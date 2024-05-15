@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\License;
+use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,11 +16,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Create a few SPT versions.
+        $spt_versions = SptVersion::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Create some code licenses.
+        $licenses = License::factory(10)->create();
+
+        // Add 100 users.
+        $users = User::factory(100)->create();
+
+        // Add 200 mods, assigning them to the users we just created.
+        $mods = Mod::factory(200)->recycle([$users, $licenses])->create();
+
+        // Add 1000 mod versions, assigning them to the mods we just created.
+        ModVersion::factory(1000)->recycle([$mods, $spt_versions])->create();
     }
 }
