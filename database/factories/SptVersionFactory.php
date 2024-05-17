@@ -14,7 +14,7 @@ class SptVersionFactory extends Factory
     {
         return [
             'version' => $this->faker->numerify('1.#.#'),
-            'color_class' => $this->faker->word(),
+            'color_class' => $this->faker->randomElement(['green', 'yellow', 'red', 'gray']),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

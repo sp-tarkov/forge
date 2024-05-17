@@ -25,8 +25,15 @@ class ModVersion extends Model
         return $this->belongsTo(Mod::class);
     }
 
-    public function spt_version(): BelongsTo
+    public function sptVersion(): belongsTo
     {
-        return $this->belongsTo(SptVersion::class, 'spt_version_id');
+        return $this->belongsTo(SptVersion::class);
+    }
+
+    public function scopeHighestSptVersion($query)
+    {
+        return $query->orderByDesc(
+            SptVersion::select('spt_versions.version')->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
+        )->orderByDesc('mod_versions.version');
     }
 }

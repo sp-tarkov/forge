@@ -16,7 +16,7 @@ class SptVersion extends Model
         'color_class',
     ];
 
-    public function mod_versions(): HasMany
+    public function modVersions(): HasMany
     {
         return $this->hasMany(ModVersion::class);
     }

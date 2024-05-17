@@ -5,3 +5,12 @@
 [x-cloak] {
     display: none;
 }
+
+button[type="submit"]:not([role="menuitem"]),
+button[type="button"]:not([role="menuitem"]) {
+    @apply border border-transparent rounded-md text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600
+}
+
+input[type="checkbox"] {
+    @apply text-gray-800 focus:ring-gray-600 border-gray-300 rounded
+}

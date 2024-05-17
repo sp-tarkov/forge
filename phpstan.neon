@@ -1,6 +1,22 @@
 includes:
-    - vendor/larastan/larastan/extension.neon
+  - vendor/larastan/larastan/extension.neon
+
 parameters:
-    paths:
-        - app/
-    level: 5
+  level: 6
+
+  paths:
+  - app/
+  - tests/
+
+  scanFiles:
+    - tests/Pest.php
+    - vendor/mockery/mockery/library/helpers.php
+
+  ignoreErrors:
+    - message: '#^Undefined variable: \$this$#'
+      paths:
+      - tests/*
+
+    - message: '#Call to an undefined method Pest\\Expectation|Pest\\Support\\Extendable::#'
+      paths:
+      - tests/*
