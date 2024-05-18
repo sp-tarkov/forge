@@ -23,6 +23,7 @@ class ModFactory extends Factory
             'description' => $this->faker->paragraph,
             'license_id' => License::factory(),
             'source_code_link' => $this->faker->url(),
+            'suggested' => $this->faker->boolean,
             'contains_ai_content' => $this->faker->boolean,
             'created_at' => now(),
             'updated_at' => now(),

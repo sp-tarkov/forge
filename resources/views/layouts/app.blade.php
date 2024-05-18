@@ -20,6 +20,7 @@
 <body class="font-sans antialiased">
 
 <x-warning/>
+
 <x-banner/>
 
 <div class="min-h-screen bg-gray-100">

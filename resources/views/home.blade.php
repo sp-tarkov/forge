@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <div class="py-12">
+    <div class="pt-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 {{-- Welcome Section --}}
@@ -21,7 +21,9 @@
                     </div>
                 </div>
 
-                <x-latest-mod-listing/>
+                <div class="pb-10">
+                    <x-mod-list-section/>
+                </div>
             </div>
         </div>
     </div>

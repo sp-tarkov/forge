@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,9 +31,14 @@ class ModVersion extends Model
         return $this->belongsTo(SptVersion::class);
     }
 
-    public function scopeHighestSptVersion($query)
+    public function scopeLastUpdated(Builder $query): void
     {
-        return $query->orderByDesc(
+        $query->orderByDesc('created_at');
+    }
+
+    public function scopeLatestSptVersion(Builder $query): void
+    {
+        $query->orderByDesc(
             SptVersion::select('spt_versions.version')->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
         )->orderByDesc('mod_versions.version');
     }

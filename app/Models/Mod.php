@@ -38,9 +38,14 @@ class Mod extends Model
         return $this->hasMany(ModVersion::class);
     }
 
-    public function versionWithHighestSptVersion()
+    public function versionLastUpdated()
     {
-        return $this->hasOne(ModVersion::class)->highestSptVersion();
+        return $this->hasOne(ModVersion::class)->lastUpdated();
+    }
+
+    public function versionLatestSptVersion()
+    {
+        return $this->hasOne(ModVersion::class)->latestSptVersion();
     }
 
     protected function slug(): Attribute

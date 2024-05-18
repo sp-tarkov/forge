@@ -18,6 +18,7 @@ return new class extends Migration
             $table->longText('description');
             $table->foreignIdFor(License::class)->constrained('licenses');
             $table->string('source_code_link');
+            $table->boolean('suggested')->default(false);
             $table->boolean('contains_ai_content')->default(false);
             $table->softDeletes();
             $table->timestamps();
