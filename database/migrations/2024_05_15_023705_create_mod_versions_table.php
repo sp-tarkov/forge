@@ -12,10 +12,11 @@ return new class extends Migration
     {
         Schema::create('mod_versions', function (Blueprint $table) {
             $table->id();
-            $table->string('hub_id')->nullable()->unique();
+            $table->string('hub_id')->nullable()->unique()->default(null);
             $table->foreignIdFor(Mod::class)->constrained('mods');
             $table->string('version');
             $table->longText('description');
+            $table->string('link');
             $table->foreignIdFor(SptVersion::class)->constrained('spt_versions');
             $table->string('virus_total_link');
             $table->unsignedBigInteger('downloads');

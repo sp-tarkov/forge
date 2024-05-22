@@ -18,6 +18,7 @@ class ModVersionFactory extends Factory
             'mod_id' => Mod::factory(),
             'version' => $this->faker->numerify('1.#.#'),
             'description' => $this->faker->text(),
+            'link' => $this->faker->url(),
             'spt_version_id' => SptVersion::factory(),
             'virus_total_link' => $this->faker->url(),
             'downloads' => $this->faker->randomNumber(),

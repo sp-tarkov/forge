@@ -10,7 +10,9 @@ use Illuminate\View\Component;
 class ModListSection extends Component
 {
     public Collection $modsFeatured;
+
     public Collection $modsLatest;
+
     public Collection $modsUpdated;
 
     public function __construct()
@@ -41,17 +43,17 @@ class ModListSection extends Component
             [
                 'title' => 'Featured Mods',
                 'mods' => $this->modsFeatured,
-                'versionScope' => 'versionLatestSptVersion'
+                'versionScope' => 'versionLatestSptVersion',
             ],
             [
                 'title' => 'Latest Mods',
                 'mods' => $this->modsLatest,
-                'versionScope' => 'versionLatestSptVersion'
+                'versionScope' => 'versionLatestSptVersion',
             ],
             [
                 'title' => 'Recently Updated Mods',
                 'mods' => $this->modsUpdated,
-                'versionScope' => 'versionLastUpdated'
+                'versionScope' => 'versionLastUpdated',
             ],
         ];
     }

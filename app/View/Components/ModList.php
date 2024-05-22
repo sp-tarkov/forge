@@ -2,13 +2,14 @@
 
 namespace App\View\Components;
 
+use App\Helpers\ColorHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
-use App\Helpers\ColorHelper;
 
 class ModList extends Component
 {
     public $mods;
+
     public string $versionScope;
 
     public function __construct($mods, $versionScope)
