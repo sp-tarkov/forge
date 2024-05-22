@@ -9,20 +9,20 @@ use Illuminate\View\Component;
 
 class ModListSection extends Component
 {
-    public Collection $modsSuggested;
+    public Collection $modsFeatured;
     public Collection $modsLatest;
     public Collection $modsUpdated;
 
     public function __construct()
     {
-        $this->modsSuggested = $this->fetchSuggestedMods();
+        $this->modsFeatured = $this->fetchFeaturedMods();
         $this->modsLatest = $this->fetchLatestMods();
         $this->modsUpdated = $this->fetchUpdatedMods();
     }
 
-    private function fetchSuggestedMods(): Collection
+    private function fetchFeaturedMods(): Collection
     {
-        return Mod::with('versionLatestSptVersion.sptVersion')->whereSuggested(true)->take(6)->get();
+        return Mod::with('versionLatestSptVersion.sptVersion')->whereFeatured(true)->take(6)->get();
     }
 
     private function fetchLatestMods(): Collection
@@ -39,8 +39,8 @@ class ModListSection extends Component
     {
         return [
             [
-                'title' => 'Suggested Mods',
-                'mods' => $this->modsSuggested,
+                'title' => 'Featured Mods',
+                'mods' => $this->modsFeatured,
                 'versionScope' => 'versionLatestSptVersion'
             ],
             [

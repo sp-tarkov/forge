@@ -12,14 +12,18 @@ return new class extends Migration
     {
         Schema::create('mods', function (Blueprint $table) {
             $table->id();
+            $table->string('hub_id')->nullable()->unique();
             $table->foreignIdFor(User::class)->constrained('users');
             $table->string('name');
             $table->string('slug');
+            $table->string('teaser');
             $table->longText('description');
-            $table->foreignIdFor(License::class)->constrained('licenses');
+            $table->string('thumbnail')->default('');
+            $table->foreignIdFor(License::class)->nullable()->default(null)->constrained('licenses');
             $table->string('source_code_link');
-            $table->boolean('suggested')->default(false);
+            $table->boolean('featured')->default(false);
             $table->boolean('contains_ai_content')->default(false);
+            $table->boolean('disabled')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });
