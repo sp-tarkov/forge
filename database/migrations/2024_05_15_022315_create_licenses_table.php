@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('licenses', function (Blueprint $table) {
             $table->id();
-            $table->string('hub_id')->nullable()->unique()->default(null);
+            $table->bigInteger('hub_id')->nullable()->default(null)->unique();
             $table->string('name');
             $table->string('link');
             $table->softDeletes();

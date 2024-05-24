@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('mods', function (Blueprint $table) {
             $table->id();
-            $table->string('hub_id')->nullable()->unique()->default(null);
+            $table->bigInteger('hub_id')->nullable()->default(null)->unique();
             $table->foreignIdFor(User::class)->constrained('users');
             $table->string('name');
             $table->string('slug');

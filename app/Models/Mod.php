@@ -23,6 +23,14 @@ class Mod extends Model
         'source_code_link',
     ];
 
+    protected function slug(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => strtolower($value),
+            set: fn (string $value) => Str::slug($value),
+        );
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -38,21 +46,54 @@ class Mod extends Model
         return $this->hasMany(ModVersion::class);
     }
 
-    public function versionLastUpdated()
+    public function scopeWithTotalDownloads($query)
     {
-        return $this->hasOne(ModVersion::class)->lastUpdated();
+        $query->addSelect(['total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
+            ->whereColumn('mod_id', 'mods.id'),
+        ]);
     }
 
-    public function versionLatestSptVersion()
+    public function latestSptVersion(): BelongsTo
     {
-        return $this->hasOne(ModVersion::class)->latestSptVersion();
+        return $this->belongsTo(ModVersion::class, 'latest_spt_version_id');
     }
 
-    protected function slug(): Attribute
+    public function scopeWithLatestSptVersion($query)
     {
-        return Attribute::make(
-            get: fn (string $value) => strtolower($value),
-            set: fn (string $value) => Str::slug($value),
-        );
+        return $query
+            ->addSelect(['latest_spt_version_id' => ModVersion::select('id')
+                ->whereColumn('mod_id', 'mods.id')
+                ->orderByDesc(
+                    SptVersion::select('version')
+                        ->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
+                        ->orderByDesc('version')
+                        ->take(1),
+                )
+                ->orderByDesc('version')
+                ->take(1),
+            ])
+            ->with(['latestSptVersion', 'latestSptVersion.sptVersion']);
+    }
+
+    public function lastUpdatedVersion(): BelongsTo
+    {
+        return $this->belongsTo(ModVersion::class, 'last_updated_spt_version_id');
+    }
+
+    public function scopeWithLastUpdatedVersion($query)
+    {
+        return $query
+            ->addSelect(['last_updated_spt_version_id' => ModVersion::select('id')
+                ->whereColumn('mod_id', 'mods.id')
+                ->orderByDesc('updated_at')
+                ->take(1),
+            ])
+            ->orderByDesc(
+                ModVersion::select('updated_at')
+                    ->whereColumn('mod_id', 'mods.id')
+                    ->orderByDesc('updated_at')
+                    ->take(1)
+            )
+            ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion']);
     }
 }

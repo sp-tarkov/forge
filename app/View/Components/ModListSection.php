@@ -24,17 +24,36 @@ class ModListSection extends Component
 
     private function fetchFeaturedMods(): Collection
     {
-        return Mod::with('versionLatestSptVersion.sptVersion')->whereFeatured(true)->take(6)->get();
+        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+            ->withLatestSptVersion()
+            ->withTotalDownloads()
+            ->with('user:id,name')
+            ->where('featured', true)
+            ->latest()
+            ->limit(6)
+            ->get();
     }
 
     private function fetchLatestMods(): Collection
     {
-        return Mod::with('versionLatestSptVersion.sptVersion')->latest()->take(6)->get();
+        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+            ->withLatestSptVersion()
+            ->withTotalDownloads()
+            ->with('user:id,name')
+            ->latest()
+            ->limit(6)
+            ->get();
     }
 
     private function fetchUpdatedMods(): Collection
     {
-        return Mod::with('versionLastUpdated.sptVersion')->take(6)->get();
+        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+            ->withLastUpdatedVersion()
+            ->withTotalDownloads()
+            ->with('user:id,name')
+            ->latest()
+            ->limit(6)
+            ->get();
     }
 
     public function getSections(): array
@@ -43,17 +62,17 @@ class ModListSection extends Component
             [
                 'title' => 'Featured Mods',
                 'mods' => $this->modsFeatured,
-                'versionScope' => 'versionLatestSptVersion',
+                'versionScope' => 'latestSptVersion',
             ],
             [
-                'title' => 'Latest Mods',
+                'title' => 'Newest Mods',
                 'mods' => $this->modsLatest,
-                'versionScope' => 'versionLatestSptVersion',
+                'versionScope' => 'latestSptVersion',
             ],
             [
                 'title' => 'Recently Updated Mods',
                 'mods' => $this->modsUpdated,
-                'versionScope' => 'versionLastUpdated',
+                'versionScope' => 'lastUpdatedVersion',
             ],
         ];
     }

@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('mod_versions', function (Blueprint $table) {
             $table->id();
-            $table->string('hub_id')->nullable()->unique()->default(null);
+            $table->bigInteger('hub_id')->nullable()->default(null)->unique();
             $table->foreignIdFor(Mod::class)->constrained('mods');
             $table->string('version');
             $table->longText('description');

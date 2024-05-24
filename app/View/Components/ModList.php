@@ -2,13 +2,13 @@
 
 namespace App\View\Components;
 
-use App\Helpers\ColorHelper;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\Component;
 
 class ModList extends Component
 {
-    public $mods;
+    public Collection $mods;
 
     public string $versionScope;
 
@@ -16,11 +16,6 @@ class ModList extends Component
     {
         $this->mods = $mods;
         $this->versionScope = $versionScope;
-
-        foreach ($this->mods as $mod) {
-            $color = $mod->{$this->versionScope}->sptVersion->color_class;
-            $mod->colorClass = ColorHelper::tagColorClasses($color);
-        }
     }
 
     public function render(): View

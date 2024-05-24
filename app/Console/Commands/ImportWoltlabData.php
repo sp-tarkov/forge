@@ -9,6 +9,7 @@ use App\Models\SptVersion;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Benchmark;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -33,21 +34,60 @@ class ImportWoltlabData extends Command
      */
     public function handle(): void
     {
-        $this->importUsers();
+        $this->newLine();
 
-        $this->importLicenses();
+        $totalTime = Benchmark::value(function () {
+            $loadDataTime = Benchmark::value(function () {
+                $this->loadData();
+            });
+            $this->info('Execution time: '.round($loadDataTime[1], 2).'ms');
+            $this->newLine();
 
-        $this->importSptVersions();
+            $importUsersTime = Benchmark::value(function () {
+                $this->importUsers();
+            });
+            $this->info('Execution time: '.round($importUsersTime[1], 2).'ms');
+            $this->newLine();
 
+            $importLicensesTime = Benchmark::value(function () {
+                $this->importLicenses();
+            });
+            $this->info('Execution time: '.round($importLicensesTime[1], 2).'ms');
+            $this->newLine();
+
+            $importSptVersionsTime = Benchmark::value(function () {
+                $this->importSptVersions();
+            });
+            $this->info('Execution time: '.round($importSptVersionsTime[1], 2).'ms');
+            $this->newLine();
+
+            $importModsTime = Benchmark::value(function () {
+                $this->importMods();
+            });
+            $this->info('Execution time: '.round($importModsTime[1], 2).'ms');
+            $this->newLine();
+
+            $importModVersionsTime = Benchmark::value(function () {
+                $this->importModVersions();
+            });
+            $this->info('Execution time: '.round($importModVersionsTime[1], 2).'ms');
+            $this->newLine();
+        });
+
+        $this->newLine();
+        $this->info('Data imported successfully');
+        $this->info('Total execution time: '.round($totalTime[1], 2).'ms');
+    }
+
+    protected function loadData(): void
+    {
+        // We're just going to dump a few things in memory to escape the N+1 problem.
+        $this->output->write('Loading data into memory... ');
         $this->fileOptionValues = $this->getFileOptionValues();
         $this->fileContent = $this->getFileContent();
-        $this->importMods();
-
-        $this->fileVersionContent = $this->getFileVersionContent();
         $this->fileVersionLabels = $this->getFileVersionLabels();
-        $this->importModVersions();
-
-        $this->info('Data imported successfully.');
+        $this->fileVersionContent = $this->getFileVersionContent();
+        $this->info('Done.');
     }
 
     protected function importUsers(): void
@@ -84,7 +124,6 @@ class ImportWoltlabData extends Command
         }, 'userID');
 
         $this->info('Total users processed: '.$totalInserted);
-        $this->newLine();
     }
 
     protected function importLicenses(): void
@@ -112,7 +151,6 @@ class ImportWoltlabData extends Command
         }, 'licenseID');
 
         $this->info('Total licenses processed: '.$totalInserted);
-        $this->newLine();
     }
 
     protected function importSptVersions(): void
@@ -125,7 +163,7 @@ class ImportWoltlabData extends Command
                 $insertData[] = [
                     'hub_id' => $version->labelID,
                     'version' => $version->label,
-                    'color_class' => $version->cssClassName,
+                    'color_class' => $this->translateColour($version->cssClassName),
                 ];
             }
 
@@ -140,7 +178,17 @@ class ImportWoltlabData extends Command
         }, 'labelID');
 
         $this->info('Total licenses processed: '.$totalInserted);
-        $this->newLine();
+    }
+
+    protected function translateColour(string $colour = ''): string
+    {
+        return match ($colour) {
+            'green' => 'green',
+            'slightly-outdated' => 'lime',
+            'yellow' => 'yellow',
+            'red' => 'red',
+            default => 'gray',
+        };
     }
 
     protected function importMods(): void
@@ -155,20 +203,20 @@ class ImportWoltlabData extends Command
         DB::connection('mysql_woltlab')->table('filebase1_file')->chunkById(100, function (Collection $mods) use (&$command, &$curl, &$totalInserted) {
 
             foreach ($mods as $mod) {
-                if ($mod->fileID == 1 || $mod->fileID == 116 || $mod->fileID == 480) {
-                    // These are special cases that we don't want to import. Installers, base files, and the patchers.
-                    continue;
-                }
-
                 $modContent = $this->fileContent[$mod->fileID] ?? [];
                 $modOptions = $this->fileOptionValues[$mod->fileID] ?? [];
+                $versionLabel = $this->fileVersionLabels[$mod->fileID] ?? [];
+
+                if (empty($versionLabel)) {
+                    continue;
+                }
 
                 $insertData[] = [
                     'hub_id' => $mod->fileID,
                     'user_id' => User::whereHubId($mod->userID)->value('id'),
                     'name' => $modContent ? $modContent->subject : '',
                     'slug' => $modContent ? Str::slug($modContent->subject) : '',
-                    'teaser' => $modContent ? $modContent->teaser : '',
+                    'teaser' => $modContent ? (strlen($modContent->teaser) > 100 ? Str::take($modContent->teaser, 97).'...' : $modContent->teaser) : '',
                     'description' => $modContent ? $modContent->message : '',
                     'thumbnail' => $this->fetchModThumbnail($command, $curl, $mod->fileID, $mod->iconHash, $mod->iconExtension),
                     'license_id' => License::whereHubId($mod->licenseID)->value('id'),
@@ -194,7 +242,6 @@ class ImportWoltlabData extends Command
         curl_close($curl);
 
         $this->info('Total mods processed: '.$totalInserted);
-        $this->newLine();
     }
 
     protected function getFileOptionValues(): array
@@ -331,7 +378,7 @@ class ImportWoltlabData extends Command
         $command = $this;
         $totalInserted = 0;
 
-        DB::connection('mysql_woltlab')->table('filebase1_file_version')->chunkById(100, function (Collection $versions) use (&$command, &$totalInserted) {
+        DB::connection('mysql_woltlab')->table('filebase1_file_version')->chunkById(500, function (Collection $versions) use (&$command, &$totalInserted) {
 
             foreach ($versions as $version) {
                 $versionContent = $this->fileVersionContent[$version->versionID] ?? [];
@@ -369,7 +416,6 @@ class ImportWoltlabData extends Command
         }, 'versionID');
 
         $this->info('Total mod versions processed: '.$totalInserted);
-        $this->newLine();
     }
 
     protected function fetchVirusTotalLink(array $options): string
