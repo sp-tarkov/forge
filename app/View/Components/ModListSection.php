@@ -36,7 +36,7 @@ class ModListSection extends Component
 
     private function fetchLatestMods(): Collection
     {
-        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
             ->withLatestSptVersion()
             ->withTotalDownloads()
             ->with('user:id,name')

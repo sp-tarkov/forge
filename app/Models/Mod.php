@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Mod extends Model
@@ -66,10 +67,10 @@ class Mod extends Model
                 ->orderByDesc(
                     SptVersion::select('version')
                         ->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
-                        ->orderByDesc('version')
+                        ->orderByDesc(DB::raw('naturalSort(version)'))
                         ->take(1),
                 )
-                ->orderByDesc('version')
+                ->orderByDesc(DB::raw('naturalSort(version)'))
                 ->take(1),
             ])
             ->with(['latestSptVersion', 'latestSptVersion.sptVersion']);

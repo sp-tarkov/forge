@@ -25,11 +25,21 @@ class ModController extends Controller
         return new ModResource(Mod::create($request->validated()));
     }
 
-    public function show(Mod $mod)
+    public function show(int $modId, string $slug)
     {
+        $mod = Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+            ->withLatestSptVersion()
+            ->withTotalDownloads()
+            ->with('user:id,name')
+            ->find($modId);
+
+        if (!$mod || $mod->slug !== $slug) {
+            abort(404);
+        }
+
         $this->authorize('view', $mod);
 
-        return new ModResource($mod);
+        return view('mod.show', compact('mod'));
     }
 
     public function update(ModRequest $request, Mod $mod)

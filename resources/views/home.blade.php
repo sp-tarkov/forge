@@ -14,7 +14,7 @@
                 </div>
                 <div class="mx-auto max-w-2xl text-center">
                     <h2 class="text-4xl font-bold tracking-tight text-white sm:text-6xl drop-shadow-md">Step into
-                        <em class="dark:text-gray-400">{{ config('app.name', 'The Forge') }}</em></h2>
+                        <em class="text-gray-200">{{ config('app.name', 'The Forge') }}</em></h2>
                     <p class="mt-6 text-lg leading-8 text-gray-300 drop-shadow-md">The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Craft your vision. Transform the game.</p>
                 </div>
             </div>

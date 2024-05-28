@@ -14,8 +14,8 @@ return new class extends Migration
         if (config('database.default') === 'mysql') {
             // https://www.drupal.org/project/natsort
             DB::unprepared("
-                DROP FUNCTION IF EXISTS naturalsort;
-                CREATE FUNCTION naturalsort (s VARCHAR (255)) RETURNS VARCHAR (255) NO SQL DETERMINISTIC BEGIN
+                DROP FUNCTION IF EXISTS naturalSort;
+                CREATE FUNCTION naturalSort (s VARCHAR (255)) RETURNS VARCHAR (255) NO SQL DETERMINISTIC BEGIN
                     DECLARE orig VARCHAR (255) DEFAULT s;
                     DECLARE ret VARCHAR (255) DEFAULT '';
                     IF s IS NULL THEN
@@ -58,7 +58,7 @@ return new class extends Migration
         if (config('database.default') === 'pgsql') {
             // http://www.rhodiumtoad.org.uk/junk/naturalsort.sql
             DB::unprepared('
-              create or replace function naturalsort(text)
+              create or replace function naturalSort(text)
               returns bytea language sql immutable strict as
               $f$ select string_agg(convert_to(coalesce(r[2],length(length(r[1])::text) || length(r[1])::text || r[1]),\'SQL_ASCII\'),\'\x00\')
               from regexp_matches($1, \'0*([0-9]+)|([^0-9]+)\', \'g\') r; $f$;
@@ -73,7 +73,7 @@ return new class extends Migration
         }
 
         if (config('database.default') === 'mysql' || config('database.default') === 'pgsql') {
-            DB::unprepared('DROP FUNCTION IF EXISTS naturalsort');
+            DB::unprepared('DROP FUNCTION IF EXISTS naturalSort');
         }
     }
 };

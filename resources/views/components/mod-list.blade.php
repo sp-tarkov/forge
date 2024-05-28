@@ -21,17 +21,10 @@
                                     {{ $mod->{$versionScope}->sptVersion->version }}
                                 </span>
                             </div>
+                            <p class="text-sm italic text-slate-600 dark:text-gray-200">By {{ $mod->user->name }}</p>
                             <p class="mt-2 text-slate-500 dark:text-gray-300">{{ $mod->teaser }}</p>
                         </div>
-                        <p class="text-slate-700 dark:text-gray-300 text-sm">
-                            <span>By {{ $mod->user->name }}</span>
-                            @if (!is_null($mod->total_downloads))
-                                <span>&ndash; {{ Number::format($mod->total_downloads) }} downloads</span>
-                            @endif
-                            @if(!is_null($mod->updated_at))
-                                <span>&ndash; updated {{ $mod->updated_at }}</span>
-                            @endif
-                        </p>
+                        <x-mod-list-stats :mod="$mod" :modVersion="$mod->{$versionScope}" />
                     </div>
                 </div>
             </div>
