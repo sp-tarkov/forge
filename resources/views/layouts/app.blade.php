@@ -7,16 +7,21 @@
 
     <title>{{ config('app.name', 'The Forge') }}</title>
 
-    <link href="https://fonts.bunny.net" rel="preconnect">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/x-icon;base64,AA">
+    <link href="//fonts.bunny.net" rel="preconnect">
+    <link href="//fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
 
-    {{-- Handle setting the dark mode theme. Done here to avoid FOUC --}}
     <script>
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark')
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
+        // Immediately set the theme to prevent a flash of the default theme when another is set.
+        // Must be located inline, in the head, and before any CSS is loaded.
+        (function () {
+            let theme = localStorage.getItem('forge-theme');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                localStorage.setItem('forge-theme', theme);
+            }
+            document.documentElement.classList.add(theme);
+        })();
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -32,14 +37,14 @@
     @livewire('navigation-menu')
 
     @if (isset($header))
-        <header class="bg-white dark:bg-gray-800 shadow dark:shadow-white">
+        <header class="bg-gray-50 dark:bg-gray-900 shadow dark:shadow-gray-950">
             <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 {{ $header }}
             </div>
         </header>
     @endif
 
-    <main class="py-12">
+    <main class="py-6 sm:py-12">
         {{ $slot }}
     </main>
 </div>

@@ -154,4 +154,6 @@ jobs:
         run: composer install -n --no-dev --prefer-dist
 
       - name: Execute Code Static Analysis with Larastan
-        run: vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress
+        run: |
+          composer require --dev larastan/larastan
+          vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress

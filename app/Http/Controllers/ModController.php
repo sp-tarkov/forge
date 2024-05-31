@@ -33,7 +33,7 @@ class ModController extends Controller
             ->with('user:id,name')
             ->find($modId);
 
-        if (!$mod || $mod->slug !== $slug) {
+        if (! $mod || $mod->slug !== $slug) {
             abort(404);
         }
 

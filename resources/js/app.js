@@ -1,37 +1,49 @@
 import "./bootstrap";
 
-var themeToggleDarkIcon = document.getElementById("theme-toggle-dark-icon");
-var themeToggleLightIcon = document.getElementById("theme-toggle-light-icon");
+document.addEventListener("DOMContentLoaded", function () {
+    const themeToggleIcon = {
+        dark: document.getElementById("theme-toggle-dark-icon"),
+        light: document.getElementById("theme-toggle-light-icon"),
+    };
 
-if (
-    localStorage.getItem("color-theme") === "dark" ||
-    (!("color-theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-) {
-    themeToggleLightIcon.classList.remove("hidden");
-} else {
-    themeToggleDarkIcon.classList.remove("hidden");
-}
-
-var themeToggleBtn = document.getElementById("theme-toggle");
-themeToggleBtn.addEventListener("click", function () {
-    themeToggleDarkIcon.classList.toggle("hidden");
-    themeToggleLightIcon.classList.toggle("hidden");
-    if (localStorage.getItem("color-theme")) {
-        if (localStorage.getItem("color-theme") === "light") {
-            document.documentElement.classList.add("dark");
-            localStorage.setItem("color-theme", "dark");
+    // Function to update the visibility of the theme icons based on the theme
+    function updateIconVisibility(theme) {
+        if (theme === "dark") {
+            themeToggleIcon.dark.classList.add("hidden");
+            themeToggleIcon.light.classList.remove("hidden");
         } else {
-            document.documentElement.classList.remove("dark");
-            localStorage.setItem("color-theme", "light");
-        }
-    } else {
-        if (document.documentElement.classList.contains("dark")) {
-            document.documentElement.classList.remove("dark");
-            localStorage.setItem("color-theme", "light");
-        } else {
-            document.documentElement.classList.add("dark");
-            localStorage.setItem("color-theme", "dark");
+            themeToggleIcon.dark.classList.remove("hidden");
+            themeToggleIcon.light.classList.add("hidden");
         }
     }
+
+    // Function to update the theme
+    function updateTheme(theme) {
+        // Update the document element class
+        document.documentElement.classList.remove("light", "dark");
+        document.documentElement.classList.add(theme);
+
+        // Update local storage
+        localStorage.setItem("forge-theme", theme);
+
+        // Update icon visibility
+        updateIconVisibility(theme);
+    }
+
+    // Initial setup: Determine the current theme and set icon visibility
+    const initialTheme =
+        localStorage.getItem("forge-theme") ||
+        (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    document.documentElement.classList.add(initialTheme); // Ensure the class is set
+    updateIconVisibility(initialTheme);
+
+    // Set up the theme toggle button
+    const themeToggleBtn = document.getElementById("theme-toggle");
+    themeToggleBtn.addEventListener("click", function () {
+        // Determine the current theme by checking the classList of documentElement
+        const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        updateTheme(newTheme);
+    });
 });
