@@ -26,6 +26,8 @@ class ModFactory extends Factory
             'source_code_link' => $this->faker->url(),
             'featured' => $this->faker->boolean,
             'contains_ai_content' => $this->faker->boolean,
+            'contains_ads' => $this->faker->boolean,
+            'disabled' => $this->faker->boolean,
             'created_at' => now(),
             'updated_at' => now(),
         ];

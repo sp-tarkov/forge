@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignIdFor(SptVersion::class)->constrained('spt_versions');
             $table->string('virus_total_link');
             $table->unsignedBigInteger('downloads');
+            $table->boolean('disabled')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

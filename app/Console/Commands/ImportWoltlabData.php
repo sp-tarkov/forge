@@ -223,6 +223,7 @@ class ImportWoltlabData extends Command
                     'source_code_link' => $this->fetchSourceLinkValue($modOptions),
                     'featured' => $mod->isFeatured,
                     'contains_ai_content' => $this->fetchContainsAiContentValue($modOptions),
+                    'contains_ads' => $this->fetchContainsAdsValue($modOptions),
                     'disabled' => $mod->isDisabled,
                     'created_at' => Carbon::parse($mod->time, 'UTC'),
                     'updated_at' => Carbon::parse($mod->lastChangeTime, 'UTC'),
@@ -298,6 +299,18 @@ class ImportWoltlabData extends Command
         // Iterate over the options and find the 'optionID' of 7. That record will contain the AI flag.
         foreach ($options as $option) {
             if ($option->optionID == 7) {
+                return (bool) $option->optionValue;
+            }
+        }
+
+        return false;
+    }
+
+    protected function fetchContainsAdsValue(array $options): bool
+    {
+        // Iterate over the options and find the 'optionID' of 3. That record will contain the Ad flag.
+        foreach ($options as $option) {
+            if ($option->optionID == 3) {
                 return (bool) $option->optionValue;
             }
         }
@@ -400,6 +413,7 @@ class ImportWoltlabData extends Command
                     'spt_version_id' => SptVersion::whereHubId($versionLabel)->value('id'),
                     'virus_total_link' => $this->fetchVirusTotalLink($modOptions),
                     'downloads' => (int) $version->downloads,
+                    'disabled' => (bool) $version->isDisabled,
                     'created_at' => Carbon::parse($version->uploadTime, 'UTC'),
                     'updated_at' => Carbon::parse($version->uploadTime, 'UTC'),
                 ];
@@ -424,14 +438,19 @@ class ImportWoltlabData extends Command
         // in the 'optionValue' column. The 'optionID' of 6 should take precedence over 1. If neither are found, return
         // an empty string.
         foreach ($options as $option) {
-            if ($option->optionID == 5 && ! empty($option->optionValue)) {
+            if ($option->optionID == 6 && ! empty($option->optionValue)) {
                 return $option->optionValue;
             }
-            if ($option->optionID == 1 && ! empty($option->optionValue)) {
+            if ($option->optionID == 2 && ! empty($option->optionValue)) {
                 return $option->optionValue;
             }
         }
 
         return '';
+    }
+
+    protected function updateDisabledPropertty(): void
+    {
+        $this->output->newLine();
     }
 }

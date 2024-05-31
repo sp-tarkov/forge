@@ -16,6 +16,9 @@
                     <div class="flex flex-col w-full justify-between p-5">
                         <div>
                             <div class="flex justify-between items-center space-x-3">
+                                @if(is_null($mod->{$versionScope}))
+                                    @dd($mod)
+                                @endif
                                 <h3 class="block mt-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
                                 <span class="badge-version {{ $mod->{$versionScope}->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                     {{ $mod->{$versionScope}->sptVersion->version }}
@@ -24,7 +27,7 @@
                             <p class="text-sm italic text-slate-600 dark:text-gray-200">By {{ $mod->user->name }}</p>
                             <p class="mt-2 text-slate-500 dark:text-gray-300">{{ $mod->teaser }}</p>
                         </div>
-                        <x-mod-list-stats :mod="$mod" :modVersion="$mod->{$versionScope}" />
+                        <x-mod-list-stats :mod="$mod" :modVersion="$mod->{$versionScope}"/>
                     </div>
                 </div>
             </div>

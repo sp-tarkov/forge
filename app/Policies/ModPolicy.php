@@ -12,7 +12,7 @@ class ModPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -29,7 +29,7 @@ class ModPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -37,7 +37,7 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -45,7 +45,7 @@ class ModPolicy
      */
     public function delete(User $user, Mod $mod): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -53,7 +53,7 @@ class ModPolicy
      */
     public function restore(User $user, Mod $mod): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class ModPolicy
      */
     public function forceDelete(User $user, Mod $mod): bool
     {
-        //
+        return false;
     }
 }

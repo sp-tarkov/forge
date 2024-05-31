@@ -27,10 +27,11 @@ class ModController extends Controller
 
     public function show(int $modId, string $slug)
     {
-        $mod = Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+        $mod = Mod::select()
             ->withLatestSptVersion()
             ->withTotalDownloads()
             ->with('user:id,name')
+            ->with('license:id,name,link')
             ->find($modId);
 
         if (! $mod || $mod->slug !== $slug) {

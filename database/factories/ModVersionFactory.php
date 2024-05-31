@@ -22,6 +22,7 @@ class ModVersionFactory extends Factory
             'spt_version_id' => SptVersion::factory(),
             'virus_total_link' => $this->faker->url(),
             'downloads' => $this->faker->randomNumber(),
+            'disabled' => $this->faker->boolean,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

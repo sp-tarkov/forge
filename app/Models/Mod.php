@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\DisabledScope;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * @property string $slug
+ */
 class Mod extends Model
 {
     use HasFactory, SoftDeletes;
@@ -23,6 +27,11 @@ class Mod extends Model
         'license_id',
         'source_code_link',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new DisabledScope);
+    }
 
     protected function slug(): Attribute
     {
@@ -49,7 +58,7 @@ class Mod extends Model
 
     public function scopeWithTotalDownloads($query)
     {
-        $query->addSelect(['total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
+        return $query->addSelect(['total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
             ->whereColumn('mod_id', 'mods.id'),
         ]);
     }
@@ -73,6 +82,7 @@ class Mod extends Model
                 ->orderByDesc(DB::raw('naturalSort(version)'))
                 ->take(1),
             ])
+            ->havingNotNull('latest_spt_version_id')
             ->with(['latestSptVersion', 'latestSptVersion.sptVersion']);
     }
 
@@ -95,6 +105,7 @@ class Mod extends Model
                     ->orderByDesc('updated_at')
                     ->take(1)
             )
+            ->havingNotNull('last_updated_spt_version_id')
             ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion']);
     }
 }

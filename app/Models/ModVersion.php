@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\DisabledScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,11 @@ class ModVersion extends Model
         'virus_total_link',
         'downloads',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new DisabledScope);
+    }
 
     public function mod(): BelongsTo
     {

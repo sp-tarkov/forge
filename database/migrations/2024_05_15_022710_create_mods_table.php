@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('source_code_link');
             $table->boolean('featured')->default(false);
             $table->boolean('contains_ai_content')->default(false);
+            $table->boolean('contains_ads')->default(false);
             $table->boolean('disabled')->default(false);
             $table->softDeletes();
             $table->timestamps();
