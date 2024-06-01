@@ -62,4 +62,4 @@ jobs:
       - name: Execute Code Static Analysis with Larastan
         run: |
           composer require --dev larastan/larastan
-          vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress
+          ./vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress
