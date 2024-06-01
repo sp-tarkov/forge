@@ -3,6 +3,8 @@ name: Pint Code Style Fixer
 on:
   pull_request:
   push:
+    branches-ignore:
+      - 'dependabot/**'
 
 jobs:
   pint-fixer:
@@ -58,11 +60,10 @@ jobs:
       - name: Update Dependencies with latest stable
         run: composer update --prefer-stable
 
-      - name: Run Laravel Pint
-        uses: aglipanci/laravel-pint-action@2
-        with:
-          preset: laravel
+      - name: Run Pint Code Style Fixer
+        run: .vendor/bin/pint
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Apply pint code style changes
+          commit_message: Pint PHP Style Fixes
+          skip_fetch: true

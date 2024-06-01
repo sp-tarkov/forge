@@ -3,6 +3,8 @@ name: Larastan Static Analysis
 on:
   pull_request:
   push:
+    branches-ignore:
+      - 'dependabot/**'
 
 jobs:
   larastan:
