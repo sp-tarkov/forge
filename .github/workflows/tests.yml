@@ -25,14 +25,6 @@ jobs:
           --health-timeout=5s
           --health-retries=3
 
-    strategy:
-      matrix:
-        operating-system: [ubuntu-latest]
-        php-versions: ['8.3']
-        dependency-stability: ['prefer-stable']
-
-    name: P${{ matrix.php-versions }} - ${{ matrix.dependency-stability }} - ${{ matrix.operating-system}}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -40,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: 20
 
       - name: Cache node_modules Directory
         uses: actions/cache@v4
@@ -59,7 +51,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: '8.3'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
           coverage: none
 
@@ -99,7 +91,6 @@ jobs:
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Update Dependencies with latest stable
-        if: matrix.dependency-stability == 'prefer-stable'
         run: composer update --prefer-stable
 
       - name: Generate key
@@ -123,10 +114,3 @@ jobs:
           DB_PORT: 33306
           DB_USER: root
         run: vendor/bin/pest
-
-      - name: Upload App Logs
-        if: failure()
-        uses: actions/upload-artifact@v2
-        with:
-          name: app
-          path: storage/logs
