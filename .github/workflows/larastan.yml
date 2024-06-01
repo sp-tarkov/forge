@@ -1,4 +1,4 @@
-name: Laravel Pest Tests
+name: Larastan Static Analysis
 
 on:
   pull_request:

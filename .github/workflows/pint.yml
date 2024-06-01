@@ -59,7 +59,7 @@ jobs:
         run: composer update --prefer-stable
 
       - name: Run Laravel Pint
-        uses: aglipanci/laravel-pint-action@2.4.0
+        uses: aglipanci/laravel-pint-action@2
         with:
           preset: laravel
 
