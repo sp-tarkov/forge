@@ -113,4 +113,6 @@ jobs:
           DB_DATABASE: test
           DB_PORT: 33306
           DB_USER: root
-        run: ./vendor/bin/pest
+        run: |
+          composer require pestphp/pest --dev --with-all-dependencies
+          ./vendor/bin/pest

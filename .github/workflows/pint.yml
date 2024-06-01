@@ -62,7 +62,7 @@ jobs:
 
       - name: Run Pint Code Style Fixer
         run: |
-          composer require --dev laravel/pint
+          composer require laravel/pint --dev
           ./vendor/bin/pint
 
       - uses: stefanzweifel/git-auto-commit-action@v5
