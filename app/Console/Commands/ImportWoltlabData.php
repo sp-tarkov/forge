@@ -109,7 +109,7 @@ class ImportWoltlabData extends Command
                     'hub_id' => $wolt->userID,
                     'name' => $wolt->username,
                     'email' => mb_convert_case($wolt->email, MB_CASE_LOWER, 'UTF-8'),
-                    'password' => $wolt->password,
+                    'password' => $this->cleanPasswordHash($wolt->password),
                     'created_at' => $registrationDate,
                     'updated_at' => now('UTC')->toDateTimeString(),
                 ];
@@ -126,6 +126,12 @@ class ImportWoltlabData extends Command
         }, 'userID');
 
         $this->info('Total users processed: '.$totalInserted);
+    }
+
+    protected function cleanPasswordHash(string $password): string
+    {
+        // The WoltLab password hash sometimes? has a prefix of the hash type. We only want the hash.
+        return str_replace(['Bcrypt:', 'cryptMD5:', 'cryptMD5::'], '', $password);
     }
 
     protected function importLicenses(): void
