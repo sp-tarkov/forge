@@ -76,10 +76,10 @@ class Mod extends Model
                 ->orderByDesc(
                     SptVersion::select('version')
                         ->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
-                        ->orderByDesc(DB::raw('naturalSort(version)'))
+                        ->orderByDesc('version')
                         ->take(1),
                 )
-                ->orderByDesc(DB::raw('naturalSort(version)'))
+                ->orderByDesc('version')
                 ->take(1),
             ])
             ->havingNotNull('latest_spt_version_id')

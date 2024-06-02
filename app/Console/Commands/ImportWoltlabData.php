@@ -14,6 +14,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\HTMLToMarkdown\HtmlConverter;
+use Stevebauman\Purify\Facades\Purify;
 
 class ImportWoltlabData extends Command
 {
@@ -212,19 +214,19 @@ class ImportWoltlabData extends Command
                 }
 
                 $insertData[] = [
-                    'hub_id' => $mod->fileID,
+                    'hub_id' => (int) $mod->fileID,
                     'user_id' => User::whereHubId($mod->userID)->value('id'),
                     'name' => $modContent ? $modContent->subject : '',
                     'slug' => $modContent ? Str::slug($modContent->subject) : '',
                     'teaser' => $modContent ? (strlen($modContent->teaser) > 100 ? Str::take($modContent->teaser, 97).'...' : $modContent->teaser) : '',
-                    'description' => $modContent ? $modContent->message : '',
+                    'description' => $this->convertModDescription($modContent?->message ?? ''),
                     'thumbnail' => $this->fetchModThumbnail($command, $curl, $mod->fileID, $mod->iconHash, $mod->iconExtension),
                     'license_id' => License::whereHubId($mod->licenseID)->value('id'),
                     'source_code_link' => $this->fetchSourceLinkValue($modOptions),
-                    'featured' => $mod->isFeatured,
+                    'featured' => (bool) $mod->isFeatured,
                     'contains_ai_content' => $this->fetchContainsAiContentValue($modOptions),
                     'contains_ads' => $this->fetchContainsAdsValue($modOptions),
-                    'disabled' => $mod->isDisabled,
+                    'disabled' => (bool) $mod->isDisabled,
                     'created_at' => Carbon::parse($mod->time, 'UTC'),
                     'updated_at' => Carbon::parse($mod->lastChangeTime, 'UTC'),
                 ];
@@ -408,11 +410,11 @@ class ImportWoltlabData extends Command
                     'hub_id' => $version->versionID,
                     'mod_id' => $modId,
                     'version' => $version->versionNumber,
-                    'description' => $versionContent['description'] ?? '',
+                    'description' => $this->convertModDescription($versionContent['description'] ?? ''),
                     'link' => $version->downloadURL,
                     'spt_version_id' => SptVersion::whereHubId($versionLabel)->value('id'),
                     'virus_total_link' => $this->fetchVirusTotalLink($modOptions),
-                    'downloads' => (int) $version->downloads,
+                    'downloads' => max((int) $version->downloads, 0), // Ensure the value is at least 0
                     'disabled' => (bool) $version->isDisabled,
                     'created_at' => Carbon::parse($version->uploadTime, 'UTC'),
                     'updated_at' => Carbon::parse($version->uploadTime, 'UTC'),
@@ -449,8 +451,10 @@ class ImportWoltlabData extends Command
         return '';
     }
 
-    protected function updateDisabledPropertty(): void
+    protected function convertModDescription(string $description): string
     {
-        $this->output->newLine();
+        // Alright, hear me out... Shut up.
+        $converter = new HtmlConverter();
+        return $converter->convert(Purify::clean($description));
     }
 }

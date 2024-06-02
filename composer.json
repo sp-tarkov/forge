@@ -17,7 +17,9 @@
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^10.9",
         "laravel/tinker": "^2.9",
-        "livewire/livewire": "^3.0"
+        "league/html-to-markdown": "^5.1",
+        "livewire/livewire": "^3.0",
+        "stevebauman/purify": "^6.2"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",

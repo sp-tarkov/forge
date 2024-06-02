@@ -15,6 +15,10 @@ input[type="checkbox"] {
     @apply text-gray-800 dark:text-gray-300 focus:ring-gray-600 dark:focus:ring-gray-500 border-gray-300 dark:border-gray-700 rounded;
 }
 
+main a:not(.mod-list-component):not(.tab) {
+    @apply underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white;
+}
+
 .badge-version {
     @apply bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100;
 
@@ -36,5 +40,47 @@ input[type="checkbox"] {
 
     &.yellow {
         @apply bg-yellow-100 dark:bg-yellow-700 text-yellow-700 dark:text-yellow-100;
+    }
+}
+
+.user-markdown {
+    b, strong {
+        @apply font-bold;
+    }
+    i, em {
+        @apply italic
+    }
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-bold mt-4 mb-2 text-black dark:text-white;
+    }
+    h1 {
+        @apply text-2xl;
+    }
+    h2 {
+        @apply text-xl;
+    }
+    h3 {
+        @apply text-lg;
+    }
+    h4 {
+        @apply text-base;
+    }
+    h5 {
+        @apply text-sm;
+    }
+    h6 {
+        @apply text-xs;
+    }
+    p {
+        @apply my-2 text-gray-800 dark:text-gray-300;
+    }
+    ul {
+        @apply list-disc mb-2;
+    }
+    ol {
+        @apply list-decimal mb-2;
+    }
+    li {
+        @apply my-2 ml-7 text-gray-800 dark:text-gray-300;
     }
 }
