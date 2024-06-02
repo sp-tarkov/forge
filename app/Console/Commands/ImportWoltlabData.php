@@ -455,6 +455,7 @@ class ImportWoltlabData extends Command
     {
         // Alright, hear me out... Shut up.
         $converter = new HtmlConverter();
+
         return $converter->convert(Purify::clean($description));
     }
 }
