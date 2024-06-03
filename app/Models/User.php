@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Scout\Searchable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -18,6 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
+    use Searchable;
 
     protected $fillable = [
         'name',
@@ -47,5 +49,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function mods(): HasMany
     {
         return $this->hasMany(Mod::class);
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'name' => $this->name,
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return ! is_null($this->email_verified_at);
     }
 }

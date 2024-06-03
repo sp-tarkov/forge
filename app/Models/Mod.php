@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Laravel\Scout\Searchable;
 
 /**
  * @property string $slug
  */
 class Mod extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Searchable;
 
     protected $fillable = [
         'user_id',
@@ -106,5 +107,24 @@ class Mod extends Model
             )
             ->havingNotNull('last_updated_spt_version_id')
             ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion']);
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'thumbnail' => $this->thumbnail,
+            'featured' => $this->featured,
+            'created_at' => strtotime($this->created_at),
+            'updated_at' => strtotime($this->updated_at),
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return ! $this->disabled;
     }
 }

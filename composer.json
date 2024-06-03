@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.3",
         "ext-curl": "*",
+        "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.0",
         "laravel/jetstream": "^5.1",
         "laravel/nova": "^4.0",
@@ -19,6 +20,7 @@
         "laravel/tinker": "^2.9",
         "league/html-to-markdown": "^5.1",
         "livewire/livewire": "^3.0",
+        "meilisearch/meilisearch-php": "^1.8",
         "stevebauman/purify": "^6.2"
     },
     "require-dev": {
