@@ -138,9 +138,9 @@ return [
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
             Mod::class => [
-                'filterableAttributes'=> ['featured'],
+                'filterableAttributes' => ['featured'],
                 'sortableAttributes' => ['created_at', 'updated_at'],
-            ]
+            ],
         ],
     ],
 

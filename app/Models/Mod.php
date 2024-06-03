@@ -17,7 +17,7 @@ use Laravel\Scout\Searchable;
  */
 class Mod extends Model
 {
-    use HasFactory, SoftDeletes, Searchable;
+    use HasFactory, Searchable, SoftDeletes;
 
     protected $fillable = [
         'user_id',
