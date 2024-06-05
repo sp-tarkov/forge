@@ -35,8 +35,8 @@
             <div>
                 <div class="sm:hidden">
                     <label for="tabs" class="sr-only">Select a tab</label>
-                    <!-- Use an "onChange" listener to redirect the user to the selected tab URL. -->
-                    <select id="tabs" name="tabs" class="block w-full rounded-md border-gray-300 focus:border-grey-500 focus:ring-grey-500">
+                    {{-- Use an "onChange" listener to redirect the user to the selected tab URL. --}}
+                    <select id="tabs" name="tabs" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
                         <option selected>Description</option>
                         <option>Versions</option>
                         <option>Comments</option>
@@ -46,8 +46,7 @@
                     <nav class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                         <a href="#description" class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10" aria-current="page">
                             <span>Description</span>
-                            <span aria-hidden="true" class="bg-gray-500 absolute inset-x-0 bottom-0 h-0.5"></span>
-                        </a>
+                            <span aria-hidden="true" class="bg-gray-500 absolute inset-x-0 bottom-0 h-0.5"></span> </a>
                         <a href="#versions" class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
                             <span>Versions</span>
                             <span aria-hidden="true" class="bg-transparent absolute inset-x-0 bottom-0 h-0.5"></span>
@@ -105,13 +104,23 @@
                         </li>
                     @endif
                     @if($mod->contains_ads)
-                        <li class="px-4 py-4 sm:px-0">
-                            <h3>{{ __('Includes Advertising') }}</h3>
+                        <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
+                            <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/>
+                            </svg>
+                            <h3 class="grow">
+                                {{ __('Includes Advertising') }}
+                            </h3>
                         </li>
                     @endif
                     @if($mod->contains_ai_content)
-                        <li class="px-4 py-4 sm:px-0">
-                            <h3>{{ __('Includes AI Generated Content') }}</h3>
+                        <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
+                            <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/>
+                            </svg>
+                            <h3 class="grow">
+                                {{ __('Includes AI Generated Content') }}
+                            </h3>
                         </li>
                     @endif
                 </ul>

@@ -44,7 +44,7 @@
         </header>
     @endif
 
-    <main class="py-6 sm:py-12">
+    <main class="pb-6 sm:py-12">
         {{ $slot }}
     </main>
 </div>

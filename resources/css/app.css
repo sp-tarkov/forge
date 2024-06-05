@@ -11,6 +11,11 @@ button[type="button"]:not([role="menuitem"]) {
     @apply border border-transparent rounded-md py-2 px-4 text-white dark:text-gray-100 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-black dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 dark:focus:ring-gray-500 transition-all duration-200
 }
 
+nav button[type="submit"]:not([role="menuitem"]),
+nav button[type="button"]:not([role="menuitem"]) {
+    @apply border border-transparent rounded-md py-2 px-4 text-white dark:text-gray-100 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 dark:focus:ring-gray-500 transition-all duration-200
+}
+
 input[type="checkbox"] {
     @apply text-gray-800 dark:text-gray-300 focus:ring-gray-600 dark:focus:ring-gray-500 border-gray-300 dark:border-gray-700 rounded;
 }
@@ -47,39 +52,51 @@ main a:not(.mod-list-component):not(.tab) {
     b, strong {
         @apply font-bold;
     }
+
     i, em {
         @apply italic
     }
+
     h1, h2, h3, h4, h5, h6 {
         @apply font-bold mt-4 mb-2 text-black dark:text-white;
     }
+
     h1 {
         @apply text-2xl;
     }
+
     h2 {
         @apply text-xl;
     }
+
     h3 {
         @apply text-lg;
     }
+
     h4 {
         @apply text-base;
     }
+
     h5 {
         @apply text-sm;
     }
+
     h6 {
         @apply text-xs;
     }
+
     p {
         @apply my-2 text-gray-800 dark:text-gray-300;
     }
+
     ul {
         @apply list-disc mb-2;
     }
+
     ol {
         @apply list-decimal mb-2;
     }
+
     li {
         @apply my-2 ml-7 text-gray-800 dark:text-gray-300;
     }

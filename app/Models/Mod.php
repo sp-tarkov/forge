@@ -23,6 +23,7 @@ class Mod extends Model
         'user_id',
         'name',
         'slug',
+        'teaser',
         'description',
         'license_id',
         'source_code_link',

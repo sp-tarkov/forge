@@ -1,8 +1,8 @@
 <x-app-layout>
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 sm:rounded-lg">
-            <div class="relative isolate overflow-hidden bg-gray-900 dark:bg-gray-800 px-6 py-24 sm:py-32 lg:px-8 rounded-md">
+        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
+            <div class="relative isolate overflow-hidden bg-gray-900 dark:bg-gray-800 px-6 py-24 sm:py-32 lg:px-8 rounded-none sm:rounded-md">
                 <video autoplay muted loop class="absolute inset-0 -z-10 h-full w-full object-cover">
                     <source src="/video/welcome.mp4" type="video/mp4">
                 </video>
