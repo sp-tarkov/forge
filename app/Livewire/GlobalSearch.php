@@ -13,7 +13,7 @@ class GlobalSearch extends Component
     public function render(): View
     {
         $results = $this->query ? Mod::search($this->query)->get() : collect();
-        
+
         return view('livewire.global-search', [
             'results' => $results,
         ]);
