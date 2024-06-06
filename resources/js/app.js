@@ -1,5 +1,7 @@
 import "./bootstrap";
 
+import.meta.glob(["../video/**"]);
+
 document.addEventListener("DOMContentLoaded", function () {
     const themeToggleIcon = {
         dark: document.getElementById("theme-toggle-dark-icon"),

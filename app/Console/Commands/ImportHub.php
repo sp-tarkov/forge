@@ -350,11 +350,11 @@ class ImportHub extends Command
         $hashShort = substr($thumbnailHash, 0, 2);
 
         $hubUrl = "https://hub.sp-tarkov.com/files/images/file/$hashShort/$fileID.$thumbnailExtension";
-        $localPath = "mods/$thumbnailHash.$thumbnailExtension";
+        $relativePath = "mods/$thumbnailHash.$thumbnailExtension";
 
         // Check to make sure the image doesn't already exist.
-        if (Storage::disk('public')->exists($localPath)) {
-            return "/storage/$localPath";
+        if (Storage::exists($relativePath)) {
+            return $relativePath;
         }
 
         $command->output->write("Downloading mod thumbnail: $hubUrl... ");
@@ -363,12 +363,11 @@ class ImportHub extends Command
         if ($image === false) {
             $command->error('Error: '.curl_error($curl));
         } else {
-            Storage::disk('public')->put($localPath, $image);
+            Storage::put($relativePath, $image);
             $command->info('Done.');
         }
 
-        // Return the path to the saved thumbnail.
-        return "/storage/$localPath";
+        return $relativePath;
     }
 
     protected function importModVersions(): void
