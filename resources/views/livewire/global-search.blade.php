@@ -19,7 +19,7 @@
                                     <img src="https://placehold.co/450x450/EEE/31343C?font=source-sans-pro&text={{ $result->name }}" alt="{{ $result->name }}" class="block dark:hidden h-6 w-6 flex-none">
                                     <img src="https://placehold.co/450x450/31343C/EEE?font=source-sans-pro&text={{ $result->name }}" alt="{{ $result->name }}" class="hidden dark:block h-6 w-6 flex-none">
                                 @else
-                                    <img src="{{ $result->thumbnail }}" alt="{{ $result->name }}" class="h-6 w-6 flex-none">
+                                    <img src="{{ Storage::url($result->thumbnail) }}" alt="{{ $result->name }}" class="h-6 w-6 flex-none">
                                 @endif
                                 <span class="ml-3 flex-auto truncate">{{ $result->name }}</span>
                                 <span class="ml-3 flex-none text-xs font-semibold text-gray-400">Mod</span> </a>
