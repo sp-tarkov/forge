@@ -16,7 +16,7 @@ jobs:
         image: mysql:8.3
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE:  test
+          MYSQL_DATABASE:  testing
         ports:
           - 33306:3306
         options: >-
@@ -102,7 +102,7 @@ jobs:
       - name: Run Migrations
         env:
           DB_CONNECTION: mysql
-          DB_DATABASE: test
+          DB_DATABASE: testing
           DB_PORT: 33306
           DB_USER: root
         run: php artisan migrate
@@ -110,7 +110,7 @@ jobs:
       - name: Execute Unit & Feature Tests
         env:
           DB_CONNECTION: mysql
-          DB_DATABASE: test
+          DB_DATABASE: testing
           DB_PORT: 33306
           DB_USER: root
         run: |

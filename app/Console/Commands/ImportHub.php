@@ -352,8 +352,13 @@ class ImportHub extends Command
         $hubUrl = "https://hub.sp-tarkov.com/files/images/file/$hashShort/$fileID.$thumbnailExtension";
         $relativePath = "mods/$thumbnailHash.$thumbnailExtension";
 
+        $disk = match (config('app.env')) {
+            'production' => 'r2',
+            default => 'local',
+        };
+
         // Check to make sure the image doesn't already exist.
-        if (Storage::exists($relativePath)) {
+        if (Storage::disk($disk)->exists($relativePath)) {
             return $relativePath;
         }
 
@@ -363,7 +368,7 @@ class ImportHub extends Command
         if ($image === false) {
             $command->error('Error: '.curl_error($curl));
         } else {
-            Storage::put($relativePath, $image);
+            Storage::disk($disk)->put($relativePath, $image);
             $command->info('Done.');
         }
 
