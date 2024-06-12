@@ -12,6 +12,7 @@
         "ext-curl": "*",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.0",
+        "laravel/horizon": "^5.24",
         "laravel/jetstream": "^5.1",
         "laravel/nova": "^4.0",
         "laravel/pulse": "^1.1",
@@ -82,6 +83,10 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "ext-pcntl": "8.0",
+            "ext-posix": "8.0"
         }
     },
     "minimum-stability": "stable",
