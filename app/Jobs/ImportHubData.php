@@ -20,8 +20,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use League\HTMLToMarkdown\HtmlConverter;
 use Stevebauman\Purify\Facades\Purify;
@@ -33,7 +33,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     public function handle(): void
     {
         // Stream some data locally so that we don't have to keep accessing the Hub's database. Use MySQL temporary
-        // tables to store the data to save on memory; we don't want this to be a memory hog.
+        // tables to store the data to save on memory; we don't want this to be a hog.
         $this->bringFileOptionsLocal();
         $this->bringFileContentLocal();
         $this->bringFileVersionLabelsLocal();
@@ -60,9 +60,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     protected function bringFileOptionsLocal(): void
     {
-        if (Schema::hasTable('temp_file_option_values')) {
-            DB::statement('DROP TABLE temp_file_option_values');
-        }
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
         DB::statement('CREATE TEMPORARY TABLE temp_file_option_values (
             fileID INT,
             optionID INT,
@@ -88,9 +86,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     protected function bringFileContentLocal(): void
     {
-        if (Schema::hasTable('temp_file_content')) {
-            DB::statement('DROP TABLE temp_file_content');
-        }
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
         DB::statement('CREATE TEMPORARY TABLE temp_file_content (
             fileID INT,
             subject VARCHAR(255),
@@ -118,9 +114,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     protected function bringFileVersionLabelsLocal(): void
     {
-        if (Schema::hasTable('temp_file_version_labels')) {
-            DB::statement('DROP TABLE temp_file_version_labels');
-        }
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_version_labels');
         DB::statement('CREATE TEMPORARY TABLE temp_file_version_labels (
             labelID INT,
             objectID INT
@@ -145,9 +139,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     protected function bringFileVersionContentLocal(): void
     {
-        if (Schema::hasTable('temp_file_version_content')) {
-            DB::statement('DROP TABLE temp_file_version_content');
-        }
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_version_content');
         DB::statement('CREATE TEMPORARY TABLE temp_file_version_content (
             versionID INT,
             description TEXT
@@ -173,10 +165,12 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     {
         DB::connection('mysql_hub')
             ->table('wcf1_user')
-            ->select('userID', 'username', 'email', 'password', 'registrationDate')
+            ->select('userID', 'username', 'email', 'password', 'registrationDate', 'banned', 'banReason', 'banExpires')
             ->chunkById(250, function (Collection $users) {
 
                 $insertData = [];
+                $bannedUsers = [];
+
                 foreach ($users as $user) {
                     $insertData[] = [
                         'hub_id' => (int) $user->userID,
@@ -186,14 +180,36 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'created_at' => $this->cleanRegistrationDate($user->registrationDate),
                         'updated_at' => now('UTC')->toDateTimeString(),
                     ];
+
+                    // If the user is banned, add them to an array of banned users.
+                    if ($user->banned) {
+                        $bannedUsers[] = [
+                            'hub_id' => (int) $user->userID,
+                            'comment' => $user->banReason ?? '',
+                            'expired_at' => $this->cleanUnbannedAtDate($user->banExpires),
+                        ];
+                    }
                 }
 
                 if (! empty($insertData)) {
-                    DB::table('users')->upsert(
-                        $insertData,
-                        ['hub_id'],
-                        ['name', 'email', 'password', 'created_at', 'updated_at']
-                    );
+                    DB::table('users')->upsert($insertData, ['hub_id'], [
+                        'name',
+                        'email',
+                        'password',
+                        'created_at',
+                        'updated_at',
+                    ]);
+                }
+
+                // Ban the users in the new local database.
+                if (! empty($bannedUsers)) {
+                    foreach ($bannedUsers as $bannedUser) {
+                        $user = User::whereHubId($bannedUser['hub_id'])->first();
+                        $user->ban([
+                            'comment' => $bannedUser['comment'],
+                            'expired_at' => $bannedUser['expired_at'],
+                        ]);
+                    }
                 }
             }, 'userID');
     }
@@ -207,7 +223,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         // If it's not Bcrypt, they'll have to reset their password. Tough luck.
         $clean = str_ireplace(['invalid:', 'bcrypt:', 'bcrypt::', 'cryptmd5:', 'cryptmd5::'], '', $password);
 
-        // If the password hash starts with $2, it's a valid Bcrypt hash. Otherwise, it's invalid.
+        // At this point, if the password hash starts with $2, it's a valid Bcrypt hash. Otherwise, it's invalid.
         return str_starts_with($clean, '$2') ? $clean : '';
     }
 
@@ -224,6 +240,46 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         }
 
         return $date->toDateTimeString();
+    }
+
+    /**
+     * Clean the banned_at date from the Hub database.
+     */
+    protected function cleanUnbannedAtDate(?string $unbannedAt): ?string
+    {
+        // If the input is null, return null
+        if ($unbannedAt === null) {
+            return null;
+        }
+
+        // Explicit check for the Unix epoch start date
+        if (Str::contains($unbannedAt, '1970-01-01')) {
+            return null;
+        }
+
+        // Use validator to check for a valid date format
+        $validator = Validator::make(['date' => $unbannedAt], [
+            'date' => 'date_format:Y-m-d H:i:s',
+        ]);
+        if ($validator->fails()) {
+            // If the date format is invalid, return null
+            return null;
+        }
+
+        // Validate the date using Carbon
+        try {
+            $date = Carbon::parse($unbannedAt);
+
+            // Additional check to ensure the date is not a default or zero date
+            if ($date->year == 0 || $date->month == 0 || $date->day == 0) {
+                return null;
+            }
+
+            return $date->toDateTimeString();
+        } catch (\Exception $e) {
+            // If the date is not valid, return null
+            return null;
+        }
     }
 
     /**
@@ -512,7 +568,14 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     public function failed(Exception $exception): void
     {
-        // Disconnect from the 'mysql_hub' database connection
+        // Drop the temporary tables.
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_version_labels');
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_version_content');
+
+        // This *should* drop the temporary tables as well, but I like to be sure.
         DB::connection('mysql_hub')->disconnect();
+        DB::disconnect();
     }
 }

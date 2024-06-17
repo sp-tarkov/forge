@@ -22,6 +22,7 @@
         "league/flysystem-aws-s3-v3": "3.0",
         "league/html-to-markdown": "^5.1",
         "livewire/livewire": "^3.0",
+        "mchev/banhammer": "^2.3",
         "meilisearch/meilisearch-php": "^1.8",
         "stevebauman/purify": "^6.2"
     },
