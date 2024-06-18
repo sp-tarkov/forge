@@ -1,16 +1,6 @@
 name: Combined GitHub Workflow
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-    branches-ignore:
-      - dependabot/**
-  pull_request:
-    branches:
-      - main
-      - develop
+on: [ push, pull_request ]
 
 jobs:
   security-checker:
