@@ -110,19 +110,9 @@ jobs:
         ports:
           - 33306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    env:
-      DB_DATABASE: testing
-      DB_PORT: 33306
-      DB_USERNAME: user
-      DB_PASSWORD: password
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Verify MySQL Connection
-        run: |
-          mysql --version
-          sudo apt-get install -y mysql-client
-          mysql --host 127.0.0.1 --port 33306 -uuser -ppassword -e "SHOW DATABASES"
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
