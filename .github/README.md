@@ -12,26 +12,11 @@ The Forge is a Laravel-based web application that provides a platform for the Si
 
 ## Development Environment Setup
 
-This is a [Laravel](https://laravel.com/docs/11.x) project that uses [Laravel Sail](https://laravel.com/docs/11.x/sail), which provides a Docker-based development environment. Ensure Docker is installed and running on your machine before proceeding.
-
-### Clone the Repository:
-
-```
-git clone https://github.com/sp-tarkov/forge.git
-cd forge
-```
-
-### Start Laravel Sail:
-
-Laravel Sail is a light command-line interface for interacting with Laravel's default Docker environment. Start the Docker containers using the following command:
-
-```
-vendor/bin/sail up -d
-```
+This is a [Laravel](https://laravel.com/docs/11.x) project that uses [Sail](https://laravel.com/docs/11.x/sail), which provides a Docker-based development environment. Ensure you review the Sail documentation for useage, particularly in a [Windows environment](https://laravel.com/docs/11.x/installation#sail-on-windows), as WSL2 is recommended.
 
 ### Accessing the Application:
 
-Once the Docker containers are running, you can access the application at <http://localhost>.
+Once the Docker containers are running with Sail you can access the application at <http://localhost>.
 
 ### Available Services:
 
@@ -60,22 +45,22 @@ Here are some basic commands to get started with Forge:
 
 ```
 # View all of the available Artisan commands:
-vendor/bin/sail artisan
+./vendor/bin/sail artisan
 ```
 
 ```
 # Migrate and seed the database with test data:
-vendor/bin/sail artisan migrate:fresh –seed
+./vendor/bin/sail artisan migrate:fresh –seed
 ```
 
 ```
 # Run Laravel Horizon (the queue monitor):
-vendor/bin/sail artisan horizon
+./vendor/bin/sail artisan horizon
 ```
 
 ```
 # Start the local 
-vendor/bin/sail artisan horizon
+./vendor/bin/sail artisan horizon
 ```
 
 ### More Information
