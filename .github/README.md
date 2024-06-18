@@ -10,8 +10,6 @@
 
 The Forge is a Laravel-based web application that provides a platform for the Single Player Tarkov community to share and discover user-generated content, such as mods, guides, and other tools. It is currently under heavy development. Please review this entire document before attempting to contribute, especially the "Development Discussion" section.
 
-----------
-
 ## Development Environment Setup
 
 This is a [Laravel](https://laravel.com/docs/11.x) project that uses [Laravel Sail](https://laravel.com/docs/11.x/sail), which provides a Docker-based development environment. Ensure Docker is installed and running on your machine before proceeding.
@@ -84,8 +82,6 @@ vendor/bin/sail artisan horizon
 
 For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/11.x/).
 
-----------
-
 ## Development Discussion
 
 *__Please note__, we are very early in development and will likely not accept work that is not discussed beforehand through the following channels...*
@@ -94,25 +90,17 @@ You may propose new features or improvements of existing Forge behavior in [the 
 
 Informal discussion regarding bugs, new features, and implementation of existing features takes place in the `#website-general` channel of the [Single Player Tarkov Discord server](https://discord.com/invite/Xn9msqQZan). Refringe, the maintainer of Forge, is typically present in the channel on weekdays from 9am-5pm Eastern Time (ET), and sporadically present in the channel at other times.
 
-----------
-
 ## Which Branch?
 
 The `main` branch is the default branch for Forge. This branch is used for the latest stable release of the site. The `develop` branch is used for the latest development changes. All feature branches should be based on the `develop` branch. All pull requests should target the `develop` branch.
-
-----------
 
 ## Security Vulnerabilities
 
 If you discover a security vulnerability within Forge, please email Refringe at me@refringe.com. All security vulnerabilities will be promptly addressed.
 
-----------
-
 ## Coding Style
 
 Forge follows the PSR-2 coding standard and the PSR-4 autoloading standard. We use an automated Laravel Pint action to enforce the coding standard, though it's suggested to run your code changes through Pint before contributing.
-
-----------
 
 ## Code of Conduct
 
