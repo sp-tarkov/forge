@@ -53,6 +53,8 @@ jobs:
           restore-keys: ${{ runner.os }}-node-
       - name: Install npm dependencies
         run: npm ci
+      - name: Build Front-end Assets
+        run: npm run build
       - name: Prepare Laravel Environment
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
