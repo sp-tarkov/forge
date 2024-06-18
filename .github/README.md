@@ -2,7 +2,8 @@
 <h1 align="center"><em>The Forge</em></h1>
 <p align="center">
 <a href="https://www.mozilla.org/en-US/MPL/2.0/"><img src="https://img.shields.io/badge/License-MPL_2.0-blue.svg" alt="License: MPL 2.0"></a>
-<a href="https://github.com/sp-tarkov/forge/actions"><img src="https://github.com/sp-tarkov/forge/workflows/general/badge.svg" alt="Actions Status"></a>
+<a href="https://github.com/sp-tarkov/forge/actions/workflows/quality.yaml"><img src="https://github.com/sp-tarkov/forge/actions/workflows/quality.yaml/badge.svg" alt="Quality Control Action Status"></a>
+<a href="https://github.com/sp-tarkov/forge/actions/workflows/tests.yaml"><img src="https://github.com/sp-tarkov/forge/actions/workflows/tests.yaml/badge.svg" alt="Test Action Status"></a>
 <a href="https://discord.com/invite/Xn9msqQZan"><img src="https://img.shields.io/badge/Chat-Discord-5865F2?logo=discord&logoColor=ffffff" alt="Discord Chat"></a>
 <a href="https://www.patreon.com/sptarkov"><img src="https://img.shields.io/badge/Fund-Patreon-fe3c71?logo=patreon&logoColor=ffffff" alt="Patreon Fund"></a>
 </p>
