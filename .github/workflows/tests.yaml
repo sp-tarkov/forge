@@ -44,11 +44,11 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
       - name: Get NPM Cache Directory
         id: npm-cache
-        run: echo "::set-output name=dir::$(npm config get cache)"
+        run: echo "NPM_CACHE_DIR=$(npm config get cache)" >> $GITHUB_ENV
       - name: Cache NPM Dependencies
         uses: actions/cache@v4
         with:
-          path: ${{ steps.npm-cache.outputs.dir }}
+          path: ${{ env.NPM_CACHE_DIR }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-node-
       - name: Install npm dependencies
@@ -65,3 +65,6 @@ jobs:
         run: php artisan storage:link
       - name: Run Tests
         run: php artisan test
+      - name: Display Laravel Log
+        if: failure()
+        run: cat storage/logs/laravel.log
