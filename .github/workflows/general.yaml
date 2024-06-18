@@ -100,19 +100,14 @@ jobs:
 
   laravel-tests:
     runs-on: ubuntu-24.04
-    env:
-      DB_DATABASE: testing
-      DB_USERNAME: root
-      DB_PASSWORD: password
     services:
       mysql:
         image: mysql:8.3
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_ROOT_PASSWORD: password
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: testing
         ports:
-          - 3306/tcp
+          - 33306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Checkout
@@ -122,7 +117,6 @@ jobs:
         with:
           php-version: '8.3'
           extensions: mbstring, dom, fileinfo
-          tools: pint
           coverage: none
       - name: Configure Laravel Nova Authentication
         shell: bash
@@ -161,7 +155,10 @@ jobs:
       - name: Run Migrations
         run: php artisan migrate -v
         env:
-          DB_PORT: ${{ job.services.mysql.ports['3306'] }}
+          DB_CONNECTION: mysql
+          DB_DATABASE: testing
+          DB_PORT: 33306
+          DB_USER: root
       - name: Link Storage
         run: php artisan storage:link
       - name: Serve Application
