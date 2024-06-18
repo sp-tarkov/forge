@@ -7,6 +7,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,6 +22,14 @@ class DatabaseSeeder extends Seeder
 
         // Create some code licenses.
         $licenses = License::factory(10)->create();
+
+        // Add 5 administrators.
+        $administrator = UserRole::factory()->administrator()->create();
+        User::factory(5)->create(['user_role_id' => $administrator->id]);
+
+        // Add 10 moderators.
+        $moderator = UserRole::factory()->moderator()->create();
+        User::factory(10)->create(['user_role_id' => $moderator->id]);
 
         // Add 100 users.
         $users = User::factory(100)->create();

@@ -7,6 +7,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Models\UserRole;
 use Carbon\Carbon;
 use CurlHandle;
 use Exception;
@@ -164,54 +165,42 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function importUsers(): void
     {
         DB::connection('mysql_hub')
-            ->table('wcf1_user')
-            ->select('userID', 'username', 'email', 'password', 'registrationDate', 'banned', 'banReason', 'banExpires')
+            ->table('wcf1_user as u')
+            ->select('u.userID', 'u.username', 'u.email', 'u.password', 'u.registrationDate', 'u.banned', 'u.banReason', 'u.banExpires', 'u.rankID', 'r.rankTitle')
+            ->leftJoin('wcf1_user_rank as r', 'u.rankID', '=', 'r.rankID')
             ->chunkById(250, function (Collection $users) {
-
-                $insertData = [];
-                $bannedUsers = [];
+                $userData = $bannedUsers = $userRanks = [];
 
                 foreach ($users as $user) {
-                    $insertData[] = [
-                        'hub_id' => (int) $user->userID,
-                        'name' => $user->username,
-                        'email' => mb_convert_case($user->email, MB_CASE_LOWER, 'UTF-8'),
-                        'password' => $this->cleanPasswordHash($user->password),
-                        'created_at' => $this->cleanRegistrationDate($user->registrationDate),
-                        'updated_at' => now('UTC')->toDateTimeString(),
-                    ];
+                    $userData[] = $this->collectUserData($user);
 
-                    // If the user is banned, add them to an array of banned users.
-                    if ($user->banned) {
-                        $bannedUsers[] = [
-                            'hub_id' => (int) $user->userID,
-                            'comment' => $user->banReason ?? '',
-                            'expired_at' => $this->cleanUnbannedAtDate($user->banExpires),
-                        ];
+                    $bannedUserData = $this->collectBannedUserData($user);
+                    if ($bannedUserData) {
+                        $bannedUsers[] = $bannedUserData;
+                    }
+
+                    $userRankData = $this->collectUserRankData($user);
+                    if ($userRankData) {
+                        $userRanks[] = $userRankData;
                     }
                 }
 
-                if (! empty($insertData)) {
-                    DB::table('users')->upsert($insertData, ['hub_id'], [
-                        'name',
-                        'email',
-                        'password',
-                        'created_at',
-                        'updated_at',
-                    ]);
-                }
-
-                // Ban the users in the new local database.
-                if (! empty($bannedUsers)) {
-                    foreach ($bannedUsers as $bannedUser) {
-                        $user = User::whereHubId($bannedUser['hub_id'])->first();
-                        $user->ban([
-                            'comment' => $bannedUser['comment'],
-                            'expired_at' => $bannedUser['expired_at'],
-                        ]);
-                    }
-                }
+                $this->upsertUsers($userData);
+                $this->handleBannedUsers($bannedUsers);
+                $this->handleUserRoles($userRanks);
             }, 'userID');
+    }
+
+    protected function collectUserData($user): array
+    {
+        return [
+            'hub_id' => (int) $user->userID,
+            'name' => $user->username,
+            'email' => mb_convert_case($user->email, MB_CASE_LOWER, 'UTF-8'),
+            'password' => $this->cleanPasswordHash($user->password),
+            'created_at' => $this->cleanRegistrationDate($user->registrationDate),
+            'updated_at' => now('UTC')->toDateTimeString(),
+        ];
     }
 
     /**
@@ -219,7 +208,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     protected function cleanPasswordHash(string $password): string
     {
-        // The hub passwords are hashed sometimes with a prefix of the hash type. We only want the hash.
+        // The hub passwords sometimes hashed with a prefix of the hash type. We only want the hash.
         // If it's not Bcrypt, they'll have to reset their password. Tough luck.
         $clean = str_ireplace(['invalid:', 'bcrypt:', 'bcrypt::', 'cryptmd5:', 'cryptmd5::'], '', $password);
 
@@ -240,6 +229,22 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         }
 
         return $date->toDateTimeString();
+    }
+
+    /**
+     * Build an array of banned user data ready to be inserted into the local database.
+     */
+    protected function collectBannedUserData($user): ?array
+    {
+        if ($user->banned) {
+            return [
+                'hub_id' => (int) $user->userID,
+                'comment' => $user->banReason ?? '',
+                'expired_at' => $this->cleanUnbannedAtDate($user->banExpires),
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -280,6 +285,98 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
             // If the date is not valid, return null
             return null;
         }
+    }
+
+    /*
+     * Build an array of user rank data ready to be inserted into the local database.
+     */
+    protected function collectUserRankData($user): ?array
+    {
+        if ($user->rankID && $user->rankTitle) {
+            return [
+                'hub_id' => (int) $user->userID,
+                'title' => $user->rankTitle,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Insert or update the users in the local database.
+     */
+    protected function upsertUsers($usersData): void
+    {
+        if (! empty($usersData)) {
+            DB::table('users')->upsert($usersData, ['hub_id'], [
+                'name',
+                'email',
+                'password',
+                'created_at',
+                'updated_at',
+            ]);
+        }
+    }
+
+    /**
+     * Fetch the hub-banned users from the local database and ban them locally.
+     */
+    protected function handleBannedUsers($bannedUsers): void
+    {
+        foreach ($bannedUsers as $bannedUser) {
+            $user = User::whereHubId($bannedUser['hub_id'])->first();
+            $user->ban([
+                'comment' => $bannedUser['comment'],
+                'expired_at' => $bannedUser['expired_at'],
+            ]);
+        }
+    }
+
+    /**
+     * Fetch or create the user ranks in the local database and assign them to the users.
+     */
+    protected function handleUserRoles($userRanks): void
+    {
+        foreach ($userRanks as $userRank) {
+            $roleName = Str::ucfirst(Str::afterLast($userRank['title'], '.'));
+            $roleData = $this->buildUserRoleData($roleName);
+            UserRole::upsert($roleData, ['name'], ['name', 'short_name', 'description', 'color_class']);
+
+            $userRole = UserRole::whereName($roleData['name'])->first();
+            $user = User::whereHubId($userRank['hub_id'])->first();
+            $user->assignRole($userRole);
+        }
+    }
+
+    /**
+     * Build the user role data based on the role name.
+     */
+    protected function buildUserRoleData(string $name): array
+    {
+        if ($name === 'Administrator') {
+            return [
+                'name' => 'Administrator',
+                'short_name' => 'Admin',
+                'description' => 'An administrator has full access to the site.',
+                'color_class' => 'sky',
+            ];
+        }
+
+        if ($name === 'Moderator') {
+            return [
+                'name' => 'Moderator',
+                'short_name' => 'Mod',
+                'description' => 'A moderator has the ability to moderate user content.',
+                'color_class' => 'emerald',
+            ];
+        }
+
+        return [
+            'name' => $name,
+            'short_name' => '',
+            'description' => '',
+            'color_class' => '',
+        ];
     }
 
     /**
@@ -568,13 +665,13 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     public function failed(Exception $exception): void
     {
-        // Drop the temporary tables.
+        // Explicitly drop the temporary tables.
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_version_labels');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_version_content');
 
-        // This *should* drop the temporary tables as well, but I like to be sure.
+        // Close the connections. This should drop the temporary tables as well, but I like to be explicit.
         DB::connection('mysql_hub')->disconnect();
         DB::disconnect();
     }
