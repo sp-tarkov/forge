@@ -1,4 +1,4 @@
-name: Combined GitHub Workflow
+name: General Workflow
 
 on: [ push, pull_request ]
 
@@ -52,6 +52,8 @@ jobs:
 
   pint-fixer:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,7 +93,7 @@ jobs:
         run: pint
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: Pint PHP Style Fixes
+          commit_message: Pint PHP Style Fixes [no ci]
           commit_user_name: Pint Bot
           skip_fetch: true
           file_pattern: '*.php'
