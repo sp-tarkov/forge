@@ -1,12 +1,9 @@
 {
-    "name": "laravel/laravel",
+    "name": "sp-tarkov/forge",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": [
-        "laravel",
-        "framework"
-    ],
-    "license": "MIT",
+    "description": "A Laravel-based web application that provides a platform for the Single Player Tarkov community to share and discover user-generated content, such as mods, guides, and other tools.",
+    "keywords": [],
+    "license": "MPL-2.0",
     "require": {
         "php": "^8.3",
         "ext-curl": "*",
