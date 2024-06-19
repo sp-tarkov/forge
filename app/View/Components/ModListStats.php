@@ -10,8 +10,7 @@ class ModListStats extends Component
     public function __construct(
         public $mod,
         public $modVersion
-    ) {
-    }
+    ) {}
 
     public function render(): View
     {
