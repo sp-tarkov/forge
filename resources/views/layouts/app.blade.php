@@ -56,6 +56,6 @@
 @livewire('global-search')
 @stack('modals')
 
-@livewireScriptConfig
+@livewireScripts
 </body>
 </html>
