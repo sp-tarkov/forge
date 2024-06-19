@@ -12,6 +12,7 @@
         "ext-curl": "*",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.0",
+        "laravel/horizon": "^5.24",
         "laravel/jetstream": "^5.1",
         "laravel/nova": "^4.0",
         "laravel/pulse": "^1.1",
@@ -21,6 +22,7 @@
         "league/flysystem-aws-s3-v3": "3.0",
         "league/html-to-markdown": "^5.1",
         "livewire/livewire": "^3.0",
+        "mchev/banhammer": "^2.3",
         "meilisearch/meilisearch-php": "^1.8",
         "stevebauman/purify": "^6.2"
     },
@@ -29,6 +31,7 @@
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^2.9",
         "laravel/pint": "^1.16",
+        "laravel/sail": "^1.29",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
         "phpunit/phpunit": "^11.0.1",
@@ -81,6 +84,10 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "ext-pcntl": "8.0",
+            "ext-posix": "8.0"
         }
     },
     "minimum-stability": "stable",

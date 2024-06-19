@@ -8,24 +8,15 @@ use Illuminate\Support\Facades\Storage;
 
 class UploadAssets extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:upload-assets';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Uploads the Vite build assets to Cloudflare R2';
 
     /**
-     * Execute the console command.
+     * This command uploads the Vite build assets to Cloudflare R2. Typically, this will be run after the assets have
+     * been built and the application is ready to deploy from within the production environment build process.
      */
-    public function handle()
+    public function handle(): void
     {
         $this->info('Publishing assets...');
 

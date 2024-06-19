@@ -19,7 +19,7 @@ class CreateApiTokenTest extends TestCase
             $this->markTestSkipped('API support is not enabled.');
         }
 
-        $this->actingAs($user = User::factory()->withPersonalTeam()->create());
+        $this->actingAs($user = User::factory()->create());
 
         Livewire::test(ApiTokenManager::class)
             ->set(['createApiTokenForm' => [
