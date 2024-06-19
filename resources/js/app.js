@@ -2,11 +2,17 @@ import "./bootstrap";
 
 import.meta.glob(["../video/**"]);
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
     const themeToggleIcon = {
         dark: document.getElementById("theme-toggle-dark-icon"),
-        light: document.getElementById("theme-toggle-light-icon"),
+        light: document.getElementById("theme-toggle-light-icon")
     };
+
+    // Make sure the theme toggle icons are available.
+    if (themeToggleIcon.dark === null || themeToggleIcon.light === null) {
+        console.log("Theme toggle icons not found.");
+        return;
+    }
 
     // Function to update the visibility of the theme icons based on the theme
     function updateIconVisibility(theme) {
@@ -41,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Set up the theme toggle button
     const themeToggleBtn = document.getElementById("theme-toggle");
-    themeToggleBtn.addEventListener("click", function () {
+    themeToggleBtn.addEventListener("click", function() {
         // Determine the current theme by checking the classList of documentElement
         const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
         const newTheme = currentTheme === "light" ? "dark" : "light";
