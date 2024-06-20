@@ -18,3 +18,7 @@ yarn-error.log
 /.idea
 /.vscode
 .DS_Store
+
+/caddy
+frankenphp
+frankenphp-worker.php

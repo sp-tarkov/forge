@@ -13,6 +13,7 @@
         "laravel/horizon": "^5.24",
         "laravel/jetstream": "^5.1",
         "laravel/nova": "^4.34",
+        "laravel/octane": "^2.4",
         "laravel/pulse": "^1.2",
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^10.10",
