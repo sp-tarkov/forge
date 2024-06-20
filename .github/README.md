@@ -16,7 +16,7 @@ This is a [Laravel](https://laravel.com/docs/11.x) project that uses [Sail](http
 
 ### Accessing the Application:
 
-Once the Docker containers are running with Sail you can access the application at <http://localhost>.
+Once the Docker containers are running with Sail you can access the application at <https://localhost>.
 
 ### Available Services:
 
@@ -29,13 +29,13 @@ Once the Docker containers are running with Sail you can access the application 
 
 ### Notable Routes
 
-| Service                          | Authentication | Access Via Host            |
-|----------------------------------|----------------|----------------------------|
-| Administration Panel (Nova)      | Via User Role  | <http://localhost/nova>    |
-| Redis Queue Management (Horizon) | Via User Role  | <http://localhost/horizon> |
-| Website Status (Pulse)           | Via User Role  | <http://localhost/pulse>   |
-| Meilisearch WebUI                | Local Only     | <http://localhost:7700>    |
-| Mailpit WebUI                    | Local Only     | <http://localhost:8025>    |
+| Service                          | Authentication | Access Via Host             |
+|----------------------------------|----------------|-----------------------------|
+| Administration Panel (Nova)      | Via User Role  | <https://localhost/nova>    |
+| Redis Queue Management (Horizon) | Via User Role  | <https://localhost/horizon> |
+| Website Status (Pulse)           | Via User Role  | <https://localhost/pulse>   |
+| Meilisearch WebUI                | Local Only     | <http://localhost:7700>     |
+| Mailpit WebUI                    | Local Only     | <http://localhost:8025>     |
 
 Most of these connection settings should already be configured in the `.env.example` file. Simply save the `.env.example` file as `.env` and adjust further settings as needed.
 
