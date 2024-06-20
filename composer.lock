@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.314.4",
+            "version": "3.314.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "fd1261a60495a7aeb2661d8b7eecfd5fc16abd41"
+                "reference": "0c1adaa22c3d333ac20dcc87dd355e9a013a05fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/fd1261a60495a7aeb2661d8b7eecfd5fc16abd41",
-                "reference": "fd1261a60495a7aeb2661d8b7eecfd5fc16abd41",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0c1adaa22c3d333ac20dcc87dd355e9a013a05fd",
+                "reference": "0c1adaa22c3d333ac20dcc87dd355e9a013a05fd",
                 "shasum": ""
             },
             "require": {
@@ -151,9 +151,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.314.4"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.314.5"
             },
-            "time": "2024-06-18T18:13:34+00:00"
+            "time": "2024-06-19T18:11:48+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -1984,16 +1984,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v11.11.0",
+            "version": "v11.11.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "194102876df42f9f5bb618efa55fa7e15ebf40aa"
+                "reference": "c9b52e84bd18f155e5ba59b948c7da3e7f37e87f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/194102876df42f9f5bb618efa55fa7e15ebf40aa",
-                "reference": "194102876df42f9f5bb618efa55fa7e15ebf40aa",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/c9b52e84bd18f155e5ba59b948c7da3e7f37e87f",
+                "reference": "c9b52e84bd18f155e5ba59b948c7da3e7f37e87f",
                 "shasum": ""
             },
             "require": {
@@ -2185,7 +2185,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2024-06-18T17:40:27+00:00"
+            "time": "2024-06-20T10:54:53+00:00"
         },
         {
             "name": "laravel/horizon",
@@ -10103,16 +10103,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "11.2.3",
+            "version": "11.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "8475044fbb0af57c8daea06bcfe21e2785401f97"
+                "reference": "be9e3ed32a1287a9bfda15936cc86fef4e4cf591"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/8475044fbb0af57c8daea06bcfe21e2785401f97",
-                "reference": "8475044fbb0af57c8daea06bcfe21e2785401f97",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/be9e3ed32a1287a9bfda15936cc86fef4e4cf591",
+                "reference": "be9e3ed32a1287a9bfda15936cc86fef4e4cf591",
                 "shasum": ""
             },
             "require": {
@@ -10183,7 +10183,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.2.3"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.2.5"
             },
             "funding": [
                 {
@@ -10199,7 +10199,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-06-19T05:31:11+00:00"
+            "time": "2024-06-20T13:11:31+00:00"
         },
         {
             "name": "sebastian/cli-parser",
