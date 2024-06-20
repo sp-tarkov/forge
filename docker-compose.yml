@@ -31,7 +31,6 @@ services:
             - redis
             - meilisearch
             - mailpit
-            - memcached
     mysql:
         image: 'mysql/mysql-server:8.0'
         ports:
@@ -95,12 +94,6 @@ services:
         ports:
             - '${FORWARD_MAILPIT_PORT:-1025}:1025'
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
-        networks:
-            - sail
-    memcached:
-        image: 'memcached:alpine'
-        ports:
-            - '${FORWARD_MEMCACHED_PORT:-11211}:11211'
         networks:
             - sail
 networks:
