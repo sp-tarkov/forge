@@ -31,17 +31,24 @@ Once the Docker containers are running with Sail you can access the application 
 
 | Service                          | Authentication | Access Via Host             |
 |----------------------------------|----------------|-----------------------------|
-| Administration Panel (Nova)      | Via User Role  | <https://localhost/nova>    |
+| Administration Panel (Nova*)     | Via User Role  | <https://localhost/nova>    |
 | Redis Queue Management (Horizon) | Via User Role  | <https://localhost/horizon> |
 | Website Status (Pulse)           | Via User Role  | <https://localhost/pulse>   |
 | Meilisearch WebUI                | Local Only     | <http://localhost:7700>     |
 | Mailpit WebUI                    | Local Only     | <http://localhost:8025>     |
+
+<sup>*Nova may be replaced shortly due to License issues.</sup>
 
 Most of these connection settings should already be configured in the `.env.example` file. Simply save the `.env.example` file as `.env` and adjust further settings as needed.
 
 ### Basic Usage Examples
 
 Here are some basic commands to get started with Forge:
+
+```
+# Start the Docker containers in detached mode:
+./vendor/bin/sail up -d
+```
 
 ```
 # View all of the available Artisan commands:
@@ -54,13 +61,18 @@ Here are some basic commands to get started with Forge:
 ```
 
 ```
-# Run Laravel Horizon (the queue monitor):
+# Run Laravel Horizon (the queue workers/monitor):
 ./vendor/bin/sail artisan horizon
 ```
 
 ```
-# Start the local 
-./vendor/bin/sail artisan horizon
+# Install NPM dependencies from within the container:
+./vendor/bin/sail npm install
+```
+
+```
+# Start the development server:
+./vendor/bin/sail npm run dev
 ```
 
 ### More Information
@@ -79,13 +91,17 @@ Informal discussion regarding bugs, new features, and implementation of existing
 
 The `main` branch is the default branch for Forge. This branch is used for the latest stable release of the site. The `develop` branch is used for the latest development changes. All feature branches should be based on the `develop` branch. All pull requests should target the `develop` branch.
 
+## Coding Style
+
+Forge follows the PSR-2 coding standard and the PSR-4 autoloading standard. We use an automated Laravel Pint action to enforce the coding standard, though it's suggested to run your code changes through Pint before contributing. This can be done by configuring your IDE to format with Pint on save, or manually by running the following command:
+
+```
+./vendor/bin/sail pint
+```
+
 ## Security Vulnerabilities
 
 If you discover a security vulnerability within Forge, please email Refringe at me@refringe.com. All security vulnerabilities will be promptly addressed.
-
-## Coding Style
-
-Forge follows the PSR-2 coding standard and the PSR-4 autoloading standard. We use an automated Laravel Pint action to enforce the coding standard, though it's suggested to run your code changes through Pint before contributing.
 
 ## Code of Conduct
 
