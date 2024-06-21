@@ -31,13 +31,10 @@ Once the Docker containers are running with Sail you can access the application 
 
 | Service                          | Authentication | Access Via Host             |
 |----------------------------------|----------------|-----------------------------|
-| Administration Panel (Nova*)     | Via User Role  | <https://localhost/nova>    |
 | Redis Queue Management (Horizon) | Via User Role  | <https://localhost/horizon> |
 | Website Status (Pulse)           | Via User Role  | <https://localhost/pulse>   |
 | Meilisearch WebUI                | Local Only     | <http://localhost:7700>     |
 | Mailpit WebUI                    | Local Only     | <http://localhost:8025>     |
-
-<sup>*Nova may be replaced shortly due to License issues.</sup>
 
 Most of these connection settings should already be configured in the `.env.example` file. Simply save the `.env.example` file as `.env` and adjust further settings as needed.
 
