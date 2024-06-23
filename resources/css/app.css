@@ -6,10 +6,6 @@
     display: none;
 }
 
-input[type="checkbox"] {
-    @apply text-gray-800 dark:text-gray-300 focus:ring-gray-600 dark:focus:ring-gray-500 border-gray-300 dark:border-gray-700 rounded;
-}
-
 main a:not(.mod-list-component):not(.tab) {
     @apply underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white;
 }
