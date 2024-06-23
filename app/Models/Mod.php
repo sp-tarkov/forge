@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
@@ -31,15 +32,8 @@ class Mod extends Model
 
     protected static function booted(): void
     {
+        // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
-    }
-
-    protected function slug(): Attribute
-    {
-        return Attribute::make(
-            get: fn (string $value) => strtolower($value),
-            set: fn (string $value) => Str::slug($value),
-        );
     }
 
     public function user(): BelongsTo
@@ -57,6 +51,9 @@ class Mod extends Model
         return $this->hasMany(ModVersion::class);
     }
 
+    /**
+     * Scope a query to include the total number of downloads for a mod.
+     */
     public function scopeWithTotalDownloads($query)
     {
         return $query->addSelect(['total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
@@ -110,6 +107,9 @@ class Mod extends Model
             ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion']);
     }
 
+    /**
+     * Get the indexable data array for the model.
+     */
     public function toSearchableArray(): array
     {
         return [
@@ -124,8 +124,45 @@ class Mod extends Model
         ];
     }
 
+    /**
+     * Determine if the model should be searchable.
+     */
     public function shouldBeSearchable(): bool
     {
         return ! $this->disabled;
+    }
+
+    /**
+     * Get the URL to the thumbnail.
+     */
+    public function thumbnailUrl(): Attribute
+    {
+        return Attribute::get(function (): string {
+            return $this->thumbnail
+                ? Storage::disk($this->thumbnailDisk())->url($this->thumbnail)
+                : '';
+        });
+    }
+
+    /**
+     * Get the disk where the thumbnail is stored.
+     */
+    protected function thumbnailDisk(): string
+    {
+        return match (config('app.env')) {
+            'production' => 'r2', // Cloudflare R2 Storage
+            default => 'public', // Local
+        };
+    }
+
+    /**
+     * Ensure the slug is always lower case when retrieved and slugified when saved.
+     */
+    protected function slug(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => Str::lower($value),
+            set: fn (string $value) => Str::slug($value),
+        );
     }
 }

@@ -84,4 +84,15 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the disk that profile photos should be stored on.
+     */
+    protected function profilePhotoDisk(): string
+    {
+        return match (config('app.env')) {
+            'production' => 'r2', // Cloudflare R2 Storage
+            default => 'public', // Local
+        };
+    }
 }
