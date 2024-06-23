@@ -112,9 +112,12 @@
                                 </div>
                             </div>
                         </div>
-                    @elseauth
-                        signin
                     @endauth
+                    @guest
+                        <div>
+                            <a href="{{ route('login') }}" class="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 whitespace-nowrap">Log in <span aria-hidden="true">&rarr;</span></a>
+                        </div>
+                    @endguest
                     {{--
                     <div class="relative ml-4 flex-shrink-0">
                         <div>
