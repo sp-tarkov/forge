@@ -1,11 +1,11 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const themeToggleIcon = {
-        dark: document.getElementById("theme-toggle-dark-icon"),
-        light: document.getElementById("theme-toggle-light-icon")
+    const themeToggleIcons = {
+        dark: Array.from(document.querySelectorAll(".theme-toggle-dark-icon")),
+        light: Array.from(document.querySelectorAll(".theme-toggle-light-icon"))
     };
 
     // Make sure the theme toggle icons are available.
-    if (themeToggleIcon.dark === null || themeToggleIcon.light === null) {
+    if (themeToggleIcons.dark.length === 0 || themeToggleIcons.light.length === 0) {
         console.log("Theme toggle icons not found.");
         return;
     }
@@ -13,11 +13,11 @@ document.addEventListener("DOMContentLoaded", function() {
     // Function to update the visibility of the theme icons based on the theme
     function updateIconVisibility(theme) {
         if (theme === "dark") {
-            themeToggleIcon.dark.classList.add("hidden");
-            themeToggleIcon.light.classList.remove("hidden");
+            themeToggleIcons.dark.forEach(icon => icon.classList.add("hidden"));
+            themeToggleIcons.light.forEach(icon => icon.classList.remove("hidden"));
         } else {
-            themeToggleIcon.dark.classList.remove("hidden");
-            themeToggleIcon.light.classList.add("hidden");
+            themeToggleIcons.dark.forEach(icon => icon.classList.remove("hidden"));
+            themeToggleIcons.light.forEach(icon => icon.classList.add("hidden"));
         }
     }
 
@@ -41,13 +41,15 @@ document.addEventListener("DOMContentLoaded", function() {
     document.documentElement.classList.add(initialTheme); // Ensure the class is set
     updateIconVisibility(initialTheme);
 
-    // Set up the theme toggle button
-    const themeToggleBtn = document.getElementById("theme-toggle");
-    themeToggleBtn.addEventListener("click", function() {
-        // Determine the current theme by checking the classList of documentElement
-        const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
-        const newTheme = currentTheme === "light" ? "dark" : "light";
+    // Set up the theme toggle buttons
+    const themeToggleButtons = Array.from(document.querySelectorAll(".theme-toggle"));
+    themeToggleButtons.forEach(button => {
+        button.addEventListener("click", function() {
+            // Determine the current theme by checking the classList of documentElement
+            const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+            const newTheme = currentTheme === "light" ? "dark" : "light";
 
-        updateTheme(newTheme);
+            updateTheme(newTheme);
+        });
     });
 });
