@@ -114,7 +114,7 @@ return [
     |
     */
 
-    'inject_assets' => false,
+    'inject_assets' => true,
 
     /*
     |---------------------------------------------------------------------------
@@ -157,16 +157,4 @@ return [
     */
 
     'pagination_theme' => 'tailwind',
-
-    /*
-    |---------------------------------------------------------------------------
-    | Asset URL
-    |---------------------------------------------------------------------------
-    |
-    | When serving assets from a CDN, you may need to override the asset URL
-    | that Livewire uses to include assets in the response.
-    |
-    */
-
-    'asset_url' => env('ASSET_URL_LIVEWIRE'),
 ];

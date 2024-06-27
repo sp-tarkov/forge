@@ -32,6 +32,7 @@ Once the Docker containers are running with Sail you can access the application 
 
 | Service                          | Authentication | Access Via Host             |
 |----------------------------------|----------------|-----------------------------|
+| Laravel Filament Admin Panel     | Via User Role  | <https://localhost/admin>   |
 | Redis Queue Management (Horizon) | Via User Role  | <https://localhost/horizon> |
 | Website Status (Pulse)           | Via User Role  | <https://localhost/pulse>   |
 | Meilisearch WebUI                | Local Only     | <http://localhost:7700>     |

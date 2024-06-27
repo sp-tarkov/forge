@@ -8,6 +8,7 @@
         "php": "^8.3",
         "ext-curl": "*",
         "aws/aws-sdk-php": "^3.314",
+        "filament/filament": "^3.2",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.11",
         "laravel/horizon": "^5.24",
@@ -50,7 +51,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
