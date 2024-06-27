@@ -10,7 +10,10 @@ return new class extends Migration
     {
         Schema::create('spt_versions', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('hub_id')->nullable()->default(null)->unique();
+            $table->bigInteger('hub_id')
+                ->nullable()
+                ->default(null)
+                ->unique();
             $table->string('version');
             $table->string('color_class');
             $table->softDeletes();
