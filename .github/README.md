@@ -12,7 +12,8 @@ The Forge is a Laravel-based web application that provides a platform for the Si
 
 ## Development Environment Setup
 
-This is a [Laravel](https://laravel.com/docs/11.x) project that uses [Sail](https://laravel.com/docs/11.x/sail), which provides a Docker-based development environment. Ensure you review the Sail documentation for useage, particularly in a [Windows environment](https://laravel.com/docs/11.x/installation#sail-on-windows), as WSL2 is recommended.
+This is a [Laravel](https://laravel.com/docs/11.x) project that uses [Sail](https://laravel.com/docs/11.x/sail), which provides a Docker-based development environment. You can see detailed instructions on how to configure the development environment on the project wiki:  
+https://github.com/sp-tarkov/forge/wiki/Dev-Environment-Setup,-Windows-11,-WSL2
 
 ### Accessing the Application:
 
