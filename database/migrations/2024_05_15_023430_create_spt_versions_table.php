@@ -15,6 +15,8 @@ return new class extends Migration
             $table->string('color_class');
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index(['version', 'deleted_at'], 'spt_versions_filtering_index');
         });
     }
 

@@ -27,6 +27,8 @@ return new class extends Migration
             $table->boolean('disabled')->default(false);
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index(['deleted_at', 'disabled'], 'mods_show_index');
         });
     }
 
