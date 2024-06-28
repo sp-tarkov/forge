@@ -25,12 +25,6 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, dom, fileinfo
           coverage: none
-      - name: Configure Laravel Nova Authentication
-        shell: bash
-        env:
-          NOVA_USERNAME: ${{ secrets.NOVA_USERNAME }}
-          NOVA_LICENSE_KEY: ${{ secrets.NOVA_LICENSE_KEY }}
-        run: composer config http-basic.nova.laravel.com "$NOVA_USERNAME" "$NOVA_LICENSE_KEY"
       - name: Get Composer Cache Directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -59,8 +53,7 @@ jobs:
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate
-          php artisan config:cache
-          php artisan route:cache
+          php artisan optimize
       - name: Run Database Migrations
         run: php artisan migrate
       - name: Link Storage
