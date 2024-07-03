@@ -12,17 +12,30 @@ return new class extends Migration
     {
         Schema::create('mod_versions', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('hub_id')->nullable()->default(null)->unique();
-            $table->foreignIdFor(Mod::class)->constrained('mods');
+            $table->bigInteger('hub_id')
+                ->nullable()
+                ->default(null)
+                ->unique();
+            $table->foreignIdFor(Mod::class)
+                ->constrained('mods')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
             $table->string('version');
             $table->longText('description');
             $table->string('link');
-            $table->foreignIdFor(SptVersion::class)->constrained('spt_versions');
+            $table->foreignIdFor(SptVersion::class)
+                ->nullable()
+                ->default(null)
+                ->constrained('spt_versions')
+                ->nullOnDelete()
+                ->cascadeOnUpdate();
             $table->string('virus_total_link');
             $table->unsignedBigInteger('downloads');
             $table->boolean('disabled')->default(false);
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index(['mod_id', 'deleted_at', 'disabled', 'version'], 'mod_versions_filtering_index');
         });
     }
 

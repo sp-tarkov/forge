@@ -15,7 +15,7 @@
                             <img src="https://placehold.co/144x144/EEE/31343C?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="block dark:hidden w-36 rounded-lg">
                             <img src="https://placehold.co/144x144/31343C/EEE?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="hidden dark:block w-36 rounded-lg">
                         @else
-                            <img src="{{ Storage::url($mod->thumbnail) }}" alt="{{ $mod->name }}" class="w-36 rounded-lg">
+                            <img src="{{ $mod->thumbnailUrl }}" alt="{{ $mod->name }}" class="w-36 rounded-lg">
                         @endif
                     </div>
                     <div class="grow flex flex-col justify-center items-center sm:items-start text-gray-800 dark:text-gray-200">

@@ -72,9 +72,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(UserRole::class, 'user_role_id');
     }
 
+    public function isMod(): bool
+    {
+        return Str::lower($this->role?->name) === 'moderator';
+    }
+
     public function isAdmin(): bool
     {
-        return Str::lower($this->role->name) === 'administrator';
+        return Str::lower($this->role?->name) === 'administrator';
     }
 
     protected function casts(): array
@@ -83,5 +88,16 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the disk that profile photos should be stored on.
+     */
+    protected function profilePhotoDisk(): string
+    {
+        return match (config('app.env')) {
+            'production' => 'r2', // Cloudflare R2 Storage
+            default => 'public', // Local
+        };
     }
 }

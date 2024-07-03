@@ -16,13 +16,13 @@ class ModVersionFactory extends Factory
     {
         return [
             'mod_id' => Mod::factory(),
-            'version' => $this->faker->numerify('1.#.#'),
-            'description' => $this->faker->text(),
-            'link' => $this->faker->url(),
+            'version' => fake()->numerify('1.#.#'),
+            'description' => fake()->text(),
+            'link' => fake()->url(),
             'spt_version_id' => SptVersion::factory(),
-            'virus_total_link' => $this->faker->url(),
-            'downloads' => $this->faker->randomNumber(),
-            'disabled' => $this->faker->boolean,
+            'virus_total_link' => fake()->url(),
+            'downloads' => fake()->randomNumber(),
+            'disabled' => fake()->boolean(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

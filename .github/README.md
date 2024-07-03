@@ -12,11 +12,7 @@ The Forge is a Laravel-based web application that provides a platform for the Si
 
 ## Development Environment Setup
 
-This is a [Laravel](https://laravel.com/docs/11.x) project that uses [Sail](https://laravel.com/docs/11.x/sail), which provides a Docker-based development environment. Ensure you review the Sail documentation for useage, particularly in a [Windows environment](https://laravel.com/docs/11.x/installation#sail-on-windows), as WSL2 is recommended.
-
-### Accessing the Application:
-
-Once the Docker containers are running with Sail you can access the application at <https://localhost>.
+We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://github.com/sp-tarkov/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://github.com/sp-tarkov/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.
 
 ### Available Services:
 
@@ -31,15 +27,13 @@ Once the Docker containers are running with Sail you can access the application 
 
 | Service                          | Authentication | Access Via Host             |
 |----------------------------------|----------------|-----------------------------|
-| Administration Panel (Nova*)     | Via User Role  | <https://localhost/nova>    |
+| Laravel Filament Admin Panel     | Via User Role  | <https://localhost/admin>   |
 | Redis Queue Management (Horizon) | Via User Role  | <https://localhost/horizon> |
 | Website Status (Pulse)           | Via User Role  | <https://localhost/pulse>   |
 | Meilisearch WebUI                | Local Only     | <http://localhost:7700>     |
 | Mailpit WebUI                    | Local Only     | <http://localhost:8025>     |
 
-<sup>*Nova may be replaced shortly due to License issues.</sup>
-
-Most of these connection settings should already be configured in the `.env.example` file. Simply save the `.env.example` file as `.env` and adjust further settings as needed.
+Most of these connection settings should already be configured in the `.env.full` or `.env.light` example files. Simply save one of these (depending on your environment) as `.env` and adjust settings as needed.
 
 ### Basic Usage Examples
 
@@ -47,32 +41,32 @@ Here are some basic commands to get started with Forge:
 
 ```
 # Start the Docker containers in detached mode:
-./vendor/bin/sail up -d
+sail up -d
 ```
 
 ```
 # View all of the available Artisan commands:
-./vendor/bin/sail artisan
+sail artisan
 ```
 
 ```
 # Migrate and seed the database with test data:
-./vendor/bin/sail artisan migrate:fresh –seed
+sail artisan migrate:fresh –seed
 ```
 
 ```
 # Run Laravel Horizon (the queue workers/monitor):
-./vendor/bin/sail artisan horizon
+sail artisan horizon
 ```
 
 ```
 # Install NPM dependencies from within the container:
-./vendor/bin/sail npm install
+sail npm install
 ```
 
 ```
 # Start the development server:
-./vendor/bin/sail npm run dev
+sail npm run dev
 ```
 
 ### More Information

@@ -8,11 +8,11 @@
         "php": "^8.3",
         "ext-curl": "*",
         "aws/aws-sdk-php": "^3.314",
+        "filament/filament": "^3.2",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.11",
         "laravel/horizon": "^5.24",
         "laravel/jetstream": "^5.1",
-        "laravel/nova": "^4.34",
         "laravel/octane": "^2.4",
         "laravel/pulse": "^1.2",
         "laravel/sanctum": "^4.0",
@@ -49,9 +49,13 @@
         }
     },
     "scripts": {
+        "phpstan": [
+            "./vendor/bin/phpstan analyse --debug --memory-limit=2G"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
@@ -66,12 +70,6 @@
             "@php artisan migrate --graceful --ansi"
         ]
     },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://nova.laravel.com"
-        }
-    ],
     "extra": {
         "laravel": {
             "dont-discover": []

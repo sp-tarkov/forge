@@ -25,7 +25,10 @@ class DatabaseSeeder extends Seeder
 
         // Add 5 administrators.
         $administrator = UserRole::factory()->administrator()->create();
-        User::factory(5)->for($administrator, 'role')->create();
+        User::factory()->for($administrator, 'role')->create([
+            'email' => 'test@example.com',
+        ]);
+        User::factory(4)->for($administrator, 'role')->create();
 
         // Add 10 moderators.
         $moderator = UserRole::factory()->moderator()->create();
