@@ -19,7 +19,7 @@ return [
     |
     */
 
-    'driver' => env('SCOUT_DRIVER', 'algolia'),
+    'driver' => env('SCOUT_DRIVER', 'meilisearch'),
 
     /*
     |--------------------------------------------------------------------------
@@ -137,9 +137,13 @@ return [
         'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
+            User::class => [
+                'filterableAttributes' => [],
+                'sortableAttributes' => [],
+            ],
             Mod::class => [
-                'filterableAttributes' => ['featured'],
-                'sortableAttributes' => ['created_at', 'updated_at'],
+                'filterableAttributes' => [],
+                'sortableAttributes' => [],
             ],
         ],
     ],

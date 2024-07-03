@@ -29,7 +29,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="font-sans antialiased" x-data="{ searchOpen: false }">
+<body class="font-sans antialiased">
 
 <x-warning/>
 
@@ -53,9 +53,7 @@
 
 <x-footer/>
 
-@livewire('global-search')
 @stack('modals')
-
 @livewireScriptConfig
 </body>
 </html>

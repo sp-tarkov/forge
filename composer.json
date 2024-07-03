@@ -49,6 +49,9 @@
         }
     },
     "scripts": {
+        "phpstan": [
+            "./vendor/bin/phpstan analyse --debug --memory-limit=2G"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",

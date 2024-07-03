@@ -74,7 +74,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isMod(): bool
     {
-        return Str::lower($this->role?->name) === 'moderator' || $this->isAdmin();
+        return Str::lower($this->role?->name) === 'moderator';
     }
 
     public function isAdmin(): bool

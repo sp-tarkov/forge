@@ -13,8 +13,8 @@ class LicenseFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'link' => $this->faker->url,
+            'name' => fake()->name(),
+            'link' => fake()->url(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];
