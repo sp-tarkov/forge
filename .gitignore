@@ -7,8 +7,7 @@
 /.idea
 /.phpunit.cache
 /.vscode
-/caddy
-/data/caddy
+/data
 /node_modules
 /public/build
 /public/hot

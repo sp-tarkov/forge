@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('mod_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
+
+            $table->unique(['mod_id', 'user_id']);
         });
     }
 
