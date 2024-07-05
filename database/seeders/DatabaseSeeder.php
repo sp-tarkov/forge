@@ -38,7 +38,12 @@ class DatabaseSeeder extends Seeder
         $users = User::factory(100)->create();
 
         // Add 200 mods, assigning them to the users we just created.
-        $mods = Mod::factory(200)->recycle([$users, $licenses])->create();
+        $allUsers = $users->merge([$administrator, $moderator]);
+        $mods = Mod::factory(200)->recycle([$licenses])->create();
+        foreach ($mods as $mod) {
+            $userIds = $allUsers->random(rand(1, 3))->pluck('id')->toArray();
+            $mod->users()->attach($userIds);
+        }
 
         // Add 1000 mod versions, assigning them to the mods we just created.
         ModVersion::factory(1000)->recycle([$mods, $spt_versions])->create();

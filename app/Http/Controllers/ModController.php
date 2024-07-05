@@ -30,7 +30,7 @@ class ModController extends Controller
         $mod = Mod::select()
             ->withLatestSptVersion()
             ->withTotalDownloads()
-            ->with('user:id,name')
+            ->with('users:id,name')
             ->with('license:id,name,link')
             ->find($modId);
 

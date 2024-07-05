@@ -12,15 +12,6 @@ class ModVersion extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'mod_id',
-        'version',
-        'description',
-        'spt_version_id',
-        'virus_total_link',
-        'downloads',
-    ];
-
     protected static function booted(): void
     {
         static::addGlobalScope(new DisabledScope);

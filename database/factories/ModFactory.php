@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\License;
 use App\Models\Mod;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Random\RandomException;
@@ -18,10 +17,10 @@ class ModFactory extends Factory
      */
     public function definition(): array
     {
+
         $name = fake()->catchPhrase();
 
         return [
-            'user_id' => User::factory(),
             'name' => $name,
             'slug' => Str::slug($name),
             'teaser' => fake()->sentence(),

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
@@ -20,25 +21,18 @@ class Mod extends Model
 {
     use HasFactory, Searchable, SoftDeletes;
 
-    protected $fillable = [
-        'user_id',
-        'name',
-        'slug',
-        'teaser',
-        'description',
-        'license_id',
-        'source_code_link',
-    ];
-
     protected static function booted(): void
     {
         // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
     }
 
-    public function user(): BelongsTo
+    /**
+     * The users that belong to the mod.
+     */
+    public function users(): BelongsToMany
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(User::class);
     }
 
     public function license(): BelongsTo
@@ -153,6 +147,16 @@ class Mod extends Model
             'production' => 'r2', // Cloudflare R2 Storage
             default => 'public', // Local
         };
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'featured' => 'boolean',
+            'contains_ai_content' => 'boolean',
+            'contains_ads' => 'boolean',
+            'disabled' => 'boolean',
+        ];
     }
 
     /**

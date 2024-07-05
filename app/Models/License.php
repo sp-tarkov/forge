@@ -11,11 +11,6 @@ class License extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'link',
-    ];
-
     public function mods(): HasMany
     {
         return $this->hasMany(Mod::class);

@@ -24,10 +24,10 @@ class ModListSection extends Component
 
     private function fetchFeaturedMods(): Collection
     {
-        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
             ->withLatestSptVersion()
             ->withTotalDownloads()
-            ->with('user:id,name')
+            ->with('users:id,name')
             ->where('featured', true)
             ->latest()
             ->limit(6)
@@ -36,10 +36,10 @@ class ModListSection extends Component
 
     private function fetchLatestMods(): Collection
     {
-        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
             ->withLatestSptVersion()
             ->withTotalDownloads()
-            ->with('user:id,name')
+            ->with('users:id,name')
             ->latest()
             ->limit(6)
             ->get();
@@ -47,13 +47,20 @@ class ModListSection extends Component
 
     private function fetchUpdatedMods(): Collection
     {
-        return Mod::select(['id', 'user_id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
             ->withLastUpdatedVersion()
             ->withTotalDownloads()
-            ->with('user:id,name')
+            ->with('users:id,name')
             ->latest()
             ->limit(6)
             ->get();
+    }
+
+    public function render(): View
+    {
+        return view('components.mod-list-section', [
+            'sections' => $this->getSections(),
+        ]);
     }
 
     public function getSections(): array
@@ -75,12 +82,5 @@ class ModListSection extends Component
                 'versionScope' => 'lastUpdatedVersion',
             ],
         ];
-    }
-
-    public function render(): View
-    {
-        return view('components.mod-list-section', [
-            'sections' => $this->getSections(),
-        ]);
     }
 }

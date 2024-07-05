@@ -11,11 +11,6 @@ class SptVersion extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'version',
-        'color_class',
-    ];
-
     public function modVersions(): HasMany
     {
         return $this->hasMany(ModVersion::class);
