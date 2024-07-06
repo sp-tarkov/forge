@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPassword;
+use App\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -74,6 +76,22 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return Str::lower($this->role?->name) === 'administrator';
+    }
+
+    /**
+     * Overwritten to instead use the queued version of the VerifyEmail notification.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmail);
+    }
+
+    /**
+     * Overwritten to instead use the queued version of the ResetPassword notification.
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPassword($token));
     }
 
     protected function casts(): array
