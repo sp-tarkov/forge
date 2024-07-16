@@ -10,13 +10,15 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                         </svg>
                     </h4>
-                    @foreach($typeResults as $result)
-                        @component('components.global-search-result-' . Str::lower($typeName), [
-                            'result' => $result,
-                            'linkClass' => 'group/global-search-link flex flex-row gap-3 py-1.5 px-4 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-100 ease-in-out',
-                        ])
-                        @endcomponent
-                    @endforeach
+                    <div class="divide-y divide-dashed divide-gray-200 dark:divide-gray-800">
+                        @foreach($typeResults as $result)
+                            @component('components.global-search-result-' . Str::lower($typeName), [
+                                'result' => $result,
+                                'linkClass' => 'group/global-search-link flex flex-row gap-3 py-1.5 px-4 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200 ease-in-out',
+                            ])
+                            @endcomponent
+                        @endforeach
+                    </div>
                 @endif
             @endforeach
         </div>

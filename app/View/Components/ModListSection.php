@@ -3,8 +3,10 @@
 namespace App\View\Components;
 
 use App\Models\Mod;
+use App\Models\ModVersion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\Component;
 
 class ModListSection extends Component
@@ -24,36 +26,44 @@ class ModListSection extends Component
 
     private function fetchFeaturedMods(): Collection
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
-            ->withLatestSptVersion()
-            ->withTotalDownloads()
-            ->with('users:id,name')
-            ->where('featured', true)
-            ->latest()
-            ->limit(6)
-            ->get();
+        return Cache::remember('homepage-featured-mods', now()->addMinutes(5), function () {
+            return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+                ->withTotalDownloads()
+                ->with(['latestSptVersion', 'users:id,name'])
+                ->where('featured', true)
+                ->latest()
+                ->limit(6)
+                ->get();
+        });
     }
 
     private function fetchLatestMods(): Collection
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
-            ->withLatestSptVersion()
-            ->withTotalDownloads()
-            ->with('users:id,name')
-            ->latest()
-            ->limit(6)
-            ->get();
+        return Cache::remember('homepage-latest-mods', now()->addMinutes(5), function () {
+            return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
+                ->withTotalDownloads()
+                ->with(['latestSptVersion', 'users:id,name'])
+                ->latest()
+                ->limit(6)
+                ->get();
+        });
     }
 
     private function fetchUpdatedMods(): Collection
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
-            ->withLastUpdatedVersion()
-            ->withTotalDownloads()
-            ->with('users:id,name')
-            ->latest()
-            ->limit(6)
-            ->get();
+        return Cache::remember('homepage-updated-mods', now()->addMinutes(5), function () {
+            return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
+                ->withTotalDownloads()
+                ->with(['lastUpdatedVersion', 'users:id,name'])
+                ->orderByDesc(
+                    ModVersion::select('updated_at')
+                        ->whereColumn('mod_id', 'mods.id')
+                        ->orderByDesc('updated_at')
+                        ->take(1)
+                )
+                ->limit(6)
+                ->get();
+        });
     }
 
     public function render(): View

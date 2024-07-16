@@ -56,6 +56,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         Artisan::call('scout:delete-all-indexes');
         Artisan::call('scout:sync-index-settings');
         Artisan::call('scout:import', ['model' => '\App\Models\Mod']);
+        Artisan::call('scout:import', ['model' => '\App\Models\User']);
     }
 
     /**

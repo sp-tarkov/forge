@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -50,55 +51,15 @@ class Mod extends Model
      */
     public function scopeWithTotalDownloads($query)
     {
-        return $query->addSelect(['total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
-            ->whereColumn('mod_id', 'mods.id'),
+        return $query->addSelect([
+            'total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
+                ->whereColumn('mod_id', 'mods.id'),
         ]);
     }
 
-    public function latestSptVersion(): BelongsTo
+    public function lastUpdatedVersion(): HasOne
     {
-        return $this->belongsTo(ModVersion::class, 'latest_spt_version_id');
-    }
-
-    public function scopeWithLatestSptVersion($query)
-    {
-        return $query
-            ->addSelect(['latest_spt_version_id' => ModVersion::select('id')
-                ->whereColumn('mod_id', 'mods.id')
-                ->orderByDesc(
-                    SptVersion::select('version')
-                        ->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
-                        ->orderByDesc('version')
-                        ->take(1),
-                )
-                ->orderByDesc('version')
-                ->take(1),
-            ])
-            ->havingNotNull('latest_spt_version_id')
-            ->with(['latestSptVersion', 'latestSptVersion.sptVersion']);
-    }
-
-    public function lastUpdatedVersion(): BelongsTo
-    {
-        return $this->belongsTo(ModVersion::class, 'last_updated_spt_version_id');
-    }
-
-    public function scopeWithLastUpdatedVersion($query)
-    {
-        return $query
-            ->addSelect(['last_updated_spt_version_id' => ModVersion::select('id')
-                ->whereColumn('mod_id', 'mods.id')
-                ->orderByDesc('updated_at')
-                ->take(1),
-            ])
-            ->orderByDesc(
-                ModVersion::select('updated_at')
-                    ->whereColumn('mod_id', 'mods.id')
-                    ->orderByDesc('updated_at')
-                    ->take(1)
-            )
-            ->havingNotNull('last_updated_spt_version_id')
-            ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion']);
+        return $this->hasOne(ModVersion::class)->orderByDesc('updated_at')->with('sptVersion');
     }
 
     /**
@@ -106,6 +67,8 @@ class Mod extends Model
      */
     public function toSearchableArray(): array
     {
+        $latestSptVersion = $this->latestSptVersion()->first();
+
         return [
             'id' => (int) $this->id,
             'name' => $this->name,
@@ -115,7 +78,23 @@ class Mod extends Model
             'featured' => $this->featured,
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
+            'latestSptVersion' => $latestSptVersion?->sptVersion->version,
+            'latestSptVersionColorClass' => $latestSptVersion?->sptVersion->color_class,
         ];
+    }
+
+    public function latestSptVersion(): HasOne
+    {
+        return $this->hasOne(ModVersion::class)
+            ->orderByDesc(
+                SptVersion::select('version')
+                    ->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
+                    ->orderByDesc('version')
+                    ->take(1),
+            )
+            ->with('sptVersion')
+            ->orderByDesc('version')
+            ->take(1);
     }
 
     /**
