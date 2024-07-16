@@ -7,6 +7,8 @@
 /.idea
 /.phpunit.cache
 /.vscode
+/caddy
+/config/psysh
 /data
 /node_modules
 /public/build
@@ -21,4 +23,3 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-config/psysh

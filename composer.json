@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.3",
         "ext-curl": "*",
+        "ext-intl": "*",
         "aws/aws-sdk-php": "^3.314",
         "filament/filament": "^3.2",
         "http-interop/http-factory-guzzle": "^1.2",

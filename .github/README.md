@@ -27,9 +27,9 @@ We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services
 
 | Service                          | Authentication | Access Via Host             |
 |----------------------------------|----------------|-----------------------------|
-| Laravel Filament Admin Panel     | Via User Role  | <https://localhost/admin>   |
-| Redis Queue Management (Horizon) | Via User Role  | <https://localhost/horizon> |
-| Website Status (Pulse)           | Via User Role  | <https://localhost/pulse>   |
+| Laravel Filament Admin Panel     | Via User Role  | <http://localhost/admin>   |
+| Redis Queue Management (Horizon) | Via User Role  | <http://localhost/horizon> |
+| Website Status (Pulse)           | Via User Role  | <http://localhost/pulse>   |
 | Meilisearch WebUI                | Local Only     | <http://localhost:7700>     |
 | Mailpit WebUI                    | Local Only     | <http://localhost:8025>     |
 
