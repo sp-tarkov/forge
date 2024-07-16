@@ -52,11 +52,8 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         // Ensure that we've disconnected from the Hub database, clearing temporary tables.
         DB::connection('mysql_hub')->disconnect();
 
-        // Reindex the Meilisearch index.
-        Artisan::call('scout:delete-all-indexes');
-        Artisan::call('scout:sync-index-settings');
-        Artisan::call('scout:import', ['model' => '\App\Models\Mod']);
-        Artisan::call('scout:import', ['model' => '\App\Models\User']);
+        // Re-sync search.
+        Artisan::call('app:search-sync');
     }
 
     /**

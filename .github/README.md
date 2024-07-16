@@ -60,6 +60,11 @@ sail artisan horizon
 ```
 
 ```
+# Sync the local database with the Meilisearch server (requires horizon to be running): 
+sail artisan app:search-sync
+```
+
+```
 # Install NPM dependencies from within the container:
 sail npm install
 ```
