@@ -44,7 +44,6 @@
                     {{-- dropdown select, for small screens  --}}
                     <div class="sm:hidden">
                         <label for="tabs" class="sr-only">Select a tab</label>
-                        Use an "onChange" listener to redirect the user to the selected tab URL.
                         <select id="tabs" name="tabs" x-model="selectedTab"
                                 class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
                             <option value="description">{{ __('Description') }}</option>
