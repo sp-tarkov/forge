@@ -25,7 +25,7 @@
                                 {{ $mod->latestSptVersion->version }}
                             </span>
                         </h2>
-                        <p>{{ __('Created by') }} {{ $mod->user->name }}</p>
+                        <p>{{ __('Created by') }} {{ $mod->users->pluck('name')->implode(', ') }}</p>
                         <p>{{ $mod->latestSptVersion->sptVersion->version }} {{ __('Compatible') }}</p>
                         <p>{{ $mod->total_downloads }} {{ __('Downloads') }}</p>
                     </div>

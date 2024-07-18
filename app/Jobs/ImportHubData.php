@@ -17,6 +17,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     {
         // Stream some data locally so that we don't have to keep accessing the Hub's database. Use MySQL temporary
         // tables to store the data to save on memory; we don't want this to be a hog.
+        $this->bringFileAuthorsLocal();
         $this->bringFileOptionsLocal();
         $this->bringFileContentLocal();
         $this->bringFileVersionLabelsLocal();
@@ -50,10 +52,32 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         // Ensure that we've disconnected from the Hub database, clearing temporary tables.
         DB::connection('mysql_hub')->disconnect();
 
-        // Reindex the Meilisearch index.
-        Artisan::call('scout:delete-all-indexes');
-        Artisan::call('scout:sync-index-settings');
-        Artisan::call('scout:import', ['model' => '\App\Models\Mod']);
+        // Re-sync search.
+        Artisan::call('app:search-sync');
+    }
+
+    /**
+     * Bring the file authors from the Hub database to the local database temporary table.
+     */
+    protected function bringFileAuthorsLocal(): void
+    {
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_author');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_author (
+            fileID INT,
+            userID INT
+        )');
+
+        DB::connection('mysql_hub')
+            ->table('filebase1_file_author')
+            ->orderBy('fileID')
+            ->chunk(200, function ($relationships) {
+                foreach ($relationships as $relationship) {
+                    DB::table('temp_file_author')->insert([
+                        'fileID' => (int) $relationship->fileID,
+                        'userID' => (int) $relationship->userID,
+                    ]);
+                }
+            });
     }
 
     /**
@@ -456,6 +480,14 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
             ->chunkById(100, function (Collection $mods) use ($curl) {
 
                 foreach ($mods as $mod) {
+                    // Fetch any additional authors for the mod.
+                    $modAuthors = DB::table('temp_file_author')
+                        ->where('fileID', $mod->fileID)
+                        ->pluck('userID')
+                        ->toArray();
+                    $modAuthors[] = $mod->userID; // Add the primary author to the list.
+                    $modAuthors = User::whereIn('hub_id', $modAuthors)->pluck('id')->toArray(); // Replace with local IDs.
+
                     $modContent = DB::table('temp_file_content')
                         ->where('fileID', $mod->fileID)
                         ->orderBy('fileID', 'desc')
@@ -494,9 +526,9 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         continue;
                     }
 
-                    $insertData[] = [
+                    $modData[] = [
                         'hub_id' => (int) $mod->fileID,
-                        'user_id' => User::whereHubId($mod->userID)->value('id'),
+                        'users' => $modAuthors,
                         'name' => $modContent?->subject ?? '',
                         'slug' => Str::slug($modContent?->subject ?? ''),
                         'teaser' => Str::limit($modContent?->teaser ?? ''),
@@ -504,18 +536,20 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'thumbnail' => $this->fetchModThumbnail($curl, $mod->fileID, $mod->iconHash, $mod->iconExtension),
                         'license_id' => License::whereHubId($mod->licenseID)->value('id'),
                         'source_code_link' => $optionSourceCode?->source_code_link ?? '',
-                        'featured' => (bool) $mod?->isFeatured,
+                        'featured' => (bool) $mod->isFeatured,
                         'contains_ai_content' => (bool) $optionContainsAi?->contains_ai,
                         'contains_ads' => (bool) $optionContainsAds?->contains_ads,
-                        'disabled' => (bool) $mod?->isDisabled,
+                        'disabled' => (bool) $mod->isDisabled,
                         'created_at' => Carbon::parse($mod->time, 'UTC'),
                         'updated_at' => Carbon::parse($mod->lastChangeTime, 'UTC'),
                     ];
                 }
 
-                if (! empty($insertData)) {
-                    Mod::upsert($insertData, ['hub_id'], [
-                        'user_id',
+                if (! empty($modData)) {
+                    // Remove the user_id from the mod data before upserting.
+                    $insertModData = array_map(fn ($mod) => Arr::except($mod, 'users'), $modData);
+
+                    Mod::upsert($insertModData, ['hub_id'], [
                         'name',
                         'slug',
                         'teaser',
@@ -525,10 +559,15 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'source_code_link',
                         'featured',
                         'contains_ai_content',
+                        'contains_ads',
                         'disabled',
                         'created_at',
                         'updated_at',
                     ]);
+
+                    foreach ($modData as $mod) {
+                        Mod::whereHubId($mod['hub_id'])->first()?->users()->sync($mod['users']);
+                    }
                 }
             }, 'fileID');
 
@@ -666,6 +705,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     public function failed(Exception $exception): void
     {
         // Explicitly drop the temporary tables.
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_author');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_version_labels');

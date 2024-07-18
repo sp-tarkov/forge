@@ -42,8 +42,8 @@ class GlobalSearch extends Component
 
         if (Str::length($query)) {
             $results['data'] = [
-                'user' => User::search($query)->get(),
-                'mod' => Mod::search($query)->get(),
+                'user' => collect(User::search($query)->raw()['hits']),
+                'mod' => collect(Mod::search($query)->raw()['hits']),
             ];
             $results['total'] = $this->countTotalResults($results['data']);
         }

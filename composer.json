@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.3",
         "ext-curl": "*",
+        "ext-intl": "*",
         "aws/aws-sdk-php": "^3.314",
         "filament/filament": "^3.2",
         "http-interop/http-factory-guzzle": "^1.2",
@@ -33,7 +34,8 @@
         "laravel/sail": "^1.29",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.2",
+        "pestphp/pest": "^2.34",
+        "pestphp/pest-plugin-stressless": "^2.2",
         "spatie/laravel-ignition": "^2.8"
     },
     "autoload": {
@@ -50,7 +52,7 @@
     },
     "scripts": {
         "phpstan": [
-            "./vendor/bin/phpstan analyse --debug --memory-limit=2G"
+            "./vendor/bin/phpstan analyse -c phpstan.neon --debug --memory-limit=2G"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
