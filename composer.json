@@ -51,7 +51,7 @@
     },
     "scripts": {
         "phpstan": [
-            "./vendor/bin/phpstan analyse --debug --memory-limit=2G"
+            "./vendor/bin/phpstan analyse -c phpstan.neon --debug --memory-limit=2G"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
