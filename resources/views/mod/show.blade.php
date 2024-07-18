@@ -8,6 +8,8 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
+
+            {{-- Mod Info Card --}}
             <div class="p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
@@ -27,44 +29,73 @@
                         </h2>
                         <p>{{ __('Created by') }} {{ $mod->users->pluck('name')->implode(', ') }}</p>
                         <p>{{ $mod->latestSptVersion->sptVersion->version }} {{ __('Compatible') }}</p>
-                        <p>{{ $mod->total_downloads }} {{ __('Downloads') }}</p>
+                        <p>{{ Number::format($mod->total_downloads) }} {{ __('Downloads') }}</p>
                     </div>
                 </div>
             </div>
 
-            <div>
-                <div class="sm:hidden">
-                    <label for="tabs" class="sr-only">Select a tab</label>
-                    {{-- Use an "onChange" listener to redirect the user to the selected tab URL. --}}
-                    <select id="tabs" name="tabs" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
-                        <option selected>Description</option>
-                        <option>Versions</option>
-                        <option>Comments</option>
-                    </select>
-                </div>
-                <div class="hidden sm:block">
-                    <nav class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
-                        <a href="#description" class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10" aria-current="page">
-                            <span>Description</span>
-                            <span aria-hidden="true" class="bg-gray-500 absolute inset-x-0 bottom-0 h-0.5"></span> </a>
-                        <a href="#versions" class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
-                            <span>Versions</span>
-                            <span aria-hidden="true" class="bg-transparent absolute inset-x-0 bottom-0 h-0.5"></span>
-                        </a>
-                        <a href="#comments" class="tab rounded-r-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
-                            <span>Comments</span>
-                            <span aria-hidden="true" class="bg-transparent absolute inset-x-0 bottom-0 h-0.5"></span>
-                        </a>
-                    </nav>
-                </div>
-            </div>
 
-            <div id="description" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
-                <p>{!! Str::markdown($mod->description) !!}</p>
+            {{-- Tabs --}}
+            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }"
+                 x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
+                 class="lg:col-span-2 flex flex-col gap-6">
+                <div>
+
+                    {{-- dropdown select, for small screens  --}}
+                    <div class="sm:hidden">
+                        <label for="tabs" class="sr-only">Select a tab</label>
+                        Use an "onChange" listener to redirect the user to the selected tab URL.
+                        <select id="tabs" name="tabs" x-model="selectedTab"
+                                class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
+                            <option value="description">{{ __('Description') }}</option>
+                            <option value="versions">{{ __('Versions') }}</option>
+                            <option value="comments">{{ __('Comments') }}</option>
+                        </select>
+                    </div>
+
+                    {{-- tab buttons --}}
+                    <div class="hidden sm:block">
+                        <nav
+                            class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
+                            aria-label="Tabs">
+                            <button @click="selectedTab = 'description'"
+                               class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10"
+                               aria-current="page">
+                                <span>Description</span>
+                                <span aria-hidden="true" :class="selectedTab === 'description' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
+                            </button>
+                            <button @click="selectedTab = 'versions'"
+                               class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                                <span>Versions</span>
+                                <span aria-hidden="true" :class="selectedTab === 'versions' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
+                            </button>
+                            <button @click="selectedTab = 'comments'"
+                               class="tab rounded-r-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                                <span>Comments</span>
+                                <span aria-hidden="true" :class="selectedTab === 'comments' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                {{-- tab panels  --}}
+                <div x-show="selectedTab === 'description'"
+                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
+                    <p>{!! Str::markdown($mod->description) !!}</p>
+                </div>
+                <div x-show="selectedTab === 'versions'"
+                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <p>Versions on this page</p>
+                </div>
+                <div x-show="selectedTab === 'comments'"
+                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <p>The comments go here</p>
+                </div>
             </div>
         </div>
 
+        {{-- --}}
         <div class="col-span-1 flex flex-col gap-6">
             <a href="{{ $mod->latestSptVersion->link }}" class="block">
                 <button type="button" class="w-full">{{ __('Download Latest Version') }} ({{ $mod->latestSptVersion->version }})</button>
