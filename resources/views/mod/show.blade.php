@@ -85,7 +85,13 @@
                 </div>
                 <div x-show="selectedTab === 'versions'"
                      class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    <p>Versions on this page</p>
+                    @for($i = 0;$i < $mod->versions->count(); $i++)
+                        <div class="bg-gray-700">
+                            <p>{{$mod->versions[$i]->id}}</p>
+                            <p>{{$mod->versions[$i]->version}}</p>
+                            <p>{{$mod->versions[$i]->description}}</p>
+                        </div>
+                    @endfor
                 </div>
                 <div x-show="selectedTab === 'comments'"
                      class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
