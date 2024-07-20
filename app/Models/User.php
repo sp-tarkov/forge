@@ -94,6 +94,22 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new ResetPassword($token));
     }
 
+    /**
+     * Get the relative URL to the user's profile page.
+     */
+    public function profileUrl(): string
+    {
+        return route('user.show', [
+            'user' => $this->id,
+            'username' => $this->slug(),
+        ]);
+    }
+
+    public function slug(): string
+    {
+        return Str::lower(Str::slug($this->name));
+    }
+
     protected function casts(): array
     {
         return [

@@ -25,7 +25,12 @@
                                 {{ $mod->latestSptVersion->version }}
                             </span>
                         </h2>
-                        <p>{{ __('Created by') }} {{ $mod->users->pluck('name')->implode(', ') }}</p>
+                        <p>
+                            {{ __('Created by') }}
+                            @foreach ($mod->users as $user)
+                                <a href="{{ $user->profileUrl() }}" class="text-slate-600 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                            @endforeach
+                        </p>
                         <p>{{ $mod->latestSptVersion->sptVersion->version }} {{ __('Compatible') }}</p>
                         <p>{{ $mod->total_downloads }} {{ __('Downloads') }}</p>
                     </div>
