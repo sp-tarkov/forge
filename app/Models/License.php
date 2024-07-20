@@ -11,6 +11,9 @@ class License extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * The relationship between a license and mod.
+     */
     public function mods(): HasMany
     {
         return $this->hasMany(Mod::class);
