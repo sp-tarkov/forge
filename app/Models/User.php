@@ -66,14 +66,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * The relationship between a user and their role.
-     */
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(UserRole::class, 'user_role_id');
-    }
-
-    /**
      * Check if the user has the role of a moderator.
      */
     public function isMod(): bool
@@ -122,6 +114,24 @@ class User extends Authenticatable implements MustVerifyEmail
     public function slug(): string
     {
         return Str::lower(Str::slug($this->name));
+    }
+
+    /**
+     * Assign a role to the user.
+     */
+    public function assignRole(UserRole $role): bool
+    {
+        $this->role()->associate($role);
+
+        return $this->save();
+    }
+
+    /**
+     * The relationship between a user and their role.
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(UserRole::class, 'user_role_id');
     }
 
     /**
