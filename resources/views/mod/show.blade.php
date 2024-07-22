@@ -78,21 +78,40 @@
                 </div>
 
                 {{-- tab panels  --}}
+                {{-- Description --}}
                 <div x-show="selectedTab === 'description'"
                      class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
                     <p>{!! Str::markdown($mod->description) !!}</p>
                 </div>
+                {{-- Versions --}}
                 <div x-show="selectedTab === 'versions'"
                      class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    @for($i = 0;$i < $mod->versions->count(); $i++)
-                        <div class="bg-gray-700">
-                            <p>{{$mod->versions[$i]->id}}</p>
-                            <p>{{$mod->versions[$i]->version}}</p>
-                            <p>{{$mod->versions[$i]->description}}</p>
+                    @foreach($mod->versions as $version)
+                        @if(!$version->disabled)
+                        <div class="bg-gray-800 rounded-xl mb-2">
+                            <div class="border-b-2 border-gray-700">
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between">
+                                        <a class="text-2xl" href="{{ $version->link }}">
+                                            Version {{$version->version}}
+                                        </a>
+                                        <p class="text-gray-700">{{ Number::forhumans($version->downloads) }} Downloads</p>
+                                    </div>
+                                    <div class="flex items-center justify-between text-gray-400">
+                                        <span>Created {{ \Carbon\Carbon::parse($version->created_at)->format("M d, h:m a") }}</span>
+                                        <span>Last Updated {{ \Carbon\Carbon::parse($version->updated_at)->format("M d, h:m a") }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                            <p>{{$version->description}}</p>
+                            </div>
                         </div>
-                    @endfor
+                        @endif
+                    @endforeach
                 </div>
+                {{-- Comments --}}
                 <div x-show="selectedTab === 'comments'"
                      class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     <p>The comments go here</p>

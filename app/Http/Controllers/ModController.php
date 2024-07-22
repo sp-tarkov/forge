@@ -6,6 +6,7 @@ use App\Http\Requests\ModRequest;
 use App\Http\Resources\ModResource;
 use App\Models\Mod;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Log;
 
 class ModController extends Controller
 {
@@ -29,7 +30,12 @@ class ModController extends Controller
     {
         $mod = Mod::select()
             ->withTotalDownloads()
-            ->with(['latestSptVersion', 'users:id,name'])
+            ->with([
+                'versions' => fn($query) => $query->orderByDesc('version'),
+                'latestSptVersion',
+                'users:id,name',
+                'license:id,name,link'
+            ])
             ->with('license:id,name,link')
             ->find($modId);
 
