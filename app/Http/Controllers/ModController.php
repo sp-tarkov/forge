@@ -31,7 +31,7 @@ class ModController extends Controller
         $mod = Mod::select()
             ->withTotalDownloads()
             ->with([
-                'versions' => fn($query) => $query->orderByDesc('version'),
+                'versions',
                 'latestSptVersion',
                 'users:id,name',
                 'license:id,name,link'
