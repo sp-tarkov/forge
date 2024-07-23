@@ -9,7 +9,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
 
-            {{-- Mod Info Card --}}
+            {{-- mod info card --}}
             <div class="p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
@@ -35,7 +35,7 @@
             </div>
 
 
-            {{-- Tabs --}}
+            {{-- tabs --}}
             <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }"
                  x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
                  class="lg:col-span-2 flex flex-col gap-6">
@@ -58,7 +58,7 @@
                             class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
                             aria-label="Tabs">
                             <button @click="selectedTab = 'description'"
-                               class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10"
+                               class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10"
                                aria-current="page">
                                 <span>Description</span>
                                 <span aria-hidden="true" :class="selectedTab === 'description' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
@@ -78,18 +78,18 @@
                 </div>
 
                 {{-- tab panels  --}}
-                {{-- Description --}}
+                {{-- description --}}
                 <div x-show="selectedTab === 'description'"
                      class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
                     <p>{!! Str::markdown($mod->description) !!}</p>
                 </div>
-                {{-- Versions --}}
+                {{-- versions --}}
                 <div x-show="selectedTab === 'versions'"
                      class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     @foreach($mod->versions as $version)
                         @if(!$version->disabled)
-                        <div class="bg-gray-800 rounded-xl mb-2">
+                        <div class="p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl mb-2">
                             <div class="border-b-2 border-gray-700">
                                 <div class="p-4">
                                     <div class="flex items-center justify-between">
@@ -102,10 +102,13 @@
                                         <span>Created {{ \Carbon\Carbon::parse($version->created_at)->format("M d, h:m a") }}</span>
                                         <span>Last Updated {{ \Carbon\Carbon::parse($version->updated_at)->format("M d, h:m a") }}</span>
                                     </div>
+                                    <div class="flex justify-end">
+                                        <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="p-4">
-                            <p>{{$version->description}}</p>
+                                <p>{{$version->description}}</p>
                             </div>
                         </div>
                         @endif
@@ -119,12 +122,15 @@
             </div>
         </div>
 
-        {{-- --}}
+        {{-- right side panel area --}}
         <div class="col-span-1 flex flex-col gap-6">
+
+            {{-- main download button --}}
             <a href="{{ $mod->latestSptVersion->link }}" class="block">
-                <button type="button" class="w-full">{{ __('Download Latest Version') }} ({{ $mod->latestSptVersion->version }})</button>
+                <button class="text-lg hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download for Latest SPT Version') }} ({{ $mod->latestSptVersion->version }})</button>
             </a>
 
+            {{-- mod details --}}
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
                 <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100">
