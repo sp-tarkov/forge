@@ -536,10 +536,10 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'thumbnail' => $this->fetchModThumbnail($curl, $mod->fileID, $mod->iconHash, $mod->iconExtension),
                         'license_id' => License::whereHubId($mod->licenseID)->value('id'),
                         'source_code_link' => $optionSourceCode?->source_code_link ?? '',
-                        'featured' => (bool) $mod?->isFeatured,
+                        'featured' => (bool) $mod->isFeatured,
                         'contains_ai_content' => (bool) $optionContainsAi?->contains_ai,
                         'contains_ads' => (bool) $optionContainsAds?->contains_ads,
-                        'disabled' => (bool) $mod?->isDisabled,
+                        'disabled' => (bool) $mod->isDisabled,
                         'created_at' => Carbon::parse($mod->time, 'UTC'),
                         'updated_at' => Carbon::parse($mod->lastChangeTime, 'UTC'),
                     ];
