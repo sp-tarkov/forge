@@ -21,12 +21,17 @@
                         @endif
                     </div>
                     <div class="grow flex flex-col justify-center items-center sm:items-start text-gray-800 dark:text-gray-200">
-                        <h2 class="pb-1 sm:p-0 text-3xl font-bold text-gray-900 dark:text-white">
-                            {{ $mod->name }}
-                            <span class="font-light text-nowrap text-gray-700 dark:text-gray-400">
-                                {{ $mod->latestSptVersion->version }}
+                        <div class="flex justify-between items-center space-x-3">
+                            <h2 class="pb-1 sm:p-0 text-3xl font-bold text-gray-900 dark:text-white">
+                                {{ $mod->name }}
+                                <span class="font-light text-nowrap text-gray-700 dark:text-gray-400">
+                                    {{ $mod->latestSptVersion->version }}
+                                </span>
+                            </h2>
+                            <span class="badge-version {{ $mod->latestSptVersion->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                    {{ $mod->latestSptVersion->sptVersion->version }}
                             </span>
-                        </h2>
+                        </div>
                         <p>{{ __('Created by') }} {{ $mod->users->pluck('name')->implode(', ') }}</p>
                         <p>{{ $mod->latestSptVersion->sptVersion->version }} {{ __('Compatible') }}</p>
                         <p>{{ Number::format($mod->total_downloads) }} {{ __('Downloads') }}</p>
@@ -98,12 +103,15 @@
                                         </a>
                                         <p class="text-gray-700">{{ Number::forhumans($version->downloads) }} Downloads</p>
                                     </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="badge-version {{ $version->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                            {{ $version->sptVersion->version }}
+                                        </span>
+                                        <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
+                                    </div>
                                     <div class="flex items-center justify-between text-gray-400">
                                         <span>Created {{ \Carbon\Carbon::parse($version->created_at)->format("M d, h:m a") }}</span>
                                         <span>Last Updated {{ \Carbon\Carbon::parse($version->updated_at)->format("M d, h:m a") }}</span>
-                                    </div>
-                                    <div class="flex justify-end">
-                                        <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
                                     </div>
                                 </div>
                             </div>
