@@ -22,11 +22,11 @@
                         <h2 class="pb-1 sm:p-0 text-3xl font-bold text-gray-900 dark:text-white">
                             {{ $mod->name }}
                             <span class="font-light text-nowrap text-gray-700 dark:text-gray-400">
-                                {{ $mod->latestSptVersion->version }}
+                                {{ $mod->latestVersion->version }}
                             </span>
                         </h2>
                         <p>{{ __('Created by') }} {{ $mod->users->pluck('name')->implode(', ') }}</p>
-                        <p>{{ $mod->latestSptVersion->sptVersion->version }} {{ __('Compatible') }}</p>
+                        <p>{{ $mod->latestVersion->sptVersion->version }} {{ __('Compatible') }}</p>
                         <p>{{ $mod->total_downloads }} {{ __('Downloads') }}</p>
                     </div>
                 </div>
@@ -66,8 +66,8 @@
         </div>
 
         <div class="col-span-1 flex flex-col gap-6">
-            <a href="{{ $mod->latestSptVersion->link }}" class="block">
-                <button type="button" class="w-full">{{ __('Download Latest Version') }} ({{ $mod->latestSptVersion->version }})</button>
+            <a href="{{ $mod->latestVersion->link }}" class="block">
+                <button type="button" class="w-full">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
             </a>
 
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
@@ -93,12 +93,12 @@
                             </p>
                         </li>
                     @endif
-                    @if($mod->latestSptVersion->virus_total_link)
+                    @if($mod->latestVersion->virus_total_link)
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest VirusTotal Result') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->latestSptVersion->virus_total_link }}" title="{{ $mod->latestSptVersion->virus_total_link }}" target="_blank">
-                                    {{ $mod->latestSptVersion->virus_total_link }}
+                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank">
+                                    {{ $mod->latestVersion->virus_total_link }}
                                 </a>
                             </p>
                         </li>

@@ -59,7 +59,8 @@ class Mod extends Model
 
     public function lastUpdatedVersion(): HasOne
     {
-        return $this->hasOne(ModVersion::class)->orderByDesc('updated_at')->with('sptVersion');
+        return $this->hasOne(ModVersion::class)
+            ->orderByDesc('updated_at');
     }
 
     /**
@@ -67,7 +68,7 @@ class Mod extends Model
      */
     public function toSearchableArray(): array
     {
-        $latestSptVersion = $this->latestSptVersion()->first();
+        $latestVersion = $this->latestVersion()->with('sptVersion')->first();
 
         return [
             'id' => (int) $this->id,
@@ -78,21 +79,17 @@ class Mod extends Model
             'featured' => $this->featured,
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
-            'latestSptVersion' => $latestSptVersion?->sptVersion->version,
-            'latestSptVersionColorClass' => $latestSptVersion?->sptVersion->color_class,
+            'latestVersion' => $latestVersion?->sptVersion->version,
+            'latestVersionColorClass' => $latestVersion?->sptVersion->color_class,
         ];
     }
 
-    public function latestSptVersion(): HasOne
+    /**
+     * The relationship to the latest mod version, dictated by the mod version number.
+     */
+    public function latestVersion(): HasOne
     {
         return $this->hasOne(ModVersion::class)
-            ->orderByDesc(
-                SptVersion::select('version')
-                    ->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
-                    ->orderByDesc('version')
-                    ->take(1),
-            )
-            ->with('sptVersion')
             ->orderByDesc('version')
             ->take(1);
     }

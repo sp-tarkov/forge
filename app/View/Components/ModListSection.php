@@ -29,7 +29,8 @@ class ModListSection extends Component
         return Cache::remember('homepage-featured-mods', now()->addMinutes(5), function () {
             return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
                 ->withTotalDownloads()
-                ->with(['latestSptVersion', 'users:id,name'])
+                ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
+                ->whereHas('latestVersion')
                 ->where('featured', true)
                 ->latest()
                 ->limit(6)
@@ -42,7 +43,8 @@ class ModListSection extends Component
         return Cache::remember('homepage-latest-mods', now()->addMinutes(5), function () {
             return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
                 ->withTotalDownloads()
-                ->with(['latestSptVersion', 'users:id,name'])
+                ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
+                ->whereHas('latestVersion')
                 ->latest()
                 ->limit(6)
                 ->get();
@@ -54,7 +56,8 @@ class ModListSection extends Component
         return Cache::remember('homepage-updated-mods', now()->addMinutes(5), function () {
             return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
                 ->withTotalDownloads()
-                ->with(['lastUpdatedVersion', 'users:id,name'])
+                ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion', 'users:id,name'])
+                ->whereHas('lastUpdatedVersion')
                 ->orderByDesc(
                     ModVersion::select('updated_at')
                         ->whereColumn('mod_id', 'mods.id')
@@ -79,12 +82,12 @@ class ModListSection extends Component
             [
                 'title' => 'Featured Mods',
                 'mods' => $this->modsFeatured,
-                'versionScope' => 'latestSptVersion',
+                'versionScope' => 'latestVersion',
             ],
             [
                 'title' => 'Newest Mods',
                 'mods' => $this->modsLatest,
-                'versionScope' => 'latestSptVersion',
+                'versionScope' => 'latestVersion',
             ],
             [
                 'title' => 'Recently Updated Mods',

@@ -27,10 +27,8 @@ class ModController extends Controller
 
     public function show(int $modId, string $slug)
     {
-        $mod = Mod::select()
-            ->withTotalDownloads()
-            ->with(['latestSptVersion', 'users:id,name'])
-            ->with('license:id,name,link')
+        $mod = Mod::withTotalDownloads()
+            ->with(['latestVersion', 'users:id,name', 'license:id,name,link'])
             ->find($modId);
 
         if (! $mod || $mod->slug !== $slug) {
