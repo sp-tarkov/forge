@@ -23,8 +23,8 @@ class ModVersionFactory extends Factory
             'virus_total_link' => fake()->url(),
             'downloads' => fake()->randomNumber(),
             'disabled' => fake()->boolean(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
         ];
     }
 }
