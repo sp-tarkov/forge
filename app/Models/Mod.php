@@ -43,7 +43,7 @@ class Mod extends Model
 
     public function versions(): HasMany
     {
-        return $this->hasMany(ModVersion::class);
+        return $this->hasMany(ModVersion::class)->orderByDesc('version');
     }
 
     /**
