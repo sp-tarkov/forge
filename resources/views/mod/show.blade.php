@@ -9,11 +9,11 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
 
-            {{-- mod info card --}}
+            {{-- Main Mod Details Card --}}
             <div class="p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
-                        @if(empty($mod->thumbnail))
+                        @if (empty($mod->thumbnail))
                             <img src="https://placehold.co/144x144/EEE/31343C?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="block dark:hidden w-36 rounded-lg">
                             <img src="https://placehold.co/144x144/31343C/EEE?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="hidden dark:block w-36 rounded-lg">
                         @else
@@ -39,42 +39,31 @@
                 </div>
             </div>
 
-
-            {{-- tabs --}}
-            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }"
-                 x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
-                 class="lg:col-span-2 flex flex-col gap-6">
+            {{-- Tabs --}}
+            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-2 flex flex-col gap-6">
                 <div>
-
-                    {{-- dropdown select, for small screens  --}}
+                    {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
                         <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
-                        <select id="tabs" name="tabs" x-model="selectedTab"
-                                class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
+                        <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
                             <option value="description">{{ __('Description') }}</option>
                             <option value="versions">{{ __('Versions') }}</option>
                             <option value="comments">{{ __('Comments') }}</option>
                         </select>
                     </div>
 
-                    {{-- tab buttons --}}
+                    {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
-                        <nav
-                            class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
-                            aria-label="Tabs">
-                            <button @click="selectedTab = 'description'"
-                               class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10"
-                               aria-current="page">
+                        <nav class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
+                            <button @click="selectedTab = 'description'" class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10" aria-current="page">
                                 <span>{{ __('Description') }}</span>
                                 <span aria-hidden="true" :class="selectedTab === 'description' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
                             </button>
-                            <button @click="selectedTab = 'versions'"
-                               class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                            <button @click="selectedTab = 'versions'" class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
                                 <span>{{ __('Versions') }}</span>
                                 <span aria-hidden="true" :class="selectedTab === 'versions' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
                             </button>
-                            <button @click="selectedTab = 'comments'"
-                               class="tab rounded-r-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                            <button @click="selectedTab = 'comments'" class="tab rounded-r-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
                                 <span>{{ __('Comments') }}</span>
                                 <span aria-hidden="true" :class="selectedTab === 'comments' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
                             </button>
@@ -82,64 +71,58 @@
                     </div>
                 </div>
 
-                {{-- tab panels  --}}
-                {{-- description --}}
-                <div x-show="selectedTab === 'description'"
-                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                {{-- Mod Description --}}
+                <div x-show="selectedTab === 'description'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
-                    <p>{!! Str::markdown($mod->description) !!}</p>
+                    {!! Str::markdown($mod->description) !!}
                 </div>
-                {{-- versions --}}
-                <div x-show="selectedTab === 'versions'"
-                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    @foreach($mod->versions as $version)
-                        @if(!$version->disabled)
-                        <div class="p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl mb-2">
-                            <div class="border-b-2 border-gray-700">
-                                <div class="p-4">
-                                    <div class="flex items-center justify-between">
-                                        <a class="text-2xl" href="{{ $version->link }}">
-                                            Version {{$version->version}}
-                                        </a>
-                                        <p class="text-gray-700">{{ Number::forhumans($version->downloads) }} Downloads</p>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="badge-version {{ $version->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                            {{ $version->sptVersion->version }}
-                                        </span>
-                                        <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
-                                    </div>
-                                    <div class="flex items-center justify-between text-gray-400">
-                                        <span>Created {{ Carbon::parse($version->created_at)->format("M d, h:m a") }}</span>
-                                        <span>Last Updated {{ Carbon::parse($version->updated_at)->format("M d, h:m a") }}</span>
-                                    </div>
+
+                {{-- Mod Versions --}}
+                <div x-show="selectedTab === 'versions'">
+                    @foreach ($mod->versions as $version)
+                        <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                            <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
+                                <div class="flex items-center justify-between">
+                                    <a class="text-2xl font-extrabold" href="{{ $version->link }}">
+                                        {{ __('Version') }} {{ $version->version }}
+                                    </a>
+                                    <p class="text-gray-700 dark:text-gray-300">{{ Number::forhumans($version->downloads) }} {{ __('Downloads') }}</p>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="badge-version {{ $version->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                        {{ $version->sptVersion->version }}
+                                    </span>
+                                    <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
+                                </div>
+                                <div class="flex items-center justify-between text-gray-400">
+                                    <span>{{ __('Created') }} {{ $version->created_at->format("M d, h:m a") }}</span>
+                                    <span>{{ __('Updated') }} {{ $version->updated_at->format("M d, h:m a") }}</span>
                                 </div>
                             </div>
-                            <div class="p-4">
+                            <div class="pt-3 user-markdown">
                                 {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
-                                <p>{!! Str::markdown($version->description) !!}</p>
+                                {!! Str::markdown($version->description) !!}
                             </div>
                         </div>
-                        @endif
                     @endforeach
                 </div>
+
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'"
-                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    <p>The comments go here</p>
+                <div x-show="selectedTab === 'comments'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <p>{{ __('The comments go here.') }}</p>
                 </div>
             </div>
         </div>
 
-        {{-- right side panel area --}}
+        {{-- Right Column --}}
         <div class="col-span-1 flex flex-col gap-6">
 
-            {{-- main download button --}}
+            {{-- Main Download Button --}}
             <a href="{{ $mod->latestVersion->link }}" class="block">
-                <button class="text-lg hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
+                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
             </a>
 
-            {{-- mod details --}}
+            {{-- Additional Mod Details --}}
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
                 <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100">
