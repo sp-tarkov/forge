@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\DisabledScope;
+use App\Models\Scopes\PublishedScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,7 @@ class ModVersion extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new DisabledScope);
+        static::addGlobalScope(new PublishedScope);
     }
 
     public function mod(): BelongsTo
