@@ -79,6 +79,7 @@ class Mod extends Model
             'featured' => $this->featured,
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
+            'published_at' => strtotime($this->published_at),
             'latestVersion' => $latestVersion?->sptVersion->version,
             'latestVersionColorClass' => $latestVersion?->sptVersion->color_class,
         ];

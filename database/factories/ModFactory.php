@@ -33,6 +33,7 @@ class ModFactory extends Factory
             'disabled' => fake()->boolean(),
             'created_at' => now(),
             'updated_at' => now(),
+            'published_at' => now()->subHours(3),
         ];
     }
 

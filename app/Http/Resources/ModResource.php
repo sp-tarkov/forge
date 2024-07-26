@@ -20,6 +20,7 @@ class ModResource extends JsonResource
             'license' => new LicenseResource($this->whenLoaded('license')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'published_at' => $this->published_at,
         ];
     }
 }
