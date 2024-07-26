@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
 /**
+ * @property int $id
+ * @property string $name
  * @property string $slug
  */
 class Mod extends Model

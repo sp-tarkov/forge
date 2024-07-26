@@ -30,10 +30,19 @@ class ModFactory extends Factory
             'featured' => fake()->boolean(),
             'contains_ai_content' => fake()->boolean(),
             'contains_ads' => fake()->boolean(),
-            'disabled' => fake()->boolean(),
             'created_at' => now(),
             'updated_at' => now(),
         ];
+    }
+
+    /**
+     * Indicate that the mod should be disabled.
+     */
+    public function disabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'disabled' => true,
+        ]);
     }
 
     /**

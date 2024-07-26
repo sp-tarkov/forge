@@ -9,6 +9,7 @@
         "ext-curl": "*",
         "ext-intl": "*",
         "aws/aws-sdk-php": "^3.314",
+        "composer/semver": "^3.4",
         "filament/filament": "^3.2",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.11",
