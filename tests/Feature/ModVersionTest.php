@@ -4,6 +4,8 @@ use App\Models\ModVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 
+uses(RefreshDatabase::class);
+
 it('includes only published mod versions', function () {
     $publishedMod = ModVersion::factory()->create([
         'published_at' => Carbon::now()->subDay(),
@@ -14,6 +16,10 @@ it('includes only published mod versions', function () {
     $noPublishedDateMod = ModVersion::factory()->create([
         'published_at' => null,
     ]);
+
+    $all = ModVersion::withoutGlobalScopes()->get();
+
+    expect($all)->toHaveCount(3);
 
     $mods = ModVersion::all();
 
