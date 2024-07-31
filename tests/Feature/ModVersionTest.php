@@ -17,10 +17,10 @@ it('includes only published mod versions', function () {
 
     $mods = ModVersion::all();
 
-    expect($mods)->toHaveCount(2);
+    expect($mods)->toHaveCount(1);
     expect($mods->contains($publishedMod))->toBeTrue();
     expect($mods->contains($unpublishedMod))->toBeFalse();
-    expect($mods->contains($noPublishedDateMod))->toBeTrue();
+    expect($mods->contains($noPublishedDateMod))->toBeFalse();
 });
 
 it('handles null published_at as not published', function () {
@@ -30,5 +30,5 @@ it('handles null published_at as not published', function () {
 
     $mods = ModVersion::all();
 
-    expect($mods->contains($modWithNoPublishDate))->toBeTrue();
+    expect($mods->contains($modWithNoPublishDate))->toBeFalse();
 });

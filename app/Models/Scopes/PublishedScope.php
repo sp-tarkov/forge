@@ -14,6 +14,7 @@ class PublishedScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        $builder->where($model->getTable().'.published_at', "<=", now());
+        $builder->whereNotNull($model->getTable().'.published_at')
+                ->where($model->getTable().'.published_at', "<=", now());
     }
 }
