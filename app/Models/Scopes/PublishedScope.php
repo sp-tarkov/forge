@@ -5,7 +5,6 @@ namespace App\Models\Scopes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
-use Illuminate\Support\Facades\Log;
 
 class PublishedScope implements Scope
 {
@@ -15,6 +14,6 @@ class PublishedScope implements Scope
     public function apply(Builder $builder, Model $model): void
     {
         $builder->whereNotNull($model->getTable().'.published_at')
-                ->where($model->getTable().'.published_at', "<=", now());
+            ->where($model->getTable().'.published_at', '<=', now());
     }
 }
