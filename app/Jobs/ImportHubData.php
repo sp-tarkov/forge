@@ -54,6 +54,8 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
 
         // Re-sync search.
         Artisan::call('app:search-sync');
+
+        Artisan::call('cache:clear');
     }
 
     /**
@@ -540,6 +542,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'contains_ai_content' => (bool) $optionContainsAi?->contains_ai,
                         'contains_ads' => (bool) $optionContainsAds?->contains_ads,
                         'disabled' => (bool) $mod->isDisabled,
+                        'published_at' => Carbon::parse($mod->time, 'UTC'),
                         'created_at' => Carbon::parse($mod->time, 'UTC'),
                         'updated_at' => Carbon::parse($mod->lastChangeTime, 'UTC'),
                     ];
@@ -549,7 +552,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                     // Remove the user_id from the mod data before upserting.
                     $insertModData = array_map(fn ($mod) => Arr::except($mod, 'users'), $modData);
 
-                    Mod::upsert($insertModData, ['hub_id'], [
+                    Mod::withoutGlobalScopes()->upsert($insertModData, ['hub_id'], [
                         'name',
                         'slug',
                         'teaser',
@@ -561,6 +564,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'contains_ai_content',
                         'contains_ads',
                         'disabled',
+                        'published_at',
                         'created_at',
                         'updated_at',
                     ]);
@@ -678,13 +682,14 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'virus_total_link' => $optionVirusTotal?->virus_total_link ?? '',
                         'downloads' => max((int) $version->downloads, 0), // At least 0.
                         'disabled' => (bool) $version->isDisabled,
+                        'published_at' => Carbon::parse($version->uploadTime, 'UTC'),
                         'created_at' => Carbon::parse($version->uploadTime, 'UTC'),
                         'updated_at' => Carbon::parse($version->uploadTime, 'UTC'),
                     ];
                 }
 
                 if (! empty($insertData)) {
-                    ModVersion::upsert($insertData, ['hub_id'], [
+                    ModVersion::withoutGlobalScopes()->upsert($insertData, ['hub_id'], [
                         'mod_id',
                         'version',
                         'description',
@@ -692,6 +697,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'spt_version_id',
                         'virus_total_link',
                         'downloads',
+                        'published_at',
                         'created_at',
                         'updated_at',
                     ]);
