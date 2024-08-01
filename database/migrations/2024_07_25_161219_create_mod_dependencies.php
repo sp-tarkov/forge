@@ -25,6 +25,8 @@ return new class extends Migration
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
             $table->timestamps();
+
+            $table->unique(['mod_version_id', 'dependency_mod_id', 'version_constraint'], 'mod_dependencies_unique');
         });
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\CircularDependencyException;
 use App\Models\Mod;
 use App\Models\ModDependency;
 use App\Models\ModVersion;
@@ -19,13 +20,12 @@ it('resolves mod version dependency when mod version is created', function () {
 
     // Create versions for Mod A that depends on Mod B
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '^1.0.0',
     ]);
 
     $modDependency->refresh();
+
     expect($modDependency->resolvedVersion->version)->toBe('1.1.1');
 });
 
@@ -41,9 +41,7 @@ it('resolves mod version dependency when mod version is updated', function () {
 
     // Create versions for Mod A that depends on Mod B
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '^1.0.0',
     ]);
 
@@ -69,9 +67,7 @@ it('resolves mod version dependency when mod version is deleted', function () {
 
     // Create versions for Mod A that depends on Mod B
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '^1.0.0',
     ]);
 
@@ -98,9 +94,7 @@ it('resolves mod version dependency after semantic version constraint is updated
 
     // Create versions for Mod A that depends on Mod B
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '^1.0.0',
     ]);
 
@@ -126,9 +120,7 @@ it('resolves mod version dependency with exact semantic version constraint', fun
 
     // Create versions for Mod A that depends on Mod B
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '1.1.0',
     ]);
 
@@ -150,9 +142,7 @@ it('resolves mod version dependency with complex semantic version constraint', f
 
     // Create versions for Mod A that depends on Mod B
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '>=1.0.0 <2.0.0',
     ]);
 
@@ -171,9 +161,7 @@ it('resolves null when no mod versions are available', function () {
 
     // Create version for Mod A that has no resolvable dependency
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '^1.0.0',
     ]);
 
@@ -192,9 +180,7 @@ it('resolves null when no mod versions match against semantic version constraint
 
     // Create version for Mod A that has no resolvable dependency
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
-    $modDependency = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '~1.2.0',
     ]);
 
@@ -220,14 +206,10 @@ it('resolves multiple dependencies', function () {
     // Creating a version for Mod A that depends on Mod B and Mod C
     $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
 
-    $modDependencyB = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modB->id,
+    $modDependencyB = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '^1.0.0',
     ]);
-    $modDependencyC = ModDependency::create([
-        'mod_version_id' => $modAv1->id,
-        'dependency_mod_id' => $modC->id,
+    $modDependencyC = ModDependency::factory()->recycle([$modAv1, $modC])->create([
         'version_constraint' => '^1.0.0',
     ]);
 
@@ -237,3 +219,20 @@ it('resolves multiple dependencies', function () {
     $modDependencyC->refresh();
     expect($modDependencyC->resolvedVersion->version)->toBe('1.1.1');
 });
+
+it('throws exception when there is a circular version dependency', function () {
+    $modA = Mod::factory()->create(['name' => 'Mod A']);
+    $modAv1 = ModVersion::factory()->recycle($modA)->create(['version' => '1.0.0']);
+
+    $modB = Mod::factory()->create(['name' => 'Mod B']);
+    $modBv1 = ModVersion::factory()->recycle($modB)->create(['version' => '1.0.0']);
+
+    $modDependencyAtoB = ModDependency::factory()->recycle([$modAv1, $modB])->create([
+        'version_constraint' => '1.0.0',
+    ]);
+
+    // Create circular dependencies
+    $modDependencyBtoA = ModDependency::factory()->recycle([$modBv1, $modA])->create([
+        'version_constraint' => '1.0.0',
+    ]);
+})->throws(CircularDependencyException::class);
