@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\License;
 use App\Models\Mod;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Random\RandomException;
 
@@ -30,8 +31,9 @@ class ModFactory extends Factory
             'featured' => fake()->boolean(),
             'contains_ai_content' => fake()->boolean(),
             'contains_ads' => fake()->boolean(),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
         ];
     }
 

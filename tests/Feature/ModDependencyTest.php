@@ -3,6 +3,9 @@
 use App\Models\Mod;
 use App\Models\ModDependency;
 use App\Models\ModVersion;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 it('resolves mod version dependency when mod version is created', function () {
     $modA = Mod::factory()->create(['name' => 'Mod A']);
