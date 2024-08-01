@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Exceptions\CircularDependencyException;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModDependency;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
@@ -46,6 +48,31 @@ class DatabaseSeeder extends Seeder
         }
 
         // Add 1000 mod versions, assigning them to the mods we just created.
-        ModVersion::factory(1000)->recycle([$mods, $spt_versions])->create();
+        $modVersions = ModVersion::factory(1000)->recycle([$mods, $spt_versions])->create();
+
+        // Add ModDependencies to a subset of ModVersions.
+        foreach ($modVersions as $modVersion) {
+            $hasDependencies = rand(0, 100) < 30; // 30% chance to have dependencies
+            if ($hasDependencies) {
+                $numDependencies = rand(1, 3); // 1 to 3 dependencies
+                $dependencyMods = $mods->random($numDependencies);
+                foreach ($dependencyMods as $dependencyMod) {
+                    try {
+                        ModDependency::factory()->recycle([$modVersion, $dependencyMod])->create([
+                            'version_constraint' => $this->generateVersionConstraint(),
+                        ]);
+                    } catch (CircularDependencyException $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
+    private function generateVersionConstraint(): string
+    {
+        $versionConstraints = ['*', '^1.0.0', '>=2.0.0', '~1.1.0', '>=1.2.0 <2.0.0'];
+
+        return $versionConstraints[array_rand($versionConstraints)];
     }
 }

@@ -9,6 +9,7 @@
         "ext-curl": "*",
         "ext-intl": "*",
         "aws/aws-sdk-php": "^3.314",
+        "composer/semver": "^3.4",
         "filament/filament": "^3.2",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.11",
@@ -52,7 +53,7 @@
     },
     "scripts": {
         "phpstan": [
-            "./vendor/bin/phpstan analyse -c phpstan.neon --debug --memory-limit=2G"
+            "./vendor/bin/phpstan analyse --configuration phpstan.neon --error-format=table --memory-limit=2G"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

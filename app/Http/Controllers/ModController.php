@@ -31,20 +31,23 @@ class ModController extends Controller
             ->with([
                 'versions',
                 'versions.sptVersion',
-                'latestVersion',
-                'latestVersion.sptVersion',
+                'versions.dependencies',
+                'versions.dependencies.resolvedVersion',
+                'versions.dependencies.resolvedVersion.mod',
                 'users:id,name',
                 'license:id,name,link',
             ])
-            ->find($modId);
+            ->findOrFail($modId);
 
-        if (! $mod || $mod->slug !== $slug) {
+        if ($mod->slug !== $slug) {
             abort(404);
         }
 
         $this->authorize('view', $mod);
 
-        return view('mod.show', compact('mod'));
+        $latestVersion = $mod->versions->sortByDesc('created_at')->first();
+
+        return view('mod.show', compact(['mod', 'latestVersion']));
     }
 
     public function update(ModRequest $request, Mod $mod)

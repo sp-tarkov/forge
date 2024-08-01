@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\DisabledScope;
+use App\Models\Scopes\PublishedScope;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,8 @@ use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
 /**
+ * @property int $id
+ * @property string $name
  * @property string $slug
  */
 class Mod extends Model
@@ -26,6 +29,8 @@ class Mod extends Model
     {
         // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
+        // Apply the global scope to exclude non-published mods.
+        static::addGlobalScope(new PublishedScope);
     }
 
     /**
@@ -79,6 +84,7 @@ class Mod extends Model
             'featured' => $this->featured,
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
+            'published_at' => strtotime($this->published_at),
             'latestVersion' => $latestVersion?->sptVersion->version,
             'latestVersionColorClass' => $latestVersion?->sptVersion->color_class,
         ];
