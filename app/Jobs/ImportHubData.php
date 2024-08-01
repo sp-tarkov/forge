@@ -582,7 +582,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     {
         // Alright, hear me out... Shut up.
 
-        $converter = new HtmlConverter();
+        $converter = new HtmlConverter;
         $clean = Purify::clean($dirty);
 
         return $converter->convert($clean);

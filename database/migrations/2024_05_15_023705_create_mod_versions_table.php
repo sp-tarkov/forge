@@ -33,6 +33,7 @@ return new class extends Migration
             $table->unsignedBigInteger('downloads');
             $table->boolean('disabled')->default(false);
             $table->softDeletes();
+            $table->timestamp('published_at')->nullable()->default(null);
             $table->timestamps();
 
             $table->index(['mod_id', 'deleted_at', 'disabled', 'version'], 'mod_versions_filtering_index');
