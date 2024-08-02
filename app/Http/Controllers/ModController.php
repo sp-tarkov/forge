@@ -6,6 +6,7 @@ use App\Http\Requests\ModRequest;
 use App\Http\Resources\ModResource;
 use App\Models\Mod;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Log;
 
 class ModController extends Controller
 {
@@ -15,7 +16,9 @@ class ModController extends Controller
     {
         $this->authorize('viewAny', Mod::class);
 
-        return ModResource::collection(Mod::all());
+        $mods = ModResource::collection(Mod::all());
+
+        return view('mod.index', compact(['mods']));
     }
 
     public function store(ModRequest $request)
