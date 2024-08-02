@@ -4,15 +4,16 @@ namespace App\Policies;
 
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class ModPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(?User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
