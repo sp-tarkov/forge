@@ -64,10 +64,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileAuthorsLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_author');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_author (
-            fileID INT,
-            userID INT
-        )');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_author (fileID INT, userID INT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_author')
@@ -88,11 +85,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileOptionsLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_option_values (
-            fileID INT,
-            optionID INT,
-            optionValue VARCHAR(255)
-        )');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_option_values (fileID INT, optionID INT, optionValue VARCHAR(255)) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_option_value')
@@ -114,12 +107,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileContentLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_content (
-            fileID INT,
-            subject VARCHAR(255),
-            teaser VARCHAR(255),
-            message LONGTEXT
-        )');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_content (fileID INT, subject VARCHAR(255), teaser VARCHAR(255), message LONGTEXT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_content')
@@ -142,10 +130,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileVersionLabelsLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_version_labels');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_version_labels (
-            labelID INT,
-            objectID INT
-        )');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_version_labels (labelID INT, objectID INT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('wcf1_label_object')
@@ -167,10 +152,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileVersionContentLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_version_content');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_version_content (
-            versionID INT,
-            description TEXT
-        )');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_version_content (versionID INT, description TEXT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_version_content')
