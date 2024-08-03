@@ -1,3 +1,6 @@
+This has been migrated to the SPT Gitea instance here:  
+https://dev.sp-tarkov.com/SPT/forge
+
 <p align="center"><a href="https://forge.sp-tarkov.com" target="_blank"><img src="logo.spt.png" width="400" alt="Single Player Tarkov Logo"></a></p>
 <h1 align="center"><em>The Forge</em></h1>
 <p align="center">
