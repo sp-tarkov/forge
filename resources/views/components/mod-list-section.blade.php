@@ -1,7 +1,7 @@
 @foreach ($sections as $section)
     @include('components.mod-list-section-partial', [
         'title' => $section['title'],
-        'mod.index' => $section['mod.index'],
+        'mods' => $section['mods'],
         'versionScope' => $section['versionScope'],
     ])
 @endforeach
