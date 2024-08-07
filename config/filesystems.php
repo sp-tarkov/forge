@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Asset Upload Disk
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the default filesystem disk that assets should be
+    | uploaded to. Typically, this will be either the "public" or "r2" disk.
+    |
+    */
+
+    'asset_upload' => env('ASSET_UPLOAD_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

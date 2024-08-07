@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Traits\HasCoverPhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use Bannable;
     use HasApiTokens;
+    use HasCoverPhoto;
     use HasFactory;
     use HasProfilePhoto;
     use Notifiable;
@@ -135,6 +137,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the disk that profile photos should be stored on.
+     */
+    protected function profilePhotoDisk(): string
+    {
+        return config('filesystems.asset_upload', 'public');
+    }
+
+    /**
      * The attributes that should be cast to native types.
      */
     protected function casts(): array
@@ -143,16 +153,5 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    /**
-     * Get the disk that profile photos should be stored on.
-     */
-    protected function profilePhotoDisk(): string
-    {
-        return match (config('app.env')) {
-            'production' => 'r2', // Cloudflare R2 Storage
-            default => 'public', // Local
-        };
     }
 }
