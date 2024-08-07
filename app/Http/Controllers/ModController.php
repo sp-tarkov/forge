@@ -6,7 +6,6 @@ use App\Http\Requests\ModRequest;
 use App\Http\Resources\ModResource;
 use App\Models\Mod;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Log;
 
 class ModController extends Controller
 {
@@ -16,7 +15,12 @@ class ModController extends Controller
     {
         $this->authorize('viewAny', Mod::class);
 
-        $mods = ModResource::collection(Mod::all());
+        $mods = Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
+            ->withTotalDownloads()
+            ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
+            ->whereHas('latestVersion')
+            ->latest()
+            ->paginate(12);
 
         return view('mod.index', compact(['mods']));
     }
