@@ -30,11 +30,13 @@ class UserResource extends JsonResource
                     ],
                 ],
             ],
+
             // TODO: Provide 'included' data for attached 'user_role'
             //'included' => [new UserRoleResource($this->role)],
 
-            // TODO: Provide 'links.self' to user profile:
-            //'links' => ['self' => '#'],
+            'links' => [
+                'self' => $this->profileUrl(),
+            ],
         ];
     }
 }
