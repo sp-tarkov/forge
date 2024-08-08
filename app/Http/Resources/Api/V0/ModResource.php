@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V0;
 
+use App\Http\Controllers\Api\V0\ApiController;
 use App\Models\Mod;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -35,23 +36,29 @@ class ModResource extends JsonResource
                 'published_at' => $this->published_at,
             ],
             'relationships' => [
-                'users' => [
-                    'data' => $this->users->map(fn ($user) => [
+                'users' => $this->users->map(fn ($user) => [
+                    'data' => [
                         'type' => 'user',
                         'id' => $user->id,
-                    ])->toArray(),
-
-                    // TODO: Provide 'links.self' to user profile
-                    //'links' => ['self' => '#'],
-                ],
+                    ],
+                    'links' => [
+                        'self' => $user->profileUrl(),
+                    ],
+                ])->toArray(),
                 'license' => [
-                    'data' => [
-                        'type' => 'license',
-                        'id' => $this->license_id,
+                    [
+                        'data' => [
+                            'type' => 'license',
+                            'id' => $this->license_id,
+                        ],
                     ],
                 ],
             ],
-            'included' => $this->users->map(fn ($user) => new UserResource($user)),
+
+            'includes' => $this->when(
+                ApiController::shouldInclude('users'),
+                fn () => $this->users->map(fn ($user) => new UserResource($user))
+            ),
 
             // TODO: Provide 'included' data for attached 'license':
             //new LicenseResource($this->license)

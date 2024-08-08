@@ -25,6 +25,9 @@ class Mod extends Model
 {
     use HasFactory, Searchable, SoftDeletes;
 
+    /**
+     * Post boot method to configure the model.
+     */
     protected static function booted(): void
     {
         // Apply the global scope to exclude disabled mods.
@@ -34,18 +37,24 @@ class Mod extends Model
     }
 
     /**
-     * The users that belong to the mod.
+     * The relationship between a mod and its users.
      */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
 
+    /**
+     * The relationship between a mod and its license.
+     */
     public function license(): BelongsTo
     {
         return $this->belongsTo(License::class);
     }
 
+    /**
+     * The relationship between a mod and its versions.
+     */
     public function versions(): HasMany
     {
         return $this->hasMany(ModVersion::class)->orderByDesc('version');
@@ -62,6 +71,9 @@ class Mod extends Model
         ]);
     }
 
+    /**
+     * The relationship between a mod and its last updated version.
+     */
     public function lastUpdatedVersion(): HasOne
     {
         return $this->hasOne(ModVersion::class)
@@ -69,7 +81,7 @@ class Mod extends Model
     }
 
     /**
-     * Get the indexable data array for the model.
+     * The data that is searchable by Scout.
      */
     public function toSearchableArray(): array
     {
@@ -97,11 +109,12 @@ class Mod extends Model
     {
         return $this->hasOne(ModVersion::class)
             ->orderByDesc('version')
+            ->orderByDesc('updated_at')
             ->take(1);
     }
 
     /**
-     * Determine if the model should be searchable.
+     * Determine if the model instance should be searchable.
      */
     public function shouldBeSearchable(): bool
     {
@@ -109,7 +122,7 @@ class Mod extends Model
     }
 
     /**
-     * Get the URL to the thumbnail.
+     * Build the URL to the mod's thumbnail.
      */
     public function thumbnailUrl(): Attribute
     {
@@ -121,7 +134,7 @@ class Mod extends Model
     }
 
     /**
-     * Get the disk where the thumbnail is stored.
+     * Get the disk where the thumbnail is stored based on the current environment.
      */
     protected function thumbnailDisk(): string
     {
@@ -131,6 +144,9 @@ class Mod extends Model
         };
     }
 
+    /**
+     * The attributes that should be cast to native types.
+     */
     protected function casts(): array
     {
         return [
@@ -142,7 +158,7 @@ class Mod extends Model
     }
 
     /**
-     * Ensure the slug is always lower case when retrieved and slugified when saved.
+     * Mutate the slug attribute to always be lower case on get and slugified on set.
      */
     protected function slug(): Attribute
     {

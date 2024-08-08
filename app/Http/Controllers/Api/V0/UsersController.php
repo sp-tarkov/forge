@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api\V0;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V0\StoreUserRequest;
 use App\Http\Requests\Api\V0\UpdateUserRequest;
 use App\Http\Resources\Api\V0\UserResource;
 use App\Models\User;
 
-class UsersController extends Controller
+class UsersController extends ApiController
 {
     /**
      * Display a listing of the resource.

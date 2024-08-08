@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Traits\HasCoverPhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use Bannable;
     use HasApiTokens;
+    use HasCoverPhoto;
     use HasFactory;
     use HasProfilePhoto;
     use Notifiable;
@@ -38,11 +40,17 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_photo_url',
     ];
 
+    /**
+     * The relationship between a user and their mods.
+     */
     public function mods(): BelongsToMany
     {
         return $this->belongsToMany(Mod::class);
     }
 
+    /**
+     * The data that is searchable by Scout.
+     */
     public function toSearchableArray(): array
     {
         return [
@@ -51,28 +59,25 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /**
+     * Determine if the model instance should be searchable.
+     */
     public function shouldBeSearchable(): bool
     {
         return ! is_null($this->email_verified_at);
     }
 
-    public function assignRole(UserRole $role): bool
-    {
-        $this->role()->associate($role);
-
-        return $this->save();
-    }
-
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(UserRole::class, 'user_role_id');
-    }
-
+    /**
+     * Check if the user has the role of a moderator.
+     */
     public function isMod(): bool
     {
         return Str::lower($this->role?->name) === 'moderator';
     }
 
+    /**
+     * Check if the user has the role of an administrator.
+     */
     public function isAdmin(): bool
     {
         return Str::lower($this->role?->name) === 'administrator';
@@ -94,12 +99,41 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new ResetPassword($token));
     }
 
-    protected function casts(): array
+    /**
+     * Get the relative URL to the user's profile page.
+     */
+    public function profileUrl(): string
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return route('user.show', [
+            'user' => $this->id,
+            'username' => $this->slug(),
+        ]);
+    }
+
+    /**
+     * Get the slug of the user's name.
+     */
+    public function slug(): string
+    {
+        return Str::lower(Str::slug($this->name));
+    }
+
+    /**
+     * Assign a role to the user.
+     */
+    public function assignRole(UserRole $role): bool
+    {
+        $this->role()->associate($role);
+
+        return $this->save();
+    }
+
+    /**
+     * The relationship between a user and their role.
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(UserRole::class, 'user_role_id');
     }
 
     /**
@@ -107,9 +141,17 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected function profilePhotoDisk(): string
     {
-        return match (config('app.env')) {
-            'production' => 'r2', // Cloudflare R2 Storage
-            default => 'public', // Local
-        };
+        return config('filesystems.asset_upload', 'public');
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }

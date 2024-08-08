@@ -8,7 +8,7 @@
     </x-slot>
 
     <x-slot name="form">
-        <!-- Profile Photo -->
+        <!-- Profile Picture -->
         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
             <div x-data="{photoName: null, photoPreview: null}" class="col-span-6 sm:col-span-4">
                 <!-- Profile Photo File Input -->
@@ -24,7 +24,7 @@
                         reader.readAsDataURL($refs.photo.files[0]);
                     " />
 
-                <x-label for="photo" value="{{ __('Photo') }}" />
+                <x-label for="photo" value="{{ __('Profile Picture') }}" />
 
                 <!-- Current Profile Photo -->
                 <div class="mt-2" x-show="! photoPreview">
@@ -51,6 +51,48 @@
                 <x-input-error for="photo" class="mt-2" />
             </div>
         @endif
+
+        <!-- Cover Picture -->
+        <div x-data="{coverName: null, coverPreview: null}" class="col-span-6 sm:col-span-4">
+            <!-- Cover Picture File Input -->
+            <input type="file" id="cover" class="hidden"
+                   wire:model.live="cover"
+                   x-ref="cover"
+                   x-on:change="
+                    coverName = $refs.cover.files[0].name;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        coverPreview = e.target.result;
+                    };
+                    reader.readAsDataURL($refs.cover.files[0]);
+                " />
+
+            <x-label for="cover" value="{{ __('Cover Picture') }}" />
+
+            <!-- Current Cover Photo -->
+            <div class="mt-2" x-show="! coverPreview">
+                <img src="{{ $this->user->cover_photo_url }}" alt="{{ $this->user->name }}" class="rounded-sm h-20 w-60 object-cover">
+            </div>
+
+            <!-- New Cover Photo Preview -->
+            <div class="mt-2" x-show="coverPreview" style="display: none;">
+                <span class="block h-20 w-60 bg-cover bg-no-repeat bg-center"
+                      x-bind:style="'background-image: url(\'' + coverPreview + '\');'">
+                </span>
+            </div>
+
+            <x-secondary-button class="mt-2 me-2" type="button" x-on:click.prevent="$refs.cover.click()">
+                {{ __('Select A New Cover Photo') }}
+            </x-secondary-button>
+
+            @if ($this->user->cover_photo_path)
+                <x-secondary-button type="button" class="mt-2" wire:click="deleteCoverPhoto">
+                    {{ __('Remove Cover Photo') }}
+                </x-secondary-button>
+            @endif
+
+            <x-input-error for="cover" class="mt-2" />
+        </div>
 
         <!-- Name -->
         <div class="col-span-6 sm:col-span-4">
@@ -88,7 +130,7 @@
             {{ __('Saved.') }}
         </x-action-message>
 
-        <x-button wire:loading.attr="disabled" wire:target="photo">
+        <x-button wire:loading.attr="disabled" wire:target="photo,cover">
             {{ __('Save') }}
         </x-button>
     </x-slot>

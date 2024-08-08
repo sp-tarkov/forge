@@ -21,7 +21,9 @@
                                     {{ $mod->{$versionScope}->sptVersion->version }}
                                 </span>
                             </div>
-                            <p class="text-sm italic text-slate-600 dark:text-gray-200">By {{ $mod->users->pluck('name')->implode(', ') }}</p>
+                            <p class="text-sm italic text-slate-600 dark:text-gray-200">
+                                By {{ $mod->users->pluck('name')->implode(', ') }}
+                            </p>
                             <p class="mt-2 text-slate-500 dark:text-gray-300">{{ $mod->teaser }}</p>
                         </div>
                         <x-mod-list-stats :mod="$mod" :modVersion="$mod->{$versionScope}"/>
