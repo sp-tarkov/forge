@@ -19,6 +19,7 @@ class ModResource extends JsonResource
             'type' => 'mod',
             'id' => $this->id,
             'attributes' => [
+                'hub_id' => $this->hub_id,
                 'name' => $this->name,
                 'slug' => $this->slug,
                 'teaser' => $this->teaser,

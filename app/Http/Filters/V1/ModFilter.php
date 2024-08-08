@@ -7,8 +7,35 @@ use Illuminate\Support\Str;
 
 class ModFilter extends QueryFilter
 {
+    protected array $sortable = [
+        'name',
+        'slug',
+        'teaser',
+        'source_code_link',
+        'featured',
+        'contains_ads',
+        'contains_ai_content',
+        'created_at',
+        'updated_at',
+        'published_at',
+    ];
+
     // TODO: Many of these are repeated across UserFilter and ModFilter. Consider refactoring into a shared trait.
     //       Also, consider using common filter types and making the field names dynamic.
+
+    public function id(string $value): Builder
+    {
+        $ids = array_map('trim', explode(',', $value));
+
+        return $this->builder->whereIn('id', $ids);
+    }
+
+    public function hub_id(string $value): Builder
+    {
+        $ids = array_map('trim', explode(',', $value));
+
+        return $this->builder->whereIn('hub_id', $ids);
+    }
 
     public function name(string $value): Builder
     {
@@ -45,7 +72,7 @@ class ModFilter extends QueryFilter
     public function created_at(string $value): Builder
     {
         // The API allows for a range of dates to be passed as a comma-separated list.
-        $dates = explode(',', $value);
+        $dates = array_map('trim', explode(',', $value));
         if (count($dates) > 1) {
             return $this->builder->whereBetween('created_at', $dates);
         }
@@ -56,7 +83,7 @@ class ModFilter extends QueryFilter
     public function updated_at(string $value): Builder
     {
         // The API allows for a range of dates to be passed as a comma-separated list.
-        $dates = explode(',', $value);
+        $dates = array_map('trim', explode(',', $value));
         if (count($dates) > 1) {
             return $this->builder->whereBetween('updated_at', $dates);
         }
@@ -67,7 +94,7 @@ class ModFilter extends QueryFilter
     public function published_at(string $value): Builder
     {
         // The API allows for a range of dates to be passed as a comma-separated list.
-        $dates = explode(',', $value);
+        $dates = array_map('trim', explode(',', $value));
         if (count($dates) > 1) {
             return $this->builder->whereBetween('published_at', $dates);
         }
