@@ -45,6 +45,19 @@ class ModResource extends JsonResource
                         'self' => $user->profileUrl(),
                     ],
                 ])->toArray(),
+                'versions' => $this->versions->map(fn ($version) => [
+                    'data' => [
+                        'type' => 'version',
+                        'id' => $version->id,
+                    ],
+
+                    // TODO: The download link to the version can be placed here, but I'd like to track the number of
+                    //       downloads that are made, so we'll need a new route/feature for that. #35
+                    'links' => [
+                        'self' => $version->link,
+                    ],
+
+                ])->toArray(),
                 'license' => [
                     [
                         'data' => [
@@ -54,15 +67,17 @@ class ModResource extends JsonResource
                     ],
                 ],
             ],
-
             'includes' => $this->when(
-                ApiController::shouldInclude('users'),
-                fn () => $this->users->map(fn ($user) => new UserResource($user))
+                ApiController::shouldInclude(['users', 'license', 'versions']),
+                fn () => collect([
+                    'users' => $this->users->map(fn ($user) => new UserResource($user)),
+                    'license' => new LicenseResource($this->license),
+                    'versions' => $this->versions->map(fn ($version) => new ModVersionResource($version)),
+                ])
+                    ->filter(fn ($value, $key) => ApiController::shouldInclude($key))
+                    ->flatten(1)
+                    ->values()
             ),
-
-            // TODO: Provide 'included' data for attached 'license':
-            //new LicenseResource($this->license)
-
             'links' => [
                 'self' => route('mod.show', [
                     'mod' => $this->id,

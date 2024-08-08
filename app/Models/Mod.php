@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -142,6 +144,14 @@ class Mod extends Model
             'production' => 'r2', // Cloudflare R2 Storage
             default => 'public', // Local
         };
+    }
+
+    /**
+     * Scope a query by applying QueryFilter filters.
+     */
+    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    {
+        return $filters->apply($builder);
     }
 
     /**
