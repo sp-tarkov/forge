@@ -35,7 +35,7 @@
                                 <a href="{{ $user->profileUrl() }}" class="text-slate-600 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
-                        <p>{{ Number::format($mod->total_downloads) }} {{ __('Downloads') }}</p>
+                        <p title="{{ __('Exactly') }} {{ $mod->total_downloads }}">{{ Number::downloads($mod->total_downloads) }} {{ __('Downloads') }}</p>
                         <p class="mt-2">
                             <span class="badge-version {{ $latestVersion->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                 {{ $latestVersion->sptVersion->version }} {{ __('Compatible') }}
@@ -97,7 +97,7 @@
                                     <a class="text-2xl font-extrabold" href="{{ $version->link }}">
                                         {{ __('Version') }} {{ $version->version }}
                                     </a>
-                                    <p class="text-gray-700 dark:text-gray-300">{{ Number::forhumans($version->downloads) }} {{ __('Downloads') }}</p>
+                                    <p class="text-gray-700 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <span class="badge-version {{ $version->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
