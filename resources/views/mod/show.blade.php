@@ -109,13 +109,15 @@
                                     <span>{{ __('Created') }} {{ $version->created_at->format("M d, h:m a") }}</span>
                                     <span>{{ __('Updated') }} {{ $version->updated_at->format("M d, h:m a") }}</span>
                                 </div>
-                                @if ($version->dependencies->count())
+                                @if ($version->dependencies->isNotEmpty() && $version->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
                                     <div class="text-gray-600 dark:text-gray-400">
                                         {{ __('Dependencies:') }}
                                         @foreach ($version->dependencies as $dependency)
-                                            <a href="{{ route('mod.show', [$dependency->resolvedVersion->mod->id, $dependency->resolvedVersion->mod->slug]) }}">
-                                                {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
-                                            </a>@if (!$loop->last), @endif
+                                            @if ($dependency->resolvedVersion?->mod)
+                                                <a href="{{ route('mod.show', [$dependency->resolvedVersion->mod->id, $dependency->resolvedVersion->mod->slug]) }}">
+                                                    {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
+                                                </a>@if (!$loop->last), @endif
+                                            @endif
                                         @endforeach
                                     </div>
                                 @endif
@@ -177,7 +179,7 @@
                             </p>
                         </li>
                     @endif
-                    @if ($latestVersion->dependencies->count())
+                    @if ($latestVersion->dependencies->isNotEmpty() && $latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
