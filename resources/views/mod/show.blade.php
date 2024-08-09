@@ -48,6 +48,11 @@
             {{-- Tabs --}}
             <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-2 flex flex-col gap-6">
                 <div>
+                    {{-- Mobile Download Button --}}
+                    <a href="{{ $latestVersion->link }}" class="block lg:hidden mb-6">
+                        <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $latestVersion->version }})</button>
+                    </a>
+
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
                         <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
@@ -133,8 +138,8 @@
         {{-- Right Column --}}
         <div class="col-span-1 flex flex-col gap-6">
 
-            {{-- Main Download Button --}}
-            <a href="{{ $latestVersion->link }}" class="block">
+            {{-- Desktop Download Button --}}
+            <a href="{{ $latestVersion->link }}" class="hidden lg:block">
                 <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $latestVersion->version }})</button>
             </a>
 
