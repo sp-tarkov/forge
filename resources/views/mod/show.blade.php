@@ -6,7 +6,7 @@
         </h2>
     </x-slot>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto py-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
 
             {{-- Main Mod Details Card --}}
@@ -22,15 +22,12 @@
                     </div>
                     <div class="grow flex flex-col justify-center items-center sm:items-start text-gray-800 dark:text-gray-200">
                         <div class="flex justify-between items-center space-x-3">
-                            <h2 class="pb-1 sm:p-0 text-3xl font-bold text-gray-900 dark:text-white">
+                            <h2 class="pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 {{ $mod->name }}
                                 <span class="font-light text-nowrap text-gray-700 dark:text-gray-400">
                                     {{ $latestVersion->version }}
                                 </span>
                             </h2>
-                            <span class="badge-version {{ $latestVersion->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                {{ $latestVersion->sptVersion->version }}
-                            </span>
                         </div>
                         <p>
                             {{ __('Created by') }}
@@ -38,8 +35,12 @@
                                 <a href="{{ $user->profileUrl() }}" class="text-slate-600 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
-                        <p>{{ $latestVersion->sptVersion->version }} {{ __('Compatible') }}</p>
                         <p>{{ Number::format($mod->total_downloads) }} {{ __('Downloads') }}</p>
+                        <p class="mt-2">
+                            <span class="badge-version {{ $latestVersion->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                {{ $latestVersion->sptVersion->version }} {{ __('Compatible') }}
+                            </span>
+                        </p>
                     </div>
                 </div>
             </div>
