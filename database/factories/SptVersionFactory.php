@@ -13,7 +13,7 @@ class SptVersionFactory extends Factory
     public function definition(): array
     {
         return [
-            'version' => $this->faker->numerify('1.#.#'),
+            'version' => $this->faker->numerify('SPT 1.#.#'),
             'color_class' => $this->faker->randomElement(['red', 'green', 'emerald', 'lime', 'yellow', 'grey']),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

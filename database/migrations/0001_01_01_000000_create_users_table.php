@@ -29,7 +29,8 @@ return new class extends Migration
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
             $table->rememberToken();
-            $table->string('profile_photo_path', 2048)->nullable();
+            $table->string('profile_photo_path', 2048)->nullable()->default(null);
+            $table->string('cover_photo_path', 2048)->nullable()->default(null);
             $table->timestamps();
         });
 

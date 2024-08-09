@@ -36,6 +36,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     {
         // Stream some data locally so that we don't have to keep accessing the Hub's database. Use MySQL temporary
         // tables to store the data to save on memory; we don't want this to be a hog.
+        $this->bringUserAvatarLocal();
         $this->bringFileAuthorsLocal();
         $this->bringFileOptionsLocal();
         $this->bringFileContentLocal();
@@ -56,6 +57,34 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         Artisan::call('app:search-sync');
 
         Artisan::call('cache:clear');
+    }
+
+    /**
+     * Bring the user avatar table from the Hub database to the local database temporary table.
+     */
+    protected function bringUserAvatarLocal(): void
+    {
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_user_avatar');
+        DB::statement('CREATE TEMPORARY TABLE temp_user_avatar (
+            avatarID INT,
+            avatarExtension VARCHAR(255),
+            userID INT,
+            fileHash VARCHAR(255)
+        )');
+
+        DB::connection('mysql_hub')
+            ->table('wcf1_user_avatar')
+            ->orderBy('avatarID')
+            ->chunk(200, function ($avatars) {
+                foreach ($avatars as $avatar) {
+                    DB::table('temp_user_avatar')->insert([
+                        'avatarID' => (int) $avatar->avatarID,
+                        'avatarExtension' => $avatar->avatarExtension,
+                        'userID' => (int) $avatar->userID,
+                        'fileHash' => $avatar->fileHash,
+                    ]);
+                }
+            });
     }
 
     /**
@@ -172,15 +201,33 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     protected function importUsers(): void
     {
+        // Initialize a cURL handler for downloading mod thumbnails.
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+
         DB::connection('mysql_hub')
             ->table('wcf1_user as u')
-            ->select('u.userID', 'u.username', 'u.email', 'u.password', 'u.registrationDate', 'u.banned', 'u.banReason', 'u.banExpires', 'u.rankID', 'r.rankTitle')
+            ->select(
+                'u.userID',
+                'u.username',
+                'u.email',
+                'u.password',
+                'u.registrationDate',
+                'u.banned',
+                'u.banReason',
+                'u.banExpires',
+                'u.coverPhotoHash',
+                'u.coverPhotoExtension',
+                'u.rankID',
+                'r.rankTitle',
+            )
             ->leftJoin('wcf1_user_rank as r', 'u.rankID', '=', 'r.rankID')
-            ->chunkById(250, function (Collection $users) {
+            ->chunkById(250, function (Collection $users) use ($curl) {
                 $userData = $bannedUsers = $userRanks = [];
 
                 foreach ($users as $user) {
-                    $userData[] = $this->collectUserData($user);
+                    $userData[] = $this->collectUserData($curl, $user);
 
                     $bannedUserData = $this->collectBannedUserData($user);
                     if ($bannedUserData) {
@@ -197,15 +244,20 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                 $this->handleBannedUsers($bannedUsers);
                 $this->handleUserRoles($userRanks);
             }, 'userID');
+
+        // Close the cURL handler.
+        curl_close($curl);
     }
 
-    protected function collectUserData($user): array
+    protected function collectUserData(CurlHandle $curl, object $user): array
     {
         return [
             'hub_id' => (int) $user->userID,
             'name' => $user->username,
-            'email' => mb_convert_case($user->email, MB_CASE_LOWER, 'UTF-8'),
+            'email' => Str::lower($user->email),
             'password' => $this->cleanPasswordHash($user->password),
+            'profile_photo_path' => $this->fetchUserAvatar($curl, $user),
+            'cover_photo_path' => $this->fetchUserCoverPhoto($curl, $user),
             'created_at' => $this->cleanRegistrationDate($user->registrationDate),
             'updated_at' => now('UTC')->toDateTimeString(),
         ];
@@ -222,6 +274,75 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
 
         // At this point, if the password hash starts with $2, it's a valid Bcrypt hash. Otherwise, it's invalid.
         return str_starts_with($clean, '$2') ? $clean : '';
+    }
+
+    /**
+     * Fetch the user avatar from the Hub and store it anew.
+     */
+    protected function fetchUserAvatar(CurlHandle $curl, object $user): string
+    {
+        // Fetch the user's avatar data from the temporary table.
+        $avatar = DB::table('temp_user_avatar')->where('userID', $user->userID)->first();
+
+        if (! $avatar) {
+            return '';
+        }
+
+        $hashShort = substr($avatar->fileHash, 0, 2);
+        $fileName = $avatar->fileHash.'.'.$avatar->avatarExtension;
+        $hubUrl = 'https://hub.sp-tarkov.com/images/avatars/'.$hashShort.'/'.$avatar->avatarID.'-'.$fileName;
+        $relativePath = 'user-avatars/'.$fileName;
+
+        return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
+    }
+
+    /**
+     * Fetch and store an image from the Hub.
+     */
+    protected function fetchAndStoreImage(CurlHandle $curl, string $hubUrl, string $relativePath): string
+    {
+        // Determine the disk to use based on the environment.
+        $disk = match (config('app.env')) {
+            'production' => 'r2', // Cloudflare R2 Storage
+            default => 'public', // Local
+        };
+
+        // Check to make sure the image doesn't already exist.
+        if (Storage::disk($disk)->exists($relativePath)) {
+            return $relativePath; // Already exists, return the path.
+        }
+
+        // Download the image using the cURL handler.
+        curl_setopt($curl, CURLOPT_URL, $hubUrl);
+        $image = curl_exec($curl);
+
+        if ($image === false) {
+            Log::error('There was an error attempting to download the image. cURL error: '.curl_error($curl));
+
+            return '';
+        }
+
+        // Store the image on the disk.
+        Storage::disk($disk)->put($relativePath, $image);
+
+        return $relativePath;
+    }
+
+    /**
+     * Fetch the user avatar from the Hub and store it anew.
+     */
+    protected function fetchUserCoverPhoto(CurlHandle $curl, object $user): string
+    {
+        if (empty($user->coverPhotoHash) || empty($user->coverPhotoExtension)) {
+            return '';
+        }
+
+        $hashShort = substr($user->coverPhotoHash, 0, 2);
+        $fileName = $user->coverPhotoHash.'.'.$user->coverPhotoExtension;
+        $hubUrl = 'https://hub.sp-tarkov.com/images/coverPhotos/'.$hashShort.'/'.$user->userID.'-'.$fileName;
+        $relativePath = 'user-covers/'.$fileName;
+
+        return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
     }
 
     /**
@@ -295,9 +416,6 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         }
     }
 
-    /*
-     * Build an array of user rank data ready to be inserted into the local database.
-     */
     protected function collectUserRankData($user): ?array
     {
         if ($user->rankID && $user->rankTitle) {
@@ -590,31 +708,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         $hubUrl = 'https://hub.sp-tarkov.com/files/images/file/'.$hashShort.'/'.$fileName;
         $relativePath = 'mods/'.$fileName;
 
-        // Determine the disk to use based on the environment.
-        $disk = match (config('app.env')) {
-            'production' => 'r2', // Cloudflare R2 Storage
-            default => 'public', // Local
-        };
-
-        // Check to make sure the image doesn't already exist.
-        if (Storage::disk($disk)->exists($relativePath)) {
-            return $relativePath; // Already exists, return the path.
-        }
-
-        // Download the image using the cURL handler.
-        curl_setopt($curl, CURLOPT_URL, $hubUrl);
-        $image = curl_exec($curl);
-
-        if ($image === false) {
-            Log::error('There was an error attempting to download a mod thumbnail. cURL error: '.curl_error($curl));
-
-            return '';
-        }
-
-        // Store the image on the disk.
-        Storage::disk($disk)->put($relativePath, $image);
-
-        return $relativePath;
+        return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
     }
 
     /**
@@ -693,6 +787,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     public function failed(Exception $exception): void
     {
         // Explicitly drop the temporary tables.
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_user_avatar');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_author');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_content');

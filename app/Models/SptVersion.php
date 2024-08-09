@@ -11,6 +11,9 @@ class SptVersion extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * The relationship between an SPT version and mod version.
+     */
     public function modVersions(): HasMany
     {
         return $this->hasMany(ModVersion::class);

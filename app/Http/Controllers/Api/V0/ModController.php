@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers\Api\V0;
 
-use App\Http\Controllers\Controller;
+use App\Http\Filters\V1\ModFilter;
 use App\Http\Requests\Api\V0\StoreModRequest;
 use App\Http\Requests\Api\V0\UpdateModRequest;
 use App\Http\Resources\Api\V0\ModResource;
 use App\Models\Mod;
 
-class ModController extends Controller
+class ModController extends ApiController
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(ModFilter $filters)
     {
-        return ModResource::collection(Mod::paginate());
+        return ModResource::collection(Mod::filter($filters)->paginate());
     }
 
     /**

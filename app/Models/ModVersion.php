@@ -19,12 +19,18 @@ class ModVersion extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Post boot method to configure the model.
+     */
     protected static function booted(): void
     {
         static::addGlobalScope(new DisabledScope);
         static::addGlobalScope(new PublishedScope);
     }
 
+    /**
+     * The relationship between a mod version and mod.
+     */
     public function mod(): BelongsTo
     {
         return $this->belongsTo(Mod::class);
@@ -38,6 +44,9 @@ class ModVersion extends Model
         return $this->hasMany(ModDependency::class);
     }
 
+    /**
+     * The relationship between a mod version and SPT version.
+     */
     public function sptVersion(): BelongsTo
     {
         return $this->belongsTo(SptVersion::class);

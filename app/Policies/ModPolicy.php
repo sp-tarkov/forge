@@ -8,7 +8,7 @@ use App\Models\User;
 class ModPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Determine whether the user can view multiple models.
      */
     public function viewAny(?User $user): bool
     {
@@ -16,7 +16,7 @@ class ModPolicy
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Determine whether the user can view a specific model.
      */
     public function view(?User $user, Mod $mod): bool
     {
