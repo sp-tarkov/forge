@@ -15,14 +15,7 @@ class ModController extends Controller
     {
         $this->authorize('viewAny', Mod::class);
 
-        $mods = Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
-            ->withTotalDownloads()
-            ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
-            ->whereHas('latestVersion')
-            ->latest()
-            ->paginate(12);
-
-        return view('mod.index', compact(['mods']));
+        return view('mod.index');
     }
 
     public function store(ModRequest $request)
