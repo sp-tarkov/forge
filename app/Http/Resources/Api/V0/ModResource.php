@@ -80,10 +80,7 @@ class ModResource extends JsonResource
                     ->values()
             ),
             'links' => [
-                'self' => route('mod.show', [
-                    'mod' => $this->id,
-                    'slug' => $this->slug,
-                ]),
+                'self' => $this->detailUrl(),
             ],
         ];
     }

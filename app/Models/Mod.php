@@ -155,6 +155,14 @@ class Mod extends Model
     }
 
     /**
+     * Build the URL to the mod's detail page.
+     */
+    public function detailUrl(): string
+    {
+        return route('mod.show', [$this->id, $this->slug]);
+    }
+
+    /**
      * The attributes that should be cast to native types.
      */
     protected function casts(): array

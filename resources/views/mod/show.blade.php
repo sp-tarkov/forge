@@ -114,7 +114,7 @@
                                         {{ __('Dependencies:') }}
                                         @foreach ($version->dependencies as $dependency)
                                             @if ($dependency->resolvedVersion?->mod)
-                                                <a href="{{ route('mod.show', [$dependency->resolvedVersion->mod->id, $dependency->resolvedVersion->mod->slug]) }}">
+                                                <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}">
                                                     {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
                                                 </a>@if (!$loop->last), @endif
                                             @endif
@@ -184,7 +184,7 @@
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($latestVersion->dependencies as $dependency)
-                                    <a href="{{ route('mod.show', [$dependency->resolvedVersion->mod->id, $dependency->resolvedVersion->mod->slug]) }}">
+                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}">
                                         {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />
                                 @endforeach
