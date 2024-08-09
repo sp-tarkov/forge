@@ -43,16 +43,21 @@
                         </p>
                     </div>
                 </div>
+
+                {{-- Mod teaser --}}
+                @if ($mod->teaser)
+                    <p class="mt-6 pt-3 border-t-2 border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200">{{ $mod->teaser }}</p>
+                @endif
             </div>
+
+            {{-- Mobile Download Button --}}
+            <a href="{{ $latestVersion->link }}" class="block lg:hidden">
+                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $latestVersion->version }})</button>
+            </a>
 
             {{-- Tabs --}}
             <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-2 flex flex-col gap-6">
                 <div>
-                    {{-- Mobile Download Button --}}
-                    <a href="{{ $latestVersion->link }}" class="block lg:hidden mb-6">
-                        <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $latestVersion->version }})</button>
-                    </a>
-
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
                         <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
@@ -84,7 +89,7 @@
 
                 {{-- Mod Description --}}
                 <div x-show="selectedTab === 'description'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
+                    {{-- The description below is safe to write directly because it has been run though HTMLPurifier. --}}
                     {!! Str::markdown($mod->description) !!}
                 </div>
 

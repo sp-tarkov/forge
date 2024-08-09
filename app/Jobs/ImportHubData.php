@@ -633,7 +633,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'users' => $modAuthors,
                         'name' => $modContent?->subject ?? '',
                         'slug' => Str::slug($modContent?->subject ?? ''),
-                        'teaser' => Str::limit($modContent?->teaser ?? ''),
+                        'teaser' => Str::limit($modContent?->teaser ?? '', 255),
                         'description' => $this->cleanHubContent($modContent?->message ?? ''),
                         'thumbnail' => $this->fetchModThumbnail($curl, $mod->fileID, $mod->iconHash, $mod->iconExtension),
                         'license_id' => License::whereHubId($mod->licenseID)->value('id'),
