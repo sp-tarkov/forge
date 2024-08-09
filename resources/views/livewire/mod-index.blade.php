@@ -32,7 +32,11 @@
             {{-- section filters --}}
             <div class="hidden sm:block my-4">
                 <nav class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
-                    <button wire:click="changeSection('new')" class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10" aria-current="page">
+                    <button wire:click="changeSection('featured')" class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                        <span>{{ __('Featured') }}</span>
+                        <span aria-hidden="true" class="{{ $sectionFilter === 'featured' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5' }}"></span>
+                    </button>
+                    <button wire:click="changeSection('new')" class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
                         <span>{{ __('New') }}</span>
                         <span aria-hidden="true" class="{{ $sectionFilter === 'new' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5' }}"></span>
                     </button>

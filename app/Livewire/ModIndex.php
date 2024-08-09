@@ -13,14 +13,17 @@ class ModIndex extends Component
 
     public $modSearch = '';
 
-    public $sectionFilter = 'new';
+    public $sectionFilter = 'featured';
 
     public function render()
     {
-        // 'new' section is default
-        $section = 'created_at';
+        // 'featured' section is default
+        $section = 'featured';
 
         switch ($this->sectionFilter) {
+            case 'new':
+                $section = 'created_at';
+                break;
             case 'most_downloaded':
                 $section = 'total_downloads';
                 break;
