@@ -12,17 +12,17 @@
                 @endif
             </div>
             <div class="flex flex-col w-full justify-between p-5">
-                <div>
+                <div class="pb-3">
                     <div class="flex justify-between items-center space-x-3">
                         <h3 class="block mt-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
                         <span class="badge-version {{ $mod->{$versionScope}->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                    {{ $mod->{$versionScope}->sptVersion->version }}
-                                </span>
+                                        {{ $mod->{$versionScope}->sptVersion->version }}
+                                    </span>
                     </div>
                     <p class="text-sm italic text-slate-600 dark:text-gray-200">
                         By {{ $mod->users->pluck('name')->implode(', ') }}
                     </p>
-                    <p class="mt-2 text-slate-500 dark:text-gray-300">{{ $mod->teaser }}</p>
+                    <p class="mt-2 text-slate-500 dark:text-gray-300">{{ Str::limit($mod->teaser, 100) }}</p>
                 </div>
                 <x-mod-list-stats :mod="$mod" :modVersion="$mod->{$versionScope}"/>
             </div>
