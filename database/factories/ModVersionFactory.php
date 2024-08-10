@@ -16,15 +16,25 @@ class ModVersionFactory extends Factory
     {
         return [
             'mod_id' => Mod::factory(),
-            'version' => fake()->numerify('1.#.#'),
+            'version' => fake()->numerify('#.#.#'),
             'description' => fake()->text(),
             'link' => fake()->url(),
             'spt_version_id' => SptVersion::factory(),
             'virus_total_link' => fake()->url(),
             'downloads' => fake()->randomNumber(),
-            'disabled' => fake()->boolean(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
         ];
+    }
+
+    /**
+     * Indicate that the mod version should be disabled.
+     */
+    public function disabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'disabled' => true,
+        ]);
     }
 }

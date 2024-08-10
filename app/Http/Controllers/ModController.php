@@ -27,19 +27,27 @@ class ModController extends Controller
 
     public function show(int $modId, string $slug)
     {
-        $mod = Mod::select()
-            ->withTotalDownloads()
-            ->with(['latestSptVersion', 'users:id,name'])
-            ->with('license:id,name,link')
-            ->find($modId);
+        $mod = Mod::withTotalDownloads()
+            ->with([
+                'versions',
+                'versions.sptVersion',
+                'versions.dependencies',
+                'versions.dependencies.resolvedVersion',
+                'versions.dependencies.resolvedVersion.mod',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->findOrFail($modId);
 
-        if (! $mod || $mod->slug !== $slug) {
+        if ($mod->slug !== $slug) {
             abort(404);
         }
 
         $this->authorize('view', $mod);
 
-        return view('mod.show', compact('mod'));
+        $latestVersion = $mod->versions->sortByDesc('version')->first();
+
+        return view('mod.show', compact(['mod', 'latestVersion']));
     }
 
     public function update(ModRequest $request, Mod $mod)

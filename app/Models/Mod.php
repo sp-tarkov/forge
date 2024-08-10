@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\DisabledScope;
+use App\Models\Scopes\PublishedScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,34 +19,47 @@ use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
 /**
+ * @property int $id
+ * @property string $name
  * @property string $slug
  */
 class Mod extends Model
 {
     use HasFactory, Searchable, SoftDeletes;
 
+    /**
+     * Post boot method to configure the model.
+     */
     protected static function booted(): void
     {
         // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
+        // Apply the global scope to exclude non-published mods.
+        static::addGlobalScope(new PublishedScope);
     }
 
     /**
-     * The users that belong to the mod.
+     * The relationship between a mod and its users.
      */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
 
+    /**
+     * The relationship between a mod and its license.
+     */
     public function license(): BelongsTo
     {
         return $this->belongsTo(License::class);
     }
 
+    /**
+     * The relationship between a mod and its versions.
+     */
     public function versions(): HasMany
     {
-        return $this->hasMany(ModVersion::class);
+        return $this->hasMany(ModVersion::class)->orderByDesc('version');
     }
 
     /**
@@ -57,17 +73,21 @@ class Mod extends Model
         ]);
     }
 
+    /**
+     * The relationship between a mod and its last updated version.
+     */
     public function lastUpdatedVersion(): HasOne
     {
-        return $this->hasOne(ModVersion::class)->orderByDesc('updated_at')->with('sptVersion');
+        return $this->hasOne(ModVersion::class)
+            ->orderByDesc('updated_at');
     }
 
     /**
-     * Get the indexable data array for the model.
+     * The data that is searchable by Scout.
      */
     public function toSearchableArray(): array
     {
-        $latestSptVersion = $this->latestSptVersion()->first();
+        $latestVersion = $this->latestVersion()->with('sptVersion')->first();
 
         return [
             'id' => (int) $this->id,
@@ -78,27 +98,25 @@ class Mod extends Model
             'featured' => $this->featured,
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
-            'latestSptVersion' => $latestSptVersion?->sptVersion->version,
-            'latestSptVersionColorClass' => $latestSptVersion?->sptVersion->color_class,
+            'published_at' => strtotime($this->published_at),
+            'latestVersion' => $latestVersion?->sptVersion->version,
+            'latestVersionColorClass' => $latestVersion?->sptVersion->color_class,
         ];
     }
 
-    public function latestSptVersion(): HasOne
+    /**
+     * The relationship to the latest mod version, dictated by the mod version number.
+     */
+    public function latestVersion(): HasOne
     {
         return $this->hasOne(ModVersion::class)
-            ->orderByDesc(
-                SptVersion::select('version')
-                    ->whereColumn('mod_versions.spt_version_id', 'spt_versions.id')
-                    ->orderByDesc('version')
-                    ->take(1),
-            )
-            ->with('sptVersion')
             ->orderByDesc('version')
+            ->orderByDesc('updated_at')
             ->take(1);
     }
 
     /**
-     * Determine if the model should be searchable.
+     * Determine if the model instance should be searchable.
      */
     public function shouldBeSearchable(): bool
     {
@@ -106,7 +124,7 @@ class Mod extends Model
     }
 
     /**
-     * Get the URL to the thumbnail.
+     * Build the URL to the mod's thumbnail.
      */
     public function thumbnailUrl(): Attribute
     {
@@ -118,7 +136,7 @@ class Mod extends Model
     }
 
     /**
-     * Get the disk where the thumbnail is stored.
+     * Get the disk where the thumbnail is stored based on the current environment.
      */
     protected function thumbnailDisk(): string
     {
@@ -128,6 +146,25 @@ class Mod extends Model
         };
     }
 
+    /**
+     * Scope a query by applying QueryFilter filters.
+     */
+    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    {
+        return $filters->apply($builder);
+    }
+
+    /**
+     * Build the URL to the mod's detail page.
+     */
+    public function detailUrl(): string
+    {
+        return route('mod.show', [$this->id, $this->slug]);
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
     protected function casts(): array
     {
         return [
@@ -139,7 +176,7 @@ class Mod extends Model
     }
 
     /**
-     * Ensure the slug is always lower case when retrieved and slugified when saved.
+     * Mutate the slug attribute to always be lower case on get and slugified on set.
      */
     protected function slug(): Attribute
     {

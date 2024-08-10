@@ -207,7 +207,7 @@ return [
             'maxJobs' => 0,
             'memory' => 256,
             'tries' => 1,
-            'timeout' => 900, // 15 Minutes
+            'timeout' => 1500, // 25 Minutes
             'nice' => 0,
         ],
     ],

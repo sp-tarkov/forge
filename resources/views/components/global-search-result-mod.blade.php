@@ -6,7 +6,7 @@
         <img src="{{ Storage::url($result['thumbnail']) }}" alt="{{ $result['name'] }}" class="h-6 w-6 self-center">
     @endif
     <p class="flex-grow">{{ $result['name'] }}</p>
-    <p class="ml-auto self-center badge-version {{ $result['latestSptVersionColorClass'] }} }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-        {{ $result['latestSptVersion'] }}
+    <p class="ml-auto self-center badge-version {{ $result['latestVersionColorClass'] }} }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+        {{ $result['latestVersion'] }}
     </p>
 </a>

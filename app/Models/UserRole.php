@@ -10,6 +10,9 @@ class UserRole extends Model
 {
     use HasFactory;
 
+    /**
+     * The relationship between a user role and users.
+     */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
