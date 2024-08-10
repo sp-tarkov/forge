@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Mod;
+use App\Models\SptVersion;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -11,9 +12,11 @@ class ModIndex extends Component
 {
     use WithPagination;
 
-    public $modSearch = '';
+    public string $modSearch = '';
 
-    public $sectionFilter = 'featured';
+    public string $sectionFilter = 'featured';
+
+    public string $versionFilter = '';
 
     public function render()
     {
@@ -40,11 +43,16 @@ class ModIndex extends Component
             ->withTotalDownloads()
             ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
             ->whereHas('latestVersion')
-            ->where('name', 'like', '%'.Str::trim($this->modSearch).'%') //TODO: Is this how search do? Ref please advise. -waffle
+            ->whereHas('latestVersion.sptVersion', function ($query) {
+                $query->where('version', 'like', '%'.Str::trim($this->versionFilter).'%');
+            })
+            ->where('name', 'like', '%'.Str::trim($this->modSearch).'%')
             ->orderByDesc($section)
             ->paginate(12);
 
-        return view('livewire.mod-index', ['mods' => $mods]);
+        $sptVersions = SptVersion::select(['id', 'version', 'color_class'])->orderByDesc('version')->get();
+
+        return view('livewire.mod-index', ['mods' => $mods, 'sptVersions' => $sptVersions]);
     }
 
     public function changeSection($section): void
