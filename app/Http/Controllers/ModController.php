@@ -45,7 +45,7 @@ class ModController extends Controller
 
         $this->authorize('view', $mod);
 
-        $latestVersion = $mod->versions->sortByDesc('created_at')->first();
+        $latestVersion = $mod->versions->sortByDesc('version')->first();
 
         return view('mod.show', compact(['mod', 'latestVersion']));
     }
