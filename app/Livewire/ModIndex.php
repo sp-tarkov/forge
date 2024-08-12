@@ -16,7 +16,7 @@ class ModIndex extends Component
 
     public string $sectionFilter = 'featured';
 
-    public string $versionFilter = '';
+    public int $versionFilter = -1;
 
     public function render()
     {
@@ -41,14 +41,23 @@ class ModIndex extends Component
 
         $mods = Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
             ->withTotalDownloads()
-            ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
-            ->whereHas('latestVersion')
-            ->whereHas('latestVersion.sptVersion', function ($query) {
-                $query->where('version', 'like', '%'.Str::trim($this->versionFilter).'%');
-            })
-            ->where('name', 'like', '%'.Str::trim($this->modSearch).'%')
-            ->orderByDesc($section)
-            ->paginate(12);
+            ->with(['users:id,name'])
+            ->where('name', 'like', '%'.Str::trim($this->modSearch).'%');
+
+        if ($this->versionFilter === -1) {
+            $mods = $mods
+                ->with(['latestVersion', 'latestVersion.sptVersion'])
+                ->whereHas('latestVersion.sptVersion');
+        } else {
+            $mods = $mods->with(['latestVersion' => function ($query) {
+                $query->where('spt_version_id', $this->versionFilter);
+            }, 'latestVersion.sptVersion'])
+                ->whereHas('latestVersion.sptVersion', function ($query) {
+                    $query->where('spt_version_id', $this->versionFilter);
+                });
+        }
+
+        $mods = $mods->orderByDesc($section)->paginate(12);
 
         $sptVersions = SptVersion::select(['id', 'version', 'color_class'])->orderByDesc('version')->get();
 

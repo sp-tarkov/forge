@@ -69,9 +69,9 @@
             <div class="flex flex-col text-gray-700 bg-gray-300 dark:text-gray-200 dark:bg-gray-950 p-4 rounded-xl">
                 <h2>SPT Version</h2>
                 <select wire:model.live="versionFilter" class="rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
-                    <option disabled value="">Select a version</option>
+                    <option disabled value="-1">Select a version</option>
                     @foreach($sptVersions as $version)
-                        <option value="{{ $version->version }}">{{ $version->version }}</option>
+                        <option value="{{ $version->id }}">{{ $version->version }}</option>
                     @endforeach
                 </select>
             </div>
