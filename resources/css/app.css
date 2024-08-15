@@ -6,7 +6,7 @@
     display: none;
 }
 
-main a:not(.mod-list-component):not(.tab) {
+main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
     @apply underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white;
 }
 

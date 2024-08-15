@@ -34,6 +34,7 @@ class Mod extends Model
     {
         // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
+
         // Apply the global scope to exclude non-published mods.
         static::addGlobalScope(new PublishedScope);
     }

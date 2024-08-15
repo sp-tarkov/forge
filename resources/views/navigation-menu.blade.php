@@ -9,9 +9,7 @@
                 </div>
                 <div class="hidden lg:ml-6 lg:block">
                     <div class="flex space-x-4">
-                        @auth
-                            <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-nav-link>
-                        @endauth
+                        <x-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-nav-link>
                         {{-- additional menu links here --}}
                     </div>
                 </div>
@@ -54,7 +52,15 @@
                                 <span class="sr-only">{{ __('Open user menu') }}</span>
                                 <img class="h-8 w-8 rounded-full" src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}">
                             </button>
-                            <div x-cloak x-show="profileDropdownOpen || openedWithKeyboard" x-transition x-trap="openedWithKeyboard" @click.outside="profileDropdownOpen = false, openedWithKeyboard = false" @keydown.down.prevent="$focus.wrap().next()" @keydown.up.prevent="$focus.wrap().previous()" class="absolute top-11 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-slate-300 bg-slate-100 dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800" role="menu">
+                            <div x-cloak
+                                 x-show="profileDropdownOpen || openedWithKeyboard"
+                                 x-transition
+                                 x-trap="openedWithKeyboard"
+                                 @click.outside="profileDropdownOpen = false, openedWithKeyboard = false"
+                                 @keydown.down.prevent="$focus.wrap().next()"
+                                 @keydown.up.prevent="$focus.wrap().previous()"
+                                 class="absolute top-11 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                 role="menu">
                                 <div class="flex flex-col py-1.5">
                                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-none dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">

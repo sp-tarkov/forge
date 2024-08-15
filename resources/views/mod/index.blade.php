@@ -1,4 +1,3 @@
 <x-app-layout>
-    @livewire('mod-index')
+    @livewire('mod.index')
 </x-app-layout>
-
