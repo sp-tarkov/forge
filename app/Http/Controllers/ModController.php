@@ -15,7 +15,7 @@ class ModController extends Controller
     {
         $this->authorize('viewAny', Mod::class);
 
-        return ModResource::collection(Mod::all());
+        return view('mod.index');
     }
 
     public function store(ModRequest $request)

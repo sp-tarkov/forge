@@ -7,6 +7,7 @@ use App\Models\ModVersion;
 use App\Models\User;
 use App\Observers\ModDependencyObserver;
 use App\Observers\ModVersionObserver;
+use App\Services\LatestSptVersionService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
@@ -19,7 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(LatestSptVersionService::class, function ($app) {
+            return new LatestSptVersionService;
+        });
     }
 
     /**
