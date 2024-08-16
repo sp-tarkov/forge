@@ -87,8 +87,24 @@ class Index extends Component
     public function resetFilters(): void
     {
         $this->query = '';
-        $this->order = 'created';
         $this->sptVersion = $this->getLatestMinorVersions()->pluck('version')->toArray();
         $this->featured = 'include';
+    }
+
+    /**
+     * Compute the count of active filters.
+     */
+    public function getFilterCountProperty(): int
+    {
+        $count = 0;
+        if ($this->query !== '') {
+            $count++;
+        }
+        if ($this->featured !== 'include') {
+            $count++;
+        }
+        $count += count($this->sptVersion);
+
+        return $count;
     }
 }
