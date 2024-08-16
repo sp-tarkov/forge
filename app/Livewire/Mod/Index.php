@@ -6,6 +6,7 @@ use App\Http\Filters\ModFilter;
 use App\Models\SptVersion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -89,12 +90,16 @@ class Index extends Component
         $this->query = '';
         $this->sptVersion = $this->getLatestMinorVersions()->pluck('version')->toArray();
         $this->featured = 'include';
+
+        // Clear local storage
+        $this->dispatch('clear-filters');
     }
 
     /**
      * Compute the count of active filters.
      */
-    public function getFilterCountProperty(): int
+    #[Computed]
+    public function filterCount(): int
     {
         $count = 0;
         if ($this->query !== '') {

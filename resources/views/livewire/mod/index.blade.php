@@ -1,4 +1,35 @@
-<div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto sm:px-6 lg:px-8"
+     x-data="{
+         query: @entangle('query'),
+         order: @entangle('order'),
+         sptVersion: @entangle('sptVersion'),
+         featured: @entangle('featured'),
+         init() {
+             this.loadFiltersFromLocalStorage();
+             $wire.$refresh();
+
+             $watch('query', value => this.saveFilterToLocalStorage('query', value));
+             $watch('order', value => this.saveFilterToLocalStorage('order', value));
+             $watch('sptVersion', value => this.saveFilterToLocalStorage('sptVersion', value));
+             $watch('featured', value => this.saveFilterToLocalStorage('featured', value));
+         },
+         saveFilterToLocalStorage(key, value) {
+             localStorage.setItem(`filter-${key}`, JSON.stringify(value));
+         },
+         loadFiltersFromLocalStorage() {
+             const query = localStorage.getItem('filter-query');
+             if (query) this.query = JSON.parse(query);
+
+             const order = localStorage.getItem('filter-order');
+             if (order) this.order = JSON.parse(order);
+
+             const sptVersion = localStorage.getItem('filter-sptVersion');
+             if (sptVersion) this.sptVersion = JSON.parse(sptVersion);
+
+             const featured = localStorage.getItem('filter-featured');
+             if (featured) this.featured = JSON.parse(featured);
+         },
+     }">
     <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
         <p class="mt-4 text-base text-slate-500 dark:text-gray-300">{!! __('Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}</p>
