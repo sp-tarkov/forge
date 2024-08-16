@@ -15,8 +15,6 @@ class Index extends Component
 {
     use WithPagination;
 
-    // TODO: These `Url` properties should be saved to the browser's local storage to persist the filters.
-
     /**
      * The search query value.
      */
