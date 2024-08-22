@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\ImportHubData;
+use App\Jobs\ImportHubDataJob;
 use Illuminate\Console\Command;
 
-class ImportHub extends Command
+class ImportHubCommand extends Command
 {
     protected $signature = 'app:import-hub';
 
@@ -13,8 +13,7 @@ class ImportHub extends Command
 
     public function handle(): void
     {
-        // Add the ImportHubData job to the queue.
-        ImportHubData::dispatch()->onQueue('long');
+        ImportHubDataJob::dispatch()->onQueue('long');
 
         $this->info('The import job has been added to the queue.');
     }

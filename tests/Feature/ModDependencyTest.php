@@ -13,13 +13,13 @@ it('resolves mod version dependency when mod version is created', function () {
     $modB = Mod::factory()->create(['name' => 'Mod B']);
 
     // Create versions for Mod B
-    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '1.0.0']);
-    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '1.1.0']);
-    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '1.1.1']);
-    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '2.0.0']);
+    ModVersion::factory()->recycle($modB)->create(['version' => '1.0.0']);
+    ModVersion::factory()->recycle($modB)->create(['version' => '1.1.0']);
+    ModVersion::factory()->recycle($modB)->create(['version' => '1.1.1']);
+    ModVersion::factory()->recycle($modB)->create(['version' => '2.0.0']);
 
     // Create versions for Mod A that depends on Mod B
-    $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
+    $modAv1 = ModVersion::factory()->recycle($modA)->create(['version' => '1.0.0']);
     $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
         'version_constraint' => '^1.0.0',
     ]);
@@ -74,7 +74,7 @@ it('resolves mod version dependency when mod version is deleted', function () {
     $modDependency->refresh();
     expect($modDependency->resolvedVersion->version)->toBe('1.1.1');
 
-    // Update the mod B version
+    // Delete the mod B version
     $modBv3->delete();
 
     $modDependency->refresh();
@@ -153,6 +153,34 @@ it('resolves mod version dependency with complex semantic version constraint', f
 
     $modDependency->refresh();
     expect($modDependency->resolvedVersion->version)->toBe('1.1.1');
+});
+
+it('resolves previously unresolved mod version dependency after semantic version constraint is updated', function () {
+    $modA = Mod::factory()->create(['name' => 'Mod A']);
+    $modB = Mod::factory()->create(['name' => 'Mod B']);
+
+    // Create versions for Mod B
+    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '1.0.0']);
+    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '1.1.0']);
+    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '1.1.1']);
+    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '2.0.0']);
+    ModVersion::factory()->create(['mod_id' => $modB->id, 'version' => '2.0.1']);
+
+    // Create version for Mod A that depends on Mod B, but no version satisfies the constraint.
+    $modAv1 = ModVersion::factory()->create(['mod_id' => $modA->id, 'version' => '1.0.0']);
+    $modDependency = ModDependency::factory()->recycle([$modAv1, $modB])->create([
+        'version_constraint' => '^3.0.0',
+    ]);
+
+    $modDependency->refresh();
+    expect($modDependency->resolved_version_id)->toBeNull();
+
+    // Update the dependency version constraint
+    $modDependency->update(['version_constraint' => '^2.0.0']);
+
+    $modDependency->refresh();
+    expect($modDependency->resolved_version_id)->not->toBeNull();
+    expect($modDependency->resolvedVersion->version)->toBe('2.0.1');
 });
 
 it('resolves null when no mod versions are available', function () {

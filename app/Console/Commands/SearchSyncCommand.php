@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
-class SearchSync extends Command
+class SearchSyncCommand extends Command
 {
     protected $signature = 'app:search-sync';
 

@@ -36,22 +36,21 @@ class SptVersion extends Model
         }
 
         try {
-            $currentMinorVersion = $this->extractMinorVersion($this->version);
-            $latestMinorVersion = $this->extractMinorVersion($latestVersion->version);
+            [$currentMajor, $currentMinor, $currentPatch] = $this->extractVersionParts($this->version);
+            [$latestMajor, $latestMinor, $latestPatch] = $this->extractVersionParts($latestVersion->version);
         } catch (InvalidVersionNumberException $e) {
-            // Could not parse a semver version number.
             return false;
         }
 
-        return $currentMinorVersion === $latestMinorVersion;
+        return $currentMajor == $latestMajor && $currentMinor === $latestMinor;
     }
 
     /**
-     * Extract the minor version from a full version string.
+     * Extract the version components from a full version string.
      *
      * @throws InvalidVersionNumberException
      */
-    private function extractMinorVersion(string $version): int
+    private function extractVersionParts(string $version): array
     {
         // Remove everything from the version string except the numbers and dots.
         $version = preg_replace('/[^0-9.]/', '', $version);
@@ -63,7 +62,10 @@ class SptVersion extends Model
 
         $parts = explode('.', $version);
 
-        // Return the minor version part.
-        return (int) $parts[1];
+        return [
+            (int) $parts[0],
+            (int) $parts[1],
+            (int) $parts[2],
+        ];
     }
 }

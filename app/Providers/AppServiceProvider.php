@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Models\ModDependency;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use App\Observers\ModDependencyObserver;
 use App\Observers\ModVersionObserver;
+use App\Observers\SptVersionObserver;
 use App\Services\LatestSptVersionService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         // Register observers.
         ModVersion::observe(ModVersionObserver::class);
         ModDependency::observe(ModDependencyObserver::class);
+        SptVersion::observe(SptVersionObserver::class);
 
         // This gate determines who can access the Pulse dashboard.
         Gate::define('viewPulse', function (User $user) {

@@ -49,7 +49,10 @@ class Index extends Component
      */
     public function mount(): void
     {
+        // TODO: This should be updated to only pull versions that have mods associated with them.
+        //       To do this, the ModVersion to SptVersion relationship needs to be converted to a many-to-many relationship. Ugh.
         $this->availableSptVersions = SptVersion::select(['id', 'version', 'color_class'])->orderByDesc('version')->get();
+
         $this->sptVersion = $this->getLatestMinorVersions()->pluck('version')->toArray();
     }
 
@@ -75,7 +78,7 @@ class Index extends Component
             'order' => $this->order,
             'sptVersion' => $this->sptVersion,
         ];
-        $mods = (new ModFilter($filters))->apply()->paginate(24);
+        $mods = (new ModFilter($filters))->apply()->paginate(16);
 
         return view('livewire.mod.index', compact('mods'));
     }

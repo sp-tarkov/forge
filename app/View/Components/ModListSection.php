@@ -30,7 +30,6 @@ class ModListSection extends Component
             return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
                 ->withTotalDownloads()
                 ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
-                ->whereHas('latestVersion')
                 ->where('featured', true)
                 ->latest()
                 ->limit(6)
@@ -44,7 +43,6 @@ class ModListSection extends Component
             return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
                 ->withTotalDownloads()
                 ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
-                ->whereHas('latestVersion')
                 ->latest()
                 ->limit(6)
                 ->get();
@@ -57,7 +55,6 @@ class ModListSection extends Component
             return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
                 ->withTotalDownloads()
                 ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion', 'users:id,name'])
-                ->whereHas('lastUpdatedVersion')
                 ->orderByDesc(
                     ModVersion::select('updated_at')
                         ->whereColumn('mod_id', 'mods.id')

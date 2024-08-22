@@ -15,6 +15,7 @@ return new class extends Migration
                 ->default(null)
                 ->unique();
             $table->string('version');
+            $table->string('link');
             $table->string('color_class');
             $table->softDeletes();
             $table->timestamps();

@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Mod;
-use App\Models\SptVersion;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -23,9 +22,9 @@ return new class extends Migration
             $table->string('version');
             $table->longText('description');
             $table->string('link');
-            $table->foreignIdFor(SptVersion::class)
+            $table->string('spt_version_constraint');
+            $table->foreignId('resolved_spt_version_id')
                 ->nullable()
-                ->default(null)
                 ->constrained('spt_versions')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();

@@ -18,7 +18,7 @@ return new class extends Migration
                 ->constrained('mods')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
-            $table->string('version_constraint'); // e.g., ^1.0.1
+            $table->string('version_constraint');
             $table->foreignId('resolved_version_id')
                 ->nullable()
                 ->constrained('mod_versions')

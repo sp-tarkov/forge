@@ -26,7 +26,7 @@ class ModDependency extends Model
     }
 
     /**
-     * The relationship between a mod dependency and mod.
+     * The relationship between the mod dependency and the mod that is depended on.
      */
     public function dependencyMod(): BelongsTo
     {

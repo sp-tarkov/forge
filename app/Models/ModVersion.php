@@ -39,9 +39,15 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and its dependencies.
      */
-    public function dependencies(): HasMany
+    public function dependencies(bool $resolvedOnly = true): HasMany
     {
-        return $this->hasMany(ModDependency::class);
+        $relation = $this->hasMany(ModDependency::class);
+
+        if ($resolvedOnly) {
+            $relation->whereNotNull('resolved_version_id');
+        }
+
+        return $relation;
     }
 
     /**
@@ -49,6 +55,6 @@ class ModVersion extends Model
      */
     public function sptVersion(): BelongsTo
     {
-        return $this->belongsTo(SptVersion::class);
+        return $this->belongsTo(SptVersion::class, 'resolved_spt_version_id');
     }
 }

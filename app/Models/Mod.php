@@ -58,9 +58,16 @@ class Mod extends Model
     /**
      * The relationship between a mod and its versions.
      */
-    public function versions(): HasMany
+    public function versions(bool $resolvedOnly = true): HasMany
     {
-        return $this->hasMany(ModVersion::class)->orderByDesc('version');
+        $relation = $this->hasMany(ModVersion::class)
+            ->orderByDesc('version');
+
+        if ($resolvedOnly) {
+            $relation->whereNotNull('resolved_spt_version_id');
+        }
+
+        return $relation;
     }
 
     /**
@@ -77,10 +84,16 @@ class Mod extends Model
     /**
      * The relationship between a mod and its last updated version.
      */
-    public function lastUpdatedVersion(): HasOne
+    public function lastUpdatedVersion(bool $resolvedOnly = true): HasOne
     {
-        return $this->hasOne(ModVersion::class)
+        $relation = $this->hasOne(ModVersion::class)
             ->orderByDesc('updated_at');
+
+        if ($resolvedOnly) {
+            $relation->whereNotNull('resolved_spt_version_id');
+        }
+
+        return $relation;
     }
 
     /**
@@ -108,12 +121,18 @@ class Mod extends Model
     /**
      * The relationship to the latest mod version, dictated by the mod version number.
      */
-    public function latestVersion(): HasOne
+    public function latestVersion(bool $resolvedOnly = true): HasOne
     {
-        return $this->hasOne(ModVersion::class)
+        $relation = $this->hasOne(ModVersion::class)
             ->orderByDesc('version')
             ->orderByDesc('updated_at')
             ->take(1);
+
+        if ($resolvedOnly) {
+            $relation->whereNotNull('resolved_spt_version_id');
+        }
+
+        return $relation;
     }
 
     /**

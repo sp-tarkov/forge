@@ -1,4 +1,4 @@
-@props(['mods, versionScope, title'])
+@props(['mods', 'versionScope', 'title'])
 
 <div class="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
     {{--

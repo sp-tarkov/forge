@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'gitea' => [
+        'domain' => env('GITEA_DOMAIN', ''),
+        'token' => env('GITEA_TOKEN', ''),
+    ],
+
 ];
