@@ -31,29 +31,48 @@ class DatabaseSeeder extends Seeder
         // Create some code licenses.
         $licenses = License::factory(10)->create();
 
-        // Add 5 administrators.
-        $administrator = UserRole::factory()->administrator()->create();
-        User::factory()->for($administrator, 'role')->create([
+        // Add administrators.
+        $administratorRole = UserRole::factory()->administrator()->create();
+        $testAccount = User::factory()->for($administratorRole, 'role')->create([
             'email' => 'test@example.com',
         ]);
 
-        $this->command->outputComponents()->info('test account created: test@example.com');
+        $this->command->outputComponents()->info("test account created: $testAccount->email");
 
-        User::factory(4)->for($administrator, 'role')->create();
+        User::factory(4)->for($administratorRole, 'role')->create();
 
-        // Add 10 moderators.
-        $moderator = UserRole::factory()->moderator()->create();
-        User::factory(5)->for($moderator, 'role')->create();
+        // Add moderators.
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        User::factory(5)->for($moderatorRole, 'role')->create();
 
-        // Add 100 users.
-        $users = collect(progress(
+        // Add users
+        progress(
             label: 'adding users...',
             steps: $userCount,
             callback: fn () => User::factory()->create()
-        ));
+        );
 
-        // Add 300 mods, assigning them to the users we just created.
-        $allUsers = $users->merge([$administrator, $moderator]);
+        // get all users
+        $allUsers = User::all();
+
+        // Add user follows
+        progress(
+            label: 'adding user follows ...',
+            steps: $allUsers,
+            callback: function ($user) use ($allUsers) {
+                $hasFollowers = rand(0, 100) < 70; // 70% chance to have followers
+                $isFollowing = rand(0, 100) < 70; // 70% chance to be following other users
+
+                if ($hasFollowers) {
+                    $followers = $allUsers->random(rand(1, 10))->pluck('id')->toArray();
+                    $user->followers()->attach($followers);
+                }
+
+                if ($isFollowing) {
+                    $following = $allUsers->random(rand(1, 10))->pluck('id')->toArray();
+                    $user->following()->attach($following);
+                }
+            });
 
         $mods = collect(progress(
             label: 'adding mods...',
@@ -71,7 +90,7 @@ class DatabaseSeeder extends Seeder
             }
         );
 
-        // Add 3000 mod versions, assigning them to the mods we just created.
+        // Add mod versions, assigning them to the mods we just created.
         $modVersions = collect(progress(
             label: 'adding mods versions ...',
             steps: $modVersionCount,
