@@ -16,6 +16,7 @@
                     </div>
 
                     @if(\Illuminate\Support\Facades\Auth::check())
+                        @if(\Illuminate\Support\Facades\Auth::id() != $user->id)
                         <div class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
                             <button type="button" class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -24,6 +25,7 @@
                                 <span>{{__("Follow")}}</span>
                             </button>
                         </div>
+                        @endif
                         <div class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
                             <button type="button" class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -39,6 +41,20 @@
             <div class="mt-6 hidden min-w-0 flex-1 sm:block md:hidden">
                 <h1 class="truncate text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $user->name }}</h1>
                 <p>{{__("Member Since")}} {{ $user->created_at->format("M d, h:m a") }}</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 m-6">
+            <div class="flex flex-col">
+                <h2 class="text-2xl">Followers:</h2>
+                @foreach($user->followers as $follower)
+                    <p>{{$follower->name}}</p>
+                @endforeach
+            </div>
+            <div class="flex flex-col">
+                <h2 class="text-2xl">Following:</h2>
+                @foreach($user->following as $following)
+                    <p>{{$following->name}}</p>
+                @endforeach
             </div>
         </div>
     </div>
