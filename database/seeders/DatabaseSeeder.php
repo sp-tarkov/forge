@@ -46,24 +46,20 @@ class DatabaseSeeder extends Seeder
         User::factory(5)->for($moderator, 'role')->create();
 
         // Add 100 users.
-        $users = progress(
+        $users = collect(progress(
             label: 'adding users...',
             steps: $userCount,
             callback: fn () => User::factory()->create()
-        );
-
-        $users = collect($users);
+        ));
 
         // Add 300 mods, assigning them to the users we just created.
         $allUsers = $users->merge([$administrator, $moderator]);
 
-        $mods = progress(
+        $mods = collect(progress(
             label: 'adding mods...',
             steps: $modCount,
             callback: fn () => Mod::factory()->recycle([$licenses])->create()
-        );
-
-        $mods = collect($mods);
+        ));
 
         // attach users to mods
         progress(
@@ -76,13 +72,11 @@ class DatabaseSeeder extends Seeder
         );
 
         // Add 3000 mod versions, assigning them to the mods we just created.
-        $modVersions = progress(
+        $modVersions = collect(progress(
             label: 'adding mods versions ...',
             steps: $modVersionCount,
             callback: fn () => ModVersion::factory()->recycle([$mods, $spt_versions])->create()
-        );
-
-        $modVersions = collect($modVersions);
+        ));
 
         // Add ModDependencies to a subset of ModVersions.
         progress(
