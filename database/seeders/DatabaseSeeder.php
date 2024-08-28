@@ -52,8 +52,6 @@ class DatabaseSeeder extends Seeder
             callback: fn () => User::factory()->create()
         );
 
-        //        dd($users);
-
         $users = collect($users);
 
         // Add 300 mods, assigning them to the users we just created.
@@ -67,6 +65,7 @@ class DatabaseSeeder extends Seeder
 
         $mods = collect($mods);
 
+        // attach users to mods
         progress(
             label: 'attaching mod users ...',
             steps: $mods,
@@ -86,7 +85,6 @@ class DatabaseSeeder extends Seeder
         $modVersions = collect($modVersions);
 
         // Add ModDependencies to a subset of ModVersions.
-
         progress(
             label: 'adding mods dependencies ...',
             steps: $modVersions,
