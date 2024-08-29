@@ -88,6 +88,11 @@ class Index extends Component
         ];
         $mods = (new ModFilter($filters))->apply()->paginate(16);
 
+        // Check if the current page is greater than the last page. Redirect if it is.
+        if ($mods->currentPage() > $mods->lastPage()) {
+            $this->redirectRoute('mods', ['page' => $mods->lastPage()]);
+        }
+
         return view('livewire.mod.index', compact('mods'));
     }
 
