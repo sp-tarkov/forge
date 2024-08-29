@@ -30,13 +30,13 @@ class ModController extends Controller
         $mod = Mod::withTotalDownloads()
             ->with([
                 'versions',
-                'versions.sptVersion',
-                'versions.dependencies',
-                'versions.dependencies.resolvedVersion',
-                'versions.dependencies.resolvedVersion.mod',
+                'versions.latestSptVersion:id,version,color_class',
+                'versions.latestResolvedDependencies',
+                'versions.latestResolvedDependencies.mod:id,name,slug',
                 'users:id,name',
                 'license:id,name,link',
             ])
+            ->whereHas('latestVersion')
             ->findOrFail($modId);
 
         if ($mod->slug !== $slug) {
@@ -45,9 +45,7 @@ class ModController extends Controller
 
         $this->authorize('view', $mod);
 
-        $latestVersion = $mod->versions->first();
-
-        return view('mod.show', compact(['mod', 'latestVersion']));
+        return view('mod.show', compact(['mod']));
     }
 
     public function update(ModRequest $request, Mod $mod)

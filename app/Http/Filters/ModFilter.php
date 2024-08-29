@@ -31,7 +31,12 @@ class ModFilter
     {
         return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
             ->withTotalDownloads()
-            ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name']);
+            ->with([
+                'users:id,name',
+                'latestVersion' => function ($query) {
+                    $query->with('latestSptVersion:id,version,color_class');
+                },
+            ]);
     }
 
     /**
@@ -95,12 +100,10 @@ class ModFilter
     /**
      * Filter the results to a specific SPT version.
      */
-    private function sptVersion(array $versions): Builder
+    private function sptVersions(array $versions): Builder
     {
-        return $this->builder->whereHas('latestVersion', function ($query) use ($versions) {
-            $query->whereHas('sptVersion', function ($query) use ($versions) {
-                $query->whereIn('version', $versions);
-            });
+        return $this->builder->whereHas('latestVersion.sptVersions', function ($query) use ($versions) {
+            $query->whereIn('spt_versions.version', $versions);
         });
     }
 }

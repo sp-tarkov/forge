@@ -13,14 +13,14 @@ class SptVersionService
      */
     public function resolve(ModVersion $modVersion): void
     {
-        $modVersion->resolved_spt_version_id = $this->satisfyconstraint($modVersion);
-        $modVersion->saveQuietly();
+        $satisfyingVersionIds = $this->satisfyConstraint($modVersion);
+        $modVersion->sptVersions()->sync($satisfyingVersionIds);
     }
 
     /**
      * Satisfies the version constraint of a given ModVersion. Returns the ID of the satisfying SptVersion.
      */
-    private function satisfyConstraint(ModVersion $modVersion): ?int
+    private function satisfyConstraint(ModVersion $modVersion): array
     {
         $availableVersions = SptVersion::query()
             ->orderBy('version', 'desc')
@@ -29,14 +29,10 @@ class SptVersionService
 
         $satisfyingVersions = Semver::satisfiedBy(array_keys($availableVersions), $modVersion->spt_version_constraint);
         if (empty($satisfyingVersions)) {
-            return null;
+            return [];
         }
 
-        // Ensure the satisfying versions are sorted in descending order to get the latest version
-        usort($satisfyingVersions, 'version_compare');
-        $satisfyingVersions = array_reverse($satisfyingVersions);
-
-        // Return the ID of the latest satisfying version
-        return $availableVersions[$satisfyingVersions[0]];
+        // Return the IDs of all satisfying versions
+        return array_map(fn ($version) => $availableVersions[$version], $satisfyingVersions);
     }
 }

@@ -6,7 +6,7 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Services\LatestSptVersionService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\App;
 
@@ -15,11 +15,19 @@ class SptVersion extends Model
     use HasFactory, SoftDeletes;
 
     /**
+     * Get the version with "SPT " prepended.
+     */
+    public function getVersionFormattedAttribute(): string
+    {
+        return __('SPT ').$this->version;
+    }
+
+    /**
      * The relationship between an SPT version and mod version.
      */
-    public function modVersions(): HasMany
+    public function modVersions(): BelongsToMany
     {
-        return $this->hasMany(ModVersion::class);
+        return $this->belongsToMany(ModVersion::class, 'mod_version_spt_version');
     }
 
     /**

@@ -23,11 +23,6 @@ return new class extends Migration
             $table->longText('description');
             $table->string('link');
             $table->string('spt_version_constraint');
-            $table->foreignId('resolved_spt_version_id')
-                ->nullable()
-                ->constrained('spt_versions')
-                ->nullOnDelete()
-                ->cascadeOnUpdate();
             $table->string('virus_total_link');
             $table->unsignedBigInteger('downloads');
             $table->boolean('disabled')->default(false);
@@ -35,7 +30,9 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable()->default(null);
             $table->timestamps();
 
-            $table->index(['mod_id', 'deleted_at', 'disabled', 'version'], 'mod_versions_filtering_index');
+            $table->index(['version']);
+            $table->index(['mod_id', 'deleted_at', 'disabled', 'published_at'], 'mod_versions_filtering_index');
+            $table->index(['id', 'deleted_at'], 'mod_versions_id_deleted_at_index');
         });
     }
 

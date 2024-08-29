@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Mod;
 use App\Models\ModDependency;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Observers\ModDependencyObserver;
+use App\Observers\ModObserver;
 use App\Observers\ModVersionObserver;
 use App\Observers\SptVersionObserver;
 use App\Services\LatestSptVersionService;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         Model::unguard();
 
         // Register observers.
+        Mod::observe(ModObserver::class);
         ModVersion::observe(ModVersionObserver::class);
         ModDependency::observe(ModDependencyObserver::class);
         SptVersion::observe(SptVersionObserver::class);

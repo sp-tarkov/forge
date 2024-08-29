@@ -14,15 +14,15 @@ class ModVersionFactory extends Factory
 
     public function definition(): array
     {
-        $constraint = fake()->numerify($this->generateVersionConstraint());
-
         return [
             'mod_id' => Mod::factory(),
             'version' => fake()->numerify('#.#.#'),
             'description' => fake()->text(),
             'link' => fake()->url(),
-            'spt_version_constraint' => $constraint,
-            'resolved_spt_version_id' => null,
+
+            // Unless a custom constraint is provided, this will also generate the required SPT versions.
+            'spt_version_constraint' => $this->faker->randomElement(['^1.0', '^2.0', '>=3.0', '<4.0']),
+
             'virus_total_link' => fake()->url(),
             'downloads' => fake()->randomNumber(),
             'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
@@ -32,28 +32,43 @@ class ModVersionFactory extends Factory
     }
 
     /**
-     * This method generates a random version constraint from a predefined set of options.
+     * Configure the model factory.
      */
-    private function generateVersionConstraint(): string
+    public function configure(): ModVersionFactory
     {
-        $versionConstraints = ['*', '^1.#.#', '>=2.#.#', '~1.#.#'];
-
-        return $versionConstraints[array_rand($versionConstraints)];
+        return $this->afterCreating(function (ModVersion $modVersion) {
+            $this->ensureSptVersionsExist($modVersion); // Create SPT Versions
+        });
     }
 
     /**
-     * Indicate that the mod version should have a resolved SPT version.
+     * Ensure that the required SPT versions exist and are associated with the mod version.
      */
-    public function sptVersionResolved(): static
+    protected function ensureSptVersionsExist(ModVersion $modVersion): void
     {
-        $constraint = fake()->numerify('#.#.#');
+        $constraint = $modVersion->spt_version_constraint;
 
-        return $this->state(fn (array $attributes) => [
-            'spt_version_constraint' => $constraint,
-            'resolved_spt_version_id' => SptVersion::factory()->create([
-                'version' => $constraint,
-            ]),
-        ]);
+        $requiredVersions = match ($constraint) {
+            '^1.0' => ['1.0.0', '1.1.0', '1.2.0'],
+            '^2.0' => ['2.0.0', '2.1.0'],
+            '>=3.0' => ['3.0.0', '3.1.0', '3.2.0', '4.0.0'],
+            '<4.0' => ['1.0.0', '2.0.0', '3.0.0'],
+            default => [],
+        };
+
+        // If the version is anything but the default, no SPT versions are created.
+        if (! $requiredVersions) {
+            return;
+        }
+
+        foreach ($requiredVersions as $version) {
+            SptVersion::firstOrCreate(['version' => $version], [
+                'color_class' => $this->faker->randomElement(['red', 'green', 'emerald', 'lime', 'yellow', 'grey']),
+                'link' => $this->faker->url,
+            ]);
+        }
+
+        $modVersion->sptVersions()->sync(SptVersion::whereIn('version', $requiredVersions)->pluck('id')->toArray());
     }
 
     /**
