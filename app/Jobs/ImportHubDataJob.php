@@ -608,8 +608,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Import the SPT versions from the Hub database to the local database.
-     *
-     * @throws Exception
      */
     protected function importSptVersions(): void
     {
@@ -938,7 +936,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                         'description' => $this->cleanHubContent($versionContent->description ?? ''),
                         'link' => $version->downloadURL,
                         'spt_version_constraint' => $sptVersionConstraint,
-                        'resolved_spt_version_id' => null,
                         'virus_total_link' => $optionVirusTotal?->virus_total_link ?? '',
                         'downloads' => max((int) $version->downloads, 0), // At least 0.
                         'disabled' => (bool) $version->isDisabled,
@@ -955,9 +952,9 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                         'description',
                         'link',
                         'spt_version_constraint',
-                        'resolved_spt_version_id',
                         'virus_total_link',
                         'downloads',
+                        'disabled',
                         'published_at',
                         'created_at',
                         'updated_at',

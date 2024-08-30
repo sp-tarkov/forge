@@ -35,7 +35,9 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable()->default(null);
             $table->timestamps();
 
-            $table->index(['deleted_at', 'disabled'], 'mods_show_index');
+            $table->index(['slug']);
+            $table->index(['featured']);
+            $table->index(['deleted_at', 'disabled', 'published_at'], 'mods_filtering_index');
         });
     }
 

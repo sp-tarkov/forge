@@ -7,6 +7,7 @@ use App\Models\Scopes\PublishedScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -39,22 +40,53 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and its dependencies.
      */
-    public function dependencies(bool $resolvedOnly = true): HasMany
+    public function dependencies(): HasMany
     {
-        $relation = $this->hasMany(ModDependency::class);
-
-        if ($resolvedOnly) {
-            $relation->whereNotNull('resolved_version_id');
-        }
-
-        return $relation;
+        return $this->hasMany(ModDependency::class);
     }
 
     /**
-     * The relationship between a mod version and SPT version.
+     * The relationship between a mod version and its resolved dependencies.
      */
-    public function sptVersion(): BelongsTo
+    public function resolvedDependencies(): BelongsToMany
     {
-        return $this->belongsTo(SptVersion::class, 'resolved_spt_version_id');
+        return $this->belongsToMany(ModVersion::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
+            ->withPivot('dependency_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * The relationship between a mod version and its each of it's resolved dependencies' latest versions.
+     */
+    public function latestResolvedDependencies(): BelongsToMany
+    {
+        return $this->belongsToMany(ModVersion::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
+            ->withPivot('dependency_id')
+            ->join('mod_versions as latest_versions', function ($join) {
+                $join->on('latest_versions.id', '=', 'mod_versions.id')
+                    ->whereRaw('latest_versions.version = (SELECT MAX(mv.version) FROM mod_versions mv WHERE mv.mod_id = mod_versions.mod_id)');
+            })
+            ->with('mod:id,name,slug')
+            ->withTimestamps();
+    }
+
+    /**
+     * The relationship between a mod version and each of its SPT versions' latest version.
+     * Hint: Be sure to call `->first()` on this to get the actual instance.
+     */
+    public function latestSptVersion(): BelongsToMany
+    {
+        return $this->belongsToMany(SptVersion::class, 'mod_version_spt_version')
+            ->orderBy('version', 'desc')
+            ->limit(1);
+    }
+
+    /**
+     * The relationship between a mod version and its SPT versions.
+     */
+    public function sptVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(SptVersion::class, 'mod_version_spt_version')
+            ->orderByDesc('version');
     }
 }

@@ -6,7 +6,9 @@ use App\Http\Filters\ModFilter;
 use App\Models\SptVersion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -19,24 +21,28 @@ class Index extends Component
      * The search query value.
      */
     #[Url]
+    #[Session]
     public string $query = '';
 
     /**
      * The sort order value.
      */
     #[Url]
+    #[Session]
     public string $order = 'created';
 
     /**
-     * The SPT version filter value.
+     * The SPT versions filter value.
      */
     #[Url]
-    public array $sptVersion = [];
+    #[Session]
+    public array $sptVersions = [];
 
     /**
      * The featured filter value.
      */
     #[Url]
+    #[Session]
     public string $featured = 'include';
 
     /**
@@ -49,11 +55,13 @@ class Index extends Component
      */
     public function mount(): void
     {
-        // TODO: This should be updated to only pull versions that have mods associated with them.
-        //       To do this, the ModVersion to SptVersion relationship needs to be converted to a many-to-many relationship. Ugh.
-        $this->availableSptVersions = SptVersion::select(['id', 'version', 'color_class'])->orderByDesc('version')->get();
+        // TODO: This should ideally be updated to only pull SPT versions that have mods associated with them so that no
+        //       empty options are shown in the listing filter.
+        $this->availableSptVersions = Cache::remember('availableSptVersions', 60 * 60, function () {
+            return SptVersion::select(['id', 'version', 'color_class'])->orderByDesc('version')->get();
+        });
 
-        $this->sptVersion = $this->getLatestMinorVersions()->pluck('version')->toArray();
+        $this->sptVersions = $this->sptVersions ?? $this->getLatestMinorVersions()->pluck('version')->toArray();
     }
 
     /**
@@ -76,7 +84,7 @@ class Index extends Component
             'query' => $this->query,
             'featured' => $this->featured,
             'order' => $this->order,
-            'sptVersion' => $this->sptVersion,
+            'sptVersions' => $this->sptVersions,
         ];
         $mods = (new ModFilter($filters))->apply()->paginate(16);
 
@@ -89,7 +97,7 @@ class Index extends Component
     public function resetFilters(): void
     {
         $this->query = '';
-        $this->sptVersion = $this->getLatestMinorVersions()->pluck('version')->toArray();
+        $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
         $this->featured = 'include';
 
         // Clear local storage
@@ -109,7 +117,7 @@ class Index extends Component
         if ($this->featured !== 'include') {
             $count++;
         }
-        $count += count($this->sptVersion);
+        $count += count($this->sptVersions);
 
         return $count;
     }

@@ -58,16 +58,11 @@ class Mod extends Model
     /**
      * The relationship between a mod and its versions.
      */
-    public function versions(bool $resolvedOnly = true): HasMany
+    public function versions(): HasMany
     {
-        $relation = $this->hasMany(ModVersion::class)
+        return $this->hasMany(ModVersion::class)
+            ->whereHas('sptVersions')
             ->orderByDesc('version');
-
-        if ($resolvedOnly) {
-            $relation->whereNotNull('resolved_spt_version_id');
-        }
-
-        return $relation;
     }
 
     /**
@@ -84,16 +79,11 @@ class Mod extends Model
     /**
      * The relationship between a mod and its last updated version.
      */
-    public function lastUpdatedVersion(bool $resolvedOnly = true): HasOne
+    public function lastUpdatedVersion(): HasOne
     {
-        $relation = $this->hasOne(ModVersion::class)
+        return $this->hasOne(ModVersion::class)
+            ->whereHas('sptVersions')
             ->orderByDesc('updated_at');
-
-        if ($resolvedOnly) {
-            $relation->whereNotNull('resolved_spt_version_id');
-        }
-
-        return $relation;
     }
 
     /**
@@ -101,10 +91,8 @@ class Mod extends Model
      */
     public function toSearchableArray(): array
     {
-        $latestVersion = $this->latestVersion()->with('sptVersion')->first();
-
         return [
-            'id' => (int) $this->id,
+            'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
@@ -113,26 +101,21 @@ class Mod extends Model
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
             'published_at' => strtotime($this->published_at),
-            'latestVersion' => $latestVersion?->sptVersion->version,
-            'latestVersionColorClass' => $latestVersion?->sptVersion->color_class,
+            'latestVersion' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->version_formatted,
+            'latestVersionColorClass' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->color_class,
         ];
     }
 
     /**
      * The relationship to the latest mod version, dictated by the mod version number.
      */
-    public function latestVersion(bool $resolvedOnly = true): HasOne
+    public function latestVersion(): HasOne
     {
-        $relation = $this->hasOne(ModVersion::class)
+        return $this->hasOne(ModVersion::class)
+            ->whereHas('sptVersions')
             ->orderByDesc('version')
             ->orderByDesc('updated_at')
             ->take(1);
-
-        if ($resolvedOnly) {
-            $relation->whereNotNull('resolved_spt_version_id');
-        }
-
-        return $relation;
     }
 
     /**
@@ -140,7 +123,31 @@ class Mod extends Model
      */
     public function shouldBeSearchable(): bool
     {
-        return ! $this->disabled;
+        // Ensure the mod is not disabled.
+        if ($this->disabled) {
+            return false;
+        }
+
+        // Ensure the mod has a publish date.
+        if (is_null($this->published_at)) {
+            return false;
+        }
+
+        // Fetch the latest version instance.
+        $latestVersion = $this->latestVersion()?->first();
+
+        // Ensure the mod has a latest version.
+        if (is_null($latestVersion)) {
+            return false;
+        }
+
+        // Ensure the latest version has a latest SPT version.
+        if ($latestVersion->latestSptVersion()->doesntExist()) {
+            return false;
+        }
+
+        // All conditions are met; the mod should be searchable.
+        return true;
     }
 
     /**

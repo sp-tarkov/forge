@@ -16,20 +16,10 @@ class ModDependencyFactory extends Factory
     {
         return [
             'mod_version_id' => ModVersion::factory(),
-            'dependency_mod_id' => Mod::factory(),
-            'version_constraint' => fake()->numerify($this->generateVersionConstraint()),
+            'dependent_mod_id' => Mod::factory(),
+            'constraint' => '*',
             'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
             'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
         ];
-    }
-
-    /**
-     * This method generates a random version constraint from a predefined set of options.
-     */
-    private function generateVersionConstraint(): string
-    {
-        $versionConstraints = ['*', '^1.#.#', '>=2.#.#', '~1.#.#', '>=1.2.# <2.#.#'];
-
-        return $versionConstraints[array_rand($versionConstraints)];
     }
 }

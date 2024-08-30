@@ -1,35 +1,4 @@
-<div class="max-w-7xl mx-auto sm:px-6 lg:px-8"
-     x-data="{
-         query: @entangle('query'),
-         order: @entangle('order'),
-         sptVersion: @entangle('sptVersion'),
-         featured: @entangle('featured'),
-         init() {
-             this.loadFiltersFromLocalStorage();
-             $wire.$refresh();
-
-             $watch('query', value => this.saveFilterToLocalStorage('query', value));
-             $watch('order', value => this.saveFilterToLocalStorage('order', value));
-             $watch('sptVersion', value => this.saveFilterToLocalStorage('sptVersion', value));
-             $watch('featured', value => this.saveFilterToLocalStorage('featured', value));
-         },
-         saveFilterToLocalStorage(key, value) {
-             localStorage.setItem(`filter-${key}`, JSON.stringify(value));
-         },
-         loadFiltersFromLocalStorage() {
-             const query = localStorage.getItem('filter-query');
-             if (query) this.query = JSON.parse(query);
-
-             const order = localStorage.getItem('filter-order');
-             if (order) this.order = JSON.parse(order);
-
-             const sptVersion = localStorage.getItem('filter-sptVersion');
-             if (sptVersion) this.sptVersion = JSON.parse(sptVersion);
-
-             const featured = localStorage.getItem('filter-featured');
-             if (featured) this.featured = JSON.parse(featured);
-         },
-     }">
+<div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
         <p class="mt-4 text-base text-slate-500 dark:text-gray-300">{!! __('Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}</p>
@@ -61,7 +30,13 @@
                     <button @click="$wire.call('resetFilters')" type="button" class="pl-6 text-gray-500 dark:text-gray-300">{{ __('Reset Filters') }}</button>
 
                     <div wire:loading.flex>
-                        <p class="pl-6 flex items-center font-medium text-gray-700 dark:text-gray-300">{{ __('Loading...') }}</p>
+                        <p class="pl-6 flex items-center font-medium text-gray-700 dark:text-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin">
+                                <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />
+                                <path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" />
+                            </svg>
+                            <span class="pl-1.5">{{ __('Loading...') }}</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -86,7 +61,7 @@
                             <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
                                 @foreach ($availableSptVersions as $index => $version)
                                     @if ($index < $half)
-                                        <x-filter-checkbox id="sptVersion-{{ $index }}" name="sptVersion" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
+                                        <x-filter-checkbox id="sptVersions-{{ $index }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
                                     @endif
                                 @endforeach
                             </div>
@@ -96,7 +71,7 @@
                             <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
                                 @foreach ($availableSptVersions as $index => $version)
                                     @if ($index >= $half)
-                                        <x-filter-checkbox id="sptVersion-{{ $index }}" name="sptVersion" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
+                                        <x-filter-checkbox id="sptVersions-{{ $index }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
                                     @endif
                                 @endforeach
                             </div>
