@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -25,8 +26,13 @@ class UserStack extends Component
         $this->viewAll = ! $this->viewAll;
     }
 
-    public function followUser($user)
+    public function followUser(User $user)
     {
-        $user->followers->syncWithoutDetaching(Auth::id());
+        Auth::user()->follow($user);
+    }
+
+    public function unfollowUser(User $user)
+    {
+        Auth::user()->unfollow($user);
     }
 }

@@ -69,6 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isFollowing(User|int $user): bool
     {
         $userId = $user instanceof User ? $user->id : $user;
+
         return $this->following()->where('following_id', $userId)->exists();
     }
 

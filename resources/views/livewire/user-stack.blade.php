@@ -33,10 +33,12 @@
         </div>
     @endif
 
+    {{-- view all dialog --}}
     <x-dialog-modal wire:model.live="viewAll">
         <x-slot name="title">
             <h2 class="text-2xl">{{$user->name}}'s {{$label}}</h2>
         </x-slot>
+
         <x-slot name="content">
             <div class="h-96 overflow-y-auto divide-y">
                 @foreach($users as $user)
@@ -44,16 +46,36 @@
                     <div class="flex group/item">
                         <img class="h-16 w-16 m-2 rounded-full" src="{{$user->profile_photo_url}}"
                              alt="{{$user->name}}" />
-                        <div class="flex flex-col justify-center">
-                            <a class="no-underline text-2xl" href="{{$user->profileUrl()}}">{{$user->name}}</a>
+
+                        <div class="flex flex-col w-full justify-center">
+                            <a class="text-2xl" href="{{$user->profileUrl()}}">{{$user->name}}</a>
                             <span class="">{{__("Member Since")}} {{ $user->created_at->format("M d, h:m a") }}</span>
                         </div>
-                            <div class="flex invisible group-hover/item:visible w-full justify-end items-center mr-10">
-                                <button class="p-2 h-fit text-white bg-cyan-500 hover:bg-cyan-700 rounded-lg"
-                                        wire:click="followUser({{$user}})">
-                                    {{__('Follow')}}
-                                </button>
+
+                        @if(auth()->id() != $user->id)
+                            @if(auth()->user()->isFollowing($user))
+                                {{-- following button --}}
+                                <div class="flex invisible group-hover/item:visible justify-end items-center mr-10">
+                                    <button class="p-2 h-fit text-white bg-cyan-500 hover:bg-cyan-700 rounded-lg"
+                                            wire:click="unfollowUser({{$user}})">
+                                        {{__('Following')}}
+                                    </button>
+                                </div>
+                            @else
+                                {{-- follow button --}}
+                                <div class="flex invisible group-hover/item:visible justify-end items-center mr-10">
+                                    <button class="p-2 h-fit text-white bg-cyan-500 hover:bg-cyan-700 rounded-lg"
+                                            wire:click="followUser({{$user}})">
+                                        {{__('Follow')}}
+                                    </button>
+                                </div>
+                            @endif
+                        @else
+                            {{-- 'you' card for auth user in list --}}
+                            <div class="flex invisible group-hover/item:visible justify-end items-center mr-10">
+                                <p class="p-2 h-fit text-black bg-gray-200 dark:text-white dark:bg-gray-700 rounded-lg">{{__('You')}}</p>
                             </div>
+                        @endif
                     </div>
                 @endforeach
             </div>
