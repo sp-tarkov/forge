@@ -17,20 +17,35 @@
                         <p>{{__("Member Since")}} {{ $user->created_at->format("M d, h:m a") }}</p>
                     </div>
 
-                    @if(\Illuminate\Support\Facades\Auth::check())
-                        @if(\Illuminate\Support\Facades\Auth::id() != $user->id)
-                            <div
-                                class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
-                                <button type="button"
-                                        class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300"
-                                         viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                        <path
-                                            d="m12.82 5.58-.82.822-.824-.824a5.375 5.375 0 1 0-7.601 7.602l7.895 7.895a.75.75 0 0 0 1.06 0l7.902-7.897a5.376 5.376 0 0 0-.001-7.599 5.38 5.38 0 0 0-7.611 0Z" />
-                                    </svg>
-                                    <span>{{__("Follow")}}</span>
-                                </button>
-                            </div>
+                    @if(auth()->check())
+                        @if(auth()->id() != $user->id)
+                            @if(auth()->user()->isFollowing($user))
+                                <div
+                                    class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+                                    <button type="button"
+                                            class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300"
+                                             viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path
+                                                d="m12.82 5.58-.82.822-.824-.824a5.375 5.375 0 1 0-7.601 7.602l7.895 7.895a.75.75 0 0 0 1.06 0l7.902-7.897a5.376 5.376 0 0 0-.001-7.599 5.38 5.38 0 0 0-7.611 0Z" />
+                                        </svg>
+                                        <span>{{__("UnFollow")}}</span>
+                                    </button>
+                                </div>
+                            @else
+                                <div
+                                    class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+                                    <button type="button"
+                                            class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300"
+                                             viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path
+                                                d="m12.82 5.58-.82.822-.824-.824a5.375 5.375 0 1 0-7.601 7.602l7.895 7.895a.75.75 0 0 0 1.06 0l7.902-7.897a5.376 5.376 0 0 0-.001-7.599 5.38 5.38 0 0 0-7.611 0Z" />
+                                        </svg>
+                                        <span>{{__("Follow")}}</span>
+                                    </button>
+                                </div>
+                            @endif
                         @endif
                         <div class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
                             <button type="button"
@@ -58,13 +73,11 @@
                 {{-- column 1 placeholder --}}
             </div>
             <div class="flex flex-col justify-center items-center">
-                <div class="flex w-full">
-                    @livewire('user-stack', ['label' => 'Followers', 'users' => $user->followers]);
-{{--                    <x-user-stack :label="__('Followers')" :users="$user->followers" />--}}
+                <div class="flex w-full max-w-sm">
+                    @livewire('user-stack', ['label' => 'Followers', 'users' => $user->followers])
                 </div>
-                <div class="flex w-full">
-                    @livewire('user-stack', ['label' => 'Following', 'users' => $user->following]);
-{{--                    <x-user-stack :label="__('Following')" :users="$user->following" />--}}
+                <div class="flex w-full max-w-sm">
+                    @livewire('user-stack', ['label' => 'Following', 'users' => $user->following])
                 </div>
             </div>
         </div>

@@ -66,6 +66,24 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(User::class, 'user_follows', 'following_id', 'follower_id');
     }
 
+    public function isFollowing(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+        return $this->following()->where('following_id', $userId)->exists();
+    }
+
+    public function follow(User|int $user): void
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+        $this->following()->syncWithoutDetaching($userId);
+    }
+
+    public function unfollow(User|int $user): void
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+        $this->following()->detach($userId);
+    }
+
     /**
      * The data that is searchable by Scout.
      */
