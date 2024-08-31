@@ -15,12 +15,18 @@ return new class extends Migration
                 ->default(null)
                 ->unique();
             $table->string('version');
+            $table->unsignedInteger('version_major');
+            $table->unsignedInteger('version_minor');
+            $table->unsignedInteger('version_patch');
+            $table->string('version_pre_release');
+            $table->unsignedInteger('mod_count')->default(0);
             $table->string('link');
             $table->string('color_class');
             $table->softDeletes();
             $table->timestamps();
 
-            $table->index(['version', 'deleted_at'], 'spt_versions_filtering_index');
+            $table->index(['version', 'deleted_at', 'id'], 'spt_versions_filtering_index');
+            $table->index(['version_major', 'version_minor', 'version_patch', 'version_pre_release', 'deleted_at'], 'spt_versions_lookup_index');
         });
     }
 

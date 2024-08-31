@@ -29,7 +29,15 @@ class ModFilter
      */
     private function baseQuery(): Builder
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
+        return Mod::select([
+            'mods.id',
+            'mods.name',
+            'mods.slug',
+            'mods.teaser',
+            'mods.thumbnail',
+            'mods.featured',
+            'mods.created_at',
+        ])
             ->withTotalDownloads()
             ->with([
                 'users:id,name',
@@ -49,6 +57,8 @@ class ModFilter
                 $this->$method($value);
             }
         }
+
+        //dd($this->builder->toRawSql());
 
         return $this->builder;
     }
@@ -98,12 +108,32 @@ class ModFilter
     }
 
     /**
-     * Filter the results to a specific SPT version.
+     * Filter the results to specific SPT versions.
      */
     private function sptVersions(array $versions): Builder
     {
-        return $this->builder->whereHas('latestVersion.sptVersions', function ($query) use ($versions) {
-            $query->whereIn('spt_versions.version', $versions);
-        });
+        // Parse the versions into major, minor, and patch arrays
+        $parsedVersions = array_map(fn ($version) => [
+            'major' => (int) explode('.', $version)[0],
+            'minor' => (int) (explode('.', $version)[1] ?? 0),
+            'patch' => (int) (explode('.', $version)[2] ?? 0),
+        ], $versions);
+
+        [$majorVersions, $minorVersions, $patchVersions] = array_map('array_unique', [
+            array_column($parsedVersions, 'major'),
+            array_column($parsedVersions, 'minor'),
+            array_column($parsedVersions, 'patch'),
+        ]);
+
+        return $this->builder
+            ->join('mod_versions as mv', 'mods.id', '=', 'mv.mod_id')
+            ->join('mod_version_spt_version as mvsv', 'mv.id', '=', 'mvsv.mod_version_id')
+            ->join('spt_versions as sv', 'mvsv.spt_version_id', '=', 'sv.id')
+            ->whereIn('sv.version_major', $majorVersions)
+            ->whereIn('sv.version_minor', $minorVersions)
+            ->whereIn('sv.version_patch', $patchVersions)
+            ->where('sv.version', '!=', '0.0.0')
+            ->groupBy('mods.id')
+            ->distinct();
     }
 }

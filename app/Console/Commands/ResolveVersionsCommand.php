@@ -14,8 +14,8 @@ class ResolveVersionsCommand extends Command
 
     public function handle(): void
     {
-        ResolveSptVersionsJob::dispatch()->onQueue('long');
-        ResolveDependenciesJob::dispatch()->onQueue('long');
+        ResolveSptVersionsJob::dispatch()->onQueue('default');
+        ResolveDependenciesJob::dispatch()->onQueue('default');
 
         $this->info('The import job has been added to the queue.');
     }
