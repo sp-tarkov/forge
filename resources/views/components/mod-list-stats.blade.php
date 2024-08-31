@@ -1,5 +1,5 @@
 <p {{ $attributes->class(['text-slate-700 dark:text-gray-300 text-sm']) }}>
-    <span title="{{ __('Exactly') }} {{ $mod->total_downloads }}">{{ Number::downloads($mod->total_downloads) }} downloads</span>
+    <span title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} downloads</span>
     @if(!is_null($mod->created_at))
         <span>
             &mdash; Created

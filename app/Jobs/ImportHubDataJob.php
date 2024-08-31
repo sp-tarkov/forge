@@ -56,6 +56,8 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
         Artisan::call('app:search-sync');
         Artisan::call('app:resolve-versions');
+        Artisan::call('app:count-mods');
+        Artisan::call('app:update-downloads');
         Artisan::call('cache:clear');
     }
 

@@ -26,7 +26,32 @@ class ModVersionObserver
     public function saved(ModVersion $modVersion): void
     {
         $this->dependencyVersionService->resolve($modVersion);
+
         $this->sptVersionService->resolve($modVersion);
+
+        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
+        $this->updateRelatedMod($modVersion);
+    }
+
+    /**
+     * Update properties on related SptVersions.
+     */
+    protected function updateRelatedSptVersions(ModVersion $modVersion): void
+    {
+        $sptVersions = $modVersion->sptVersions; // These should already be resolved.
+
+        foreach ($sptVersions as $sptVersion) {
+            $sptVersion->updateModCount();
+        }
+    }
+
+    /**
+     * Update properties on the related Mod.
+     */
+    protected function updateRelatedMod(ModVersion $modVersion): void
+    {
+        $mod = $modVersion->mod;
+        $mod->calculateDownloads();
     }
 
     /**
@@ -35,5 +60,8 @@ class ModVersionObserver
     public function deleted(ModVersion $modVersion): void
     {
         $this->dependencyVersionService->resolve($modVersion);
+
+        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
+        $this->updateRelatedMod($modVersion);
     }
 }

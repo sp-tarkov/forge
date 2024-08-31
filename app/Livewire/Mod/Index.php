@@ -55,17 +55,15 @@ class Index extends Component
      */
     public function mount(): void
     {
-        // TODO: This should ideally be updated to only pull SPT versions that have mods associated with them so that no
-        //       empty options are shown in the listing filter.
-        $this->availableSptVersions = Cache::remember('availableSptVersions', 60 * 60, function () {
-            return SptVersion::select(['id', 'version', 'color_class'])->orderByDesc('version')->get();
+        $this->availableSptVersions = $this->availableSptVersions ?? Cache::remember('available-spt-versions', 60 * 60, function () {
+            return SptVersion::getVersionsForLastThreeMinors();
         });
 
         $this->sptVersions = $this->sptVersions ?? $this->getLatestMinorVersions()->pluck('version')->toArray();
     }
 
     /**
-     * Get all hotfix versions of the latest minor SPT version.
+     * Get all patch versions of the latest minor SPT version.
      */
     public function getLatestMinorVersions(): Collection
     {
@@ -87,6 +85,11 @@ class Index extends Component
             'sptVersions' => $this->sptVersions,
         ];
         $mods = (new ModFilter($filters))->apply()->paginate(16);
+
+        // Check if the current page is greater than the last page. Redirect if it is.
+        if ($mods->currentPage() > $mods->lastPage()) {
+            $this->redirectRoute('mods', ['page' => $mods->lastPage()]);
+        }
 
         return view('livewire.mod.index', compact('mods'));
     }

@@ -5,6 +5,7 @@ namespace App\Http\Filters;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ModFilter
 {
@@ -29,14 +30,21 @@ class ModFilter
      */
     private function baseQuery(): Builder
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
-            ->withTotalDownloads()
-            ->with([
-                'users:id,name',
-                'latestVersion' => function ($query) {
-                    $query->with('latestSptVersion:id,version,color_class');
-                },
-            ]);
+        return Mod::select([
+            'mods.id',
+            'mods.name',
+            'mods.slug',
+            'mods.teaser',
+            'mods.thumbnail',
+            'mods.featured',
+            'mods.downloads',
+            'mods.created_at',
+        ])->with([
+            'users:id,name',
+            'latestVersion' => function ($query) {
+                $query->with('latestSptVersion:id,version,color_class');
+            },
+        ]);
     }
 
     /**
@@ -50,6 +58,8 @@ class ModFilter
             }
         }
 
+        //dd($this->builder->toRawSql());
+
         return $this->builder;
     }
 
@@ -60,17 +70,20 @@ class ModFilter
     {
         // We order the "recently updated" mods by the ModVersion's updated_at value.
         if ($type === 'updated') {
-            return $this->builder->orderByDesc(
-                ModVersion::select('updated_at')
-                    ->whereColumn('mod_id', 'mods.id')
-                    ->orderByDesc('updated_at')
-                    ->take(1)
-            );
+            return $this->builder
+                ->joinSub(
+                    ModVersion::select('mod_id', DB::raw('MAX(updated_at) as latest_updated_at'))->groupBy('mod_id'),
+                    'latest_versions',
+                    'mods.id',
+                    '=',
+                    'latest_versions.mod_id'
+                )
+                ->orderByDesc('latest_versions.latest_updated_at');
         }
 
         // By default, we simply order by the column on the mods table/query.
         $column = match ($type) {
-            'downloaded' => 'total_downloads',
+            'downloaded' => 'downloads',
             default => 'created_at',
         };
 
@@ -98,12 +111,32 @@ class ModFilter
     }
 
     /**
-     * Filter the results to a specific SPT version.
+     * Filter the results to specific SPT versions.
      */
     private function sptVersions(array $versions): Builder
     {
-        return $this->builder->whereHas('latestVersion.sptVersions', function ($query) use ($versions) {
-            $query->whereIn('spt_versions.version', $versions);
-        });
+        // Parse the versions into major, minor, and patch arrays
+        $parsedVersions = array_map(fn ($version) => [
+            'major' => (int) explode('.', $version)[0],
+            'minor' => (int) (explode('.', $version)[1] ?? 0),
+            'patch' => (int) (explode('.', $version)[2] ?? 0),
+        ], $versions);
+
+        [$majorVersions, $minorVersions, $patchVersions] = array_map('array_unique', [
+            array_column($parsedVersions, 'major'),
+            array_column($parsedVersions, 'minor'),
+            array_column($parsedVersions, 'patch'),
+        ]);
+
+        return $this->builder
+            ->join('mod_versions as mv', 'mods.id', '=', 'mv.mod_id')
+            ->join('mod_version_spt_version as mvsv', 'mv.id', '=', 'mvsv.mod_version_id')
+            ->join('spt_versions as sv', 'mvsv.spt_version_id', '=', 'sv.id')
+            ->whereIn('sv.version_major', $majorVersions)
+            ->whereIn('sv.version_minor', $minorVersions)
+            ->whereIn('sv.version_patch', $patchVersions)
+            ->where('sv.version', '!=', '0.0.0')
+            ->groupBy('mods.id')
+            ->distinct();
     }
 }

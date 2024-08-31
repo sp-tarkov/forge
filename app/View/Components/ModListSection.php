@@ -6,6 +6,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\Component;
 
 class ModListSection extends Component
@@ -25,24 +26,22 @@ class ModListSection extends Component
 
     private function fetchFeaturedMods(): Collection
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
-            ->withTotalDownloads()
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'downloads'])
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion:id,version,color_class',
                 'users:id,name',
                 'license:id,name,link',
             ])
-            ->where('featured', true)
-            ->latest()
+            ->whereFeatured(true)
+            ->inRandomOrder()
             ->limit(6)
             ->get();
     }
 
     private function fetchLatestMods(): Collection
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
-            ->withTotalDownloads()
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at', 'downloads'])
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion:id,version,color_class',
@@ -56,20 +55,21 @@ class ModListSection extends Component
 
     private function fetchUpdatedMods(): Collection
     {
-        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
-            ->withTotalDownloads()
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'downloads'])
             ->with([
-                'latestVersion',
-                'latestVersion.latestSptVersion:id,version,color_class',
+                'lastUpdatedVersion',
+                'lastUpdatedVersion.latestSptVersion:id,version,color_class',
                 'users:id,name',
                 'license:id,name,link',
             ])
-            ->orderByDesc(
-                ModVersion::select('updated_at')
-                    ->whereColumn('mod_id', 'mods.id')
-                    ->orderByDesc('updated_at')
-                    ->take(1)
+            ->joinSub(
+                ModVersion::select('mod_id', DB::raw('MAX(updated_at) as latest_updated_at'))->groupBy('mod_id'),
+                'latest_versions',
+                'mods.id',
+                '=',
+                'latest_versions.mod_id'
             )
+            ->orderByDesc('latest_versions.latest_updated_at')
             ->limit(6)
             ->get();
     }
@@ -85,17 +85,17 @@ class ModListSection extends Component
     {
         return [
             [
-                'title' => 'Featured Mods',
+                'title' => __('Featured Mods'),
                 'mods' => $this->modsFeatured,
                 'versionScope' => 'latestVersion',
             ],
             [
-                'title' => 'Newest Mods',
+                'title' => __('Newest Mods'),
                 'mods' => $this->modsLatest,
                 'versionScope' => 'latestVersion',
             ],
             [
-                'title' => 'Recently Updated Mods',
+                'title' => __('Recently Updated Mods'),
                 'mods' => $this->modsUpdated,
                 'versionScope' => 'lastUpdatedVersion',
             ],

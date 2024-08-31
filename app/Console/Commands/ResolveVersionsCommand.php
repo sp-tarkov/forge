@@ -10,13 +10,13 @@ class ResolveVersionsCommand extends Command
 {
     protected $signature = 'app:resolve-versions';
 
-    protected $description = 'Resolve SPT and dependency versions for all mods.';
+    protected $description = 'Resolve SPT and dependency versions for all mods';
 
     public function handle(): void
     {
-        ResolveSptVersionsJob::dispatch()->onQueue('long');
-        ResolveDependenciesJob::dispatch()->onQueue('long');
+        ResolveSptVersionsJob::dispatch()->onQueue('default');
+        ResolveDependenciesJob::dispatch()->onQueue('default');
 
-        $this->info('The import job has been added to the queue.');
+        $this->info('ResolveSptVersionsJob and ResolveDependenciesJob have been added to the queue');
     }
 }

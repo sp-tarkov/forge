@@ -40,6 +40,15 @@ class Mod extends Model
     }
 
     /**
+     * Calculate the total number of downloads for the mod.
+     */
+    public function calculateDownloads(): void
+    {
+        $this->downloads = $this->versions->sum('downloads');
+        $this->saveQuietly();
+    }
+
+    /**
      * The relationship between a mod and its users.
      */
     public function users(): BelongsToMany
@@ -61,19 +70,8 @@ class Mod extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(ModVersion::class)
-            ->whereHas('sptVersions')
+            ->whereHas('latestSptVersion')
             ->orderByDesc('version');
-    }
-
-    /**
-     * Scope a query to include the total number of downloads for a mod.
-     */
-    public function scopeWithTotalDownloads($query)
-    {
-        return $query->addSelect([
-            'total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
-                ->whereColumn('mod_id', 'mods.id'),
-        ]);
     }
 
     /**
@@ -82,7 +80,7 @@ class Mod extends Model
     public function lastUpdatedVersion(): HasOne
     {
         return $this->hasOne(ModVersion::class)
-            ->whereHas('sptVersions')
+            ->whereHas('latestSptVersion')
             ->orderByDesc('updated_at');
     }
 

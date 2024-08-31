@@ -38,7 +38,7 @@
                                 <a href="{{ $user->profileUrl() }}" class="text-slate-600 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
-                        <p title="{{ __('Exactly') }} {{ $mod->total_downloads }}">{{ Number::downloads($mod->total_downloads) }} {{ __('Downloads') }}</p>
+                        <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
                         <p class="mt-2">
                             <span class="badge-version {{ $mod->latestVersion->latestSptVersion->first()->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                 {{ $mod->latestVersion->latestSptVersion->first()->version_formatted }} {{ __('Compatible') }}
