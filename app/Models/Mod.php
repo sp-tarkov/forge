@@ -34,8 +34,18 @@ class Mod extends Model
     {
         // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
+
         // Apply the global scope to exclude non-published mods.
         static::addGlobalScope(new PublishedScope);
+    }
+
+    /**
+     * Calculate the total number of downloads for the mod.
+     */
+    public function calculateDownloads(): void
+    {
+        $this->downloads = $this->versions->sum('downloads');
+        $this->saveQuietly();
     }
 
     /**
@@ -59,18 +69,9 @@ class Mod extends Model
      */
     public function versions(): HasMany
     {
-        return $this->hasMany(ModVersion::class)->orderByDesc('version');
-    }
-
-    /**
-     * Scope a query to include the total number of downloads for a mod.
-     */
-    public function scopeWithTotalDownloads($query)
-    {
-        return $query->addSelect([
-            'total_downloads' => ModVersion::selectRaw('SUM(downloads) AS total_downloads')
-                ->whereColumn('mod_id', 'mods.id'),
-        ]);
+        return $this->hasMany(ModVersion::class)
+            ->whereHas('latestSptVersion')
+            ->orderByDesc('version');
     }
 
     /**
@@ -79,6 +80,7 @@ class Mod extends Model
     public function lastUpdatedVersion(): HasOne
     {
         return $this->hasOne(ModVersion::class)
+            ->whereHas('latestSptVersion')
             ->orderByDesc('updated_at');
     }
 
@@ -87,10 +89,8 @@ class Mod extends Model
      */
     public function toSearchableArray(): array
     {
-        $latestVersion = $this->latestVersion()->with('sptVersion')->first();
-
         return [
-            'id' => (int) $this->id,
+            'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
@@ -99,8 +99,8 @@ class Mod extends Model
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
             'published_at' => strtotime($this->published_at),
-            'latestVersion' => $latestVersion?->sptVersion->version,
-            'latestVersionColorClass' => $latestVersion?->sptVersion->color_class,
+            'latestVersion' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->version_formatted,
+            'latestVersionColorClass' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->color_class,
         ];
     }
 
@@ -110,6 +110,7 @@ class Mod extends Model
     public function latestVersion(): HasOne
     {
         return $this->hasOne(ModVersion::class)
+            ->whereHas('sptVersions')
             ->orderByDesc('version')
             ->orderByDesc('updated_at')
             ->take(1);
@@ -120,7 +121,31 @@ class Mod extends Model
      */
     public function shouldBeSearchable(): bool
     {
-        return ! $this->disabled;
+        // Ensure the mod is not disabled.
+        if ($this->disabled) {
+            return false;
+        }
+
+        // Ensure the mod has a publish date.
+        if (is_null($this->published_at)) {
+            return false;
+        }
+
+        // Fetch the latest version instance.
+        $latestVersion = $this->latestVersion()?->first();
+
+        // Ensure the mod has a latest version.
+        if (is_null($latestVersion)) {
+            return false;
+        }
+
+        // Ensure the latest version has a latest SPT version.
+        if ($latestVersion->latestSptVersion()->doesntExist()) {
+            return false;
+        }
+
+        // All conditions are met; the mod should be searchable.
+        return true;
     }
 
     /**

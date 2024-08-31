@@ -10,23 +10,12 @@ return new class extends Migration
     {
         Schema::create('mod_dependencies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mod_version_id')
-                ->constrained('mod_versions')
-                ->cascadeOnDelete()
-                ->cascadeOnUpdate();
-            $table->foreignId('dependency_mod_id')
-                ->constrained('mods')
-                ->cascadeOnDelete()
-                ->cascadeOnUpdate();
-            $table->string('version_constraint'); // e.g., ^1.0.1
-            $table->foreignId('resolved_version_id')
-                ->nullable()
-                ->constrained('mod_versions')
-                ->nullOnDelete()
-                ->cascadeOnUpdate();
+            $table->foreignId('mod_version_id')->constrained('mod_versions')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('dependent_mod_id')->constrained('mods')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('constraint');
             $table->timestamps();
 
-            $table->unique(['mod_version_id', 'dependency_mod_id', 'version_constraint'], 'mod_dependencies_unique');
+            $table->index(['mod_version_id', 'dependent_mod_id']);
         });
     }
 

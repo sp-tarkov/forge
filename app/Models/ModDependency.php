@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
  * @property int $mod_version_id
  * @property int $dependency_mod_id
- * @property string $version_constraint
+ * @property string $constraint
  * @property int|null $resolved_version_id
  */
 class ModDependency extends Model
@@ -18,7 +19,7 @@ class ModDependency extends Model
     use HasFactory;
 
     /**
-     * The relationship between a mod dependency and mod version.
+     * The relationship between the mod dependency and the mod version.
      */
     public function modVersion(): BelongsTo
     {
@@ -26,18 +27,18 @@ class ModDependency extends Model
     }
 
     /**
-     * The relationship between a mod dependency and mod.
+     * The relationship between the mod dependency and the resolved dependency.
      */
-    public function dependencyMod(): BelongsTo
+    public function resolvedDependencies(): HasMany
     {
-        return $this->belongsTo(Mod::class, 'dependency_mod_id');
+        return $this->hasMany(ModResolvedDependency::class, 'dependency_id');
     }
 
     /**
-     * The relationship between a mod dependency and resolved mod version.
+     * The relationship between the mod dependency and the dependent mod.
      */
-    public function resolvedVersion(): BelongsTo
+    public function dependentMod(): BelongsTo
     {
-        return $this->belongsTo(ModVersion::class, 'resolved_version_id');
+        return $this->belongsTo(Mod::class, 'dependent_mod_id');
     }
 }

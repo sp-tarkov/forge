@@ -10,9 +10,9 @@ class ModPolicy
     /**
      * Determine whether the user can view multiple models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(?User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**

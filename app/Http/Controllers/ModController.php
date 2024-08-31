@@ -15,7 +15,7 @@ class ModController extends Controller
     {
         $this->authorize('viewAny', Mod::class);
 
-        return ModResource::collection(Mod::all());
+        return view('mod.index');
     }
 
     public function store(ModRequest $request)
@@ -27,16 +27,15 @@ class ModController extends Controller
 
     public function show(int $modId, string $slug)
     {
-        $mod = Mod::withTotalDownloads()
-            ->with([
-                'versions',
-                'versions.sptVersion',
-                'versions.dependencies',
-                'versions.dependencies.resolvedVersion',
-                'versions.dependencies.resolvedVersion.mod',
-                'users:id,name',
-                'license:id,name,link',
-            ])
+        $mod = Mod::with([
+            'versions',
+            'versions.latestSptVersion:id,version,color_class',
+            'versions.latestResolvedDependencies',
+            'versions.latestResolvedDependencies.mod:id,name,slug',
+            'users:id,name',
+            'license:id,name,link',
+        ])
+            ->whereHas('latestVersion')
             ->findOrFail($modId);
 
         if ($mod->slug !== $slug) {
@@ -45,9 +44,7 @@ class ModController extends Controller
 
         $this->authorize('view', $mod);
 
-        $latestVersion = $mod->versions->sortByDesc('version')->first();
-
-        return view('mod.show', compact(['mod', 'latestVersion']));
+        return view('mod.show', compact(['mod']));
     }
 
     public function update(ModRequest $request, Mod $mod)

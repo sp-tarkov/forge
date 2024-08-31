@@ -28,7 +28,7 @@ use Illuminate\Support\Str;
 use League\HTMLToMarkdown\HtmlConverter;
 use Stevebauman\Purify\Facades\Purify;
 
-class ImportHubData implements ShouldBeUnique, ShouldQueue
+class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -42,6 +42,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         $this->bringFileContentLocal();
         $this->bringFileVersionLabelsLocal();
         $this->bringFileVersionContentLocal();
+        $this->bringSptVersionTagsLocal();
 
         // Begin to import the data into the permanent local database tables.
         $this->importUsers();
@@ -53,9 +54,10 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         // Ensure that we've disconnected from the Hub database, clearing temporary tables.
         DB::connection('mysql_hub')->disconnect();
 
-        // Re-sync search.
         Artisan::call('app:search-sync');
-
+        Artisan::call('app:resolve-versions');
+        Artisan::call('app:count-mods');
+        Artisan::call('app:update-downloads');
         Artisan::call('cache:clear');
     }
 
@@ -70,19 +72,24 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
             avatarExtension VARCHAR(255),
             userID INT,
             fileHash VARCHAR(255)
-        )');
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('wcf1_user_avatar')
             ->orderBy('avatarID')
             ->chunk(200, function ($avatars) {
+                $insertData = [];
                 foreach ($avatars as $avatar) {
-                    DB::table('temp_user_avatar')->insert([
+                    $insertData[] = [
                         'avatarID' => (int) $avatar->avatarID,
                         'avatarExtension' => $avatar->avatarExtension,
                         'userID' => (int) $avatar->userID,
                         'fileHash' => $avatar->fileHash,
-                    ]);
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_user_avatar')->insert($insertData);
                 }
             });
     }
@@ -93,17 +100,25 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileAuthorsLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_author');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_author (fileID INT, userID INT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_author (
+            fileID INT,
+            userID INT
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_author')
             ->orderBy('fileID')
             ->chunk(200, function ($relationships) {
+                $insertData = [];
                 foreach ($relationships as $relationship) {
-                    DB::table('temp_file_author')->insert([
+                    $insertData[] = [
                         'fileID' => (int) $relationship->fileID,
                         'userID' => (int) $relationship->userID,
-                    ]);
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_file_author')->insert($insertData);
                 }
             });
     }
@@ -114,18 +129,27 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileOptionsLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_option_values (fileID INT, optionID INT, optionValue VARCHAR(255)) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_option_values (
+            fileID INT,
+            optionID INT,
+            optionValue VARCHAR(255)
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_option_value')
             ->orderBy('fileID')
             ->chunk(200, function ($options) {
+                $insertData = [];
                 foreach ($options as $option) {
-                    DB::table('temp_file_option_values')->insert([
+                    $insertData[] = [
                         'fileID' => (int) $option->fileID,
                         'optionID' => (int) $option->optionID,
                         'optionValue' => $option->optionValue,
-                    ]);
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_file_option_values')->insert($insertData);
                 }
             });
     }
@@ -136,19 +160,29 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileContentLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_content (fileID INT, subject VARCHAR(255), teaser VARCHAR(255), message LONGTEXT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_content (
+            fileID INT,
+            subject VARCHAR(255),
+            teaser VARCHAR(255),
+            message LONGTEXT
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_content')
             ->orderBy('fileID')
             ->chunk(200, function ($contents) {
+                $insertData = [];
                 foreach ($contents as $content) {
-                    DB::table('temp_file_content')->insert([
+                    $insertData[] = [
                         'fileID' => (int) $content->fileID,
                         'subject' => $content->subject,
                         'teaser' => $content->teaser,
                         'message' => $content->message,
-                    ]);
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_file_content')->insert($insertData);
                 }
             });
     }
@@ -159,18 +193,26 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileVersionLabelsLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_version_labels');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_version_labels (labelID INT, objectID INT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_version_labels (
+            labelID INT,
+            objectID INT
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('wcf1_label_object')
             ->where('objectTypeID', 387)
             ->orderBy('labelID')
             ->chunk(200, function ($options) {
+                $insertData = [];
                 foreach ($options as $option) {
-                    DB::table('temp_file_version_labels')->insert([
+                    $insertData[] = [
                         'labelID' => (int) $option->labelID,
                         'objectID' => (int) $option->objectID,
-                    ]);
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_file_version_labels')->insert($insertData);
                 }
             });
     }
@@ -181,17 +223,54 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
     protected function bringFileVersionContentLocal(): void
     {
         DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_file_version_content');
-        DB::statement('CREATE TEMPORARY TABLE temp_file_version_content (versionID INT, description TEXT) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+        DB::statement('CREATE TEMPORARY TABLE temp_file_version_content (
+            versionID INT,
+            description TEXT
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
 
         DB::connection('mysql_hub')
             ->table('filebase1_file_version_content')
             ->orderBy('versionID')
             ->chunk(200, function ($options) {
+                $insertData = [];
                 foreach ($options as $option) {
-                    DB::table('temp_file_version_content')->insert([
+                    $insertData[] = [
                         'versionID' => (int) $option->versionID,
                         'description' => $option->description,
-                    ]);
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_file_version_content')->insert($insertData);
+                }
+            });
+    }
+
+    private function bringSptVersionTagsLocal(): void
+    {
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_spt_version_tags');
+        DB::statement('CREATE TEMPORARY TABLE temp_spt_version_tags (
+            hub_id INT,
+            version VARCHAR(255),
+            color_class VARCHAR(255)
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+
+        DB::connection('mysql_hub')
+            ->table('wcf1_label')
+            ->where('groupID', 1)
+            ->orderBy('labelID')
+            ->chunk(100, function (Collection $versions) {
+                $insertData = [];
+                foreach ($versions as $version) {
+                    $insertData[] = [
+                        'hub_id' => (int) $version->labelID,
+                        'version' => $version->label,
+                        'color_class' => $version->cssClassName,
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_spt_version_tags')->insert($insertData);
                 }
             });
     }
@@ -534,37 +613,137 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
      */
     protected function importSptVersions(): void
     {
-        DB::connection('mysql_hub')
-            ->table('wcf1_label')
-            ->where('groupID', 1)
-            ->chunkById(100, function (Collection $versions) {
-                $insertData = [];
-                foreach ($versions as $version) {
-                    $insertData[] = [
-                        'hub_id' => (int) $version->labelID,
-                        'version' => $version->label,
-                        'color_class' => $this->translateColour($version->cssClassName),
-                    ];
-                }
+        $domain = config('services.gitea.domain');
+        $token = config('services.gitea.token');
 
-                if (! empty($insertData)) {
-                    DB::table('spt_versions')->upsert($insertData, ['hub_id'], ['version', 'color_class']);
-                }
-            }, 'labelID');
+        if (empty($domain) || empty($token)) {
+            return;
+        }
+
+        $url = "{$domain}/api/v1/repos/SPT/Stable-releases/releases?draft=false&pre-release=false&token={$token}";
+
+        $response = json_decode(file_get_contents($url), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('JSON Decode Error: '.json_last_error_msg());
+        }
+
+        if (empty($response)) {
+            throw new Exception('No version data found in the API response.');
+        }
+
+        $latestVersion = $this->getLatestVersion($response);
+
+        $insertData = [];
+        foreach ($response as $version) {
+            $insertData[] = [
+                'version' => $version['tag_name'],
+                'link' => $version['html_url'],
+                'color_class' => $this->detectVersionColor($version['tag_name'], $latestVersion),
+                'created_at' => Carbon::parse($version['created_at'], 'UTC'),
+                'updated_at' => Carbon::parse($version['created_at'], 'UTC'),
+            ];
+        }
+
+        // Add a fake 0.0.0 version for outdated mods.
+        $insertData[] = [
+            'version' => '0.0.0',
+            'link' => '',
+            'color_class' => 'black',
+            'created_at' => Carbon::now('UTC'),
+            'updated_at' => Carbon::now('UTC'),
+        ];
+
+        // Upsert won't work here. Do it manually. :(
+        foreach ($insertData as $data) {
+            $existingVersion = SptVersion::where('version', $data['version'])->first();
+            if ($existingVersion) {
+                $existingVersion->update([
+                    'link' => $data['link'],
+                    'color_class' => $data['color_class'],
+                    'created_at' => $data['created_at'],
+                    'updated_at' => $data['updated_at'],
+                ]);
+            } else {
+                SptVersion::create($data);
+            }
+        }
     }
 
     /**
-     * Translate the colour class from the Hub database to the local database.
+     * Get the latest current version from the response data.
      */
-    protected function translateColour(string $colour = ''): string
+    protected function getLatestVersion(array $versions): string
     {
-        return match ($colour) {
-            'green' => 'green',
-            'slightly-outdated' => 'lime',
-            'yellow' => 'yellow',
-            'red' => 'red',
-            default => 'gray',
-        };
+        $semanticVersions = array_map(
+            fn ($version) => $this->extractSemanticVersion($version['tag_name']),
+            $versions
+        );
+
+        usort($semanticVersions, 'version_compare');
+
+        return end($semanticVersions);
+    }
+
+    /**
+     * Extract the last semantic version from a string.
+     * If the version has no patch number, return it as `~<major>.<minor>.0`.
+     */
+    protected function extractSemanticVersion(string $versionString, bool $appendPatch = false): ?string
+    {
+        // Match both two-part and three-part semantic versions
+        preg_match_all('/\b\d+\.\d+(?:\.\d+)?\b/', $versionString, $matches);
+
+        // Get the last version found, if any
+        $version = end($matches[0]) ?: null;
+
+        if (! $appendPatch) {
+            return $version;
+        }
+
+        // If version is two-part (e.g., "3.9"), add ".0" and prefix with "~"
+        if ($version && preg_match('/^\d+\.\d+$/', $version)) {
+            $version = '~'.$version.'.0';
+        }
+
+        return $version;
+    }
+
+    /**
+     * Translate the version string into a color class.
+     */
+    protected function detectVersionColor(string $versionString, string $currentVersion): string
+    {
+        $version = $this->extractSemanticVersion($versionString);
+        if (! $version) {
+            return 'gray';
+        }
+
+        if ($version === '0.0.0') {
+            return 'black';
+        }
+
+        [$currentMajor, $currentMinor] = explode('.', $currentVersion);
+        [$major, $minor] = explode('.', $version);
+
+        $currentMajor = (int) $currentMajor;
+        $currentMinor = (int) $currentMinor;
+        $major = (int) $major;
+        $minor = (int) $minor;
+
+        if ($major == $currentMajor) {
+            $difference = $currentMinor - $minor;
+
+            return match ($difference) {
+                0 => 'green',
+                1 => 'lime',
+                2 => 'yellow',
+                3 => 'red',
+                default => 'gray',
+            };
+        }
+
+        return 'gray';
     }
 
     /**
@@ -748,17 +927,21 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         continue;
                     }
 
+                    // Fetch the version string using the labelID from the hub.
+                    $sptVersionTemp = DB::table('temp_spt_version_tags')->where('hub_id', $versionLabel->labelID)->value('version');
+                    $sptVersionConstraint = $this->extractSemanticVersion($sptVersionTemp, appendPatch: true) ?? '0.0.0';
+
                     $insertData[] = [
                         'hub_id' => (int) $version->versionID,
                         'mod_id' => $modId,
-                        'version' => $version->versionNumber,
+                        'version' => $this->extractSemanticVersion($version->versionNumber) ?? '0.0.0',
                         'description' => $this->cleanHubContent($versionContent->description ?? ''),
                         'link' => $version->downloadURL,
-                        'spt_version_id' => SptVersion::whereHubId($versionLabel->labelID)->value('id'),
+                        'spt_version_constraint' => $sptVersionConstraint,
                         'virus_total_link' => $optionVirusTotal?->virus_total_link ?? '',
                         'downloads' => max((int) $version->downloads, 0), // At least 0.
                         'disabled' => (bool) $version->isDisabled,
-                        'published_at' => Carbon::parse($version->uploadTime, 'UTC'),
+                        'published_at' => $sptVersionConstraint === '0.0.0' ? null : Carbon::parse($version->uploadTime, 'UTC'),
                         'created_at' => Carbon::parse($version->uploadTime, 'UTC'),
                         'updated_at' => Carbon::parse($version->uploadTime, 'UTC'),
                     ];
@@ -770,9 +953,10 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
                         'version',
                         'description',
                         'link',
-                        'spt_version_id',
+                        'spt_version_constraint',
                         'virus_total_link',
                         'downloads',
+                        'disabled',
                         'published_at',
                         'created_at',
                         'updated_at',
@@ -793,6 +977,7 @@ class ImportHubData implements ShouldBeUnique, ShouldQueue
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_version_labels');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_version_content');
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_spt_version_tags');
 
         // Close the connections. This should drop the temporary tables as well, but I like to be explicit.
         DB::connection('mysql_hub')->disconnect();

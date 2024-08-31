@@ -2,32 +2,66 @@
 
 namespace App\Observers;
 
-use App\Models\ModDependency;
 use App\Models\ModVersion;
-use App\Services\ModVersionService;
+use App\Services\DependencyVersionService;
+use App\Services\SptVersionService;
 
 class ModVersionObserver
 {
-    protected ModVersionService $modVersionService;
+    protected DependencyVersionService $dependencyVersionService;
 
-    public function __construct(ModVersionService $modVersionService)
-    {
-        $this->modVersionService = $modVersionService;
+    protected SptVersionService $sptVersionService;
+
+    public function __construct(
+        DependencyVersionService $dependencyVersionService,
+        SptVersionService $sptVersionService,
+    ) {
+        $this->dependencyVersionService = $dependencyVersionService;
+        $this->sptVersionService = $sptVersionService;
     }
 
+    /**
+     * Handle the ModVersion "saved" event.
+     */
     public function saved(ModVersion $modVersion): void
     {
-        $dependencies = ModDependency::where('resolved_version_id', $modVersion->id)->get();
-        foreach ($dependencies as $dependency) {
-            $this->modVersionService->resolveDependencies($dependency->modVersion);
+        $this->dependencyVersionService->resolve($modVersion);
+
+        $this->sptVersionService->resolve($modVersion);
+
+        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
+        $this->updateRelatedMod($modVersion);
+    }
+
+    /**
+     * Update properties on related SptVersions.
+     */
+    protected function updateRelatedSptVersions(ModVersion $modVersion): void
+    {
+        $sptVersions = $modVersion->sptVersions; // These should already be resolved.
+
+        foreach ($sptVersions as $sptVersion) {
+            $sptVersion->updateModCount();
         }
     }
 
+    /**
+     * Update properties on the related Mod.
+     */
+    protected function updateRelatedMod(ModVersion $modVersion): void
+    {
+        $mod = $modVersion->mod;
+        $mod->calculateDownloads();
+    }
+
+    /**
+     * Handle the ModVersion "deleted" event.
+     */
     public function deleted(ModVersion $modVersion): void
     {
-        $dependencies = ModDependency::where('resolved_version_id', $modVersion->id)->get();
-        foreach ($dependencies as $dependency) {
-            $this->modVersionService->resolveDependencies($dependency->modVersion);
-        }
+        $this->dependencyVersionService->resolve($modVersion);
+
+        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
+        $this->updateRelatedMod($modVersion);
     }
 }

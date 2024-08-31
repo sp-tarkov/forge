@@ -6,7 +6,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\Component;
 
 class ModListSection extends Component
@@ -26,47 +26,52 @@ class ModListSection extends Component
 
     private function fetchFeaturedMods(): Collection
     {
-        return Cache::remember('homepage-featured-mods', now()->addMinutes(5), function () {
-            return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
-                ->withTotalDownloads()
-                ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
-                ->whereHas('latestVersion')
-                ->where('featured', true)
-                ->latest()
-                ->limit(6)
-                ->get();
-        });
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'downloads'])
+            ->with([
+                'latestVersion',
+                'latestVersion.latestSptVersion:id,version,color_class',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->whereFeatured(true)
+            ->inRandomOrder()
+            ->limit(6)
+            ->get();
     }
 
     private function fetchLatestMods(): Collection
     {
-        return Cache::remember('homepage-latest-mods', now()->addMinutes(5), function () {
-            return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at'])
-                ->withTotalDownloads()
-                ->with(['latestVersion', 'latestVersion.sptVersion', 'users:id,name'])
-                ->whereHas('latestVersion')
-                ->latest()
-                ->limit(6)
-                ->get();
-        });
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at', 'downloads'])
+            ->with([
+                'latestVersion',
+                'latestVersion.latestSptVersion:id,version,color_class',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->latest()
+            ->limit(6)
+            ->get();
     }
 
     private function fetchUpdatedMods(): Collection
     {
-        return Cache::remember('homepage-updated-mods', now()->addMinutes(5), function () {
-            return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured'])
-                ->withTotalDownloads()
-                ->with(['lastUpdatedVersion', 'lastUpdatedVersion.sptVersion', 'users:id,name'])
-                ->whereHas('lastUpdatedVersion')
-                ->orderByDesc(
-                    ModVersion::select('updated_at')
-                        ->whereColumn('mod_id', 'mods.id')
-                        ->orderByDesc('updated_at')
-                        ->take(1)
-                )
-                ->limit(6)
-                ->get();
-        });
+        return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'downloads'])
+            ->with([
+                'lastUpdatedVersion',
+                'lastUpdatedVersion.latestSptVersion:id,version,color_class',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->joinSub(
+                ModVersion::select('mod_id', DB::raw('MAX(updated_at) as latest_updated_at'))->groupBy('mod_id'),
+                'latest_versions',
+                'mods.id',
+                '=',
+                'latest_versions.mod_id'
+            )
+            ->orderByDesc('latest_versions.latest_updated_at')
+            ->limit(6)
+            ->get();
     }
 
     public function render(): View
@@ -80,17 +85,17 @@ class ModListSection extends Component
     {
         return [
             [
-                'title' => 'Featured Mods',
+                'title' => __('Featured Mods'),
                 'mods' => $this->modsFeatured,
                 'versionScope' => 'latestVersion',
             ],
             [
-                'title' => 'Newest Mods',
+                'title' => __('Newest Mods'),
                 'mods' => $this->modsLatest,
                 'versionScope' => 'latestVersion',
             ],
             [
-                'title' => 'Recently Updated Mods',
+                'title' => __('Recently Updated Mods'),
                 'mods' => $this->modsUpdated,
                 'versionScope' => 'lastUpdatedVersion',
             ],

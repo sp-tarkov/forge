@@ -3,31 +3,30 @@
 namespace App\Observers;
 
 use App\Models\ModDependency;
-use App\Models\ModVersion;
-use App\Services\ModVersionService;
+use App\Services\DependencyVersionService;
 
 class ModDependencyObserver
 {
-    protected ModVersionService $modVersionService;
+    protected DependencyVersionService $dependencyVersionService;
 
-    public function __construct(ModVersionService $modVersionService)
+    public function __construct(DependencyVersionService $dependencyVersionService)
     {
-        $this->modVersionService = $modVersionService;
+        $this->dependencyVersionService = $dependencyVersionService;
     }
 
+    /**
+     * Handle the ModDependency "saved" event.
+     */
     public function saved(ModDependency $modDependency): void
     {
-        $modVersion = ModVersion::find($modDependency->mod_version_id);
-        if ($modVersion) {
-            $this->modVersionService->resolveDependencies($modVersion);
-        }
+        $this->dependencyVersionService->resolve($modDependency->modVersion);
     }
 
+    /**
+     * Handle the ModDependency "deleted" event.
+     */
     public function deleted(ModDependency $modDependency): void
     {
-        $modVersion = ModVersion::find($modDependency->mod_version_id);
-        if ($modVersion) {
-            $this->modVersionService->resolveDependencies($modVersion);
-        }
+        $this->dependencyVersionService->resolve($modDependency->modVersion);
     }
 }

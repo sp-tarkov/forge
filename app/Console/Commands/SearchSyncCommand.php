@@ -5,11 +5,11 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
-class SearchSync extends Command
+class SearchSyncCommand extends Command
 {
     protected $signature = 'app:search-sync';
 
-    protected $description = 'Syncs all search settings and indexes with the database data.';
+    protected $description = 'Syncs all search settings and indexes with the database data';
 
     public function handle(): void
     {
@@ -18,6 +18,6 @@ class SearchSync extends Command
         Artisan::call('scout:import', ['model' => '\App\Models\Mod']);
         Artisan::call('scout:import', ['model' => '\App\Models\User']);
 
-        $this->info('The search synchronisation jobs have been added to the queue.');
+        $this->info('The search synchronisation jobs have been added to the queue');
     }
 }

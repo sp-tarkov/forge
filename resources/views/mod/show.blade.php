@@ -10,7 +10,10 @@
         <div class="lg:col-span-2 flex flex-col gap-6">
 
             {{-- Main Mod Details Card --}}
-            <div class="p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                @if ($mod->featured)
+                    <div class="ribbon z-10">{{ __('Featured!') }}</div>
+                @endif
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
                         @if (empty($mod->thumbnail))
@@ -25,7 +28,7 @@
                             <h2 class="pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 {{ $mod->name }}
                                 <span class="font-light text-nowrap text-gray-700 dark:text-gray-400">
-                                    {{ $latestVersion->version }}
+                                    {{ $mod->latestVersion->version }}
                                 </span>
                             </h2>
                         </div>
@@ -35,10 +38,10 @@
                                 <a href="{{ $user->profileUrl() }}" class="text-slate-600 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
-                        <p title="{{ __('Exactly') }} {{ $mod->total_downloads }}">{{ Number::downloads($mod->total_downloads) }} {{ __('Downloads') }}</p>
+                        <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
                         <p class="mt-2">
-                            <span class="badge-version {{ $latestVersion->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                {{ $latestVersion->sptVersion->version }} {{ __('Compatible') }}
+                            <span class="badge-version {{ $mod->latestVersion->latestSptVersion->first()->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                {{ $mod->latestVersion->latestSptVersion->first()->version_formatted }} {{ __('Compatible') }}
                             </span>
                         </p>
                     </div>
@@ -51,8 +54,8 @@
             </div>
 
             {{-- Mobile Download Button --}}
-            <a href="{{ $latestVersion->link }}" class="block lg:hidden">
-                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $latestVersion->version }})</button>
+            <a href="{{ $mod->latestVersion->link }}" class="block lg:hidden">
+                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
             </a>
 
             {{-- Tabs --}}
@@ -105,8 +108,8 @@
                                     <p class="text-gray-700 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <span class="badge-version {{ $version->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                        {{ $version->sptVersion->version }}
+                                    <span class="badge-version {{ $version->latestSptVersion->first()->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                        {{ $version->latestSptVersion->first()->version_formatted }}
                                     </span>
                                     <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
                                 </div>
@@ -114,20 +117,18 @@
                                     <span>{{ __('Created') }} {{ $version->created_at->format("M d, h:m a") }}</span>
                                     <span>{{ __('Updated') }} {{ $version->updated_at->format("M d, h:m a") }}</span>
                                 </div>
-                                @if ($version->dependencies->isNotEmpty() && $version->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
+
+                                {{-- Display latest resolved dependencies --}}
+                                @if ($version->latestResolvedDependencies->isNotEmpty())
                                     <div class="text-gray-600 dark:text-gray-400">
                                         {{ __('Dependencies:') }}
-                                        @foreach ($version->dependencies as $dependency)
-                                            @if ($dependency->resolvedVersion?->mod)
-                                                <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}">
-                                                    {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
-                                                </a>@if (!$loop->last), @endif
-                                            @endif
+                                        @foreach ($version->latestResolvedDependencies as $resolvedDependency)
+                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last), @endif
                                         @endforeach
                                     </div>
                                 @endif
                             </div>
-                            <div class="p-3 user-markdown">
+                            <div class="py-3 user-markdown">
                                 {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
                                 {!! Str::markdown($version->description) !!}
                             </div>
@@ -146,8 +147,8 @@
         <div class="col-span-1 flex flex-col gap-6">
 
             {{-- Desktop Download Button --}}
-            <a href="{{ $latestVersion->link }}" class="hidden lg:block">
-                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $latestVersion->version }})</button>
+            <a href="{{ $mod->latestVersion->link }}" class="hidden lg:block">
+                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
             </a>
 
             {{-- Additional Mod Details --}}
@@ -174,21 +175,21 @@
                             </p>
                         </li>
                     @endif
-                    @if ($latestVersion->virus_total_link)
+                    @if ($mod->latestVersion->virus_total_link)
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version VirusTotal Result') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $latestVersion->virus_total_link }}" title="{{ $latestVersion->virus_total_link }}" target="_blank">
-                                    {{ $latestVersion->virus_total_link }}
+                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank">
+                                    {{ $mod->latestVersion->virus_total_link }}
                                 </a>
                             </p>
                         </li>
                     @endif
-                    @if ($latestVersion->dependencies->isNotEmpty() && $latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
+                    @if ($mod->latestVersion->dependencies->isNotEmpty() && $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
-                                @foreach ($latestVersion->dependencies as $dependency)
+                                @foreach ($mod->latestVersion->dependencies as $dependency)
                                     <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}">
                                         {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />

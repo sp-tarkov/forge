@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
-class UploadAssets extends Command
+class UploadAssetsCommand extends Command
 {
     protected $signature = 'app:upload-assets';
 
