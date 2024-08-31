@@ -5,6 +5,7 @@ namespace App\Http\Filters;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ModFilter
 {
@@ -36,15 +37,14 @@ class ModFilter
             'mods.teaser',
             'mods.thumbnail',
             'mods.featured',
+            'mods.downloads',
             'mods.created_at',
-        ])
-            ->withTotalDownloads()
-            ->with([
-                'users:id,name',
-                'latestVersion' => function ($query) {
-                    $query->with('latestSptVersion:id,version,color_class');
-                },
-            ]);
+        ])->with([
+            'users:id,name',
+            'latestVersion' => function ($query) {
+                $query->with('latestSptVersion:id,version,color_class');
+            },
+        ]);
     }
 
     /**
@@ -70,17 +70,20 @@ class ModFilter
     {
         // We order the "recently updated" mods by the ModVersion's updated_at value.
         if ($type === 'updated') {
-            return $this->builder->orderByDesc(
-                ModVersion::select('updated_at')
-                    ->whereColumn('mod_id', 'mods.id')
-                    ->orderByDesc('updated_at')
-                    ->take(1)
-            );
+            return $this->builder
+                ->joinSub(
+                    ModVersion::select('mod_id', DB::raw('MAX(updated_at) as latest_updated_at'))->groupBy('mod_id'),
+                    'latest_versions',
+                    'mods.id',
+                    '=',
+                    'latest_versions.mod_id'
+                )
+                ->orderByDesc('latest_versions.latest_updated_at');
         }
 
         // By default, we simply order by the column on the mods table/query.
         $column = match ($type) {
-            'downloaded' => 'total_downloads',
+            'downloaded' => 'downloads',
             default => 'created_at',
         };
 

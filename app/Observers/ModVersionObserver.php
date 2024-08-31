@@ -29,7 +29,8 @@ class ModVersionObserver
 
         $this->sptVersionService->resolve($modVersion);
 
-        $this->updateRelatedSptVersions($modVersion); // Always done after resolving SPT versions.
+        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
+        $this->updateRelatedMod($modVersion);
     }
 
     /**
@@ -45,12 +46,22 @@ class ModVersionObserver
     }
 
     /**
+     * Update properties on the related Mod.
+     */
+    protected function updateRelatedMod(ModVersion $modVersion): void
+    {
+        $mod = $modVersion->mod;
+        $mod->calculateDownloads();
+    }
+
+    /**
      * Handle the ModVersion "deleted" event.
      */
     public function deleted(ModVersion $modVersion): void
     {
         $this->dependencyVersionService->resolve($modVersion);
 
-        $this->updateRelatedSptVersions($modVersion); // Always done after resolving SPT versions.
+        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
+        $this->updateRelatedMod($modVersion);
     }
 }

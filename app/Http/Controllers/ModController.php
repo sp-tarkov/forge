@@ -27,15 +27,14 @@ class ModController extends Controller
 
     public function show(int $modId, string $slug)
     {
-        $mod = Mod::withTotalDownloads()
-            ->with([
-                'versions',
-                'versions.latestSptVersion:id,version,color_class',
-                'versions.latestResolvedDependencies',
-                'versions.latestResolvedDependencies.mod:id,name,slug',
-                'users:id,name',
-                'license:id,name,link',
-            ])
+        $mod = Mod::with([
+            'versions',
+            'versions.latestSptVersion:id,version,color_class',
+            'versions.latestResolvedDependencies',
+            'versions.latestResolvedDependencies.mod:id,name,slug',
+            'users:id,name',
+            'license:id,name,link',
+        ])
             ->whereHas('latestVersion')
             ->findOrFail($modId);
 

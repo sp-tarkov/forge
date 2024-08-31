@@ -26,6 +26,7 @@ return new class extends Migration
                 ->constrained('licenses')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
+            $table->unsignedBigInteger('downloads')->default(0);
             $table->string('source_code_link');
             $table->boolean('featured')->default(false);
             $table->boolean('contains_ai_content')->default(false);
