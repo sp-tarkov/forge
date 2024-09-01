@@ -45,7 +45,7 @@
                         @endif
                     @endif
                     <div class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
-                        <button type="button"
+                        <button type="button" wire:click="message"
                                 class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
                             <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300" viewBox="0 0 20 20"
                                  fill="currentColor" aria-hidden="true">
@@ -71,10 +71,10 @@
         </div>
         <div class="flex flex-col justify-center items-center">
             <div class="flex w-full max-w-sm">
-                <livewire:user-stack :label="__('Followers')" :users="$user->followers"/>
+                <livewire:user-stack :label="__('Followers')" :users="$followers"/>
             </div>
             <div class="flex w-full max-w-sm">
-                <livewire:user-stack :label="__('Following')" :users="$user->following"/>
+                <livewire:user-stack :label="__('Following')"  :users="$following"/>
             </div>
         </div>
     </div>

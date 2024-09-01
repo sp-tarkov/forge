@@ -53,20 +53,29 @@
                         </div>
 
                         @if(auth()->id() != $user->id)
-                            @if(auth()->user()->isFollowing($user))
+                            @if(count($authFollowingIds) !== 0 && in_array($user->id, $authFollowingIds))
                                 {{-- following button --}}
                                 <div class="flex invisible group-hover/item:visible justify-end items-center mr-10">
-                                    <button class="p-2 h-fit text-white bg-cyan-500 hover:bg-cyan-700 rounded-lg"
-                                            wire:click="unfollowUser({{$user}})">
-                                        {{__('Following')}}
+                                    <button type="button" wire:click="unfollowUser({{$user}})"
+                                            class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-red-400 dark:text-red-600"
+                                             viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path
+                                                d="m12.82 5.58-.82.822-.824-.824a5.375 5.375 0 1 0-7.601 7.602l7.895 7.895a.75.75 0 0 0 1.06 0l7.902-7.897a5.376 5.376 0 0 0-.001-7.599 5.38 5.38 0 0 0-7.611 0Z" />
+                                        </svg>
+                                        <span>{{__('Following')}}</span>
                                     </button>
                                 </div>
                             @else
                                 {{-- follow button --}}
                                 <div class="flex invisible group-hover/item:visible justify-end items-center mr-10">
-                                    <button class="p-2 h-fit text-white bg-cyan-500 hover:bg-cyan-700 rounded-lg"
-                                            wire:click="followUser({{$user}})">
-                                        {{__('Follow')}}
+                                    <button type="button" wire:click="followUser({{$user}})"
+                                            class="inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300"
+                                             viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="m12.82 5.58-.82.822-.824-.824a5.375 5.375 0 1 0-7.601 7.602l7.895 7.895a.75.75 0 0 0 1.06 0l7.902-7.897a5.376 5.376 0 0 0-.001-7.599 5.38 5.38 0 0 0-7.611 0Zm6.548 6.54L12 19.485 4.635 12.12a3.875 3.875 0 1 1 5.48-5.48l1.358 1.357a.75.75 0 0 0 1.073-.012L13.88 6.64a3.88 3.88 0 0 1 5.487 5.48Z"/>
+                                        </svg>
+                                        <span>{{__("Follow")}}</span>
                                     </button>
                                 </div>
                             @endif
@@ -82,7 +91,7 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-button wire:click="toggleViewAll">
+            <x-button wire:click="closeDialog">
                 {{__('Close')}}
             </x-button>
         </x-slot>
