@@ -76,13 +76,23 @@ class User extends Authenticatable implements MustVerifyEmail
     public function follow(User|int $user): void
     {
         $userId = $user instanceof User ? $user->id : $user;
+
+        if ($this->id === $userId) {
+            // don't allow following yourself
+            return;
+        }
+
         $this->following()->syncWithoutDetaching($userId);
     }
 
     public function unfollow(User|int $user): void
     {
         $userId = $user instanceof User ? $user->id : $user;
-        $this->following()->detach($userId);
+
+        // make sure the user is being followed before trying to detach
+        if ($this->isFollowing($userId)) {
+            $this->following()->detach($userId);
+        }
     }
 
     /**
