@@ -13,6 +13,7 @@ use App\Observers\ModVersionObserver;
 use App\Observers\SptVersionObserver;
 use App\Services\LatestSptVersionService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
@@ -56,6 +57,10 @@ class AppServiceProvider extends ServiceProvider
                 maxPrecision: null,
                 abbreviate: true
             );
+        });
+
+        Blade::directive('formatDatetime', function (string $expression) {
+            return "<?php if (($expression)->diff(now())->m > 1) { echo ($expression)->format('M d, Y'); } elseif(($expression)->diff(now())->d === 0) { echo ($expression)->diffForHumans(); } else { echo ($expression)->format('M d h:m a'); } ?>";
         });
     }
 }

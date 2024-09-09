@@ -114,8 +114,8 @@
                                     <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
                                 </div>
                                 <div class="flex items-center justify-between text-gray-600 dark:text-gray-400">
-                                    <span>{{ __('Created') }} {{ $version->created_at->format("M d, h:m a") }}</span>
-                                    <span>{{ __('Updated') }} {{ $version->updated_at->format("M d, h:m a") }}</span>
+                                    <span>{{ __('Created') }} @formatDatetime($version->created_at)</span>
+                                    <span>{{ __('Updated') }} @formatDatetime($version->updated_at)</span>
                                 </div>
 
                                 {{-- Display latest resolved dependencies --}}
