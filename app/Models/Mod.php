@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
@@ -141,6 +142,14 @@ class Mod extends Model
 
         // Ensure the latest version has a latest SPT version.
         if ($latestVersion->latestSptVersion()->doesntExist()) {
+            return false;
+        }
+
+        // Ensure the latest SPT version is within the last three minor versions.
+        $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, function () {
+            return SptVersion::getVersionsForLastThreeMinors();
+        });
+        if (! in_array($latestVersion->latestSptVersion()->first()->version, $activeSptVersions->pluck('version')->toArray())) {
             return false;
         }
 
