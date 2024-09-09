@@ -53,13 +53,13 @@
                 <div class="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
                     <div class="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
                         @php
-                            $totalVersions = count($availableSptVersions);
+                            $totalVersions = count($activeSptVersions);
                             $half = ceil($totalVersions / 2);
                         @endphp
                         <fieldset>
                             <legend class="block font-medium text-gray-900 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
                             <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                                @foreach ($availableSptVersions as $index => $version)
+                                @foreach ($activeSptVersions as $index => $version)
                                     @if ($index < $half)
                                         <x-filter-checkbox id="sptVersions-{{ $index }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
                                     @endif
@@ -69,7 +69,7 @@
                         <fieldset>
                             <legend class="block font-medium text-gray-900 dark:text-gray-100">&nbsp;</legend>
                             <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                                @foreach ($availableSptVersions as $index => $version)
+                                @foreach ($activeSptVersions as $index => $version)
                                     @if ($index >= $half)
                                         <x-filter-checkbox id="sptVersions-{{ $index }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
                                     @endif
