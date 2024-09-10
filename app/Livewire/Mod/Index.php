@@ -48,14 +48,14 @@ class Index extends Component
     /**
      * The available SPT versions.
      */
-    public Collection $availableSptVersions;
+    public Collection $activeSptVersions;
 
     /**
      * The component mount method, run only once when the component is mounted.
      */
     public function mount(): void
     {
-        $this->availableSptVersions = $this->availableSptVersions ?? Cache::remember('available-spt-versions', 60 * 60, function () {
+        $this->activeSptVersions = $this->activeSptVersions ?? Cache::remember('active-spt-versions', 60 * 60, function () {
             return SptVersion::getVersionsForLastThreeMinors();
         });
 
@@ -67,7 +67,7 @@ class Index extends Component
      */
     public function getLatestMinorVersions(): Collection
     {
-        return $this->availableSptVersions->filter(function (SptVersion $sptVersion) {
+        return $this->activeSptVersions->filter(function (SptVersion $sptVersion) {
             return $sptVersion->isLatestMinor();
         });
     }
