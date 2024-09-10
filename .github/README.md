@@ -12,7 +12,7 @@ The Forge is a Laravel-based web application that provides a platform for the Si
 
 ## Development Environment Setup
 
-We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://github.com/sp-tarkov/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://github.com/sp-tarkov/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.
+We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://dev.sp-tarkov.com/SPT/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://dev.sp-tarkov.com/SPT/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.
 
 ### Available Services:
 
@@ -25,13 +25,13 @@ We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services
 
 ### Notable Routes
 
-| Service                          | Authentication | Access Via Host             |
-|----------------------------------|----------------|-----------------------------|
+| Service                          | Authentication | Access Via Host            |
+|----------------------------------|----------------|----------------------------|
 | Laravel Filament Admin Panel     | Via User Role  | <http://localhost/admin>   |
 | Redis Queue Management (Horizon) | Via User Role  | <http://localhost/horizon> |
 | Website Status (Pulse)           | Via User Role  | <http://localhost/pulse>   |
-| Meilisearch WebUI                | Local Only     | <http://localhost:7700>     |
-| Mailpit WebUI                    | Local Only     | <http://localhost:8025>     |
+| Meilisearch WebUI                | Local Only     | <http://localhost:7700>    |
+| Mailpit WebUI                    | Local Only     | <http://localhost:8025>    |
 
 Most of these connection settings should already be configured in the `.env.full` or `.env.light` example files. Simply save one of these (depending on your environment) as `.env` and adjust settings as needed.
 
@@ -80,11 +80,11 @@ For more information on Laravel development, please refer to the [official docum
 
 ## Development Discussion
 
-*__Please note__, we are very early in development and will likely not accept work that is not discussed beforehand through the following channels...*
-
-You may propose new features or improvements of existing Forge behavior in [the repository's GitHub discussion board](https://github.com/sp-tarkov/forge/discussions). If you propose a new feature, please be willing to implement at least some of the code that would be needed to complete the feature.
+*__Please note__, we are very early in development and will likely not accept work that is not discussed beforehand.*
 
 Informal discussion regarding bugs, new features, and implementation of existing features takes place in the `#website-general` channel of the [Single Player Tarkov Discord server](https://discord.com/invite/Xn9msqQZan). Refringe, the maintainer of Forge, is typically present in the channel on weekdays from 9am-5pm Eastern Time (ET), and sporadically present in the channel at other times.
+
+If you propose a new feature, please be willing to implement at least some of the code that would be needed to complete the feature.
 
 ## Which Branch?
 
