@@ -10,8 +10,9 @@
                     <img class="h-full w-full rounded-full" src="{{$user->profile_photo_url}}"
                          alt="{{$user->name[0]}}" />
                 </a>
+                {{-- tooltip --}}
                 <div
-                    class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded shadow-lg opacity-0 group-hover:opacity-100">
+                    class="absolute bottom-full -ml-3 left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded shadow-lg opacity-0 group-hover:opacity-100">
                     {{$user->name}}
                 </div>
             </div>
@@ -21,7 +22,7 @@
                 <span
                     class="rounded-full -ml-6 z-20 bg-cyan-500 dark:bg-cyan-700 h-16 w-16 flex justify-center items-center border text-white">+{{$users->count()-$limit}}</span>
                 <div
-                    class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded shadow-lg opacity-0 group-hover:opacity-100">
+                    class="absolute bottom-full -ml-3 left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded shadow-lg opacity-0 group-hover:opacity-100">
                     {{$users->count()}} total
                 </div>
             </div>

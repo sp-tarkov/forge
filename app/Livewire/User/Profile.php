@@ -3,11 +3,15 @@
 namespace App\Livewire\User;
 
 use App\Models\User;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class Profile extends Component
 {
     public User $user;
+
+    #[Url]
+    public string $section = 'wall';
 
     public $followers;
 
@@ -23,9 +27,13 @@ class Profile extends Component
         return view('livewire.user.profile');
     }
 
+    public function setSection(string $name) {
+        $this->section = $name;
+    }
+
     public function message()
     {
-        $this->render();
+        // todo: not implemented yet
     }
 
     public function followUser(User $user)

@@ -68,7 +68,60 @@
     </div>
     <div class="grid grid-cols-4">
         <div class="flex flex-col col-span-3">
-            {{-- column 1 placeholder --}}
+            <div>
+                {{-- Mobile Dropdown --}}
+                <div class="sm:hidden">
+                    <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
+                    <select wire:model.change="section" id="tabs" name="tabs" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
+                        <option value="wall">{{ __('Wall') }}</option>
+                        <option value="mods">{{ __('Mods') }}</option>
+                        <option value="recentActivity">{{ __('Recent Activity') }}</option>
+                        <option value="aboutMe">{{ __('About Me') }}</option>
+                    </select>
+                </div>
+
+                {{-- Desktop Tabs --}}
+                <div class="hidden sm:block">
+                    <nav class="isolate m-4 flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
+                        <button wire:click="setSection('wall')" class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10" aria-current="page">
+                            <span>{{ __('Wall') }}</span>
+                            <span aria-hidden="true" class="{{$section === 'wall' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'}}"></span>
+                        </button>
+                        <button wire:click="setSection('mods')" class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                            <span>{{ __('Mods') }}</span>
+                            <span aria-hidden="true" class="{{$section === 'mods' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'}}"></span>
+                        </button>
+                        <button wire:click="setSection('recentActivity')" class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                            <span>{{ __('Recent Activity') }}</span>
+                            <span aria-hidden="true" class="{{$section === 'recentActivity' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'}}"></span>
+                        </button>
+                        <button wire:click="setSection('aboutMe')" class="tab rounded-r-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
+                            <span>{{ __('About Me') }}</span>
+                            <span aria-hidden="true" class="{{$section === 'aboutMe' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'}}"></span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+            <div>
+                @switch($section)
+                    @case('wall')
+                        <p class="m-4">This is the wall. I don't think this can be implemented yet? requires comments or something</p>
+                        @break
+                    @case('mods')
+                        <div class="m-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                            @foreach($user->mods as $mod)
+                                <x-mod-card :mod="$mod"/>
+                            @endforeach
+                        </div>
+                        @break
+                    @case('recentActivity')
+                        <p class="m-4">This is the recent activity. Probably need to implement some kind of activity tracking for this?</p>
+                        @break
+                    @case('aboutMe')
+                        <p class="m-4">{{$user->about}}</p>
+                        @break
+                @endswitch
+            </div>
         </div>
         <div class="flex flex-col justify-center items-center">
             <div class="flex w-full max-w-sm">
