@@ -97,9 +97,6 @@ class Index extends Component
         $this->query = '';
         $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
         $this->featured = 'include';
-
-        // Clear local storage
-        $this->dispatch('clear-filters');
     }
 
     /**
