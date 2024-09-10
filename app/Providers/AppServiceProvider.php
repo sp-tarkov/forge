@@ -11,8 +11,8 @@ use App\Observers\ModDependencyObserver;
 use App\Observers\ModObserver;
 use App\Observers\ModVersionObserver;
 use App\Observers\SptVersionObserver;
-use App\Services\LatestSptVersionService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
@@ -24,9 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(LatestSptVersionService::class, function ($app) {
-            return new LatestSptVersionService;
-        });
+        //
     }
 
     /**
@@ -37,18 +35,34 @@ class AppServiceProvider extends ServiceProvider
         // Allow mass assignment for all models. Be careful!
         Model::unguard();
 
-        // Register observers.
-        Mod::observe(ModObserver::class);
-        ModVersion::observe(ModVersionObserver::class);
-        ModDependency::observe(ModDependencyObserver::class);
-        SptVersion::observe(SptVersionObserver::class);
+        $this->registerObservers();
+
+        $this->registerNumberMacros();
+        $this->registerCarbonMacros();
 
         // This gate determines who can access the Pulse dashboard.
         Gate::define('viewPulse', function (User $user) {
             return $user->isAdmin();
         });
+    }
 
-        // Register a number macro to format download numbers.
+    /**
+     * Register model observers.
+     */
+    private function registerObservers(): void
+    {
+        Mod::observe(ModObserver::class);
+        ModVersion::observe(ModVersionObserver::class);
+        ModDependency::observe(ModDependencyObserver::class);
+        SptVersion::observe(SptVersionObserver::class);
+    }
+
+    /**
+     * Register custom number macros.
+     */
+    private function registerNumberMacros(): void
+    {
+        // Format download numbers.
         Number::macro('downloads', function (int|float $number) {
             return Number::forHumans(
                 $number,
@@ -56,6 +70,24 @@ class AppServiceProvider extends ServiceProvider
                 maxPrecision: null,
                 abbreviate: true
             );
+        });
+    }
+
+    /**
+     * Register custom Carbon macros.
+     */
+    private function registerCarbonMacros(): void
+    {
+        // Format dates dynamically based on the time passed.
+        Carbon::macro('dynamicFormat', function (Carbon $date) {
+            if ($date->diff(now())->m > 1) {
+                return $date->format('M jS, Y');
+            }
+            if ($date->diff(now())->d === 0) {
+                return $date->diffForHumans();
+            }
+
+            return $date->format('M jS, g:i A');
         });
     }
 }
