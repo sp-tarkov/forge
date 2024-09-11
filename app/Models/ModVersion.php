@@ -42,7 +42,8 @@ class ModVersion extends Model
      */
     public function dependencies(): HasMany
     {
-        return $this->hasMany(ModDependency::class);
+        return $this->hasMany(ModDependency::class)
+            ->chaperone();
     }
 
     /**
