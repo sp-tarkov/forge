@@ -4,10 +4,15 @@
         <span>
             &mdash; Created
             <time datetime="{{ $mod->created_at->format('c') }}">
-                {{ $mod->created_at->diffForHumans() }}
+                {{ Carbon::dynamicFormat($mod->created_at) }}
             </time>
         </span>
     @elseif(!is_null($modVersion->updated_at))
-        <span>&mdash; Updated {{ $modVersion->updated_at->diffForHumans() }}</span>
+        <span>
+            &mdash; Updated
+            <time datetime="{{ $modVersion->updated_at->format('c') }}">
+                {{ Carbon::dynamicFormat($modVersion->updated_at) }}
+            </time>
+        </span>
     @endif
 </p>
