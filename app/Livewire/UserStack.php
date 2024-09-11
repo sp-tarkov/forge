@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
@@ -41,8 +40,7 @@ class UserStack extends Component
 
     public function closeDialog()
     {
-        if ($this->refreshNeeded)
-        {
+        if ($this->refreshNeeded) {
             $this->dispatch('refreshNeeded');
         }
 

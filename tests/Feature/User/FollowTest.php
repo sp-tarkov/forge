@@ -31,7 +31,6 @@ test('confirm following a user cannot be done twice', function () {
     $user1->follow($user2);
     $user1->follow($user2);
 
-
     $this->assertCount(1, $user1->following);
     $this->assertCount(1, $user2->followers);
 });

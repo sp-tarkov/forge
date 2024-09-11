@@ -113,7 +113,7 @@
                         </div>
                         <div class="m-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
                             @foreach($mods as $mod)
-                                <x-mod-card :mod="$mod"/>
+                                <x-mod-card :mod="$mod" versionScope="latestVersion" />
                             @endforeach
                         </div>
                         @break

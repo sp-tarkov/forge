@@ -16,6 +16,7 @@ class UserFactory extends Factory
 
     /**
      * Define the user's default state.
+     *
      * @throws RandomException
      */
     public function definition(): array

@@ -27,12 +27,13 @@ class Profile extends Component
         $this->followers = $this->user->followers;
         $this->following = $this->user->following;
 
-        $mods = $this->user->mods()->paginate(6);
+        $mods = $this->user->mods()->withWhereHas('latestVersion')->paginate(6);
 
         return view('livewire.user.profile', compact('mods'));
     }
 
-    public function setSection(string $name) {
+    public function setSection(string $name)
+    {
         $this->section = $name;
     }
 
