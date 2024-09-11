@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         // how many of each "thing" to make during seeding
         $userCount = 100;
         $modCount = 300;
-        $modVersionCount = 500;
+        $modVersionCount = 3000;
 
         // Create a few SPT versions.
         $spt_versions = SptVersion::factory(30)->create();

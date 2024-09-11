@@ -88,16 +88,19 @@ class ModListSection extends Component
                 'title' => __('Featured Mods'),
                 'mods' => $this->modsFeatured,
                 'versionScope' => 'latestVersion',
+                'link' => '/mods?featured=only',
             ],
             [
                 'title' => __('Newest Mods'),
                 'mods' => $this->modsLatest,
                 'versionScope' => 'latestVersion',
+                'link' => '/mods',
             ],
             [
                 'title' => __('Recently Updated Mods'),
                 'mods' => $this->modsUpdated,
                 'versionScope' => 'lastUpdatedVersion',
+                'link' => '/mods?order=updated',
             ],
         ];
     }
