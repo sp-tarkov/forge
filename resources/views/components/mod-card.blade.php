@@ -1,4 +1,4 @@
-@props(['mod', 'versionScope' => 'latestVersion'])
+@props(['mod', 'versionScope' => 'none'])
 
 <a href="/mod/{{ $mod->id }}/{{ $mod->slug }}" class="mod-list-component relative mx-auto w-full max-w-md md:max-w-2xl">
     @if ($mod->featured && !request()->routeIs('home'))
@@ -18,16 +18,20 @@
                 <div class="pb-3">
                     <div class="flex justify-between items-center space-x-3">
                         <h3 class="block mt-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
+                        @if($versionScope !== 'none' && $mod->{$versionScope} !== null && $mod->{$versionScope}->latestSptVersion !== null)
                         <span class="badge-version {{ $mod->{$versionScope}->latestSptVersion->first()->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                             {{ $mod->{$versionScope}->latestSptVersion->first()->version_formatted }}
                         </span>
+                        @endif
                     </div>
                     <p class="text-sm italic text-slate-600 dark:text-gray-200">
                         By {{ $mod->users->pluck('name')->implode(', ') }}
                     </p>
                     <p class="mt-2 text-slate-500 dark:text-gray-300">{{ Str::limit($mod->teaser, 100) }}</p>
                 </div>
-                <x-mod-list-stats :mod="$mod" :modVersion="$mod->{$versionScope}"/>
+                @if($versionScope !== 'none' && $mod->{$versionScope} !== null)
+                    <x-mod-list-stats :mod="$mod" :modVersion="$mod->{$versionScope}"/>
+                @endif
             </div>
         </div>
     </div>

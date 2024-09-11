@@ -8,7 +8,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,41 +20,37 @@ class Index extends Component
      * The search query value.
      */
     #[Url]
-    #[Session]
     public string $query = '';
 
     /**
      * The sort order value.
      */
     #[Url]
-    #[Session]
     public string $order = 'created';
 
     /**
      * The SPT versions filter value.
      */
     #[Url]
-    #[Session]
     public array $sptVersions = [];
 
     /**
      * The featured filter value.
      */
     #[Url]
-    #[Session]
     public string $featured = 'include';
 
     /**
      * The available SPT versions.
      */
-    public Collection $availableSptVersions;
+    public Collection $activeSptVersions;
 
     /**
      * The component mount method, run only once when the component is mounted.
      */
     public function mount(): void
     {
-        $this->availableSptVersions = $this->availableSptVersions ?? Cache::remember('available-spt-versions', 60 * 60, function () {
+        $this->activeSptVersions = $this->activeSptVersions ?? Cache::remember('active-spt-versions', 60 * 60, function () {
             return SptVersion::getVersionsForLastThreeMinors();
         });
 
@@ -67,7 +62,7 @@ class Index extends Component
      */
     public function getLatestMinorVersions(): Collection
     {
-        return $this->availableSptVersions->filter(function (SptVersion $sptVersion) {
+        return $this->activeSptVersions->filter(function (SptVersion $sptVersion) {
             return $sptVersion->isLatestMinor();
         });
     }
@@ -102,9 +97,6 @@ class Index extends Component
         $this->query = '';
         $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
         $this->featured = 'include';
-
-        // Clear local storage
-        $this->dispatch('clear-filters');
     }
 
     /**
