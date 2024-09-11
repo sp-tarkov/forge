@@ -13,16 +13,9 @@ jobs:
           MYSQL_USER: user
           MYSQL_PASSWORD: password
           MYSQL_ROOT_PASSWORD: password
-        ports:
-          - 33306:3306
+        options: --health-cmd="mysql -u user -D testing -ppassword -h mysql -e ''" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-      - name: Ready MySQL connection
-        run: |
-          apt-get update && apt-get install -qy libmcrypt-dev default-mysql-client
-          mysql --version
-          mysql --host mysql --port 3306 -uuser -ppassword -e "SHOW DATABASES"
-
       - name: Checkout
         uses: actions/checkout@v4
 
