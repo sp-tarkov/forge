@@ -4,7 +4,7 @@ on: [ push, pull_request ]
 
 jobs:
   security-checker:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -12,7 +12,7 @@ jobs:
         uses: symfonycorp/security-checker-action@v5
 
   larastan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
         run: ./vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress --error-format=github
 
   pint-fixer:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
