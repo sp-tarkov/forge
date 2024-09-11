@@ -16,28 +16,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           extensions: mbstring, dom, fileinfo
           coverage: none
+
       - name: Get Composer Cache Directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
       - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+
       - name: Install Composer Dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
+
       - name: Prepare Laravel Environment
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate
           php artisan optimize
+
       - name: Execute Code Static Analysis with Larastan
         run: ./vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress --error-format=github
 
@@ -48,30 +54,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           extensions: mbstring, dom, fileinfo
           coverage: none
+
       - name: Get Composer Cache Directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
       - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+
       - name: Install Composer Dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
+
       - name: Prepare Laravel Environment
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate
           php artisan optimize
+
       - name: Run Pint Code Style Fixer
         run: ./vendor/bin/pint
+
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Pint PHP Style Fixes [no ci]
