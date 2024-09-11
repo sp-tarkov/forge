@@ -37,7 +37,7 @@
     {{-- view all dialog --}}
     <x-dialog-modal wire:model.live="viewAll">
         <x-slot name="title">
-            <h2 class="text-2xl">{{$user->name}}'s {{$label}}</h2>
+            <h2 class="text-2xl">{{$parentUserName}}'s {{$label}}</h2>
         </x-slot>
 
         <x-slot name="content">

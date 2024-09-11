@@ -123,12 +123,12 @@
                 @endswitch
             </div>
         </div>
-        <div class="flex flex-col justify-center items-center">
+        <div class="flex flex-col justify-top items-center">
             <div class="flex w-full max-w-sm">
-                <livewire:user-stack :label="__('Followers')" :users="$followers"/>
+                <livewire:user-stack :parentUserName="$user->name" :label="__('Followers')" :users="$followers"/>
             </div>
             <div class="flex w-full max-w-sm">
-                <livewire:user-stack :label="__('Following')"  :users="$following"/>
+                <livewire:user-stack :parentUserName="$user->name" :label="__('Following')"  :users="$following"/>
             </div>
         </div>
     </div>

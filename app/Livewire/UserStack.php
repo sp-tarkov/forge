@@ -13,6 +13,8 @@ class UserStack extends Component
     #[Reactive]
     public $users;
 
+    public string $parentUserName;
+
     public $authFollowingIds = [];
 
     public string $label = 'Users';
