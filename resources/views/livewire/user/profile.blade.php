@@ -108,8 +108,11 @@
                         <p class="m-4">This is the wall. I don't think this can be implemented yet? requires comments or something</p>
                         @break
                     @case('mods')
+                        <div class="m-4">
+                            {{ $mods->links() }}
+                        </div>
                         <div class="m-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                            @foreach($user->mods as $mod)
+                            @foreach($mods as $mod)
                                 <x-mod-card :mod="$mod"/>
                             @endforeach
                         </div>
