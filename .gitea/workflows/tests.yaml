@@ -18,6 +18,11 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+      - name: Verify MySQL connection
+        run: |
+          mysql --version
+          mysql --host mysql --port 33306 -uuser -ppassword -e "SHOW DATABASES"
+
       - name: Checkout
         uses: actions/checkout@v4
 
