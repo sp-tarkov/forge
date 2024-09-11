@@ -20,8 +20,9 @@ jobs:
     steps:
       - name: Verify MySQL connection
         run: |
+          sudo apt-get install -y mysql-client
           mysql --version
-          mysql --host mysql --port 33306 -uuser -ppassword -e "SHOW DATABASES"
+          mysql --host 127.0.0.1 --port 3306 -uuser -ppassword -e "SHOW DATABASES"
 
       - name: Checkout
         uses: actions/checkout@v4
