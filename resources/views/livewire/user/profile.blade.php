@@ -66,11 +66,19 @@
             <p>{{__("Member Since")}} {{ $user->created_at->format("M d, h:m a") }}</p>
         </div>
     </div>
-    <div class="grid grid-cols-4">
+    <div class="grid grid-cols-1 lg:grid-cols-4">
+        <div class="lg:hidden flex flex-col justify-top items-center">
+            <div class="flex w-full max-w-sm">
+                <livewire:user-stack :parentUserName="$user->name" :label="__('Followers')" :users="$followers"/>
+            </div>
+            <div class="flex w-full max-w-sm">
+                <livewire:user-stack :parentUserName="$user->name" :label="__('Following')"  :users="$following"/>
+            </div>
+        </div>
         <div class="flex flex-col col-span-3">
             <div>
                 {{-- Mobile Dropdown --}}
-                <div class="sm:hidden">
+                <div class="sm:hidden m-4">
                     <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
                     <select wire:model.change="section" id="tabs" name="tabs" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
                         <option value="wall">{{ __('Wall') }}</option>
@@ -126,7 +134,7 @@
                 @endswitch
             </div>
         </div>
-        <div class="flex flex-col justify-top items-center">
+        <div class="max-lg:hidden flex flex-col justify-top items-center">
             <div class="flex w-full max-w-sm">
                 <livewire:user-stack :parentUserName="$user->name" :label="__('Followers')" :users="$followers"/>
             </div>

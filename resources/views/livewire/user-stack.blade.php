@@ -1,9 +1,17 @@
-<div class="w-full text-gray-600 bg-white shadow-md dark:text-gray-200 dark:bg-gray-900 rounded-xl p-4 m-4">
+<div class="w-full text-gray-600 bg-white shadow-md dark:shadow-gray-950 drop-shadow-xl dark:text-gray-200 dark:bg-gray-900 rounded-xl p-4 m-4">
+    {{-- Card Header --}}
     <div class="flex justify-center items-center">
         <h2 class="text-2xl">{{$label}}</h2>
     </div>
+
+    @if($users->count() === 0)
+        <div class="flex justify-center text-sm">
+            <span>{{__('nothing here yet')}}</span>
+        </div>
+    @else
     <div class="flex ml-6 py-2 justify-center items-center">
         @foreach($users->slice(0, $limit) as $user)
+            {{-- User Badge --}}
             <div class="relative group">
                 <a href="{{$user->profileUrl()}}"
                    class="rounded-full -ml-6 z-20 bg-[#ebf4ff] h-16 w-16 flex justify-center items-center border">
@@ -18,6 +26,7 @@
             </div>
         @endforeach
         @if($users->count() > $limit)
+            {{-- Count Badge --}}
             <div class="relative group">
                 <span
                     class="rounded-full -ml-6 z-20 bg-cyan-500 dark:bg-cyan-700 h-16 w-16 flex justify-center items-center border text-white">+{{$users->count()-$limit}}</span>
@@ -28,7 +37,9 @@
             </div>
         @endif
     </div>
+    @endif
     @if($users->count() > $limit)
+        {{-- View all button --}}
         <div class="flex justify-center items-center">
             <button wire:click="toggleViewAll">view all</button>
         </div>
