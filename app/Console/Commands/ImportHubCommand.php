@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\ImportHubDataJob;
+use App\Jobs\Import\ImportHubDataJob;
 use Illuminate\Console\Command;
 
 class ImportHubCommand extends Command

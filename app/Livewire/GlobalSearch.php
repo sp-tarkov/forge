@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -34,16 +35,18 @@ class GlobalSearch extends Component
 
     /**
      * Execute the search against each of the searchable models.
+     *
+     * @return array<string, array<array<string, mixed>>>
      */
     protected function executeSearch(string $query): array
     {
         $query = Str::trim($query);
         $results = ['data' => [], 'total' => 0];
 
-        if (Str::length($query)) {
+        if (Str::length($query) > 0) {
             $results['data'] = [
-                'user' => collect(User::search($query)->raw()['hits']),
-                'mod' => collect(Mod::search($query)->raw()['hits']),
+                'user' => $this->fetchUserResults($query),
+                'mod' => $this->fetchModResults($query),
             ];
             $results['total'] = $this->countTotalResults($results['data']);
         }
@@ -55,11 +58,39 @@ class GlobalSearch extends Component
     }
 
     /**
-     * Count the total number of results across all models.
+     * Fetch the user search results.
+     *
+     * @return Collection<int, array<string, mixed>>
      */
-    protected function countTotalResults($results): int
+    protected function fetchUserResults(string $query): Collection
     {
-        return collect($results)->reduce(function ($carry, $result) {
+        /** @var array<int, array<string, mixed>> $userHits */
+        $userHits = User::search($query)->raw()['hits'];
+
+        return collect($userHits);
+    }
+
+    /**
+     * Fetch the mod search results.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function fetchModResults(string $query): Collection
+    {
+        /** @var array<int, array<string, mixed>> $modHits */
+        $modHits = Mod::search($query)->raw()['hits'];
+
+        return collect($modHits);
+    }
+
+    /**
+     * Count the total number of results across all models.
+     *
+     * @param  array<string, Collection<int, array<string, mixed>>>  $results
+     */
+    protected function countTotalResults(array $results): int
+    {
+        return collect($results)->reduce(function (int $carry, Collection $result) {
             return $carry + $result->count();
         }, 0);
     }

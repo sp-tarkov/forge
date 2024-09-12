@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
+use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,14 +12,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @property int $id
- * @property int $mod_id
- * @property string $version
- */
 class ModVersion extends Model
 {
-    use HasFactory, SoftDeletes;
+    /** @use HasFactory<ModFactory> */
+    use HasFactory;
+
+    use SoftDeletes;
 
     /**
      * Post boot method to configure the model.
@@ -31,6 +30,8 @@ class ModVersion extends Model
 
     /**
      * The relationship between a mod version and mod.
+     *
+     * @return BelongsTo<Mod, ModVersion>
      */
     public function mod(): BelongsTo
     {
@@ -39,6 +40,8 @@ class ModVersion extends Model
 
     /**
      * The relationship between a mod version and its dependencies.
+     *
+     * @return HasMany<ModDependency>
      */
     public function dependencies(): HasMany
     {
@@ -48,6 +51,8 @@ class ModVersion extends Model
 
     /**
      * The relationship between a mod version and its resolved dependencies.
+     *
+     * @return BelongsToMany<ModVersion>
      */
     public function resolvedDependencies(): BelongsToMany
     {
@@ -58,6 +63,8 @@ class ModVersion extends Model
 
     /**
      * The relationship between a mod version and its each of it's resolved dependencies' latest versions.
+     *
+     * @return BelongsToMany<ModVersion>
      */
     public function latestResolvedDependencies(): BelongsToMany
     {
@@ -74,6 +81,8 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and each of its SPT versions' latest version.
      * Hint: Be sure to call `->first()` on this to get the actual instance.
+     *
+     * @return BelongsToMany<SptVersion>
      */
     public function latestSptVersion(): BelongsToMany
     {
@@ -84,6 +93,8 @@ class ModVersion extends Model
 
     /**
      * The relationship between a mod version and its SPT versions.
+     *
+     * @return BelongsToMany<SptVersion>
      */
     public function sptVersions(): BelongsToMany
     {

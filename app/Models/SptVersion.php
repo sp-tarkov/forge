@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
+use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,10 +13,15 @@ use Illuminate\Support\Facades\Cache;
 
 class SptVersion extends Model
 {
-    use HasFactory, SoftDeletes;
+    /** @use HasFactory<SptVersionFactory> */
+    use HasFactory;
+
+    use SoftDeletes;
 
     /**
      * Get all versions for the last three minor versions.
+     *
+     * @return Collection<int, SptVersion>
      */
     public static function getVersionsForLastThreeMinors(): Collection
     {
@@ -44,6 +50,8 @@ class SptVersion extends Model
 
     /**
      * Get the last three minor versions (major.minor format).
+     *
+     * @return array<int, array{major: int, minor: int}>
      */
     public static function getLastThreeMinorVersions(): array
     {
@@ -54,7 +62,7 @@ class SptVersion extends Model
             ->orderByDesc('version_minor')
             ->limit(3)
             ->get()
-            ->map(function ($version) {
+            ->map(function (SptVersion $version) {
                 return [
                     'major' => (int) $version->version_major,
                     'minor' => (int) $version->version_minor,
@@ -69,7 +77,7 @@ class SptVersion extends Model
     protected static function booted(): void
     {
         // Callback that runs before saving the model.
-        static::saving(function ($model) {
+        static::saving(function (SptVersion $model) {
             // Extract the version sections from the version string.
             if (! empty($model->version)) {
                 // Default values in case there's an exception.
@@ -94,6 +102,8 @@ class SptVersion extends Model
 
     /**
      * Extract the version sections from the version string.
+     *
+     * @return array{major: int, minor: int, patch: int, pre_release: string}
      *
      * @throws InvalidVersionNumberException
      */
@@ -131,6 +141,8 @@ class SptVersion extends Model
 
     /**
      * The relationship between an SPT version and mod version.
+     *
+     * @return BelongsToMany<ModVersion>
      */
     public function modVersions(): BelongsToMany
     {

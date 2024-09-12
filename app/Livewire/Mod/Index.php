@@ -30,6 +30,8 @@ class Index extends Component
 
     /**
      * The SPT versions filter value.
+     *
+     * @var array<string>
      */
     #[Url]
     public array $sptVersions = [];
@@ -42,6 +44,8 @@ class Index extends Component
 
     /**
      * The available SPT versions.
+     *
+     * @var Collection<int, SptVersion>
      */
     public Collection $activeSptVersions;
 
@@ -59,6 +63,8 @@ class Index extends Component
 
     /**
      * Get all patch versions of the latest minor SPT version.
+     *
+     * @return Collection<int, SptVersion>
      */
     public function getLatestMinorVersions(): Collection
     {

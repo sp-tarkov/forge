@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
+use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,24 +20,20 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
-/**
- * @property int $id
- * @property string $name
- * @property string $slug
- */
 class Mod extends Model
 {
-    use HasFactory, Searchable, SoftDeletes;
+    /** @use HasFactory<ModFactory> */
+    use HasFactory;
+
+    use Searchable;
+    use SoftDeletes;
 
     /**
      * Post boot method to configure the model.
      */
     protected static function booted(): void
     {
-        // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
-
-        // Apply the global scope to exclude non-published mods.
         static::addGlobalScope(new PublishedScope);
     }
 
@@ -51,6 +48,8 @@ class Mod extends Model
 
     /**
      * The relationship between a mod and its users.
+     *
+     * @return BelongsToMany<User>
      */
     public function users(): BelongsToMany
     {
@@ -59,6 +58,8 @@ class Mod extends Model
 
     /**
      * The relationship between a mod and its license.
+     *
+     * @return BelongsTo<License, Mod>
      */
     public function license(): BelongsTo
     {
@@ -67,6 +68,8 @@ class Mod extends Model
 
     /**
      * The relationship between a mod and its versions.
+     *
+     * @return HasMany<ModVersion>
      */
     public function versions(): HasMany
     {
@@ -78,6 +81,8 @@ class Mod extends Model
 
     /**
      * The relationship between a mod and its last updated version.
+     *
+     * @return HasOne<ModVersion>
      */
     public function lastUpdatedVersion(): HasOne
     {
@@ -89,6 +94,8 @@ class Mod extends Model
 
     /**
      * The data that is searchable by Scout.
+     *
+     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -102,13 +109,15 @@ class Mod extends Model
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
             'published_at' => strtotime($this->published_at),
-            'latestVersion' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->version_formatted,
-            'latestVersionColorClass' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->color_class,
+            'latestVersion' => $this->latestVersion()->first()->latestSptVersion()->first()->version_formatted,
+            'latestVersionColorClass' => $this->latestVersion()->first()->latestSptVersion()->first()->color_class,
         ];
     }
 
     /**
      * The relationship to the latest mod version, dictated by the mod version number.
+     *
+     * @return HasOne<ModVersion>
      */
     public function latestVersion(): HasOne
     {
@@ -136,7 +145,7 @@ class Mod extends Model
         }
 
         // Fetch the latest version instance.
-        $latestVersion = $this->latestVersion()?->first();
+        $latestVersion = $this->latestVersion()->first();
 
         // Ensure the mod has a latest version.
         if (is_null($latestVersion)) {
@@ -162,6 +171,8 @@ class Mod extends Model
 
     /**
      * Build the URL to the mod's thumbnail.
+     *
+     * @return Attribute<string, never>
      */
     public function thumbnailUrl(): Attribute
     {
@@ -185,6 +196,10 @@ class Mod extends Model
 
     /**
      * Scope a query by applying QueryFilter filters.
+     *
+     * @param  Builder<Mod>  $builder
+     * @param  QueryFilter<Mod>  $filters
+     * @return Builder<Mod>
      */
     public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
     {
@@ -201,6 +216,8 @@ class Mod extends Model
 
     /**
      * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
      */
     protected function casts(): array
     {
@@ -214,6 +231,8 @@ class Mod extends Model
 
     /**
      * Mutate the slug attribute to always be lower case on get and slugified on set.
+     *
+     * @return Attribute<string, string>
      */
     protected function slug(): Attribute
     {
