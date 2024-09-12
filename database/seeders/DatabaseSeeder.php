@@ -6,10 +6,11 @@ use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModDependency;
 use App\Models\ModVersion;
-use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
+use Laravel\Prompts\Progress;
 
 use function Laravel\Prompts\progress;
 
@@ -20,42 +21,44 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // how many of each "thing" to make during seeding
-        $userCount = 100;
-        $modCount = 300;
-        $modVersionCount = 3000;
+        // How many of each entity to create.
+        $counts = [
+            'license' => 10,
+            'administrator' => 5,
+            'moderator' => 5,
+            'user' => 100,
+            'mod' => 200,
+            'modVersion' => 1500,
+        ];
 
-        // Create a few SPT versions.
-        $spt_versions = SptVersion::factory(30)->create();
+        // Licenses
+        $licenses = License::factory($counts['license'])->create();
 
-        // Create some code licenses.
-        $licenses = License::factory(10)->create();
-
-        // Add administrators.
+        // Administrator Users
         $administratorRole = UserRole::factory()->administrator()->create();
         $testAccount = User::factory()->for($administratorRole, 'role')->create([
             'email' => 'test@example.com',
         ]);
+        User::factory($counts['administrator'] - 1)->for($administratorRole, 'role')->create();
 
-        $this->command->outputComponents()->info("test account created: $testAccount->email");
+        $this->command->outputComponents()->info("Test account created: {$testAccount->email}");
 
-        User::factory(4)->for($administratorRole, 'role')->create();
-
-        // Add moderators.
+        // Moderator Users
         $moderatorRole = UserRole::factory()->moderator()->create();
-        User::factory(5)->for($moderatorRole, 'role')->create();
+        User::factory($counts['moderator'])->for($moderatorRole, 'role')->create();
 
-        // Add users
+        // Users
         progress(
-            label: 'adding users...',
-            steps: $userCount,
+            label: 'Adding Users...',
+            steps: $counts['user'],
             callback: fn () => User::factory()->create()
         );
 
-        // get all users
+        // All Users
         $allUsers = User::all();
 
-        // Add user follows
+        /* We got a little ahead of ourselves here. This hasn't been merged yet!
+        // User Follows
         progress(
             label: 'adding user follows ...',
             steps: $allUsers,
@@ -73,18 +76,20 @@ class DatabaseSeeder extends Seeder
                     $user->following()->attach($following);
                 }
             });
+        */
 
+        // Mods
         $mods = collect(progress(
-            label: 'adding mods...',
-            steps: $modCount,
+            label: 'Adding Mods...',
+            steps: $counts['mod'],
             callback: fn () => Mod::factory()->recycle([$licenses])->create()
         ));
 
-        // attach users to mods
+        // Attach users to mods
         progress(
-            label: 'attaching mod users ...',
+            label: 'Attaching users to mods...',
             steps: $mods,
-            callback: function ($mod) use ($allUsers) {
+            callback: function (Mod $mod, Progress $progress) use ($allUsers) {
                 $userIds = $allUsers->random(rand(1, 3))->pluck('id')->toArray();
                 $mod->users()->attach($userIds);
             }
@@ -92,26 +97,40 @@ class DatabaseSeeder extends Seeder
 
         // Add mod versions, assigning them to the mods we just created.
         $modVersions = collect(progress(
-            label: 'adding mods versions ...',
-            steps: $modVersionCount,
-            callback: fn () => ModVersion::factory()->recycle([$mods, $spt_versions])->create()
+            label: 'Adding Mod Versions...',
+            steps: $counts['modVersion'],
+            callback: fn () => ModVersion::factory()->recycle([$mods])->create()
         ));
 
-        // Add ModDependencies to a subset of ModVersions.
+        // Add mod dependencies to *some* mod versions.
         progress(
-            label: 'adding mods dependencies ...',
+            label: 'Adding Mod Dependencies...',
             steps: $modVersions,
-            callback: function ($modVersion) use ($mods) {
-                $hasDependencies = rand(0, 100) < 30; // 30% chance to have dependencies
-                if ($hasDependencies) {
-                    $dependencyMods = $mods->random(rand(1, 3)); // 1 to 3 dependencies
-                    foreach ($dependencyMods as $dependencyMod) {
-                        ModDependency::factory()->recycle([$modVersion, $dependencyMod])->create();
-                    }
+            callback: function (ModVersion $modVersion, Progress $progress) use ($mods) {
+                // 70% chance to not have dependencies
+                if (rand(0, 9) >= 3) {
+                    return;
+                }
+
+                // Choose 1-3 random mods to be dependencies.
+                $dependencyMods = $mods->random(rand(1, 3));
+                foreach ($dependencyMods as $dependencyMod) {
+                    ModDependency::factory()->recycle([$modVersion, $dependencyMod])->create();
                 }
             }
         );
 
-        $this->command->outputComponents()->success('Database seeded');
+        $this->command->outputComponents()->success('Initial seeding complete');
+
+        Artisan::call('app:search-sync');
+        Artisan::call('app:resolve-versions');
+        Artisan::call('app:count-mods');
+        Artisan::call('app:update-downloads');
+        $this->command->outputComponents()->warn('Jobs added to queue. Ensure Horizon is running!');
+
+        Artisan::call('cache:clear');
+        $this->command->outputComponents()->info('Cache cleared');
+
+        $this->command->outputComponents()->success('Database seeding complete');
     }
 }
