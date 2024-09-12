@@ -11,14 +11,21 @@ class ModFilter
 {
     /**
      * The query builder instance for the mod model.
+     *
+     * @var Builder<Mod>
      */
     protected Builder $builder;
 
     /**
      * The filter that should be applied to the query.
+     *
+     * @var array<string, mixed>
      */
     protected array $filters;
 
+    /**
+     * @param  array<string, mixed>  $filters
+     */
     public function __construct(array $filters)
     {
         $this->builder = $this->baseQuery();
@@ -27,6 +34,8 @@ class ModFilter
 
     /**
      * The base query for the mod listing.
+     *
+     * @return Builder<Mod>
      */
     private function baseQuery(): Builder
     {
@@ -49,6 +58,8 @@ class ModFilter
 
     /**
      * Apply the filters to the query.
+     *
+     * @return Builder<Mod>
      */
     public function apply(): Builder
     {
@@ -58,13 +69,13 @@ class ModFilter
             }
         }
 
-        //dd($this->builder->toRawSql());
-
         return $this->builder;
     }
 
     /**
      * Order the query by the given type.
+     *
+     * @return Builder<Mod>
      */
     private function order(string $type): Builder
     {
@@ -92,6 +103,8 @@ class ModFilter
 
     /**
      * Filter the results by the given search term.
+     *
+     * @return Builder<Mod>
      */
     private function query(string $term): Builder
     {
@@ -100,6 +113,8 @@ class ModFilter
 
     /**
      * Filter the results by the featured status.
+     *
+     * @return Builder<Mod>
      */
     private function featured(string $option): Builder
     {
@@ -112,6 +127,9 @@ class ModFilter
 
     /**
      * Filter the results to specific SPT versions.
+     *
+     * @param  array<int, string>  $versions
+     * @return Builder<Mod>
      */
     private function sptVersions(array $versions): Builder
     {

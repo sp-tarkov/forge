@@ -13,6 +13,11 @@ class VerifyEmail extends OriginalVerifyEmail implements ShouldQueue
 {
     use Queueable;
 
+    /**
+     * Get the array representation of the notification.
+     *
+     * @return array<mixed>
+     */
     public function toArray(object $notifiable): array
     {
         return [];

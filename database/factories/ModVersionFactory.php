@@ -8,6 +8,9 @@ use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<ModVersion>
+ */
 class ModVersionFactory extends Factory
 {
     protected $model = ModVersion::class;

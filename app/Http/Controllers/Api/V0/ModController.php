@@ -7,13 +7,15 @@ use App\Http\Requests\Api\V0\StoreModRequest;
 use App\Http\Requests\Api\V0\UpdateModRequest;
 use App\Http\Resources\Api\V0\ModResource;
 use App\Models\Mod;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class ModController extends ApiController
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(ModFilter $filters)
+    public function index(ModFilter $filters): AnonymousResourceCollection
     {
         return ModResource::collection(Mod::filter($filters)->paginate());
     }
@@ -21,15 +23,12 @@ class ModController extends ApiController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreModRequest $request)
-    {
-        //
-    }
+    public function store(StoreModRequest $request): void {}
 
     /**
      * Display the specified resource.
      */
-    public function show(Mod $mod)
+    public function show(Mod $mod): JsonResource
     {
         return new ModResource($mod);
     }
@@ -37,16 +36,10 @@ class ModController extends ApiController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateModRequest $request, Mod $mod)
-    {
-        //
-    }
+    public function update(UpdateModRequest $request, Mod $mod): void {}
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Mod $mod)
-    {
-        //
-    }
+    public function destroy(Mod $mod): void {}
 }
