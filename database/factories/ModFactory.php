@@ -7,25 +7,23 @@ use App\Models\Mod;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Random\RandomException;
 
+/**
+ * @extends Factory<Mod>
+ */
 class ModFactory extends Factory
 {
     protected $model = Mod::class;
 
-    /**
-     * @throws RandomException
-     */
     public function definition(): array
     {
-
-        $name = fake()->catchPhrase();
+        $name = fake()->sentence(rand(3, 5));
 
         return [
             'name' => $name,
             'slug' => Str::slug($name),
             'teaser' => fake()->sentence(),
-            'description' => fake()->paragraphs(random_int(4, 20), true),
+            'description' => fake()->paragraphs(rand(4, 20), true),
             'license_id' => License::factory(),
             'source_code_link' => fake()->url(),
             'featured' => fake()->boolean(),

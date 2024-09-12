@@ -72,7 +72,8 @@ class Mod extends Model
     {
         return $this->hasMany(ModVersion::class)
             ->whereHas('latestSptVersion')
-            ->orderByDesc('version');
+            ->orderByDesc('version')
+            ->chaperone();
     }
 
     /**
@@ -82,7 +83,8 @@ class Mod extends Model
     {
         return $this->hasOne(ModVersion::class)
             ->whereHas('latestSptVersion')
-            ->orderByDesc('updated_at');
+            ->orderByDesc('updated_at')
+            ->chaperone();
     }
 
     /**
@@ -114,7 +116,8 @@ class Mod extends Model
             ->whereHas('sptVersions')
             ->orderByDesc('version')
             ->orderByDesc('updated_at')
-            ->take(1);
+            ->take(1)
+            ->chaperone();
     }
 
     /**

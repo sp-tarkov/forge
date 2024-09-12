@@ -8,6 +8,9 @@ use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<ModDependency>
+ */
 class ModDependencyFactory extends Factory
 {
     protected $model = ModDependency::class;

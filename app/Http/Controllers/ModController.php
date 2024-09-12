@@ -6,26 +6,27 @@ use App\Http\Requests\ModRequest;
 use App\Http\Resources\ModResource;
 use App\Models\Mod;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\View\View;
 
 class ModController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
+    public function index(): View
     {
         $this->authorize('viewAny', Mod::class);
 
         return view('mod.index');
     }
 
-    public function store(ModRequest $request)
+    public function store(ModRequest $request): ModResource
     {
         $this->authorize('create', Mod::class);
 
         return new ModResource(Mod::create($request->validated()));
     }
 
-    public function show(int $modId, string $slug)
+    public function show(int $modId, string $slug): View
     {
         $mod = Mod::with([
             'versions',
@@ -47,7 +48,7 @@ class ModController extends Controller
         return view('mod.show', compact(['mod']));
     }
 
-    public function update(ModRequest $request, Mod $mod)
+    public function update(ModRequest $request, Mod $mod): ModResource
     {
         $this->authorize('update', $mod);
 
@@ -56,12 +57,5 @@ class ModController extends Controller
         return new ModResource($mod);
     }
 
-    public function destroy(Mod $mod)
-    {
-        $this->authorize('delete', $mod);
-
-        $mod->delete();
-
-        return response()->json();
-    }
+    public function destroy(Mod $mod): void {}
 }

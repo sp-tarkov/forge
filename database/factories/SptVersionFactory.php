@@ -6,6 +6,9 @@ use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<SptVersion>
+ */
 class SptVersionFactory extends Factory
 {
     protected $model = SptVersion::class;

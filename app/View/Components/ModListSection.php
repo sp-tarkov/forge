@@ -11,10 +11,25 @@ use Illuminate\View\Component;
 
 class ModListSection extends Component
 {
+    /**
+     * The featured mods listed on the homepage.
+     *
+     * @var Collection<int, Mod>
+     */
     public Collection $modsFeatured;
 
+    /**
+     * The latest mods listed on the homepage.
+     *
+     * @var Collection<int, Mod>
+     */
     public Collection $modsLatest;
 
+    /**
+     * The last updated mods listed on the homepage.
+     *
+     * @var Collection<int, Mod>
+     */
     public Collection $modsUpdated;
 
     public function __construct()
@@ -24,6 +39,11 @@ class ModListSection extends Component
         $this->modsUpdated = $this->fetchUpdatedMods();
     }
 
+    /**
+     * Fetches the featured mods homepage listing.
+     *
+     * @return Collection<int, Mod>
+     */
     private function fetchFeaturedMods(): Collection
     {
         return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'downloads'])
@@ -39,6 +59,11 @@ class ModListSection extends Component
             ->get();
     }
 
+    /**
+     * Fetches the latest mods homepage listing.
+     *
+     * @return Collection<int, Mod>
+     */
     private function fetchLatestMods(): Collection
     {
         return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'created_at', 'downloads'])
@@ -53,6 +78,11 @@ class ModListSection extends Component
             ->get();
     }
 
+    /**
+     * Fetches the recently updated mods homepage listing.
+     *
+     * @return Collection<int, Mod>
+     */
     private function fetchUpdatedMods(): Collection
     {
         return Mod::select(['id', 'name', 'slug', 'teaser', 'thumbnail', 'featured', 'downloads'])
@@ -81,6 +111,11 @@ class ModListSection extends Component
         ]);
     }
 
+    /**
+     * Prepare the sections for the homepage mod lists.
+     *
+     * @return array<int, array<string, mixed>>
+     */
     public function getSections(): array
     {
         return [

@@ -6,6 +6,9 @@ use App\Models\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<UserRole>
+ */
 class UserRoleFactory extends Factory
 {
     protected $model = UserRole::class;

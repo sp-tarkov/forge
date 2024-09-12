@@ -16,6 +16,7 @@ class License extends Model
      */
     public function mods(): HasMany
     {
-        return $this->hasMany(Mod::class);
+        return $this->hasMany(Mod::class)
+            ->chaperone();
     }
 }
