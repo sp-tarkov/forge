@@ -226,6 +226,9 @@ class Mod extends Model
             'contains_ai_content' => 'boolean',
             'contains_ads' => 'boolean',
             'disabled' => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
         ];
     }
 
