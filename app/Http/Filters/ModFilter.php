@@ -39,6 +39,10 @@ class ModFilter
      */
     private function baseQuery(): Builder
     {
+        // TODO: The latestVersion relationship is sometimes null here and it causes issues. We need to ensure that
+        //       empty relationships are filtered out. Normally we would use the whereHas method, but it causes *major*
+        //       performance issues in this case. We need to find a better solution.
+
         return Mod::select([
             'mods.id',
             'mods.name',
