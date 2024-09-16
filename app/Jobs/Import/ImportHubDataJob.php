@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Import;
 
+use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\Import\DataTransferObjects\HubUser;
 use App\Models\License;
 use App\Models\Mod;
@@ -9,6 +10,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Support\Version;
 use Carbon\Carbon;
 use CurlHandle;
 use Exception;
@@ -969,10 +971,20 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     $sptVersionTemp = DB::table('temp_spt_version_tags')->where('hub_id', $versionLabel->labelID)->value('version');
                     $sptVersionConstraint = $this->extractSemanticVersion($sptVersionTemp, appendPatch: true) ?? '0.0.0';
 
+                    try {
+                        $modVersion = new Version($version->versionNumber);
+                    } catch (InvalidVersionNumberException $e) {
+                        $modVersion = new Version('0.0.0');
+                    }
+
                     $insertData[] = [
                         'hub_id' => (int) $version->versionID,
                         'mod_id' => $modId,
-                        'version' => $this->extractSemanticVersion($version->versionNumber) ?? '0.0.0',
+                        'version' => $modVersion,
+                        'version_major' => $modVersion->getMajor(),
+                        'version_minor' => $modVersion->getMinor(),
+                        'version_patch' => $modVersion->getPatch(),
+                        'version_pre_release' => $modVersion->getPreRelease(),
                         'description' => $this->cleanHubContent($versionContent->description ?? ''),
                         'link' => $version->downloadURL,
                         'spt_version_constraint' => $sptVersionConstraint,

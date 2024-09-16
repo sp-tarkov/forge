@@ -18,8 +18,8 @@
                 <div class="pb-3">
                     <div class="flex justify-between items-center space-x-3">
                         <h3 class="block mt-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
-                        <span class="badge-version {{ $version->latestSptVersion->first()->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                            {{ $version->latestSptVersion->first()->version_formatted }}
+                        <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                            {{ $version->latestSptVersion->version_formatted }}
                         </span>
                     </div>
                     <p class="text-sm italic text-slate-600 dark:text-gray-200">

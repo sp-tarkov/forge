@@ -30,14 +30,12 @@ class ModController extends Controller
     {
         $mod = Mod::with([
             'versions',
-            'versions.latestSptVersion:id,version,color_class',
+            'versions.latestSptVersion',
             'versions.latestResolvedDependencies',
-            'versions.latestResolvedDependencies.mod:id,name,slug',
-            'users:id,name',
-            'license:id,name,link',
-        ])
-            ->whereHas('latestVersion')
-            ->findOrFail($modId);
+            'versions.latestResolvedDependencies.mod',
+            'license',
+            'users',
+        ])->findOrFail($modId);
 
         if ($mod->slug !== $slug) {
             abort(404);

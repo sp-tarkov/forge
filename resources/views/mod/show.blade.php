@@ -40,8 +40,8 @@
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
                         <p class="mt-2">
-                            <span class="badge-version {{ $mod->latestVersion->latestSptVersion->first()->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                {{ $mod->latestVersion->latestSptVersion->first()->version_formatted }} {{ __('Compatible') }}
+                            <span class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                {{ $mod->latestVersion->latestSptVersion->version_formatted }} {{ __('Compatible') }}
                             </span>
                         </p>
                     </div>
@@ -108,8 +108,8 @@
                                     <p class="text-gray-700 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <span class="badge-version {{ $version->latestSptVersion->first()->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                        {{ $version->latestSptVersion->first()->version_formatted }}
+                                    <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                        {{ $version->latestSptVersion->version_formatted }}
                                     </span>
                                     <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
                                 </div>

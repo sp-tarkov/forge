@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
+use App\Support\Version;
 use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -72,35 +73,6 @@ class SptVersion extends Model
     }
 
     /**
-     * Called when the model is booted.
-     */
-    protected static function booted(): void
-    {
-        // Callback that runs before saving the model.
-        static::saving(function (SptVersion $model) {
-            // Extract the version sections from the version string.
-            if (! empty($model->version)) {
-                // Default values in case there's an exception.
-                $model->version_major = 0;
-                $model->version_minor = 0;
-                $model->version_patch = 0;
-                $model->version_pre_release = '';
-
-                try {
-                    $versionSections = self::extractVersionSections($model->version);
-                } catch (InvalidVersionNumberException $e) {
-                    return;
-                }
-
-                $model->version_major = $versionSections['major'];
-                $model->version_minor = $versionSections['minor'];
-                $model->version_patch = $versionSections['patch'];
-                $model->version_pre_release = $versionSections['pre_release'];
-            }
-        });
-    }
-
-    /**
      * Extract the version sections from the version string.
      *
      * @return array{major: int, minor: int, patch: int, pre_release: string}
@@ -127,6 +99,29 @@ class SptVersion extends Model
     }
 
     /**
+     * Called when the model is booted.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (SptVersion $model) {
+            // Extract the version sections from the version string.
+            try {
+                $version = new Version($model->version);
+
+                $model->version_major = $version->getMajor();
+                $model->version_minor = $version->getMinor();
+                $model->version_patch = $version->getPatch();
+                $model->version_pre_release = $version->getPreRelease();
+            } catch (InvalidVersionNumberException $e) {
+                $model->version_major = 0;
+                $model->version_minor = 0;
+                $model->version_patch = 0;
+                $model->version_pre_release = '';
+            }
+        });
+    }
+
+    /**
      * Update the mod count for this SptVersion.
      */
     public function updateModCount(): void
@@ -146,7 +141,8 @@ class SptVersion extends Model
      */
     public function modVersions(): BelongsToMany
     {
-        return $this->belongsToMany(ModVersion::class, 'mod_version_spt_version');
+        return $this->belongsToMany(ModVersion::class)
+            ->using(ModVersionSptVersion::class);
     }
 
     /**

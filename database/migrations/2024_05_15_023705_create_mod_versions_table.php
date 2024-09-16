@@ -20,6 +20,10 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
             $table->string('version');
+            $table->unsignedInteger('version_major')->default(0);
+            $table->unsignedInteger('version_minor')->default(0);
+            $table->unsignedInteger('version_patch')->default(0);
+            $table->string('version_pre_release')->default('');
             $table->longText('description');
             $table->string('link');
             $table->string('spt_version_constraint');
@@ -32,6 +36,7 @@ return new class extends Migration
 
             $table->index(['version']);
             $table->index(['mod_id', 'deleted_at', 'disabled', 'published_at'], 'mod_versions_filtering_index');
+            $table->index(['version_major', 'version_minor', 'version_patch', 'version_pre_release'], 'mod_versions_version_components_index');
             $table->index(['id', 'deleted_at'], 'mod_versions_id_deleted_at_index');
         });
     }

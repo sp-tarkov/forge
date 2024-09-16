@@ -67,6 +67,19 @@ class Mod extends Model
     }
 
     /**
+     * The relationship between a mod and its last updated version.
+     *
+     * @return HasOne<ModVersion>
+     */
+    public function latestUpdatedVersion(): HasOne
+    {
+        return $this->versions()
+            ->one()
+            ->ofMany('updated_at', 'max')
+            ->chaperone();
+    }
+
+    /**
      * The relationship between a mod and its versions.
      *
      * @return HasMany<ModVersion>
@@ -74,21 +87,10 @@ class Mod extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(ModVersion::class)
-            ->whereHas('latestSptVersion')
-            ->orderByDesc('version')
-            ->chaperone();
-    }
-
-    /**
-     * The relationship between a mod and its last updated version.
-     *
-     * @return HasOne<ModVersion>
-     */
-    public function lastUpdatedVersion(): HasOne
-    {
-        return $this->hasOne(ModVersion::class)
-            ->whereHas('latestSptVersion')
-            ->orderByDesc('updated_at')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByDesc('version_pre_release')
             ->chaperone();
     }
 
@@ -109,24 +111,9 @@ class Mod extends Model
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
             'published_at' => strtotime($this->published_at),
-            'latestVersion' => $this->latestVersion()->first()->latestSptVersion()->first()->version_formatted,
-            'latestVersionColorClass' => $this->latestVersion()->first()->latestSptVersion()->first()->color_class,
+            'latestVersion' => $this->latestVersion->latestSptVersion->version_formatted,
+            'latestVersionColorClass' => $this->latestVersion->latestSptVersion->color_class,
         ];
-    }
-
-    /**
-     * The relationship to the latest mod version, dictated by the mod version number.
-     *
-     * @return HasOne<ModVersion>
-     */
-    public function latestVersion(): HasOne
-    {
-        return $this->hasOne(ModVersion::class)
-            ->whereHas('sptVersions')
-            ->orderByDesc('version')
-            ->orderByDesc('updated_at')
-            ->take(1)
-            ->chaperone();
     }
 
     /**
@@ -144,16 +131,13 @@ class Mod extends Model
             return false;
         }
 
-        // Fetch the latest version instance.
-        $latestVersion = $this->latestVersion()->first();
-
         // Ensure the mod has a latest version.
-        if (is_null($latestVersion)) {
+        if ($this->latestVersion()->doesntExist()) {
             return false;
         }
 
         // Ensure the latest version has a latest SPT version.
-        if ($latestVersion->latestSptVersion()->doesntExist()) {
+        if ($this->latestVersion->latestSptVersion()->doesntExist()) {
             return false;
         }
 
@@ -161,12 +145,30 @@ class Mod extends Model
         $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, function () {
             return SptVersion::getVersionsForLastThreeMinors();
         });
-        if (! in_array($latestVersion->latestSptVersion()->first()->version, $activeSptVersions->pluck('version')->toArray())) {
+        if (! in_array($this->latestVersion->latestSptVersion->version, $activeSptVersions->pluck('version')->toArray())) {
             return false;
         }
 
         // All conditions are met; the mod should be searchable.
         return true;
+    }
+
+    /**
+     * The relationship between a mod and its latest version.
+     *
+     * @return HasOne<ModVersion>
+     */
+    public function latestVersion(string $sort = 'version'): HasOne
+    {
+        return $this->versions()
+            ->one()
+            ->ofMany([
+                'version_major' => 'max',
+                'version_minor' => 'max',
+                'version_patch' => 'max',
+                'version_pre_release' => 'max',
+            ])
+            ->chaperone();
     }
 
     /**

@@ -99,6 +99,36 @@ it('returns no mods when no SPT versions match', function () {
     expect($filteredMods)->toBeEmpty();
 });
 
+it('filters mods based on a exact search term', function () {
+    SptVersion::factory()->create(['version' => '1.0.0']);
+
+    $mod = Mod::factory()->create(['name' => 'BigBrain']);
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
+
+    Mod::factory()->create(['name' => 'SmallFeet']);
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
+
+    $filters = ['query' => 'BigBrain'];
+    $filteredMods = (new ModFilter($filters))->apply()->get();
+
+    expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
+});
+
+it('filters mods based featured status', function () {
+    SptVersion::factory()->create(['version' => '1.0.0']);
+
+    $mod = Mod::factory()->create(['name' => 'BigBrain', 'featured' => true]);
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
+
+    Mod::factory()->create(['name' => 'SmallFeet']);
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
+
+    $filters = ['featured' => true];
+    $filteredMods = (new ModFilter($filters))->apply()->get();
+
+    expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
+});
+
 it('filters mods correctly with combined filters', function () {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
@@ -128,8 +158,7 @@ it('filters mods correctly with combined filters', function () {
     $filteredMods = (new ModFilter($filters))->apply()->get();
 
     // Assert that only the correct mod is returned
-    expect($filteredMods)->toHaveCount(1)
-        ->and($filteredMods->first()->id)->toBe($mod1->id);
+    expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod1->id);
 });
 
 it('handles an empty SPT versions array correctly', function () {

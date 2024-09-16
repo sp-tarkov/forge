@@ -16,7 +16,7 @@
     <x-page-content-title :title="$updated['title']" :button-text="__('View All')" :button-link="$updated['link']" />
     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         @foreach ($updated['mods'] as $mod)
-            <x-mod-card :mod="$mod" :version="$mod->lastUpdatedVersion" />
+            <x-mod-card :mod="$mod" :version="$mod->latestUpdatedVersion" />
         @endforeach
     </div>
 </div>
