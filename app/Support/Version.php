@@ -38,7 +38,7 @@ class Version
 
         // Regex to match semantic versioning, including pre-release identifiers
         if (preg_match('/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([\w.-]+))?$/', $this->version, $matches)) {
-            $this->major = (int) ($matches[1] ?? 0);
+            $this->major = (int) $matches[1];
             $this->minor = (int) ($matches[2] ?? 0);
             $this->patch = (int) ($matches[3] ?? 0);
             $this->preRelease = $matches[4] ?? '';
