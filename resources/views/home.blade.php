@@ -20,7 +20,7 @@
             </div>
 
             <div class="pb-10">
-                <x-mod-list-section/>
+                <x-homepage-mods />
             </div>
         </div>
     </div>

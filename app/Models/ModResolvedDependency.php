@@ -9,6 +9,8 @@ class ModResolvedDependency extends Model
 {
     /**
      * The relationship between the resolved dependency and the mod version.
+     *
+     * @return BelongsTo<ModVersion, ModResolvedDependency>
      */
     public function modVersion(): BelongsTo
     {
@@ -17,6 +19,8 @@ class ModResolvedDependency extends Model
 
     /**
      * The relationship between the resolved dependency and the dependency.
+     *
+     * @return BelongsTo<ModDependency, ModResolvedDependency>
      */
     public function dependency(): BelongsTo
     {
@@ -25,6 +29,8 @@ class ModResolvedDependency extends Model
 
     /**
      * The relationship between the resolved dependency and the resolved mod version.
+     *
+     * @return BelongsTo<ModVersion, ModResolvedDependency>
      */
     public function resolvedModVersion(): BelongsTo
     {

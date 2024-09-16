@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\LicenseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,10 +10,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class License extends Model
 {
-    use HasFactory, SoftDeletes;
+    /** @use HasFactory<LicenseFactory> */
+    use HasFactory;
+
+    use SoftDeletes;
 
     /**
      * The relationship between a license and mod.
+     *
+     * @return HasMany<Mod>
      */
     public function mods(): HasMany
     {

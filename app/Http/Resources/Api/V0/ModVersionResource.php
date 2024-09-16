@@ -11,6 +11,8 @@ class ModVersionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
@@ -32,7 +34,6 @@ class ModVersionResource extends JsonResource
                 //       downloads that are made, so we'll need a new route/feature for that. #35
                 'link' => $this->link,
 
-                'spt_version_id' => $this->spt_version_id,
                 'virus_total_link' => $this->virus_total_link,
                 'downloads' => $this->downloads,
                 'created_at' => $this->created_at,
@@ -44,7 +45,6 @@ class ModVersionResource extends JsonResource
                     [
                         'data' => [
                             'type' => 'spt_version',
-                            'id' => $this->spt_version_id,
                         ],
                     ],
                 ],

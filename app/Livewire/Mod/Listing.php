@@ -3,7 +3,9 @@
 namespace App\Livewire\Mod;
 
 use App\Http\Filters\ModFilter;
+use App\Models\Mod;
 use App\Models\SptVersion;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -12,7 +14,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class Index extends Component
+class Listing extends Component
 {
     use WithPagination;
 
@@ -30,6 +32,8 @@ class Index extends Component
 
     /**
      * The SPT versions filter value.
+     *
+     * @var array<string>
      */
     #[Url]
     public array $sptVersions = [];
@@ -42,6 +46,8 @@ class Index extends Component
 
     /**
      * The available SPT versions.
+     *
+     * @var Collection<int, SptVersion>
      */
     public Collection $activeSptVersions;
 
@@ -59,6 +65,8 @@ class Index extends Component
 
     /**
      * Get all patch versions of the latest minor SPT version.
+     *
+     * @return Collection<int, SptVersion>
      */
     public function getLatestMinorVersions(): Collection
     {
@@ -81,12 +89,21 @@ class Index extends Component
         ];
         $mods = (new ModFilter($filters))->apply()->paginate(16);
 
-        // Check if the current page is greater than the last page. Redirect if it is.
+        $this->redirectOutOfBoundsPage($mods);
+
+        return view('livewire.mod.listing', compact('mods'));
+    }
+
+    /**
+     * Check if the current page is greater than the last page. Redirect if it is.
+     *
+     * @param  LengthAwarePaginator<Mod>  $mods
+     */
+    private function redirectOutOfBoundsPage(LengthAwarePaginator $mods): void
+    {
         if ($mods->currentPage() > $mods->lastPage()) {
             $this->redirectRoute('mods', ['page' => $mods->lastPage()]);
         }
-
-        return view('livewire.mod.index', compact('mods'));
     }
 
     /**

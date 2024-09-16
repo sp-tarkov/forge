@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Jobs\Import;
 
+use App\Exceptions\InvalidVersionNumberException;
+use App\Jobs\Import\DataTransferObjects\HubUser;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Support\Version;
 use Carbon\Carbon;
 use CurlHandle;
 use Exception;
@@ -306,14 +309,29 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                 $userData = $bannedUsers = $userRanks = [];
 
                 foreach ($users as $user) {
-                    $userData[] = $this->collectUserData($curl, $user);
+                    $hubUser = new HubUser(
+                        $user->userID,
+                        $user->username,
+                        $user->email,
+                        $user->password,
+                        $user->registrationDate,
+                        $user->banned,
+                        $user->banReason,
+                        $user->banExpires,
+                        $user->coverPhotoHash,
+                        $user->coverPhotoExtension,
+                        $user->rankID,
+                        $user->rankTitle
+                    );
 
-                    $bannedUserData = $this->collectBannedUserData($user);
+                    $userData[] = $this->collectUserData($curl, $hubUser);
+
+                    $bannedUserData = $this->collectBannedUserData($hubUser);
                     if ($bannedUserData) {
                         $bannedUsers[] = $bannedUserData;
                     }
 
-                    $userRankData = $this->collectUserRankData($user);
+                    $userRankData = $this->collectUserRankData($hubUser);
                     if ($userRankData) {
                         $userRanks[] = $userRankData;
                     }
@@ -328,16 +346,21 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         curl_close($curl);
     }
 
-    protected function collectUserData(CurlHandle $curl, object $user): array
+    /**
+     * Build an array of user data ready to be inserted into the local database.
+     *
+     * @return array<string, mixed>
+     */
+    protected function collectUserData(CurlHandle $curl, HubUser $hubUser): array
     {
         return [
-            'hub_id' => (int) $user->userID,
-            'name' => $user->username,
-            'email' => Str::lower($user->email),
-            'password' => $this->cleanPasswordHash($user->password),
-            'profile_photo_path' => $this->fetchUserAvatar($curl, $user),
-            'cover_photo_path' => $this->fetchUserCoverPhoto($curl, $user),
-            'created_at' => $this->cleanRegistrationDate($user->registrationDate),
+            'hub_id' => (int) $hubUser->userID,
+            'name' => $hubUser->username,
+            'email' => Str::lower($hubUser->email),
+            'password' => $this->cleanPasswordHash($hubUser->password),
+            'profile_photo_path' => $this->fetchUserAvatar($curl, $hubUser),
+            'cover_photo_path' => $this->fetchUserCoverPhoto($curl, $hubUser),
+            'created_at' => $this->cleanRegistrationDate($hubUser->registrationDate),
             'updated_at' => now('UTC')->toDateTimeString(),
         ];
     }
@@ -358,10 +381,10 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Fetch the user avatar from the Hub and store it anew.
      */
-    protected function fetchUserAvatar(CurlHandle $curl, object $user): string
+    protected function fetchUserAvatar(CurlHandle $curl, HubUser $hubUser): string
     {
         // Fetch the user's avatar data from the temporary table.
-        $avatar = DB::table('temp_user_avatar')->where('userID', $user->userID)->first();
+        $avatar = DB::table('temp_user_avatar')->where('userID', $hubUser->userID)->first();
 
         if (! $avatar) {
             return '';
@@ -410,15 +433,15 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Fetch the user avatar from the Hub and store it anew.
      */
-    protected function fetchUserCoverPhoto(CurlHandle $curl, object $user): string
+    protected function fetchUserCoverPhoto(CurlHandle $curl, HubUser $hubUser): string
     {
-        if (empty($user->coverPhotoHash) || empty($user->coverPhotoExtension)) {
+        if (empty($hubUser->coverPhotoHash) || empty($hubUser->coverPhotoExtension)) {
             return '';
         }
 
-        $hashShort = substr($user->coverPhotoHash, 0, 2);
-        $fileName = $user->coverPhotoHash.'.'.$user->coverPhotoExtension;
-        $hubUrl = 'https://hub.sp-tarkov.com/images/coverPhotos/'.$hashShort.'/'.$user->userID.'-'.$fileName;
+        $hashShort = substr($hubUser->coverPhotoHash, 0, 2);
+        $fileName = $hubUser->coverPhotoHash.'.'.$hubUser->coverPhotoExtension;
+        $hubUrl = 'https://hub.sp-tarkov.com/images/coverPhotos/'.$hashShort.'/'.$hubUser->userID.'-'.$fileName;
         $relativePath = 'user-covers/'.$fileName;
 
         return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
@@ -441,14 +464,16 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build an array of banned user data ready to be inserted into the local database.
+     *
+     * @return array<string, mixed>|null
      */
-    protected function collectBannedUserData($user): ?array
+    protected function collectBannedUserData(HubUser $hubUser): ?array
     {
-        if ($user->banned) {
+        if ($hubUser->banned) {
             return [
-                'hub_id' => (int) $user->userID,
-                'comment' => $user->banReason ?? '',
-                'expired_at' => $this->cleanUnbannedAtDate($user->banExpires),
+                'hub_id' => (int) $hubUser->userID,
+                'comment' => $hubUser->banReason ?? '',
+                'expired_at' => $this->cleanUnbannedAtDate($hubUser->banExpires),
             ];
         }
 
@@ -495,12 +520,17 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         }
     }
 
-    protected function collectUserRankData($user): ?array
+    /**
+     * Build an array of user rank data ready to be inserted into the local database.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function collectUserRankData(HubUser $hubUser): ?array
     {
-        if ($user->rankID && $user->rankTitle) {
+        if ($hubUser->rankID && $hubUser->rankTitle) {
             return [
-                'hub_id' => (int) $user->userID,
-                'title' => $user->rankTitle,
+                'hub_id' => (int) $hubUser->userID,
+                'title' => $hubUser->rankTitle,
             ];
         }
 
@@ -509,8 +539,10 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Insert or update the users in the local database.
+     *
+     * @param  array<array<string, mixed>>  $usersData
      */
-    protected function upsertUsers($usersData): void
+    protected function upsertUsers(array $usersData): void
     {
         if (! empty($usersData)) {
             DB::table('users')->upsert($usersData, ['hub_id'], [
@@ -525,8 +557,10 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Fetch the hub-banned users from the local database and ban them locally.
+     *
+     * @param  array<array<string, mixed>>  $bannedUsers
      */
-    protected function handleBannedUsers($bannedUsers): void
+    protected function handleBannedUsers(array $bannedUsers): void
     {
         foreach ($bannedUsers as $bannedUser) {
             $user = User::whereHubId($bannedUser['hub_id'])->first();
@@ -539,8 +573,10 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Fetch or create the user ranks in the local database and assign them to the users.
+     *
+     * @param  array<array<string, mixed>>  $userRanks
      */
-    protected function handleUserRoles($userRanks): void
+    protected function handleUserRoles(array $userRanks): void
     {
         foreach ($userRanks as $userRank) {
             $roleName = Str::ucfirst(Str::afterLast($userRank['title'], '.'));
@@ -555,6 +591,8 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build the user role data based on the role name.
+     *
+     * @return array<string, string>
      */
     protected function buildUserRoleData(string $name): array
     {
@@ -672,6 +710,8 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Get the latest current version from the response data.
+     *
+     * @param  array<string, array<string, string>>  $versions
      */
     protected function getLatestVersion(array $versions): string
     {
@@ -931,10 +971,20 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     $sptVersionTemp = DB::table('temp_spt_version_tags')->where('hub_id', $versionLabel->labelID)->value('version');
                     $sptVersionConstraint = $this->extractSemanticVersion($sptVersionTemp, appendPatch: true) ?? '0.0.0';
 
+                    try {
+                        $modVersion = new Version($version->versionNumber);
+                    } catch (InvalidVersionNumberException $e) {
+                        $modVersion = new Version('0.0.0');
+                    }
+
                     $insertData[] = [
                         'hub_id' => (int) $version->versionID,
                         'mod_id' => $modId,
-                        'version' => $this->extractSemanticVersion($version->versionNumber) ?? '0.0.0',
+                        'version' => $modVersion,
+                        'version_major' => $modVersion->getMajor(),
+                        'version_minor' => $modVersion->getMinor(),
+                        'version_patch' => $modVersion->getPatch(),
+                        'version_pre_release' => $modVersion->getPreRelease(),
                         'description' => $this->cleanHubContent($versionContent->description ?? ''),
                         'link' => $version->downloadURL,
                         'spt_version_constraint' => $sptVersionConstraint,

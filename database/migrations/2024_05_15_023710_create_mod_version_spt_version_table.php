@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mod_version_id')->constrained('mod_versions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('spt_version_id')->constrained('spt_versions')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->timestamps();
 
             $table->index(['mod_version_id', 'spt_version_id'], 'mod_version_spt_version_index');
             $table->index(['spt_version_id', 'mod_version_id'], 'spt_version_mod_version_index');
