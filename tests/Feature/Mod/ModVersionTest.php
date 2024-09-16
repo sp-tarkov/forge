@@ -128,3 +128,16 @@ it('handles null published_at as not published', function () {
 
     expect($mods->contains($modWithNoPublishDate))->toBeFalse();
 });
+
+it('updates the parent mods updated_at column when updated', function () {
+    $originalDate = now()->subDays(10);
+    $version = ModVersion::factory()->create(['updated_at' => $originalDate]);
+
+    $version->downloads++;
+    $version->save();
+
+    $version->refresh();
+
+    expect($version->mod->updated_at)->not->toEqual($originalDate)
+        ->and($version->mod->updated_at->format('Y-m-d'))->toEqual(now()->format('Y-m-d'));
+});

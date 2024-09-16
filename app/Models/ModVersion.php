@@ -23,6 +23,11 @@ class ModVersion extends Model
     use SoftDeletes;
 
     /**
+     * Update the parent mod's updated_at timestamp when the mod version is updated.
+     */
+    protected $touches = ['mod'];
+
+    /**
      * Post boot method to configure the model.
      */
     protected static function booted(): void
