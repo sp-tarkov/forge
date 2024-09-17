@@ -2,10 +2,10 @@
 
 namespace App\Http\Filters\V1;
 
+use App\Traits\V1\FilterMethods;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
  * @template TModelClass of Model
@@ -13,24 +13,58 @@ use Illuminate\Support\Str;
 abstract class QueryFilter
 {
     /**
+     * Include general filter methods.
+     *
+     * @use FilterMethods<TModelClass>
+     */
+    use FilterMethods;
+
+    /**
      * The query builder instance.
      *
      * @var Builder<TModelClass>
      */
     protected Builder $builder;
 
+    /**
+     * The request instance.
+     */
     protected Request $request;
 
-    /** @var array<string> */
+    /**
+     * The sortable fields.
+     *
+     * @var array<string>
+     */
     protected array $sortable = [];
 
+    /**
+     * Create a new QueryFilter instance.
+     */
     public function __construct(Request $request)
     {
         $this->request = $request;
     }
 
     /**
-     * Apply the filter to the query builder.
+     * Iterate over each of the filter options and call the appropriate method if it exists.
+     *
+     * @param  array<string, string>  $filters
+     * @return Builder<TModelClass>
+     */
+    public function filter(array $filters): Builder
+    {
+        foreach ($filters as $attribute => $value) {
+            if (method_exists($this, $attribute)) {
+                $this->$attribute($value);
+            }
+        }
+
+        return $this->builder;
+    }
+
+    /**
+     * Iterate over all request data and call the appropriate method if it exists.
      *
      * @param  Builder<TModelClass>  $builder
      * @return Builder<TModelClass>
@@ -42,27 +76,6 @@ abstract class QueryFilter
         foreach ($this->request->all() as $attribute => $value) {
             if (method_exists($this, $attribute)) {
                 $this->$attribute($value);
-            }
-        }
-
-        return $this->builder;
-    }
-
-    /**
-     * Apply the sort type to the query.
-     *
-     * @return Builder<TModelClass>
-     */
-    protected function sort(string $values): Builder
-    {
-        $sortables = array_map('trim', explode(',', $values));
-
-        foreach ($sortables as $sortable) {
-            $direction = Str::startsWith($sortable, '-') ? 'desc' : 'asc';
-            $column = Str::of($sortable)->remove('-')->value();
-
-            if (in_array($column, $this->sortable)) {
-                $this->builder->orderBy($column, $direction);
             }
         }
 

@@ -91,7 +91,7 @@ class ModFilter
     private function order(string $type): Builder
     {
         return match ($type) {
-            'updated' => $this->builder->orderByDesc('mods.updated_at'), // TODO: This needs to be updated when a version is updated.
+            'updated' => $this->builder->orderByDesc('mods.updated_at'),
             'downloaded' => $this->builder->orderByDesc('mods.downloads'),
             default => $this->builder->orderByDesc('mods.created_at'),
         };

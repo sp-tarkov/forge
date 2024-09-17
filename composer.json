@@ -30,6 +30,7 @@
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.13",
         "fakerphp/faker": "^1.23",
+        "knuckleswtf/scribe": "^4.37",
         "larastan/larastan": "^2.9",
         "laravel/pint": "^1.16",
         "laravel/sail": "^1.29",

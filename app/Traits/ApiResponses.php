@@ -8,8 +8,6 @@ trait ApiResponses
 {
     /**
      * Return a success JSON response.
-     *
-     * @param  array<mixed>  $data
      */
     protected function success(string $message, ?array $data = []): JsonResponse
     {
@@ -18,15 +16,17 @@ trait ApiResponses
 
     /**
      * The base response.
-     *
-     * @param  array<mixed>  $data
      */
     private function baseResponse(?string $message = '', ?array $data = [], ?int $code = 200): JsonResponse
     {
-        return response()->json([
-            'message' => $message,
-            'data' => $data,
-        ], $code);
+        $response = [];
+        $response['message'] = $message;
+        if ($data) {
+            $response['data'] = $data;
+        }
+        $response['status'] = $code;
+
+        return response()->json($response, $code);
     }
 
     /**
