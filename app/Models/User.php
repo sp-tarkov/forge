@@ -75,7 +75,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return;
         }
 
-        $this->following()->syncWithoutDetaching($userId);
+        $this->following()->syncWithoutDetaching([$userId]);
     }
 
     /**
