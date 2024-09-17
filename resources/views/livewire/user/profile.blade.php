@@ -121,7 +121,7 @@
                         </div>
                         <div class="m-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
                             @foreach($mods as $mod)
-                                <x-mod-card :mod="$mod" versionScope="latestVersion" />
+                                <x-mod-card :mod="$mod" :version="$mod->latestVersion" />
                             @endforeach
                         </div>
                         @break
@@ -129,7 +129,9 @@
                         <p class="m-4">This is the recent activity. Probably need to implement some kind of activity tracking for this?</p>
                         @break
                     @case('aboutMe')
-                        <p class="m-4">{{$user->about}}</p>
+                        <div class="text-gray-600 bg-white shadow-md dark:shadow-gray-950 drop-shadow-xl dark:text-gray-200 dark:bg-gray-900 rounded-xl p-2 m-4">
+                            <p class="m-4">{{$user->about}}</p>
+                        </div>
                         @break
                 @endswitch
             </div>
