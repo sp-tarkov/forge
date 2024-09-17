@@ -53,48 +53,62 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * The relationship between a user and users they follow
-     */
-    public function following(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id');
-    }
-
-    /**
-     * The relationship between a user and users that follow them
+     * The relationship between a user and users that follow them.
+     *
+     * @return BelongsToMany<User>
      */
     public function followers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_follows', 'following_id', 'follower_id');
+        return $this->belongsToMany(User::class, 'user_follows', 'following_id', 'follower_id')
+            ->withTimestamps();
     }
 
-    public function isFollowing(User|int $user): bool
-    {
-        $userId = $user instanceof User ? $user->id : $user;
-
-        return $this->following()->where('following_id', $userId)->exists();
-    }
-
+    /**
+     * Follow another user.
+     */
     public function follow(User|int $user): void
     {
         $userId = $user instanceof User ? $user->id : $user;
 
         if ($this->id === $userId) {
-            // don't allow following yourself
+            // Don't allow following yourself.
             return;
         }
 
         $this->following()->syncWithoutDetaching($userId);
     }
 
+    /**
+     * The relationship between a user and users they follow.
+     *
+     * @return BelongsToMany<User>
+     */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Unfollow another user.
+     */
     public function unfollow(User|int $user): void
     {
         $userId = $user instanceof User ? $user->id : $user;
 
-        // make sure the user is being followed before trying to detach
         if ($this->isFollowing($userId)) {
             $this->following()->detach($userId);
         }
+    }
+
+    /**
+     * Check if the user is following another user.
+     */
+    public function isFollowing(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->following()->where('following_id', $userId)->exists();
     }
 
     /**
@@ -209,8 +223,12 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
+            'id' => 'integer',
+            'hub_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 }
