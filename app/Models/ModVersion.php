@@ -24,6 +24,8 @@ class ModVersion extends Model
 
     /**
      * Update the parent mod's updated_at timestamp when the mod version is updated.
+     *
+     * @var array<string>
      */
     protected $touches = ['mod'];
 
