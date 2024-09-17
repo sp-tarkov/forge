@@ -11,8 +11,12 @@ class UserController extends Controller
 {
     use AuthorizesRequests;
 
-    public function show(Request $request, User $user, string $username): View
+    public function show(Request $request, int $userId, string $username): View
     {
+        $user = User::where('id', $userId)
+            // Reimplement eager loading after the review.
+            ->firstOrFail();
+
         if ($user->slug() !== $username) {
             abort(404);
         }
@@ -20,11 +24,6 @@ class UserController extends Controller
         if ($request->user()?->cannot('view', $user)) {
             abort(403);
         }
-
-        // not sure if this is optimal. Some way to do $user->with(...) ???
-        $user = User::where('id', $user->id)
-            ->with(['followers', 'following'])
-            ->firstOrFail();
 
         return view('user.show', compact('user'));
     }
