@@ -38,8 +38,6 @@ class ModController extends ApiController
         return ModResource::collection(Mod::filter($filters)->paginate());
     }
 
-    //public function store(StoreModRequest $request): void {}
-
     /**
      * Get Mod
      *
@@ -53,8 +51,4 @@ class ModController extends ApiController
     {
         return new ModResource($mod);
     }
-
-    //public function update(UpdateModRequest $request, Mod $mod): void {}
-
-    //public function destroy(Mod $mod): void {}
 }

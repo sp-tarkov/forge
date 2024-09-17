@@ -6,7 +6,6 @@ use App\Http\Filters\V1\QueryFilter;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Traits\HasCoverPhoto;
-use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,10 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
     use Bannable;
     use HasApiTokens;
     use HasCoverPhoto;
-
-    /** @use HasFactory<UserFactory> */
     use HasFactory;
-
     use HasProfilePhoto;
     use Notifiable;
     use Searchable;
@@ -103,8 +99,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * The data that is searchable by Scout.
-     *
-     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -195,10 +189,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Scope a query by applying QueryFilter filters.
-     *
-     * @param  Builder<User>  $builder
-     * @param  QueryFilter<User>  $filters
-     * @return Builder<User>
      */
     public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
     {
@@ -215,8 +205,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * The attributes that should be cast to native types.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {

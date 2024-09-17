@@ -4,25 +4,17 @@ namespace App\Http\Filters\V1;
 
 use App\Traits\V1\FilterMethods;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-/**
- * @template TModelClass of Model
- */
 abstract class QueryFilter
 {
     /**
      * Include general filter methods.
-     *
-     * @use FilterMethods<TModelClass>
      */
     use FilterMethods;
 
     /**
      * The query builder instance.
-     *
-     * @var Builder<TModelClass>
      */
     protected Builder $builder;
 
@@ -33,8 +25,6 @@ abstract class QueryFilter
 
     /**
      * The sortable fields.
-     *
-     * @var array<string>
      */
     protected array $sortable = [];
 
@@ -48,9 +38,6 @@ abstract class QueryFilter
 
     /**
      * Iterate over each of the filter options and call the appropriate method if it exists.
-     *
-     * @param  array<string, string>  $filters
-     * @return Builder<TModelClass>
      */
     public function filter(array $filters): Builder
     {
@@ -65,9 +52,6 @@ abstract class QueryFilter
 
     /**
      * Iterate over all request data and call the appropriate method if it exists.
-     *
-     * @param  Builder<TModelClass>  $builder
-     * @return Builder<TModelClass>
      */
     public function apply(Builder $builder): Builder
     {

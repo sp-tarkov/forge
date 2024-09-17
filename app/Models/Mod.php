@@ -96,8 +96,6 @@ class Mod extends Model
 
     /**
      * The data that is searchable by Scout.
-     *
-     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -173,8 +171,6 @@ class Mod extends Model
 
     /**
      * Build the URL to the mod's thumbnail.
-     *
-     * @return Attribute<string, never>
      */
     public function thumbnailUrl(): Attribute
     {
@@ -198,10 +194,6 @@ class Mod extends Model
 
     /**
      * Scope a query by applying QueryFilter filters.
-     *
-     * @param  Builder<Mod>  $builder
-     * @param  QueryFilter<Mod>  $filters
-     * @return Builder<Mod>
      */
     public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
     {
@@ -218,8 +210,6 @@ class Mod extends Model
 
     /**
      * The attributes that should be cast to native types.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {

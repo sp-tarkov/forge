@@ -1,5 +1,13 @@
-<div class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
-    <div class="w-full max-w-lg lg:max-w-md">
+<div x-data="{ query: $wire.entangle('query'), showDropdown: $wire.entangle('showDropdown'), noResults: $wire.entangle('noResults') }"
+     @keydown.esc.window="showDropdown = false"
+     class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end"
+>
+    <div class="w-full max-w-lg lg:max-w-md"
+         x-trap="showDropdown && query.length"
+         @click.away="showDropdown = false"
+         @keydown.down.prevent="$focus.wrap().next()"
+         @keydown.up.prevent="$focus.wrap().previous()"
+    >
         <label for="search" class="sr-only">{{ __('Search') }}</label>
         <search class="relative group" role="search">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -8,14 +16,15 @@
                 </svg>
             </div>
             <input id="global-search"
-                type="search"
-                wire:model.live="query"
-                @keydown.escape.window="$wire.clearSearch()"
-                placeholder="{{ __('Search') }}"
-                aria-controls="search-results"
-                aria-expanded="{{ $showDropdown ? 'true' : 'false' }}"
-                aria-label="{{ __('Search') }}"
-                class="block w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
+                   type="search"
+                   wire:model.live="query"
+                   @focus="showDropdown = true"
+                   @keydown.escape.window="$wire.query = ''; showDropdown = false; $wire.$refresh()"
+                   placeholder="{{ __('Search') }}"
+                   aria-controls="search-results"
+                   :aria-expanded="showDropdown"
+                   aria-label="{{ __('Search') }}"
+                   class="block w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
             />
             <x-global-search-results :showDropdown="$showDropdown" :noResults="$noResults" :results="$results" />
         </search>

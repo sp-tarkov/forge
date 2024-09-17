@@ -12,8 +12,6 @@ class ApiController extends Controller
     /**
      * Determine if the given relationship should be included in the request. If more than one relationship is provided,
      * only one needs to be present in the request for this method to return true.
-     *
-     * @param  string|string[]  $relationships
      */
     public static function shouldInclude(string|array $relationships): bool
     {

@@ -29,8 +29,6 @@ class UsersController extends ApiController
         return UserResource::collection(User::filter($filters)->paginate());
     }
 
-    //public function store(StoreUserRequest $request): void {}
-
     /**
      * Get User
      *
@@ -43,8 +41,4 @@ class UsersController extends ApiController
     {
         return new UserResource($user);
     }
-
-    //public function update(UpdateUserRequest $request, User $user): void {}
-
-    //public function destroy(User $user): void {}
 }

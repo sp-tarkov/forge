@@ -35,8 +35,6 @@ class GlobalSearch extends Component
 
     /**
      * Execute the search against each of the searchable models.
-     *
-     * @return array<string, array<array<string, mixed>>>
      */
     protected function executeSearch(string $query): array
     {
@@ -51,16 +49,13 @@ class GlobalSearch extends Component
             $results['total'] = $this->countTotalResults($results['data']);
         }
 
-        $this->showDropdown = Str::length($query) > 0;
-        $this->noResults = $results['total'] === 0 && $this->showDropdown;
+        $this->noResults = $results['total'] === 0;
 
         return $results;
     }
 
     /**
      * Fetch the user search results.
-     *
-     * @return Collection<int, array<string, mixed>>
      */
     protected function fetchUserResults(string $query): Collection
     {
@@ -72,8 +67,6 @@ class GlobalSearch extends Component
 
     /**
      * Fetch the mod search results.
-     *
-     * @return Collection<int, array<string, mixed>>
      */
     protected function fetchModResults(string $query): Collection
     {
@@ -85,23 +78,11 @@ class GlobalSearch extends Component
 
     /**
      * Count the total number of results across all models.
-     *
-     * @param  array<string, Collection<int, array<string, mixed>>>  $results
      */
     protected function countTotalResults(array $results): int
     {
         return collect($results)->reduce(function (int $carry, Collection $result) {
             return $carry + $result->count();
         }, 0);
-    }
-
-    /**
-     * Clear the search query and hide the dropdown.
-     */
-    public function clearSearch(): void
-    {
-        $this->query = '';
-        $this->showDropdown = false;
-        $this->noResults = false;
     }
 }

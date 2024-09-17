@@ -10,22 +10,16 @@ class ModFilter
 {
     /**
      * The query builder instance for the mod model.
-     *
-     * @var Builder<Mod>
      */
     protected Builder $builder;
 
     /**
      * The filters to apply.
-     *
-     * @var array<string, mixed>
      */
     protected array $filters;
 
     /**
-     * Constructor.
-     *
-     * @param  array<string, mixed>  $filters
+     * Create a new ModFilter instance.
      */
     public function __construct(array $filters)
     {
@@ -35,8 +29,6 @@ class ModFilter
 
     /**
      * The base query for the mod listing.
-     *
-     * @return Builder<Mod>
      */
     private function baseQuery(): Builder
     {
@@ -59,8 +51,6 @@ class ModFilter
 
     /**
      * Filter the results by the given search term.
-     *
-     * @return Builder<Mod>
      */
     private function query(string $term): Builder
     {
@@ -69,8 +59,6 @@ class ModFilter
 
     /**
      * Apply the filters to the query.
-     *
-     * @return Builder<Mod>
      */
     public function apply(): Builder
     {
@@ -85,8 +73,6 @@ class ModFilter
 
     /**
      * Order the query by the given type.
-     *
-     * @return Builder<Mod>
      */
     private function order(string $type): Builder
     {
@@ -99,8 +85,6 @@ class ModFilter
 
     /**
      * Filter the results by the featured status.
-     *
-     * @return Builder<Mod>
      */
     private function featured(string $option): Builder
     {
@@ -113,9 +97,6 @@ class ModFilter
 
     /**
      * Filter the results to specific SPT versions.
-     *
-     * @param  array<int, string>  $versions
-     * @return Builder<Mod>
      */
     private function sptVersions(array $versions): Builder
     {
