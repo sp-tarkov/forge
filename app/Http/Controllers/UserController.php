@@ -21,6 +21,11 @@ class UserController extends Controller
             abort(403);
         }
 
+        // not sure if this is optimal. Some way to do $user->with(...) ???
+        $user = User::where('id', $user->id)
+            ->with(['followers', 'following'])
+            ->firstOrFail();
+
         return view('user.show', compact('user'));
     }
 }
