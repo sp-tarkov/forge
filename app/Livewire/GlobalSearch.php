@@ -35,8 +35,6 @@ class GlobalSearch extends Component
 
     /**
      * Execute the search against each of the searchable models.
-     *
-     * @return array<string, array<array<string, mixed>>>
      */
     protected function executeSearch(string $query): array
     {
@@ -58,8 +56,6 @@ class GlobalSearch extends Component
 
     /**
      * Fetch the user search results.
-     *
-     * @return Collection<int, array<string, mixed>>
      */
     protected function fetchUserResults(string $query): Collection
     {
@@ -71,8 +67,6 @@ class GlobalSearch extends Component
 
     /**
      * Fetch the mod search results.
-     *
-     * @return Collection<int, array<string, mixed>>
      */
     protected function fetchModResults(string $query): Collection
     {
@@ -84,8 +78,6 @@ class GlobalSearch extends Component
 
     /**
      * Count the total number of results across all models.
-     *
-     * @param  array<string, Collection<int, array<string, mixed>>>  $results
      */
     protected function countTotalResults(array $results): int
     {

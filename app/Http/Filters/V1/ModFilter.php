@@ -12,8 +12,6 @@ class ModFilter extends QueryFilter
 {
     /**
      * The sortable fields.
-     *
-     * @var array<string>
      */
     protected array $sortable = [
         'name',
@@ -30,8 +28,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by ID.
-     *
-     * @return Builder<Mod>
      */
     public function id(string $value): Builder
     {
@@ -40,8 +36,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by hub ID.
-     *
-     * @return Builder<Mod>
      */
     public function hub_id(string $value): Builder
     {
@@ -50,8 +44,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by name.
-     *
-     * @return Builder<Mod>
      */
     public function name(string $value): Builder
     {
@@ -60,8 +52,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by slug.
-     *
-     * @return Builder<Mod>
      */
     public function slug(string $value): Builder
     {
@@ -70,8 +60,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by teaser.
-     *
-     * @return Builder<Mod>
      */
     public function teaser(string $value): Builder
     {
@@ -80,8 +68,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by source code link.
-     *
-     * @return Builder<Mod>
      */
     public function source_code_link(string $value): Builder
     {
@@ -90,8 +76,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by created at date.
-     *
-     * @return Builder<Mod>
      */
     public function created_at(string $value): Builder
     {
@@ -100,8 +84,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by updated at date.
-     *
-     * @return Builder<Mod>
      */
     public function updated_at(string $value): Builder
     {
@@ -110,8 +92,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by published at date.
-     *
-     * @return Builder<Mod>
      */
     public function published_at(string $value): Builder
     {
@@ -120,8 +100,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by featured.
-     *
-     * @return Builder<Mod>
      */
     public function featured(string $value): Builder
     {
@@ -130,8 +108,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by contains ads.
-     *
-     * @return Builder<Mod>
      */
     public function contains_ads(string $value): Builder
     {
@@ -140,8 +116,6 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by contains AI content.
-     *
-     * @return Builder<Mod>
      */
     public function contains_ai_content(string $value): Builder
     {

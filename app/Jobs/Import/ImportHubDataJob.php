@@ -348,8 +348,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build an array of user data ready to be inserted into the local database.
-     *
-     * @return array<string, mixed>
      */
     protected function collectUserData(CurlHandle $curl, HubUser $hubUser): array
     {
@@ -464,8 +462,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build an array of banned user data ready to be inserted into the local database.
-     *
-     * @return array<string, mixed>|null
      */
     protected function collectBannedUserData(HubUser $hubUser): ?array
     {
@@ -522,8 +518,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build an array of user rank data ready to be inserted into the local database.
-     *
-     * @return array<string, mixed>|null
      */
     protected function collectUserRankData(HubUser $hubUser): ?array
     {
@@ -539,8 +533,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Insert or update the users in the local database.
-     *
-     * @param  array<array<string, mixed>>  $usersData
      */
     protected function upsertUsers(array $usersData): void
     {
@@ -557,8 +549,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Fetch the hub-banned users from the local database and ban them locally.
-     *
-     * @param  array<array<string, mixed>>  $bannedUsers
      */
     protected function handleBannedUsers(array $bannedUsers): void
     {
@@ -573,8 +563,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Fetch or create the user ranks in the local database and assign them to the users.
-     *
-     * @param  array<array<string, mixed>>  $userRanks
      */
     protected function handleUserRoles(array $userRanks): void
     {
@@ -591,8 +579,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build the user role data based on the role name.
-     *
-     * @return array<string, string>
      */
     protected function buildUserRoleData(string $name): array
     {
@@ -710,8 +696,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Get the latest current version from the response data.
-     *
-     * @param  array<string, array<string, string>>  $versions
      */
     protected function getLatestVersion(array $versions): string
     {

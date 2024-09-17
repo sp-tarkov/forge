@@ -33,8 +33,6 @@ class HomepageMods extends Component
 
     /**
      * Fetches the featured mods homepage listing.
-     *
-     * @return Collection<int, Mod>
      */
     private function fetchFeaturedMods(): Collection
     {
@@ -54,8 +52,6 @@ class HomepageMods extends Component
 
     /**
      * Fetches the latest mods homepage listing.
-     *
-     * @return Collection<int, Mod>
      */
     private function fetchLatestMods(): Collection
     {
@@ -74,8 +70,6 @@ class HomepageMods extends Component
 
     /**
      * Fetches the recently updated mods homepage listing.
-     *
-     * @return Collection<int, Mod>
      */
     private function fetchUpdatedMods(): Collection
     {

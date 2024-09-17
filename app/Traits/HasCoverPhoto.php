@@ -52,8 +52,6 @@ trait HasCoverPhoto
 
     /**
      * Get the cover photo URL for the user.
-     *
-     * @return Attribute<string, never>
      */
     public function coverPhotoUrl(): Attribute
     {

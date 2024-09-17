@@ -12,8 +12,6 @@ class UserFilter extends QueryFilter
 {
     /**
      * The sortable fields.
-     *
-     * @var array<string>
      */
     protected array $sortable = [
         'name',
@@ -23,8 +21,6 @@ class UserFilter extends QueryFilter
 
     /**
      * Filter by ID.
-     *
-     * @return Builder<User>
      */
     public function id(string $value): Builder
     {
@@ -33,8 +29,6 @@ class UserFilter extends QueryFilter
 
     /**
      * Filter by name.
-     *
-     * @return Builder<User>
      */
     public function name(string $value): Builder
     {
@@ -43,8 +37,6 @@ class UserFilter extends QueryFilter
 
     /**
      * Filter by created at date.
-     *
-     * @return Builder<User>
      */
     public function created_at(string $value): Builder
     {
@@ -53,8 +45,6 @@ class UserFilter extends QueryFilter
 
     /**
      * Filter by updated at date.
-     *
-     * @return Builder<User>
      */
     public function updated_at(string $value): Builder
     {

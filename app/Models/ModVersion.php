@@ -6,7 +6,6 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
-use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,15 +16,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ModVersion extends Model
 {
-    /** @use HasFactory<ModFactory> */
     use HasFactory;
-
     use SoftDeletes;
 
     /**
      * Update the parent mod's updated_at timestamp when the mod version is updated.
-     *
-     * @var array<string>
      */
     protected $touches = ['mod'];
 
