@@ -46,7 +46,10 @@
 
                     @auth
                         {{-- Profile Dropdown --}}
-                        <div x-data="{ profileDropdownOpen: false, openedWithKeyboard: false }" @keydown.esc.window="profileDropdownOpen = false, openedWithKeyboard = false" class="relative">
+                        <div x-data="{ profileDropdownOpen: false, openedWithKeyboard: false }"
+                             @keydown.esc.window="profileDropdownOpen = false, openedWithKeyboard = false"
+                             class="relative"
+                        >
                             <button id="user-menu-button" type="button" @click="profileDropdownOpen = ! profileDropdownOpen" @keydown.space.prevent="openedWithKeyboard = true" @keydown.enter.prevent="openedWithKeyboard = true" @keydown.down.prevent="openedWithKeyboard = true" class="relative flex rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" :class="profileDropdownOpen || openedWithKeyboard ? 'text-black dark:text-white' : 'text-slate-700 dark:text-slate-300'" :aria-expanded="profileDropdownOpen || openedWithKeyboard" aria-haspopup="true">
                                 <span class="absolute -inset-1.5"></span>
                                 <span class="sr-only">{{ __('Open user menu') }}</span>
@@ -60,7 +63,8 @@
                                  @keydown.down.prevent="$focus.wrap().next()"
                                  @keydown.up.prevent="$focus.wrap().previous()"
                                  class="absolute top-11 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
-                                 role="menu">
+                                 role="menu"
+                            >
                                 <div class="flex flex-col py-1.5">
                                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-none dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">

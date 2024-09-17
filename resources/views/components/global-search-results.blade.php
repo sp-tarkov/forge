@@ -1,5 +1,11 @@
-<div id="search-results" aria-live="polite" class="{{ $showDropdown ? 'block' : 'hidden' }} absolute z-10 top-11 w-full mx-auto max-w-2xl transform overflow-hidden rounded-md bg-white dark:bg-gray-900 shadow-2xl border border-gray-300 dark:border-gray-700 transition-all">
-    @if($showDropdown)
+<div id="search-results"
+     x-cloak
+     x-show="showDropdown && query.length"
+     x-transition
+     aria-live="polite"
+     class="{{ $showDropdown ? 'block' : 'hidden' }} absolute z-10 top-11 w-full mx-auto max-w-2xl transform overflow-hidden rounded-md bg-white dark:bg-gray-900 shadow-2xl border border-gray-300 dark:border-gray-700 transition-all"
+>
+    @if ($showDropdown)
         <h2 class="sr-only">{{ __('Search Results') }}</h2>
         <div class="max-h-96 scroll-py-2 overflow-y-auto" role="list">
             @foreach($results['data'] as $typeName => $typeResults)

@@ -51,8 +51,7 @@ class GlobalSearch extends Component
             $results['total'] = $this->countTotalResults($results['data']);
         }
 
-        $this->showDropdown = Str::length($query) > 0;
-        $this->noResults = $results['total'] === 0 && $this->showDropdown;
+        $this->noResults = $results['total'] === 0;
 
         return $results;
     }
@@ -93,15 +92,5 @@ class GlobalSearch extends Component
         return collect($results)->reduce(function (int $carry, Collection $result) {
             return $carry + $result->count();
         }, 0);
-    }
-
-    /**
-     * Clear the search query and hide the dropdown.
-     */
-    public function clearSearch(): void
-    {
-        $this->query = '';
-        $this->showDropdown = false;
-        $this->noResults = false;
     }
 }
