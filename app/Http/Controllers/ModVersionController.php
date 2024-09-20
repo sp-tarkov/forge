@@ -17,7 +17,8 @@ class ModVersionController extends Controller
 
         $modVersion->downloads++;
         $modVersion->save();
+        $modVersion->mod->calculateDownloads();
 
-        return redirect($modVersion->link);
+        return redirect($modVersion->link, 307);
     }
 }
