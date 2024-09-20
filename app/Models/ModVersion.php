@@ -130,4 +130,9 @@ class ModVersion extends Model
             ->orderByDesc('version_patch')
             ->orderByDesc('version_pre_release');
     }
+
+    public function downloadUrl(): string
+    {
+        return "/mod/download/$this->mod_id/$this->version";
+    }
 }
