@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class GlobalSearch extends Component
@@ -17,20 +18,26 @@ class GlobalSearch extends Component
     public string $query = '';
 
     /**
-     * Whether to show the search result dropdown.
+     * The search results.
      */
-    public bool $showDropdown = false;
+    #[Locked]
+    public array $result = [];
 
     /**
-     * Whether to show the "no results found" message.
+     * The total number of search results.
      */
-    public bool $noResults = false;
+    #[Locked]
+    public int $count = 0;
 
+    /**
+     * Render the component.
+     */
     public function render(): View
     {
-        return view('livewire.global-search', [
-            'results' => $this->executeSearch($this->query),
-        ]);
+        $this->result = $this->executeSearch($this->query);
+        $this->count = $this->countTotalResults($this->result);
+
+        return view('livewire.global-search');
     }
 
     /**
@@ -39,19 +46,15 @@ class GlobalSearch extends Component
     protected function executeSearch(string $query): array
     {
         $query = Str::trim($query);
-        $results = ['data' => [], 'total' => 0];
 
         if (Str::length($query) > 0) {
-            $results['data'] = [
+            return [
                 'user' => $this->fetchUserResults($query),
                 'mod' => $this->fetchModResults($query),
             ];
-            $results['total'] = $this->countTotalResults($results['data']);
         }
 
-        $this->noResults = $results['total'] === 0;
-
-        return $results;
+        return [];
     }
 
     /**
@@ -59,10 +62,7 @@ class GlobalSearch extends Component
      */
     protected function fetchUserResults(string $query): Collection
     {
-        /** @var array<int, array<string, mixed>> $userHits */
-        $userHits = User::search($query)->raw()['hits'];
-
-        return collect($userHits);
+        return collect(User::search($query)->raw()['hits']);
     }
 
     /**
@@ -70,10 +70,7 @@ class GlobalSearch extends Component
      */
     protected function fetchModResults(string $query): Collection
     {
-        /** @var array<int, array<string, mixed>> $modHits */
-        $modHits = Mod::search($query)->raw()['hits'];
-
-        return collect($modHits);
+        return collect(Mod::search($query)->raw()['hits']);
     }
 
     /**

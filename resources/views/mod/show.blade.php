@@ -16,9 +16,8 @@
                 @endif
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
-                        @if (empty($mod->thumbnail))
-                            <img src="https://placehold.co/144x144/EEE/31343C?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="block dark:hidden w-36 rounded-lg">
-                            <img src="https://placehold.co/144x144/31343C/EEE?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="hidden dark:block w-36 rounded-lg">
+                        @if ($mod->thumbnail)
+                            <img src="https://placehold.co/144x144/31343C/EEE?font=source-sans-pro&text={{ urlencode($mod->name) }}" alt="{{ $mod->name }}" class="w-36 rounded-lg">
                         @else
                             <img src="{{ $mod->thumbnailUrl }}" alt="{{ $mod->name }}" class="w-36 rounded-lg">
                         @endif
@@ -39,11 +38,19 @@
                             @endforeach
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
-                        <p class="mt-2">
-                            <span class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                {{ $mod->latestVersion->latestSptVersion->version_formatted }} {{ __('Compatible') }}
-                            </span>
-                        </p>
+                        @if ($mod->latestVersion->latestSptVersion)
+                            <p class="mt-2">
+                                <span class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                    {{ $mod->latestVersion->latestSptVersion->version_formatted }} {{ __('Compatible') }}
+                                </span>
+                            </p>
+                        @else
+                            <p class="mt-2">
+                                <span class="badge-version bg-gray-100 text-gray-600 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                    {{ __('Unknown SPT Version') }}
+                                </span>
+                            </p>
+                        @endif
                     </div>
                 </div>
 
@@ -74,18 +81,9 @@
                     {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
                         <nav class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
-                            <button @click="selectedTab = 'description'" class="tab rounded-l-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10" aria-current="page">
-                                <span>{{ __('Description') }}</span>
-                                <span aria-hidden="true" :class="selectedTab === 'description' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
-                            </button>
-                            <button @click="selectedTab = 'versions'" class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
-                                <span>{{ __('Versions') }}</span>
-                                <span aria-hidden="true" :class="selectedTab === 'versions' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
-                            </button>
-                            <button @click="selectedTab = 'comments'" class="tab rounded-r-xl group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm font-medium text-gray-900 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-black dark:hover:text-white focus:z-10">
-                                <span>{{ __('Comments') }}</span>
-                                <span aria-hidden="true" :class="selectedTab === 'comments' ? 'bg-gray-500 absolute inset-x-0 bottom-0 h-0.5' : 'bottom-0 h-0.5'"></span>
-                            </button>
+                            <x-tab-button name="Description" />
+                            <x-tab-button name="Versions" />
+                            <x-tab-button name="Comments" />
                         </nav>
                     </div>
                 </div>
@@ -108,9 +106,15 @@
                                     <p class="text-gray-700 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                        {{ $version->latestSptVersion->version_formatted }}
-                                    </span>
+                                    @if ($version->latestSptVersion)
+                                        <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                            {{ $version->latestSptVersion->version_formatted }}
+                                        </span>
+                                    @else
+                                        <span class="badge-version bg-gray-100 text-gray-600 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                            {{ __('Unknown SPT Version') }}
+                                        </span>
+                                    @endif
                                     <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
                                 </div>
                                 <div class="flex items-center justify-between text-gray-600 dark:text-gray-400">
@@ -138,7 +142,7 @@
 
                 {{-- Comments --}}
                 <div x-show="selectedTab === 'comments'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    <p>{{ __('The comments go here.') }}</p>
+                    <p>Not quite yet...</p>
                 </div>
             </div>
         </div>

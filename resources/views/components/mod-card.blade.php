@@ -7,20 +7,21 @@
     <div class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black hover:shadow-gray-400 dark:hover:shadow-black transition-all duration-200">
         <div class="h-auto md:h-full md:flex">
             <div class="h-auto md:h-full md:shrink-0 overflow-hidden">
-                @empty($mod->thumbnail)
-                    <img src="https://placehold.co/450x450/EEE/31343C?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="block dark:hidden h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-all duration-200">
-                    <img src="https://placehold.co/450x450/31343C/EEE?font=source-sans-pro&text={{ $mod->name }}" alt="{{ $mod->name }}" class="hidden dark:block h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-all duration-200">
-                @else
+                @if ($mod->thumbnail)
                     <img src="{{ $mod->thumbnailUrl }}" alt="{{ $mod->name }}" class="h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-all duration-200">
-                @endempty
+                @else
+                    <img src="https://placehold.co/450x450/31343C/EEE?font=source-sans-pro&text={{ urlencode($mod->name) }}" alt="{{ $mod->name }}" class="h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-all duration-200">
+                @endif
             </div>
             <div class="flex flex-col w-full justify-between p-5">
                 <div class="pb-3">
                     <div class="flex justify-between items-center space-x-3">
                         <h3 class="block mt-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
-                        <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                            {{ $version->latestSptVersion->version_formatted }}
-                        </span>
+                        @if ($version?->latestSptVersion)
+                            <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                {{ $version->latestSptVersion->version_formatted }}
+                            </span>
+                        @endif
                     </div>
                     <p class="text-sm italic text-slate-600 dark:text-gray-200">
                         {{ __('By :authors', ['authors' => $mod->users->pluck('name')->implode(', ')]) }}
@@ -31,7 +32,7 @@
                 </div>
                 <div class="text-slate-700 dark:text-gray-300 text-sm">
                     <div class="flex items-end w-full text-sm">
-                        @if ($mod->updated_at || $mod->created_at)
+                        @if (($mod->updated_at || $mod->created_at) && $version)
                             <div class="flex items-end w-full">
                                 <div class="flex items-center gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
