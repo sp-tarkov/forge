@@ -49,6 +49,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
         // Begin to import the data into the permanent local database tables.
         $this->importUsers();
+        $this->importUserFollows();
         $this->importLicenses();
         $this->importSptVersions();
         $this->importMods();
@@ -606,6 +607,37 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             'description' => '',
             'color_class' => '',
         ];
+    }
+
+    protected function importUserFollows(): void
+    {
+        $followsGroupedByFollower = [];
+
+        DB::connection('mysql_hub')
+            ->table('wcf1_user_follow')
+            ->select(['followID', 'userID', 'followUserID', 'time'])
+            ->chunkById(100, function (Collection $follows) use (&$followsGroupedByFollower) {
+                foreach ($follows as $follow) {
+                    $followerId = User::whereHubId($follow->userID)->value('id');
+                    $followingId = User::whereHubId($follow->followUserID)->value('id');
+
+                    if (! $followerId || ! $followingId) {
+                        continue;
+                    }
+
+                    $followsGroupedByFollower[$followerId][$followingId] = [
+                        'created_at' => Carbon::parse($follow->time, 'UTC'),
+                        'updated_at' => Carbon::parse($follow->time, 'UTC'),
+                    ];
+                }
+            }, 'followID');
+
+        foreach ($followsGroupedByFollower as $followerId => $followings) {
+            $user = User::find($followerId);
+            if ($user) {
+                $user->following()->sync($followings);
+            }
+        }
     }
 
     /**

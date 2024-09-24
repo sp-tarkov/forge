@@ -2,12 +2,8 @@
 
 namespace App\Http\Filters\V1;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * @extends QueryFilter<User>
- */
 class UserFilter extends QueryFilter
 {
     /**

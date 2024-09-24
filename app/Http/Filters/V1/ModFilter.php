@@ -2,12 +2,8 @@
 
 namespace App\Http\Filters\V1;
 
-use App\Models\Mod;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * @extends QueryFilter<Mod>
- */
 class ModFilter extends QueryFilter
 {
     /**

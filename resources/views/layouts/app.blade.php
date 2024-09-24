@@ -8,10 +8,14 @@
     <title>{{ config('app.name', 'The Forge') }}</title>
 
     <link rel="icon" href="data:image/x-icon;base64,AA">
+
     <link href="//fonts.bunny.net" rel="preconnect">
     <link href="//fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
 
     <link href="{{ config('app.asset_url') }}" rel="dns-prefetch">
+
+    @livewireStyles
+    @vite(['resources/css/app.css'])
 
     <script>
         // Immediately set the theme to prevent a flash of the default theme when another is set.
@@ -25,35 +29,33 @@
             document.documentElement.classList.add(theme);
         })();
     </script>
-
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @livewireStyles
 </head>
 <body class="font-sans antialiased">
+    <x-warning/>
 
-<x-warning/>
+    <x-banner/>
 
-<x-banner/>
+    <div class="min-h-screen bg-gray-100 dark:bg-gray-800">
+        @livewire('navigation-menu')
 
-<div class="min-h-screen bg-gray-100 dark:bg-gray-800">
-    @livewire('navigation-menu')
+        @if (isset($header))
+            <header class="bg-gray-50 dark:bg-gray-900 shadow dark:shadow-gray-950">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    {{ $header }}
+                </div>
+            </header>
+        @endif
 
-    @if (isset($header))
-        <header class="bg-gray-50 dark:bg-gray-900 shadow dark:shadow-gray-950">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                {{ $header }}
-            </div>
-        </header>
-    @endif
+        <main class="pb-6 sm:py-12">
+            {{ $slot }}
+        </main>
+    </div>
 
-    <main class="pb-6 sm:py-12">
-        {{ $slot }}
-    </main>
-</div>
+    <x-footer/>
 
-<x-footer/>
-
-@stack('modals')
-@livewireScriptConfig
+    @vite(['resources/js/app.js'])
+    @stack('modals')
+    @livewireScriptConfig
+    @include('includes.analytics')
 </body>
 </html>
