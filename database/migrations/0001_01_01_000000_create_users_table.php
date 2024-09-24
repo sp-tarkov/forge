@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->longText('about');
+            $table->longText('about')->nullable()->default(null);
             $table->foreignIdFor(UserRole::class)
                 ->nullable()
                 ->default(null)

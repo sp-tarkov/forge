@@ -8,6 +8,7 @@ use App\Notifications\VerifyEmail;
 use App\Traits\HasCoverPhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -207,6 +208,24 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
     {
         return $filters->apply($builder);
+    }
+
+    /**
+     * Handle the about default value if empty. Thanks MySQL!
+     */
+    protected function about(): Attribute
+    {
+        return Attribute::make(
+            set: function ($value) {
+                // MySQL will not allow you to set a default value of an empty string for a (LONG)TEXT column. *le sigh*
+                // NULL is the default. If NULL is saved, we'll swap it out for an empty string.
+                if (is_null($value)) {
+                    return '';
+                }
+
+                return $value;
+            },
+        );
     }
 
     /**
