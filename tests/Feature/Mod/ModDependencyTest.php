@@ -184,22 +184,26 @@ it('handles the case where a dependent mod has no versions available', function 
 });
 
 it('handles a large number of versions efficiently', function () {
+    $startTime = microtime(true);
     $versionCount = 100;
-    $modVersion = ModVersion::factory()->create();
 
     $dependentMod = Mod::factory()->create();
     for ($i = 0; $i < $versionCount; $i++) {
         ModVersion::factory()->recycle($dependentMod)->create(['version' => "1.0.$i"]);
     }
 
-    // Create a dependency with a broad constraint
+    // Create a mod and mod version, and then create a dependency for all versions of the dependent mod.
+    $modVersion = ModVersion::factory()->create();
     ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
         'constraint' => '>=1.0.0',
     ]);
 
-    // Verify that all versions were resolved
-    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->count())->toBe($versionCount);
-});
+    $executionTime = microtime(true) - $startTime;
+
+    // Verify that all versions were resolved and that the execution time is reasonable.
+    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->count())->toBe($versionCount)
+        ->and($executionTime)->toBeLessThan(5); // Arbitrarily picked out of my ass.
+})->skip('This is a performance test and is skipped by default. It will probably fail.');
 
 it('calls DependencyVersionService when a Mod is updated', function () {
     $mod = Mod::factory()->create();

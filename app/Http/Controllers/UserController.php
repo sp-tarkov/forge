@@ -13,9 +13,13 @@ class UserController extends Controller
 
     public function show(Request $request, int $userId, string $username): View
     {
-        $user = User::where('id', $userId)
-            // Reimplement eager loading after the review.
+        $user = User::whereId($userId)
             ->firstOrFail();
+
+        $mods = $user->mods()
+            ->orderByDesc('created_at')
+            ->paginate(10)
+            ->fragment('mods');
 
         if ($user->slug() !== $username) {
             abort(404);
@@ -25,6 +29,6 @@ class UserController extends Controller
             abort(403);
         }
 
-        return view('user.show', compact('user'));
+        return view('user.show', compact('user', 'mods'));
     }
 }
