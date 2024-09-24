@@ -127,7 +127,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function shouldBeSearchable(): bool
     {
-        return ! is_null($this->email_verified_at);
+        return $this->isNotBanned();
     }
 
     /**
