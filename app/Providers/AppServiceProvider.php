@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('modDownloads', function (Request $request) {
-           return Limit::perMinute(3)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(3)->by($request->user()?->id ?: $request->ip());
         });
     }
 

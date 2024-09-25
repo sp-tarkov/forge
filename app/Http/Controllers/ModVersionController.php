@@ -9,7 +9,7 @@ class ModVersionController extends Controller
 {
     public function show(int $modId, string $version): RedirectResponse
     {
-        $modVersion = ModVersion::where("mod_id", $modId)->where("version", $version)->first();
+        $modVersion = ModVersion::where('mod_id', $modId)->where('version', $version)->first();
 
         if ($modVersion == null) {
             abort(404);
