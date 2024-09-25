@@ -50,3 +50,12 @@ it('displays the latest version on the mod detail page', function () {
     // Assert the latest version is in the latest download button
     $response->assertSeeText(__('Download Latest Version')." ($latestVersion)");
 });
+
+it('builds download links using the latest mod version', function () {
+    $mod = Mod::factory()->create(['id' => 1, 'slug' => 'test-mod']);
+    ModVersion::factory()->recycle($mod)->create(['version' => '1.2.3']);
+    ModVersion::factory()->recycle($mod)->create(['version' => '1.3.0']);
+    $modVersion = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.4']);
+
+    expect($mod->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion->version");
+});

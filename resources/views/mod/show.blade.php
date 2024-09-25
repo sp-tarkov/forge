@@ -61,7 +61,7 @@
             </div>
 
             {{-- Mobile Download Button --}}
-            <a href="{{ $mod->latestVersion->link }}" class="block lg:hidden">
+            <a href="{{ $mod->downloadUrl() }}" class="block lg:hidden">
                 <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
             </a>
 
@@ -100,7 +100,7 @@
                         <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
                                 <div class="flex items-center justify-between">
-                                    <a class="text-2xl font-extrabold" href="{{ $version->link }}">
+                                    <a class="text-2xl font-extrabold" href="{{ $version->downloadUrl() }}">
                                         {{ __('Version') }} {{ $version->version }}
                                     </a>
                                     <p class="text-gray-700 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
@@ -151,7 +151,7 @@
         <div class="col-span-1 flex flex-col gap-6">
 
             {{-- Desktop Download Button --}}
-            <a href="{{ $mod->latestVersion->link }}" class="hidden lg:block">
+            <a href="{{ $mod->downloadUrl() }}" class="hidden lg:block">
                 <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
             </a>
 

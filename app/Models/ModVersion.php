@@ -130,4 +130,26 @@ class ModVersion extends Model
             ->orderByDesc('version_patch')
             ->orderByDesc('version_pre_release');
     }
+
+    /**
+     * Build the download URL for this mod version.
+     */
+    public function downloadUrl(bool $absolute = false): string
+    {
+        return route('mod.version.download', [$this->mod->id, $this->mod->slug, $this->version], absolute: $absolute);
+    }
+
+    /**
+     * Increment the download count for this mod version.
+     */
+    public function incrementDownloads(): int
+    {
+        $this->downloads++;
+        $this->save();
+
+        // Recalculate the total download count for this mod.
+        $this->mod->calculateDownloads();
+
+        return $this->downloads;
+    }
 }

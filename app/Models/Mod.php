@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
-use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,9 +21,7 @@ use Laravel\Scout\Searchable;
 
 class Mod extends Model
 {
-    /** @use HasFactory<ModFactory> */
     use HasFactory;
-
     use Searchable;
     use SoftDeletes;
 
@@ -44,6 +41,18 @@ class Mod extends Model
     {
         $this->downloads = $this->versions->sum('downloads');
         $this->saveQuietly();
+    }
+
+    /**
+     * Build the URL to download the latest version of this mod.
+     */
+    public function downloadUrl(bool $absolute = false): string
+    {
+        return route('mod.version.download', [
+            $this->id,
+            $this->slug,
+            $this->latestVersion->version,
+        ], absolute: $absolute);
     }
 
     /**
