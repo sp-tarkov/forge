@@ -46,6 +46,11 @@ class Mod extends Model
         $this->saveQuietly();
     }
 
+    public function downloadUrl(): string
+    {
+        return "/mod/download/$this->id/{$this->latestVersion->version}";
+    }
+
     /**
      * The relationship between a mod and its users.
      *

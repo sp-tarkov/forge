@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ModController;
+use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +14,10 @@ Route::middleware(['auth.banned'])->group(function () {
     Route::controller(ModController::class)->group(function () {
         Route::get('/mods', 'index')->name('mods');
         Route::get('/mod/{mod}/{slug}', 'show')->where(['mod' => '[0-9]+'])->name('mod.show');
+    });
+
+    Route::middleware(['throttle:modDownloads'])->controller(ModVersionController::class)->group(function () {
+        Route::get('/mod/download/{mod}/{version}', 'show')->where(['mod' => '[0-9]+']);
     });
 
     Route::controller(UserController::class)->group(function () {
