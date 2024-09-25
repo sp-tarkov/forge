@@ -16,8 +16,13 @@ Route::middleware(['auth.banned'])->group(function () {
         Route::get('/mod/{mod}/{slug}', 'show')->where(['mod' => '[0-9]+'])->name('mod.show');
     });
 
-    Route::middleware(['throttle:modDownloads'])->controller(ModVersionController::class)->group(function () {
-        Route::get('/mod/download/{mod}/{version}', 'show')->where(['mod' => '[0-9]+']);
+    Route::controller(ModVersionController::class)->group(function () {
+        Route::get('/mod/download/{mod}/{slug}/{version}', 'show')
+            ->where([
+                'mod' => '[0-9]+',
+                'slug' => '[a-z0-9-]+',
+            ])
+            ->name('mod.version.download');
     });
 
     Route::controller(UserController::class)->group(function () {

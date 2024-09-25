@@ -138,6 +138,8 @@ class FollowCard extends Component
                 // Add the follow status based on the preloaded IDs.
                 $user->follows = $followingIds->contains($user->id);
 
+                // TODO: The above follows property doesn't exist on the User model. What was I smoking?
+
                 return $user;
             });
     }

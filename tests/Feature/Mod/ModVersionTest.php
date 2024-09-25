@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -140,4 +141,49 @@ it('updates the parent mods updated_at column when updated', function () {
 
     expect($version->mod->updated_at)->not->toEqual($originalDate)
         ->and($version->mod->updated_at->format('Y-m-d'))->toEqual(now()->format('Y-m-d'));
+});
+
+it('builds download links using the specified version', function () {
+    $mod = Mod::factory()->create(['id' => 1, 'slug' => 'test-mod']);
+    $modVersion1 = ModVersion::factory()->recycle($mod)->create(['version' => '1.2.3']);
+    $modVersion2 = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.0']);
+    $modVersion3 = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.4']);
+
+    expect($modVersion1->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion1->version")
+        ->and($modVersion2->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion2->version")
+        ->and($modVersion3->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion3->version");
+});
+
+it('increments download counts when downloaded', function () {
+    $mod = Mod::factory()->create(['downloads' => 0]);
+    $modVersion = ModVersion::factory()->recycle($mod)->create(['downloads' => 0]);
+
+    $request = $this->get($modVersion->downloadUrl());
+    $request->assertStatus(307);
+
+    $modVersion->refresh();
+
+    expect($modVersion->downloads)->toEqual(1)
+        ->and($modVersion->mod->downloads)->toEqual(1);
+});
+
+it('rate limits download links from being hit', function () {
+    $mod = Mod::factory()->create(['downloads' => 0]);
+    $modVersion = ModVersion::factory()->recycle($mod)->create(['downloads' => 0]);
+
+    // The first 5 requests should be fine.
+    for ($i = 0; $i < 5; $i++) {
+        $request = $this->get($modVersion->downloadUrl());
+        $request->assertStatus(307);
+    }
+
+    // The 6th request should be rate limited.
+    $request = $this->get($modVersion->downloadUrl());
+    $request->assertStatus(429);
+
+    $modVersion->refresh();
+
+    // The download count should still be 5.
+    expect($modVersion->downloads)->toEqual(5)
+        ->and($modVersion->mod->downloads)->toEqual(5);
 });

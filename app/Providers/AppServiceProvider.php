@@ -12,11 +12,8 @@ use App\Observers\ModObserver;
 use App\Observers\ModVersionObserver;
 use App\Observers\SptVersionObserver;
 use Carbon\Carbon;
-use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
@@ -46,10 +43,6 @@ class AppServiceProvider extends ServiceProvider
         // This gate determines who can access the Pulse dashboard.
         Gate::define('viewPulse', function (User $user) {
             return $user->isAdmin();
-        });
-
-        RateLimiter::for('modDownloads', function (Request $request) {
-            return Limit::perMinute(3)->by($request->user()?->id ?: $request->ip());
         });
     }
 
