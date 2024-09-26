@@ -2,10 +2,16 @@
 
 use App\Http\Controllers\ModController;
 use App\Http\Controllers\ModVersionController;
+use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.banned'])->group(function () {
+
+    Route::controller(SocialiteController::class)->group(function () {
+        Route::get('/login/{provider}/redirect', 'redirect')->name('login.socialite');
+        Route::get('/login/{provider}/callback', 'callback');
+    });
 
     Route::get('/', function () {
         return view('home');
@@ -16,12 +22,10 @@ Route::middleware(['auth.banned'])->group(function () {
         Route::get('/mod/{mod}/{slug}', 'show')->where(['mod' => '[0-9]+'])->name('mod.show');
     });
 
+    // Download Link
     Route::controller(ModVersionController::class)->group(function () {
         Route::get('/mod/download/{mod}/{slug}/{version}', 'show')
-            ->where([
-                'mod' => '[0-9]+',
-                'slug' => '[a-z0-9-]+',
-            ])
+            ->where(['mod' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
             ->name('mod.version.download');
     });
 

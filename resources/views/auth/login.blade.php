@@ -44,5 +44,10 @@
                 </x-button>
             </div>
         </form>
+
+
+        <ul>
+            <li><a href="{{ route('login.socialite', ['provider' => 'discord']) }}">{{ __('Login with Discord') }}</a></li>
+        </ul>
     </x-authentication-card>
 </x-guest-layout>
