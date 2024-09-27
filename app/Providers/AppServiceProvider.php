@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\Mod;
 use App\Models\ModDependency;
 use App\Models\ModVersion;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
@@ -44,6 +46,9 @@ class AppServiceProvider extends ServiceProvider
         // Register custom macros.
         $this->registerNumberMacros();
         $this->registerCarbonMacros();
+
+        // Register Livewire component overrides.
+        $this->registerLivewireOverrides();
 
         // This gate determines who can access the Pulse dashboard.
         Gate::define('viewPulse', function (User $user) {
@@ -99,5 +104,13 @@ class AppServiceProvider extends ServiceProvider
 
             return $date->format('M jS, g:i A');
         });
+    }
+
+    /**
+     * Register Livewire component overrides.
+     */
+    private function registerLivewireOverrides(): void
+    {
+        Livewire::component('profile.update-password-form', UpdatePasswordForm::class);
     }
 }

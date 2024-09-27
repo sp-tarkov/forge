@@ -8,11 +8,18 @@
     </x-slot>
 
     <x-slot name="form">
-        <div class="col-span-6 sm:col-span-4">
-            <x-label for="current_password" value="{{ __('Current Password') }}" />
-            <x-input id="current_password" type="password" class="mt-1 block w-full" wire:model="state.current_password" autocomplete="current-password" />
-            <x-input-error for="current_password" class="mt-2" />
-        </div>
+
+        @if (auth()->user()->password === null)
+            <div class="col-span-6 sm:col-span-4 mt-3 max-w-xl text-sm text-gray-600 dark:text-gray-400">
+                <p>{{ __('Your account does not have a password set. We recommend setting a password so that you can recover your account if you need to.') }}</p>
+            </div>
+        @else
+            <div class="col-span-6 sm:col-span-4">
+                <x-label for="current_password" value="{{ __('Current Password') }}" />
+                <x-input id="current_password" type="password" class="mt-1 block w-full" wire:model="state.current_password" autocomplete="current-password" />
+                <x-input-error for="current_password" class="mt-2" />
+            </div>
+        @endif
 
         <div class="col-span-6 sm:col-span-4">
             <x-label for="password" value="{{ __('New Password') }}" />
