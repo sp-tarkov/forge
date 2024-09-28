@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Laravel\Jetstream\Http\Livewire\UpdatePasswordForm as JetstreamUpdatePasswordForm;
+use Override;
 
 class UpdatePasswordForm extends JetstreamUpdatePasswordForm
 {
@@ -19,6 +20,7 @@ class UpdatePasswordForm extends JetstreamUpdatePasswordForm
      * This method has been overwritten to allow a user that has a null password to set a password for their account
      * without needing to provide their current password. This is useful for users that have been created using OAuth.
      */
+    #[Override]
     public function updatePassword(UpdatesUserPasswords $updater): void
     {
         $this->resetErrorBag();

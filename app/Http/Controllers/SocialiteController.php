@@ -65,7 +65,11 @@ class SocialiteController extends Controller
         if ($oauthConnection) {
             $oauthConnection->update([
                 'token' => $providerUser->token,
-                'refresh_token' => $providerUser->refreshToken ?? null,
+                'refresh_token' => $providerUser->refreshToken ?? '',
+                'nickname' => $providerUser->getNickname() ?? '',
+                'name' => $providerUser->getName() ?? '',
+                'email' => $providerUser->getEmail() ?? '',
+                'avatar' => $providerUser->getAvatar() ?? '',
             ]);
 
             return $oauthConnection->user;
@@ -84,7 +88,11 @@ class SocialiteController extends Controller
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
                 'token' => $providerUser->token,
-                'refresh_token' => $providerUser->refreshToken ?? null,
+                'refresh_token' => $providerUser->refreshToken ?? '',
+                'nickname' => $providerUser->getNickname() ?? '',
+                'name' => $providerUser->getName() ?? '',
+                'email' => $providerUser->getEmail() ?? '',
+                'avatar' => $providerUser->getAvatar() ?? '',
             ]);
 
             return $user;

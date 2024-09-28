@@ -22,6 +22,10 @@ return new class extends Migration
             $table->string('provider_id');
             $table->string('token')->default('');
             $table->string('refresh_token')->default('');
+            $table->string('nickname')->default('');
+            $table->string('name')->default('');
+            $table->string('email')->default('');
+            $table->string('avatar')->default('');
             $table->timestamps();
 
             $table->unique(['provider', 'provider_id']);
