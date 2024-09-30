@@ -78,14 +78,22 @@ class SocialiteController extends Controller
             return $oauthConnection->user;
         }
 
+        // If the username already exists in the database, append a random string to it to ensure uniqueness.
+        $username = $providerUser->getName() ?? $providerUser->getNickname();
+        $random = '';
+        while (User::whereName($username.$random)->exists()) {
+            $random = '-'.Str::random(5);
+        }
+        $username .= $random;
+
         // The user has not connected their account with this OAuth provider before, so a new connection needs to be
         // established. Check if the user has an account with the same email address that's passed in from the provider.
         // If one exists, connect that account. Otherwise, create a new one.
 
-        return DB::transaction(function () use ($providerUser, $provider) {
+        return DB::transaction(function () use ($providerUser, $provider, $username) {
 
             $user = User::firstOrCreate(['email' => $providerUser->getEmail()], [
-                'name' => $providerUser->getName() ?? $providerUser->getNickname(),
+                'name' => $username,
                 'password' => null,
             ]);
 
