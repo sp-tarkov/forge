@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -42,6 +43,14 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $appends = [
         'profile_photo_url',
     ];
+
+    /**
+     * Get the storage path for profile photos.
+     */
+    public static function profilePhotoStoragePath(): string
+    {
+        return 'profile-photos';
+    }
 
     /**
      * The relationship between a user and their mods.
@@ -211,7 +220,15 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Handle the about default value if empty. Thanks MySQL!
+     * The relationship between a user and their OAuth providers.
+     */
+    public function oAuthConnections(): HasMany
+    {
+        return $this->hasMany(OAuthConnection::class);
+    }
+
+    /**
+     * Handle the about default value if empty. Thanks, MySQL!
      */
     protected function about(): Attribute
     {

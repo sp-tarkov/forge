@@ -30,3 +30,22 @@ test('users cannot authenticate with invalid password', function () {
 
     $this->assertGuest();
 });
+
+test('users can authenticate using Discord', function () {
+    $response = $this->get('/auth/discord/redirect');
+
+    $response->assertStatus(302);
+    $response->assertSessionHas('url.intended', route('dashboard', absolute: false));
+});
+
+test('user can not authenticate using a null password', function () {
+    $user = User::factory()->create();
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => null,
+    ]);
+
+    $this->assertGuest();
+    $response->assertSessionHasErrors('password');
+});
