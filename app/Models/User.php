@@ -45,6 +45,14 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * Get the storage path for profile photos.
+     */
+    public static function profilePhotoStoragePath(): string
+    {
+        return 'profile-photos';
+    }
+
+    /**
      * The relationship between a user and their mods.
      *
      * @return BelongsToMany<Mod>

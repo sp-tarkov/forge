@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as ProviderUser;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -80,11 +83,13 @@ class SocialiteController extends Controller
         // If one exists, connect that account. Otherwise, create a new one.
 
         return DB::transaction(function () use ($providerUser, $provider) {
+
             $user = User::firstOrCreate(['email' => $providerUser->getEmail()], [
                 'name' => $providerUser->getName() ?? $providerUser->getNickname(),
                 'password' => null,
             ]);
-            $user->oAuthConnections()->create([
+
+            $connection = $user->oAuthConnections()->create([
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
                 'token' => $providerUser->token,
@@ -95,7 +100,43 @@ class SocialiteController extends Controller
                 'avatar' => $providerUser->getAvatar() ?? '',
             ]);
 
+            $this->updateAvatar($user, $connection->avatar);
+
             return $user;
         });
+    }
+
+    private function updateAvatar(User $user, string $avatarUrl): void
+    {
+        // Determine the disk to use based on the environment.
+        $disk = match (config('app.env')) {
+            'production' => 'r2', // Cloudflare R2 Storage
+            default => 'public', // Local
+        };
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_URL, $avatarUrl);
+        $image = curl_exec($curl);
+
+        if ($image === false) {
+            Log::error('There was an error attempting to download the image. cURL error: '.curl_error($curl));
+
+            return;
+        }
+
+        // Generate a random path for the image and ensure that it doesn't already exist.
+        do {
+            $relativePath = User::profilePhotoStoragePath().'/'.Str::random(40).'.webp';
+        } while (Storage::disk($disk)->exists($relativePath));
+
+        // Store the image on the disk.
+        Storage::disk($disk)->put($relativePath, $image);
+
+        // Update the user's profile photo path.
+        $user->forceFill([
+            'profile_photo_path' => $relativePath,
+        ])->save();
     }
 }
