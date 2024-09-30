@@ -29,12 +29,12 @@ class ManageOAuthConnections extends Component
     public $selectedConnectionId;
 
     /**
-     * The component’s listeners.
+     * The component's listeners.
      */
     protected $listeners = ['saved' => 'refreshUser'];
 
     /**
-     * Initializes the component by loading the user’s OAuth connections.
+     * Initializes the component by loading the user's OAuth connections.
      */
     public function mount(): void
     {
