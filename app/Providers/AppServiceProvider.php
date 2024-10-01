@@ -40,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
         // Allow mass assignment for all models. Be careful!
         Model::unguard();
 
+        // Disable lazy loading in non-production environments.
+        Model::preventLazyLoading(! app()->isProduction());
+
         // Register model observers.
         $this->registerObservers();
 
