@@ -3,7 +3,6 @@
 namespace App\Livewire\User;
 
 use App\Models\User;
-use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -40,12 +39,16 @@ class FollowCard extends Component
     public string $dialogTitle;
 
     /**
-     * The users to display in the card.
-     *
-     * @var Collection<User>
+     * The user data to display in the card.
      */
     #[Locked]
-    public Collection $followUsers;
+    public array $display = [];
+
+    /**
+     * The limited user data to display in the card.
+     */
+    #[Locked]
+    public array $displayLimit = [];
 
     /**
      * The maximum number of users to display on the card.
@@ -63,6 +66,12 @@ class FollowCard extends Component
      */
     #[Locked]
     public User $profileUser;
+
+    /**
+     * The number of users being displayed.
+     */
+    #[Locked]
+    public int $followUsersCount;
 
     /**
      * Called when the component is initialized.
@@ -130,18 +139,31 @@ class FollowCard extends Component
     public function populateFollowUsers(): void
     {
         // Fetch IDs of all users the authenticated user is following.
-        $followingIds = auth()->user()->following()->pluck('following_id');
+        $followingIds = collect();
+        $authUser = auth()->user();
+        if ($authUser) {
+            $followingIds = $authUser->following()->pluck('following_id');
+        }
 
-        // Load the profile user's followers (or following) and map the follow status.
-        $this->followUsers = $this->profileUser->{$this->relationship}
+        // Load the profile user's followers (or following).
+        $users = $this->profileUser->{$this->relationship}()->with([])->get();
+
+        // Count the number of users.
+        $this->followUsersCount = $users->count();
+
+        // Load the users to display and whether the authenticated user is following each user.
+        $this->display = $users
             ->map(function (User $user) use ($followingIds) {
-                // Add the follow status based on the preloaded IDs.
-                $user->follows = $followingIds->contains($user->id);
+                return [
+                    'user' => $user,
+                    'isFollowing' => $followingIds->contains($user->id),
+                ];
+            })->toArray();
 
-                // TODO: The above follows property doesn't exist on the User model. What was I smoking?
-
-                return $user;
-            });
+        // Store limited users for the main view.
+        $this->displayLimit = collect($this->display)
+            ->take($this->limit)
+            ->toArray();
     }
 
     /**
