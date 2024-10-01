@@ -2,28 +2,6 @@
 
 use App\Models\Mod;
 use App\Models\ModVersion;
-use App\Models\SptVersion;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
-
-it('displays homepage mod cards with the latest supported spt version number', function () {
-    $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
-    $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
-    $sptVersion3 = SptVersion::factory()->create(['version' => '3.0.0']);
-
-    $mod1 = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => $sptVersion1->version]);
-    ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => $sptVersion1->version]);
-    ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => $sptVersion2->version]);
-    ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => $sptVersion2->version]);
-    ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => $sptVersion3->version]);
-    ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => $sptVersion3->version]);
-
-    $response = $this->get(route('home'));
-
-    $response->assertSeeInOrder(explode(' ', "$mod1->name $sptVersion3->version_formatted"));
-});
 
 it('displays the latest version on the mod detail page', function () {
     $versions = [

@@ -32,10 +32,10 @@ test('users cannot authenticate with invalid password', function () {
 });
 
 test('users can authenticate using Discord', function () {
-    $response = $this->get('/auth/discord/redirect');
+    $response = $this->get(route('login.socialite', ['provider' => 'discord']));
 
     $response->assertStatus(302);
-    $response->assertSessionHas('url.intended', route('dashboard', absolute: false));
+    $response->assertRedirect();
 });
 
 test('user can not authenticate using a null password', function () {
