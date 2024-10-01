@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as ProviderUser;
 use Laravel\Socialite\Facades\Socialite;
+use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 
 class SocialiteController extends Controller
 {
@@ -23,18 +24,19 @@ class SocialiteController extends Controller
     /**
      * Redirect the user to the provider's authentication page.
      */
-    public function redirect(string $provider): RedirectResponse
+    public function redirect(string $provider): SymfonyRedirectResponse
     {
         if (! in_array($provider, $this->providers)) {
             return redirect()->route('login')->withErrors(__('Unsupported OAuth provider.'));
         }
 
-        return Socialite::driver('discord')
-            ->scopes([
-                'identify',
-                'email',
-            ])
-            ->redirect();
+        $socialiteProvider = Socialite::driver($provider);
+
+        if (method_exists($socialiteProvider, 'scopes')) {
+            return $socialiteProvider->scopes(['identify', 'email'])->redirect();
+        }
+
+        return $socialiteProvider->redirect();
     }
 
     /**
@@ -67,7 +69,7 @@ class SocialiteController extends Controller
 
         if ($oauthConnection) {
             $oauthConnection->update([
-                'token' => $providerUser->token,
+                'token' => $providerUser->token ?? '',
                 'refresh_token' => $providerUser->refreshToken ?? '',
                 'nickname' => $providerUser->getNickname() ?? '',
                 'name' => $providerUser->getName() ?? '',
@@ -100,7 +102,7 @@ class SocialiteController extends Controller
             $connection = $user->oAuthConnections()->create([
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
-                'token' => $providerUser->token,
+                'token' => $providerUser->token ?? '',
                 'refresh_token' => $providerUser->refreshToken ?? '',
                 'nickname' => $providerUser->getNickname() ?? '',
                 'name' => $providerUser->getName() ?? '',
