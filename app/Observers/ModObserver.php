@@ -20,6 +20,8 @@ class ModObserver
      */
     public function saved(Mod $mod): void
     {
+        $mod->load('versions.sptVersions');
+
         foreach ($mod->versions as $modVersion) {
             $this->dependencyVersionService->resolve($modVersion);
         }
@@ -44,6 +46,8 @@ class ModObserver
      */
     public function deleted(Mod $mod): void
     {
+        $mod->load('versions.sptVersions');
+
         $this->updateRelatedSptVersions($mod);
     }
 }
