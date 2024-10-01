@@ -5,6 +5,7 @@ namespace App\Livewire\Profile;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ManageOAuthConnections extends Component
@@ -27,11 +28,6 @@ class ManageOAuthConnections extends Component
      */
     #[Locked]
     public $selectedConnectionId;
-
-    /**
-     * The component's listeners.
-     */
-    protected $listeners = ['saved' => 'refreshUser'];
 
     /**
      * Initializes the component by loading the user's OAuth connections.
@@ -86,6 +82,7 @@ class ManageOAuthConnections extends Component
     /**
      * Refreshes the user instance.
      */
+    #[On('saved')]
     public function refreshUser(): void
     {
         $this->user->refresh();
