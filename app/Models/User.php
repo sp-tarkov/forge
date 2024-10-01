@@ -137,6 +137,8 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function shouldBeSearchable(): bool
     {
+        $this->load(['bans']);
+
         return $this->isNotBanned();
     }
 
