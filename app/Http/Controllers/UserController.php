@@ -17,6 +17,11 @@ class UserController extends Controller
             ->firstOrFail();
 
         $mods = $user->mods()
+            ->with([
+                'users',
+                'latestVersion',
+                'latestVersion.latestSptVersion',
+            ])
             ->orderByDesc('created_at')
             ->paginate(10)
             ->fragment('mods');

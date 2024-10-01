@@ -14,14 +14,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('hub_id')
-                ->nullable()
-                ->default(null)
-                ->unique();
+            $table->bigInteger('hub_id')->nullable()->default(null)->unique();
+            $table->unsignedBigInteger('discord_id')->nullable()->default(null)->unique();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->longText('about')->nullable()->default(null);
             $table->foreignIdFor(UserRole::class)
                 ->nullable()

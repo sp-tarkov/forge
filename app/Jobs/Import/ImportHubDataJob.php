@@ -392,7 +392,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         $hashShort = substr($avatar->fileHash, 0, 2);
         $fileName = $avatar->fileHash.'.'.$avatar->avatarExtension;
         $hubUrl = 'https://hub.sp-tarkov.com/images/avatars/'.$hashShort.'/'.$avatar->avatarID.'-'.$fileName;
-        $relativePath = 'user-avatars/'.$fileName;
+        $relativePath = User::profilePhotoStoragePath().'/'.$fileName;
 
         return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
     }

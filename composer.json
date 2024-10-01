@@ -19,12 +19,14 @@
         "laravel/pulse": "^1.2",
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^10.10",
+        "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.9",
         "league/flysystem-aws-s3-v3": "^3.28",
         "league/html-to-markdown": "^5.1",
         "livewire/livewire": "^3.5",
         "mchev/banhammer": "^2.3",
         "meilisearch/meilisearch-php": "^1.8",
+        "socialiteproviders/discord": "^4.2",
         "stevebauman/purify": "^6.2"
     },
     "require-dev": {
