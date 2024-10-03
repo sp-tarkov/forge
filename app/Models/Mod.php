@@ -108,6 +108,11 @@ class Mod extends Model
      */
     public function toSearchableArray(): array
     {
+        $this->load([
+            'latestVersion',
+            'latestVersion.latestSptVersion',
+        ]);
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -137,6 +142,12 @@ class Mod extends Model
         if (is_null($this->published_at)) {
             return false;
         }
+
+        // Eager load the latest mod version, and it's latest SPT version.
+        $this->load([
+            'latestVersion',
+            'latestVersion.latestSptVersion',
+        ]);
 
         // Ensure the mod has a latest version.
         if ($this->latestVersion()->doesntExist()) {
