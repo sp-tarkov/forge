@@ -14,6 +14,7 @@ class UserController extends Controller
     public function show(Request $request, int $userId, string $username): View
     {
         $user = User::whereId($userId)
+            ->with(['following', 'followers'])
             ->firstOrFail();
 
         $mods = $user->mods()

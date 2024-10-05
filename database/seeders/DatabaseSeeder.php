@@ -57,7 +57,6 @@ class DatabaseSeeder extends Seeder
         // All Users
         $allUsers = User::all();
 
-        /* We got a little ahead of ourselves here. This hasn't been merged yet!
         // User Follows
         progress(
             label: 'adding user follows ...',
@@ -76,7 +75,6 @@ class DatabaseSeeder extends Seeder
                     $user->following()->attach($following);
                 }
             });
-        */
 
         // Mods
         $mods = collect(progress(

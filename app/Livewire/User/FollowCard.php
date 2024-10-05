@@ -3,19 +3,15 @@
 namespace App\Livewire\User;
 
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class FollowCard extends Component
 {
-    /**
-     * The ID of the user whose profile is being viewed.
-     */
-    #[Locked]
-    public int $profileUserId;
-
     /**
      * The type of user follow relationship to display.
      * Currently, either "followers" or "following".
@@ -68,19 +64,31 @@ class FollowCard extends Component
     public User $profileUser;
 
     /**
-     * The number of users being displayed.
+     * A collection of user IDs that the auth user follows.
      */
     #[Locked]
-    public int $followUsersCount;
+    public Collection $authFollowIds;
+
+    /**
+     * The profile user's followers (or following).
+     */
+    #[Locked]
+    public Collection $followUsers;
+
+    /**
+     * The number of users being displayed.
+     */
+    #[Computed]
+    public function followUsersCount(): int
+    {
+        return $this->followUsers->count();
+    }
 
     /**
      * Called when the component is initialized.
      */
     public function mount(): void
     {
-        $this->profileUser = User::select(['id', 'name', 'profile_photo_path', 'cover_photo_path'])
-            ->findOrFail($this->profileUserId);
-
         $this->setTitle();
         $this->setEmptyMessage();
         $this->setDialogTitle();
@@ -135,35 +143,11 @@ class FollowCard extends Component
     /**
      * Called when the user follows or unfollows a user.
      */
-    #[On('user-follow-change')]
+    #[On('auth-follow-change')]
     public function populateFollowUsers(): void
     {
-        // Fetch IDs of all users the authenticated user is following.
-        $followingIds = collect();
-        $authUser = auth()->user();
-        if ($authUser) {
-            $followingIds = $authUser->following()->pluck('following_id');
-        }
-
-        // Load the profile user's followers (or following).
-        $users = $this->profileUser->{$this->relationship}()->with([])->get();
-
-        // Count the number of users.
-        $this->followUsersCount = $users->count();
-
-        // Load the users to display and whether the authenticated user is following each user.
-        $this->display = $users
-            ->map(function (User $user) use ($followingIds) {
-                return [
-                    'user' => $user,
-                    'isFollowing' => $followingIds->contains($user->id),
-                ];
-            })->toArray();
-
-        // Store limited users for the main view.
-        $this->displayLimit = collect($this->display)
-            ->take($this->limit)
-            ->toArray();
+        // Update the collection of profile user's followers (or following).
+        $this->followUsers = $this->profileUser->{$this->relationship}()->get();
     }
 
     /**

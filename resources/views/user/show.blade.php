@@ -39,7 +39,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {{-- Mobile Follows --}}
             <div class="lg:hidden flex flex-col justify-top items-center">
-                <x-user-follow-cards :profile-user-id="$user->id" />
+                <livewire:user.follow-cards :profile-user="$user" />
             </div>
 
             {{-- Left Column --}}
@@ -106,7 +106,7 @@
 
             {{-- Desktop Follows --}}
             <div class="max-lg:hidden flex flex-col justify-top items-center gap-6">
-                <x-user-follow-cards :profile-user-id="$user->id" />
+                <livewire:user.follow-cards :profile-user="$user" />
             </div>
         </div>
     </div>
