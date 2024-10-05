@@ -50,7 +50,7 @@ class FollowCard extends Component
      * The maximum number of users to display on the card.
      */
     #[Locked]
-    public int $limit = 5;
+    public int $limit = 4;
 
     /**
      * Whether to show all users in a model dialog.

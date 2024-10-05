@@ -37,11 +37,6 @@
     </div>
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {{-- Mobile Follows --}}
-            <div class="lg:hidden flex flex-col justify-top items-center">
-                <livewire:user.follow-cards :profile-user="$user" />
-            </div>
-
             {{-- Left Column --}}
             <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'wall' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-3 flex flex-col gap-6">
 
@@ -104,8 +99,9 @@
                 </div>
             </div>
 
-            {{-- Desktop Follows --}}
-            <div class="max-lg:hidden flex flex-col justify-top items-center gap-6">
+            {{-- Right Column --}}
+            <div class="col-span-1 flex flex-col justify-top items-center">
+                {{-- Follows --}}
                 <livewire:user.follow-cards :profile-user="$user" />
             </div>
         </div>
