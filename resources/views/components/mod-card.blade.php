@@ -1,6 +1,6 @@
 @props(['mod', 'version'])
 
-<a href="{{ $mod->detailUrl() }}" class="mod-list-component relative mx-auto w-full max-w-md md:max-w-2xl">
+<a href="{{ $mod->detailUrl() }}" class="mod-list-component relative mx-auto w-full max-w-2xl">
     @if ($mod->featured && !request()->routeIs('home'))
         <div class="ribbon z-10">{{ __('Featured!') }}</div>
     @endif
@@ -15,18 +15,16 @@
             </div>
             <div class="flex flex-col w-full justify-between p-5">
                 <div class="pb-3">
-                    <div class="flex justify-between items-center space-x-3">
-                        <h3 class="block mt-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
-                        @if ($version?->latestSptVersion)
-                            <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                {{ $version->latestSptVersion->version_formatted }}
-                            </span>
-                        @endif
-                    </div>
-                    <p class="text-sm italic text-slate-600 dark:text-gray-200">
+                    <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
+                    <p class="mb-2 text-sm italic text-slate-600 dark:text-gray-200">
                         {{ __('By :authors', ['authors' => $mod->users->pluck('name')->implode(', ')]) }}
                     </p>
-                    <p class="mt-2 text-slate-500 dark:text-gray-300">
+                    @if ($version?->latestSptVersion)
+                        <p class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 mb-2 text-xs font-medium text-nowrap">
+                            {{ $version->latestSptVersion->version_formatted }}
+                        </p>
+                    @endif
+                    <p class="text-slate-500 dark:text-gray-300">
                         {{ Str::limit($mod->teaser, 100) }}
                     </p>
                 </div>
