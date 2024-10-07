@@ -75,8 +75,8 @@
                 </div>
 
                 {{-- Mods --}}
-                <div x-show="selectedTab === 'mods'" class="">
-                    @if($mods)
+                <div x-show="selectedTab === 'mods'">
+                    @if($mods->count())
                         <div class="mb-4">
                             {{ $mods->links() }}
                         </div>
@@ -89,7 +89,9 @@
                             {{ $mods->links() }}
                         </div>
                     @else
-                        <p>{{ __('This user has not yet published any mods.') }}</p>
+                        <p class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
+                            {{ __('This user has not yet published any mods.') }}
+                        </p>
                     @endif
                 </div>
 
