@@ -76,7 +76,15 @@ class Listing extends Component
             return SptVersion::getVersionsForLastThreeMinors();
         });
 
-        $this->sptVersions = $this->sptVersions ?? $this->getLatestMinorVersions()->pluck('version')->toArray();
+        $this->sptVersions = $this->sptVersions ?? $this->getDefaultSptVersions();
+    }
+
+    /**
+     * Get the default values for the SPT Versions filter.
+     */
+    protected function getDefaultSptVersions(): array
+    {
+        return $this->getLatestMinorVersions()->pluck('version')->toArray();
     }
 
     /**
@@ -145,7 +153,7 @@ class Listing extends Component
     public function resetFilters(): void
     {
         $this->query = '';
-        $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
+        $this->sptVersions = $this->getDefaultSptVersions();
         $this->featured = 'include';
     }
 
