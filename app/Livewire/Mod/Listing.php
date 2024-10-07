@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -20,24 +21,28 @@ class Listing extends Component
     /**
      * The search query value.
      */
+    #[Session]
     #[Url]
     public string $query = '';
 
     /**
      * The sort order value.
      */
+    #[Session]
     #[Url]
     public string $order = 'created';
 
     /**
      * The SPT versions filter value.
      */
+    #[Session]
     #[Url]
     public array $sptVersions = [];
 
     /**
      * The featured filter value.
      */
+    #[Session]
     #[Url]
     public string $featured = 'include';
 
