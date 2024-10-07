@@ -35,5 +35,9 @@ it('builds download links using the latest mod version', function () {
     ModVersion::factory()->recycle($mod)->create(['version' => '1.3.0']);
     $modVersion = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.4']);
 
-    expect($mod->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion->version");
+    expect($mod->downloadUrl())->toEqual(route('mod.version.download', [
+        'mod' => $mod->id,
+        'slug' => $mod->slug,
+        'version' => $modVersion->version,
+    ], absolute: false));
 });

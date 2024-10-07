@@ -48,6 +48,8 @@ class Mod extends Model
      */
     public function downloadUrl(bool $absolute = false): string
     {
+        $this->load('latestVersion');
+
         return route('mod.version.download', [
             $this->id,
             $this->slug,
@@ -176,7 +178,7 @@ class Mod extends Model
      *
      * @return HasOne<ModVersion>
      */
-    public function latestVersion(string $sort = 'version'): HasOne
+    public function latestVersion(): HasOne
     {
         return $this->versions()
             ->one()
