@@ -32,6 +32,9 @@ class Listing extends Component
     #[Url]
     public string $order = 'created';
 
+    #[Url]
+    public int $resultsPerPage = 12;
+
     /**
      * The SPT versions filter value.
      */
@@ -87,7 +90,7 @@ class Listing extends Component
             'order' => $this->order,
             'sptVersions' => $this->sptVersions,
         ];
-        $mods = (new ModFilter($filters))->apply()->paginate(16);
+        $mods = (new ModFilter($filters))->apply()->paginate($this->resultsPerPage);
 
         $this->redirectOutOfBoundsPage($mods);
 
