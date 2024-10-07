@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -32,8 +33,18 @@ class Listing extends Component
     #[Url]
     public string $order = 'created';
 
+    /**
+     * The number of results to show on a single page.
+     */
+    #[Session]
     #[Url]
-    public int $resultsPerPage = 12;
+    public int $perPage = 12;
+
+    /**
+     * The options that are available for the per page setting.
+     */
+    #[Locked]
+    public array $perPageOptions = [6, 12, 24, 50];
 
     /**
      * The SPT versions filter value.
@@ -83,6 +94,8 @@ class Listing extends Component
      */
     public function render(): View
     {
+        $this->validatePerPage();
+
         // Fetch the mods using the filters saved to the component properties.
         $filters = [
             'query' => $this->query,
@@ -90,11 +103,30 @@ class Listing extends Component
             'order' => $this->order,
             'sptVersions' => $this->sptVersions,
         ];
-        $mods = (new ModFilter($filters))->apply()->paginate($this->resultsPerPage);
+
+        $mods = (new ModFilter($filters))->apply()->paginate($this->perPage);
 
         $this->redirectOutOfBoundsPage($mods);
 
         return view('livewire.mod.listing', compact('mods'));
+    }
+
+    /**
+     * Validate that the option selected is an option that is available by setting it to the closest available version.
+     */
+    public function validatePerPage(): void
+    {
+        $this->perPage = collect($this->perPageOptions)->pipe(function ($data) {
+            $closest = null;
+
+            foreach ($data as $item) {
+                if ($closest === null || abs($this->perPage - $closest) > abs($item - $this->perPage)) {
+                    $closest = $item;
+                }
+            }
+
+            return $closest;
+        });
     }
 
     /**

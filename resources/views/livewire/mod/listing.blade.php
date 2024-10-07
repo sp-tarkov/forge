@@ -105,14 +105,14 @@
                         <div class="flex">
                             {{-- Large display can show full text --}}
                             <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="hidden lg:flex group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true">
-                                {{ __('Results Per Page') }}
+                                {{ __('Per Page') }}
                                 <svg class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                             {{-- Only show selected number on smaller screens --}}
-                            <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="lg:hidden group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true">
-                                {{ $resultsPerPage }}
+                            <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="lg:hidden group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true" title="{{ __(':perPage results per page', ['perPage' => $perPage]) }}">
+                                {{ __(':perPage/p', ['perPage' => $perPage]) }}
                                 <svg class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
@@ -129,11 +129,9 @@
                              class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
                              role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                             <div class="flex flex-col py-1.5">
-                                <x-filter-menu-item filterName="resultsPerPage" filter="6" :currentFilter="$resultsPerPage">6</x-filter-menu-item>
-                                <x-filter-menu-item filterName="resultsPerPage" filter="12" :currentFilter="$resultsPerPage">12</x-filter-menu-item>
-                                <x-filter-menu-item filterName="resultsPerPage" filter="24" :currentFilter="$resultsPerPage">24</x-filter-menu-item>
-                                <x-filter-menu-item filterName="resultsPerPage" filter="50" :currentFilter="$resultsPerPage">50</x-filter-menu-item>
-                                <x-filter-menu-item filterName="resultsPerPage" filter="100" :currentFilter="$resultsPerPage">100</x-filter-menu-item>
+                                @foreach($perPageOptions as $option)
+                                    <x-filter-menu-item filterName="perPage" :filter="$option" :currentFilter="$perPage">{{ $option }}</x-filter-menu-item>
+                                @endforeach
                             </div>
                         </div>
                     </div>
