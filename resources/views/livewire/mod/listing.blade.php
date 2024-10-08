@@ -99,7 +99,44 @@
                 </div>
             </div>
             <div class="col-start-1 row-start-1 py-4">
-                <div class="mx-auto flex max-w-7xl justify-end px-4 sm:px-6 lg:px-8">
+                <div class="mx-auto flex max-w-7xl justify-end px-4 sm:px-6 lg:px-8 gap-6">
+                    {{-- Results Per Page Dropdown --}}
+                    <div class="relative inline-block" x-data="{ isResultsPerPageOpen: false }" @click.away="isResultsPerPageOpen = false">
+                        <div class="flex">
+                            {{-- Large display can show full text --}}
+                            <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="hidden lg:flex group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true">
+                                {{ __('Per Page') }}
+                                <svg class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            {{-- Only show selected number on smaller screens --}}
+                            <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="lg:hidden group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true" title="{{ __(':perPage results per page', ['perPage' => $perPage]) }}">
+                                {{ __(':perPage/p', ['perPage' => $perPage]) }}
+                                <svg class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div x-cloak
+                             x-show="isResultsPerPageOpen"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                             role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                            <div class="flex flex-col py-1.5">
+                                @foreach($perPageOptions as $option)
+                                    <x-filter-menu-item filterName="perPage" :filter="$option" :currentFilter="$perPage">{{ $option }}</x-filter-menu-item>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Sort Dropdown --}}
                     <div class="relative inline-block" x-data="{ isSortOpen: false }" @click.away="isSortOpen = false">
                         <div class="flex">
                             <button type="button" @click="isSortOpen = !isSortOpen" class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isSortOpen.toString()" aria-haspopup="true">
@@ -120,9 +157,9 @@
                              class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
                              role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                             <div class="flex flex-col py-1.5">
-                                <x-filter-sort-menu-item order="created" :currentOrder="$order">{{ __('Newest') }}</x-filter-sort-menu-item>
-                                <x-filter-sort-menu-item order="updated" :currentOrder="$order">{{ __('Recently Updated') }}</x-filter-sort-menu-item>
-                                <x-filter-sort-menu-item order="downloaded" :currentOrder="$order">{{ __('Most Downloaded') }}</x-filter-sort-menu-item>
+                                <x-filter-menu-item filterName="order" filter="created" :currentFilter="$order">{{ __('Newest') }}</x-filter-menu-item>
+                                <x-filter-menu-item filterName="order" filter="updated" :currentFilter="$order">{{ __('Recently Updated') }}</x-filter-menu-item>
+                                <x-filter-menu-item filterName="order" filter="downloaded" :currentFilter="$order">{{ __('Most Downloaded') }}</x-filter-menu-item>
                             </div>
                         </div>
                     </div>
