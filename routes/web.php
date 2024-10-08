@@ -20,6 +20,8 @@ Route::middleware(['auth.banned'])->group(function () {
     Route::controller(ModController::class)->group(function () {
         Route::get('/mods', 'index')->name('mods');
         Route::get('/mod/{mod}/{slug}', 'show')->where(['mod' => '[0-9]+'])->name('mod.show');
+        Route::post('/mod/{mod}', 'update')->where(['mod' => '[0-9]+'])->name('mod.update');
+        Route::delete('/mod/{mod}', 'destroy')->where(['mod' => '[0-9]+'])->name('mod.destroy');
     });
 
     // Download Link
