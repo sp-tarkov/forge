@@ -37,7 +37,7 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        return false;
+        return $user->isMod() || $user->isAdmin() || $mod->users->contains($user);
     }
 
     /**
@@ -48,7 +48,7 @@ class ModPolicy
         // I'm guessing we want the mod author to also be able to do this?
         // what if there are multiple authors?
         // I'm leaving that out for now -waffle.lazy
-        return $user->isMod() || $user->isAdmin();
+        return $user->isAdmin();
     }
 
     /**
