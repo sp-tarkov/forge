@@ -55,5 +55,10 @@ class ModController extends Controller
         return new ModResource($mod);
     }
 
-    public function destroy(Mod $mod): void {}
+    public function destroy(Mod $mod): void
+    {
+        $this->authorize('delete', $mod);
+
+        $mod->delete();
+    }
 }

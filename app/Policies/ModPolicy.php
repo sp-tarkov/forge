@@ -45,7 +45,10 @@ class ModPolicy
      */
     public function delete(User $user, Mod $mod): bool
     {
-        return false;
+        // I'm guessing we want the mod author to also be able to do this?
+        // what if there are multiple authors?
+        // I'm leaving that out for now -waffle.lazy
+        return $user->isMod() || $user->isAdmin();
     }
 
     /**
