@@ -24,6 +24,16 @@ class FollowCards extends Component
     public Collection $authFollowIds;
 
     /**
+     * Render the component.
+     */
+    public function render(): View
+    {
+        $this->updateAuthFollowIds();
+
+        return view('livewire.user.follow-cards');
+    }
+
+    /**
      * Called when the user follows or unfollows a user.
      */
     #[On('user-follow-change')]
@@ -37,13 +47,5 @@ class FollowCards extends Component
         }
 
         $this->dispatch('auth-follow-change');
-    }
-
-    /**
-     * Render the component.
-     */
-    public function render(): View
-    {
-        return view('livewire.user.follow-cards');
     }
 }
