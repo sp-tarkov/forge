@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use League\HTMLToMarkdown\HtmlConverter;
 use Stevebauman\Purify\Facades\Purify;
+use Throwable;
 
 class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 {
@@ -40,6 +41,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         // Stream some data locally so that we don't have to keep accessing the Hub's database. Use MySQL temporary
         // tables to store the data to save on memory; we don't want this to be a hog.
         $this->bringUserAvatarLocal();
+        $this->bringUserOptionsLocal();
         $this->bringFileAuthorsLocal();
         $this->bringFileOptionsLocal();
         $this->bringFileContentLocal();
@@ -94,6 +96,35 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
                 if ($insertData) {
                     DB::table('temp_user_avatar')->insert($insertData);
+                }
+            });
+    }
+
+    /**
+     * Bring the user options table from the Hub database to the local database temporary table.
+     */
+    private function bringUserOptionsLocal(): void
+    {
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS temp_user_options_values');
+        DB::statement('CREATE TEMPORARY TABLE temp_user_options_values (
+            userID INT,
+            about LONGTEXT
+        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+
+        DB::connection('mysql_hub')
+            ->table('wcf1_user_option_value')
+            ->orderBy('userID')
+            ->chunk(200, function ($options) {
+                $insertData = [];
+                foreach ($options as $option) {
+                    $insertData[] = [
+                        'userID' => (int) $option->userID,
+                        'about' => $option->userOption1,
+                    ];
+                }
+
+                if ($insertData) {
+                    DB::table('temp_user_options_values')->insert($insertData);
                 }
             });
     }
@@ -357,6 +388,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             'name' => $hubUser->username,
             'email' => Str::lower($hubUser->email),
             'password' => $this->cleanPasswordHash($hubUser->password),
+            'about' => $this->fetchUserAbout($hubUser->userID) ?? '',
             'profile_photo_path' => $this->fetchUserAvatar($curl, $hubUser),
             'cover_photo_path' => $this->fetchUserCoverPhoto($curl, $hubUser),
             'created_at' => $this->cleanRegistrationDate($hubUser->registrationDate),
@@ -375,6 +407,32 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
         // At this point, if the password hash starts with $2, it's a valid Bcrypt hash. Otherwise, it's invalid.
         return str_starts_with($clean, '$2') ? $clean : '';
+    }
+
+    /**
+     * Fetch the user about text from the temporary table.
+     */
+    private function fetchUserAbout(int $userID): string
+    {
+        $about = DB::table('temp_user_options_values')
+            ->where('userID', $userID)
+            ->limit(1)
+            ->value('about');
+
+        return $this->cleanHubContent($about ?? '');
+    }
+
+    /**
+     * Convert the mod description from WoltHub flavoured HTML to Markdown.
+     */
+    protected function cleanHubContent(string $dirty): string
+    {
+        // Alright, hear me out... Shut up.
+
+        $converter = new HtmlConverter;
+        $clean = Purify::clean($dirty);
+
+        return $converter->convert($clean) ?? '';
     }
 
     /**
@@ -915,19 +973,6 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * Convert the mod description from WoltHub flavoured HTML to Markdown.
-     */
-    protected function cleanHubContent(string $dirty): string
-    {
-        // Alright, hear me out... Shut up.
-
-        $converter = new HtmlConverter;
-        $clean = Purify::clean($dirty);
-
-        return $converter->convert($clean);
-    }
-
-    /**
      * Fetch the mod thumbnail from the Hub and store it anew.
      */
     protected function fetchModThumbnail(CurlHandle $curl, string $fileID, string $thumbnailHash, string $thumbnailExtension): string
@@ -1034,10 +1079,11 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * The job failed to process.
      */
-    public function failed(Exception $exception): void
+    public function failed(Throwable $exception): void
     {
         // Explicitly drop the temporary tables.
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_user_avatar');
+        DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_user_options_values');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_author');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_option_values');
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_file_content');
