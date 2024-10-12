@@ -76,6 +76,11 @@ class FollowCard extends Component
     public Collection $followUsers;
 
     /**
+     * The events the component should listen for.
+     */
+    protected $listeners = ['refreshComponent' => '$refresh'];
+
+    /**
      * The number of users being displayed.
      */
     #[Computed]
@@ -148,6 +153,8 @@ class FollowCard extends Component
     {
         // Update the collection of profile user's followers (or following).
         $this->followUsers = $this->profileUser->{$this->relationship}()->get();
+
+        $this->dispatch('refreshComponent');
     }
 
     /**
