@@ -36,7 +36,7 @@ class UserResource extends JsonResource
             ],
             'includes' => $this->when(
                 ApiController::shouldInclude('user_role'),
-                new UserRoleResource($this->role)
+                new UserRoleResource($this->role),
             ),
             'links' => [
                 'self' => $this->profileUrl(),
