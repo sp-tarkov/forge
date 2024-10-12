@@ -152,4 +152,23 @@ class ModVersion extends Model
 
         return $this->downloads;
     }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'hub_id' => 'integer',
+            'version_major' => 'integer',
+            'version_minor' => 'integer',
+            'version_patch' => 'integer',
+            'downloads' => 'integer',
+            'disabled' => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
+            'published_at' => 'datetime',
+        ];
+    }
 }

@@ -41,4 +41,15 @@ class ModDependency extends Model
     {
         return $this->belongsTo(Mod::class, 'dependent_mod_id');
     }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 }
