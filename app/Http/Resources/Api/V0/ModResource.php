@@ -15,6 +15,8 @@ class ModResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $this->load(['users', 'versions', 'license']);
+
         return [
             'type' => 'mod',
             'id' => $this->id,

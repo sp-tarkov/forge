@@ -15,6 +15,8 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $this->load('role');
+
         return [
             'type' => 'user',
             'id' => $this->id,
