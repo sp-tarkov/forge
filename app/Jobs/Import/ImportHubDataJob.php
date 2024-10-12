@@ -388,7 +388,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             'name' => $hubUser->username,
             'email' => Str::lower($hubUser->email),
             'password' => $this->cleanPasswordHash($hubUser->password),
-            'about' => $this->fetchUserAbout($hubUser->userID) ?? '',
+            'about' => $this->fetchUserAbout($hubUser->userID),
             'profile_photo_path' => $this->fetchUserAvatar($curl, $hubUser),
             'cover_photo_path' => $this->fetchUserCoverPhoto($curl, $hubUser),
             'created_at' => $this->cleanRegistrationDate($hubUser->registrationDate),
@@ -432,7 +432,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         $converter = new HtmlConverter;
         $clean = Purify::clean($dirty);
 
-        return $converter->convert($clean) ?? '';
+        return $converter->convert($clean);
     }
 
     /**
