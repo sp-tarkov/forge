@@ -172,4 +172,21 @@ class SptVersion extends Model
                 ->first();
         });
     }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'hub_id' => 'integer',
+            'version_major' => 'integer',
+            'version_minor' => 'integer',
+            'version_patch' => 'integer',
+            'mod_count' => 'integer',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
+        ];
+    }
 }

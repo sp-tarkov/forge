@@ -28,10 +28,7 @@ class ModVersionResource extends JsonResource
                 //    $this->description
                 //),
 
-                // TODO: The download link to the version can be placed here, but I'd like to track the number of
-                //       downloads that are made, so we'll need a new route/feature for that. #35
-                'link' => $this->link,
-
+                'link' => $this->downloadUrl(absolute: true),
                 'virus_total_link' => $this->virus_total_link,
                 'downloads' => $this->downloads,
                 'created_at' => $this->created_at,

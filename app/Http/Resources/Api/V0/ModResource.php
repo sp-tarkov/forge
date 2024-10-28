@@ -15,6 +15,8 @@ class ModResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $this->load(['users', 'versions', 'license']);
+
         return [
             'type' => 'mod',
             'id' => $this->id,
@@ -51,11 +53,8 @@ class ModResource extends JsonResource
                         'type' => 'version',
                         'id' => $version->id,
                     ],
-
-                    // TODO: The download link to the version can be placed here, but I'd like to track the number of
-                    //       downloads that are made, so we'll need a new route/feature for that. #35
                     'links' => [
-                        'self' => $version->link,
+                        'self' => $version->downloadUrl(absolute: true),
                     ],
 
                 ])->toArray(),

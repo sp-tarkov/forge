@@ -22,4 +22,17 @@ class License extends Model
         return $this->hasMany(Mod::class)
             ->chaperone();
     }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'hub_id' => 'integer',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
+        ];
+    }
 }

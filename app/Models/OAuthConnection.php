@@ -16,4 +16,15 @@ class OAuthConnection extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 }

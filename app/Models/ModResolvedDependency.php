@@ -36,4 +36,15 @@ class ModResolvedDependency extends Model
     {
         return $this->belongsTo(ModVersion::class, 'resolved_mod_version_id');
     }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 }

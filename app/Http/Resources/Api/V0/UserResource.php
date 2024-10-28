@@ -15,6 +15,8 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $this->load('role');
+
         return [
             'type' => 'user',
             'id' => $this->id,
@@ -34,7 +36,7 @@ class UserResource extends JsonResource
             ],
             'includes' => $this->when(
                 ApiController::shouldInclude('user_role'),
-                new UserRoleResource($this->role)
+                new UserRoleResource($this->role),
             ),
             'links' => [
                 'self' => $this->profileUrl(),
