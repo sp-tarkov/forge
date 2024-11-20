@@ -8,6 +8,6 @@ class ModerationOptions extends Component
 {
     public function render()
     {
-        return view('livewire..mod.moderation-options');
+        return view('livewire.mod.moderation-options');
     }
 }
