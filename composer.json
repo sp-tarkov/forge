@@ -33,7 +33,7 @@
         "barryvdh/laravel-debugbar": "^3.13",
         "fakerphp/faker": "^1.23",
         "knuckleswtf/scribe": "^4.37",
-        "larastan/larastan": "^2.9",
+        "larastan/larastan": "^3.0",
         "laravel/pint": "^1.16",
         "laravel/sail": "^1.29",
         "mockery/mockery": "^1.6",
