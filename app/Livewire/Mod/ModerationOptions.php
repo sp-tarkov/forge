@@ -17,11 +17,13 @@ class ModerationOptions extends Component
     public function deleteMod(): void
     {
         $this->mod->delete();
+        $this->js('window.location.reload()');
     }
 
-    public function disableMod(): void
+    public function toggleDisabled(): void
     {
-        $this->mod->disabled = true;
+        $this->mod->disabled = ! $this->mod->disabled;
         $this->mod->save();
+        $this->js('window.location.reload()');
     }
 }

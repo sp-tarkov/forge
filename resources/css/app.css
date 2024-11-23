@@ -91,7 +91,6 @@ main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
 .ribbon {
     font-size: 18px;
     font-weight: bold;
-    color: #fff;
 }
 
 .ribbon {
@@ -106,7 +105,6 @@ main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
     clip-path: polygon(100% calc(100% - var(--f)), 100% 100%, calc(100% - var(--f)) calc(100% - var(--f)), var(--f) calc(100% - var(--f)), 0 100%, 0 calc(100% - var(--f)), 999px calc(100% - var(--f) - 999px), calc(100% - 999px) calc(100% - var(--f) - 999px));
     transform: translate(calc((cos(45deg) - 1) * 100%), -100%) rotate(-45deg);
     transform-origin: 100% 100%;
-    background-color: #0e7490;
 }
 
 .rainbow {

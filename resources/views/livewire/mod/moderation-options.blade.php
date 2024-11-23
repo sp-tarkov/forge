@@ -12,15 +12,22 @@
 
         <x-slot name="content">
             <div>
-                <button wire:click.prevent="disableMod" wire:confirm="Disable the mod '{{$this->mod->name}}'?" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
+                <button wire:click.prevent="toggleDisabled" wire:confirm="{{$this->mod->disabled ? __('Enable') : __('Disable') }} the mod '{{$this->mod->name}}'?" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
                     <div class="flex">
                         <span class="pr-2">
+                            @if ($this->mod->disabled)
+                            {{-- Icon (circle with checkmark) --}}
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z" />
+                            </svg>
+                            @else
                             {{-- Icon (circle with dash) --}}
                             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 2.001c5.524 0 10 4.477 10 10s-4.476 10-10 10c-5.522 0-10-4.477-10-10s4.478-10 10-10Zm4.25 9.25h-8.5a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5Z" />
                             </svg>
+                            @endif
                         </span>
-                        {{ __('Disable') }}
+                        {{$this->mod->disabled ? __('Enable') : __('Disable') }}
                     </div>
                 </button>
             </div>

@@ -1,14 +1,17 @@
 @props(['mod', 'version'])
 
 <a href="{{ $mod->detailUrl() }}" class="mod-list-component relative mx-auto w-full max-w-2xl">
-    @if ($mod->featured && !request()->routeIs('home'))
-        <div class="ribbon z-10">{{ __('Featured!') }}</div>
+    @if ($mod->featured && !$mod->disabled && !request()->routeIs('home'))
+        <div class="ribbon text-white bg-cyan-500 dark:bg-cyan-700 z-10">{{ __('Featured!') }}</div>
+    @endif
+    @if ($mod->disabled)
+            <div class="ribbon text-white bg-red-500 dark:bg-red-700 z-10">{{ __('Disabled') }}</div>
     @endif
     <div class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black hover:shadow-gray-400 dark:hover:shadow-black transition-colors ease-out duration-700">
         <div class="h-auto md:h-full md:flex">
-            @if (auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isMod()))
+            @if (auth()->check() && auth()->user()->isModOrAdmin())
             <div class="absolute right-0 z-50 m-2">
-                <livewire:mod.moderation-options :mod="$mod"/>
+                <livewire:mod.moderation-options :mod="$mod" />
             </div>
             @endif
             <div class="relative h-auto md:h-full md:shrink-0 overflow-hidden">

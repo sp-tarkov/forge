@@ -11,8 +11,16 @@
 
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                @if ($mod->featured)
-                    <div class="ribbon z-10">{{ __('Featured!') }}</div>
+                @if (auth()->check() && auth()->user()->isModOrAdmin())
+                    <div class="absolute top-0 right-0 z-50 m-2">
+                        <livewire:mod.moderation-options :mod="$mod" />
+                    </div>
+                @endif
+                @if ($mod->featured && !$mod->disabled)
+                    <div class="ribbon text-white bg-cyan-500 dark:bg-cyan-700 z-10">{{ __('Featured!') }}</div>
+                @endif
+                @if ($mod->disabled)
+                    <div class="ribbon text-white bg-red-500 dark:bg-red-700 z-10">{{ __('Disabled') }}</div>
                 @endif
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">

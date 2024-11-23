@@ -20,7 +20,11 @@ class ModPolicy
      */
     public function view(?User $user, Mod $mod): bool
     {
-        // Everyone can view mods.
+        // Everyone can view mods, unless they are disabled.
+        if ($mod->disabled && ! $user?->isModOrAdmin()) {
+            return false;
+        }
+
         return true;
     }
 
