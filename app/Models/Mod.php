@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -30,7 +29,6 @@ class Mod extends Model
      */
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
         static::addGlobalScope(new PublishedScope);
     }
 

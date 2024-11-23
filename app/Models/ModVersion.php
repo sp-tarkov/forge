@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,8 +28,6 @@ class ModVersion extends Model
      */
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
-
         static::addGlobalScope(new PublishedScope);
 
         static::saving(function (ModVersion $model) {

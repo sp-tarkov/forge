@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Mod;
 
-use Illuminate\Support\Facades\Log;
+use App\Models\Mod;
 use Livewire\Component;
 
 class ModerationOptions extends Component
 {
+    public Mod $mod;
+
     public function render()
     {
         return view('livewire.mod.moderation-options');
@@ -14,11 +16,12 @@ class ModerationOptions extends Component
 
     public function deleteMod(): void
     {
-        Log::info('delete');
+        $this->mod->delete();
     }
 
     public function disableMod(): void
     {
-        Log::info('disable');
+        $this->mod->disabled = true;
+        $this->mod->save();
     }
 }

@@ -12,7 +12,7 @@
 
         <x-slot name="content">
             <div>
-                <button wire:click.prevent="disableMod" wire:confirm="Disable the mod?" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
+                <button wire:click.prevent="disableMod" wire:confirm="Disable the mod '{{$this->mod->name}}'?" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
                     <div class="flex">
                         <span class="pr-2">
                             {{-- Icon (circle with dash) --}}
@@ -24,8 +24,9 @@
                     </div>
                 </button>
             </div>
+            @if(auth()->user()->isAdmin())
             <div>
-                <button wire:click.prevent="deleteMod" wire:confirm="Delete the mod?" class="p-2 h-full w-full text-red-500 dark:text-red-500 bg-gray-200 dark:bg-gray-800 hover:text-red-400 dark:hover:text-red-400">
+                <button wire:click.prevent="deleteMod" wire:confirm="Delete the mod '{{$this->mod->name}}'?" class="p-2 h-full w-full text-red-500 dark:text-red-500 bg-gray-200 dark:bg-gray-800 hover:text-red-400 dark:hover:text-red-400">
                     <div class="flex">
                         <span class="pr-2">
                             {{-- Icon (trash can) --}}
@@ -37,6 +38,7 @@
                     </div>
                 </button>
             </div>
+            @endif
         </x-slot>
 
     </x-dropdown>
