@@ -7,19 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @property int $id
- * @property int $mod_version_id
- * @property int $dependency_mod_id
- * @property string $constraint
- * @property int|null $resolved_version_id
- */
 class ModDependency extends Model
 {
     use HasFactory;
 
     /**
      * The relationship between the mod dependency and the mod version.
+     *
+     * @return BelongsTo<ModVersion, ModDependency>
      */
     public function modVersion(): BelongsTo
     {
@@ -28,17 +23,33 @@ class ModDependency extends Model
 
     /**
      * The relationship between the mod dependency and the resolved dependency.
+     *
+     * @return HasMany<ModResolvedDependency>
      */
     public function resolvedDependencies(): HasMany
     {
-        return $this->hasMany(ModResolvedDependency::class, 'dependency_id');
+        return $this->hasMany(ModResolvedDependency::class, 'dependency_id')
+            ->chaperone();
     }
 
     /**
      * The relationship between the mod dependency and the dependent mod.
+     *
+     * @return BelongsTo<Mod, ModDependency>
      */
     public function dependentMod(): BelongsTo
     {
         return $this->belongsTo(Mod::class, 'dependent_mod_id');
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

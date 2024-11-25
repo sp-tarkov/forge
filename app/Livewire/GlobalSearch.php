@@ -4,8 +4,10 @@ namespace App\Livewire;
 
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class GlobalSearch extends Component
@@ -16,20 +18,26 @@ class GlobalSearch extends Component
     public string $query = '';
 
     /**
-     * Whether to show the search result dropdown.
+     * The search results.
      */
-    public bool $showDropdown = false;
+    #[Locked]
+    public array $result = [];
 
     /**
-     * Whether to show the "no results found" message.
+     * The total number of search results.
      */
-    public bool $noResults = false;
+    #[Locked]
+    public int $count = 0;
 
+    /**
+     * Render the component.
+     */
     public function render(): View
     {
-        return view('livewire.global-search', [
-            'results' => $this->executeSearch($this->query),
-        ]);
+        $this->result = $this->executeSearch($this->query);
+        $this->count = $this->countTotalResults($this->result);
+
+        return view('livewire.global-search');
     }
 
     /**
@@ -38,39 +46,40 @@ class GlobalSearch extends Component
     protected function executeSearch(string $query): array
     {
         $query = Str::trim($query);
-        $results = ['data' => [], 'total' => 0];
 
-        if (Str::length($query)) {
-            $results['data'] = [
-                'user' => collect(User::search($query)->raw()['hits']),
-                'mod' => collect(Mod::search($query)->raw()['hits']),
+        if (Str::length($query) > 0) {
+            return [
+                'user' => $this->fetchUserResults($query),
+                'mod' => $this->fetchModResults($query),
             ];
-            $results['total'] = $this->countTotalResults($results['data']);
         }
 
-        $this->showDropdown = Str::length($query) > 0;
-        $this->noResults = $results['total'] === 0 && $this->showDropdown;
+        return [];
+    }
 
-        return $results;
+    /**
+     * Fetch the user search results.
+     */
+    protected function fetchUserResults(string $query): Collection
+    {
+        return collect(User::search($query)->raw()['hits']);
+    }
+
+    /**
+     * Fetch the mod search results.
+     */
+    protected function fetchModResults(string $query): Collection
+    {
+        return collect(Mod::search($query)->raw()['hits']);
     }
 
     /**
      * Count the total number of results across all models.
      */
-    protected function countTotalResults($results): int
+    protected function countTotalResults(array $results): int
     {
-        return collect($results)->reduce(function ($carry, $result) {
+        return collect($results)->reduce(function (int $carry, Collection $result) {
             return $carry + $result->count();
         }, 0);
-    }
-
-    /**
-     * Clear the search query and hide the dropdown.
-     */
-    public function clearSearch(): void
-    {
-        $this->query = '';
-        $this->showDropdown = false;
-        $this->noResults = false;
     }
 }

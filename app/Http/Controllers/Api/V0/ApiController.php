@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V0;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class ApiController extends Controller
 {
@@ -13,7 +15,11 @@ class ApiController extends Controller
      */
     public static function shouldInclude(string|array $relationships): bool
     {
-        $param = request()->get('include');
+        try {
+            $param = request()->get('include');
+        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+            return false;
+        }
 
         if (! $param) {
             return false;

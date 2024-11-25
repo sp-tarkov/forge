@@ -2,12 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ModVersion;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\ModVersion */
+/** @mixin ModVersion */
 class ModVersionResource extends JsonResource
 {
+    /**
+     * Transform the resource into an array.
+     */
     public function toArray(Request $request): array
     {
         return [
@@ -19,10 +23,7 @@ class ModVersionResource extends JsonResource
             'description' => $this->description,
             'virus_total_link' => $this->virus_total_link,
             'downloads' => $this->downloads,
-
             'mod_id' => $this->mod_id,
-            'spt_version_id' => $this->spt_version_id,
-
             'mod' => new ModResource($this->whenLoaded('mod')),
             'sptVersion' => new SptVersionResource($this->whenLoaded('sptVersion')),
         ];

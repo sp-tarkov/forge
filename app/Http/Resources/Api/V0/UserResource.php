@@ -10,8 +10,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin User */
 class UserResource extends JsonResource
 {
+    /**
+     * Transform the resource into an array.
+     */
     public function toArray(Request $request): array
     {
+        $this->load('role');
+
         return [
             'type' => 'user',
             'id' => $this->id,
@@ -31,7 +36,7 @@ class UserResource extends JsonResource
             ],
             'includes' => $this->when(
                 ApiController::shouldInclude('user_role'),
-                new UserRoleResource($this->role)
+                new UserRoleResource($this->role),
             ),
             'links' => [
                 'self' => $this->profileUrl(),

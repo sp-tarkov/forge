@@ -8,6 +8,9 @@ use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
+/**
+ * @extends Factory<ModVersion>
+ */
 class ModVersionFactory extends Factory
 {
     protected $model = ModVersion::class;
@@ -16,7 +19,7 @@ class ModVersionFactory extends Factory
     {
         return [
             'mod_id' => Mod::factory(),
-            'version' => fake()->numerify('#.#.#'),
+            'version' => $this->faker->numerify('#.#.#'),
             'description' => fake()->text(),
             'link' => fake()->url(),
 

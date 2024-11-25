@@ -3,7 +3,6 @@
 namespace App\Http\Filters;
 
 use App\Models\Mod;
-use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -15,14 +14,17 @@ class ModFilter
     protected Builder $builder;
 
     /**
-     * The filter that should be applied to the query.
+     * The filters to apply.
      */
     protected array $filters;
 
+    /**
+     * Create a new ModFilter instance.
+     */
     public function __construct(array $filters)
     {
-        $this->builder = $this->baseQuery();
         $this->filters = $filters;
+        $this->builder = $this->baseQuery();
     }
 
     /**
@@ -30,21 +32,29 @@ class ModFilter
      */
     private function baseQuery(): Builder
     {
-        return Mod::select([
-            'mods.id',
-            'mods.name',
-            'mods.slug',
-            'mods.teaser',
-            'mods.thumbnail',
-            'mods.featured',
-            'mods.downloads',
-            'mods.created_at',
-        ])->with([
-            'users:id,name',
-            'latestVersion' => function ($query) {
-                $query->with('latestSptVersion:id,version,color_class');
-            },
-        ]);
+        return Mod::query()
+            ->select('mods.*')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('mod_versions')
+                    ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
+                    ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                    ->whereColumn('mod_versions.mod_id', 'mods.id')
+                    ->where('spt_versions.version', '!=', '0.0.0');
+            })
+            ->with([
+                'users:id,name',
+                'latestVersion',
+                'latestVersion.latestSptVersion',
+            ]);
+    }
+
+    /**
+     * Filter the results by the given search term.
+     */
+    private function query(string $term): Builder
+    {
+        return $this->builder->whereLike('mods.name', "%{$term}%");
     }
 
     /**
@@ -58,8 +68,6 @@ class ModFilter
             }
         }
 
-        //dd($this->builder->toRawSql());
-
         return $this->builder;
     }
 
@@ -68,34 +76,11 @@ class ModFilter
      */
     private function order(string $type): Builder
     {
-        // We order the "recently updated" mods by the ModVersion's updated_at value.
-        if ($type === 'updated') {
-            return $this->builder
-                ->joinSub(
-                    ModVersion::select('mod_id', DB::raw('MAX(updated_at) as latest_updated_at'))->groupBy('mod_id'),
-                    'latest_versions',
-                    'mods.id',
-                    '=',
-                    'latest_versions.mod_id'
-                )
-                ->orderByDesc('latest_versions.latest_updated_at');
-        }
-
-        // By default, we simply order by the column on the mods table/query.
-        $column = match ($type) {
-            'downloaded' => 'downloads',
-            default => 'created_at',
+        return match ($type) {
+            'updated' => $this->builder->orderByDesc('mods.updated_at'),
+            'downloaded' => $this->builder->orderByDesc('mods.downloads'),
+            default => $this->builder->orderByDesc('mods.created_at'),
         };
-
-        return $this->builder->orderByDesc($column);
-    }
-
-    /**
-     * Filter the results by the given search term.
-     */
-    private function query(string $term): Builder
-    {
-        return $this->builder->whereLike('name', "%$term%");
     }
 
     /**
@@ -104,8 +89,8 @@ class ModFilter
     private function featured(string $option): Builder
     {
         return match ($option) {
-            'exclude' => $this->builder->where('featured', false),
-            'only' => $this->builder->where('featured', true),
+            'exclude' => $this->builder->where('mods.featured', false),
+            'only' => $this->builder->where('mods.featured', true),
             default => $this->builder,
         };
     }
@@ -115,28 +100,14 @@ class ModFilter
      */
     private function sptVersions(array $versions): Builder
     {
-        // Parse the versions into major, minor, and patch arrays
-        $parsedVersions = array_map(fn ($version) => [
-            'major' => (int) explode('.', $version)[0],
-            'minor' => (int) (explode('.', $version)[1] ?? 0),
-            'patch' => (int) (explode('.', $version)[2] ?? 0),
-        ], $versions);
-
-        [$majorVersions, $minorVersions, $patchVersions] = array_map('array_unique', [
-            array_column($parsedVersions, 'major'),
-            array_column($parsedVersions, 'minor'),
-            array_column($parsedVersions, 'patch'),
-        ]);
-
-        return $this->builder
-            ->join('mod_versions as mv', 'mods.id', '=', 'mv.mod_id')
-            ->join('mod_version_spt_version as mvsv', 'mv.id', '=', 'mvsv.mod_version_id')
-            ->join('spt_versions as sv', 'mvsv.spt_version_id', '=', 'sv.id')
-            ->whereIn('sv.version_major', $majorVersions)
-            ->whereIn('sv.version_minor', $minorVersions)
-            ->whereIn('sv.version_patch', $patchVersions)
-            ->where('sv.version', '!=', '0.0.0')
-            ->groupBy('mods.id')
-            ->distinct();
+        return $this->builder->whereExists(function ($query) use ($versions) {
+            $query->select(DB::raw(1))
+                ->from('mod_versions')
+                ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
+                ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                ->whereColumn('mod_versions.mod_id', 'mods.id')
+                ->whereIn('spt_versions.version', $versions)
+                ->where('spt_versions.version', '!=', '0.0.0');
+        });
     }
 }

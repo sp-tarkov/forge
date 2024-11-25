@@ -2,12 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Models\SptVersion;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\SptVersion */
+/** @mixin SptVersion */
 class SptVersionResource extends JsonResource
 {
+    /**
+     * Transform the resource into an array.
+     */
     public function toArray(Request $request): array
     {
         return [

@@ -14,28 +14,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
-/**
- * @property int $id
- * @property string $name
- * @property string $slug
- */
 class Mod extends Model
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory;
+    use Searchable;
+    use SoftDeletes;
 
     /**
      * Post boot method to configure the model.
      */
     protected static function booted(): void
     {
-        // Apply the global scope to exclude disabled mods.
         static::addGlobalScope(new DisabledScope);
-
-        // Apply the global scope to exclude non-published mods.
         static::addGlobalScope(new PublishedScope);
     }
 
@@ -49,7 +44,23 @@ class Mod extends Model
     }
 
     /**
+     * Build the URL to download the latest version of this mod.
+     */
+    public function downloadUrl(bool $absolute = false): string
+    {
+        $this->load('latestVersion');
+
+        return route('mod.version.download', [
+            $this->id,
+            $this->slug,
+            $this->latestVersion->version,
+        ], absolute: $absolute);
+    }
+
+    /**
      * The relationship between a mod and its users.
+     *
+     * @return BelongsToMany<User>
      */
     public function users(): BelongsToMany
     {
@@ -58,6 +69,8 @@ class Mod extends Model
 
     /**
      * The relationship between a mod and its license.
+     *
+     * @return BelongsTo<License, Mod>
      */
     public function license(): BelongsTo
     {
@@ -65,23 +78,31 @@ class Mod extends Model
     }
 
     /**
+     * The relationship between a mod and its last updated version.
+     *
+     * @return HasOne<ModVersion>
+     */
+    public function latestUpdatedVersion(): HasOne
+    {
+        return $this->versions()
+            ->one()
+            ->ofMany('updated_at', 'max')
+            ->chaperone();
+    }
+
+    /**
      * The relationship between a mod and its versions.
+     *
+     * @return HasMany<ModVersion>
      */
     public function versions(): HasMany
     {
         return $this->hasMany(ModVersion::class)
-            ->whereHas('latestSptVersion')
-            ->orderByDesc('version');
-    }
-
-    /**
-     * The relationship between a mod and its last updated version.
-     */
-    public function lastUpdatedVersion(): HasOne
-    {
-        return $this->hasOne(ModVersion::class)
-            ->whereHas('latestSptVersion')
-            ->orderByDesc('updated_at');
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByDesc('version_pre_release')
+            ->chaperone();
     }
 
     /**
@@ -89,6 +110,11 @@ class Mod extends Model
      */
     public function toSearchableArray(): array
     {
+        $this->load([
+            'latestVersion',
+            'latestVersion.latestSptVersion',
+        ]);
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -99,21 +125,9 @@ class Mod extends Model
             'created_at' => strtotime($this->created_at),
             'updated_at' => strtotime($this->updated_at),
             'published_at' => strtotime($this->published_at),
-            'latestVersion' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->version_formatted,
-            'latestVersionColorClass' => $this->latestVersion()?->first()?->latestSptVersion()?->first()?->color_class,
+            'latestVersion' => $this->latestVersion->latestSptVersion->version_formatted,
+            'latestVersionColorClass' => $this->latestVersion->latestSptVersion->color_class,
         ];
-    }
-
-    /**
-     * The relationship to the latest mod version, dictated by the mod version number.
-     */
-    public function latestVersion(): HasOne
-    {
-        return $this->hasOne(ModVersion::class)
-            ->whereHas('sptVersions')
-            ->orderByDesc('version')
-            ->orderByDesc('updated_at')
-            ->take(1);
     }
 
     /**
@@ -131,21 +145,50 @@ class Mod extends Model
             return false;
         }
 
-        // Fetch the latest version instance.
-        $latestVersion = $this->latestVersion()?->first();
+        // Eager load the latest mod version, and it's latest SPT version.
+        $this->load([
+            'latestVersion',
+            'latestVersion.latestSptVersion',
+        ]);
 
         // Ensure the mod has a latest version.
-        if (is_null($latestVersion)) {
+        if ($this->latestVersion()->doesntExist()) {
             return false;
         }
 
         // Ensure the latest version has a latest SPT version.
-        if ($latestVersion->latestSptVersion()->doesntExist()) {
+        if ($this->latestVersion->latestSptVersion()->doesntExist()) {
+            return false;
+        }
+
+        // Ensure the latest SPT version is within the last three minor versions.
+        $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, function () {
+            return SptVersion::getVersionsForLastThreeMinors();
+        });
+        if (! in_array($this->latestVersion->latestSptVersion->version, $activeSptVersions->pluck('version')->toArray())) {
             return false;
         }
 
         // All conditions are met; the mod should be searchable.
         return true;
+    }
+
+    /**
+     * The relationship between a mod and its latest version.
+     *
+     * @return HasOne<ModVersion>
+     */
+    public function latestVersion(): HasOne
+    {
+        return $this->versions()
+            ->one()
+            ->ofMany([
+                'version_major' => 'max',
+                'version_minor' => 'max',
+                'version_patch' => 'max',
+                'version_pre_release' => 'max',
+            ])
+            ->chaperone();
     }
 
     /**
@@ -197,11 +240,17 @@ class Mod extends Model
             'contains_ai_content' => 'boolean',
             'contains_ads' => 'boolean',
             'disabled' => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
+            'published_at' => 'datetime',
         ];
     }
 
     /**
      * Mutate the slug attribute to always be lower case on get and slugified on set.
+     *
+     * @return Attribute<string, string>
      */
     protected function slug(): Attribute
     {

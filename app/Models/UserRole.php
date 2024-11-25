@@ -12,9 +12,12 @@ class UserRole extends Model
 
     /**
      * The relationship between a user role and users.
+     *
+     * @return HasMany<User>
      */
     public function users(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class)
+            ->chaperone();
     }
 }

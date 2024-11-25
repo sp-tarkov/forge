@@ -11,7 +11,7 @@ trait HasCoverPhoto
     /**
      * Update the user's cover photo.
      */
-    public function updateCoverPhoto(UploadedFile $cover, $storagePath = 'cover-photos'): void
+    public function updateCoverPhoto(UploadedFile $cover, string $storagePath = 'cover-photos'): void
     {
         tap($this->cover_photo_path, function ($previous) use ($cover, $storagePath) {
             $this->forceFill([
@@ -51,15 +51,15 @@ trait HasCoverPhoto
     }
 
     /**
-     * Get the URL to the user's cover photo.
+     * Get the cover photo URL for the user.
      */
     public function coverPhotoUrl(): Attribute
     {
-        return Attribute::get(function (): string {
-            return $this->cover_photo_path
+        return new Attribute(
+            get: fn (): string => $this->cover_photo_path
                 ? Storage::disk($this->coverPhotoDisk())->url($this->cover_photo_path)
-                : $this->defaultCoverPhotoUrl();
-        });
+                : $this->defaultCoverPhotoUrl()
+        );
     }
 
     /**

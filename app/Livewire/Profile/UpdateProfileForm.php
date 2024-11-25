@@ -12,8 +12,6 @@ class UpdateProfileForm extends UpdateProfileInformationForm
 {
     /**
      * The new cover photo for the user.
-     *
-     * @var mixed
      */
     public $cover;
 

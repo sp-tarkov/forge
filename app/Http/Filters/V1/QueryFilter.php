@@ -2,37 +2,44 @@
 
 namespace App\Http\Filters\V1;
 
+use App\Traits\V1\FilterMethods;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 abstract class QueryFilter
 {
+    /**
+     * Include general filter methods.
+     */
+    use FilterMethods;
+
+    /**
+     * The query builder instance.
+     */
     protected Builder $builder;
 
+    /**
+     * The request instance.
+     */
     protected Request $request;
 
+    /**
+     * The sortable fields.
+     */
     protected array $sortable = [];
 
+    /**
+     * Create a new QueryFilter instance.
+     */
     public function __construct(Request $request)
     {
         $this->request = $request;
     }
 
-    public function apply(Builder $builder): Builder
-    {
-        $this->builder = $builder;
-
-        foreach ($this->request->all() as $attribute => $value) {
-            if (method_exists($this, $attribute)) {
-                $this->$attribute($value);
-            }
-        }
-
-        return $this->builder;
-    }
-
-    protected function filter(array $filters): Builder
+    /**
+     * Iterate over each of the filter options and call the appropriate method if it exists.
+     */
+    public function filter(array $filters): Builder
     {
         foreach ($filters as $attribute => $value) {
             if (method_exists($this, $attribute)) {
@@ -43,16 +50,16 @@ abstract class QueryFilter
         return $this->builder;
     }
 
-    protected function sort(string $values): Builder
+    /**
+     * Iterate over all request data and call the appropriate method if it exists.
+     */
+    public function apply(Builder $builder): Builder
     {
-        $sortables = array_map('trim', explode(',', $values));
+        $this->builder = $builder;
 
-        foreach ($sortables as $sortable) {
-            $direction = Str::startsWith($sortable, '-') ? 'desc' : 'asc';
-            $column = Str::of($sortable)->remove('-')->value();
-
-            if (in_array($column, $this->sortable)) {
-                $this->builder->orderBy($column, $direction);
+        foreach ($this->request->all() as $attribute => $value) {
+            if (method_exists($this, $attribute)) {
+                $this->$attribute($value);
             }
         }
 

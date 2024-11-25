@@ -18,6 +18,9 @@ class ResetPassword extends OriginalResetPassword implements ShouldQueue
         parent::__construct($token);
     }
 
+    /**
+     * Get the array representation of the notification.
+     */
     public function toArray(object $notifiable): array
     {
         return [];

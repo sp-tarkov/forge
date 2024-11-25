@@ -8,9 +8,11 @@ use App\Notifications\VerifyEmail;
 use App\Traits\HasCoverPhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -43,11 +45,80 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * Get the storage path for profile photos.
+     */
+    public static function profilePhotoStoragePath(): string
+    {
+        return 'profile-photos';
+    }
+
+    /**
      * The relationship between a user and their mods.
+     *
+     * @return BelongsToMany<Mod>
      */
     public function mods(): BelongsToMany
     {
         return $this->belongsToMany(Mod::class);
+    }
+
+    /**
+     * The relationship between a user and users that follow them.
+     *
+     * @return BelongsToMany<User>
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_follows', 'following_id', 'follower_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Follow another user.
+     */
+    public function follow(User|int $user): void
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        if ($this->id === $userId) {
+            // Don't allow following yourself.
+            return;
+        }
+
+        $this->following()->syncWithoutDetaching([$userId]);
+    }
+
+    /**
+     * The relationship between a user and users they follow.
+     *
+     * @return BelongsToMany<User>
+     */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Unfollow another user.
+     */
+    public function unfollow(User|int $user): void
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        if ($this->isFollowing($userId)) {
+            $this->following()->detach($userId);
+        }
+    }
+
+    /**
+     * Check if the user is following another user.
+     */
+    public function isFollowing(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->following()->where('following_id', $userId)->exists();
     }
 
     /**
@@ -66,7 +137,9 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function shouldBeSearchable(): bool
     {
-        return ! is_null($this->email_verified_at);
+        $this->load(['bans']);
+
+        return $this->isNotBanned();
     }
 
     /**
@@ -132,6 +205,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * The relationship between a user and their role.
+     *
+     * @return BelongsTo<UserRole, User>
      */
     public function role(): BelongsTo
     {
@@ -144,6 +219,32 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
     {
         return $filters->apply($builder);
+    }
+
+    /**
+     * The relationship between a user and their OAuth providers.
+     */
+    public function oAuthConnections(): HasMany
+    {
+        return $this->hasMany(OAuthConnection::class);
+    }
+
+    /**
+     * Handle the about default value if empty. Thanks, MySQL!
+     */
+    protected function about(): Attribute
+    {
+        return Attribute::make(
+            set: function ($value) {
+                // MySQL will not allow you to set a default value of an empty string for a (LONG)TEXT column. *le sigh*
+                // NULL is the default. If NULL is saved, we'll swap it out for an empty string.
+                if (is_null($value)) {
+                    return '';
+                }
+
+                return $value;
+            },
+        );
     }
 
     /**
@@ -160,8 +261,12 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
+            'id' => 'integer',
+            'hub_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 }
