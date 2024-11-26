@@ -1084,7 +1084,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
      */
     private function removeDeletedMods(): void
     {
-        $mods = Mod::select('hub_id')->all();
+        $mods = Mod::select('hub_id')->get();
         foreach ($mods as $mod) {
             if (DB::connection('mysql_hub')->table('filebase1_file')->where('fileID', $mod->hub_id)->doesntExist()) {
                 $mod->delete();
