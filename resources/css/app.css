@@ -110,7 +110,7 @@ main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
     }
 }
 
-.ribbon-disabled {
+.ribbon-red {
     @apply ribbon;
     @apply text-white bg-red-500 dark:bg-red-700;
 }

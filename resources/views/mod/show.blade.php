@@ -20,7 +20,7 @@
                     <div class="ribbon z-10">{{ __('Featured!') }}</div>
                 @endif
                 @if ($mod->disabled)
-                    <div class="ribbon-disabled z-10">{{ __('Disabled') }}</div>
+                    <div class="ribbon-red z-10">{{ __('Disabled') }}</div>
                 @endif
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
