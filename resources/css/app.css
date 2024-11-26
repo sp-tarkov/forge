@@ -88,24 +88,33 @@ main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
     }
 }
 
-.ribbon {
-    font-size: 18px;
-    font-weight: bold;
+@layer components {
+    .ribbon {
+        font-size: 18px;
+        font-weight: bold;
+        @apply text-white bg-cyan-500 dark:bg-cyan-700;
+    }
+
+    .ribbon {
+        --f: .5em;
+        position: absolute;
+        top: 0;
+        left: 0;
+        line-height: 1.5;
+        padding-inline: 1lh;
+        padding-bottom: var(--f);
+        border-image: conic-gradient(#0008 0 0) 51%/var(--f);
+        clip-path: polygon(100% calc(100% - var(--f)), 100% 100%, calc(100% - var(--f)) calc(100% - var(--f)), var(--f) calc(100% - var(--f)), 0 100%, 0 calc(100% - var(--f)), 999px calc(100% - var(--f) - 999px), calc(100% - 999px) calc(100% - var(--f) - 999px));
+        transform: translate(calc((cos(45deg) - 1) * 100%), -100%) rotate(-45deg);
+        transform-origin: 100% 100%;
+    }
 }
 
-.ribbon {
-    --f: .5em;
-    position: absolute;
-    top: 0;
-    left: 0;
-    line-height: 1.5;
-    padding-inline: 1lh;
-    padding-bottom: var(--f);
-    border-image: conic-gradient(#0008 0 0) 51%/var(--f);
-    clip-path: polygon(100% calc(100% - var(--f)), 100% 100%, calc(100% - var(--f)) calc(100% - var(--f)), var(--f) calc(100% - var(--f)), 0 100%, 0 calc(100% - var(--f)), 999px calc(100% - var(--f) - 999px), calc(100% - 999px) calc(100% - var(--f) - 999px));
-    transform: translate(calc((cos(45deg) - 1) * 100%), -100%) rotate(-45deg);
-    transform-origin: 100% 100%;
+.ribbon-disabled {
+    @apply ribbon;
+    @apply text-white bg-red-500 dark:bg-red-700;
 }
+
 
 .rainbow {
     height: 100%;
