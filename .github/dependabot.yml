@@ -4,37 +4,45 @@ updates:
   - package-ecosystem: "composer"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "15:00" # 10am EST
-    open-pull-requests-limit: 10
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
     target-branch: "develop"
+    versioning-strategy: increase-if-necessary
     labels:
       - "dependencies"
-    assignees:
+    reviewers:
       - "Refringe"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "15:00" # 10am EST
-    open-pull-requests-limit: 10
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
     target-branch: "develop"
     labels:
       - "dependencies"
-    assignees:
+    reviewers:
       - "Refringe"
 
   # npm modules (JavaScript)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "15:00" # 10am EST
-    open-pull-requests-limit: 10
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
     target-branch: "develop"
+    versioning-strategy: increase-if-necessary
     labels:
       - "dependencies"
-    assignees:
+    reviewers:
       - "Refringe"
