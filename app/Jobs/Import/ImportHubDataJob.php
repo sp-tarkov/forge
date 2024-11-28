@@ -57,6 +57,9 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         $this->importMods();
         $this->importModVersions();
 
+        // Remove mods that are no longer on the hub.
+        $this->removeDeletedMods();
+
         // Ensure that we've disconnected from the Hub database, clearing temporary tables.
         DB::connection('mysql_hub')->disconnect();
 
@@ -1074,6 +1077,19 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ]);
                 }
             }, 'versionID');
+    }
+
+    /**
+     * Remove mods that are no longer on the Hub.
+     */
+    private function removeDeletedMods(): void
+    {
+        $mods = Mod::select('hub_id')->get();
+        foreach ($mods as $mod) {
+            if (DB::connection('mysql_hub')->table('filebase1_file')->where('fileID', $mod->hub_id)->doesntExist()) {
+                $mod->delete();
+            }
+        }
     }
 
     /**
