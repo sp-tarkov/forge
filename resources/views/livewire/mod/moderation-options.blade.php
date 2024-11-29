@@ -2,7 +2,7 @@
     <x-dropdown alignment="right" contentClasses="py-1 rounded-full bg-gray-200 dark:bg-gray-800">
         <x-slot name="trigger">
             {{-- wire:click.prevent here to stop from following mod card links --}}
-            <button class="relative text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-700" wire:click.prevent="">
+            <button class="relative text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-700">
                 {{-- Icon (shield with keyhole) --}}
                 <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M3 5.75V11c0 5.001 2.958 8.676 8.725 10.948a.75.75 0 0 0 .55 0C18.042 19.676 21 16 21 11V5.75a.75.75 0 0 0-.75-.75c-2.663 0-5.258-.943-7.8-2.85a.75.75 0 0 0-.9 0C9.008 4.057 6.413 5 3.75 5a.75.75 0 0 0-.75.75ZM13.995 11a2 2 0 0 1-1.245 1.852v2.398a.75.75 0 0 1-1.5 0v-2.394A2 2 0 1 1 13.995 11Z"/>
@@ -12,10 +12,10 @@
 
         <x-slot name="content">
             <div>
-                <button wire:click.prevent="toggleDisabled" wire:confirm="{{$this->mod->disabled ? __('Enable') : __('Disable') }} the mod '{{$this->mod->name}}'?" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
+                <button wire:click.prevent="toggleDisabled" wire:confirm="{{$this->moderatedObject->disabled ? __('Enable') : __('Disable') }} '{{$this->moderatedObject->getFriendlyName()}}'?" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
                     <div class="flex">
                         <span class="pr-2">
-                            @if ($this->mod->disabled)
+                            @if ($this->moderatedObject->disabled)
                             {{-- Icon (circle with checkmark) --}}
                             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z" />
@@ -27,13 +27,13 @@
                             </svg>
                             @endif
                         </span>
-                        {{$this->mod->disabled ? __('Enable') : __('Disable') }}
+                        {{$this->moderatedObject->disabled ? __('Enable') : __('Disable') }}
                     </div>
                 </button>
             </div>
             @if(auth()->user()->isAdmin())
             <div>
-                <button wire:click.prevent="deleteMod" wire:confirm="Delete the mod '{{$this->mod->name}}'?" class="p-2 h-full w-full text-red-500 dark:text-red-500 bg-gray-200 dark:bg-gray-800 hover:text-red-400 dark:hover:text-red-400">
+                <button wire:click.prevent="delete" wire:confirm="Delete '{{$this->moderatedObject->getFriendlyName()}}'?" class="p-2 h-full w-full text-red-500 dark:text-red-500 bg-gray-200 dark:bg-gray-800 hover:text-red-400 dark:hover:text-red-400">
                     <div class="flex">
                         <span class="pr-2">
                             {{-- Icon (trash can) --}}

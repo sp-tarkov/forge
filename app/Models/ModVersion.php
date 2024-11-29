@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ModVersion extends Model
+class ModVersion extends ModeratedModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -167,5 +167,10 @@ class ModVersion extends Model
             'deleted_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function getFriendlyName(): string
+    {
+        return $this->version;
     }
 }
