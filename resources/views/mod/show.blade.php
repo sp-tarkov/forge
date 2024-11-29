@@ -1,7 +1,7 @@
 <x-app-layout>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Mod Details') }}
         </h2>
     </x-slot>
@@ -22,11 +22,11 @@
                             <img src="{{ $mod->thumbnailUrl }}" alt="{{ $mod->name }}" class="w-36 rounded-lg">
                         @endif
                     </div>
-                    <div class="grow flex flex-col justify-center items-center sm:items-start text-gray-800 dark:text-gray-200">
+                    <div class="grow flex flex-col justify-center items-center sm:items-start text-gray-900 dark:text-gray-200">
                         <div class="flex justify-between items-center space-x-3">
                             <h2 class="pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 {{ $mod->name }}
-                                <span class="font-light text-nowrap text-gray-700 dark:text-gray-400">
+                                <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
                                     {{ $mod->latestVersion->version }}
                                 </span>
                             </h2>
@@ -34,7 +34,7 @@
                         <p>
                             {{ __('Created by') }}
                             @foreach ($mod->users as $user)
-                                <a href="{{ $user->profileUrl() }}" class="text-slate-600 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                                <a href="{{ $user->profileUrl() }}" class="text-slate-800 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
@@ -46,7 +46,7 @@
                             </p>
                         @else
                             <p class="mt-2">
-                                <span class="badge-version bg-gray-100 text-gray-600 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                <span class="badge-version bg-gray-200 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                     {{ __('Unknown SPT Version') }}
                                 </span>
                             </p>
@@ -56,13 +56,13 @@
 
                 {{-- Mod teaser --}}
                 @if ($mod->teaser)
-                    <p class="mt-6 pt-3 border-t-2 border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200">{{ $mod->teaser }}</p>
+                    <p class="mt-6 pt-3 border-t-2 border-gray-300 dark:border-gray-800 text-gray-900 dark:text-gray-200">{{ $mod->teaser }}</p>
                 @endif
             </div>
 
             {{-- Mobile Download Button --}}
             <a href="{{ $mod->downloadUrl() }}" class="block lg:hidden">
-                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
+                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-600 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
             </a>
 
             {{-- Tabs --}}
@@ -71,7 +71,7 @@
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
                         <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
-                        <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
+                        <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-cyan-500 dark:focus:ring-cyan-400">
                             <option value="description">{{ __('Description') }}</option>
                             <option value="versions">{{ __('Versions') }}</option>
                             <option value="comments">{{ __('Comments') }}</option>
@@ -80,7 +80,7 @@
 
                     {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
-                        <nav class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
+                        <nav class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                             <x-tab-button name="Description" />
                             <x-tab-button name="Versions" />
                             <x-tab-button name="Comments" />
@@ -100,10 +100,10 @@
                         <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
                                 <div class="flex items-center justify-between">
-                                    <a class="text-2xl font-extrabold" href="{{ $version->downloadUrl() }}">
+                                    <a class="text-2xl font-extrabold text-gray-900 dark:text-white" href="{{ $version->downloadUrl() }}">
                                         {{ __('Version') }} {{ $version->version }}
                                     </a>
-                                    <p class="text-gray-700 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
+                                    <p class="text-gray-800 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     @if ($version->latestSptVersion)
@@ -111,28 +111,28 @@
                                             {{ $version->latestSptVersion->version_formatted }}
                                         </span>
                                     @else
-                                        <span class="badge-version bg-gray-100 text-gray-600 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                        <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                             {{ __('Unknown SPT Version') }}
                                         </span>
                                     @endif
-                                    <a href="{{ $version->virus_total_link }}">{{__('Virus Total Results')}}</a>
+                                    <a href="{{ $version->virus_total_link }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{__('Virus Total Results')}}</a>
                                 </div>
-                                <div class="flex items-center justify-between text-gray-600 dark:text-gray-400">
+                                <div class="flex items-center justify-between text-gray-700 dark:text-gray-400">
                                     <span>{{ __('Created') }} {{ Carbon::dynamicFormat($version->created_at) }}</span>
                                     <span>{{ __('Updated') }} {{ Carbon::dynamicFormat($version->updated_at) }}</span>
                                 </div>
 
                                 {{-- Display latest resolved dependencies --}}
                                 @if ($version->latestResolvedDependencies->isNotEmpty())
-                                    <div class="text-gray-600 dark:text-gray-400">
+                                    <div class="text-gray-700 dark:text-gray-400">
                                         {{ __('Dependencies:') }}
                                         @foreach ($version->latestResolvedDependencies as $resolvedDependency)
-                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last), @endif
+                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last), @endif
                                         @endforeach
                                     </div>
                                 @endif
                             </div>
-                            <div class="py-3 user-markdown">
+                            <div class="py-3 user-markdown text-gray-700 dark:text-gray-400">
                                 {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
                                 {!! Str::markdown($version->description) !!}
                             </div>
@@ -141,7 +141,7 @@
                 </div>
 
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                <div x-show="selectedTab === 'comments'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-gray-700 dark:text-gray-400">
                     <p>Not quite yet...</p>
                 </div>
             </div>
@@ -163,7 +163,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('License') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank">
+                                <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
                                     {{ $mod->license->name }}
                                 </a>
                             </p>
@@ -173,7 +173,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Source Code') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->source_code_link }}" title="{{ $mod->source_code_link }}" target="_blank">
+                                <a href="{{ $mod->source_code_link }}" title="{{ $mod->source_code_link }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
                                     {{ $mod->source_code_link }}
                                 </a>
                             </p>
@@ -183,7 +183,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version VirusTotal Result') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank">
+                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
                                     {{ $mod->latestVersion->virus_total_link }}
                                 </a>
                             </p>
@@ -194,7 +194,7 @@
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
-                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}">
+                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">
                                         {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />
                                 @endforeach
@@ -206,7 +206,7 @@
                             <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
                                 <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/>
                             </svg>
-                            <h3 class="grow">
+                            <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes Advertising') }}
                             </h3>
                         </li>
@@ -216,7 +216,7 @@
                             <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
                                 <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/>
                             </svg>
-                            <h3 class="grow">
+                            <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes AI Generated Content') }}
                             </h3>
                         </li>
