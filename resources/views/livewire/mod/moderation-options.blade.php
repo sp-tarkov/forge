@@ -12,7 +12,7 @@
 
         <x-slot name="content">
             <div>
-                <button wire:click.prevent="toggleDisabled" wire:confirm="{{$this->moderatedObject->disabled ? __('Enable') : __('Disable') }} '{{$this->moderatedObject->getFriendlyName()}}'?" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
+                <button wire:click.prevent="confirmDisable" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
                     <div class="flex">
                         <span class="pr-2">
                             @if ($this->moderatedObject->disabled)
@@ -33,7 +33,7 @@
             </div>
             @if(auth()->user()->isAdmin())
             <div>
-                <button wire:click.prevent="delete" wire:confirm="Delete '{{$this->moderatedObject->getFriendlyName()}}'?" class="p-2 h-full w-full text-red-500 dark:text-red-500 bg-gray-200 dark:bg-gray-800 hover:text-red-400 dark:hover:text-red-400">
+                <button wire:click.prevent="confirmDelete" class="p-2 h-full w-full text-red-500 dark:text-red-500 bg-gray-200 dark:bg-gray-800 hover:text-red-400 dark:hover:text-red-400">
                     <div class="flex">
                         <span class="pr-2">
                             {{-- Icon (trash can) --}}
@@ -49,4 +49,32 @@
         </x-slot>
 
     </x-dropdown>
+
+    @push('modals')
+        <x-dialog-modal wire:model="showDisableDialog">
+            <x-slot name="title">
+                <h2 class="text-2xl">{{__('Confirm')}} {{__($this->moderatedObject->disabled ? 'Enable' : 'Disable')}}</h2>
+            </x-slot>
+            <x-slot name="content">
+                <p>Are you sure you want to {{__($this->moderatedObject->disabled ? 'enable' : 'disable')}} '{{$this->moderatedObject->getFriendlyName()}}'?</p>
+            </x-slot>
+            <x-slot name="footer">
+                <livewire:mod.moderation-action-button actionType="{{ $this->moderatedObject->disabled ? 'enable' : 'disable' }}" :moderatedObject="$moderatedObject" />
+            </x-slot>
+        </x-dialog-modal>
+    @endpush
+
+    @push('modals')
+        <x-dialog-modal wire:model="showDeleteDialog">
+            <x-slot name="title">
+                <h2 class="text-2xl">{{ __('Confirm') }} {{ __('Delete') }}</h2>
+            </x-slot>
+            <x-slot name="content">
+                <p>Are you sure you want to {{__('Delete')}} '{{$this->moderatedObject->getFriendlyName()}}'?</p>
+            </x-slot>
+            <x-slot name="footer">
+                <livewire:mod.moderation-action-button actionType='delete' :moderatedObject="$moderatedObject" />
+            </x-slot>
+        </x-dialog-modal>
+    @endpush
 </div>

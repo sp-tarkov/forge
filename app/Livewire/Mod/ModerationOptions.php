@@ -9,20 +9,22 @@ class ModerationOptions extends Component
 {
     public ModeratedModel $moderatedObject;
 
+    public bool $showDeleteDialog = false;
+
+    public bool $showDisableDialog = false;
+
     public function render()
     {
         return view('livewire.mod.moderation-options');
     }
 
-    public function delete(): void
+    public function confirmDelete(): void
     {
-        $this->moderatedObject->delete();
-        $this->js('window.location.reload()');
+        $this->showDeleteDialog = true;
     }
 
-    public function toggleDisabled(): void
+    public function confirmDisable(): void
     {
-        $this->moderatedObject->toggleDisabled();
-        $this->js('window.location.reload()');
+        $this->showDisableDialog = true;
     }
 }
