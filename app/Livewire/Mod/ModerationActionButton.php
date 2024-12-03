@@ -27,8 +27,7 @@ class ModerationActionButton extends Component
     public function runActionEvent(): void
     {
         $this->isRunning = true;
-        defer(fn () => $this->invokeAction());
-        $this->js('setTimeout(3000, window.location.reload())');
+        $this->js('setTimeout(function() { $wire.invokeAction(); }, 500)');
     }
 
     public function invokeAction(): void
@@ -37,12 +36,15 @@ class ModerationActionButton extends Component
             case 'delete':
 
                 $this->moderatedObject->delete();
+                break;
 
             case 'enable':
             case 'disable':
 
                 $this->moderatedObject->toggleDisabled();
-
+                break;
         }
+
+        $this->js('window.location.reload()');
     }
 }
