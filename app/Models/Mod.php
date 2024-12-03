@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -19,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
-class Mod extends Model
+class Mod extends ModeratedModel
 {
     use HasFactory;
     use Searchable;
@@ -30,7 +29,6 @@ class Mod extends Model
      */
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
         static::addGlobalScope(new PublishedScope);
     }
 
@@ -258,5 +256,10 @@ class Mod extends Model
             get: fn (string $value) => Str::lower($value),
             set: fn (string $value) => Str::slug($value),
         );
+    }
+
+    public function getFriendlyName(): string
+    {
+        return $this->name;
     }
 }

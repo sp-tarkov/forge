@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ModVersion extends Model
+class ModVersion extends ModeratedModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -29,8 +28,6 @@ class ModVersion extends Model
      */
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
-
         static::addGlobalScope(new PublishedScope);
 
         static::saving(function (ModVersion $model) {
@@ -170,5 +167,10 @@ class ModVersion extends Model
             'deleted_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function getFriendlyName(): string
+    {
+        return $this->version;
     }
 }
