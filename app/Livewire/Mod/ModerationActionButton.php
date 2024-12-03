@@ -3,11 +3,14 @@
 namespace App\Livewire\Mod;
 
 use App\Models\ModeratedModel;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ModerationActionButton extends Component
 {
     public ModeratedModel $moderatedObject;
+
+    public string $guid = '';
 
     public string $actionType;
 
@@ -16,6 +19,11 @@ class ModerationActionButton extends Component
     public bool $isRunning = false;
 
     protected $listeners = ['refreshComponent' => '$refresh'];
+
+    public function mount(): void
+    {
+        $this->guid = uniqid('', true);
+    }
 
     public function render()
     {
@@ -27,9 +35,10 @@ class ModerationActionButton extends Component
     public function runActionEvent(): void
     {
         $this->isRunning = true;
-        $this->js('setTimeout(function() { $wire.invokeAction(); }, 500)');
+        $this->dispatch("startAction.{$this->guid}");
     }
 
+    #[On('startAction.{guid}')]
     public function invokeAction(): void
     {
         switch ($this->actionType) {
