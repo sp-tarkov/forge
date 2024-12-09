@@ -13,7 +13,7 @@
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 @if (auth()->check() && auth()->user()->isModOrAdmin())
                     <div class="absolute top-0 right-0 z-50 m-2">
-                        <livewire:mod.moderation-options :moderatedObject="$mod" />
+                        <livewire:mod.moderation-options :objectId="$mod->id" targetType="mod" :displayName="$mod->name" :disabled="$mod->disabled" />
                     </div>
                 @endif
                 @if ($mod->featured && !$mod->disabled)
@@ -112,7 +112,7 @@
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
                                 @if (auth()->check() && auth()->user()->isModOrAdmin())
                                     <div class="absolute top-0 right-0 z-50 m-2">
-                                        <livewire:mod.moderation-options :moderatedObject="$version" />
+                                        <livewire:mod.moderation-options :objectId="$version->id" targetType="modVersion" :displayName="$version->version" :disabled="$version->disabled" />
                                     </div>
                                 @endif
                                 <div class="flex items-center justify-between">

@@ -2,12 +2,17 @@
 
 namespace App\Livewire\Mod;
 
-use App\Models\ModeratedModel;
 use Livewire\Component;
 
 class ModerationOptions extends Component
 {
-    public ModeratedModel $moderatedObject;
+    public string $objectId;
+
+    public string $targetType;
+
+    public bool $disabled;
+
+    public string $displayName;
 
     public bool $showDeleteDialog = false;
 

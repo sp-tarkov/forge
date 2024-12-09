@@ -1,4 +1,4 @@
-<div class="text-blue-600">
+<div>
     <x-dropdown alignment="right" contentClasses="py-1 rounded-full bg-gray-200 dark:bg-gray-800">
         <x-slot name="trigger">
             <button class="relative text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-700">
@@ -14,7 +14,7 @@
                 <button wire:click.prevent="confirmDisable" class="p-2 h-full w-full text-blue-500 dark:text-blue-500 bg-gray-200 dark:bg-gray-800 hover:text-blue-400 dark:hover:text-blue-400">
                     <div class="flex">
                         <span class="pr-2">
-                            @if ($this->moderatedObject->disabled)
+                            @if ($this->disabled)
 {{--                             Icon (circle with checkmark)--}}
                             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z" />
@@ -26,7 +26,7 @@
                             </svg>
                             @endif
                         </span>
-                        {{$this->moderatedObject->disabled ? __('Enable') : __('Disable') }}
+                        {{$this->disabled ? __('Enable') : __('Disable') }}
                     </div>
                 </button>
             </div>
@@ -52,13 +52,13 @@
     @push('modals')
         <x-dialog-modal wire:model="showDisableDialog">
             <x-slot name="title">
-                <h2 class="text-2xl">{{__('Confirm')}} {{__($this->moderatedObject->disabled ? 'Enable' : 'Disable')}}</h2>
+                <h2 class="text-2xl">{{__('Confirm')}} {{__($this->disabled ? 'Enable' : 'Disable')}}</h2>
             </x-slot>
             <x-slot name="content">
-                <p>Are you sure you want to {{__($this->moderatedObject->disabled ? 'enable' : 'disable')}} '{{$this->moderatedObject->getFriendlyName()}}'?</p>
+                <p>Are you sure you want to {{__($this->disabled ? 'enable' : 'disable')}} '{{$this->displayName}}'?</p>
             </x-slot>
             <x-slot name="footer">
-                <livewire:mod.moderation-action-button actionType="{{ $this->moderatedObject->disabled ? 'enable' : 'disable' }}" :moderatedObject="$moderatedObject" />
+                <livewire:mod.moderation-action-button actionType="{{ $this->disabled ? 'enable' : 'disable' }}" :targetType="$targetType"  :moderatedObjectId="$objectId" />
             </x-slot>
         </x-dialog-modal>
     @endpush
@@ -69,10 +69,10 @@
                 <h2 class="text-2xl">{{ __('Confirm') }} {{ __('Delete') }}</h2>
             </x-slot>
             <x-slot name="content">
-                <p>Are you sure you want to {{__('delete')}} '{{$this->moderatedObject->getFriendlyName()}}'?</p>
+                <p>Are you sure you want to {{__('delete')}} '{{$this->displayName}}'?</p>
             </x-slot>
             <x-slot name="footer">
-                <livewire:mod.moderation-action-button actionType='delete' :moderatedObject="$moderatedObject" />
+                <livewire:mod.moderation-action-button actionType='delete' :targetType="$targetType" :moderatedObjectId="$objectId" />
             </x-slot>
         </x-dialog-modal>
     @endpush
