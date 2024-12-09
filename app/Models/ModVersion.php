@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
+use App\Traits\CanModerate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,8 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ModVersion extends ModeratedModel
+class ModVersion extends Model
 {
+    use CanModerate;
     use HasFactory;
     use SoftDeletes;
 
@@ -167,10 +169,5 @@ class ModVersion extends ModeratedModel
             'deleted_at' => 'datetime',
             'published_at' => 'datetime',
         ];
-    }
-
-    public function getFriendlyName(): string
-    {
-        return $this->version;
     }
 }

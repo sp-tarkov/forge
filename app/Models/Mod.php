@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\PublishedScope;
+use App\Traits\CanModerate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,8 +19,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
-class Mod extends ModeratedModel
+class Mod extends Model
 {
+    use CanModerate;
     use HasFactory;
     use Searchable;
     use SoftDeletes;
@@ -256,10 +258,5 @@ class Mod extends ModeratedModel
             get: fn (string $value) => Str::lower($value),
             set: fn (string $value) => Str::slug($value),
         );
-    }
-
-    public function getFriendlyName(): string
-    {
-        return $this->name;
     }
 }
