@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
+use App\Traits\CanModerate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +21,7 @@ use Laravel\Scout\Searchable;
 
 class Mod extends Model
 {
+    use CanModerate;
     use HasFactory;
     use Searchable;
     use SoftDeletes;
@@ -30,7 +31,6 @@ class Mod extends Model
      */
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
         static::addGlobalScope(new PublishedScope);
     }
 

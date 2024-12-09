@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
+use App\Traits\CanModerate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ModVersion extends Model
 {
+    use CanModerate;
     use HasFactory;
     use SoftDeletes;
 
@@ -29,8 +30,6 @@ class ModVersion extends Model
      */
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
-
         static::addGlobalScope(new PublishedScope);
 
         static::saving(function (ModVersion $model) {

@@ -173,7 +173,9 @@
         @if ($mods->isNotEmpty())
             <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 @foreach ($mods as $mod)
-                    <x-mod-card :mod="$mod" :version="$mod->latestVersion" />
+                    @if(!$mod->disabled || (auth()->check() && auth()->user()->isModOrAdmin()))
+                        <x-mod-card :mod="$mod" :version="$mod->latestVersion" />
+                    @endif
                 @endforeach
             </div>
         @else
