@@ -1,0 +1,38 @@
+name: Rector
+
+on: [ push, pull_request ]
+
+jobs:
+  rector:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.3
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Rector Cache
+        uses: actions/cache@v4
+        with:
+          path: .rector/cache
+          key: ${{ runner.os }}-rector-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-rector-
+
+      - run: mkdir -p .rector/cache
+
+      - name: Execute Rector Analysis
+        run: php vendor/bin/rector process --dry-run --config=rector.php
+
+# Disable automated changes until we have a better understanding of the impact
+#      - uses: stefanzweifel/git-auto-commit-action@v5
+#        with:
+#          commit_message: Rector Fixes [no ci]
+#          commit_user_name: Rector Bot
+#          skip_fetch: true
+#          file_pattern: '*.php'

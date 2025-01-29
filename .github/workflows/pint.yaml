@@ -1,0 +1,33 @@
+name: Pint
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  pint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.3
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Run Pint Code Style Fixer
+        run: ./vendor/bin/pint
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Pint PHP Style Fixes [no ci]
+          commit_user_name: Pint Bot
+          skip_fetch: true
+          file_pattern: '*.php'

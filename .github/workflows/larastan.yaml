@@ -1,0 +1,21 @@
+name: Larastan
+
+on: [ push, pull_request ]
+
+jobs:
+  larastan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.3
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Execute Code Static Analysis with Larastan
+        run: ./vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress --error-format=github
