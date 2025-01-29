@@ -726,28 +726,56 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * Import the SPT versions from the Hub database to the local database.
+     * Import the SPT versions from the public GitHub repo to the local database.
+     *
+     * @throws Exception
      */
     protected function importSptVersions(): void
     {
-        $domain = config('services.gitea.domain');
-        $token = config('services.gitea.token');
+        $url = 'https://api.github.com/repos/sp-tarkov/build/releases';
+        $token = config('services.github.token');
 
-        if (empty($domain) || empty($token)) {
-            return;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'User-Agent: The Forge (forge.sp-tarkov.com)',
+            'Authorization: token '.$token,
+        ]);
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            throw new Exception('cURL Error: '.curl_error($ch));
         }
 
-        $url = "{$domain}/api/v1/repos/SPT/Stable-releases/releases?draft=false&pre-release=false&token={$token}";
+        curl_close($ch);
 
-        $response = json_decode(file_get_contents($url), true);
+        $response = (array) json_decode($response, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception('JSON Decode Error: '.json_last_error_msg());
         }
 
         if (empty($response)) {
-            throw new Exception('No version data found in the API response.');
+            throw new Exception('No version data found in the GitHub API response.');
         }
+
+        // Filter out drafts and pre-releases.
+        $response = array_filter($response, function ($release) {
+            return ! $release['draft'] && ! $release['prerelease'];
+        });
+
+        if (empty($response)) {
+            throw new Exception('No finalized versions found after filtering drafts and pre-releases.');
+        }
+
+        // Ensure that each of the tag_name values has any 'v' prefix trimmed.
+        $response = array_map(function ($release) {
+            $release['tag_name'] = Str::of($release['tag_name'])->ltrim('v')->toString();
+
+            return $release;
+        }, $response);
 
         $latestVersion = $this->getLatestVersion($response);
 
@@ -757,8 +785,8 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                 'version' => $version['tag_name'],
                 'link' => $version['html_url'],
                 'color_class' => $this->detectVersionColor($version['tag_name'], $latestVersion),
-                'created_at' => Carbon::parse($version['created_at'], 'UTC'),
-                'updated_at' => Carbon::parse($version['created_at'], 'UTC'),
+                'created_at' => Carbon::parse($version['published_at'], 'UTC'),
+                'updated_at' => Carbon::parse($version['published_at'], 'UTC'),
             ];
         }
 
@@ -771,7 +799,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             'updated_at' => Carbon::now('UTC'),
         ];
 
-        // Upsert won't work here. Do it manually. :(
+        // Manually update or create
         foreach ($insertData as $data) {
             $existingVersion = SptVersion::where('version', $data['version'])->first();
             if ($existingVersion) {
