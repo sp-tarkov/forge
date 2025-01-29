@@ -18,16 +18,16 @@
                  class="my-8 grid items-center border-t border-gray-400 dark:border-gray-700">
             <h2 id="filter-heading" class="sr-only">{{ __('Filters') }}</h2>
             <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-400 dark:border-gray-700">
-                <div class="mx-auto flex max-w-7xl space-x-6 divide-x divide-gray-400 dark:divide-gray-700 px-4 text-sm sm:px-6 lg:px-8">
+                <div class="mx-auto flex max-w-7xl text-sm">
 
-                    <button type="button" @click="isFilterOpen = !isFilterOpen" class="group flex items-center font-medium text-gray-800 dark:text-gray-300" aria-controls="disclosure-1" aria-expanded="false">
+                    <button type="button" @click="isFilterOpen = !isFilterOpen" class="group flex items-center font-medium text-gray-800 dark:text-gray-300 mx-0 pr-6 border-r border-gray-400 dark:border-gray-700" aria-controls="disclosure-1" aria-expanded="false">
                         <svg class="mr-2 h-5 w-5 flex-none text-gray-500 group-hover:text-gray-600 dark:text-gray-600" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" />
                         </svg>
                         {{ $this->filterCount }} {{ __('Filters') }}
                     </button>
 
-                    <search class="hidden md:flex relative group pl-6">
+                    <search class="hidden md:flex relative group px-6 border-r border-gray-400 dark:border-gray-700">
                         <div class="pointer-events-none absolute inset-y-0 left-8 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-5 w-5 text-gray-500">
                                 <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
@@ -36,9 +36,9 @@
                         <input wire:model.live="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
                     </search>
 
-                    <button @click="$wire.call('resetFilters')" type="button" class="pl-6 text-gray-600 dark:text-gray-300">{{ __('Reset Filters') }}</button>
+                    <button @click="$wire.call('resetFilters')" type="button" class="px-6 text-gray-600 dark:text-gray-300">{{ __('Reset Filters') }}</button>
 
-                    <div wire:loading.flex>
+                    <div class="border-l border-gray-400 dark:border-gray-700" wire:loading.flex>
                         <p class="pl-6 flex items-center font-medium text-gray-800 dark:text-gray-300">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin">
                                 <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />
@@ -104,16 +104,16 @@
                     <div class="relative inline-block" x-data="{ isResultsPerPageOpen: false }" @click.away="isResultsPerPageOpen = false">
                         <div class="flex">
                             {{-- Large display can show full text --}}
-                            <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="hidden lg:flex group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true">
+                            <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="hidden group lg:inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true">
                                 {{ __('Per Page') }}
-                                <svg class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                             {{-- Only show selected number on smaller screens --}}
                             <button type="button" @click="isResultsPerPageOpen = !isResultsPerPageOpen" class="lg:hidden group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true" title="{{ __(':perPage results per page', ['perPage' => $perPage]) }}">
                                 {{ __(':perPage/p', ['perPage' => $perPage]) }}
-                                <svg class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
                             </button>
@@ -141,7 +141,7 @@
                         <div class="flex">
                             <button type="button" @click="isSortOpen = !isSortOpen" class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isSortOpen.toString()" aria-haspopup="true">
                                 {{ __('Sort') }}
-                                <svg class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
                             </button>
