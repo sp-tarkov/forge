@@ -23,19 +23,19 @@ runs:
   steps:
     - name: Get PHP Extension Cache Hash
       id: php-ext-cache-hash
-      with:
+      env:
         PHP_EXTENSIONS: ${{ inputs.php-extensions }}
         REDIS_OPTIONS: ${{ inputs.redis-options }}
         REDIS_LIBS: ${{ inputs.redis-libs }}
       run: |
         concat_values="${PHP_EXTENSIONS}${REDIS_OPTIONS}${REDIS_LIBS}"
-        echo hash=$(echo $concat_values | md5sum | awk '{print $1}') >> $GITHUB_OUTPUT
+        echo "hash=$(echo $concat_values | md5sum | awk '{print $1}')" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Setup Cache Environment
       id: php-ext-cache
       uses: shivammathur/cache-extensions@v1
-      if: inputs.php-extensions == true && inputs.redis-options == true && inputs.redis-libs == true
+      if: inputs.php-extensions != '' && inputs.redis-options != '' && inputs.redis-libs != ''
       with:
         php-version: ${{ inputs.php-version }}
         extensions: ${{ inputs.php-extensions }}
@@ -43,7 +43,7 @@ runs:
 
     - name: Cache PHP Extensions
       uses: actions/cache@v4
-      if: inputs.php-extensions == true && inputs.redis-options == true && inputs.redis-libs == true
+      if: inputs.php-extensions != '' && inputs.redis-options != '' && inputs.redis-libs != ''
       with:
         path: ${{ steps.php-ext-cache.outputs.dir }}
         key: ${{ steps.php-ext-cache.outputs.key }}
@@ -63,7 +63,7 @@ runs:
 
     - name: Get Composer Cache Directory
       id: composer-cache
-      run: echo dir=$(composer config cache-files-dir) >> $GITHUB_OUTPUT
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Cache Composer Dependencies
@@ -75,7 +75,7 @@ runs:
 
     - name: Get NPM Cache Directory
       id: npm-cache
-      run: echo dir=$(npm config get cache) >> $GITHUB_OUTPUT
+      run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Cache NPM Dependencies
