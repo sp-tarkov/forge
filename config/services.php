@@ -35,9 +35,8 @@ return [
         ],
     ],
 
-    'gitea' => [
-        'domain' => env('GITEA_DOMAIN', ''),
-        'token' => env('GITEA_TOKEN', ''),
+    'github' => [
+        'token' => env('GITHUB_TOKEN', ''),
     ],
 
     'discord' => [

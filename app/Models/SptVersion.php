@@ -168,7 +168,9 @@ class SptVersion extends Model
     {
         return Cache::remember('latest_spt_version', 300, function () {
             return SptVersion::select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
-                ->orderByDesc('version')
+                ->orderByDesc('version_major')
+                ->orderByDesc('version_minor')
+                ->orderByDesc('version_patch')
                 ->first();
         });
     }
