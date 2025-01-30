@@ -24,7 +24,7 @@ it('resolves mod version dependencies on create', function (): void {
     ]);
 
     // Check that the resolved dependency has been created
-    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->first())
+    expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first())
         ->not()->toBeNull()
         ->resolved_mod_version_id->toBe($dependentVersion1->id);
 });
@@ -42,7 +42,7 @@ it('resolves multiple matching versions', function (): void {
         'constraint' => '^1.0', // Should resolve to dependentVersion1 and dependentVersion2
     ]);
 
-    $resolvedDependencies = ModResolvedDependency::where('mod_version_id', $modVersion->id)->get();
+    $resolvedDependencies = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->get();
 
     expect($resolvedDependencies->count())->toBe(2)
         ->and($resolvedDependencies->pluck('resolved_mod_version_id'))
@@ -63,7 +63,7 @@ it('does not resolve dependencies when no versions match', function (): void {
     ]);
 
     // Check that no resolved dependencies were created
-    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+    expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
 });
 
 it('updates resolved dependencies when constraint changes', function (): void {
@@ -78,13 +78,13 @@ it('updates resolved dependencies when constraint changes', function (): void {
         'constraint' => '^1.0', // Should resolve to dependentVersion1
     ]);
 
-    $resolvedDependency = ModResolvedDependency::where('mod_version_id', $modVersion->id)->first();
+    $resolvedDependency = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first();
     expect($resolvedDependency->resolved_mod_version_id)->toBe($dependentVersion1->id);
 
     // Update the constraint
     $dependency->update(['constraint' => '^2.0']); // Should now resolve to dependentVersion2
 
-    $resolvedDependency = ModResolvedDependency::where('mod_version_id', $modVersion->id)->first();
+    $resolvedDependency = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first();
     expect($resolvedDependency->resolved_mod_version_id)->toBe($dependentVersion2->id);
 });
 
@@ -99,14 +99,14 @@ it('removes resolved dependencies when dependency is removed', function (): void
         'constraint' => '^1.0',
     ]);
 
-    $resolvedDependency = ModResolvedDependency::where('mod_version_id', $modVersion->id)->first();
+    $resolvedDependency = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first();
     expect($resolvedDependency)->not()->toBeNull();
 
     // Delete the dependency
     $dependency->delete();
 
     // Check that the resolved dependency is removed
-    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+    expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
 });
 
 it('handles mod versions with no dependencies gracefully', function (): void {
@@ -116,7 +116,7 @@ it('handles mod versions with no dependencies gracefully', function (): void {
 
     // Check that the service was called and that no resolved dependencies were created.
     $serviceSpy->shouldHaveReceived('resolve');
-    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+    expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
 });
 
 it('resolves the correct versions with a complex semver constraint', function (): void {
@@ -134,7 +134,7 @@ it('resolves the correct versions with a complex semver constraint', function ()
         'constraint' => '>1.0 <2.0 || >=2.5.0 <3.0', // Should resolve to dependentVersion2, dependentVersion3, and dependentVersion5
     ]);
 
-    $resolvedDependencies = ModResolvedDependency::where('mod_version_id', $modVersion->id)->pluck('resolved_mod_version_id');
+    $resolvedDependencies = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->pluck('resolved_mod_version_id');
 
     expect($resolvedDependencies)->toContain($dependentVersion2->id)
         ->toContain($dependentVersion3->id)
@@ -163,7 +163,7 @@ it('resolves overlapping version constraints from multiple dependencies correctl
         'constraint' => '>=1.5.0 <2.0.0', // Matches only the second version of dependentMod2
     ]);
 
-    $resolvedDependencies = ModResolvedDependency::where('mod_version_id', $modVersion->id)->get();
+    $resolvedDependencies = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->get();
 
     expect($resolvedDependencies->pluck('resolved_mod_version_id'))
         ->toContain($dependentVersion1_1->id)
@@ -182,7 +182,7 @@ it('handles the case where a dependent mod has no versions available', function 
     ]);
 
     // Verify that no versions were resolved.
-    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+    expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
 });
 
 it('handles a large number of versions efficiently', function (): void {
@@ -190,7 +190,7 @@ it('handles a large number of versions efficiently', function (): void {
     $versionCount = 100;
 
     $dependentMod = Mod::factory()->create();
-    for ($i = 0; $i < $versionCount; ++$i) {
+    for ($i = 0; $i < $versionCount; $i++) {
         ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.'.$i]);
     }
 
@@ -203,7 +203,7 @@ it('handles a large number of versions efficiently', function (): void {
     $executionTime = microtime(true) - $startTime;
 
     // Verify that all versions were resolved and that the execution time is reasonable.
-    expect(ModResolvedDependency::where('mod_version_id', $modVersion->id)->count())->toBe($versionCount)
+    expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->count())->toBe($versionCount)
         ->and($executionTime)->toBeLessThan(5); // Arbitrarily picked out of my ass.
 })->skip('This is a performance test and is skipped by default. It will probably fail.');
 

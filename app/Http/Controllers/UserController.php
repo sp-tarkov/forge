@@ -29,13 +29,9 @@ class UserController extends Controller
             ->paginate(10)
             ->fragment('mods');
 
-        if ($user->slug() !== $username) {
-            abort(404);
-        }
+        abort_if($user->slug() !== $username, 404);
 
-        if ($request->user()?->cannot('view', $user)) {
-            abort(403);
-        }
+        abort_if($request->user()?->cannot('view', $user), 403);
 
         return view('user.show', ['user' => $user, 'mods' => $mods]);
     }

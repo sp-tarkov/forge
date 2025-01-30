@@ -25,7 +25,7 @@ it('creates a new user and attaches the OAuth provider when logging in via OAuth
     $response = $this->get('/login/discord/callback');
 
     // Assert that the user was created
-    $user = User::where('email', 'newuser@example.com')->first();
+    $user = User::query()->where('email', 'newuser@example.com')->first();
     expect($user)->not->toBeNull()
         ->and($user->name)->toBe('New User');
 

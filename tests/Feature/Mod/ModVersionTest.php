@@ -112,7 +112,7 @@ it('includes only published mod versions', function (): void {
         'published_at' => null,
     ]);
 
-    $all = ModVersion::withoutGlobalScopes()->get();
+    $all = ModVersion::query()->withoutGlobalScopes()->get();
     expect($all)->toHaveCount(3);
 
     $mods = ModVersion::all();
@@ -137,7 +137,7 @@ it('updates the parent mods updated_at column when updated', function (): void {
     $originalDate = now()->subDays(10);
     $version = ModVersion::factory()->create(['updated_at' => $originalDate]);
 
-    ++$version->downloads;
+    $version->downloads++;
     $version->save();
 
     $version->refresh();
@@ -175,7 +175,7 @@ it('rate limits download links from being hit', function (): void {
     $modVersion = ModVersion::factory()->recycle($mod)->create(['downloads' => 0]);
 
     // The first 5 requests should be fine.
-    for ($i = 0; $i < 5; ++$i) {
+    for ($i = 0; $i < 5; $i++) {
         $request = $this->get($modVersion->downloadUrl());
         $request->assertStatus(307);
     }

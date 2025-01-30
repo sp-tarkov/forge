@@ -637,7 +637,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         foreach ($userRanks as $userRank) {
             $roleName = Str::ucfirst(Str::afterLast($userRank['title'], '.'));
             $roleData = $this->buildUserRoleData($roleName);
-            UserRole::upsert($roleData, ['name'], ['name', 'short_name', 'description', 'color_class']);
+            UserRole::query()->upsert($roleData, ['name'], ['name', 'short_name', 'description', 'color_class']);
 
             $userRole = UserRole::whereName($roleData['name'])->first();
             $user = User::whereHubId($userRank['hub_id'])->first();
@@ -700,7 +700,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             }, 'followID');
 
         foreach ($followsGroupedByFollower as $followerId => $followings) {
-            $user = User::find($followerId);
+            $user = User::query()->find($followerId);
             if ($user) {
                 $user->following()->sync($followings);
             }
@@ -751,28 +751,20 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
         $response = curl_exec($ch);
 
-        if (curl_errno($ch) !== 0) {
-            throw new Exception('cURL Error: '.curl_error($ch));
-        }
+        throw_if(curl_errno($ch) !== 0, new Exception('cURL Error: '.curl_error($ch)));
 
         curl_close($ch);
 
         $response = (array) json_decode($response, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('JSON Decode Error: '.json_last_error_msg());
-        }
+        throw_if(json_last_error() !== JSON_ERROR_NONE, new Exception('JSON Decode Error: '.json_last_error_msg()));
 
-        if ($response === []) {
-            throw new Exception('No version data found in the GitHub API response.');
-        }
+        throw_if($response === [], new Exception('No version data found in the GitHub API response.'));
 
         // Filter out drafts and pre-releases.
         $response = array_filter($response, fn (array $release): bool => ! $release['draft'] && ! $release['prerelease']);
 
-        if ($response === []) {
-            throw new Exception('No finalized versions found after filtering drafts and pre-releases.');
-        }
+        throw_if($response === [], new Exception('No finalized versions found after filtering drafts and pre-releases.'));
 
         // Ensure that each of the tag_name values has any 'v' prefix trimmed.
         $response = array_map(function (array $release) {
@@ -805,7 +797,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
         // Manually update or create
         foreach ($insertData as $data) {
-            $existingVersion = SptVersion::where('version', $data['version'])->first();
+            $existingVersion = SptVersion::query()->where('version', $data['version'])->first();
             if ($existingVersion) {
                 $existingVersion->update([
                     'link' => $data['link'],
@@ -814,7 +806,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     'updated_at' => $data['updated_at'],
                 ]);
             } else {
-                SptVersion::create($data);
+                SptVersion::query()->create($data);
             }
         }
     }
@@ -916,7 +908,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                         ->pluck('userID')
                         ->toArray();
                     $modAuthors[] = $mod->userID; // Add the primary author to the list.
-                    $modAuthors = User::whereIn('hub_id', $modAuthors)->pluck('id')->toArray(); // Replace with local IDs.
+                    $modAuthors = User::query()->whereIn('hub_id', $modAuthors)->pluck('id')->toArray(); // Replace with local IDs.
 
                     $modContent = DB::table('temp_file_content')
                         ->where('fileID', $mod->fileID)
@@ -980,7 +972,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     // Remove the user_id from the mod data before upserting.
                     $insertModData = array_map(fn ($mod) => Arr::except($mod, 'users'), $modData);
 
-                    Mod::withoutGlobalScopes()->upsert($insertModData, ['hub_id'], [
+                    Mod::query()->withoutGlobalScopes()->upsert($insertModData, ['hub_id'], [
                         'name',
                         'slug',
                         'teaser',
@@ -1094,7 +1086,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                 }
 
                 if (! empty($insertData)) {
-                    ModVersion::withoutGlobalScopes()->upsert($insertData, ['hub_id'], [
+                    ModVersion::query()->withoutGlobalScopes()->upsert($insertData, ['hub_id'], [
                         'mod_id',
                         'version',
                         'description',
@@ -1116,7 +1108,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
      */
     private function removeDeletedMods(): void
     {
-        $mods = Mod::select('hub_id')->get();
+        $mods = Mod::query()->select('hub_id')->get();
         foreach ($mods as $mod) {
             if (DB::connection('mysql_hub')->table('filebase1_file')->where('fileID', $mod->hub_id)->doesntExist()) {
                 $mod->delete();

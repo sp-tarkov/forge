@@ -25,7 +25,7 @@ class ModController extends Controller
     {
         $this->authorize('create', Mod::class);
 
-        return new ModResource(Mod::create($modRequest->validated()));
+        return new ModResource(Mod::query()->create($modRequest->validated()));
     }
 
     public function show(int $modId, string $slug): View
@@ -39,9 +39,7 @@ class ModController extends Controller
             'users',
         ])->findOrFail($modId);
 
-        if ($mod->slug !== $slug) {
-            abort(404);
-        }
+        abort_if($mod->slug !== $slug, 404);
 
         $this->authorize('view', $mod);
 

@@ -31,7 +31,7 @@ class SptVersion extends Model
         $minorVersions = array_column($lastThreeMinorVersions, 'minor');
 
         // Fetch all versions for the last three minor versions with mod count.
-        return self::select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count'])
+        return self::query()->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count'])
             ->join('mod_version_spt_version', 'spt_versions.id', '=', 'mod_version_spt_version.spt_version_id')
             ->join('mod_versions', 'mod_version_spt_version.mod_version_id', '=', 'mod_versions.id')
             ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
@@ -52,7 +52,7 @@ class SptVersion extends Model
      */
     public static function getLastThreeMinorVersions(): array
     {
-        return self::selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
+        return self::query()->selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
             ->where('version', '!=', '0.0.0')
             ->groupBy('version_major', 'version_minor')
             ->orderByDesc('version_major')
@@ -78,9 +78,7 @@ class SptVersion extends Model
         // Perform the regex match to capture the version sections, including the possible preRelease section.
         preg_match('/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9]+))?$/', $version, $matches);
 
-        if ($matches === []) {
-            throw new InvalidVersionNumberException('Invalid SPT version number: '.$version);
-        }
+        throw_if($matches === [], new InvalidVersionNumberException('Invalid SPT version number: '.$version));
 
         return [
             'major' => $matches[1] ?? 0,
@@ -168,7 +166,7 @@ class SptVersion extends Model
      */
     public static function getLatest(): ?SptVersion
     {
-        return Cache::remember('latest_spt_version', 300, fn () => SptVersion::select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
+        return Cache::remember('latest_spt_version', 300, fn () => \App\Models\SptVersion::query()->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')

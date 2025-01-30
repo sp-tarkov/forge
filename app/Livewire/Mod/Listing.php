@@ -163,11 +163,11 @@ class Listing extends Component
     {
         $count = 0;
         if ($this->query !== '') {
-            ++$count;
+            $count++;
         }
 
         if ($this->featured !== 'include') {
-            ++$count;
+            $count++;
         }
 
         return $count + count($this->sptVersions);

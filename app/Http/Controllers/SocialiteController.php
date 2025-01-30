@@ -98,12 +98,12 @@ class SocialiteController extends Controller
 
         return DB::transaction(function () use ($providerUser, $provider, $username) {
 
-            $user = User::firstOrCreate(['email' => $providerUser->getEmail()], [
+            $user = User::query()->firstOrCreate(['email' => $providerUser->getEmail()], [
                 'name' => $username,
                 'password' => null,
             ]);
 
-            $connection = $user->oAuthConnections()->create([
+            $model = $user->oAuthConnections()->create([
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
                 'token' => $providerUser->token ?? '',
@@ -114,7 +114,7 @@ class SocialiteController extends Controller
                 'avatar' => $providerUser->getAvatar() ?? '',
             ]);
 
-            $this->updateAvatar($user, $connection->avatar);
+            $this->updateAvatar($user, $model->avatar);
 
             return $user;
         });

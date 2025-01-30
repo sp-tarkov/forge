@@ -55,7 +55,7 @@ class HomepageMods extends Component
      */
     private function fetchLatestMods(): Collection
     {
-        return Cache::flexible('homepage-latest-mods', [5, 10], fn () => Mod::orderByDesc('created_at')
+        return Cache::flexible('homepage-latest-mods', [5, 10], fn () => Mod::query()->orderByDesc('created_at')
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
@@ -71,7 +71,7 @@ class HomepageMods extends Component
      */
     private function fetchUpdatedMods(): Collection
     {
-        return Cache::flexible('homepage-updated-mods', [5, 10], fn () => Mod::orderByDesc('updated_at')
+        return Cache::flexible('homepage-updated-mods', [5, 10], fn () => Mod::query()->orderByDesc('updated_at')
             ->with([
                 'latestUpdatedVersion',
                 'latestUpdatedVersion.latestSptVersion',

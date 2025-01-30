@@ -44,7 +44,7 @@ class AuthController extends Controller
             return $this->error(__('invalid credentials'), 401);
         }
 
-        $user = User::firstWhere('email', $loginUserRequest->email);
+        $user = User::query()->firstWhere('email', $loginUserRequest->email);
         $tokenName = $loginUserRequest->token_name ?? __('Dynamic API Token');
 
         return $this->success(__('authenticated'), [

@@ -148,7 +148,7 @@ class ModVersion extends Model
      */
     public function incrementDownloads(): int
     {
-        ++$this->downloads;
+        $this->downloads++;
         $this->save();
 
         // Recalculate the total download count for this mod.
