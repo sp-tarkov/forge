@@ -127,9 +127,9 @@ class Mod extends Model
             'description' => $this->description,
             'thumbnail' => $this->thumbnail,
             'featured' => $this->featured,
-            'created_at' => strtotime($this->created_at),
-            'updated_at' => strtotime($this->updated_at),
-            'published_at' => strtotime($this->published_at),
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
+            'published_at' => $this->published_at->timestamp,
             'latestVersion' => $this->latestVersion->latestSptVersion->version_formatted,
             'latestVersionColorClass' => $this->latestVersion->latestSptVersion->color_class,
         ];

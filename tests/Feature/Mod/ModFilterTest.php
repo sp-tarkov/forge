@@ -125,7 +125,7 @@ it('filters mods based featured status', function (): void {
     Mod::factory()->create(['name' => 'SmallFeet']);
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
 
-    $filters = ['featured' => true];
+    $filters = ['featured' => 'only'];
     $filteredMods = (new ModFilter($filters))->apply()->get();
 
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
