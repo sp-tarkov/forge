@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Override;
 
 class ModVersion extends Model
 {
@@ -27,26 +30,27 @@ class ModVersion extends Model
     /**
      * Post boot method to configure the model.
      */
+    #[Override]
     protected static function booted(): void
     {
         static::addGlobalScope(new DisabledScope);
 
         static::addGlobalScope(new PublishedScope);
 
-        static::saving(function (ModVersion $model) {
+        static::saving(function (ModVersion $modVersion): void {
             // Extract the version sections from the version string.
             try {
-                $version = new Version($model->version);
+                $version = new Version($modVersion->version);
 
-                $model->version_major = $version->getMajor();
-                $model->version_minor = $version->getMinor();
-                $model->version_patch = $version->getPatch();
-                $model->version_pre_release = $version->getPreRelease();
-            } catch (InvalidVersionNumberException $e) {
-                $model->version_major = 0;
-                $model->version_minor = 0;
-                $model->version_patch = 0;
-                $model->version_pre_release = '';
+                $modVersion->version_major = $version->getMajor();
+                $modVersion->version_minor = $version->getMinor();
+                $modVersion->version_patch = $version->getPatch();
+                $modVersion->version_pre_release = $version->getPreRelease();
+            } catch (InvalidVersionNumberException) {
+                $modVersion->version_major = 0;
+                $modVersion->version_minor = 0;
+                $modVersion->version_patch = 0;
+                $modVersion->version_pre_release = '';
             }
         });
     }
@@ -93,7 +97,7 @@ class ModVersion extends Model
     {
         return $this->belongsToMany(ModVersion::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
             ->withPivot('dependency_id')
-            ->join('mod_versions as latest_versions', function ($join) {
+            ->join('mod_versions as latest_versions', function ($join): void {
                 $join->on('latest_versions.id', '=', 'mod_versions.id')
                     ->whereRaw('latest_versions.version = (SELECT MAX(mv.version) FROM mod_versions mv WHERE mv.mod_id = mod_versions.mod_id)');
             })
@@ -144,7 +148,7 @@ class ModVersion extends Model
      */
     public function incrementDownloads(): int
     {
-        $this->downloads++;
+        ++$this->downloads;
         $this->save();
 
         // Recalculate the total download count for this mod.

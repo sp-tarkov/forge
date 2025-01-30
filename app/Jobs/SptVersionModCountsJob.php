@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Models\SptVersion;
@@ -12,14 +14,17 @@ use Illuminate\Queue\SerializesModels;
 
 class SptVersionModCountsJob implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Recalculate the mod counts for each SPT version.
      */
     public function handle(): void
     {
-        SptVersion::all()->each(function (SptVersion $sptVersion) {
+        SptVersion::all()->each(function (SptVersion $sptVersion): void {
             $sptVersion->updateModCount();
         });
     }

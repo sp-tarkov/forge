@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
@@ -7,6 +9,7 @@ use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Override;
 
 class Mod extends Model
 {
@@ -28,6 +32,7 @@ class Mod extends Model
     /**
      * Post boot method to configure the model.
      */
+    #[Override]
     protected static function booted(): void
     {
         static::addGlobalScope(new DisabledScope);
@@ -162,15 +167,10 @@ class Mod extends Model
         }
 
         // Ensure the latest SPT version is within the last three minor versions.
-        $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, function () {
-            return SptVersion::getVersionsForLastThreeMinors();
-        });
-        if (! in_array($this->latestVersion->latestSptVersion->version, $activeSptVersions->pluck('version')->toArray())) {
-            return false;
-        }
+        $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
 
         // All conditions are met; the mod should be searchable.
-        return true;
+        return in_array($this->latestVersion->latestSptVersion->version, $activeSptVersions->pluck('version')->toArray());
     }
 
     /**
@@ -196,11 +196,9 @@ class Mod extends Model
      */
     public function thumbnailUrl(): Attribute
     {
-        return Attribute::get(function (): string {
-            return $this->thumbnail
-                ? Storage::disk($this->thumbnailDisk())->url($this->thumbnail)
-                : '';
-        });
+        return Attribute::get(fn (): string => $this->thumbnail
+            ? Storage::disk($this->thumbnailDisk())->url($this->thumbnail)
+            : '');
     }
 
     /**
@@ -217,9 +215,9 @@ class Mod extends Model
     /**
      * Scope a query by applying QueryFilter filters.
      */
-    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    public function scopeFilter(Builder $builder, QueryFilter $queryFilter): Builder
     {
-        return $filters->apply($builder);
+        return $queryFilter->apply($builder);
     }
 
     /**

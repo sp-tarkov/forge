@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\View\Components;
 
 use App\Models\Mod;
@@ -36,18 +38,16 @@ class HomepageMods extends Component
      */
     private function fetchFeaturedMods(): Collection
     {
-        return Cache::flexible('homepage-featured-mods', [5, 10], function () {
-            return Mod::whereFeatured(true)
-                ->with([
-                    'latestVersion',
-                    'latestVersion.latestSptVersion',
-                    'users:id,name',
-                    'license:id,name,link',
-                ])
-                ->inRandomOrder()
-                ->limit(6)
-                ->get();
-        });
+        return Cache::flexible('homepage-featured-mods', [5, 10], fn () => Mod::whereFeatured(true)
+            ->with([
+                'latestVersion',
+                'latestVersion.latestSptVersion',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->inRandomOrder()
+            ->limit(6)
+            ->get());
     }
 
     /**
@@ -55,17 +55,15 @@ class HomepageMods extends Component
      */
     private function fetchLatestMods(): Collection
     {
-        return Cache::flexible('homepage-latest-mods', [5, 10], function () {
-            return Mod::orderByDesc('created_at')
-                ->with([
-                    'latestVersion',
-                    'latestVersion.latestSptVersion',
-                    'users:id,name',
-                    'license:id,name,link',
-                ])
-                ->limit(6)
-                ->get();
-        });
+        return Cache::flexible('homepage-latest-mods', [5, 10], fn () => Mod::orderByDesc('created_at')
+            ->with([
+                'latestVersion',
+                'latestVersion.latestSptVersion',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->limit(6)
+            ->get());
     }
 
     /**
@@ -73,16 +71,14 @@ class HomepageMods extends Component
      */
     private function fetchUpdatedMods(): Collection
     {
-        return Cache::flexible('homepage-updated-mods', [5, 10], function () {
-            return Mod::orderByDesc('updated_at')
-                ->with([
-                    'latestUpdatedVersion',
-                    'latestUpdatedVersion.latestSptVersion',
-                    'users:id,name',
-                    'license:id,name,link',
-                ])
-                ->limit(6)
-                ->get();
-        });
+        return Cache::flexible('homepage-updated-mods', [5, 10], fn () => Mod::orderByDesc('updated_at')
+            ->with([
+                'latestUpdatedVersion',
+                'latestUpdatedVersion.latestSptVersion',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->limit(6)
+            ->get());
     }
 }

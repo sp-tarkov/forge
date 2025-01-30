@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Filters\V1;
 
 use Illuminate\Database\Eloquent\Builder;

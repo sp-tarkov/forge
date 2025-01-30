@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Filters;
 
 use App\Models\Mod;
@@ -14,16 +16,13 @@ class ModFilter
     protected Builder $builder;
 
     /**
-     * The filters to apply.
-     */
-    protected array $filters;
-
-    /**
      * Create a new ModFilter instance.
      */
-    public function __construct(array $filters)
+    public function __construct(/**
+     * The filters to apply.
+     */
+        protected array $filters)
     {
-        $this->filters = $filters;
         $this->builder = $this->baseQuery();
     }
 
@@ -34,7 +33,7 @@ class ModFilter
     {
         return Mod::query()
             ->select('mods.*')
-            ->whereExists(function ($query) {
+            ->whereExists(function ($query): void {
                 $query->select(DB::raw(1))
                     ->from('mod_versions')
                     ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
@@ -54,7 +53,7 @@ class ModFilter
      */
     private function query(string $term): Builder
     {
-        return $this->builder->whereLike('mods.name', "%{$term}%");
+        return $this->builder->whereLike('mods.name', sprintf('%%%s%%', $term));
     }
 
     /**
@@ -100,7 +99,7 @@ class ModFilter
      */
     private function sptVersions(array $versions): Builder
     {
-        return $this->builder->whereExists(function ($query) use ($versions) {
+        return $this->builder->whereExists(function ($query) use ($versions): void {
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')

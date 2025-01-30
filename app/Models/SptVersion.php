@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
@@ -10,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
+use Override;
 
 class SptVersion extends Model
 {
@@ -56,12 +59,10 @@ class SptVersion extends Model
             ->orderByDesc('version_minor')
             ->limit(3)
             ->get()
-            ->map(function (SptVersion $version) {
-                return [
-                    'major' => (int) $version->version_major,
-                    'minor' => (int) $version->version_minor,
-                ];
-            })
+            ->map(fn (SptVersion $sptVersion): array => [
+                'major' => (int) $sptVersion->version_major,
+                'minor' => (int) $sptVersion->version_minor,
+            ])
             ->toArray();
     }
 
@@ -77,7 +78,7 @@ class SptVersion extends Model
         // Perform the regex match to capture the version sections, including the possible preRelease section.
         preg_match('/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9]+))?$/', $version, $matches);
 
-        if (! $matches) {
+        if ($matches === []) {
             throw new InvalidVersionNumberException('Invalid SPT version number: '.$version);
         }
 
@@ -92,22 +93,23 @@ class SptVersion extends Model
     /**
      * Called when the model is booted.
      */
+    #[Override]
     protected static function booted(): void
     {
-        static::saving(function (SptVersion $model) {
+        static::saving(function (SptVersion $sptVersion): void {
             // Extract the version sections from the version string.
             try {
-                $version = new Version($model->version);
+                $version = new Version($sptVersion->version);
 
-                $model->version_major = $version->getMajor();
-                $model->version_minor = $version->getMinor();
-                $model->version_patch = $version->getPatch();
-                $model->version_pre_release = $version->getPreRelease();
-            } catch (InvalidVersionNumberException $e) {
-                $model->version_major = 0;
-                $model->version_minor = 0;
-                $model->version_patch = 0;
-                $model->version_pre_release = '';
+                $sptVersion->version_major = $version->getMajor();
+                $sptVersion->version_minor = $version->getMinor();
+                $sptVersion->version_patch = $version->getPatch();
+                $sptVersion->version_pre_release = $version->getPreRelease();
+            } catch (InvalidVersionNumberException) {
+                $sptVersion->version_major = 0;
+                $sptVersion->version_minor = 0;
+                $sptVersion->version_patch = 0;
+                $sptVersion->version_pre_release = '';
             }
         });
     }
@@ -152,7 +154,7 @@ class SptVersion extends Model
     {
         $latestVersion = self::getLatest();
 
-        if (! $latestVersion) {
+        if (! $latestVersion instanceof \App\Models\SptVersion) {
             return false;
         }
 
@@ -166,13 +168,11 @@ class SptVersion extends Model
      */
     public static function getLatest(): ?SptVersion
     {
-        return Cache::remember('latest_spt_version', 300, function () {
-            return SptVersion::select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
-                ->orderByDesc('version_major')
-                ->orderByDesc('version_minor')
-                ->orderByDesc('version_patch')
-                ->first();
-        });
+        return Cache::remember('latest_spt_version', 300, fn () => SptVersion::select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->first());
     }
 
     /**

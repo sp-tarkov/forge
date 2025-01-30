@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Filters\V1;
 
 use App\Traits\V1\FilterMethods;
@@ -19,11 +21,6 @@ abstract class QueryFilter
     protected Builder $builder;
 
     /**
-     * The request instance.
-     */
-    protected Request $request;
-
-    /**
      * The sortable fields.
      */
     protected array $sortable = [];
@@ -31,10 +28,12 @@ abstract class QueryFilter
     /**
      * Create a new QueryFilter instance.
      */
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
+    public function __construct(
+        /**
+         * The request instance.
+         */
+        protected Request $request
+    ) {}
 
     /**
      * Iterate over each of the filter options and call the appropriate method if it exists.

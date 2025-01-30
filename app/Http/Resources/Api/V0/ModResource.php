@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources\Api\V0;
 
 use App\Http\Controllers\Api\V0\ApiController;
 use App\Models\Mod;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Override;
 
 /** @mixin Mod */
 class ModResource extends JsonResource
@@ -13,6 +16,7 @@ class ModResource extends JsonResource
     /**
      * Transform the resource into an array.
      */
+    #[Override]
     public function toArray(Request $request): array
     {
         $this->load(['users', 'versions', 'license']);
@@ -39,7 +43,7 @@ class ModResource extends JsonResource
                 'published_at' => $this->published_at,
             ],
             'relationships' => [
-                'users' => $this->users->map(fn ($user) => [
+                'users' => $this->users->map(fn ($user): array => [
                     'data' => [
                         'type' => 'user',
                         'id' => $user->id,
@@ -48,7 +52,7 @@ class ModResource extends JsonResource
                         'self' => $user->profileUrl(),
                     ],
                 ])->toArray(),
-                'versions' => $this->versions->map(fn ($version) => [
+                'versions' => $this->versions->map(fn ($version): array => [
                     'data' => [
                         'type' => 'version',
                         'id' => $version->id,
@@ -70,11 +74,11 @@ class ModResource extends JsonResource
             'includes' => $this->when(
                 ApiController::shouldInclude(['users', 'license', 'versions']),
                 fn () => collect([
-                    'users' => $this->users->map(fn ($user) => new UserResource($user)),
+                    'users' => $this->users->map(fn ($user): UserResource => new UserResource($user)),
                     'license' => new LicenseResource($this->license),
-                    'versions' => $this->versions->map(fn ($version) => new ModVersionResource($version)),
+                    'versions' => $this->versions->map(fn ($version): ModVersionResource => new ModVersionResource($version)),
                 ])
-                    ->filter(fn ($value, $key) => ApiController::shouldInclude($key))
+                    ->filter(fn ($value, $key): bool => ApiController::shouldInclude($key))
                     ->flatten(1)
                     ->values()
             ),

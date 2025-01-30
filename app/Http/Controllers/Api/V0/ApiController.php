@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V0;
 
 use App\Http\Controllers\Controller;
@@ -17,7 +19,7 @@ class ApiController extends Controller
     {
         try {
             $param = request()->get('include');
-        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+        } catch (NotFoundExceptionInterface|ContainerExceptionInterface) {
             return false;
         }
 

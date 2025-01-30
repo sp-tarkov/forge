@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Profile;
 
 use Illuminate\Http\RedirectResponse;
@@ -7,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Laravel\Jetstream\Http\Livewire\UpdateProfileInformationForm;
 use Livewire\Features\SupportRedirects\Redirector;
+use Override;
 
 class UpdateProfileForm extends UpdateProfileInformationForm
 {
@@ -38,11 +41,12 @@ class UpdateProfileForm extends UpdateProfileInformationForm
     /**
      * Update the user's profile information.
      */
-    public function updateProfileInformation(UpdatesUserProfileInformation $updater): RedirectResponse|Redirector|null
+    #[Override]
+    public function updateProfileInformation(UpdatesUserProfileInformation $updatesUserProfileInformation): RedirectResponse|Redirector|null
     {
         $this->resetErrorBag();
 
-        $updater->update(
+        $updatesUserProfileInformation->update(
             Auth::user(),
             $this->photo || $this->cover
                 ? array_merge($this->state, array_filter([
@@ -51,7 +55,7 @@ class UpdateProfileForm extends UpdateProfileInformationForm
                 ])) : $this->state
         );
 
-        if (isset($this->photo) || isset($this->cover)) {
+        if ($this->photo !== null || $this->cover !== null) {
             return redirect()->route('profile.show');
         }
 

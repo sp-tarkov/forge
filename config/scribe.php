@@ -1,6 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 use Knuckles\Scribe\Extracting\Strategies;
+use Knuckles\Scribe\Extracting\Strategies\BodyParameters\GetFromBodyParamAttribute;
+use Knuckles\Scribe\Extracting\Strategies\BodyParameters\GetFromBodyParamTag;
+use Knuckles\Scribe\Extracting\Strategies\Headers\GetFromHeaderAttribute;
+use Knuckles\Scribe\Extracting\Strategies\Headers\GetFromHeaderTag;
+use Knuckles\Scribe\Extracting\Strategies\Metadata\GetFromDocBlocks;
+use Knuckles\Scribe\Extracting\Strategies\Metadata\GetFromMetadataAttributes;
+use Knuckles\Scribe\Extracting\Strategies\QueryParameters\GetFromFormRequest;
+use Knuckles\Scribe\Extracting\Strategies\QueryParameters\GetFromInlineValidator;
+use Knuckles\Scribe\Extracting\Strategies\QueryParameters\GetFromQueryParamAttribute;
+use Knuckles\Scribe\Extracting\Strategies\QueryParameters\GetFromQueryParamTag;
+use Knuckles\Scribe\Extracting\Strategies\ResponseFields\GetFromResponseFieldAttribute;
+use Knuckles\Scribe\Extracting\Strategies\ResponseFields\GetFromResponseFieldTag;
+use Knuckles\Scribe\Extracting\Strategies\Responses\ResponseCalls;
+use Knuckles\Scribe\Extracting\Strategies\Responses\UseApiResourceTags;
+use Knuckles\Scribe\Extracting\Strategies\Responses\UseResponseAttributes;
+use Knuckles\Scribe\Extracting\Strategies\Responses\UseResponseFileTag;
+use Knuckles\Scribe\Extracting\Strategies\Responses\UseResponseTag;
+use Knuckles\Scribe\Extracting\Strategies\Responses\UseTransformerTags;
+use Knuckles\Scribe\Extracting\Strategies\UrlParameters\GetFromLaravelAPI;
+use Knuckles\Scribe\Extracting\Strategies\UrlParameters\GetFromUrlParamAttribute;
+use Knuckles\Scribe\Extracting\Strategies\UrlParameters\GetFromUrlParamTag;
+use Knuckles\Scribe\Matching\RouteMatcher;
 
 return [
     // The HTML <title> for the generated documentation. If this is empty, Scribe will infer it from config('app.name').
@@ -201,23 +225,23 @@ INTRO
     // If you create or install a custom strategy, add it here.
     'strategies' => [
         'metadata' => [
-            Strategies\Metadata\GetFromDocBlocks::class,
-            Strategies\Metadata\GetFromMetadataAttributes::class,
+            GetFromDocBlocks::class,
+            GetFromMetadataAttributes::class,
         ],
         'urlParameters' => [
-            Strategies\UrlParameters\GetFromLaravelAPI::class,
-            Strategies\UrlParameters\GetFromUrlParamAttribute::class,
-            Strategies\UrlParameters\GetFromUrlParamTag::class,
+            GetFromLaravelAPI::class,
+            GetFromUrlParamAttribute::class,
+            GetFromUrlParamTag::class,
         ],
         'queryParameters' => [
-            Strategies\QueryParameters\GetFromFormRequest::class,
-            Strategies\QueryParameters\GetFromInlineValidator::class,
-            Strategies\QueryParameters\GetFromQueryParamAttribute::class,
-            Strategies\QueryParameters\GetFromQueryParamTag::class,
+            GetFromFormRequest::class,
+            GetFromInlineValidator::class,
+            GetFromQueryParamAttribute::class,
+            GetFromQueryParamTag::class,
         ],
         'headers' => [
-            Strategies\Headers\GetFromHeaderAttribute::class,
-            Strategies\Headers\GetFromHeaderTag::class,
+            GetFromHeaderAttribute::class,
+            GetFromHeaderTag::class,
             [
                 'override',
                 [
@@ -229,17 +253,17 @@ INTRO
         'bodyParameters' => [
             Strategies\BodyParameters\GetFromFormRequest::class,
             Strategies\BodyParameters\GetFromInlineValidator::class,
-            Strategies\BodyParameters\GetFromBodyParamAttribute::class,
-            Strategies\BodyParameters\GetFromBodyParamTag::class,
+            GetFromBodyParamAttribute::class,
+            GetFromBodyParamTag::class,
         ],
         'responses' => [
-            Strategies\Responses\UseResponseAttributes::class,
-            Strategies\Responses\UseTransformerTags::class,
-            Strategies\Responses\UseApiResourceTags::class,
-            Strategies\Responses\UseResponseTag::class,
-            Strategies\Responses\UseResponseFileTag::class,
+            UseResponseAttributes::class,
+            UseTransformerTags::class,
+            UseApiResourceTags::class,
+            UseResponseTag::class,
+            UseResponseFileTag::class,
             [
-                Strategies\Responses\ResponseCalls::class,
+                ResponseCalls::class,
                 [
                     'only' => ['GET *'],
                     // Disable debug mode when generating response calls to avoid error stack traces in responses
@@ -250,8 +274,8 @@ INTRO
             ],
         ],
         'responseFields' => [
-            Strategies\ResponseFields\GetFromResponseFieldAttribute::class,
-            Strategies\ResponseFields\GetFromResponseFieldTag::class,
+            GetFromResponseFieldAttribute::class,
+            GetFromResponseFieldTag::class,
         ],
     ],
 
@@ -265,5 +289,5 @@ INTRO
         'serializer' => null,
     ],
 
-    'routeMatcher' => \Knuckles\Scribe\Matching\RouteMatcher::class,
+    'routeMatcher' => RouteMatcher::class,
 ];

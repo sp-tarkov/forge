@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V0;
 
 use App\Http\Filters\V1\UserFilter;
@@ -24,9 +26,9 @@ class UsersController extends ApiController
     #[QueryParam('filter[created_at]', 'string', 'Filter by the `created_at` attribute. Ranges are possible by separating the dates with a comma.', required: false, example: '2023-12-31,2024-12-31')]
     #[QueryParam('filter[updated_at]', 'string', 'Filter by the `updated_at` attribute. Ranges are possible by separating the dates with a comma.', required: false, example: '2023-12-31,2024-12-31')]
     #[QueryParam('sort', 'string', 'Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC.', required: false, example: 'created_at,-name')]
-    public function index(UserFilter $filters): AnonymousResourceCollection
+    public function index(UserFilter $userFilter): AnonymousResourceCollection
     {
-        return UserResource::collection(User::filter($filters)->paginate());
+        return UserResource::collection(User::filter($userFilter)->paginate());
     }
 
     /**

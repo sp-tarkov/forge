@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\Mod;
@@ -78,8 +80,6 @@ class GlobalSearch extends Component
      */
     protected function countTotalResults(array $results): int
     {
-        return collect($results)->reduce(function (int $carry, Collection $result) {
-            return $carry + $result->count();
-        }, 0);
+        return collect($results)->reduce(fn (int $carry, Collection $result): int => $carry + $result->count(), 0);
     }
 }

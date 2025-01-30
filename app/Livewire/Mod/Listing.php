@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Mod;
 
 use App\Http\Filters\ModFilter;
@@ -72,11 +74,9 @@ class Listing extends Component
      */
     public function mount(): void
     {
-        $this->activeSptVersions = $this->activeSptVersions ?? Cache::remember('active-spt-versions', 60 * 60, function () {
-            return SptVersion::getVersionsForLastThreeMinors();
-        });
+        $this->activeSptVersions ??= Cache::remember('active-spt-versions', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
 
-        $this->sptVersions = $this->sptVersions ?? $this->getDefaultSptVersions();
+        $this->sptVersions ??= $this->getDefaultSptVersions();
     }
 
     /**
@@ -92,9 +92,7 @@ class Listing extends Component
      */
     public function getLatestMinorVersions(): Collection
     {
-        return $this->activeSptVersions->filter(function (SptVersion $sptVersion) {
-            return $sptVersion->isLatestMinor();
-        });
+        return $this->activeSptVersions->filter(fn (SptVersion $sptVersion): bool => $sptVersion->isLatestMinor());
     }
 
     /**
@@ -112,11 +110,11 @@ class Listing extends Component
             'sptVersions' => $this->sptVersions,
         ];
 
-        $mods = (new ModFilter($filters))->apply()->paginate($this->perPage);
+        $lengthAwarePaginator = (new ModFilter($filters))->apply()->paginate($this->perPage);
 
-        $this->redirectOutOfBoundsPage($mods);
+        $this->redirectOutOfBoundsPage($lengthAwarePaginator);
 
-        return view('livewire.mod.listing', compact('mods'));
+        return view('livewire.mod.listing', ['mods' => $mods]);
     }
 
     /**
@@ -140,10 +138,10 @@ class Listing extends Component
     /**
      * Check if the current page is greater than the last page. Redirect if it is.
      */
-    private function redirectOutOfBoundsPage(LengthAwarePaginator $mods): void
+    private function redirectOutOfBoundsPage(LengthAwarePaginator $lengthAwarePaginator): void
     {
-        if ($mods->currentPage() > $mods->lastPage()) {
-            $this->redirectRoute('mods', ['page' => $mods->lastPage()]);
+        if ($lengthAwarePaginator->currentPage() > $lengthAwarePaginator->lastPage()) {
+            $this->redirectRoute('mods', ['page' => $lengthAwarePaginator->lastPage()]);
         }
     }
 
@@ -165,13 +163,13 @@ class Listing extends Component
     {
         $count = 0;
         if ($this->query !== '') {
-            $count++;
+            ++$count;
         }
-        if ($this->featured !== 'include') {
-            $count++;
-        }
-        $count += count($this->sptVersions);
 
-        return $count;
+        if ($this->featured !== 'include') {
+            ++$count;
+        }
+
+        return $count + count($this->sptVersions);
     }
 }

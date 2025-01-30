@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\ModVersion;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Override;
 
 /** @mixin ModVersion */
 class ModVersionResource extends JsonResource
@@ -12,6 +15,7 @@ class ModVersionResource extends JsonResource
     /**
      * Transform the resource into an array.
      */
+    #[Override]
     public function toArray(Request $request): array
     {
         return [
@@ -23,10 +27,10 @@ class ModVersionResource extends JsonResource
                 'version' => $this->version,
 
                 // TODO: This should only be visible on the mod version show route(?) which doesn't exist.
-                //'description' => $this->when(
+                // 'description' => $this->when(
                 //    $request->routeIs('api.v0.modversion.show'),
                 //    $this->description
-                //),
+                // ),
 
                 'link' => $this->downloadUrl(absolute: true),
                 'virus_total_link' => $this->virus_total_link,

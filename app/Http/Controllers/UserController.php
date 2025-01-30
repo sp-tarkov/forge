@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -35,6 +37,6 @@ class UserController extends Controller
             abort(403);
         }
 
-        return view('user.show', compact('user', 'mods'));
+        return view('user.show', ['user' => $user, 'mods' => $mods]);
     }
 }

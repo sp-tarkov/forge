@@ -1,23 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 
-it('creates a new user and attaches the OAuth provider when logging in via OAuth', function () {
+it('creates a new user and attaches the OAuth provider when logging in via OAuth', function (): void {
     // Mock the Socialite user
-    $socialiteUser = Mockery::mock(SocialiteUser::class);
-    $socialiteUser->shouldReceive('getId')->andReturn('provider-user-id');
-    $socialiteUser->shouldReceive('getEmail')->andReturn('newuser@example.com');
-    $socialiteUser->shouldReceive('getName')->andReturn('New User');
-    $socialiteUser->shouldReceive('getNickname')->andReturn(null);
-    $socialiteUser->shouldReceive('getAvatar')->andReturn('avatar-url');
-    $socialiteUser->token = 'access-token';
-    $socialiteUser->refreshToken = 'refresh-token';
+    $mock = Mockery::mock(SocialiteUser::class);
+    $mock->shouldReceive('getId')->andReturn('provider-user-id');
+    $mock->shouldReceive('getEmail')->andReturn('newuser@example.com');
+    $mock->shouldReceive('getName')->andReturn('New User');
+    $mock->shouldReceive('getNickname')->andReturn(null);
+    $mock->shouldReceive('getAvatar')->andReturn('avatar-url');
+    $mock->token = 'access-token';
+    $mock->refreshToken = 'refresh-token';
 
     // Mock Socialite facade
-    Socialite::shouldReceive('driver->user')->andReturn($socialiteUser);
+    Socialite::shouldReceive('driver->user')->andReturn($mock);
 
     // Hit the callback route
     $response = $this->get('/login/discord/callback');
@@ -39,7 +41,7 @@ it('creates a new user and attaches the OAuth provider when logging in via OAuth
     $response->assertRedirect(route('dashboard'));
 });
 
-it('attaches a new OAuth provider to an existing user when logging in via OAuth', function () {
+it('attaches a new OAuth provider to an existing user when logging in via OAuth', function (): void {
     // Create an existing user
     $user = User::factory()->create([
         'email' => 'existinguser@example.com',
@@ -48,17 +50,17 @@ it('attaches a new OAuth provider to an existing user when logging in via OAuth'
     ]);
 
     // Mock the Socialite user
-    $socialiteUser = Mockery::mock(SocialiteUser::class);
-    $socialiteUser->shouldReceive('getId')->andReturn('new-provider-user-id');
-    $socialiteUser->shouldReceive('getEmail')->andReturn('existinguser@example.com');
-    $socialiteUser->shouldReceive('getName')->andReturn('Existing User Updated');
-    $socialiteUser->shouldReceive('getNickname')->andReturn(null);
-    $socialiteUser->shouldReceive('getAvatar')->andReturn('new-avatar-url');
-    $socialiteUser->token = 'new-access-token';
-    $socialiteUser->refreshToken = 'new-refresh-token';
+    $mock = Mockery::mock(SocialiteUser::class);
+    $mock->shouldReceive('getId')->andReturn('new-provider-user-id');
+    $mock->shouldReceive('getEmail')->andReturn('existinguser@example.com');
+    $mock->shouldReceive('getName')->andReturn('Existing User Updated');
+    $mock->shouldReceive('getNickname')->andReturn(null);
+    $mock->shouldReceive('getAvatar')->andReturn('new-avatar-url');
+    $mock->token = 'new-access-token';
+    $mock->refreshToken = 'new-refresh-token';
 
     // Mock Socialite facade
-    Socialite::shouldReceive('driver->user')->andReturn($socialiteUser);
+    Socialite::shouldReceive('driver->user')->andReturn($mock);
 
     // Hit the callback route
     $response = $this->get('/login/discord/callback');
@@ -82,7 +84,7 @@ it('attaches a new OAuth provider to an existing user when logging in via OAuth'
     $response->assertRedirect(route('dashboard'));
 });
 
-it('hides the current password field when the user has no password', function () {
+it('hides the current password field when the user has no password', function (): void {
     // Create a user with no password
     $user = User::factory()->create([
         'password' => null,
@@ -98,7 +100,7 @@ it('hides the current password field when the user has no password', function ()
     $response->assertDontSee(__('Current Password'));
 });
 
-it('shows the current password field when the user has a password', function () {
+it('shows the current password field when the user has a password', function (): void {
     // Create a user with a password
     $user = User::factory()->create([
         'password' => bcrypt('password123'),
@@ -114,7 +116,7 @@ it('shows the current password field when the user has a password', function () 
     $response->assertSee(__('Current Password'));
 });
 
-it('allows a user without a password to set a new password without entering the current password', function () {
+it('allows a user without a password to set a new password without entering the current password', function (): void {
     // Create a user with a NULL password
     $user = User::factory()->create([
         'password' => null,
@@ -136,7 +138,7 @@ it('allows a user without a password to set a new password without entering the 
     expect(Hash::check('newpassword123', $user->password))->toBeTrue();
 });
 
-it('requires a user with a password to enter the current password to set a new password', function () {
+it('requires a user with a password to enter the current password to set a new password', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('oldpassword'),
     ]);

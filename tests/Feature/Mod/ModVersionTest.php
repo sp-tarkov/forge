@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -8,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
-it('resolves spt versions when mod version is created', function () {
+it('resolves spt versions when mod version is created', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
     SptVersion::factory()->create(['version' => '1.1.0']);
     SptVersion::factory()->create(['version' => '1.1.1']);
@@ -24,7 +26,7 @@ it('resolves spt versions when mod version is created', function () {
         ->and($sptVersions->pluck('version'))->toContain('1.1.0', '1.1.1');
 });
 
-it('resolves spt versions when constraint is updated', function () {
+it('resolves spt versions when constraint is updated', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
     SptVersion::factory()->create(['version' => '1.1.0']);
     SptVersion::factory()->create(['version' => '1.1.1']);
@@ -50,7 +52,7 @@ it('resolves spt versions when constraint is updated', function () {
         ->and($sptVersions->pluck('version'))->toContain('1.2.0');
 });
 
-it('resolves spt versions when spt version is created', function () {
+it('resolves spt versions when spt version is created', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
     SptVersion::factory()->create(['version' => '1.1.0']);
     SptVersion::factory()->create(['version' => '1.1.1']);
@@ -75,7 +77,7 @@ it('resolves spt versions when spt version is created', function () {
         ->and($sptVersions->pluck('version'))->toContain('1.1.0', '1.1.1', '1.1.2');
 });
 
-it('resolves spt versions when spt version is deleted', function () {
+it('resolves spt versions when spt version is deleted', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
     SptVersion::factory()->create(['version' => '1.1.0']);
     SptVersion::factory()->create(['version' => '1.1.1']);
@@ -84,6 +86,7 @@ it('resolves spt versions when spt version is deleted', function () {
     $modVersion = ModVersion::factory()->create(['spt_version_constraint' => '~1.1.0']);
 
     $modVersion->refresh();
+
     $sptVersions = $modVersion->sptVersions;
 
     expect($sptVersions)->toHaveCount(3)
@@ -98,7 +101,7 @@ it('resolves spt versions when spt version is deleted', function () {
         ->and($sptVersions->pluck('version'))->toContain('1.1.0', '1.1.1');
 });
 
-it('includes only published mod versions', function () {
+it('includes only published mod versions', function (): void {
     $publishedMod = ModVersion::factory()->create([
         'published_at' => Carbon::now()->subDay(),
     ]);
@@ -120,7 +123,7 @@ it('includes only published mod versions', function () {
         ->and($mods->contains($noPublishedDateMod))->toBeFalse();
 });
 
-it('handles null published_at as not published', function () {
+it('handles null published_at as not published', function (): void {
     $modWithNoPublishDate = ModVersion::factory()->create([
         'published_at' => null,
     ]);
@@ -130,11 +133,11 @@ it('handles null published_at as not published', function () {
     expect($mods->contains($modWithNoPublishDate))->toBeFalse();
 });
 
-it('updates the parent mods updated_at column when updated', function () {
+it('updates the parent mods updated_at column when updated', function (): void {
     $originalDate = now()->subDays(10);
     $version = ModVersion::factory()->create(['updated_at' => $originalDate]);
 
-    $version->downloads++;
+    ++$version->downloads;
     $version->save();
 
     $version->refresh();
@@ -143,18 +146,18 @@ it('updates the parent mods updated_at column when updated', function () {
         ->and($version->mod->updated_at->format('Y-m-d'))->toEqual(now()->format('Y-m-d'));
 });
 
-it('builds download links using the specified version', function () {
+it('builds download links using the specified version', function (): void {
     $mod = Mod::factory()->create(['id' => 1, 'slug' => 'test-mod']);
     $modVersion1 = ModVersion::factory()->recycle($mod)->create(['version' => '1.2.3']);
     $modVersion2 = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.0']);
     $modVersion3 = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.4']);
 
-    expect($modVersion1->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion1->version")
-        ->and($modVersion2->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion2->version")
-        ->and($modVersion3->downloadUrl())->toEqual("/mod/download/$mod->id/$mod->slug/$modVersion3->version");
+    expect($modVersion1->downloadUrl())->toEqual(sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion1->version))
+        ->and($modVersion2->downloadUrl())->toEqual(sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion2->version))
+        ->and($modVersion3->downloadUrl())->toEqual(sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion3->version));
 });
 
-it('increments download counts when downloaded', function () {
+it('increments download counts when downloaded', function (): void {
     $mod = Mod::factory()->create(['downloads' => 0]);
     $modVersion = ModVersion::factory()->recycle($mod)->create(['downloads' => 0]);
 
@@ -167,12 +170,12 @@ it('increments download counts when downloaded', function () {
         ->and($modVersion->mod->downloads)->toEqual(1);
 });
 
-it('rate limits download links from being hit', function () {
+it('rate limits download links from being hit', function (): void {
     $mod = Mod::factory()->create(['downloads' => 0]);
     $modVersion = ModVersion::factory()->recycle($mod)->create(['downloads' => 0]);
 
     // The first 5 requests should be fine.
-    for ($i = 0; $i < 5; $i++) {
+    for ($i = 0; $i < 5; ++$i) {
         $request = $this->get($modVersion->downloadUrl());
         $request->assertStatus(307);
     }

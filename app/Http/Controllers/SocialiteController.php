@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\OAuthConnection;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -50,7 +53,7 @@ class SocialiteController extends Controller
 
         try {
             $providerUser = Socialite::driver($provider)->user();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             return redirect()->route('login')->withErrors('Unable to login using '.$provider.'. Please try again.');
         }
 
@@ -86,6 +89,7 @@ class SocialiteController extends Controller
         while (User::whereName($username.$random)->exists()) {
             $random = '-'.Str::random(5);
         }
+
         $username .= $random;
 
         // The user has not connected their account with this OAuth provider before, so a new connection needs to be

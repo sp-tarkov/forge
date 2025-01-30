@@ -16,6 +16,9 @@ return RectorConfig::configure()
         __DIR__.'/routes',
         __DIR__.'/tests',
     ])
+    ->withSkip([
+        __DIR__.'*.blade.php',
+    ])
     ->withCache(
         cacheDirectory: '.rector/cache',
         cacheClass: FileCacheStorage::class
@@ -30,4 +33,5 @@ return RectorConfig::configure()
         rectorPreset: true,
     )
     ->withPhpSets()
-    ->withImportNames(removeUnusedImports: true);
+    ->withImportNames(removeUnusedImports: true)
+    ->withAttributesSets();

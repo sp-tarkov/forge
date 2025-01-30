@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
@@ -21,6 +23,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
+use SensitiveParameter;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -169,7 +172,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Overwritten to instead use the queued version of the ResetPassword notification.
      */
-    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    public function sendPasswordResetNotification(#[SensitiveParameter] $token): void
     {
         $this->notify(new ResetPassword($token));
     }
@@ -196,9 +199,9 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Assign a role to the user.
      */
-    public function assignRole(UserRole $role): bool
+    public function assignRole(UserRole $userRole): bool
     {
-        $this->role()->associate($role);
+        $this->role()->associate($userRole);
 
         return $this->save();
     }
@@ -216,9 +219,9 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Scope a query by applying QueryFilter filters.
      */
-    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    public function scopeFilter(Builder $builder, QueryFilter $queryFilter): Builder
     {
-        return $filters->apply($builder);
+        return $queryFilter->apply($builder);
     }
 
     /**

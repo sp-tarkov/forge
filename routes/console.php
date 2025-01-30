@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Console\Commands\ImportHubCommand;
 use App\Console\Commands\ResolveVersionsCommand;
 use App\Console\Commands\SptVersionModCountsCommand;

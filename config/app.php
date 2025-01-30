@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Facade;
 
 return [
@@ -103,7 +106,7 @@ return [
 
     'previous_keys' => [
         ...array_filter(
-            explode(',', env('APP_PREVIOUS_KEYS', ''))
+            explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
         ),
     ],
 
@@ -137,7 +140,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        'Carbon' => \Carbon\Carbon::class,
+        'Carbon' => Carbon::class,
     ])->toArray(),
 
 ];
