@@ -8,6 +8,7 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,8 +16,37 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Override;
 
+/**
+ * ModVersion Model
+ *
+ * @property int $id
+ * @property int|null $hub_id
+ * @property int $mod_id
+ * @property string $version
+ * @property int $version_major
+ * @property int $version_minor
+ * @property int $version_patch
+ * @property string $version_pre_release
+ * @property string $description
+ * @property string $link
+ * @property string $spt_version_constraint
+ * @property string $virus_total_link
+ * @property int $downloads
+ * @property bool $disabled
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $published_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Mod $mod
+ * @property-read Collection<int, ModDependency> $dependencies
+ * @property-read Collection<int, ModVersion> $resolvedDependencies
+ * @property-read Collection<int, ModVersion> $latestResolvedDependencies
+ * @property-read SptVersion|null $latestSptVersion
+ * @property-read Collection<int, SptVersion> $sptVersions
+ */
 class ModVersion extends Model
 {
     use HasFactory;
@@ -58,7 +88,7 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and mod.
      *
-     * @return BelongsTo<Mod, ModVersion>
+     * @return BelongsTo<Mod, $this>
      */
     public function mod(): BelongsTo
     {
@@ -68,7 +98,7 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and its dependencies.
      *
-     * @return HasMany<ModDependency>
+     * @return HasMany<ModDependency, $this>
      */
     public function dependencies(): HasMany
     {
@@ -79,7 +109,7 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and its resolved dependencies.
      *
-     * @return BelongsToMany<ModVersion>
+     * @return BelongsToMany<ModVersion, $this>
      */
     public function resolvedDependencies(): BelongsToMany
     {
@@ -91,7 +121,7 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and its each of it's resolved dependencies' latest versions.
      *
-     * @return BelongsToMany<ModVersion>
+     * @return BelongsToMany<ModVersion, $this>
      */
     public function latestResolvedDependencies(): BelongsToMany
     {
@@ -108,7 +138,7 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and its latest SPT version.
      *
-     * @return HasOneThrough<SptVersion>
+     * @return HasOneThrough<SptVersion, ModVersionSptVersion, $this>
      */
     public function latestSptVersion(): HasOneThrough
     {
@@ -123,7 +153,7 @@ class ModVersion extends Model
     /**
      * The relationship between a mod version and its SPT versions.
      *
-     * @return BelongsToMany<SptVersion>
+     * @return BelongsToMany<SptVersion, $this>
      */
     public function sptVersions(): BelongsToMany
     {

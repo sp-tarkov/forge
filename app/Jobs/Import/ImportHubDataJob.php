@@ -325,7 +325,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     {
         // Initialize a cURL handler for downloading mod thumbnails.
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 
         DB::connection('mysql_hub')
@@ -894,7 +894,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     {
         // Initialize a cURL handler for downloading mod thumbnails.
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 
         DB::connection('mysql_hub')
@@ -951,13 +951,13 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     $modData[] = [
                         'hub_id' => (int) $mod->fileID,
                         'users' => $modAuthors,
-                        'name' => $modContent?->subject ?? '',
-                        'slug' => Str::slug($modContent?->subject ?? ''),
-                        'teaser' => Str::limit($modContent?->teaser ?? '', 255),
-                        'description' => $this->cleanHubContent($modContent?->message ?? ''),
+                        'name' => $modContent->subject ?? '',
+                        'slug' => Str::slug($modContent->subject ?? ''),
+                        'teaser' => Str::limit($modContent->teaser ?? '', 255),
+                        'description' => $this->cleanHubContent($modContent->message ?? ''),
                         'thumbnail' => $this->fetchModThumbnail($curl, $mod->fileID, $mod->iconHash, $mod->iconExtension),
                         'license_id' => License::whereHubId($mod->licenseID)->value('id'),
-                        'source_code_link' => $optionSourceCode?->source_code_link ?? '',
+                        'source_code_link' => $optionSourceCode->source_code_link ?? '',
                         'featured' => (bool) $mod->isFeatured,
                         'contains_ai_content' => (bool) $optionContainsAi?->contains_ai,
                         'contains_ads' => (bool) $optionContainsAds?->contains_ads,
@@ -1076,7 +1076,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                         'description' => $this->cleanHubContent($versionContent->description ?? ''),
                         'link' => $version->downloadURL,
                         'spt_version_constraint' => $sptVersionConstraint,
-                        'virus_total_link' => $optionVirusTotal?->virus_total_link ?? '',
+                        'virus_total_link' => $optionVirusTotal->virus_total_link ?? '',
                         'downloads' => max((int) $version->downloads, 0), // At least 0.
                         'disabled' => (bool) $version->isDisabled,
                         'published_at' => $sptVersionConstraint === '0.0.0' ? null : Carbon::parse($version->uploadTime, 'UTC'),

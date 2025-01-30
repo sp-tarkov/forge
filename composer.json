@@ -34,7 +34,7 @@
         "driftingly/rector-laravel": "^2.0",
         "fakerphp/faker": "^1.24.1",
         "knuckleswtf/scribe": "^4.39",
-        "larastan/larastan": "^3.0.2",
+        "larastan/larastan": "^3.0",
         "laravel/pint": "^1.20",
         "laravel/sail": "^1.40",
         "mockery/mockery": "^1.6.12",

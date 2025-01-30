@@ -8,9 +8,11 @@ use App\Http\Filters\V1\QueryFilter;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Traits\HasCoverPhoto;
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -25,6 +27,28 @@ use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
 use SensitiveParameter;
 
+/**
+ * @property int $id
+ * @property int|null $hub_id
+ * @property int|null $discord_id
+ * @property string $name
+ * @property string $email
+ * @property Carbon|null $email_verified_at
+ * @property string|null $password
+ * @property string $about
+ * @property int|null $user_role_id
+ * @property string|null $remember_token
+ * @property string|null $profile_photo_path
+ * @property string|null $cover_photo_path
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read string $profile_photo_url
+ * @property-read UserRole|null $role
+ * @property-read Collection<int, Mod> $mods
+ * @property-read Collection<int, User> $followers
+ * @property-read Collection<int, User> $following
+ * @property-read Collection<int, OAuthConnection> $oAuthConnections
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use Bannable;
@@ -58,7 +82,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * The relationship between a user and their mods.
      *
-     * @return BelongsToMany<Mod>
+     * @return BelongsToMany<Mod, $this>
      */
     public function mods(): BelongsToMany
     {
@@ -68,7 +92,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * The relationship between a user and users that follow them.
      *
-     * @return BelongsToMany<User>
+     * @return BelongsToMany<User, $this>
      */
     public function followers(): BelongsToMany
     {
@@ -94,7 +118,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * The relationship between a user and users they follow.
      *
-     * @return BelongsToMany<User>
+     * @return BelongsToMany<User, $this>
      */
     public function following(): BelongsToMany
     {
@@ -209,7 +233,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * The relationship between a user and their role.
      *
-     * @return BelongsTo<UserRole, User>
+     * @return BelongsTo<UserRole, $this>
      */
     public function role(): BelongsTo
     {
@@ -226,6 +250,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * The relationship between a user and their OAuth providers.
+     *
+     * @return HasMany<OAuthConnection, $this>
      */
     public function oAuthConnections(): HasMany
     {

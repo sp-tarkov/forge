@@ -17,12 +17,40 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use Override;
 
+/**
+ * Mod Model
+ *
+ * @property int $id
+ * @property int|null $hub_id
+ * @property string $name
+ * @property string $slug
+ * @property string $teaser
+ * @property string $description
+ * @property string $thumbnail
+ * @property int|null $license_id
+ * @property int $downloads
+ * @property string $source_code_link
+ * @property bool $featured
+ * @property bool $contains_ai_content
+ * @property bool $contains_ads
+ * @property bool $disabled
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $published_at
+ * @property-read License|null $license
+ * @property-read Collection<int, User> $users
+ * @property-read Collection<int, ModVersion> $versions
+ * @property-read ModVersion|null $latestVersion
+ * @property-read ModVersion|null $latestUpdatedVersion
+ */
 class Mod extends Model
 {
     use HasFactory;
@@ -65,7 +93,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its users.
      *
-     * @return BelongsToMany<User>
+     * @return BelongsToMany<User, $this>
      */
     public function users(): BelongsToMany
     {
@@ -75,7 +103,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its license.
      *
-     * @return BelongsTo<License, Mod>
+     * @return BelongsTo<License, $this>
      */
     public function license(): BelongsTo
     {
@@ -85,7 +113,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its last updated version.
      *
-     * @return HasOne<ModVersion>
+     * @return HasOne<ModVersion, $this>
      */
     public function latestUpdatedVersion(): HasOne
     {
@@ -98,7 +126,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its versions.
      *
-     * @return HasMany<ModVersion>
+     * @return HasMany<ModVersion, $this>
      */
     public function versions(): HasMany
     {
@@ -176,7 +204,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its latest version.
      *
-     * @return HasOne<ModVersion>
+     * @return HasOne<ModVersion, $this>
      */
     public function latestVersion(): HasOne
     {

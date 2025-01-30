@@ -114,7 +114,7 @@ class Listing extends Component
 
         $this->redirectOutOfBoundsPage($lengthAwarePaginator);
 
-        return view('livewire.mod.listing', ['mods' => $mods]);
+        return view('livewire.mod.listing', ['mods' => $lengthAwarePaginator]);
     }
 
     /**

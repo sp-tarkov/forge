@@ -6,6 +6,8 @@ namespace App\Http\Resources\Api\V0;
 
 use App\Http\Controllers\Api\V0\ApiController;
 use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
@@ -43,7 +45,7 @@ class ModResource extends JsonResource
                 'published_at' => $this->published_at,
             ],
             'relationships' => [
-                'users' => $this->users->map(fn ($user): array => [
+                'users' => $this->users->map(fn (User $user): array => [
                     'data' => [
                         'type' => 'user',
                         'id' => $user->id,
@@ -52,7 +54,7 @@ class ModResource extends JsonResource
                         'self' => $user->profileUrl(),
                     ],
                 ])->toArray(),
-                'versions' => $this->versions->map(fn ($version): array => [
+                'versions' => $this->versions->map(fn (ModVersion $version): array => [
                     'data' => [
                         'type' => 'version',
                         'id' => $version->id,

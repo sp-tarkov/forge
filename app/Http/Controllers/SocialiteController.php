@@ -70,7 +70,7 @@ class SocialiteController extends Controller
             ->whereProviderId($providerUser->getId())
             ->first();
 
-        if ($oauthConnection) {
+        if ($oauthConnection !== null) {
             $oauthConnection->update([
                 'token' => $providerUser->token ?? '',
                 'refresh_token' => $providerUser->refreshToken ?? '',
@@ -103,7 +103,7 @@ class SocialiteController extends Controller
                 'password' => null,
             ]);
 
-            $model = $user->oAuthConnections()->create([
+            $oAuthConnection = $user->oAuthConnections()->create([
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
                 'token' => $providerUser->token ?? '',
@@ -114,7 +114,7 @@ class SocialiteController extends Controller
                 'avatar' => $providerUser->getAvatar() ?? '',
             ]);
 
-            $this->updateAvatar($user, $model->avatar);
+            $this->updateAvatar($user, $oAuthConnection->avatar);
 
             return $user;
         });
@@ -129,10 +129,11 @@ class SocialiteController extends Controller
         };
 
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_URL, $avatarUrl);
         $image = curl_exec($curl);
+        curl_close($curl);
 
         if ($image === false) {
             Log::error('There was an error attempting to download the image. cURL error: '.curl_error($curl));

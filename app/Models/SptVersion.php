@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
 use App\Support\Version;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 use Override;
+use Throwable;
 
+/**
+ * SptVersion Model
+ *
+ * @property int $id
+ * @property int|null $hub_id
+ * @property string $version
+ * @property int $version_major
+ * @property int $version_minor
+ * @property int $version_patch
+ * @property string $version_pre_release
+ * @property int $mod_count
+ * @property string $link
+ * @property string $color_class
+ * @property Carbon|null $deleted_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ModVersion> $modVersions
+ * @property-read string $version_formatted
+ */
 class SptVersion extends Model
 {
     use HasFactory;
@@ -69,7 +90,7 @@ class SptVersion extends Model
     /**
      * Extract the version sections from the version string.
      *
-     * @throws InvalidVersionNumberException
+     * @throws InvalidVersionNumberException|Throwable
      */
     public static function extractVersionSections(string $version): array
     {
@@ -128,7 +149,7 @@ class SptVersion extends Model
     /**
      * The relationship between an SPT version and mod version.
      *
-     * @return BelongsToMany<ModVersion>
+     * @return BelongsToMany<ModVersion, $this>
      */
     public function modVersions(): BelongsToMany
     {
