@@ -9,11 +9,13 @@ use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Traits\HasCoverPhoto;
 use Carbon\Carbon;
+use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -54,7 +56,10 @@ class User extends Authenticatable implements MustVerifyEmail
     use Bannable;
     use HasApiTokens;
     use HasCoverPhoto;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use HasProfilePhoto;
     use Notifiable;
     use Searchable;
@@ -150,6 +155,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * The data that is searchable by Scout.
+     *
+     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -242,6 +249,9 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Scope a query by applying QueryFilter filters.
+     *
+     * @param  Builder<Model>  $builder
+     * @return Builder<Model>
      */
     public function scopeFilter(Builder $builder, QueryFilter $queryFilter): Builder
     {
@@ -260,6 +270,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Handle the about default value if empty. Thanks, MySQL!
+     *
+     * @return Attribute<string[], never>
      */
     protected function about(): Attribute
     {

@@ -15,6 +15,8 @@ class UpdateProfileForm extends UpdateProfileInformationForm
 {
     /**
      * The new cover photo for the user.
+     *
+     * @var string|null
      */
     public $cover;
 
@@ -42,11 +44,11 @@ class UpdateProfileForm extends UpdateProfileInformationForm
      * Update the user's profile information.
      */
     #[Override]
-    public function updateProfileInformation(UpdatesUserProfileInformation $updatesUserProfileInformation): RedirectResponse|Redirector|null
+    public function updateProfileInformation(UpdatesUserProfileInformation $updater): RedirectResponse|Redirector|null
     {
         $this->resetErrorBag();
 
-        $updatesUserProfileInformation->update(
+        $updater->update(
             Auth::user(),
             $this->photo || $this->cover
                 ? array_merge($this->state, array_filter([

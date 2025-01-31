@@ -21,6 +21,8 @@ class FollowCards extends Component
 
     /**
      * A collection of user IDs that the auth user follows.
+     *
+     * @var Collection<int, int>
      */
     #[Locked]
     public Collection $authFollowIds;

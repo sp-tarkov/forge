@@ -10,6 +10,8 @@ trait ApiResponses
 {
     /**
      * Return a success JSON response.
+     *
+     * @param  array<string, string>  $data
      */
     protected function success(string $message, ?array $data = []): JsonResponse
     {
@@ -18,6 +20,8 @@ trait ApiResponses
 
     /**
      * The base response.
+     *
+     * @param  array<string, string>  $data
      */
     private function baseResponse(?string $message = '', ?array $data = [], ?int $code = 200): JsonResponse
     {

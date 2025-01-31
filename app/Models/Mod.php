@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
+use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -53,7 +54,9 @@ use Override;
  */
 class Mod extends Model
 {
+    /** @use HasFactory<ModFactory> */
     use HasFactory;
+
     use Searchable;
     use SoftDeletes;
 
@@ -140,6 +143,8 @@ class Mod extends Model
 
     /**
      * The data that is searchable by Scout.
+     *
+     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -221,6 +226,8 @@ class Mod extends Model
 
     /**
      * Build the URL to the mod's thumbnail.
+     *
+     * @return Attribute<string, never>
      */
     public function thumbnailUrl(): Attribute
     {
@@ -242,6 +249,9 @@ class Mod extends Model
 
     /**
      * Scope a query by applying QueryFilter filters.
+     *
+     * @param  Builder<Model>  $builder
+     * @return Builder<Model>
      */
     public function scopeFilter(Builder $builder, QueryFilter $queryFilter): Builder
     {

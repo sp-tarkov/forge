@@ -21,6 +21,8 @@ class SocialiteController extends Controller
 {
     /**
      * The providers that are supported.
+     *
+     * @var array<int, string>
      */
     protected array $providers = ['discord'];
 

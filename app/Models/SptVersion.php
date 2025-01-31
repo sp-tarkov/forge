@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Support\Version;
 use Carbon\Carbon;
+use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,11 +38,15 @@ use Throwable;
  */
 class SptVersion extends Model
 {
+    /** @use HasFactory<SptVersionFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     /**
      * Get all versions for the last three minor versions.
+     *
+     * @return Collection<int, $this>
      */
     public static function getVersionsForLastThreeMinors(): Collection
     {
@@ -70,6 +75,8 @@ class SptVersion extends Model
 
     /**
      * Get the last three minor versions (major.minor format).
+     *
+     * @return array<int, array{major: int, minor: int}>
      */
     public static function getLastThreeMinorVersions(): array
     {
@@ -89,6 +96,8 @@ class SptVersion extends Model
 
     /**
      * Extract the version sections from the version string.
+     *
+     * @return array{major: int, minor: int, patch: int, pre_release: string}
      *
      * @throws InvalidVersionNumberException|Throwable
      */

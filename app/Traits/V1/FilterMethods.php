@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Traits\V1;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 trait FilterMethods
 {
     /**
      * Filter using a whereIn clause.
+     *
+     * @return Builder<Model>
      */
     public function filterWhereIn(string $column, string $value): Builder
     {
@@ -21,6 +24,8 @@ trait FilterMethods
 
     /**
      * Filter using a LIKE clause with a wildcard characters.
+     *
+     * @return Builder<Model>
      */
     public function filterByWildcardLike(string $column, string $value): Builder
     {
@@ -31,6 +36,8 @@ trait FilterMethods
 
     /**
      * Filter by date range or specific date.
+     *
+     * @return Builder<Model>
      */
     public function filterByDate(string $column, string $value): Builder
     {
@@ -45,6 +52,8 @@ trait FilterMethods
 
     /**
      * Filter by boolean value.
+     *
+     * @return Builder<Model>
      */
     public function filterByBoolean(string $column, string $value): Builder
     {
@@ -58,6 +67,8 @@ trait FilterMethods
 
     /**
      * Apply the sort type to the query.
+     *
+     * @return Builder<Model>
      */
     protected function sort(string $values): Builder
     {

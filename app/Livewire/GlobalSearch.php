@@ -21,6 +21,8 @@ class GlobalSearch extends Component
 
     /**
      * The search results.
+     *
+     * @var array<string, Collection<int, mixed>>
      */
     #[Locked]
     public array $result = [];
@@ -44,6 +46,8 @@ class GlobalSearch extends Component
 
     /**
      * Execute the search against each of the searchable models.
+     *
+     * @return array<string, Collection<int, mixed>>
      */
     protected function executeSearch(string $query): array
     {
@@ -61,25 +65,37 @@ class GlobalSearch extends Component
 
     /**
      * Fetch the user search results.
+     *
+     * @return Collection<int, mixed>
      */
     protected function fetchUserResults(string $query): Collection
     {
-        return collect(User::search($query)->raw()['hits']);
+        /** @var Collection<int, mixed> $searchHits */
+        $searchHits = User::search($query)->raw()['hits'];
+
+        return collect($searchHits);
     }
 
     /**
      * Fetch the mod search results.
+     *
+     * @return Collection<int, mixed>
      */
     protected function fetchModResults(string $query): Collection
     {
-        return collect(Mod::search($query)->raw()['hits']);
+        /** @var Collection<int, mixed> $searchHits */
+        $searchHits = Mod::search($query)->raw()['hits'];
+
+        return collect($searchHits);
     }
 
     /**
      * Count the total number of results across all models.
+     *
+     * @param  array<string, Collection<int, mixed>>  $results
      */
     protected function countTotalResults(array $results): int
     {
-        return collect($results)->reduce(fn (int $carry, Collection $result): int => $carry + $result->count(), 0);
+        return (int) collect($results)->reduce(fn (int $carry, Collection $result): int => $carry + $result->count(), 0);
     }
 }

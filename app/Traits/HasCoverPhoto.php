@@ -54,8 +54,10 @@ trait HasCoverPhoto
 
     /**
      * Get the cover photo URL for the user.
+     *
+     * @return Attribute<string[], never>
      */
-    public function coverPhotoUrl(): Attribute
+    protected function coverPhotoUrl(): Attribute
     {
         return new Attribute(
             get: fn (): string => $this->cover_photo_path

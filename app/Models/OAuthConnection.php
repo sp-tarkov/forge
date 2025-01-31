@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\OAuthConnectionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OAuthConnection extends Model
 {
+    /** @use HasFactory<OAuthConnectionFactory> */
     use HasFactory;
 
     protected $table = 'oauth_connections';

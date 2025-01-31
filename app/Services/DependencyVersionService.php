@@ -20,6 +20,8 @@ class DependencyVersionService
 
     /**
      * Satisfies all dependency constraints of a ModVersion.
+     *
+     * @return array<int, array<string, int>>
      */
     private function satisfyConstraint(ModVersion $modVersion): array
     {

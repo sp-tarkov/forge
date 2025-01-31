@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Mod;
 
 use App\Http\Filters\ModFilter;
+use App\Models\Mod;
 use App\Models\SptVersion;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
@@ -44,12 +45,16 @@ class Listing extends Component
 
     /**
      * The options that are available for the per page setting.
+     *
+     * @var array<int>
      */
     #[Locked]
     public array $perPageOptions = [6, 12, 24, 50];
 
     /**
      * The SPT versions filter value.
+     *
+     * @var array<int, string>
      */
     #[Session]
     #[Url]
@@ -81,6 +86,8 @@ class Listing extends Component
 
     /**
      * Get the default values for the SPT Versions filter.
+     *
+     * @return array<int, string>
      */
     protected function getDefaultSptVersions(): array
     {
@@ -89,6 +96,8 @@ class Listing extends Component
 
     /**
      * Get all patch versions of the latest minor SPT version.
+     *
+     * @return Collection<int, SptVersion>
      */
     public function getLatestMinorVersions(): Collection
     {
@@ -137,6 +146,8 @@ class Listing extends Component
 
     /**
      * Check if the current page is greater than the last page. Redirect if it is.
+     *
+     * @param  LengthAwarePaginator<Mod>  $lengthAwarePaginator
      */
     private function redirectOutOfBoundsPage(LengthAwarePaginator $lengthAwarePaginator): void
     {

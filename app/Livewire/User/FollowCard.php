@@ -37,18 +37,6 @@ class FollowCard extends Component
     public string $dialogTitle;
 
     /**
-     * The user data to display in the card.
-     */
-    #[Locked]
-    public array $display = [];
-
-    /**
-     * The limited user data to display in the card.
-     */
-    #[Locked]
-    public array $displayLimit = [];
-
-    /**
      * The maximum number of users to display on the card.
      */
     #[Locked]
@@ -67,18 +55,24 @@ class FollowCard extends Component
 
     /**
      * A collection of user IDs that the auth user follows.
+     *
+     * @var Collection<int, int>
      */
     #[Locked]
     public Collection $authFollowIds;
 
     /**
      * The profile user's followers (or following).
+     *
+     * @var Collection<int, User>
      */
     #[Locked]
     public Collection $followUsers;
 
     /**
      * The events the component should listen for.
+     *
+     * @var array<string, string>
      */
     protected $listeners = ['refreshComponent' => '$refresh'];
 

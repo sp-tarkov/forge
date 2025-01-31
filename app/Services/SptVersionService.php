@@ -21,6 +21,8 @@ class SptVersionService
 
     /**
      * Satisfies the version constraint of a given ModVersion. Returns the ID of the satisfying SptVersion.
+     *
+     * @return array<int>
      */
     private function satisfyConstraint(ModVersion $modVersion): array
     {

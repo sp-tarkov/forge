@@ -14,6 +14,8 @@ class ModVersionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
      */
     #[Override]
     public function toArray(Request $request): array
