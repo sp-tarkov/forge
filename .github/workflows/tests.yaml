@@ -46,7 +46,7 @@ jobs:
         run: php artisan storage:link
 
       - name: Run Tests
-        run: php artisan test --compact
+        run: php artisan test
 
       - name: Display Laravel Log
         if: failure()

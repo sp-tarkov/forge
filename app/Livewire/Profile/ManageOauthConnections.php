@@ -11,7 +11,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class ManageOAuthConnections extends Component
+class ManageOauthConnections extends Component
 {
     use AuthorizesRequests;
 
@@ -37,8 +37,6 @@ class ManageOAuthConnections extends Component
      */
     public function mount(): void
     {
-        $this->setName('profile.manage-oauth-connections');
-
         $this->user = auth()->user();
     }
 
