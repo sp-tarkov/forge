@@ -19,6 +19,7 @@ return RectorConfig::configure()
     ])
     ->withSkip([
         __DIR__.'*.blade.php',
+        __DIR__.'/bootstrap/cache',
     ])
     ->withCache(
         cacheDirectory: '.rector/cache',
