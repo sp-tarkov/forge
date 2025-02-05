@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\User;
 
-test('confirm a user cannot follow themself', function () {
+test('confirm a user cannot follow themself', function (): void {
     $user = User::factory()->create();
 
     $user->follow($user);
@@ -11,7 +13,7 @@ test('confirm a user cannot follow themself', function () {
     $this->assertEmpty($user->following);
 });
 
-test('confirm a user can follow and unfollow another user', function () {
+test('confirm a user can follow and unfollow another user', function (): void {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -24,7 +26,7 @@ test('confirm a user can follow and unfollow another user', function () {
     $this->assertFalse($user1->isFollowing($user2));
 });
 
-test('confirm following a user cannot be done twice', function () {
+test('confirm following a user cannot be done twice', function (): void {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -35,7 +37,7 @@ test('confirm following a user cannot be done twice', function () {
     $this->assertCount(1, $user2->followers);
 });
 
-test('confirm unfollowing a user that isnt being followed doesnt throw', function () {
+test('confirm unfollowing a user that isnt being followed doesnt throw', function (): void {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
@@ -45,7 +47,7 @@ test('confirm unfollowing a user that isnt being followed doesnt throw', functio
     $this->assertEmpty($user2->followers);
 });
 
-test('confirm unfollowing random number doesnt perform detach all', function () {
+test('confirm unfollowing random number doesnt perform detach all', function (): void {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
     $user3 = User::factory()->create();
@@ -66,7 +68,7 @@ test('confirm unfollowing random number doesnt perform detach all', function () 
     $this->assertTrue($user1->isFollowing($user3));
 });
 
-test('confirm null follow input fails', function () {
+test('confirm null follow input fails', function (): void {
     $this->expectException(TypeError::class);
 
     $user = User::factory()->create();
@@ -74,7 +76,7 @@ test('confirm null follow input fails', function () {
     $user->follow(null);
 });
 
-test('confirm empty follow input fails', function () {
+test('confirm empty follow input fails', function (): void {
     $this->expectException(ArgumentCountError::class);
 
     $user = User::factory()->create();
@@ -82,7 +84,7 @@ test('confirm empty follow input fails', function () {
     $user->follow();
 });
 
-test('confirm null unfollow input fails', function () {
+test('confirm null unfollow input fails', function (): void {
     $this->expectException(TypeError::class);
 
     $user = User::factory()->create();
@@ -90,7 +92,7 @@ test('confirm null unfollow input fails', function () {
     $user->unfollow(null);
 });
 
-test('confirm empty unfollow input fails', function () {
+test('confirm empty unfollow input fails', function (): void {
     $this->expectException(ArgumentCountError::class);
 
     $user = User::factory()->create();

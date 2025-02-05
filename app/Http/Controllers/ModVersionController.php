@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\ModVersion;
@@ -18,17 +20,13 @@ class ModVersionController extends Controller
             ->whereVersion($version)
             ->firstOrFail();
 
-        if ($modVersion->mod->slug !== $slug) {
-            abort(404);
-        }
+        abort_if($modVersion->mod->slug !== $slug, 404);
 
         $this->authorize('view', $modVersion);
 
         // Rate limit the downloads.
         $rateKey = 'mod-download:'.($request->user()?->id ?: $request->ip());
-        if (RateLimiter::tooManyAttempts($rateKey, maxAttempts: 5)) { // Max attempts is per minute.
-            abort(429);
-        }
+        abort_if(RateLimiter::tooManyAttempts($rateKey, maxAttempts: 5), 429);
 
         // Increment downloads counts in the background.
         defer(fn () => $modVersion->incrementDownloads());

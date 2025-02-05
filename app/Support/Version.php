@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
 use App\Exceptions\InvalidVersionNumberException;
+use Stringable;
 
-class Version
+class Version implements Stringable
 {
     protected int $major = 0;
 
@@ -14,16 +17,13 @@ class Version
 
     protected string $preRelease = '';
 
-    protected string $version;
-
     /**
      * Constructor.
      *
      * @throws InvalidVersionNumberException
      */
-    public function __construct(string $version)
+    public function __construct(protected string $version)
     {
-        $this->version = $version;
         $this->parseVersion();
     }
 

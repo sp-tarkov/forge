@@ -12,7 +12,7 @@ The Forge is a Laravel-based web application that provides a platform for the Si
 
 ## Development Environment Setup
 
-We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://dev.sp-tarkov.com/SPT/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://dev.sp-tarkov.com/SPT/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.
+We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://github.com/sp-tarkov/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://github.com/sp-tarkov/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.
 
 ### Available Services:
 
@@ -77,36 +77,3 @@ sail npm run dev
 ### More Information
 
 For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/11.x/).
-
-## Development Discussion
-
-*__Please note__, we are very early in development and will likely not accept work that is not discussed beforehand.*
-
-Informal discussion regarding bugs, new features, and implementation of existing features takes place in the `#website-general` channel of the [Single Player Tarkov Discord server](https://discord.com/invite/Xn9msqQZan). Refringe, the maintainer of Forge, is typically present in the channel on weekdays from 9am-5pm Eastern Time (ET), and sporadically present in the channel at other times.
-
-If you propose a new feature, please be willing to implement at least some of the code that would be needed to complete the feature.
-
-## Which Branch?
-
-The `main` branch is the default branch for Forge. This branch is used for the latest stable release of the site. The `develop` branch is used for the latest development changes. All feature branches should be based on the `develop` branch. All pull requests should target the `develop` branch.
-
-## Coding Style
-
-Forge follows the PSR-2 coding standard and the PSR-4 autoloading standard. We use an automated Laravel Pint action to enforce the coding standard, though it's suggested to run your code changes through Pint before contributing. This can be done by configuring your IDE to format with Pint on save, or manually by running the following command:
-
-```
-./vendor/bin/sail pint
-```
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Forge, please email Refringe at me@refringe.com. All security vulnerabilities will be promptly addressed.
-
-## Code of Conduct
-
-The Forge development code of conduct is derived from the Ruby code of conduct. Any violations of the code of conduct may be reported to Refringe at me@refringe.com.
-
-- Participants will be tolerant of opposing views.
-- Participants must ensure that their language and actions are free of personal attacks and disparaging personal remarks.
-- When interpreting the words and actions of others, participants should always assume good intentions.
-- Behavior that can be reasonably considered harassment will not be tolerated.

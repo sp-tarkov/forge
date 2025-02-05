@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Str;
 
 return [
@@ -207,7 +209,7 @@ return [
             'maxJobs' => 0,
             'memory' => 256,
             'tries' => 1,
-            'timeout' => 2700, // 45 Minutes
+            'timeout' => 7200, // 2 hours
             'nice' => 0,
         ],
     ],

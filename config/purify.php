@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+use Stevebauman\Purify\Cache\CacheDefinitionCache;
 use Stevebauman\Purify\Definitions\Html5Definition;
 
 return [
@@ -107,6 +110,6 @@ return [
 
     'serializer' => [
         'driver' => env('CACHE_DRIVER', 'file'),
-        'cache' => \Stevebauman\Purify\Cache\CacheDefinitionCache::class,
+        'cache' => CacheDefinitionCache::class,
     ],
 ];

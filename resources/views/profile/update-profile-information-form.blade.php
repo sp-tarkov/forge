@@ -71,7 +71,7 @@
 
             <!-- Current Cover Photo -->
             <div class="mt-2" x-show="! coverPreview">
-                <img src="{{ $this->user->cover_photo_url }}" alt="{{ $this->user->name }}" class="rounded-sm h-20 w-60 object-cover">
+                <img src="{{ $this->user->cover_photo_url }}" alt="{{ $this->user->name }}" class="rounded-xs h-20 w-60 object-cover">
             </div>
 
             <!-- New Cover Photo Preview -->
@@ -111,7 +111,7 @@
                 <p class="text-sm mt-2 text-red-600 dark:text-red-400">
                     {{ __('Your email address is unverified.') }}
 
-                    <button type="button" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" wire:click.prevent="sendEmailVerification">
+                    <button type="button" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" wire:click.prevent="sendEmailVerification">
                         {{ __('Click here to re-send the verification email.') }}
                     </button>
                 </p>

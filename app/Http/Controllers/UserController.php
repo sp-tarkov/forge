@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -27,14 +29,10 @@ class UserController extends Controller
             ->paginate(10)
             ->fragment('mods');
 
-        if ($user->slug() !== $username) {
-            abort(404);
-        }
+        abort_if($user->slug() !== $username, 404);
 
-        if ($request->user()?->cannot('view', $user)) {
-            abort(403);
-        }
+        abort_if($request->user()?->cannot('view', $user), 403);
 
-        return view('user.show', compact('user', 'mods'));
+        return view('user.show', ['user' => $user, 'mods' => $mods]);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -11,11 +13,11 @@ trait HasCoverPhoto
     /**
      * Update the user's cover photo.
      */
-    public function updateCoverPhoto(UploadedFile $cover, string $storagePath = 'cover-photos'): void
+    public function updateCoverPhoto(UploadedFile $uploadedFile, string $storagePath = 'cover-photos'): void
     {
-        tap($this->cover_photo_path, function ($previous) use ($cover, $storagePath) {
+        tap($this->cover_photo_path, function ($previous) use ($uploadedFile, $storagePath): void {
             $this->forceFill([
-                'cover_photo_path' => $cover->storePublicly(
+                'cover_photo_path' => $uploadedFile->storePublicly(
                     $storagePath, ['disk' => $this->coverPhotoDisk()]
                 ),
             ])->save();
@@ -52,8 +54,10 @@ trait HasCoverPhoto
 
     /**
      * Get the cover photo URL for the user.
+     *
+     * @return Attribute<string[], never>
      */
-    public function coverPhotoUrl(): Attribute
+    protected function coverPhotoUrl(): Attribute
     {
         return new Attribute(
             get: fn (): string => $this->cover_photo_path

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\OAuthConnection;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +21,8 @@ class SocialiteController extends Controller
 {
     /**
      * The providers that are supported.
+     *
+     * @var array<int, string>
      */
     protected array $providers = ['discord'];
 
@@ -50,7 +55,7 @@ class SocialiteController extends Controller
 
         try {
             $providerUser = Socialite::driver($provider)->user();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             return redirect()->route('login')->withErrors('Unable to login using '.$provider.'. Please try again.');
         }
 
@@ -67,7 +72,7 @@ class SocialiteController extends Controller
             ->whereProviderId($providerUser->getId())
             ->first();
 
-        if ($oauthConnection) {
+        if ($oauthConnection !== null) {
             $oauthConnection->update([
                 'token' => $providerUser->token ?? '',
                 'refresh_token' => $providerUser->refreshToken ?? '',
@@ -86,6 +91,7 @@ class SocialiteController extends Controller
         while (User::whereName($username.$random)->exists()) {
             $random = '-'.Str::random(5);
         }
+
         $username .= $random;
 
         // The user has not connected their account with this OAuth provider before, so a new connection needs to be
@@ -94,12 +100,12 @@ class SocialiteController extends Controller
 
         return DB::transaction(function () use ($providerUser, $provider, $username) {
 
-            $user = User::firstOrCreate(['email' => $providerUser->getEmail()], [
+            $user = User::query()->firstOrCreate(['email' => $providerUser->getEmail()], [
                 'name' => $username,
                 'password' => null,
             ]);
 
-            $connection = $user->oAuthConnections()->create([
+            $oAuthConnection = $user->oAuthConnections()->create([
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
                 'token' => $providerUser->token ?? '',
@@ -110,7 +116,7 @@ class SocialiteController extends Controller
                 'avatar' => $providerUser->getAvatar() ?? '',
             ]);
 
-            $this->updateAvatar($user, $connection->avatar);
+            $this->updateAvatar($user, $oAuthConnection->avatar);
 
             return $user;
         });
@@ -125,10 +131,11 @@ class SocialiteController extends Controller
         };
 
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_URL, $avatarUrl);
         $image = curl_exec($curl);
+        curl_close($curl);
 
         if ($image === false) {
             Log::error('There was an error attempting to download the image. cURL error: '.curl_error($curl));

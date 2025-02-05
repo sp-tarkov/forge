@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -8,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('filters mods by a single SPT version', function () {
+it('filters mods by a single SPT version', function (): void {
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
 
@@ -35,7 +37,7 @@ it('filters mods by a single SPT version', function () {
         ->and($filteredMods->first()->id)->toBe($mod1->id);
 });
 
-it('filters mods by multiple SPT versions', function () {
+it('filters mods by multiple SPT versions', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
@@ -71,7 +73,7 @@ it('filters mods by multiple SPT versions', function () {
         ->and($filteredMods->pluck('id')->toArray())->toContain($mod1->id, $mod3->id);
 });
 
-it('returns no mods when no SPT versions match', function () {
+it('returns no mods when no SPT versions match', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
@@ -99,7 +101,7 @@ it('returns no mods when no SPT versions match', function () {
     expect($filteredMods)->toBeEmpty();
 });
 
-it('filters mods based on a exact search term', function () {
+it('filters mods based on a exact search term', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
 
     $mod = Mod::factory()->create(['name' => 'BigBrain']);
@@ -114,7 +116,7 @@ it('filters mods based on a exact search term', function () {
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
 });
 
-it('filters mods based featured status', function () {
+it('filters mods based featured status', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
 
     $mod = Mod::factory()->create(['name' => 'BigBrain', 'featured' => true]);
@@ -123,13 +125,13 @@ it('filters mods based featured status', function () {
     Mod::factory()->create(['name' => 'SmallFeet']);
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
 
-    $filters = ['featured' => true];
+    $filters = ['featured' => 'only'];
     $filteredMods = (new ModFilter($filters))->apply()->get();
 
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
 });
 
-it('filters mods correctly with combined filters', function () {
+it('filters mods correctly with combined filters', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
@@ -161,7 +163,7 @@ it('filters mods correctly with combined filters', function () {
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod1->id);
 });
 
-it('handles an empty SPT versions array correctly', function () {
+it('handles an empty SPT versions array correctly', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);

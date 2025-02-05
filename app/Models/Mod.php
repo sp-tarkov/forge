@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\PublishedScope;
 use App\Traits\CanModerate;
+use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,21 +18,53 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Override;
 
+/**
+ * Mod Model
+ *
+ * @property int $id
+ * @property int|null $hub_id
+ * @property string $name
+ * @property string $slug
+ * @property string $teaser
+ * @property string $description
+ * @property string $thumbnail
+ * @property int|null $license_id
+ * @property int $downloads
+ * @property string $source_code_link
+ * @property bool $featured
+ * @property bool $contains_ai_content
+ * @property bool $contains_ads
+ * @property bool $disabled
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $published_at
+ * @property-read License|null $license
+ * @property-read Collection<int, User> $users
+ * @property-read Collection<int, ModVersion> $versions
+ * @property-read ModVersion|null $latestVersion
+ * @property-read ModVersion|null $latestUpdatedVersion
+ */
 class Mod extends Model
 {
     use CanModerate;
+    /** @use HasFactory<ModFactory> */
     use HasFactory;
+
     use Searchable;
     use SoftDeletes;
 
     /**
      * Post boot method to configure the model.
      */
+    #[Override]
     protected static function booted(): void
     {
         static::addGlobalScope(new PublishedScope);
@@ -60,7 +96,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its users.
      *
-     * @return BelongsToMany<User>
+     * @return BelongsToMany<User, $this>
      */
     public function users(): BelongsToMany
     {
@@ -70,7 +106,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its license.
      *
-     * @return BelongsTo<License, Mod>
+     * @return BelongsTo<License, $this>
      */
     public function license(): BelongsTo
     {
@@ -80,7 +116,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its last updated version.
      *
-     * @return HasOne<ModVersion>
+     * @return HasOne<ModVersion, $this>
      */
     public function latestUpdatedVersion(): HasOne
     {
@@ -93,7 +129,7 @@ class Mod extends Model
     /**
      * The relationship between a mod and its versions.
      *
-     * @return HasMany<ModVersion>
+     * @return HasMany<ModVersion, $this>
      */
     public function versions(): HasMany
     {
@@ -107,6 +143,8 @@ class Mod extends Model
 
     /**
      * The data that is searchable by Scout.
+     *
+     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
@@ -122,9 +160,9 @@ class Mod extends Model
             'description' => $this->description,
             'thumbnail' => $this->thumbnail,
             'featured' => $this->featured,
-            'created_at' => strtotime($this->created_at),
-            'updated_at' => strtotime($this->updated_at),
-            'published_at' => strtotime($this->published_at),
+            'created_at' => $this->created_at->timestamp,
+            'updated_at' => $this->updated_at->timestamp,
+            'published_at' => $this->published_at->timestamp,
             'latestVersion' => $this->latestVersion->latestSptVersion->version_formatted,
             'latestVersionColorClass' => $this->latestVersion->latestSptVersion->color_class,
         ];
@@ -162,21 +200,16 @@ class Mod extends Model
         }
 
         // Ensure the latest SPT version is within the last three minor versions.
-        $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, function () {
-            return SptVersion::getVersionsForLastThreeMinors();
-        });
-        if (! in_array($this->latestVersion->latestSptVersion->version, $activeSptVersions->pluck('version')->toArray())) {
-            return false;
-        }
+        $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
 
         // All conditions are met; the mod should be searchable.
-        return true;
+        return in_array($this->latestVersion->latestSptVersion->version, $activeSptVersions->pluck('version')->toArray());
     }
 
     /**
      * The relationship between a mod and its latest version.
      *
-     * @return HasOne<ModVersion>
+     * @return HasOne<ModVersion, $this>
      */
     public function latestVersion(): HasOne
     {
@@ -193,14 +226,14 @@ class Mod extends Model
 
     /**
      * Build the URL to the mod's thumbnail.
+     *
+     * @return Attribute<string, never>
      */
     public function thumbnailUrl(): Attribute
     {
-        return Attribute::get(function (): string {
-            return $this->thumbnail
-                ? Storage::disk($this->thumbnailDisk())->url($this->thumbnail)
-                : '';
-        });
+        return Attribute::get(fn (): string => $this->thumbnail
+            ? Storage::disk($this->thumbnailDisk())->url($this->thumbnail)
+            : '');
     }
 
     /**
@@ -216,10 +249,13 @@ class Mod extends Model
 
     /**
      * Scope a query by applying QueryFilter filters.
+     *
+     * @param  Builder<Model>  $builder
+     * @return Builder<Model>
      */
-    public function scopeFilter(Builder $builder, QueryFilter $filters): Builder
+    public function scopeFilter(Builder $builder, QueryFilter $queryFilter): Builder
     {
-        return $filters->apply($builder);
+        return $queryFilter->apply($builder);
     }
 
     /**

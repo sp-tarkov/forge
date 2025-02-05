@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Filters\V1;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ModFilter extends QueryFilter
 {
     /**
      * The sortable fields.
+     *
+     * @var array<int, string>
      */
     protected array $sortable = [
         'name',
@@ -24,6 +29,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by ID.
+     *
+     * @return Builder<Model>
      */
     public function id(string $value): Builder
     {
@@ -32,6 +39,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by hub ID.
+     *
+     * @return Builder<Model>
      */
     public function hub_id(string $value): Builder
     {
@@ -40,6 +49,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by name.
+     *
+     * @return Builder<Model>
      */
     public function name(string $value): Builder
     {
@@ -48,6 +59,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by slug.
+     *
+     * @return Builder<Model>
      */
     public function slug(string $value): Builder
     {
@@ -56,6 +69,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by teaser.
+     *
+     * @return Builder<Model>
      */
     public function teaser(string $value): Builder
     {
@@ -64,6 +79,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by source code link.
+     *
+     * @return Builder<Model>
      */
     public function source_code_link(string $value): Builder
     {
@@ -72,6 +89,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by created at date.
+     *
+     * @return Builder<Model>
      */
     public function created_at(string $value): Builder
     {
@@ -80,6 +99,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by updated at date.
+     *
+     * @return Builder<Model>
      */
     public function updated_at(string $value): Builder
     {
@@ -88,6 +109,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by published at date.
+     *
+     * @return Builder<Model>
      */
     public function published_at(string $value): Builder
     {
@@ -96,6 +119,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by featured.
+     *
+     * @return Builder<Model>
      */
     public function featured(string $value): Builder
     {
@@ -104,6 +129,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by contains ads.
+     *
+     * @return Builder<Model>
      */
     public function contains_ads(string $value): Builder
     {
@@ -112,6 +139,8 @@ class ModFilter extends QueryFilter
 
     /**
      * Filter by contains AI content.
+     *
+     * @return Builder<Model>
      */
     public function contains_ai_content(string $value): Builder
     {

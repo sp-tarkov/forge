@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -35,9 +37,8 @@ return [
         ],
     ],
 
-    'gitea' => [
-        'domain' => env('GITEA_DOMAIN', ''),
-        'token' => env('GITEA_TOKEN', ''),
+    'github' => [
+        'token' => env('GITHUB_TOKEN', ''),
     ],
 
     'discord' => [

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Mod;
 
 use App\Http\Filters\ModFilter;
+use App\Models\Mod;
 use App\Models\SptVersion;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
@@ -42,12 +45,16 @@ class Listing extends Component
 
     /**
      * The options that are available for the per page setting.
+     *
+     * @var array<int>
      */
     #[Locked]
     public array $perPageOptions = [6, 12, 24, 50];
 
     /**
      * The SPT versions filter value.
+     *
+     * @var array<int, string>
      */
     #[Session]
     #[Url]
@@ -72,15 +79,15 @@ class Listing extends Component
      */
     public function mount(): void
     {
-        $this->activeSptVersions = $this->activeSptVersions ?? Cache::remember('active-spt-versions', 60 * 60, function () {
-            return SptVersion::getVersionsForLastThreeMinors();
-        });
+        $this->activeSptVersions ??= Cache::remember('active-spt-versions', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
 
-        $this->sptVersions = $this->sptVersions ?? $this->getDefaultSptVersions();
+        $this->sptVersions ??= $this->getDefaultSptVersions();
     }
 
     /**
      * Get the default values for the SPT Versions filter.
+     *
+     * @return array<int, string>
      */
     protected function getDefaultSptVersions(): array
     {
@@ -89,12 +96,12 @@ class Listing extends Component
 
     /**
      * Get all patch versions of the latest minor SPT version.
+     *
+     * @return Collection<int, SptVersion>
      */
     public function getLatestMinorVersions(): Collection
     {
-        return $this->activeSptVersions->filter(function (SptVersion $sptVersion) {
-            return $sptVersion->isLatestMinor();
-        });
+        return $this->activeSptVersions->filter(fn (SptVersion $sptVersion): bool => $sptVersion->isLatestMinor());
     }
 
     /**
@@ -112,11 +119,11 @@ class Listing extends Component
             'sptVersions' => $this->sptVersions,
         ];
 
-        $mods = (new ModFilter($filters))->apply()->paginate($this->perPage);
+        $lengthAwarePaginator = (new ModFilter($filters))->apply()->paginate($this->perPage);
 
-        $this->redirectOutOfBoundsPage($mods);
+        $this->redirectOutOfBoundsPage($lengthAwarePaginator);
 
-        return view('livewire.mod.listing', compact('mods'));
+        return view('livewire.mod.listing', ['mods' => $lengthAwarePaginator]);
     }
 
     /**
@@ -139,11 +146,13 @@ class Listing extends Component
 
     /**
      * Check if the current page is greater than the last page. Redirect if it is.
+     *
+     * @param  LengthAwarePaginator<Mod>  $lengthAwarePaginator
      */
-    private function redirectOutOfBoundsPage(LengthAwarePaginator $mods): void
+    private function redirectOutOfBoundsPage(LengthAwarePaginator $lengthAwarePaginator): void
     {
-        if ($mods->currentPage() > $mods->lastPage()) {
-            $this->redirectRoute('mods', ['page' => $mods->lastPage()]);
+        if ($lengthAwarePaginator->currentPage() > $lengthAwarePaginator->lastPage()) {
+            $this->redirectRoute('mods', ['page' => $lengthAwarePaginator->lastPage()]);
         }
     }
 
@@ -167,11 +176,11 @@ class Listing extends Component
         if ($this->query !== '') {
             $count++;
         }
+
         if ($this->featured !== 'include') {
             $count++;
         }
-        $count += count($this->sptVersions);
 
-        return $count;
+        return $count + count($this->sptVersions);
     }
 }

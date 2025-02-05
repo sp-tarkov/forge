@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V0;
 
 use App\Http\Controllers\Controller;
@@ -12,12 +14,14 @@ class ApiController extends Controller
     /**
      * Determine if the given relationship should be included in the request. If more than one relationship is provided,
      * only one needs to be present in the request for this method to return true.
+     *
+     * @param  string|array<int, string>  $relationships
      */
     public static function shouldInclude(string|array $relationships): bool
     {
         try {
             $param = request()->get('include');
-        } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+        } catch (NotFoundExceptionInterface|ContainerExceptionInterface) {
             return false;
         }
 

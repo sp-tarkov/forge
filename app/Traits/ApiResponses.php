@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
@@ -8,6 +10,8 @@ trait ApiResponses
 {
     /**
      * Return a success JSON response.
+     *
+     * @param  array<string, string>  $data
      */
     protected function success(string $message, ?array $data = []): JsonResponse
     {
@@ -16,6 +20,8 @@ trait ApiResponses
 
     /**
      * The base response.
+     *
+     * @param  array<string, string>  $data
      */
     private function baseResponse(?string $message = '', ?array $data = [], ?int $code = 200): JsonResponse
     {
@@ -24,6 +30,7 @@ trait ApiResponses
         if ($data) {
             $response['data'] = $data;
         }
+
         $response['status'] = $code;
 
         return response()->json($response, $code);

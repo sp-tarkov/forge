@@ -3,55 +3,31 @@ name: Tests
 on: [ push, pull_request ]
 
 jobs:
-  laravel-tests:
+  tests:
     runs-on: ubuntu-latest
     services:
       mysql:
         image: mysql:8.3
+        ports:
+          - 33306:3306
         env:
-          MYSQL_DATABASE: testing
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_ROOT_PASSWORD: password
-        options: --health-cmd="mysql -u user -D testing -ppassword -h mysql -e ''" --health-interval=10s --health-timeout=5s --health-retries=3
+          MYSQL_DATABASE: test
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Setup
+        uses: ./.github/action/setup
         with:
-          php-version: '8.3'
-          extensions: mbstring, dom, fileinfo
-          coverage: none
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          php-version: 8.3
 
       - name: Install Composer Dependencies
-        run: composer install --no-progress --prefer-dist --optimize-autoloader
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Get NPM Cache Directory
-        id: npm-cache
-        run: echo "NPM_CACHE_DIR=$(npm config get cache)" >> $GITHUB_ENV
-
-      - name: Cache NPM Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.NPM_CACHE_DIR }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-node-
-
-      - name: Install npm dependencies
+      - name: Install NPM dependencies
         run: npm ci
 
       - name: Build Front-end Assets

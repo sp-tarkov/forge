@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -34,16 +36,16 @@ class AuthController extends Controller
     #[Response(['message' => 'authenticated', 'data' => ['token' => 'YOUR_API_KEY'], 'status' => 200], status: 200, description: 'Authenticated successfully')]
     #[Response(['message' => 'invalid credentials', 'status' => 401], status: 401, description: 'Invalid credentials')]
     #[ResponseField('token', description: 'The newly created read-only API token to use for future authenticated requests.')]
-    public function login(LoginUserRequest $request): JsonResponse
+    public function login(LoginUserRequest $loginUserRequest): JsonResponse
     {
-        $request->validated($request->all());
+        $loginUserRequest->validated($loginUserRequest->all());
 
-        if (! Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($loginUserRequest->only('email', 'password'))) {
             return $this->error(__('invalid credentials'), 401);
         }
 
-        $user = User::firstWhere('email', $request->email);
-        $tokenName = $request->token_name ?? __('Dynamic API Token');
+        $user = User::query()->firstWhere('email', $loginUserRequest->email);
+        $tokenName = $loginUserRequest->token_name ?? __('Dynamic API Token');
 
         return $this->success(__('authenticated'), [
             // Only allowing the 'read' scope to be dynamically created. Can revisit later when writes are possible.
