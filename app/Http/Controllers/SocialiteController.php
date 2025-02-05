@@ -130,6 +130,12 @@ class SocialiteController extends Controller
             default => 'public', // Local
         };
 
+        if ($avatarUrl === '') {
+            Log::error('The avatar URL is empty. Skipping.');
+
+            return;
+        }
+
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
@@ -149,7 +155,7 @@ class SocialiteController extends Controller
         } while (Storage::disk($disk)->exists($relativePath));
 
         // Store the image on the disk.
-        Storage::disk($disk)->put($relativePath, $image);
+        Storage::disk($disk)->put($relativePath, (string) $image);
 
         // Update the user's profile photo path.
         $user->forceFill([
