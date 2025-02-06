@@ -59,6 +59,9 @@
         "phpstan": [
             "./vendor/bin/phpstan analyse --configuration phpstan.neon --error-format=table --memory-limit=2G"
         ],
+        "rector": [
+            "./vendor/bin/rector process --dry-run --config=rector.php"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
