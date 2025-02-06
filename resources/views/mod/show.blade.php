@@ -20,7 +20,7 @@
                     <div class="ribbon z-10">{{ __('Featured!') }}</div>
                 @endif
                 @if ($mod->disabled)
-                    <div class="ribbon-red z-10">{{ __('Disabled') }}</div>
+                    <div class="ribbon ribbon-red z-10">{{ __('Disabled') }}</div>
                 @endif
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
@@ -107,7 +107,7 @@
                     @foreach ($mod->versions as $version)
                         <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                             @if($version->disabled)
-                                <div class="ribbon-red z-10">{{ __('Disabled') }}</div>
+                                <div class="ribbon ribbon-red z-10">{{ __('Disabled') }}</div>
                             @endif
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
                                 @if (auth()->check() && auth()->user()->isModOrAdmin())
