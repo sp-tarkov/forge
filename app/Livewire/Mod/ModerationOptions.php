@@ -2,6 +2,10 @@
 
 namespace App\Livewire\Mod;
 
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View as ContractView;
+use Illuminate\Foundation\Application;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class ModerationOptions extends Component
@@ -18,7 +22,7 @@ class ModerationOptions extends Component
 
     public bool $showDisableDialog = false;
 
-    public function render()
+    public function render(): Application|Factory|ContractView|View
     {
         return view('livewire.mod.moderation-options');
     }

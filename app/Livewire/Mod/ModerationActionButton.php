@@ -4,7 +4,11 @@ namespace App\Livewire\Mod;
 
 use App\Models\Mod;
 use App\Models\ModVersion;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View as ContractView;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -22,6 +26,9 @@ class ModerationActionButton extends Component
 
     public bool $isRunning = false;
 
+    /**
+     * @var array<string, string>
+     */
     protected $listeners = ['refreshComponent' => '$refresh'];
 
     public function mount(): void
@@ -29,7 +36,7 @@ class ModerationActionButton extends Component
         $this->guid = uniqid('', true);
     }
 
-    public function render()
+    public function render(): Application|Factory|ContractView|View
     {
         $this->allowActions = ! $this->isRunning;
 
@@ -45,7 +52,7 @@ class ModerationActionButton extends Component
     #[On('startAction.{guid}')]
     public function invokeAction(): void
     {
-        if ($this->moderatedObjectId == null || $this->moderatedObjectId == '') {
+        if (empty($this->moderatedObjectId)) {
             Log::info('Failed: no ID specified.');
 
             return;
@@ -61,11 +68,11 @@ class ModerationActionButton extends Component
 
         switch ($this->targetType) {
             case 'mod':
-                $moderatedObject = Mod::where('id', '=', $this->moderatedObjectId)->first();
+                $moderatedObject = Mod::query()->where('id', '=', $this->moderatedObjectId)->first();
                 break;
 
             case 'modVersion':
-                $moderatedObject = ModVersion::where('id', '=', $this->moderatedObjectId)->first();
+                $moderatedObject = ModVersion::query()->where('id', '=', $this->moderatedObjectId)->first();
                 break;
 
             default:
@@ -74,7 +81,7 @@ class ModerationActionButton extends Component
                 return;
         }
 
-        if ($moderatedObject == null) {
+        if ($moderatedObject === null) {
             Log::info('Failed: moderated object is null');
 
             return;
