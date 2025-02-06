@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
+use App\Traits\CanModerate;
 use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -54,6 +54,7 @@ use Override;
  */
 class Mod extends Model
 {
+    use CanModerate;
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 
@@ -66,7 +67,6 @@ class Mod extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
         static::addGlobalScope(new PublishedScope);
     }
 

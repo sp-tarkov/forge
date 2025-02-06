@@ -193,6 +193,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Conveniently check is a user is a mod or an admin
+     */
+    public function isModOrAdmin(): bool
+    {
+        return $this->isMod() || $this->isAdmin();
+    }
+
+    /**
      * Overwritten to instead use the queued version of the VerifyEmail notification.
      */
     public function sendEmailVerificationNotification(): void

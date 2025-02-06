@@ -22,7 +22,11 @@ class ModPolicy
      */
     public function view(?User $user, Mod $mod): bool
     {
-        // Everyone can view mods.
+        // Everyone can view mods, unless they are disabled.
+        if ($mod->disabled && ! $user?->isModOrAdmin()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -39,7 +43,7 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        return false;
+        return $user->isMod() || $user->isAdmin() || $mod->users->contains($user);
     }
 
     /**
@@ -47,7 +51,10 @@ class ModPolicy
      */
     public function delete(User $user, Mod $mod): bool
     {
-        return false;
+        // I'm guessing we want the mod author to also be able to do this?
+        // what if there are multiple authors?
+        // I'm leaving that out for now -waffle.lazy
+        return $user->isAdmin();
     }
 
     /**
