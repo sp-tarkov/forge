@@ -6,7 +6,8 @@
         </x-slot>
 
         <x-slot name="description">
-            {{ __('API tokens allow third-party services to authenticate with our application on your behalf.') }}
+            {{ __('API tokens allow third-party services to authenticate with our application on your behalf.') }}<br /><br />
+            {!! __('Please read the <a href="/docs/index.html">API documentation</a> for examples and details on the available API endpoints. Build something great! :D') !!}
         </x-slot>
 
         <x-slot name="form">

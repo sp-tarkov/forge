@@ -1,12 +1,9 @@
 @props(['mod', 'version'])
 
 <a href="{{ $mod->detailUrl() }}" class="mod-list-component relative mx-auto w-full max-w-2xl">
-    @if ($mod->featured && !$mod->disabled && !request()->routeIs('home'))
-        <div class="ribbon z-10">{{ __('Featured!') }}</div>
-    @endif
-    @if ($mod->disabled)
-            <div class="ribbon ribbon-red z-10">{{ __('Disabled') }}</div>
-    @endif
+
+    <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" />
+
     <div class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black hover:shadow-gray-400 dark:hover:shadow-black transition-colors ease-out duration-700">
         <div class="h-auto md:h-full md:flex">
             <div class="relative h-auto md:h-full md:shrink-0 overflow-hidden">

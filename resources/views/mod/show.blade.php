@@ -11,17 +11,14 @@
 
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                @if (auth()->check() && auth()->user()->isModOrAdmin())
+                @if (auth()->user()?->isModOrAdmin())
                     <div class="absolute top-0 right-0 z-50 m-2">
                         <livewire:mod.moderation-options :objectId="$mod->id" targetType="mod" :displayName="$mod->name" :disabled="$mod->disabled" />
                     </div>
                 @endif
-                @if ($mod->featured && !$mod->disabled)
-                    <div class="ribbon z-10">{{ __('Featured!') }}</div>
-                @endif
-                @if ($mod->disabled)
-                    <div class="ribbon ribbon-red z-10">{{ __('Disabled') }}</div>
-                @endif
+
+                <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" />
+
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
                         @if ($mod->thumbnail)
@@ -62,7 +59,7 @@
                     </div>
                 </div>
 
-                {{-- Mod teaser --}}
+                {{-- Mod Teaser --}}
                 @if ($mod->teaser)
                     <p class="mt-6 pt-3 border-t-2 border-gray-300 dark:border-gray-800 text-gray-900 dark:text-gray-200">{{ $mod->teaser }}</p>
                 @endif
@@ -106,11 +103,11 @@
                 <div x-show="selectedTab === 'versions'">
                     @foreach ($mod->versions as $version)
                         <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                            @if($version->disabled)
-                                <div class="ribbon ribbon-red z-10">{{ __('Disabled') }}</div>
-                            @endif
+
+                            <livewire:mod.ribbon key="mod-version-ribbon-{{ $version->id }}" :id="$version->id" :disabled="$version->disabled" />
+
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
-                                @if (auth()->check() && auth()->user()->isModOrAdmin())
+                                @if (auth()->user()?->isModOrAdmin())
                                     <div class="absolute top-0 right-0 z-50 m-2">
                                         <livewire:mod.moderation-options :objectId="$version->id" targetType="modVersion" :displayName="$version->version" :disabled="$version->disabled" />
                                     </div>

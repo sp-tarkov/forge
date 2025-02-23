@@ -127,10 +127,10 @@ main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
     transform: translate(calc((cos(45deg) - 1) * 100%), -100%) rotate(-45deg);
     transform-origin: 100% 100%;
     @apply text-white bg-cyan-500 dark:bg-cyan-700;
-}
 
-.ribbon-red {
-    @apply text-white bg-red-500 dark:bg-red-700;
+    &.red {
+        @apply text-white bg-red-500 dark:bg-red-700;
+    }
 }
 
 .rainbow {

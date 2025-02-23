@@ -30,14 +30,15 @@ class ModController extends Controller
 
     public function show(int $modId, string $slug): View
     {
-        $mod = Mod::with([
-            'versions',
-            'versions.latestSptVersion',
-            'versions.latestResolvedDependencies',
-            'versions.latestResolvedDependencies.mod',
-            'license',
-            'users',
-        ])->findOrFail($modId);
+        $mod = Mod::query()
+            ->with([
+                'versions',
+                'versions.latestSptVersion',
+                'versions.latestResolvedDependencies',
+                'versions.latestResolvedDependencies.mod',
+                'license',
+                'users',
+            ])->findOrFail($modId);
 
         abort_if($mod->slug !== $slug, 404);
 

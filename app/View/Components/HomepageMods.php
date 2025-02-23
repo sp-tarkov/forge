@@ -40,7 +40,10 @@ class HomepageMods extends Component
      */
     private function fetchFeaturedMods(): Collection
     {
-        return Cache::flexible('homepage-featured-mods', [5, 10], fn () => Mod::whereFeatured(true)
+        return Cache::flexible('homepage-featured-mods', [5, 10], fn () => Mod::query()
+            ->whereFeatured(true)
+            ->when(! auth()->user()?->isModOrAdmin(), fn ($query) => $query->whereDisabled(false))
+            ->whereHas('latestVersion')
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
@@ -59,7 +62,10 @@ class HomepageMods extends Component
      */
     private function fetchLatestMods(): Collection
     {
-        return Cache::flexible('homepage-latest-mods', [5, 10], fn () => Mod::query()->orderByDesc('created_at')
+        return Cache::flexible('homepage-latest-mods', [5, 10], fn () => Mod::query()
+            ->unless(auth()->user()?->isModOrAdmin(), fn ($query) => $query->whereDisabled(false))
+            ->orderByDesc('created_at')
+            ->whereHas('latestVersion')
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
@@ -77,7 +83,10 @@ class HomepageMods extends Component
      */
     private function fetchUpdatedMods(): Collection
     {
-        return Cache::flexible('homepage-updated-mods', [5, 10], fn () => Mod::query()->orderByDesc('updated_at')
+        return Cache::flexible('homepage-updated-mods', [5, 10], fn () => Mod::query()
+            ->unless(auth()->user()?->isModOrAdmin(), fn ($query) => $query->whereDisabled(false))
+            ->orderByDesc('updated_at')
+            ->whereHas('latestVersion')
             ->with([
                 'latestUpdatedVersion',
                 'latestUpdatedVersion.latestSptVersion',
