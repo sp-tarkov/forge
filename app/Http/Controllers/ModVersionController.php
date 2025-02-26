@@ -25,7 +25,7 @@ class ModVersionController extends Controller
         $this->authorize('view', $modVersion);
 
         // Rate limit the downloads.
-        $rateKey = 'mod-download:'.($request->user()?->id ?: $request->ip());
+        $rateKey = 'mod-download:'.($request->user()?->id ?: $request->session()->getId());
         if (RateLimiter::tooManyAttempts($rateKey, maxAttempts: 5)) { // Max attempts is per minute.
             abort(429);
         }
