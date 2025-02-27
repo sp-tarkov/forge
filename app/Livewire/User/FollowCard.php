@@ -136,7 +136,7 @@ class FollowCard extends Component
      */
     public function render(): View
     {
-        $this->populateFollowUsers();
+        $this->followUsers = $this->profileUser->{$this->relationship}()->get();
 
         return view('livewire.user.follow-card');
     }
