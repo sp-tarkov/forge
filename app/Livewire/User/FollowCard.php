@@ -74,7 +74,7 @@ class FollowCard extends Component
      *
      * @var array<string, string>
      */
-    protected $listeners = ['refreshComponent' => '$refresh'];
+    protected $listeners = ['auth-follow-change' => '$refresh'];
 
     /**
      * The number of users being displayed.
@@ -136,21 +136,10 @@ class FollowCard extends Component
      */
     public function render(): View
     {
-        $this->followUsers = $this->profileUser->{$this->relationship}()->get();
-
-        return view('livewire.user.follow-card');
-    }
-
-    /**
-     * Called when the user follows or unfollows a user.
-     */
-    #[On('auth-follow-change')]
-    public function populateFollowUsers(): void
-    {
         // Update the collection of profile user's followers (or following).
         $this->followUsers = $this->profileUser->{$this->relationship}()->get();
 
-        $this->dispatch('refreshComponent');
+        return view('livewire.user.follow-card');
     }
 
     /**
