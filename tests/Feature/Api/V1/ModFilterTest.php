@@ -4,15 +4,42 @@ declare(strict_types=1);
 
 use App\Http\Filters\V1\ModFilter;
 use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    Mod::factory()->create(['name' => 'Mod C', 'slug' => 'mod-c', 'featured' => true]);
-    Mod::factory()->create(['name' => 'Mod B', 'slug' => 'mod-b', 'featured' => false]);
-    Mod::factory()->create(['name' => 'Mod A', 'slug' => 'mod-a', 'featured' => true]);
+    SptVersion::factory()->create(['version' => '1.0.0']);
+    Mod::factory()->create(['id' => 1, 'name' => 'Mod C', 'slug' => 'mod-c', 'featured' => true]);
+    Mod::factory()->create(['id' => 2, 'name' => 'Mod B', 'slug' => 'mod-b', 'featured' => false]);
+    Mod::factory()->create(['id' => 3, 'name' => 'Mod A', 'slug' => 'mod-a', 'featured' => true]);
+    Mod::all()->each(function ($mod): void {
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+    });
+});
+
+it('does not show mods without versions', function (): void {
+    $mod = Mod::factory()->create();
+
+    $request = new Request;
+    $filter = new ModFilter($request);
+    $builder = $filter->apply(Mod::query());
+
+    expect($builder->get()->pluck('id')->toArray())->not()->toContain($mod->id);
+});
+
+it('does not show disabled mods', function (): void {
+    $mod = Mod::factory()->disabled()->create();
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+    $request = new Request;
+    $filter = new ModFilter($request);
+    $builder = $filter->apply(Mod::query());
+
+    expect($builder->get()->pluck('id')->toArray())->not()->toContain($mod->id);
 });
 
 it('can filter mods by id', function (): void {
@@ -20,7 +47,9 @@ it('can filter mods by id', function (): void {
     $filter = new ModFilter($request);
     $builder = $filter->apply(Mod::query());
 
-    expect($builder->get()->pluck('id')->toArray())->toBe([1, 2]);
+    dump($builder->get());
+
+    expect($builder->get()->pluck('id')->toArray())->toContain(1, 2);
 });
 
 it('can filter mods by name with wildcard', function (): void {

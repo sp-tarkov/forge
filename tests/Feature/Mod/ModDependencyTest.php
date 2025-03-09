@@ -223,22 +223,6 @@ it('calls DependencyVersionService when a Mod is updated', function (): void {
     }
 });
 
-it('calls DependencyVersionService when a Mod is deleted', function (): void {
-    $mod = Mod::factory()->create();
-    ModVersion::factory(2)->recycle($mod)->create();
-
-    $serviceSpy = $this->spy(DependencyVersionService::class);
-
-    $mod->delete();
-
-    $mod->refresh();
-
-    expect($mod->versions)->toHaveCount(2);
-    foreach ($mod->versions as $modVersion) {
-        $serviceSpy->shouldReceive('resolve')->with($modVersion);
-    }
-});
-
 it('calls DependencyVersionService when a ModVersion is updated', function (): void {
     $modVersion = ModVersion::factory()->create();
 

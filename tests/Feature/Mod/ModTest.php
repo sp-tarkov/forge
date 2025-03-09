@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
+use App\Models\User;
+use App\Models\UserRole;
 
 it('displays the latest version on the mod detail page', function (): void {
     $versions = [
@@ -42,4 +45,32 @@ it('builds download links using the latest mod version', function (): void {
         'slug' => $mod->slug,
         'version' => $modVersion->version,
     ], absolute: false));
+});
+
+it('displays unauthorised if the mod has been disabled', function (): void {
+    SptVersion::factory()->create(['version' => '1.0.0']);
+    $mod = Mod::factory()->create();
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+    $response = $this->get($mod->detailUrl());
+    $response->assertOk();
+
+    // Disable the mod
+    $mod->disabled = true;
+    $mod->save();
+
+    $notFoundResponse = $this->get($mod->detailUrl());
+    $notFoundResponse->assertForbidden();
+});
+
+it('allows an administrator to view a disabled mod', function (): void {
+    $userRole = UserRole::factory()->administrator()->create();
+    $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+
+    SptVersion::factory()->create(['version' => '1.0.0']);
+    $mod = Mod::factory()->disabled()->create();
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+    $response = $this->get($mod->detailUrl());
+    $response->assertOk();
 });

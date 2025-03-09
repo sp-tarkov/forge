@@ -177,6 +177,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if the user has the role of an moderator or administrator.
+     */
+    public function isModOrAdmin(): bool
+    {
+        return $this->isMod() || $this->isAdmin();
+    }
+
+    /**
      * Check if the user has the role of a moderator.
      */
     public function isMod(): bool
@@ -224,7 +232,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function slug(): string
     {
-        return Str::lower(Str::slug($this->name));
+        return Str::of($this->name)->slug('-')->toString();
     }
 
     /**

@@ -11,9 +11,12 @@
 
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                @if ($mod->featured)
-                    <div class="ribbon z-10">{{ __('Featured!') }}</div>
+                @if (auth()->user()?->isModOrAdmin())
+                    <livewire:mod.moderation :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
                 @endif
+
+                <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" />
+
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
                         @if ($mod->thumbnail)
@@ -54,7 +57,7 @@
                     </div>
                 </div>
 
-                {{-- Mod teaser --}}
+                {{-- Mod Teaser --}}
                 @if ($mod->teaser)
                     <p class="mt-6 pt-3 border-t-2 border-gray-300 dark:border-gray-800 text-gray-900 dark:text-gray-200">{{ $mod->teaser }}</p>
                 @endif
@@ -98,7 +101,13 @@
                 <div x-show="selectedTab === 'versions'">
                     @foreach ($mod->versions as $version)
                         <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+
+                            <livewire:mod.ribbon key="mod-version-ribbon-{{ $version->id }}" :id="$version->id" :disabled="$version->disabled" />
+
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
+                                @if (auth()->user()?->isModOrAdmin())
+                                    {{-- TODO: <livewire:modVersion.moderation :modVersion="$version" /> --}}
+                                @endif
                                 <div class="flex items-center justify-between">
                                     <a class="text-2xl font-extrabold text-gray-900 dark:text-white" href="{{ $version->downloadUrl() }}">
                                         {{ __('Version') }} {{ $version->version }}

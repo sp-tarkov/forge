@@ -27,8 +27,10 @@ class ResolveSptVersionsJob implements ShouldBeUnique, ShouldQueue
     {
         $sptVersionService = new SptVersionService;
 
-        foreach (ModVersion::all() as $modVersion) {
-            $sptVersionService->resolve($modVersion);
-        }
+        ModVersion::query()->chunk(100, function ($modVersions) use ($sptVersionService): void {
+            foreach ($modVersions as $modVersion) {
+                $sptVersionService->resolve($modVersion);
+            }
+        });
     }
 }

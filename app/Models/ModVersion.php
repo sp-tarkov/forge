@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
+use App\Traits\CanModerate;
 use Database\Factories\ModVersionFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Override;
 
@@ -37,7 +36,6 @@ use Override;
  * @property string $virus_total_link
  * @property int $downloads
  * @property bool $disabled
- * @property Carbon|null $deleted_at
  * @property Carbon|null $published_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -50,10 +48,10 @@ use Override;
  */
 class ModVersion extends Model
 {
+    use CanModerate;
+
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
-
-    use SoftDeletes;
 
     /**
      * Update the parent mod's updated_at timestamp when the mod version is updated.
@@ -68,8 +66,6 @@ class ModVersion extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
-
         static::addGlobalScope(new PublishedScope);
 
         static::saving(function (ModVersion $modVersion): void {
@@ -124,7 +120,7 @@ class ModVersion extends Model
     }
 
     /**
-     * The relationship between a mod version and its each of it's resolved dependencies' latest versions.
+     * The relationship between a mod version and each of it's resolved dependencies' latest versions.
      *
      * @return BelongsToMany<ModVersion, $this>
      */

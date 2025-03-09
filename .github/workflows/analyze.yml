@@ -2,9 +2,7 @@ name: Analyze
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ "main" ]
 
 jobs:
   build:

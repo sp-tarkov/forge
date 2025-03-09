@@ -12,14 +12,6 @@
     --font-sans: Figtree, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
     *,
     ::after,
@@ -38,7 +30,7 @@ button {
     @apply cursor-pointer;
 }
 
-main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
+main a:not(.mod-list-component > a):not(.tab):not([role="menuitem"]) {
     @apply underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white;
 }
 
@@ -121,24 +113,24 @@ main a:not(.mod-list-component):not(.tab):not([role="menuitem"]) {
 }
 
 .ribbon {
-    font-size: 18px;
-    font-weight: bold;
-    color: #fff;
-}
-
-.ribbon {
     --f: .5em;
     position: absolute;
     top: 0;
     left: 0;
     line-height: 1.5;
+    font-size: 18px;
+    font-weight: bold;
     padding-inline: 1lh;
     padding-bottom: var(--f);
     border-image: conic-gradient(#0008 0 0) 51%/var(--f);
     clip-path: polygon(100% calc(100% - var(--f)), 100% 100%, calc(100% - var(--f)) calc(100% - var(--f)), var(--f) calc(100% - var(--f)), 0 100%, 0 calc(100% - var(--f)), 999px calc(100% - var(--f) - 999px), calc(100% - 999px) calc(100% - var(--f) - 999px));
     transform: translate(calc((cos(45deg) - 1) * 100%), -100%) rotate(-45deg);
     transform-origin: 100% 100%;
-    background-color: #0e7490;
+    @apply text-white bg-cyan-500 dark:bg-cyan-700;
+
+    &.red {
+        @apply text-white bg-red-500 dark:bg-red-700;
+    }
 }
 
 .rainbow {

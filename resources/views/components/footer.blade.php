@@ -42,11 +42,8 @@
                 <div>
                     <h3 class="text-sm font-semibold leading-6 text-white">Legal</h3>
                     <ul role="list" class="mt-6 space-y-4">
-                        <li>
-                            <a href="#" class="text-sm leading-6 text-gray-300 hover:text-white">Community Guidelines</a>
-                        </li>
-                        <li><a href="#" class="text-sm leading-6 text-gray-300 hover:text-white">Terms of Service</a>
-                        </li>
+                        <li><a href="#" class="text-sm leading-6 text-gray-300 hover:text-white">Community Guidelines</a></li>
+                        <li><a href="#" class="text-sm leading-6 text-gray-300 hover:text-white">Terms of Service</a></li>
                         <li><a href="#" class="text-sm leading-6 text-gray-300 hover:text-white">Privacy Policy</a></li>
                         <li><a href="#" class="text-sm leading-6 text-gray-300 hover:text-white">Disclaimer</a></li>
                         <li><a href="#" class="text-sm leading-6 text-gray-300 hover:text-white">DMCA</a></li>

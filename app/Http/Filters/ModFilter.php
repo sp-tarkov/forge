@@ -6,6 +6,7 @@ namespace App\Http\Filters;
 
 use App\Models\Mod;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 
 class ModFilter
@@ -38,15 +39,19 @@ class ModFilter
      */
     private function baseQuery(): Builder
     {
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
         return Mod::query()
             ->select('mods.*')
-            ->whereExists(function ($query): void {
+            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false))
+            ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
                 $query->select(DB::raw(1))
                     ->from('mod_versions')
                     ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
                     ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                     ->whereColumn('mod_versions.mod_id', 'mods.id')
-                    ->where('spt_versions.version', '!=', '0.0.0');
+                    ->where('spt_versions.version', '!=', '0.0.0')
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mods.disabled', false));
             })
             ->with([
                 'users:id,name',

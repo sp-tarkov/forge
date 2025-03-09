@@ -1,5 +1,4 @@
 <x-app-layout>
-
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
             <div class="relative isolate overflow-hidden bg-gray-900 dark:bg-gray-800 px-6 py-24 sm:py-32 lg:px-8 rounded-none sm:rounded-md">
@@ -18,9 +17,8 @@
                     <p class="mt-6 text-lg leading-8 text-gray-300 drop-shadow-md">The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Craft your vision. Transform the game.</p>
                 </div>
             </div>
-
             <div class="pb-10">
-                <x-homepage-mods />
+                <livewire:mod.homepage />
             </div>
         </div>
     </div>

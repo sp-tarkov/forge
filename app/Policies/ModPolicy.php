@@ -22,7 +22,11 @@ class ModPolicy
      */
     public function view(?User $user, Mod $mod): bool
     {
-        // Everyone can view mods.
+        // Disabled mods will not be shown to normal users.
+        if ($mod->disabled && ! $user?->isModOrAdmin()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -39,7 +43,7 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        return false;
+        return $user->isModOrAdmin() || $mod->users->contains($user);
     }
 
     /**
@@ -47,7 +51,7 @@ class ModPolicy
      */
     public function delete(User $user, Mod $mod): bool
     {
-        return false;
+        return $user->isAdmin() || $mod->users->contains($user);
     }
 
     /**

@@ -11,8 +11,8 @@ test('current profile information is available', function (): void {
 
     $testable = Livewire::test(UpdateProfileInformationForm::class);
 
-    expect($testable->state['name'])->toEqual($user->name);
-    expect($testable->state['email'])->toEqual($user->email);
+    expect($testable->state['name'])->toEqual($user->name)
+        ->and($testable->state['email'])->toEqual($user->email);
 });
 
 test('profile information can be updated', function (): void {

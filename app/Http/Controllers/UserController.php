@@ -19,20 +19,9 @@ class UserController extends Controller
             ->with(['following', 'followers'])
             ->firstOrFail();
 
-        $mods = $user->mods()
-            ->with([
-                'users',
-                'latestVersion',
-                'latestVersion.latestSptVersion',
-            ])
-            ->orderByDesc('created_at')
-            ->paginate(10)
-            ->fragment('mods');
-
         abort_if($user->slug() !== $username, 404);
-
         abort_if($request->user()?->cannot('view', $user), 403);
 
-        return view('user.show', ['user' => $user, 'mods' => $mods]);
+        return view('user.show', ['user' => $user]);
     }
 }

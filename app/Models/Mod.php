@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
-use App\Models\Scopes\DisabledScope;
 use App\Models\Scopes\PublishedScope;
+use App\Traits\CanModerate;
 use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -44,7 +43,6 @@ use Override;
  * @property bool $disabled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
  * @property Carbon|null $published_at
  * @property-read License|null $license
  * @property-read Collection<int, User> $users
@@ -54,11 +52,12 @@ use Override;
  */
 class Mod extends Model
 {
+    use CanModerate;
+
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 
     use Searchable;
-    use SoftDeletes;
 
     /**
      * Post boot method to configure the model.
@@ -66,7 +65,6 @@ class Mod extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::addGlobalScope(new DisabledScope);
         static::addGlobalScope(new PublishedScope);
     }
 
@@ -278,7 +276,6 @@ class Mod extends Model
             'disabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'deleted_at' => 'datetime',
             'published_at' => 'datetime',
         ];
     }

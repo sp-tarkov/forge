@@ -6,6 +6,8 @@ use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
+use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -189,4 +191,50 @@ it('handles an empty SPT versions array correctly', function (): void {
 
     // Assert that the behavior is as expected (return all mods, or none, depending on intended behavior)
     expect($filteredMods)->toHaveCount(2); // Modify this assertion to reflect your desired behavior
+});
+
+it('does not show disabled mods to unauthorised users', function (): void {
+    // Create the SPT versions
+    $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
+
+    // Create the mods and their versions with appropriate constraints
+    $modEnabled = Mod::factory()->create();
+    $modEnabledVersion = ModVersion::factory()->recycle($modEnabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    $modDisabled = Mod::factory()->disabled()->create();
+    $modDisabledVersion = ModVersion::factory()->recycle($modDisabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    // Apply an empty filter
+    $filters = [];
+    $filteredMods = (new ModFilter($filters))->apply()->get();
+
+    // Assert that only the enabled mod is returned
+    expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($modEnabled->id)
+        ->and($filteredMods->pluck('id')->toArray())->not()->toContain($modDisabled->id);
+});
+
+it('does show disabled mods to administrators and moderators', function (): void {
+    // Create an administrator
+    $userRole = UserRole::factory()->administrator()->create();
+    $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+
+    // Create the SPT versions
+    $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
+
+    // Create the mods and their versions with appropriate constraints
+    $modEnabled = Mod::factory()->create();
+    $modEnabledVersion = ModVersion::factory()->recycle($modEnabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    $modDisabled = Mod::factory()->create();
+    $modDisabledVersion = ModVersion::factory()->recycle($modDisabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    // Apply an empty filter
+    $filters = [];
+    $filteredMods = (new ModFilter($filters))->apply()->get();
+
+    // Assert that both the enabled and disabled mods are returned
+    expect($filteredMods)
+        ->toHaveCount(2)
+        ->and($filteredMods->pluck('id')->toArray())
+        ->toContain($modEnabled->id, $modDisabled->id);
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Filters\V1;
 
+use App\Models\Mod;
 use App\Traits\V1\FilterMethods;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -65,7 +66,7 @@ abstract class QueryFilter
      */
     public function apply(Builder $builder): Builder
     {
-        $this->builder = $builder;
+        $this->builder = $this->applyBaseFilters($builder);
 
         foreach ($this->request->all() as $attribute => $value) {
             if (method_exists($this, $attribute)) {
@@ -74,5 +75,23 @@ abstract class QueryFilter
         }
 
         return $this->builder;
+    }
+
+    /**
+     * Apply the base filters to the query builder.
+     *
+     * @param  Builder<Model>  $builder
+     * @return Builder<Model>
+     */
+    private function applyBaseFilters(Builder $builder): Builder
+    {
+        $builder->where('disabled', false);
+
+        // If this builder is for a mod, ensure it has a latest version.
+        if ($builder->getModel() instanceof Mod) {
+            $builder->whereHas('latestVersion');
+        }
+
+        return $builder;
     }
 }
