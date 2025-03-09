@@ -33,7 +33,7 @@ it('shows mods on a profile page', function (): void {
     $response->assertSeeText($mod->name);
 });
 
-it('does not show mods without versions to anonymous users', function () {
+it('does not show mods without versions to anonymous users', function (): void {
     $user = User::factory()->create();
 
     $mod = Mod::factory()->create();
@@ -44,7 +44,7 @@ it('does not show mods without versions to anonymous users', function () {
     $response->assertDontSeeText($mod->name);
 });
 
-it('shows mods without versions to the author', function () {
+it('shows mods without versions to the author', function (): void {
     $user = User::factory()->create();
 
     $mod = Mod::factory()->create();
@@ -55,7 +55,7 @@ it('shows mods without versions to the author', function () {
     $response->assertSeeText($mod->name);
 });
 
-it('shows mods without versions to administrators', function () {
+it('shows mods without versions to administrators', function (): void {
     $role = UserRole::factory()->administrator()->create();
     $user = User::factory()->create(['user_role_id' => $role->id]);
 

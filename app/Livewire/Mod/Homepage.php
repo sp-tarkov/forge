@@ -2,45 +2,26 @@
 
 declare(strict_types=1);
 
-namespace App\View\Components;
+namespace App\Livewire\Mod;
 
 use App\Models\Mod;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\View\Component;
+use Illuminate\View\View;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
-class HomepageMods extends Component
+class Homepage extends Component
 {
-    public function render(): View
-    {
-        return view('components.homepage-mods', [
-            'featured' => [
-                'title' => __('Featured Mods'),
-                'mods' => $this->fetchFeaturedMods(),
-                'link' => '/mods?featured=only',
-            ],
-            'latest' => [
-                'title' => __('Newest Mods'),
-                'mods' => $this->fetchLatestMods(),
-                'link' => '/mods',
-            ],
-            'updated' => [
-                'title' => __('Recently Updated Mods'),
-                'mods' => $this->fetchUpdatedMods(),
-                'link' => '/mods?order=updated',
-            ],
-        ]);
-    }
-
     /**
-     * Fetches the featured mods homepage listing.
+     * Featured mods for the homepage listing.
      *
      * @return Collection<int, Mod>
      */
-    private function fetchFeaturedMods(): Collection
+    #[Computed(persist: true, seconds: 600)]
+    public function featured(): Collection
     {
-        return Cache::flexible('homepage-featured-mods', [5, 10], fn () => Mod::query()
+        return Mod::query()
             ->whereFeatured(true)
             ->when(! auth()->user()?->isModOrAdmin(), fn ($query) => $query->whereDisabled(false))
             ->whereHas('latestVersion')
@@ -52,17 +33,18 @@ class HomepageMods extends Component
             ])
             ->inRandomOrder()
             ->limit(6)
-            ->get());
+            ->get();
     }
 
     /**
-     * Fetches the latest mods homepage listing.
+     * Latest mods for the homepage listing.
      *
      * @return Collection<int, Mod>
      */
-    private function fetchLatestMods(): Collection
+    #[Computed(persist: true, seconds: 600)]
+    public function latest(): Collection
     {
-        return Cache::flexible('homepage-latest-mods', [5, 10], fn () => Mod::query()
+        return Mod::query()
             ->unless(auth()->user()?->isModOrAdmin(), fn ($query) => $query->whereDisabled(false))
             ->orderByDesc('created_at')
             ->whereHas('latestVersion')
@@ -73,17 +55,18 @@ class HomepageMods extends Component
                 'license:id,name,link',
             ])
             ->limit(6)
-            ->get());
+            ->get();
     }
 
     /**
-     * Fetches the recently updated mods homepage listing.
+     * Latest updated mods for the homepage listing.
      *
      * @return Collection<int, Mod>
      */
-    private function fetchUpdatedMods(): Collection
+    #[Computed(persist: true, seconds: 600)]
+    public function updated(): Collection
     {
-        return Cache::flexible('homepage-updated-mods', [5, 10], fn () => Mod::query()
+        return Mod::query()
             ->unless(auth()->user()?->isModOrAdmin(), fn ($query) => $query->whereDisabled(false))
             ->orderByDesc('updated_at')
             ->whereHas('latestVersion')
@@ -94,6 +77,24 @@ class HomepageMods extends Component
                 'license:id,name,link',
             ])
             ->limit(6)
-            ->get());
+            ->get();
+    }
+
+    /**
+     * Refresh the mod listing.
+     */
+    #[On('mod-delete')]
+    public function refreshListing(): void
+    {
+        unset($this->featured, $this->latest, $this->updated);
+        $this->render();
+    }
+
+    /**
+     * Render the component.
+     */
+    public function render(): View|string
+    {
+        return view('livewire.mod.homepage');
     }
 }

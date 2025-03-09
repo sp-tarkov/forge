@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Override;
 
@@ -37,7 +36,6 @@ use Override;
  * @property string $virus_total_link
  * @property int $downloads
  * @property bool $disabled
- * @property Carbon|null $deleted_at
  * @property Carbon|null $published_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -51,10 +49,9 @@ use Override;
 class ModVersion extends Model
 {
     use CanModerate;
+
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
-
-    use SoftDeletes;
 
     /**
      * Update the parent mod's updated_at timestamp when the mod version is updated.
@@ -123,7 +120,7 @@ class ModVersion extends Model
     }
 
     /**
-     * The relationship between a mod version and its each of it's resolved dependencies' latest versions.
+     * The relationship between a mod version and each of it's resolved dependencies' latest versions.
      *
      * @return BelongsToMany<ModVersion, $this>
      */

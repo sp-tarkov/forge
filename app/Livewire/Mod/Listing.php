@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -105,6 +106,25 @@ class Listing extends Component
     }
 
     /**
+     * The method to reset the filters.
+     */
+    public function resetFilters(): void
+    {
+        $this->query = '';
+        $this->sptVersions = $this->getDefaultSptVersions();
+        $this->featured = 'include';
+    }
+
+    /**
+     * Refresh the mod listing.
+     */
+    #[On('mod-delete')]
+    public function refreshListing(): void
+    {
+        $this->render();
+    }
+
+    /**
      * The component mount method.
      */
     public function render(): View
@@ -112,18 +132,18 @@ class Listing extends Component
         $this->validatePerPage();
 
         // Fetch the mods using the filters saved to the component properties.
-        $filters = [
+        $filters = new ModFilter([
             'query' => $this->query,
             'featured' => $this->featured,
             'order' => $this->order,
             'sptVersions' => $this->sptVersions,
-        ];
+        ]);
 
-        $lengthAwarePaginator = (new ModFilter($filters))->apply()->paginate($this->perPage);
+        $paginatedMods = $filters->apply()->paginate($this->perPage);
 
-        $this->redirectOutOfBoundsPage($lengthAwarePaginator);
+        $this->redirectOutOfBoundsPage($paginatedMods);
 
-        return view('livewire.mod.listing', ['mods' => $lengthAwarePaginator]);
+        return view('livewire.mod.listing', ['mods' => $paginatedMods]);
     }
 
     /**
@@ -147,23 +167,13 @@ class Listing extends Component
     /**
      * Check if the current page is greater than the last page. Redirect if it is.
      *
-     * @param  LengthAwarePaginator<Mod>  $lengthAwarePaginator
+     * @param  LengthAwarePaginator<Mod>  $paginatedMods
      */
-    private function redirectOutOfBoundsPage(LengthAwarePaginator $lengthAwarePaginator): void
+    private function redirectOutOfBoundsPage(LengthAwarePaginator $paginatedMods): void
     {
-        if ($lengthAwarePaginator->currentPage() > $lengthAwarePaginator->lastPage()) {
-            $this->redirectRoute('mods', ['page' => $lengthAwarePaginator->lastPage()]);
+        if ($paginatedMods->currentPage() > $paginatedMods->lastPage()) {
+            $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
         }
-    }
-
-    /**
-     * The method to reset the filters.
-     */
-    public function resetFilters(): void
-    {
-        $this->query = '';
-        $this->sptVersions = $this->getDefaultSptVersions();
-        $this->featured = 'include';
     }
 
     /**

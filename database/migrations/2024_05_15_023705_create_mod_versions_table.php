@@ -30,14 +30,12 @@ return new class extends Migration
             $table->string('virus_total_link');
             $table->unsignedBigInteger('downloads');
             $table->boolean('disabled')->default(false);
-            $table->softDeletes();
             $table->timestamp('published_at')->nullable()->default(null);
             $table->timestamps();
 
             $table->index(['version']);
-            $table->index(['mod_id', 'deleted_at', 'disabled', 'published_at'], 'mod_versions_filtering_index');
+            $table->index(['mod_id', 'disabled', 'published_at'], 'mod_versions_filtering_index');
             $table->index(['version_major', 'version_minor', 'version_patch', 'version_pre_release'], 'mod_versions_version_components_index');
-            $table->index(['id', 'deleted_at'], 'mod_versions_id_deleted_at_index');
         });
     }
 

@@ -27,6 +27,9 @@
                 localStorage.setItem('forge-theme', theme);
             }
             document.documentElement.classList.add(theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('fl-dark');
+            }
         })();
     </script>
 </head>

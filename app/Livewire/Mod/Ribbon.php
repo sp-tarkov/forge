@@ -24,6 +24,11 @@ class Ribbon extends Component
     public bool $featured = false;
 
     /**
+     * Whether the ribbon is the home page.
+     */
+    public bool $isHomePage = false;
+
+    /**
      * Triggered when the object has had its relevant properties updated and the ribbon needs to reflect the changes.
      */
     #[On('updateProperties')]

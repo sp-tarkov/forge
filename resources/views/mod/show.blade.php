@@ -12,9 +12,7 @@
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 @if (auth()->user()?->isModOrAdmin())
-                    <div class="absolute top-0 right-0 z-50 m-2">
-                        <livewire:mod.moderation-options :objectId="$mod->id" targetType="mod" :displayName="$mod->name" :disabled="$mod->disabled" />
-                    </div>
+                    <livewire:mod.moderation :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
                 @endif
 
                 <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" />
@@ -108,9 +106,7 @@
 
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
                                 @if (auth()->user()?->isModOrAdmin())
-                                    <div class="absolute top-0 right-0 z-50 m-2">
-                                        <livewire:mod.moderation-options :objectId="$version->id" targetType="modVersion" :displayName="$version->version" :disabled="$version->disabled" />
-                                    </div>
+                                    {{-- TODO: <livewire:modVersion.moderation :modVersion="$version" /> --}}
                                 @endif
                                 <div class="flex items-center justify-between">
                                     <a class="text-2xl font-extrabold text-gray-900 dark:text-white" href="{{ $version->downloadUrl() }}">

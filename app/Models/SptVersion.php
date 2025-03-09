@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 use Override;
 use Throwable;
@@ -30,7 +29,6 @@ use Throwable;
  * @property int $mod_count
  * @property string $link
  * @property string $color_class
- * @property Carbon|null $deleted_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, ModVersion> $modVersions
@@ -40,8 +38,6 @@ class SptVersion extends Model
 {
     /** @use HasFactory<SptVersionFactory> */
     use HasFactory;
-
-    use SoftDeletes;
 
     /**
      * Get all versions for the last three minor versions.
@@ -80,7 +76,8 @@ class SptVersion extends Model
      */
     public static function getLastThreeMinorVersions(): array
     {
-        return self::query()->selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
+        return self::query()
+            ->selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
             ->where('version', '!=', '0.0.0')
             ->groupBy('version_major', 'version_minor')
             ->orderByDesc('version_major')
@@ -216,7 +213,6 @@ class SptVersion extends Model
             'mod_count' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'deleted_at' => 'datetime',
         ];
     }
 }

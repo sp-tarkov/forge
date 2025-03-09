@@ -32,13 +32,12 @@ return new class extends Migration
             $table->boolean('contains_ai_content')->default(false);
             $table->boolean('contains_ads')->default(false);
             $table->boolean('disabled')->default(false);
-            $table->softDeletes();
             $table->timestamp('published_at')->nullable()->default(null);
             $table->timestamps();
 
             $table->index(['slug']);
             $table->index(['featured']);
-            $table->index(['deleted_at', 'disabled', 'published_at'], 'mods_filtering_index');
+            $table->index(['disabled', 'published_at'], 'mods_filtering_index');
         });
     }
 
