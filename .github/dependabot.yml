@@ -8,9 +8,16 @@ updates:
       day: "monday"
       time: "10:00"
       timezone: "America/Toronto"
-    open-pull-requests-limit: 5
     target-branch: "develop"
     versioning-strategy: increase-if-necessary
+    groups:
+      production-deps:
+        dependency-type: "production"
+      development-deps:
+        dependency-type: "development"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "composer"
     labels:
       - "dependencies"
     reviewers:
@@ -24,8 +31,14 @@ updates:
       day: "monday"
       time: "10:00"
       timezone: "America/Toronto"
-    open-pull-requests-limit: 5
     target-branch: "develop"
+    groups:
+      actions-deps:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "actions"
     labels:
       - "dependencies"
     reviewers:
@@ -39,9 +52,16 @@ updates:
       day: "monday"
       time: "10:00"
       timezone: "America/Toronto"
-    open-pull-requests-limit: 5
     target-branch: "develop"
     versioning-strategy: increase-if-necessary
+    groups:
+      production-deps:
+        dependency-type: "production"
+      development-deps:
+        dependency-type: "development"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "npm"
     labels:
       - "dependencies"
     reviewers:
