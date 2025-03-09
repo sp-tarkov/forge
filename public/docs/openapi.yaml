@@ -1,11 +1,30 @@
 openapi: 3.0.3
 info:
   title: 'The Forge API Documentation'
-  description: ''
+  description: 'The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Craft your vision. Transform the game.'
   version: 1.0.0
 servers:
   -
-    url: 'https://forge.test'
+    url: 'https://forge.sp-tarkov.com'
+tags:
+  -
+    name: Authentication
+    description: ''
+  -
+    name: Mods
+    description: ''
+  -
+    name: Users
+    description: ''
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'You can generate your own API token by logging into The Forge, clicking your profile picture, and clicking <b>API Tokens</b>.'
+security:
+  -
+    default: []
 paths:
   /api/login:
     post:
@@ -478,22 +497,3 @@ paths:
         required: true
         schema:
           type: integer
-tags:
-  -
-    name: Authentication
-    description: ''
-  -
-    name: Mods
-    description: ''
-  -
-    name: Users
-    description: ''
-components:
-  securitySchemes:
-    default:
-      type: http
-      scheme: bearer
-      description: 'You can generate your own API token by logging into The Forge, clicking your profile picture, and clicking <b>API Tokens</b>.'
-security:
-  -
-    default: []

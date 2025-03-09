@@ -5,13 +5,13 @@
             "key": "baseUrl",
             "type": "string",
             "name": "string",
-            "value": "https:\/\/forge.test"
+            "value": "https:\/\/forge.sp-tarkov.com"
         }
     ],
     "info": {
         "name": "The Forge API Documentation",
-        "_postman_id": "2ec65d75-a4a6-437e-96b7-c71bb5df6943",
-        "description": "",
+        "_postman_id": "c24b3cd6-2bb9-477a-991c-0bd4ca5d8a6c",
+        "description": "The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Craft your vision. Transform the game.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
     "item": [
