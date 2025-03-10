@@ -55,11 +55,11 @@ class Listing extends Component
     /**
      * The SPT versions filter value.
      *
-     * @var array<int, string>
+     * @var array<int, string>|null
      */
     #[Session]
-    #[Url]
-    public array $sptVersions = [];
+    #[Url(as: 'versions')]
+    public ?array $sptVersions = null;
 
     /**
      * The featured filter value.
@@ -73,38 +73,26 @@ class Listing extends Component
      *
      * @var Collection<int, SptVersion>
      */
-    public Collection $activeSptVersions;
+    public Collection $availableSptVersions;
 
     /**
-     * The component mount method, run only once when the component is mounted.
+     * Called when a component is created.
      */
     public function mount(): void
     {
-        $this->activeSptVersions ??= Cache::remember('active-spt-versions', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
-    }
+        // Fetch the
+        $this->availableSptVersions ??= Cache::remember(
+            'active-spt-versions',
+            600,
+            function (): Collection {
+                return SptVersion::getVersionsForLastThreeMinors();
+            }
+        );
 
-    /**
-     * Get or initialize the SPT Versions filter value.
-     *
-     * @return array<int, string>
-     */
-    public function getSptVersionsProperty(): array
-    {
-        if (empty($this->sptVersions)) {
-            $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
+        // Only set the default version filter values if the property is empty after URL and session hydration.
+        if ($this->sptVersions === null) {
+            $this->sptVersions = $this->defaultSptVersions;
         }
-
-        return $this->sptVersions;
-    }
-
-    /**
-     * Get all patch versions of the latest minor SPT version.
-     *
-     * @return Collection<int, SptVersion>
-     */
-    public function getLatestMinorVersions(): Collection
-    {
-        return $this->activeSptVersions->filter(fn (SptVersion $sptVersion): bool => $sptVersion->isLatestMinor());
     }
 
     /**
@@ -113,8 +101,19 @@ class Listing extends Component
     public function resetFilters(): void
     {
         $this->query = '';
-        $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
+        $this->sptVersions = $this->defaultSptVersions;
         $this->featured = 'include';
+    }
+
+    /**
+     * Fetch the default value for the sptVersions property.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function defaultSptVersions(): array
+    {
+        return SptVersion::getLatestMinorVersions()->pluck('version')->toArray();
     }
 
     /**
@@ -127,12 +126,10 @@ class Listing extends Component
     }
 
     /**
-     * The component mount method.
+     * Render the component's view.
      */
     public function render(): View
     {
-        $this->validatePerPage();
-
         // Fetch the mods using the filters saved to the component properties.
         $filters = new ModFilter([
             'query' => $this->query,
@@ -149,21 +146,30 @@ class Listing extends Component
     }
 
     /**
-     * Validate that the option selected is an option that is available by setting it to the closest available version.
+     * Validate that the selected perPage value is an allowed option, resetting to the closest valid option.
      */
-    public function validatePerPage(): void
+    public function updatedPerPage(int $value): void
     {
-        $this->perPage = collect($this->perPageOptions)->pipe(function ($data) {
-            $closest = null;
+        $allowed = collect($this->perPageOptions)->sort()->values();
 
-            foreach ($data as $item) {
-                if ($closest === null || abs($this->perPage - $closest) > abs($item - $this->perPage)) {
-                    $closest = $item;
-                }
-            }
+        if ($allowed->contains($value)) {
+            return; // The value is allowed.
+        }
 
-            return $closest;
-        });
+        // Find the closest allowed value.
+        $this->perPage = $allowed->sortBy(function ($item) use ($value) {
+            return abs($item - $value);
+        })->first();
+    }
+
+    /**
+     * Validate the order value.
+     */
+    public function updatedOrder(string $value): void
+    {
+        if (! in_array($value, ['created', 'updated', 'downloaded'])) {
+            $this->order = 'created';
+        }
     }
 
     /**
@@ -176,6 +182,23 @@ class Listing extends Component
         if ($paginatedMods->currentPage() > $paginatedMods->lastPage()) {
             $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
         }
+    }
+
+    /**
+     * Compute the split of the active SPT versions.
+     *
+     * @return array<int, Collection<int, SptVersion>>
+     */
+    #[Computed]
+    public function splitSptVersions(): array
+    {
+        $versions = $this->availableSptVersions;
+        $half = ceil($versions->count() / 2);
+
+        return [
+            $versions->take($half),
+            $versions->slice($half),
+        ];
     }
 
     /**

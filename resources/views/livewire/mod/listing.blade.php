@@ -9,7 +9,7 @@
                     <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
                 </svg>
             </div>
-            <input wire:model.live="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
+            <input wire:model.live.debounce.300ms="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
         </search>
 
         <section x-data="{ isFilterOpen: false }"
@@ -33,7 +33,7 @@
                                 <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
                             </svg>
                         </div>
-                        <input wire:model.live="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
+                        <input wire:model.live.debounce.300ms="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
                     </search>
 
                     <button @click="$wire.call('resetFilters')" type="button" class="px-6 text-gray-600 dark:text-gray-300">{{ __('Reset Filters') }}</button>
@@ -61,27 +61,19 @@
                  class="py-10 border-b border-gray-400 dark:border-gray-700">
                 <div class="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
                     <div class="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
-                        @php
-                            $totalVersions = count($activeSptVersions);
-                            $half = ceil($totalVersions / 2);
-                        @endphp
                         <fieldset>
                             <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
                             <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                                @foreach ($activeSptVersions as $index => $version)
-                                    @if ($index < $half)
-                                        <x-filter-checkbox id="sptVersions-{{ $index }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
-                                    @endif
+                                @foreach ($this->splitSptVersions[0] as $version)
+                                    <x-filter-checkbox id="sptVersions-{{ $version->version }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
                                 @endforeach
                             </div>
                         </fieldset>
                         <fieldset>
                             <legend class="block font-medium text-gray-800 dark:text-gray-100">&nbsp;</legend>
                             <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                                @foreach ($activeSptVersions as $index => $version)
-                                    @if ($index >= $half)
-                                        <x-filter-checkbox id="sptVersions-{{ $index }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
-                                    @endif
+                                @foreach ($this->splitSptVersions[1] as $version)
+                                    <x-filter-checkbox id="sptVersions-{{ $version->version }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
                                 @endforeach
                             </div>
                         </fieldset>

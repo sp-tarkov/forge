@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Facades\Cache;
 use Override;
 use Throwable;
 
@@ -172,8 +171,8 @@ class SptVersion extends Model
     }
 
     /**
-     * Determine if the version is part of the latest version's minor releases.
-     * For example, if the latest version is 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
+     * Determine if the version is part of the latest version's minor releases. For example, if the latest version is
+     * 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
      */
     public function isLatestMinor(): bool
     {
@@ -188,16 +187,34 @@ class SptVersion extends Model
 
     /**
      * Get the latest SPT version.
-     *
-     * @cached latest_spt_version 300s
      */
     public static function getLatest(): ?SptVersion
     {
-        return Cache::remember('latest_spt_version', 300, fn () => \App\Models\SptVersion::query()->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
+        return self::query()
+            ->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
-            ->first());
+            ->first();
+    }
+
+    /**
+     * Get all the minor/patch versions of the latest major version.
+     *
+     * @return Collection<int, SptVersion>
+     */
+    public static function getLatestMinorVersions(): Collection
+    {
+        $latestMajor = self::getLatest();
+        if ($latestMajor === null) {
+            return new Collection;
+        }
+
+        return self::query()
+            ->where('version_major', $latestMajor->version_major)
+            ->where('version_minor', $latestMajor->version_minor)
+            ->orderBy('version_patch', 'desc')
+            ->get();
     }
 
     /**
