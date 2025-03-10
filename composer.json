@@ -27,6 +27,7 @@
         "mchev/banhammer": "^2.3.2",
         "meilisearch/meilisearch-php": "^1.13",
         "php-flasher/flasher-laravel": "^2.1.6",
+        "sentry/sentry-laravel": "^4.13",
         "socialiteproviders/discord": "^4.2",
         "stevebauman/purify": "^6.3.0"
     },
