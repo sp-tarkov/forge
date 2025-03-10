@@ -14,7 +14,7 @@ updates:
     labels:
       - "dependencies"
     reviewers:
-      - "Refringe"
+      - "refringe"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -29,7 +29,7 @@ updates:
     labels:
       - "dependencies"
     reviewers:
-      - "Refringe"
+      - "refringe"
 
   # npm modules (JavaScript)
   - package-ecosystem: "npm"
@@ -45,4 +45,4 @@ updates:
     labels:
       - "dependencies"
     reviewers:
-      - "Refringe"
+      - "refringe"
