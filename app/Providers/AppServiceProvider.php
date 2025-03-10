@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Livewire\Profile\UpdatePasswordForm;
@@ -19,6 +21,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
+use Override;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
@@ -27,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
+    #[Override]
     public function register(): void
     {
         //
@@ -54,13 +58,11 @@ class AppServiceProvider extends ServiceProvider
         $this->registerLivewireOverrides();
 
         // This gate determines who can access the Pulse dashboard.
-        Gate::define('viewPulse', function (User $user) {
-            return $user->isAdmin();
-        });
+        Gate::define('viewPulse', fn (User $user): bool => $user->isAdmin());
 
         // Register the Discord socialite provider.
-        Event::listen(function (SocialiteWasCalled $event) {
-            $event->extendSocialite('discord', Provider::class);
+        Event::listen(function (SocialiteWasCalled $socialiteWasCalled): void {
+            $socialiteWasCalled->extendSocialite('discord', Provider::class);
         });
     }
 
@@ -81,14 +83,12 @@ class AppServiceProvider extends ServiceProvider
     private function registerNumberMacros(): void
     {
         // Format download numbers.
-        Number::macro('downloads', function (int|float $number) {
-            return Number::forHumans(
-                $number,
-                $number > 1000000 ? 2 : ($number > 1000 ? 1 : 0),
-                maxPrecision: null,
-                abbreviate: true
-            );
-        });
+        Number::macro('downloads', fn (int|float $number) => Number::forHumans(
+            $number,
+            $number > 1000000 ? 2 : ($number > 1000 ? 1 : 0),
+            maxPrecision: null,
+            abbreviate: true
+        ));
     }
 
     /**
@@ -97,10 +97,11 @@ class AppServiceProvider extends ServiceProvider
     private function registerCarbonMacros(): void
     {
         // Format dates dynamically based on the time passed.
-        Carbon::macro('dynamicFormat', function (Carbon $date) {
+        Carbon::macro('dynamicFormat', function (Carbon $date): string {
             if ($date->diff(now())->m > 1) {
                 return $date->format('M jS, Y');
             }
+
             if ($date->diff(now())->d === 0) {
                 return $date->diffForHumans();
             }

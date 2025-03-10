@@ -1,0 +1,86 @@
+name: Setup
+description: Setup and Cache PHP, Composer, and NPM.
+
+inputs:
+  php-version:
+    description: PHP version(s) to use.
+    required: true
+  php-extensions:
+    description: PHP extensions to install.
+    required: false
+    default: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd, redis, igbinary, msgpack, memcached, gmp, :php-psr
+  redis-options:
+    description: Redis options to compile with.
+    required: false
+    default: --enable-redis --enable-redis-igbinary --enable-redis-msgpack --enable-redis-lzf --with-liblzf --enable-redis-zstd --with-libzstd --enable-redis-lz4 --with-liblz4
+  redis-libs:
+    description: Redis libraries to install.
+    required: false
+    default: liblz4-dev, liblzf-dev, libzstd-dev
+
+runs:
+  using: composite
+  steps:
+    - name: Get PHP Extension Cache Hash
+      id: php-ext-cache-hash
+      env:
+        PHP_EXTENSIONS: ${{ inputs.php-extensions }}
+        REDIS_OPTIONS: ${{ inputs.redis-options }}
+        REDIS_LIBS: ${{ inputs.redis-libs }}
+      run: |
+        concat_values="${PHP_EXTENSIONS}${REDIS_OPTIONS}${REDIS_LIBS}"
+        echo "hash=$(echo $concat_values | md5sum | awk '{print $1}')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Setup Cache Environment
+      id: php-ext-cache
+      uses: shivammathur/cache-extensions@v1
+      if: inputs.php-extensions != '' && inputs.redis-options != '' && inputs.redis-libs != ''
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ inputs.php-extensions }}
+        key: ${{ runner.os }}-php-ext-${{ steps.php-ext-cache-hash.outputs.hash }}
+
+    - name: Cache PHP Extensions
+      uses: actions/cache@v4
+      if: inputs.php-extensions != '' && inputs.redis-options != '' && inputs.redis-libs != ''
+      with:
+        path: ${{ steps.php-ext-cache.outputs.dir }}
+        key: ${{ steps.php-ext-cache.outputs.key }}
+        restore-keys: ${{ steps.php-ext-cache.outputs.key }}
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ inputs.php-extensions }}
+        ini-values: error_reporting=E_ALL
+        tools: composer:v2
+        coverage: none
+      env:
+        REDIS_CONFIGURE_OPTS: ${{ inputs.redis-options }}
+        REDIS_LIBS: ${{ inputs.redis-libs }}
+
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache Composer Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Get NPM Cache Directory
+      id: npm-cache
+      run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache NPM Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.npm-cache.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-node-

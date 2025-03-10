@@ -6,7 +6,8 @@
         </x-slot>
 
         <x-slot name="description">
-            {{ __('API tokens allow third-party services to authenticate with our application on your behalf.') }}
+            {{ __('API tokens allow third-party services to authenticate with our application on your behalf.') }}<br /><br />
+            {!! __('Please read the <a href="/docs/index.html">API documentation</a> for examples and details on the available API endpoints. Build something great! :D') !!}
         </x-slot>
 
         <x-slot name="form">
@@ -105,7 +106,7 @@
             </div>
 
             <x-input x-ref="plaintextToken" type="text" readonly :value="$plainTextToken"
-                class="mt-4 px-4 py-2 rounded font-mono text-sm w-full break-all"
+                class="mt-4 px-4 py-2 rounded-sm font-mono text-sm w-full break-all"
                 autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                 @showing-token-modal.window="setTimeout(() => $refs.plaintextToken.select(), 250)"
             />

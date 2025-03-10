@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\User;
@@ -14,10 +16,19 @@ class UserPolicy
         return false;
     }
 
-    public function view(User $userCurrent, User $userResource): bool
+    public function view(?User $userCurrent, User $userResource): bool
     {
-        // TODO: check to see if the userResource has blocked the userCurrent.
+        // TODO: check to see if either of the users have blocked each other.
         return true;
+    }
+
+    /*
+     * Determine whether the user can view disabled objects. This is only allowed for the user themselves and
+     * moderators and administrators.
+     */
+    public function viewDisabled(?User $user, User $userResource): bool
+    {
+        return $user && ($user->isModOrAdmin() || $user->id === $userResource->id);
     }
 
     public function create(User $user): bool

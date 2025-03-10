@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword as OriginalResetPassword;
@@ -20,6 +22,8 @@ class ResetPassword extends OriginalResetPassword implements ShouldQueue
 
     /**
      * Get the array representation of the notification.
+     *
+     * @return array<int, mixed>
      */
     public function toArray(object $notifiable): array
     {

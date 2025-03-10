@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
+use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('filters mods by a single SPT version', function () {
+it('filters mods by a single SPT version', function (): void {
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
 
@@ -35,7 +39,7 @@ it('filters mods by a single SPT version', function () {
         ->and($filteredMods->first()->id)->toBe($mod1->id);
 });
 
-it('filters mods by multiple SPT versions', function () {
+it('filters mods by multiple SPT versions', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
@@ -71,7 +75,7 @@ it('filters mods by multiple SPT versions', function () {
         ->and($filteredMods->pluck('id')->toArray())->toContain($mod1->id, $mod3->id);
 });
 
-it('returns no mods when no SPT versions match', function () {
+it('returns no mods when no SPT versions match', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
@@ -99,7 +103,7 @@ it('returns no mods when no SPT versions match', function () {
     expect($filteredMods)->toBeEmpty();
 });
 
-it('filters mods based on a exact search term', function () {
+it('filters mods based on a exact search term', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
 
     $mod = Mod::factory()->create(['name' => 'BigBrain']);
@@ -114,7 +118,7 @@ it('filters mods based on a exact search term', function () {
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
 });
 
-it('filters mods based featured status', function () {
+it('filters mods based featured status', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
 
     $mod = Mod::factory()->create(['name' => 'BigBrain', 'featured' => true]);
@@ -123,13 +127,13 @@ it('filters mods based featured status', function () {
     Mod::factory()->create(['name' => 'SmallFeet']);
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
 
-    $filters = ['featured' => true];
+    $filters = ['featured' => 'only'];
     $filteredMods = (new ModFilter($filters))->apply()->get();
 
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
 });
 
-it('filters mods correctly with combined filters', function () {
+it('filters mods correctly with combined filters', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
@@ -161,7 +165,7 @@ it('filters mods correctly with combined filters', function () {
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod1->id);
 });
 
-it('handles an empty SPT versions array correctly', function () {
+it('handles an empty SPT versions array correctly', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
     $sptVersion2 = SptVersion::factory()->create(['version' => '2.0.0']);
@@ -187,4 +191,50 @@ it('handles an empty SPT versions array correctly', function () {
 
     // Assert that the behavior is as expected (return all mods, or none, depending on intended behavior)
     expect($filteredMods)->toHaveCount(2); // Modify this assertion to reflect your desired behavior
+});
+
+it('does not show disabled mods to unauthorised users', function (): void {
+    // Create the SPT versions
+    $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
+
+    // Create the mods and their versions with appropriate constraints
+    $modEnabled = Mod::factory()->create();
+    $modEnabledVersion = ModVersion::factory()->recycle($modEnabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    $modDisabled = Mod::factory()->disabled()->create();
+    $modDisabledVersion = ModVersion::factory()->recycle($modDisabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    // Apply an empty filter
+    $filters = [];
+    $filteredMods = (new ModFilter($filters))->apply()->get();
+
+    // Assert that only the enabled mod is returned
+    expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($modEnabled->id)
+        ->and($filteredMods->pluck('id')->toArray())->not()->toContain($modDisabled->id);
+});
+
+it('does show disabled mods to administrators and moderators', function (): void {
+    // Create an administrator
+    $userRole = UserRole::factory()->administrator()->create();
+    $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+
+    // Create the SPT versions
+    $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
+
+    // Create the mods and their versions with appropriate constraints
+    $modEnabled = Mod::factory()->create();
+    $modEnabledVersion = ModVersion::factory()->recycle($modEnabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    $modDisabled = Mod::factory()->create();
+    $modDisabledVersion = ModVersion::factory()->recycle($modDisabled)->create(['spt_version_constraint' => '1.0.0']);
+
+    // Apply an empty filter
+    $filters = [];
+    $filteredMods = (new ModFilter($filters))->apply()->get();
+
+    // Assert that both the enabled and disabled mods are returned
+    expect($filteredMods)
+        ->toHaveCount(2)
+        ->and($filteredMods->pluck('id')->toArray())
+        ->toContain($modEnabled->id, $modDisabled->id);
 });

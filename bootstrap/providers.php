@@ -1,10 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\AdminPanelProvider;
+use App\Providers\FortifyServiceProvider;
+use App\Providers\HorizonServiceProvider;
+use App\Providers\JetstreamServiceProvider;
+use SocialiteProviders\Manager\ServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\FortifyServiceProvider::class,
-    App\Providers\HorizonServiceProvider::class,
-    App\Providers\JetstreamServiceProvider::class,
-    App\Providers\Filament\AdminPanelProvider::class,
-    \SocialiteProviders\Manager\ServiceProvider::class,
+    AppServiceProvider::class,
+    FortifyServiceProvider::class,
+    HorizonServiceProvider::class,
+    JetstreamServiceProvider::class,
+    AdminPanelProvider::class,
+    ServiceProvider::class,
 ];

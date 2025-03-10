@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V0;
 
 use App\Http\Filters\V1\ModFilter;
@@ -33,9 +35,9 @@ class ModController extends ApiController
     #[QueryParam('filter[updated_at]', 'string', 'Filter by the `updated_at` attribute. Ranges are possible by separating the dates with a comma.', required: false, example: '2023-12-31,2024-12-31')]
     #[QueryParam('filter[published_at]', 'string', 'Filter by the `published_at` attribute. Ranges are possible by seperating the dates with a comma.', required: false, example: '2023-12-31,2024-12-31')]
     #[QueryParam('sort', 'string', 'Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC.', required: false, example: '-featured,name')]
-    public function index(ModFilter $filters): AnonymousResourceCollection
+    public function index(ModFilter $modFilter): AnonymousResourceCollection
     {
-        return ModResource::collection(Mod::filter($filters)->paginate());
+        return ModResource::collection(Mod::filter($modFilter)->paginate());
     }
 
     /**

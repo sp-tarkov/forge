@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Models\ModVersion;
@@ -13,7 +15,10 @@ use Illuminate\Queue\SerializesModels;
 
 class ResolveDependenciesJob implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Resolve the SPT versions for each of the mod versions.

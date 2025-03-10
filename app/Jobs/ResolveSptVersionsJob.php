@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Models\ModVersion;
@@ -13,7 +15,10 @@ use Illuminate\Queue\SerializesModels;
 
 class ResolveSptVersionsJob implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     /**
      * Resolve the SPT versions for each of the mod versions.
@@ -22,8 +27,10 @@ class ResolveSptVersionsJob implements ShouldBeUnique, ShouldQueue
     {
         $sptVersionService = new SptVersionService;
 
-        foreach (ModVersion::all() as $modVersion) {
-            $sptVersionService->resolve($modVersion);
-        }
+        ModVersion::query()->chunk(100, function ($modVersions) use ($sptVersionService): void {
+            foreach ($modVersions as $modVersion) {
+                $sptVersionService->resolve($modVersion);
+            }
+        });
     }
 }

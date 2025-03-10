@@ -1,20 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use Carbon\Carbon;
+use Database\Factories\ModDependencyFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * ModDependency Model
+ *
+ * @property int $id
+ * @property int $mod_version_id
+ * @property int $dependent_mod_id
+ * @property string $constraint
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read ModVersion $modVersion
+ * @property-read Mod $dependentMod
+ * @property-read Collection<int, ModResolvedDependency> $resolvedDependencies
+ */
 class ModDependency extends Model
 {
+    /** @use HasFactory<ModDependencyFactory> */
     use HasFactory;
 
     /**
      * The relationship between the mod dependency and the mod version.
      *
-     * @return BelongsTo<ModVersion, ModDependency>
+     * @return BelongsTo<ModVersion, $this>
      */
     public function modVersion(): BelongsTo
     {
@@ -24,7 +43,7 @@ class ModDependency extends Model
     /**
      * The relationship between the mod dependency and the resolved dependency.
      *
-     * @return HasMany<ModResolvedDependency>
+     * @return HasMany<ModResolvedDependency, $this>
      */
     public function resolvedDependencies(): HasMany
     {
@@ -35,7 +54,7 @@ class ModDependency extends Model
     /**
      * The relationship between the mod dependency and the dependent mod.
      *
-     * @return BelongsTo<Mod, ModDependency>
+     * @return BelongsTo<Mod, $this>
      */
     public function dependentMod(): BelongsTo
     {

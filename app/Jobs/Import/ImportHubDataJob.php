@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Import;
 
 use App\Exceptions\InvalidVersionNumberException;
@@ -34,7 +36,10 @@ use Throwable;
 
 class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public function handle(): void
     {
@@ -86,7 +91,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         DB::connection('mysql_hub')
             ->table('wcf1_user_avatar')
             ->orderBy('avatarID')
-            ->chunk(200, function ($avatars) {
+            ->chunk(200, function ($avatars): void {
                 $insertData = [];
                 foreach ($avatars as $avatar) {
                     $insertData[] = [
@@ -97,7 +102,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_user_avatar')->insert($insertData);
                 }
             });
@@ -117,7 +122,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         DB::connection('mysql_hub')
             ->table('wcf1_user_option_value')
             ->orderBy('userID')
-            ->chunk(200, function ($options) {
+            ->chunk(200, function ($options): void {
                 $insertData = [];
                 foreach ($options as $option) {
                     $insertData[] = [
@@ -126,7 +131,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_user_options_values')->insert($insertData);
                 }
             });
@@ -146,7 +151,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         DB::connection('mysql_hub')
             ->table('filebase1_file_author')
             ->orderBy('fileID')
-            ->chunk(200, function ($relationships) {
+            ->chunk(200, function ($relationships): void {
                 $insertData = [];
                 foreach ($relationships as $relationship) {
                     $insertData[] = [
@@ -155,7 +160,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_file_author')->insert($insertData);
                 }
             });
@@ -176,7 +181,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         DB::connection('mysql_hub')
             ->table('filebase1_file_option_value')
             ->orderBy('fileID')
-            ->chunk(200, function ($options) {
+            ->chunk(200, function ($options): void {
                 $insertData = [];
                 foreach ($options as $option) {
                     $insertData[] = [
@@ -186,7 +191,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_file_option_values')->insert($insertData);
                 }
             });
@@ -208,7 +213,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         DB::connection('mysql_hub')
             ->table('filebase1_file_content')
             ->orderBy('fileID')
-            ->chunk(200, function ($contents) {
+            ->chunk(200, function ($contents): void {
                 $insertData = [];
                 foreach ($contents as $content) {
                     $insertData[] = [
@@ -219,7 +224,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_file_content')->insert($insertData);
                 }
             });
@@ -240,7 +245,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             ->table('wcf1_label_object')
             ->where('objectTypeID', 387)
             ->orderBy('labelID')
-            ->chunk(200, function ($options) {
+            ->chunk(200, function ($options): void {
                 $insertData = [];
                 foreach ($options as $option) {
                     $insertData[] = [
@@ -249,7 +254,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_file_version_labels')->insert($insertData);
                 }
             });
@@ -269,7 +274,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         DB::connection('mysql_hub')
             ->table('filebase1_file_version_content')
             ->orderBy('versionID')
-            ->chunk(200, function ($options) {
+            ->chunk(200, function ($options): void {
                 $insertData = [];
                 foreach ($options as $option) {
                     $insertData[] = [
@@ -278,7 +283,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_file_version_content')->insert($insertData);
                 }
             });
@@ -297,7 +302,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             ->table('wcf1_label')
             ->where('groupID', 1)
             ->orderBy('labelID')
-            ->chunk(100, function (Collection $versions) {
+            ->chunk(100, function (Collection $versions): void {
                 $insertData = [];
                 foreach ($versions as $version) {
                     $insertData[] = [
@@ -307,7 +312,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if ($insertData) {
+                if ($insertData !== []) {
                     DB::table('temp_spt_version_tags')->insert($insertData);
                 }
             });
@@ -320,7 +325,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     {
         // Initialize a cURL handler for downloading mod thumbnails.
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 
         DB::connection('mysql_hub')
@@ -340,9 +345,10 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                 'r.rankTitle',
             )
             ->leftJoin('wcf1_user_rank as r', 'u.rankID', '=', 'r.rankID')
-            ->chunkById(250, function (Collection $users) use ($curl) {
-                $userData = $bannedUsers = $userRanks = [];
-
+            ->chunkById(250, function (Collection $users) use ($curl): void {
+                $userData = [];
+                $bannedUsers = [];
+                $userRanks = [];
                 foreach ($users as $user) {
                     $hubUser = new HubUser(
                         $user->userID,
@@ -383,17 +389,19 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build an array of user data ready to be inserted into the local database.
+     *
+     * @return array<string, mixed>
      */
-    protected function collectUserData(CurlHandle $curl, HubUser $hubUser): array
+    protected function collectUserData(CurlHandle $curlHandle, HubUser $hubUser): array
     {
         return [
-            'hub_id' => (int) $hubUser->userID,
+            'hub_id' => $hubUser->userID,
             'name' => $hubUser->username,
             'email' => Str::lower($hubUser->email),
             'password' => $this->cleanPasswordHash($hubUser->password),
             'about' => $this->fetchUserAbout($hubUser->userID),
-            'profile_photo_path' => $this->fetchUserAvatar($curl, $hubUser),
-            'cover_photo_path' => $this->fetchUserCoverPhoto($curl, $hubUser),
+            'profile_photo_path' => $this->fetchUserAvatar($curlHandle, $hubUser),
+            'cover_photo_path' => $this->fetchUserCoverPhoto($curlHandle, $hubUser),
             'created_at' => $this->cleanRegistrationDate($hubUser->registrationDate),
             'updated_at' => now('UTC')->toDateTimeString(),
         ];
@@ -432,16 +440,16 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     {
         // Alright, hear me out... Shut up.
 
-        $converter = new HtmlConverter;
+        $htmlConverter = new HtmlConverter;
         $clean = Purify::clean($dirty);
 
-        return $converter->convert($clean);
+        return $htmlConverter->convert($clean);
     }
 
     /**
      * Fetch the user avatar from the Hub and store it anew.
      */
-    protected function fetchUserAvatar(CurlHandle $curl, HubUser $hubUser): string
+    protected function fetchUserAvatar(CurlHandle $curlHandle, HubUser $hubUser): string
     {
         // Fetch the user's avatar data from the temporary table.
         $avatar = DB::table('temp_user_avatar')->where('userID', $hubUser->userID)->first();
@@ -450,18 +458,18 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             return '';
         }
 
-        $hashShort = substr($avatar->fileHash, 0, 2);
+        $hashShort = substr((string) $avatar->fileHash, 0, 2);
         $fileName = $avatar->fileHash.'.'.$avatar->avatarExtension;
         $hubUrl = 'https://hub.sp-tarkov.com/images/avatars/'.$hashShort.'/'.$avatar->avatarID.'-'.$fileName;
         $relativePath = User::profilePhotoStoragePath().'/'.$fileName;
 
-        return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
+        return $this->fetchAndStoreImage($curlHandle, $hubUrl, $relativePath);
     }
 
     /**
      * Fetch and store an image from the Hub.
      */
-    protected function fetchAndStoreImage(CurlHandle $curl, string $hubUrl, string $relativePath): string
+    protected function fetchAndStoreImage(CurlHandle $curlHandle, string $hubUrl, string $relativePath): string
     {
         // Determine the disk to use based on the environment.
         $disk = match (config('app.env')) {
@@ -475,11 +483,11 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         }
 
         // Download the image using the cURL handler.
-        curl_setopt($curl, CURLOPT_URL, $hubUrl);
-        $image = curl_exec($curl);
+        curl_setopt($curlHandle, CURLOPT_URL, $hubUrl);
+        $image = curl_exec($curlHandle);
 
         if ($image === false) {
-            Log::error('There was an error attempting to download the image. cURL error: '.curl_error($curl));
+            Log::error('There was an error attempting to download the image. cURL error: '.curl_error($curlHandle));
 
             return '';
         }
@@ -493,9 +501,9 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Fetch the user avatar from the Hub and store it anew.
      */
-    protected function fetchUserCoverPhoto(CurlHandle $curl, HubUser $hubUser): string
+    protected function fetchUserCoverPhoto(CurlHandle $curlHandle, HubUser $hubUser): string
     {
-        if (empty($hubUser->coverPhotoHash) || empty($hubUser->coverPhotoExtension)) {
+        if ($hubUser->coverPhotoHash === null || $hubUser->coverPhotoHash === '' || $hubUser->coverPhotoExtension === null || $hubUser->coverPhotoExtension === '') {
             return '';
         }
 
@@ -504,7 +512,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         $hubUrl = 'https://hub.sp-tarkov.com/images/coverPhotos/'.$hashShort.'/'.$hubUser->userID.'-'.$fileName;
         $relativePath = 'user-covers/'.$fileName;
 
-        return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
+        return $this->fetchAndStoreImage($curlHandle, $hubUrl, $relativePath);
     }
 
     /**
@@ -524,12 +532,14 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build an array of banned user data ready to be inserted into the local database.
+     *
+     * @return array<string, mixed>|null
      */
     protected function collectBannedUserData(HubUser $hubUser): ?array
     {
         if ($hubUser->banned) {
             return [
-                'hub_id' => (int) $hubUser->userID,
+                'hub_id' => $hubUser->userID,
                 'comment' => $hubUser->banReason ?? '',
                 'expired_at' => $this->cleanUnbannedAtDate($hubUser->banExpires),
             ];
@@ -572,7 +582,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             }
 
             return $date->toDateTimeString();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             // If the date is not valid, return null
             return null;
         }
@@ -580,12 +590,14 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build an array of user rank data ready to be inserted into the local database.
+     *
+     * @return array<string, mixed>|null
      */
     protected function collectUserRankData(HubUser $hubUser): ?array
     {
         if ($hubUser->rankID && $hubUser->rankTitle) {
             return [
-                'hub_id' => (int) $hubUser->userID,
+                'hub_id' => $hubUser->userID,
                 'title' => $hubUser->rankTitle,
             ];
         }
@@ -595,10 +607,12 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Insert or update the users in the local database.
+     *
+     * @param  array<array<string, mixed>>  $usersData
      */
     protected function upsertUsers(array $usersData): void
     {
-        if (! empty($usersData)) {
+        if ($usersData !== []) {
             DB::table('users')->upsert($usersData, ['hub_id'], [
                 'name',
                 'email',
@@ -611,6 +625,8 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Fetch the hub-banned users from the local database and ban them locally.
+     *
+     * @param  array<array<string, mixed>>  $bannedUsers
      */
     protected function handleBannedUsers(array $bannedUsers): void
     {
@@ -625,13 +641,15 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Fetch or create the user ranks in the local database and assign them to the users.
+     *
+     * @param  array<array<string, mixed>>  $userRanks
      */
     protected function handleUserRoles(array $userRanks): void
     {
         foreach ($userRanks as $userRank) {
             $roleName = Str::ucfirst(Str::afterLast($userRank['title'], '.'));
             $roleData = $this->buildUserRoleData($roleName);
-            UserRole::upsert($roleData, ['name'], ['name', 'short_name', 'description', 'color_class']);
+            UserRole::query()->upsert($roleData, ['name'], ['name', 'short_name', 'description', 'color_class']);
 
             $userRole = UserRole::whereName($roleData['name'])->first();
             $user = User::whereHubId($userRank['hub_id'])->first();
@@ -641,6 +659,8 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Build the user role data based on the role name.
+     *
+     * @return array<string, string>
      */
     protected function buildUserRoleData(string $name): array
     {
@@ -677,7 +697,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         DB::connection('mysql_hub')
             ->table('wcf1_user_follow')
             ->select(['followID', 'userID', 'followUserID', 'time'])
-            ->chunkById(100, function (Collection $follows) use (&$followsGroupedByFollower) {
+            ->chunkById(100, function (Collection $follows) use (&$followsGroupedByFollower): void {
                 foreach ($follows as $follow) {
                     $followerId = User::whereHubId($follow->userID)->value('id');
                     $followingId = User::whereHubId($follow->followUserID)->value('id');
@@ -694,7 +714,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
             }, 'followID');
 
         foreach ($followsGroupedByFollower as $followerId => $followings) {
-            $user = User::find($followerId);
+            $user = User::query()->find($followerId);
             if ($user) {
                 $user->following()->sync($followings);
             }
@@ -708,7 +728,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     {
         DB::connection('mysql_hub')
             ->table('filebase1_license')
-            ->chunkById(100, function (Collection $licenses) {
+            ->chunkById(100, function (Collection $licenses): void {
 
                 $insertData = [];
                 foreach ($licenses as $license) {
@@ -719,7 +739,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     ];
                 }
 
-                if (! empty($insertData)) {
+                if ($insertData !== []) {
                     DB::table('licenses')->upsert($insertData, ['hub_id'], ['name', 'link']);
                 }
             }, 'licenseID');
@@ -745,33 +765,23 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
         $response = curl_exec($ch);
 
-        if (curl_errno($ch)) {
-            throw new Exception('cURL Error: '.curl_error($ch));
-        }
+        throw_if(curl_errno($ch) !== 0, new Exception('cURL Error: '.curl_error($ch)));
 
         curl_close($ch);
 
         $response = (array) json_decode($response, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('JSON Decode Error: '.json_last_error_msg());
-        }
+        throw_if(json_last_error() !== JSON_ERROR_NONE, new Exception('JSON Decode Error: '.json_last_error_msg()));
 
-        if (empty($response)) {
-            throw new Exception('No version data found in the GitHub API response.');
-        }
+        throw_if($response === [], new Exception('No version data found in the GitHub API response.'));
 
         // Filter out drafts and pre-releases.
-        $response = array_filter($response, function ($release) {
-            return ! $release['draft'] && ! $release['prerelease'];
-        });
+        $response = array_filter($response, fn (array $release): bool => ! $release['draft'] && ! $release['prerelease']);
 
-        if (empty($response)) {
-            throw new Exception('No finalized versions found after filtering drafts and pre-releases.');
-        }
+        throw_if($response === [], new Exception('No finalized versions found after filtering drafts and pre-releases.'));
 
         // Ensure that each of the tag_name values has any 'v' prefix trimmed.
-        $response = array_map(function ($release) {
+        $response = array_map(function (array $release) {
             $release['tag_name'] = Str::of($release['tag_name'])->ltrim('v')->toString();
 
             return $release;
@@ -801,7 +811,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
         // Manually update or create
         foreach ($insertData as $data) {
-            $existingVersion = SptVersion::where('version', $data['version'])->first();
+            $existingVersion = SptVersion::query()->where('version', $data['version'])->first();
             if ($existingVersion) {
                 $existingVersion->update([
                     'link' => $data['link'],
@@ -810,18 +820,20 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     'updated_at' => $data['updated_at'],
                 ]);
             } else {
-                SptVersion::create($data);
+                SptVersion::query()->create($data);
             }
         }
     }
 
     /**
      * Get the latest current version from the response data.
+     *
+     * @param  array<array<string, mixed>>  $versions
      */
     protected function getLatestVersion(array $versions): string
     {
         $semanticVersions = array_map(
-            fn ($version) => $this->extractSemanticVersion($version['tag_name']),
+            fn ($version): ?string => $this->extractSemanticVersion($version['tag_name']),
             $versions
         );
 
@@ -876,7 +888,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         $major = (int) $major;
         $minor = (int) $minor;
 
-        if ($major == $currentMajor) {
+        if ($major === $currentMajor) {
             $difference = $currentMinor - $minor;
 
             return match ($difference) {
@@ -898,12 +910,12 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     {
         // Initialize a cURL handler for downloading mod thumbnails.
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
 
         DB::connection('mysql_hub')
             ->table('filebase1_file')
-            ->chunkById(100, function (Collection $mods) use ($curl) {
+            ->chunkById(100, function (Collection $mods) use ($curl): void {
 
                 foreach ($mods as $mod) {
                     // Fetch any additional authors for the mod.
@@ -912,7 +924,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                         ->pluck('userID')
                         ->toArray();
                     $modAuthors[] = $mod->userID; // Add the primary author to the list.
-                    $modAuthors = User::whereIn('hub_id', $modAuthors)->pluck('id')->toArray(); // Replace with local IDs.
+                    $modAuthors = User::query()->whereIn('hub_id', $modAuthors)->pluck('id')->toArray(); // Replace with local IDs.
 
                     $modContent = DB::table('temp_file_content')
                         ->where('fileID', $mod->fileID)
@@ -955,13 +967,13 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     $modData[] = [
                         'hub_id' => (int) $mod->fileID,
                         'users' => $modAuthors,
-                        'name' => $modContent?->subject ?? '',
-                        'slug' => Str::slug($modContent?->subject ?? ''),
-                        'teaser' => Str::limit($modContent?->teaser ?? '', 255),
-                        'description' => $this->cleanHubContent($modContent?->message ?? ''),
+                        'name' => $modContent->subject ?? '',
+                        'slug' => Str::slug($modContent->subject ?? ''),
+                        'teaser' => Str::limit($modContent->teaser ?? '', 255),
+                        'description' => $this->cleanHubContent($modContent->message ?? ''),
                         'thumbnail' => $this->fetchModThumbnail($curl, $mod->fileID, $mod->iconHash, $mod->iconExtension),
                         'license_id' => License::whereHubId($mod->licenseID)->value('id'),
-                        'source_code_link' => $optionSourceCode?->source_code_link ?? '',
+                        'source_code_link' => $optionSourceCode->source_code_link ?? '',
                         'featured' => (bool) $mod->isFeatured,
                         'contains_ai_content' => (bool) $optionContainsAi?->contains_ai,
                         'contains_ads' => (bool) $optionContainsAds?->contains_ads,
@@ -976,7 +988,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                     // Remove the user_id from the mod data before upserting.
                     $insertModData = array_map(fn ($mod) => Arr::except($mod, 'users'), $modData);
 
-                    Mod::withoutGlobalScopes()->upsert($insertModData, ['hub_id'], [
+                    Mod::query()->withoutGlobalScopes()->upsert($insertModData, ['hub_id'], [
                         'name',
                         'slug',
                         'teaser',
@@ -1006,10 +1018,10 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Fetch the mod thumbnail from the Hub and store it anew.
      */
-    protected function fetchModThumbnail(CurlHandle $curl, string $fileID, string $thumbnailHash, string $thumbnailExtension): string
+    protected function fetchModThumbnail(CurlHandle $curlHandle, string $fileID, string $thumbnailHash, string $thumbnailExtension): string
     {
         // If any of the required fields are empty, return an empty string.
-        if (empty($fileID) || empty($thumbnailHash) || empty($thumbnailExtension)) {
+        if ($fileID === '' || $fileID === '0' || ($thumbnailHash === '' || $thumbnailHash === '0') || ($thumbnailExtension === '' || $thumbnailExtension === '0')) {
             return '';
         }
 
@@ -1019,7 +1031,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         $hubUrl = 'https://hub.sp-tarkov.com/files/images/file/'.$hashShort.'/'.$fileName;
         $relativePath = 'mods/'.$fileName;
 
-        return $this->fetchAndStoreImage($curl, $hubUrl, $relativePath);
+        return $this->fetchAndStoreImage($curlHandle, $hubUrl, $relativePath);
     }
 
     /**
@@ -1029,7 +1041,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     {
         DB::connection('mysql_hub')
             ->table('filebase1_file_version')
-            ->chunkById(500, function (Collection $versions) {
+            ->chunkById(500, function (Collection $versions): void {
 
                 foreach ($versions as $version) {
                     $versionContent = DB::table('temp_file_version_content')
@@ -1065,7 +1077,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
 
                     try {
                         $modVersion = new Version($version->versionNumber);
-                    } catch (InvalidVersionNumberException $e) {
+                    } catch (InvalidVersionNumberException) {
                         $modVersion = new Version('0.0.0');
                     }
 
@@ -1080,7 +1092,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                         'description' => $this->cleanHubContent($versionContent->description ?? ''),
                         'link' => $version->downloadURL,
                         'spt_version_constraint' => $sptVersionConstraint,
-                        'virus_total_link' => $optionVirusTotal?->virus_total_link ?? '',
+                        'virus_total_link' => $optionVirusTotal->virus_total_link ?? '',
                         'downloads' => max((int) $version->downloads, 0), // At least 0.
                         'disabled' => (bool) $version->isDisabled,
                         'published_at' => $sptVersionConstraint === '0.0.0' ? null : Carbon::parse($version->uploadTime, 'UTC'),
@@ -1090,7 +1102,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
                 }
 
                 if (! empty($insertData)) {
-                    ModVersion::withoutGlobalScopes()->upsert($insertData, ['hub_id'], [
+                    ModVersion::query()->withoutGlobalScopes()->upsert($insertData, ['hub_id'], [
                         'mod_id',
                         'version',
                         'description',
@@ -1112,7 +1124,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
      */
     private function removeDeletedMods(): void
     {
-        $mods = Mod::select('hub_id')->get();
+        $mods = Mod::query()->select('hub_id')->get();
         foreach ($mods as $mod) {
             if (DB::connection('mysql_hub')->table('filebase1_file')->where('fileID', $mod->hub_id)->doesntExist()) {
                 $mod->delete();
@@ -1123,7 +1135,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * The job failed to process.
      */
-    public function failed(Throwable $exception): void
+    public function failed(Throwable $throwable): void
     {
         // Explicitly drop the temporary tables.
         DB::unprepared('DROP TEMPORARY TABLE IF EXISTS temp_user_avatar');

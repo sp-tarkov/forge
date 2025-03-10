@@ -1,12 +1,15 @@
-@props(['mod', 'version'])
+@props([
+    'mod',
+    'version',
+    'section' => 'default',
+    'isHomePage' => false,
+])
 
-<a href="{{ $mod->detailUrl() }}" class="mod-list-component relative mx-auto w-full max-w-2xl">
-    @if ($mod->featured && !request()->routeIs('home'))
-        <div class="ribbon z-10">{{ __('Featured!') }}</div>
-    @endif
-    <div class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black hover:shadow-gray-400 dark:hover:shadow-black transition-colors ease-out duration-700">
+<div class="mod-list-component relative mx-auto max-w-2xl h-full w-full">
+    <livewire:mod.ribbon key="mod-ribbon-{{ $section }}-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" :is-home-page="$isHomePage" />
+    <a href="{{ $mod->detailUrl() }}" class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black hover:shadow-gray-400 dark:hover:shadow-black transition-colors ease-out duration-700">
         <div class="h-auto md:h-full md:flex">
-            <div class="h-auto md:h-full md:shrink-0 overflow-hidden">
+            <div class="relative h-auto md:h-full md:shrink-0 overflow-hidden">
                 @if ($mod->thumbnail)
                     <img src="{{ $mod->thumbnailUrl }}" alt="{{ $mod->name }}" class="h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-all duration-200">
                 @else
@@ -16,7 +19,7 @@
             <div class="flex flex-col w-full justify-between p-5">
                 <div class="pb-3">
                     <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
-                    <p class="mb-2 text-sm italic text-slate-600 dark:text-gray-200">
+                    <p class="no-underline mb-2 text-sm italic text-slate-600 dark:text-gray-200">
                         {{ __('By :authors', ['authors' => $mod->users->pluck('name')->implode(', ')]) }}
                     </p>
                     @if ($version?->latestSptVersion)
@@ -52,5 +55,8 @@
                 </div>
             </div>
         </div>
-    </div>
-</a>
+    </a>
+    @if (auth()->user()?->isModOrAdmin())
+        <livewire:mod.moderation key="mod-moderation-{{ $section }}-{{ $mod->id }}" :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
+    @endif
+</div>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Str;
 
 return [
@@ -56,7 +58,7 @@ return [
 
     'prefix' => env(
         'HORIZON_PREFIX',
-        Str::slug(env('APP_NAME', 'laravel'), '_').'_horizon:'
+        Str::slug((string) env('APP_NAME', 'laravel'), '_').'_horizon:'
     ),
 
     /*
@@ -192,7 +194,7 @@ return [
             'maxJobs' => 0,
             'memory' => 128,
             'tries' => 1,
-            'timeout' => 60,
+            'timeout' => 75, // Seconds
             'nice' => 0,
         ],
         'supervisor-long' => [
@@ -207,7 +209,7 @@ return [
             'maxJobs' => 0,
             'memory' => 256,
             'tries' => 1,
-            'timeout' => 2700, // 45 Minutes
+            'timeout' => 7200, // 2 hours
             'nice' => 0,
         ],
     ],

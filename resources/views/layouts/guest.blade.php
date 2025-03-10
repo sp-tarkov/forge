@@ -14,8 +14,8 @@
 
     <link href="{{ config('app.asset_url') }}" rel="dns-prefetch">
 
-    @vite(['resources/css/app.css'])
     @livewireStyles
+    @vite(['resources/css/app.css'])
 
     <script>
         // Immediately set the theme to prevent a flash of the default theme when another is set.
@@ -27,6 +27,9 @@
                 localStorage.setItem('forge-theme', theme);
             }
             document.documentElement.classList.add(theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('fl-dark');
+            }
         })();
     </script>
 </head>

@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Profile;
 
+use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class ManageOAuthConnections extends Component
+class ManageOauthConnections extends Component
 {
     use AuthorizesRequests;
 
@@ -16,33 +19,31 @@ class ManageOAuthConnections extends Component
      * Store the current user.
      */
     #[Locked]
-    public $user;
+    public User $user;
 
     /**
      * Controls the confirmation modal visibility.
      */
-    public $confirmingConnectionDeletion = false;
+    public bool $confirmingConnectionDeletion = false;
 
     /**
      * Stores the ID of the connection to be deleted.
      */
     #[Locked]
-    public $selectedConnectionId;
+    public ?string $selectedConnectionId = null;
 
     /**
      * Initializes the component by loading the user's OAuth connections.
      */
     public function mount(): void
     {
-        $this->setName('profile.manage-oauth-connections');
-
         $this->user = auth()->user();
     }
 
     /**
      * Sets up the deletion confirmation.
      */
-    public function confirmConnectionDeletion($connectionId): void
+    public function confirmConnectionDeletion(string $connectionId): void
     {
         $this->confirmingConnectionDeletion = true;
         $this->selectedConnectionId = $connectionId;

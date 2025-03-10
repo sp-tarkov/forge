@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers;
 
 use App\Models\Mod;
@@ -7,13 +9,7 @@ use App\Services\DependencyVersionService;
 
 class ModObserver
 {
-    protected DependencyVersionService $dependencyVersionService;
-
-    public function __construct(
-        DependencyVersionService $dependencyVersionService,
-    ) {
-        $this->dependencyVersionService = $dependencyVersionService;
-    }
+    public function __construct(protected DependencyVersionService $dependencyVersionService) {}
 
     /**
      * Handle the Mod "saved" event.

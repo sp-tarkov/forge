@@ -1,18 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources\Api\V0;
 
 use App\Http\Controllers\Api\V0\ApiController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Override;
 
 /** @mixin User */
 class UserResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
      */
+    #[Override]
     public function toArray(Request $request): array
     {
         $this->load('role');

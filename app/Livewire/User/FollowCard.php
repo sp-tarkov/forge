@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\User;
 
 use App\Models\User;
@@ -7,7 +9,6 @@ use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class FollowCard extends Component
@@ -35,18 +36,6 @@ class FollowCard extends Component
     public string $dialogTitle;
 
     /**
-     * The user data to display in the card.
-     */
-    #[Locked]
-    public array $display = [];
-
-    /**
-     * The limited user data to display in the card.
-     */
-    #[Locked]
-    public array $displayLimit = [];
-
-    /**
      * The maximum number of users to display on the card.
      */
     #[Locked]
@@ -65,20 +54,26 @@ class FollowCard extends Component
 
     /**
      * A collection of user IDs that the auth user follows.
+     *
+     * @var Collection<int, int>
      */
     #[Locked]
     public Collection $authFollowIds;
 
     /**
      * The profile user's followers (or following).
+     *
+     * @var Collection<int, User>
      */
     #[Locked]
     public Collection $followUsers;
 
     /**
      * The events the component should listen for.
+     *
+     * @var array<string, string>
      */
-    protected $listeners = ['refreshComponent' => '$refresh'];
+    protected $listeners = ['auth-follow-change' => '$refresh'];
 
     /**
      * The number of users being displayed.
@@ -140,21 +135,10 @@ class FollowCard extends Component
      */
     public function render(): View
     {
-        $this->populateFollowUsers();
-
-        return view('livewire.user.follow-card');
-    }
-
-    /**
-     * Called when the user follows or unfollows a user.
-     */
-    #[On('auth-follow-change')]
-    public function populateFollowUsers(): void
-    {
         // Update the collection of profile user's followers (or following).
         $this->followUsers = $this->profileUser->{$this->relationship}()->get();
 
-        $this->dispatch('refreshComponent');
+        return view('livewire.user.follow-card');
     }
 
     /**

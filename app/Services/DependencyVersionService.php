@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\ModVersion;
@@ -18,6 +20,8 @@ class DependencyVersionService
 
     /**
      * Satisfies all dependency constraints of a ModVersion.
+     *
+     * @return array<int, array<string, int>>
      */
     private function satisfyConstraint(ModVersion $modVersion): array
     {
@@ -32,9 +36,7 @@ class DependencyVersionService
             $dependentModVersions = $dependency->dependentMod->versions()->get();
 
             // Filter the dependent mod versions to find the ones that satisfy the dependency constraint.
-            $matchedVersions = $dependentModVersions->filter(function ($version) use ($dependency) {
-                return Semver::satisfies($version->version, $dependency->constraint);
-            });
+            $matchedVersions = $dependentModVersions->filter(fn ($version) => Semver::satisfies($version->version, $dependency->constraint));
 
             // Map the matched versions to the sync data.
             foreach ($matchedVersions as $matchedVersion) {

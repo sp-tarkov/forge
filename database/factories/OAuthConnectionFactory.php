@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
+/**
+ * @extends Factory<OAuthConnection>
+ */
 class OAuthConnectionFactory extends Factory
 {
     protected $model = OAuthConnection::class;

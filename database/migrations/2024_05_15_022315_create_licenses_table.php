@@ -13,7 +13,6 @@ return new class extends Migration
             $table->bigInteger('hub_id')->nullable()->default(null)->unique();
             $table->string('name');
             $table->string('link');
-            $table->softDeletes();
             $table->timestamps();
         });
     }

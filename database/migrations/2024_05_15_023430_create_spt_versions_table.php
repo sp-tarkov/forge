@@ -22,7 +22,6 @@ return new class extends Migration
             $table->unsignedInteger('mod_count')->default(0);
             $table->string('link');
             $table->string('color_class');
-            $table->softDeletes();
             $table->timestamps();
 
             $table->index(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'], 'spt_versions_lookup_index');

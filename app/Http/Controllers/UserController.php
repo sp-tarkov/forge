@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -17,24 +19,9 @@ class UserController extends Controller
             ->with(['following', 'followers'])
             ->firstOrFail();
 
-        $mods = $user->mods()
-            ->with([
-                'users',
-                'latestVersion',
-                'latestVersion.latestSptVersion',
-            ])
-            ->orderByDesc('created_at')
-            ->paginate(10)
-            ->fragment('mods');
+        abort_if($user->slug() !== $username, 404);
+        abort_if($request->user()?->cannot('view', $user), 403);
 
-        if ($user->slug() !== $username) {
-            abort(404);
-        }
-
-        if ($request->user()?->cannot('view', $user)) {
-            abort(403);
-        }
-
-        return view('user.show', compact('user', 'mods'));
+        return view('user.show', ['user' => $user]);
     }
 }

@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+use Mchev\Banhammer\Models\Ban;
+
 return [
 
     /*
@@ -23,7 +27,7 @@ return [
     |
      */
 
-    'model' => \Mchev\Banhammer\Models\Ban::class,
+    'model' => Ban::class,
 
     /*
     |--------------------------------------------------------------------------

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Profile;
 
 use App\Actions\Fortify\PasswordValidationRules;
@@ -21,14 +23,14 @@ class UpdatePasswordForm extends JetstreamUpdatePasswordForm
      * without needing to provide their current password. This is useful for users that have been created using OAuth.
      */
     #[Override]
-    public function updatePassword(UpdatesUserPasswords $updater): void
+    public function updatePassword(UpdatesUserPasswords $updatesUserPasswords): void
     {
         $this->resetErrorBag();
 
         $user = Auth::user();
 
         if ($user->password !== null) {
-            parent::updatePassword($updater);
+            parent::updatePassword($updatesUserPasswords);
         } else {
 
             // User has a null password. Allow them to set a new password without their current password.

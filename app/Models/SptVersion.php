@@ -1,23 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
 use App\Support\Version;
+use Carbon\Carbon;
+use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Cache;
+use Override;
+use Throwable;
 
+/**
+ * SptVersion Model
+ *
+ * @property int $id
+ * @property int|null $hub_id
+ * @property string $version
+ * @property int $version_major
+ * @property int $version_minor
+ * @property int $version_patch
+ * @property string $version_pre_release
+ * @property int $mod_count
+ * @property string $link
+ * @property string $color_class
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, ModVersion> $modVersions
+ * @property-read string $version_formatted
+ */
 class SptVersion extends Model
 {
+    /** @use HasFactory<SptVersionFactory> */
     use HasFactory;
-    use SoftDeletes;
 
     /**
      * Get all versions for the last three minor versions.
+     *
+     * @return Collection<int, $this>
      */
     public static function getVersionsForLastThreeMinors(): Collection
     {
@@ -28,7 +52,7 @@ class SptVersion extends Model
         $minorVersions = array_column($lastThreeMinorVersions, 'minor');
 
         // Fetch all versions for the last three minor versions with mod count.
-        return self::select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count'])
+        return self::query()->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count'])
             ->join('mod_version_spt_version', 'spt_versions.id', '=', 'mod_version_spt_version.spt_version_id')
             ->join('mod_versions', 'mod_version_spt_version.mod_version_id', '=', 'mod_versions.id')
             ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
@@ -46,29 +70,32 @@ class SptVersion extends Model
 
     /**
      * Get the last three minor versions (major.minor format).
+     *
+     * @return array<int, array{major: int, minor: int}>
      */
     public static function getLastThreeMinorVersions(): array
     {
-        return self::selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
+        return self::query()
+            ->selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
             ->where('version', '!=', '0.0.0')
             ->groupBy('version_major', 'version_minor')
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->limit(3)
             ->get()
-            ->map(function (SptVersion $version) {
-                return [
-                    'major' => (int) $version->version_major,
-                    'minor' => (int) $version->version_minor,
-                ];
-            })
+            ->map(fn (SptVersion $sptVersion): array => [
+                'major' => (int) $sptVersion->version_major,
+                'minor' => (int) $sptVersion->version_minor,
+            ])
             ->toArray();
     }
 
     /**
      * Extract the version sections from the version string.
      *
-     * @throws InvalidVersionNumberException
+     * @return array{major: int, minor: int, patch: int, pre_release: string}
+     *
+     * @throws InvalidVersionNumberException|Throwable
      */
     public static function extractVersionSections(string $version): array
     {
@@ -77,9 +104,7 @@ class SptVersion extends Model
         // Perform the regex match to capture the version sections, including the possible preRelease section.
         preg_match('/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9]+))?$/', $version, $matches);
 
-        if (! $matches) {
-            throw new InvalidVersionNumberException('Invalid SPT version number: '.$version);
-        }
+        throw_if($matches === [], new InvalidVersionNumberException('Invalid SPT version number: '.$version));
 
         return [
             'major' => $matches[1] ?? 0,
@@ -92,22 +117,23 @@ class SptVersion extends Model
     /**
      * Called when the model is booted.
      */
+    #[Override]
     protected static function booted(): void
     {
-        static::saving(function (SptVersion $model) {
+        static::saving(function (SptVersion $sptVersion): void {
             // Extract the version sections from the version string.
             try {
-                $version = new Version($model->version);
+                $version = new Version($sptVersion->version);
 
-                $model->version_major = $version->getMajor();
-                $model->version_minor = $version->getMinor();
-                $model->version_patch = $version->getPatch();
-                $model->version_pre_release = $version->getPreRelease();
-            } catch (InvalidVersionNumberException $e) {
-                $model->version_major = 0;
-                $model->version_minor = 0;
-                $model->version_patch = 0;
-                $model->version_pre_release = '';
+                $sptVersion->version_major = $version->getMajor();
+                $sptVersion->version_minor = $version->getMinor();
+                $sptVersion->version_patch = $version->getPatch();
+                $sptVersion->version_pre_release = $version->getPreRelease();
+            } catch (InvalidVersionNumberException) {
+                $sptVersion->version_major = 0;
+                $sptVersion->version_minor = 0;
+                $sptVersion->version_patch = 0;
+                $sptVersion->version_pre_release = '';
             }
         });
     }
@@ -128,7 +154,7 @@ class SptVersion extends Model
     /**
      * The relationship between an SPT version and mod version.
      *
-     * @return BelongsToMany<ModVersion>
+     * @return BelongsToMany<ModVersion, $this>
      */
     public function modVersions(): BelongsToMany
     {
@@ -145,14 +171,14 @@ class SptVersion extends Model
     }
 
     /**
-     * Determine if the version is part of the latest version's minor releases.
-     * For example, if the latest version is 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
+     * Determine if the version is part of the latest version's minor releases. For example, if the latest version is
+     * 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
      */
     public function isLatestMinor(): bool
     {
         $latestVersion = self::getLatest();
 
-        if (! $latestVersion) {
+        if (! $latestVersion instanceof \App\Models\SptVersion) {
             return false;
         }
 
@@ -161,18 +187,34 @@ class SptVersion extends Model
 
     /**
      * Get the latest SPT version.
-     *
-     * @cached latest_spt_version 300s
      */
     public static function getLatest(): ?SptVersion
     {
-        return Cache::remember('latest_spt_version', 300, function () {
-            return SptVersion::select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
-                ->orderByDesc('version_major')
-                ->orderByDesc('version_minor')
-                ->orderByDesc('version_patch')
-                ->first();
-        });
+        return self::query()
+            ->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->first();
+    }
+
+    /**
+     * Get all the minor/patch versions of the latest major version.
+     *
+     * @return Collection<int, $this>
+     */
+    public static function getLatestMinorVersions(): Collection
+    {
+        $latestMajor = self::getLatest();
+        if ($latestMajor === null) {
+            return new Collection;
+        }
+
+        return self::query()
+            ->where('version_major', $latestMajor->version_major)
+            ->where('version_minor', $latestMajor->version_minor)
+            ->orderBy('version_patch', 'desc')
+            ->get();
     }
 
     /**
@@ -188,7 +230,6 @@ class SptVersion extends Model
             'mod_count' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
-            'deleted_at' => 'datetime',
         ];
     }
 }
