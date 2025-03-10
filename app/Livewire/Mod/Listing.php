@@ -81,18 +81,20 @@ class Listing extends Component
     public function mount(): void
     {
         $this->activeSptVersions ??= Cache::remember('active-spt-versions', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
-
-        $this->sptVersions ??= $this->getDefaultSptVersions();
     }
 
     /**
-     * Get the default values for the SPT Versions filter.
+     * Get or initialize the SPT Versions filter value.
      *
      * @return array<int, string>
      */
-    protected function getDefaultSptVersions(): array
+    public function getSptVersionsProperty(): array
     {
-        return $this->getLatestMinorVersions()->pluck('version')->toArray();
+        if (empty($this->sptVersions)) {
+            $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
+        }
+
+        return $this->sptVersions;
     }
 
     /**
@@ -111,7 +113,7 @@ class Listing extends Component
     public function resetFilters(): void
     {
         $this->query = '';
-        $this->sptVersions = $this->getDefaultSptVersions();
+        $this->sptVersions = $this->getLatestMinorVersions()->pluck('version')->toArray();
         $this->featured = 'include';
     }
 
