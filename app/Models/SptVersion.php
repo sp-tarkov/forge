@@ -201,7 +201,7 @@ class SptVersion extends Model
     /**
      * Get all the minor/patch versions of the latest major version.
      *
-     * @return Collection<int, SptVersion>
+     * @return Collection<int, $this>
      */
     public static function getLatestMinorVersions(): Collection
     {

@@ -19,6 +19,9 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @property-read array<int, string> $defaultSptVersions
+ */
 class Listing extends Component
 {
     use WithPagination;
@@ -84,9 +87,7 @@ class Listing extends Component
         $this->availableSptVersions ??= Cache::remember(
             'active-spt-versions',
             600,
-            function (): Collection {
-                return SptVersion::getVersionsForLastThreeMinors();
-            }
+            fn (): Collection => SptVersion::getVersionsForLastThreeMinors()
         );
 
         // Only set the default version filter values if the property is empty after URL and session hydration.
@@ -157,9 +158,7 @@ class Listing extends Component
         }
 
         // Find the closest allowed value.
-        $this->perPage = $allowed->sortBy(function ($item) use ($value) {
-            return abs($item - $value);
-        })->first();
+        $this->perPage = $allowed->sortBy(fn ($item) => abs($item - $value))->first();
     }
 
     /**
@@ -193,7 +192,7 @@ class Listing extends Component
     public function splitSptVersions(): array
     {
         $versions = $this->availableSptVersions;
-        $half = ceil($versions->count() / 2);
+        $half = (int) ceil($versions->count() / 2);
 
         return [
             $versions->take($half),
