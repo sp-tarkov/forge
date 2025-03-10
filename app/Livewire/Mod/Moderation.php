@@ -50,6 +50,22 @@ class Moderation extends Component
     }
 
     /**
+     * Toggles the disabled property of the mod.
+     */
+    public function disabledToggle(): void
+    {
+        $this->authorize('update', $this->mod);
+
+        $this->mod->disabled = ! $this->mod->disabled;
+        $this->mod->save();
+        $this->mod->refresh();
+
+        flash()->success('Mod updated successfully!');
+
+        $this->dispatch('mod-updated.'.$this->mod->id, $this->mod->disabled, $this->mod->featured);
+    }
+
+    /**
      * Render the component.
      */
     public function render(): string|View
