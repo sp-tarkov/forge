@@ -12,7 +12,7 @@
         "composer/semver": "^3.4.3",
         "filament/filament": "^3.3.3",
         "http-interop/http-factory-guzzle": "^1.2",
-        "laravel/framework": "^11.44.1",
+        "laravel/framework": "^12.1.1",
         "laravel/horizon": "^5.31.0",
         "laravel/jetstream": "^5.3.5",
         "laravel/octane": "^2.8.1",
