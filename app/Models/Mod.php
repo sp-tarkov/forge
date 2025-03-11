@@ -73,6 +73,7 @@ class Mod extends Model
      */
     public function calculateDownloads(): void
     {
+        $this->loadMissing('versions');
         $this->downloads = $this->versions->sum('downloads');
         $this->saveQuietly();
     }
