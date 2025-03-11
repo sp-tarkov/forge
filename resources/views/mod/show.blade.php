@@ -29,9 +29,11 @@
                         <div class="flex justify-between items-center space-x-3">
                             <h2 class="pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 {{ $mod->name }}
-                                <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
-                                    {{ $mod->latestVersion->version }}
-                                </span>
+                                @if ($mod->latestVersion)
+                                    <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
+                                        {{ $mod->latestVersion->version }}
+                                    </span>
+                                @endif
                             </h2>
                         </div>
                         <p>
@@ -41,7 +43,7 @@
                             @endforeach
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
-                        @if ($mod->latestVersion->latestSptVersion)
+                        @if ($mod->latestVersion?->latestSptVersion)
                             <p class="mt-2">
                                 <span class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                     {{ $mod->latestVersion->latestSptVersion->version_formatted }} {{ __('Compatible') }}
@@ -64,9 +66,13 @@
             </div>
 
             {{-- Mobile Download Button --}}
-            <a href="{{ $mod->downloadUrl() }}" class="block lg:hidden">
-                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-600 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
-            </a>
+            @if ($mod->latestVersion)
+                <a href="{{ $mod->downloadUrl() }}" class="block lg:hidden">
+                    <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-600 dark:bg-cyan-700 rounded-xl w-full h-20">
+                        {{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})
+                    </button>
+                </a>
+            @endif
 
             {{-- Tabs --}}
             <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-2 flex flex-col gap-6">
@@ -160,9 +166,13 @@
         <div class="col-span-1 flex flex-col gap-6">
 
             {{-- Desktop Download Button --}}
-            <a href="{{ $mod->downloadUrl() }}" class="hidden lg:block">
-                <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">{{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})</button>
-            </a>
+            @if ($mod->latestVersion)
+                <a href="{{ $mod->downloadUrl() }}" class="hidden lg:block">
+                    <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">
+                        {{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})
+                    </button>
+                </a>
+            @endif
 
             {{-- Additional Mod Details --}}
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
@@ -188,7 +198,7 @@
                             </p>
                         </li>
                     @endif
-                    @if ($mod->latestVersion->virus_total_link)
+                    @if ($mod->latestVersion?->virus_total_link)
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version VirusTotal Result') }}</h3>
                             <p class="truncate">
@@ -198,7 +208,7 @@
                             </p>
                         </li>
                     @endif
-                    @if ($mod->latestVersion->dependencies->isNotEmpty() && $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
+                    @if ($mod->latestVersion?->dependencies->isNotEmpty() && $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">

@@ -38,7 +38,8 @@ class ModController extends Controller
                 'versions.latestResolvedDependencies.mod',
                 'license',
                 'users',
-            ])->findOrFail($modId);
+            ])
+            ->findOrFail($modId);
 
         abort_if($mod->slug !== $slug, 404);
 

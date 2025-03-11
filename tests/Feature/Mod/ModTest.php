@@ -74,3 +74,28 @@ it('allows an administrator to view a disabled mod', function (): void {
     $response = $this->get($mod->detailUrl());
     $response->assertOk();
 });
+
+it('does not allow a normal user to view a mod without a resolved SPT version', function (): void {
+    $this->actingAs(User::factory()->create(['user_role_id' => null]));
+
+    SptVersion::factory()->create(['version' => '9.9.9']);
+    $mod = Mod::factory()->create();
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
+
+    $response = $this->get($mod->detailUrl());
+    $response->assertForbidden();
+});
+
+it('allows a mod author to view their mod without a resolved SPT version', function (): void {
+    $user = User::factory()->create(['email' => 'test@test.com', 'user_role_id' => null]);
+    $this->actingAs($user);
+
+    SptVersion::factory()->create(['version' => '9.9.9']);
+    $mod = Mod::factory()->create();
+    $mod->users()->attach($user->id);
+
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
+
+    $response = $this->get($mod->detailUrl());
+    $response->assertOk();
+});
