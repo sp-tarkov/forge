@@ -12,7 +12,7 @@ class HubUser
         public string $email,
         public string $password,
         public int $registrationDate,
-        public ?bool $banned,
+        public int $banned,
         public ?string $banReason,
         public ?string $banExpires,
         public ?string $coverPhotoHash,
