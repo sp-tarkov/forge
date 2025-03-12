@@ -518,7 +518,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Clean the registration date from the Hub database.
      */
-    protected function cleanRegistrationDate(string $registrationDate): string
+    protected function cleanRegistrationDate(int $registrationDate): string
     {
         $date = Carbon::createFromTimestamp($registrationDate);
 

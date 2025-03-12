@@ -32,7 +32,7 @@ class ModObserver
      */
     protected function updateRelatedSptVersions(Mod $mod): void
     {
-        /** @var Collection<SptVersion> $sptVersions */
+        /** @var Collection<int, SptVersion> $sptVersions */
         $sptVersions = $mod->versions->flatMap->sptVersions->unique();
 
         foreach ($sptVersions as $sptVersion) {
