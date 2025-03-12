@@ -14,7 +14,7 @@ class HubUser
         public int $registrationDate,
         public int $banned,
         public ?string $banReason,
-        public ?string $banExpires,
+        public int $banExpires,
         public ?string $coverPhotoHash,
         public ?string $coverPhotoExtension,
         public ?int $rankID,

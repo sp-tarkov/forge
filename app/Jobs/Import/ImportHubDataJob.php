@@ -551,7 +551,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Clean the banned_at date from the Hub database.
      */
-    protected function cleanUnbannedAtDate(?string $unbannedAt): ?string
+    protected function cleanUnbannedAtDate(?int $unbannedAt): ?string
     {
         // If the input is null, return null
         if ($unbannedAt === null) {
