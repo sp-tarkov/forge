@@ -551,7 +551,7 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Clean the banned_at date from the Hub database.
      */
-    protected function cleanUnbannedAtDate(?string $unbannedAt): ?string
+    protected function cleanUnbannedAtDate(?int $unbannedAt): ?string
     {
         // If the input is null, return null
         if ($unbannedAt === null) {
@@ -1018,10 +1018,10 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
     /**
      * Fetch the mod thumbnail from the Hub and store it anew.
      */
-    protected function fetchModThumbnail(CurlHandle $curlHandle, string $fileID, string $thumbnailHash, string $thumbnailExtension): string
+    protected function fetchModThumbnail(CurlHandle $curlHandle, int $fileID, string $thumbnailHash, string $thumbnailExtension): string
     {
         // If any of the required fields are empty, return an empty string.
-        if ($fileID === '' || $fileID === '0' || ($thumbnailHash === '' || $thumbnailHash === '0') || ($thumbnailExtension === '' || $thumbnailExtension === '0')) {
+        if (empty($fileID) || ($thumbnailHash === '' || $thumbnailHash === '0') || ($thumbnailExtension === '' || $thumbnailExtension === '0')) {
             return '';
         }
 
