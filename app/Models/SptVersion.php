@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\DB;
 use Override;
 use Throwable;
 
@@ -143,12 +144,13 @@ class SptVersion extends Model
      */
     public function updateModCount(): void
     {
-        $modCount = $this->modVersions()
-            ->distinct('mod_id')
-            ->count('mod_id');
-
-        $this->mod_count = $modCount;
-        $this->saveQuietly();
+        DB::table('spt_versions')
+            ->where('id', $this->id)
+            ->update([
+                'mod_count' => $this->modVersions()
+                    ->distinct('mod_id')
+                    ->count('mod_id'),
+            ]);
     }
 
     /**

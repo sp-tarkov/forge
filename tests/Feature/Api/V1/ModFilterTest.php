@@ -47,8 +47,6 @@ it('can filter mods by id', function (): void {
     $filter = new ModFilter($request);
     $builder = $filter->apply(Mod::query());
 
-    dump($builder->get());
-
     expect($builder->get()->pluck('id')->toArray())->toContain(1, 2);
 });
 

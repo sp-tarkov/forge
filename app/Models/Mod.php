@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
@@ -73,9 +74,15 @@ class Mod extends Model
      */
     public function calculateDownloads(): void
     {
-        $this->loadMissing('versions');
-        $this->downloads = $this->versions->sum('downloads');
-        $this->saveQuietly();
+        DB::table('mods')
+            ->where('id', $this->id)
+            ->update([
+                'downloads' => DB::table('mod_versions')
+                    ->where('mod_id', $this->id)
+                    ->sum('downloads'),
+            ]);
+
+        $this->refresh();
     }
 
     /**

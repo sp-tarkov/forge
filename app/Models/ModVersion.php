@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Override;
 
 /**
@@ -179,8 +180,11 @@ class ModVersion extends Model
      */
     public function incrementDownloads(): int
     {
-        $this->downloads++;
-        $this->save();
+        DB::table('mod_versions')
+            ->where('id', $this->id)
+            ->increment('downloads');
+
+        $this->refresh();
 
         // Recalculate the total download count for this mod.
         $this->mod->calculateDownloads();

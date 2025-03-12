@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\Mod;
+use App\Models\SptVersion;
 use App\Services\DependencyVersionService;
+use Illuminate\Support\Collection;
 
 class ModObserver
 {
@@ -30,6 +32,7 @@ class ModObserver
      */
     protected function updateRelatedSptVersions(Mod $mod): void
     {
+        /** @var Collection<SptVersion> $sptVersions */
         $sptVersions = $mod->versions->flatMap->sptVersions->unique();
 
         foreach ($sptVersions as $sptVersion) {
