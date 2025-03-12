@@ -11,7 +11,7 @@ class HubUser
         public string $username,
         public string $email,
         public string $password,
-        public string $registrationDate,
+        public int $registrationDate,
         public ?bool $banned,
         public ?string $banReason,
         public ?string $banExpires,

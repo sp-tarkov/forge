@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 
@@ -171,8 +172,15 @@ it('increments download counts when downloaded', function (): void {
 });
 
 it('rate limits download links from being hit', function (): void {
+    $spt = SptVersion::factory()->create();
     $mod = Mod::factory()->create(['downloads' => 0]);
-    $modVersion = ModVersion::factory()->recycle($mod)->create(['downloads' => 0]);
+    $modVersion = ModVersion::factory()->recycle($mod)->create([
+        'spt_version_constraint' => $spt->version,
+        'link' => 'https://refringe.com',
+        'downloads' => 0,
+    ]);
+
+    $this->actingAs(User::factory()->create());
 
     // The first 5 requests should be fine.
     for ($i = 0; $i < 5; $i++) {
@@ -186,7 +194,32 @@ it('rate limits download links from being hit', function (): void {
 
     $modVersion->refresh();
 
-    // The download count should still be 5.
+    // The download count should be 5.
     expect($modVersion->downloads)->toEqual(5)
         ->and($modVersion->mod->downloads)->toEqual(5);
+});
+
+it('does not change the mod or mod version updated date when downloaded', function (): void {
+    $spt = SptVersion::factory()->create();
+    $mod = Mod::factory()->create();
+    $modVersion = ModVersion::factory()->recycle($mod)->create([
+        'spt_version_constraint' => $spt->version,
+        'link' => 'https://refringe.com',
+    ]);
+
+    $updated = now()->subDays(10);
+
+    // The observers change the updated_at column, so we need to manually update them.
+    DB::table('mods')->where('id', $mod->id)->update(['updated_at' => $updated]);
+    DB::table('mod_versions')->where('id', $modVersion->id)->update(['updated_at' => $updated]);
+
+    $this->get($modVersion->downloadUrl());
+
+    // Refresh the mod and mod version.
+    $mod->refresh();
+    $modVersion->refresh();
+
+    $expected = $updated->format('Y-m-d H:i:s');
+    expect($mod->updated_at->format('Y-m-d H:i:s'))->toEqual($expected)
+        ->and($modVersion->updated_at->format('Y-m-d H:i:s'))->toEqual($expected);
 });

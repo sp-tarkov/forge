@@ -34,6 +34,9 @@ class Version implements Stringable
      */
     protected function parseVersion(): void
     {
+        // Trim whitespace and remove any character that is not a number, dot, or hyphen
+        $this->version = trim((string) preg_replace('/[^0-9.\-]/', '', $this->version));
+
         $matches = [];
 
         // Regex to match semantic versioning, including pre-release identifiers

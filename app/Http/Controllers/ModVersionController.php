@@ -24,8 +24,8 @@ class ModVersionController extends Controller
 
         $this->authorize('view', $modVersion);
 
-        // Rate limit the downloads.
-        $rateKey = 'mod-download:'.($request->user()?->id ?: $request->session()->getId());
+        // Rate limit the downloads to 5 per minute.
+        $rateKey = 'mod.version.download.'.$modId.'.'.($request->user()?->id ?: $request->session()->getId());
         abort_if(RateLimiter::tooManyAttempts($rateKey, maxAttempts: 5), 429);
 
         // Increment downloads counts in the background.
@@ -34,7 +34,15 @@ class ModVersionController extends Controller
         // Increment the rate limiter.
         RateLimiter::increment($rateKey);
 
-        // Redirect to the download link, using a 307 status code to prevent browsers from caching.
+        // Use the new method for redirection.
+        return $this->redirectToDownload($modVersion);
+    }
+
+    /**
+     * Redirect to the download link, using a 307 status code to prevent browsers from caching.
+     */
+    protected function redirectToDownload(ModVersion $modVersion): RedirectResponse
+    {
         return redirect($modVersion->link, 307);
     }
 }
