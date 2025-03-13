@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use League\HTMLToMarkdown\HtmlConverter;
 use Stevebauman\Purify\Facades\Purify;
@@ -559,25 +558,16 @@ class ImportHubDataJob implements ShouldBeUnique, ShouldQueue
         }
 
         // Explicit check for the Unix epoch start date
-        if (Str::contains($unbannedAt, '1970-01-01')) {
-            return null;
-        }
-
-        // Use validator to check for a valid date format
-        $validator = Validator::make(['date' => $unbannedAt], [
-            'date' => 'date_format:Y-m-d H:i:s',
-        ]);
-        if ($validator->fails()) {
-            // If the date format is invalid, return null
+        if ($unbannedAt === 0) {
             return null;
         }
 
         // Validate the date using Carbon
         try {
-            $date = Carbon::parse($unbannedAt);
+            $date = Carbon::createFromTimestamp($unbannedAt);
 
             // Additional check to ensure the date is not a default or zero date
-            if ($date->year == 0 || $date->month == 0 || $date->day == 0) {
+            if ($date->year == 1970 && $date->month == 1 && $date->day == 1) {
                 return null;
             }
 
