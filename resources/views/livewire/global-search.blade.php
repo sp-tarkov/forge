@@ -40,7 +40,7 @@
                  x-transition
                  x-show="query.length && show"
                  aria-live="polite"
-                 class="absolute z-10 top-11 w-full mx-auto max-w-2xl transform overflow-hidden rounded-md bg-white dark:bg-gray-900 shadow-2xl border border-gray-300 dark:border-gray-700 transition-all"
+                 class="absolute z-20 top-11 w-full mx-auto max-w-2xl transform overflow-hidden rounded-md bg-white dark:bg-gray-900 shadow-2xl border border-gray-300 dark:border-gray-700 transition-all"
             >
                 <div x-cloak x-show="count">
                     <h2 class="sr-only select-none">{{ __('Search Results') }}</h2>
