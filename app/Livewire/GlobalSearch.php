@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Attributes\Session;
 
 class GlobalSearch extends Component
 {
@@ -34,6 +35,18 @@ class GlobalSearch extends Component
     public int $count = 0;
 
     /**
+     * The session variable for showing Mod category in search results
+     */
+    #[Session]
+    public bool $isModCatVisible = true;
+
+    /**
+     * The session variable for showing User category in search results
+     */
+    #[Session]
+    public bool $isUserCatVisible = true;
+
+    /**
      * Render the component.
      */
     public function render(): View
@@ -55,8 +68,8 @@ class GlobalSearch extends Component
 
         if (Str::length($query) > 0) {
             return [
-                'user' => $this->fetchUserResults($query),
                 'mod' => $this->fetchModResults($query),
+                'user' => $this->fetchUserResults($query),
             ];
         }
 
