@@ -1,5 +1,11 @@
 <div
-    x-data="{ query: $wire.entangle('query'), count: $wire.entangle('count'), show: false }"
+    x-data="{
+        query: $wire.entangle('query'),
+        count: $wire.entangle('count'),
+        show: false,
+        isModCatVisible: $wire.isModCatVisible,
+        isUserCatVisible: $wire.isUserCatVisible
+    }"
     class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end"
 >
     <div class="w-full max-w-lg lg:max-w-md">
@@ -15,7 +21,9 @@
         >
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                          d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+                          clip-rule="evenodd" />
                 </svg>
             </div>
             <input id="global-search"
@@ -32,20 +40,20 @@
                  x-transition
                  x-show="query.length && show"
                  aria-live="polite"
-                 class="absolute z-10 top-11 w-full mx-auto max-w-2xl transform overflow-hidden rounded-md bg-white dark:bg-gray-900 shadow-2xl border border-gray-300 dark:border-gray-700 transition-all"
+                 class="absolute z-20 top-11 w-full mx-auto max-w-2xl transform overflow-hidden rounded-md bg-white dark:bg-gray-900 shadow-2xl border border-gray-300 dark:border-gray-700 transition-all"
             >
                 <div x-cloak x-show="count">
                     <h2 class="sr-only select-none">{{ __('Search Results') }}</h2>
                     <div class="max-h-96 scroll-py-2 overflow-y-auto" role="list" tabindex="-1">
                         @foreach($result as $type => $results)
                             @if ($results->count())
-                                <h4 class="flex flex-row gap-1.5 py-2.5 px-4 text-[0.6875rem] font-semibold uppercase text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-950 select-none">
+                                <h4 x-on:click="is{{ Str::ucfirst($type) }}CatVisible = !is{{ Str::ucfirst($type) }}CatVisible; $wire.toggleTypeVisibility('{{ $type }}')" class="flex flex-row gap-1.5 py-2.5 px-4 text-[0.6875rem] font-semibold uppercase text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-950 select-none">
                                     <span>{{ Str::plural($type) }}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 transition-all transform duration-400" :class="{'rotate-180': is{{ Str::ucfirst($type) }}CatVisible}">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                     </svg>
                                 </h4>
-                                <div class="divide-y divide-dashed divide-gray-200 dark:divide-gray-800">
+                                <div class="divide-y divide-dashed divide-gray-200 dark:divide-gray-800 transition-all transform duration-400 max-h-0 overflow-hidden" :class="{'max-h-screen': is{{ Str::ucfirst($type) }}CatVisible}">
                                     @foreach($results as $hit)
                                         @component('components.global-search-result-' . Str::lower($type), [
                                             'result' => $hit,

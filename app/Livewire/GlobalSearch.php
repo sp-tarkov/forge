@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Session;
 use Livewire\Component;
 
 class GlobalSearch extends Component
@@ -34,6 +35,29 @@ class GlobalSearch extends Component
     public int $count = 0;
 
     /**
+     * The session variable for showing Mod category in search results
+     */
+    #[Session]
+    public bool $isModCatVisible = true;
+
+    /**
+     * The session variable for showing User category in search results
+     */
+    #[Session]
+    public bool $isUserCatVisible = true;
+
+    /**
+     * Toggle the visibility of a search result category.
+     */
+    public function toggleTypeVisibility(string $type): void
+    {
+        $typeProperty = 'is'.ucfirst($type).'CatVisible';
+        if (property_exists($this, $typeProperty)) {
+            $this->$typeProperty = ! $this->$typeProperty;
+        }
+    }
+
+    /**
      * Render the component.
      */
     public function render(): View
@@ -55,8 +79,8 @@ class GlobalSearch extends Component
 
         if (Str::length($query) > 0) {
             return [
-                'user' => $this->fetchUserResults($query),
                 'mod' => $this->fetchModResults($query),
+                'user' => $this->fetchUserResults($query),
             ];
         }
 
