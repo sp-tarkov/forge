@@ -10,27 +10,22 @@
         <div class="lg:col-span-2 flex flex-col gap-6">
 
             {{-- Main Mod Details Card --}}
-            <div
-                class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 @if (auth()->user()?->isModOrAdmin())
                     <livewire:mod.moderation :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
                 @endif
 
-                <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled"
-                                     :featured="$mod->featured" />
+                <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" />
 
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
                         @if ($mod->thumbnail)
                             <img src="{{ $mod->thumbnailUrl }}" alt="{{ $mod->name }}" class="w-36 rounded-lg">
                         @else
-                            <img
-                                src="https://placehold.co/144x144/31343C/EEE?font=source-sans-pro&text={{ urlencode($mod->name) }}"
-                                alt="{{ $mod->name }}" class="w-36 rounded-lg">
+                            <img src="https://placehold.co/144x144/31343C/EEE?font=source-sans-pro&text={{ urlencode($mod->name) }}" alt="{{ $mod->name }}" class="w-36 rounded-lg">
                         @endif
                     </div>
-                    <div
-                        class="grow flex flex-col justify-center items-center sm:items-start text-gray-900 dark:text-gray-200">
+                    <div class="grow flex flex-col justify-center items-center sm:items-start text-gray-900 dark:text-gray-200">
                         <div class="flex justify-between items-center space-x-3">
                             <h2 class="pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 {{ $mod->name }}
@@ -44,15 +39,13 @@
                         <p>
                             {{ __('Created by') }}
                             @foreach ($mod->users as $user)
-                                <a href="{{ $user->profileUrl() }}"
-                                   class="text-slate-800 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                                <a href="{{ $user->profileUrl() }}" class="text-slate-800 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
                         @if ($mod->latestVersion?->latestSptVersion)
                             <p class="mt-2">
-                                <span
-                                    class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                <span class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                     {{ $mod->latestVersion->latestSptVersion->version_formatted }} {{ __('Compatible') }}
                                 </span>
                             </p>
@@ -96,9 +89,7 @@
 
                     {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
-                        <nav
-                            class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
-                            aria-label="Tabs">
+                        <nav class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                             <x-tab-button name="Description" />
                             <x-tab-button name="Versions" />
                             <x-tab-button name="Comments" />
@@ -107,8 +98,7 @@
                 </div>
 
                 {{-- Mod Description --}}
-                <div x-show="selectedTab === 'description'"
-                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                <div x-show="selectedTab === 'description'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     {{-- The description below is safe to write directly because it has been run though HTMLPurifier. --}}
                     {!! Str::markdown($mod->description) !!}
                 </div>
@@ -119,16 +109,14 @@
                         <div
                             class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
 
-                            <livewire:mod.ribbon key="mod-version-ribbon-{{ $version->id }}" :id="$version->id"
-                                                 :disabled="$version->disabled" />
+                            <livewire:mod.ribbon key="mod-version-ribbon-{{ $version->id }}" :id="$version->id" :disabled="$version->disabled" />
 
                             <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
                                 @if (auth()->user()?->isModOrAdmin())
                                     {{-- TODO: <livewire:modVersion.moderation :modVersion="$version" /> --}}
                                 @endif
                                 <div class="flex items-center justify-between">
-                                    <a class="text-2xl font-extrabold text-gray-900 dark:text-white"
-                                       href="{{ $version->downloadUrl() }}">
+                                    <a class="text-2xl font-extrabold text-gray-900 dark:text-white" href="{{ $version->downloadUrl() }}">
                                         {{ __('Version') }} {{ $version->version }}
                                     </a>
                                     <p class="text-gray-800 dark:text-gray-300"
@@ -136,18 +124,15 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     @if ($version->latestSptVersion)
-                                        <span
-                                            class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                        <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                             {{ $version->latestSptVersion->version_formatted }}
                                         </span>
                                     @else
-                                        <span
-                                            class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                        <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
                                             {{ __('Unknown SPT Version') }}
                                         </span>
                                     @endif
-                                    <a href="{{ $version->virus_total_link }}"
-                                       class="text-cyan-600 dark:text-cyan-400 hover:underline">{{__('Virus Total Results')}}</a>
+                                    <a href="{{ $version->virus_total_link }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{__('Virus Total Results')}}</a>
                                 </div>
                                 <div class="flex items-center justify-between text-gray-700 dark:text-gray-400">
                                     <span>{{ __('Created') }} {{ Carbon::dynamicFormat($version->created_at) }}</span>
@@ -159,8 +144,7 @@
                                     <div class="text-gray-700 dark:text-gray-400">
                                         {{ __('Dependencies:') }}
                                         @foreach ($version->latestResolvedDependencies as $resolvedDependency)
-                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}"
-                                               class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ $resolvedDependency->mod->name }}
+                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ $resolvedDependency->mod->name }}
                                                 &nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last)
                                                 ,
                                             @endif
@@ -177,8 +161,7 @@
                 </div>
 
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'"
-                     class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-gray-700 dark:text-gray-400">
+                <div x-show="selectedTab === 'comments'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-gray-700 dark:text-gray-400">
                     <p>Not quite yet...</p>
                 </div>
             </div>
