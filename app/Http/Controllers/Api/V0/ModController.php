@@ -8,9 +8,9 @@ use App\Http\Filters\V1\ModFilter;
 use App\Http\Resources\Api\V0\ModResource;
 use App\Models\Mod;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Knuckles\Scribe\Attributes\QueryParam;
 use Knuckles\Scribe\Attributes\UrlParam;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ModController extends ApiController
 {
@@ -37,7 +37,13 @@ class ModController extends ApiController
     #[QueryParam('sort', 'string', 'Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC.', required: false, example: '-featured,name')]
     public function index(ModFilter $modFilter): AnonymousResourceCollection
     {
-        return ModResource::collection(Mod::filter($modFilter)->paginate());
+        $mods = Mod::filter($modFilter)->paginate();
+
+        if ($mods->isEmpty()) {
+            throw new NotFoundHttpException;
+        }
+
+        return ModResource::collection($mods);
     }
 
     /**
@@ -49,7 +55,7 @@ class ModController extends ApiController
      */
     #[UrlParam('id', 'integer', 'The ID of the mod.', required: true, example: 558)]
     #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'users,versions,license')]
-    public function show(Mod $mod): JsonResource
+    public function show(Mod $mod): ModResource
     {
         return new ModResource($mod);
     }
