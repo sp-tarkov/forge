@@ -67,15 +67,13 @@
 
             {{-- Mobile Download Button --}}
             @if ($mod->latestVersion)
-                <a href="{{ $mod->downloadUrl() }}" class="block lg:hidden">
-                    <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-600 dark:bg-cyan-700 rounded-xl w-full h-20">
-                        {{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})
-                    </button>
-                </a>
+                <livewire:mod.download-button :mod="$mod" classes="block lg:hidden"/>
             @endif
 
             {{-- Tabs --}}
-            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-2 flex flex-col gap-6">
+            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }"
+                 x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
+                 class="lg:col-span-2 flex flex-col gap-6">
                 <div>
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
@@ -118,7 +116,8 @@
                                     <a class="text-2xl font-extrabold text-gray-900 dark:text-white" href="{{ $version->downloadUrl() }}">
                                         {{ __('Version') }} {{ $version->version }}
                                     </a>
-                                    <p class="text-gray-800 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
+                                    <p class="text-gray-800 dark:text-gray-300"
+                                       title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     @if ($version->latestSptVersion)
@@ -142,7 +141,9 @@
                                     <div class="text-gray-700 dark:text-gray-400">
                                         {{ __('Dependencies:') }}
                                         @foreach ($version->latestResolvedDependencies as $resolvedDependency)
-                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last), @endif
+                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last)
+                                                ,
+                                            @endif
                                         @endforeach
                                     </div>
                                 @endif
@@ -167,11 +168,7 @@
 
             {{-- Desktop Download Button --}}
             @if ($mod->latestVersion)
-                <a href="{{ $mod->downloadUrl() }}" class="hidden lg:block">
-                    <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">
-                        {{ __('Download Latest Version') }} ({{ $mod->latestVersion->version }})
-                    </button>
-                </a>
+                <livewire:mod.download-button :mod="$mod" classes="hidden lg:block"/>
             @endif
 
             {{-- Additional Mod Details --}}
@@ -214,7 +211,8 @@
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
                                     <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">
-                                        {{ $dependency->resolvedVersion->mod->name }}&nbsp;({{ $dependency->resolvedVersion->version }})
+                                        {{ $dependency->resolvedVersion->mod->name }}
+                                        &nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />
                                 @endforeach
                             </p>
@@ -223,7 +221,7 @@
                     @if ($mod->contains_ads)
                         <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
                             <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/>
+                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
                             </svg>
                             <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes Advertising') }}
@@ -233,7 +231,7 @@
                     @if ($mod->contains_ai_content)
                         <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
                             <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd"/>
+                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
                             </svg>
                             <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes AI Generated Content') }}
