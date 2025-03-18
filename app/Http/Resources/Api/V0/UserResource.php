@@ -47,7 +47,7 @@ class UserResource extends JsonResource
                 new UserRoleResource($this->role),
             ),
             'links' => [
-                'self' => $this->profileUrl(),
+                'self' => $this->profile_url,
             ],
         ];
     }

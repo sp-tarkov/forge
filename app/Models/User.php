@@ -217,22 +217,26 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the relative URL to the user's profile page.
+     * The link to the user's profile page.
      */
-    public function profileUrl(): string
+    protected function profileUrl(): Attribute
     {
-        return route('user.show', [
-            'user' => $this->id,
-            'username' => $this->slug(),
-        ]);
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => route('user.show', [
+                'user' => $attributes['id'],
+                'username' => Str::slug($attributes['name']),
+            ]),
+        )->shouldCache();
     }
 
     /**
      * Get the slug of the user's name.
      */
-    public function slug(): string
+    protected function slug(): Attribute
     {
-        return Str::of($this->name)->slug('-')->toString();
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => Str::slug($attributes['name']),
+        )->shouldCache();
     }
 
     /**

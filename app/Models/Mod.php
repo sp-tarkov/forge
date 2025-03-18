@@ -235,7 +235,7 @@ class Mod extends Model
      *
      * @return Attribute<string, never>
      */
-    public function thumbnailUrl(): Attribute
+    protected function thumbnailUrl(): Attribute
     {
         return Attribute::get(fn (): string => $this->thumbnail
             ? Storage::disk($this->thumbnailDisk())->url($this->thumbnail)

@@ -53,7 +53,7 @@ class ModResource extends JsonResource
                         'id' => $user->id,
                     ],
                     'links' => [
-                        'self' => $user->profileUrl(),
+                        'self' => $user->profile_url,
                     ],
                 ])->toArray(),
                 'versions' => $this->versions->map(fn (ModVersion $version): array => [

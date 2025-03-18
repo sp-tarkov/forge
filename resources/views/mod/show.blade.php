@@ -39,7 +39,7 @@
                         <p>
                             {{ __('Created by') }}
                             @foreach ($mod->users as $user)
-                                <a href="{{ $user->profileUrl() }}" class="text-slate-800 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                                <a href="{{ $user->profile_url }}" class="text-slate-800 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
