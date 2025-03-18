@@ -1,4 +1,4 @@
-<a classes="hidden lg:block">
+<a class="{{ $this->classes }}">
     <button wire:click="toggleDownloadDialog" class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">
         {{ __('Download Latest Version') }} ({{ $this->mod->latestVersion->version }})
     </button>

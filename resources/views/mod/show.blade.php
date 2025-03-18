@@ -168,7 +168,7 @@
 
             {{-- Desktop Download Button --}}
             @if ($mod->latestVersion)
-                <livewire:mod.download-button :mod="$mod" />
+                <livewire:mod.download-button :mod="$mod" classes="hidden lg:block"/>
             @endif
 
             {{-- Additional Mod Details --}}
