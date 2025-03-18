@@ -21,6 +21,14 @@ beforeEach(function (): void {
     });
 });
 
+it('shows valid mods', function (): void {
+    $request = new Request;
+    $filter = new ModFilter($request);
+    $builder = $filter->apply(Mod::query());
+
+    expect($builder->get()->count())->toBe(3);
+});
+
 it('does not show mods without versions', function (): void {
     $mod = Mod::factory()->create();
 
@@ -34,6 +42,18 @@ it('does not show mods without versions', function (): void {
 it('does not show disabled mods', function (): void {
     $mod = Mod::factory()->disabled()->create();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+    $request = new Request;
+    $filter = new ModFilter($request);
+    $builder = $filter->apply(Mod::query());
+
+    expect($builder->get()->pluck('id')->toArray())->not()->toContain($mod->id);
+});
+
+it('does not show mods that do not have any versions which resolve to an SPT version', function (): void {
+    SptVersion::factory()->create(['version' => '9.9.9']);
+    $mod = Mod::factory()->create();
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
 
     $request = new Request;
     $filter = new ModFilter($request);

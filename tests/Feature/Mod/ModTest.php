@@ -75,6 +75,17 @@ it('allows an administrator to view a disabled mod', function (): void {
     $response->assertOk();
 });
 
+it('allows a normal user to view a mod in a valid state', function (): void {
+    $this->actingAs(User::factory()->create(['user_role_id' => null]));
+
+    SptVersion::factory()->create(['version' => '1.1.1']);
+    $mod = Mod::factory()->create();
+    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']);
+
+    $response = $this->get($mod->detailUrl());
+    $response->assertOk();
+});
+
 it('does not allow a normal user to view a mod without a resolved SPT version', function (): void {
     $this->actingAs(User::factory()->create(['user_role_id' => null]));
 
