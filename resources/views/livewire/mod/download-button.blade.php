@@ -1,4 +1,4 @@
-<a classes="hidden lg:block">
+<a class="{{ $classes }}">
     <button wire:click="toggleDownloadDialog" class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">
         {{ __('Download Latest Version') }} ({{ $this->mod->latestVersion->version }})
     </button>
@@ -22,10 +22,8 @@
             </div>
         </x-slot>
         <x-slot name="footer">
-            <a href="{{ $mod->downloadUrl() }}" class="block pe-3" target="_blank">
-                <x-primary-button>
-                    Download
-                </x-primary-button>
+            <a href="{{ $mod->downloadUrl() }}" class="inline-flex items-center px-4 py-2 mx-4 border border-transparent rounded-md font-semibold text-xs uppercase transition ease-in-out duration-150 cursor-pointer text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700 outline-none disabled:opacity-50" target="_blank">
+                Download
             </a>
             <x-button x-on:click="show = false">
                 {{ __('Close') }}
