@@ -40,7 +40,7 @@
                 </div>
             </div>
 
-            <x-primary-button class="my-6 w-full flex justify-center">
+            <x-primary-button type="submit" class="mt-6 w-full flex justify-center">
                 {{ __('Log in') }}
             </x-primary-button>
         </form>
