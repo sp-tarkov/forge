@@ -67,7 +67,7 @@
 
             {{-- Mobile Download Button --}}
             @if ($mod->latestVersion)
-                <livewire:mod.download-button :mod="$mod" classes="block lg:hidden"/>
+                <livewire:mod.download-button key="mod-download-button-mobile" :mod="$mod" classes="block lg:hidden" />
             @endif
 
             {{-- Tabs --}}
@@ -168,7 +168,7 @@
 
             {{-- Desktop Download Button --}}
             @if ($mod->latestVersion)
-                <livewire:mod.download-button :mod="$mod" classes="hidden lg:block"/>
+                <livewire:mod.download-button key="mod-download-button-desktop" :mod="$mod" classes="hidden lg:block" />
             @endif
 
             {{-- Additional Mod Details --}}

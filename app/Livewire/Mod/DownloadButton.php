@@ -14,9 +14,9 @@ class DownloadButton extends Component
     public Mod $mod;
 
     /**
-     * classes that are applied to the component
+     * CSS classes that are applied to the component.
      */
-    public string $classes;
+    public string $classes = '';
 
     /**
      * Whether to show latest version download model dialog.
