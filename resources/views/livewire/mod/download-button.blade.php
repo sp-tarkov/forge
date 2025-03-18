@@ -1,6 +1,5 @@
-<a class="{{ $this->classes }}">
-    <button wire:click="toggleDownloadDialog"
-            class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">
+<a classes="hidden lg:block">
+    <button wire:click="toggleDownloadDialog" class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">
         {{ __('Download Latest Version') }} ({{ $this->mod->latestVersion->version }})
     </button>
 </a>
@@ -9,11 +8,12 @@
     <x-dialog-modal wire:model="showDownloadDialog">
         <x-slot name="title">
             <h2 class="text-2xl">Latest Version: {{ $this->mod->latestVersion->version }}</h2>
-            <span
-                class="badge-version {{ $this->mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                {{ $this->mod->latestVersion->latestSptVersion->version_formatted }}
-            </span>
-            <span>{{ __('Updated') }} {{ Carbon::dynamicFormat($this->mod->latestVersion->latestSptVersion->updated_at) }}</span>
+            @if ($this->mod->latestVersion->latestSptVersion)
+                <span class="badge-version {{ $this->mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                    {{ $this->mod->latestVersion->latestSptVersion->version_formatted }}
+                </span>
+            @endif
+            <span>{{ __('Updated') }} {{ Carbon::dynamicFormat($this->mod->latestVersion->updated_at) }}</span>
         </x-slot>
         <x-slot name="content">
             <div class="overflow-y-auto">

@@ -87,7 +87,7 @@ it('does not allow a normal user to view a mod without a resolved SPT version', 
 });
 
 it('allows a mod author to view their mod without a resolved SPT version', function (): void {
-    $user = User::factory()->create(['email' => 'test@test.com', 'user_role_id' => null]);
+    $user = User::factory()->create(['user_role_id' => null]);
     $this->actingAs($user);
 
     SptVersion::factory()->create(['version' => '9.9.9']);
