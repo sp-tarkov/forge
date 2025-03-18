@@ -39,9 +39,7 @@ class ModController extends ApiController
     {
         $mods = Mod::filter($modFilter)->paginate();
 
-        if ($mods->isEmpty()) {
-            throw new NotFoundHttpException;
-        }
+        throw_if($mods->isEmpty(), new NotFoundHttpException);
 
         return ModResource::collection($mods);
     }

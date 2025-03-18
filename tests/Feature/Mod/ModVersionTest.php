@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\DB;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;

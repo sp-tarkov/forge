@@ -89,7 +89,7 @@ abstract class QueryFilter
 
         // If this builder is for a mod, ensure it has a latest version.
         if ($builder->getModel() instanceof Mod) {
-            $builder->whereHas('latestVersion', function (Builder $query) {
+            $builder->whereHas('latestVersion', function (Builder $query): void {
                 // Ensure the latest version has a resolved SPT version.
                 $query->whereHas('latestSptVersion');
             });

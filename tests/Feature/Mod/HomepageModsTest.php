@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Cache;
 use App\Livewire\Mod\Homepage;
 use App\Models\Mod;
 use App\Models\ModVersion;

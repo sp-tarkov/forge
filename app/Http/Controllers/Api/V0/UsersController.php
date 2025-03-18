@@ -30,9 +30,7 @@ class UsersController extends ApiController
     {
         $users = User::filter($userFilter)->paginate();
 
-        if ($users->isEmpty()) {
-            throw new NotFoundHttpException;
-        }
+        throw_if($users->isEmpty(), new NotFoundHttpException);
 
         return UserResource::collection($users);
     }
