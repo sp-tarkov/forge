@@ -20,6 +20,8 @@ class ModVersionResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
+        $this->load(['resolvedDependencies', 'latestResolvedDependencies', 'sptVersions', 'latestSptVersion']);
+
         return [
             'type' => 'mod_version',
             'id' => $this->id,
@@ -27,6 +29,10 @@ class ModVersionResource extends JsonResource
                 'hub_id' => $this->hub_id,
                 'mod_id' => $this->mod_id,
                 'version' => $this->version,
+                'version_major' => $this->version_major,
+                'version_minor' => $this->version_minor,
+                'version_patch' => $this->version_patch,
+                'version_pre_release' => $this->version_pre_release,
 
                 // TODO: This should only be visible on the mod version show route(?) which doesn't exist.
                 // 'description' => $this->when(
@@ -35,6 +41,7 @@ class ModVersionResource extends JsonResource
                 // ),
 
                 'link' => $this->downloadUrl(absolute: true),
+                'spt_version_constraint' => $this->spt_version_constraint,
                 'virus_total_link' => $this->virus_total_link,
                 'downloads' => $this->downloads,
                 'created_at' => $this->created_at,
@@ -42,13 +49,55 @@ class ModVersionResource extends JsonResource
                 'published_at' => $this->published_at,
             ],
             'relationships' => [
-                'spt_version' => [
-                    [
-                        'data' => [
-                            'type' => 'spt_version',
-                        ],
+                'mod' => [
+                    'data' => [
+                        'type' => 'mod',
+                        'id' => $this->mod_id,
+                    ],
+                    'links' => [
+                        'self' => $this->mod->detailUrl(),
                     ],
                 ],
+                'dependencies' => $this->resolvedDependencies->map(fn (ModVersion $modVersion): array => [
+                    'data' => [
+                        'type' => 'dependency',
+                        'id' => $modVersion->id,
+                    ],
+                ])->toArray(),
+                'latest_dependencies' => $this->latestResolvedDependencies->map(fn (ModVersion $modVersion): array => [
+                    'data' => [
+                        'type' => 'dependency',
+                        'id' => $modVersion->id,
+                    ],
+                ])->toArray(),
+                'spt_versions' => $this->sptVersions->map(fn ($sptVersion): array => [
+                    'data' => [
+                        'type' => 'spt_version',
+                        'id' => $sptVersion->id,
+                    ],
+                ])->toArray(),
+                'latest_spt_version' => [
+                    'data' => [
+                        'type' => 'spt_version',
+                        'id' => $this->latestSptVersion->id,
+                    ],
+                ],
+            ],
+            //            // TODO: give the options to include detailed relationship data.
+            //            'includes' => $this->when(
+            //                ApiController::shouldInclude(['users', 'license', 'versions']), [
+            //                    'users' => $this->when(
+            //                        ApiController::shouldInclude('users'),
+            //                        $this->users->map(fn ($user): UserResource => new UserResource($user)),
+            //                    ),
+            //                    'license' => $this->when(
+            //                        ApiController::shouldInclude('license'),
+            //                        new LicenseResource($this->license),
+            //                    ),
+            //                ]
+            //            ),
+            'links' => [
+                'self' => $this->mod->detailUrl(),
             ],
         ];
     }
