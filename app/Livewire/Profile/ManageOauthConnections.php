@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Profile;
 
 use App\Models\User;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -13,7 +12,6 @@ use Livewire\Component;
 
 class ManageOauthConnections extends Component
 {
-    use AuthorizesRequests;
 
     /**
      * Store the current user.

@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Gate;
 use App\Models\ModVersion;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
 class ModVersionController extends Controller
 {
-    use AuthorizesRequests;
 
     public function show(Request $request, int $modId, string $slug, string $version): RedirectResponse
     {
@@ -22,7 +21,7 @@ class ModVersionController extends Controller
 
         abort_if($modVersion->mod->slug !== $slug, 404);
 
-        $this->authorize('view', $modVersion);
+        Gate::authorize('view', $modVersion);
 
         // Rate limit the downloads to 5 per minute.
         $rateKey = 'mod.version.download.'.$modId.'.'.($request->user()?->id ?: $request->session()->getId());
