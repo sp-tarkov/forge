@@ -61,10 +61,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register model observers.
      */
-    private function registerObservers(): void
-    {
-
-    }
+    private function registerObservers(): void {}
 
     /**
      * Register custom number macros.

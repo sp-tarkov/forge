@@ -10,7 +10,6 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-
     public function show(Request $request, int $userId, string $username): View
     {
         $user = User::whereId($userId)

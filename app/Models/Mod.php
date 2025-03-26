@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
-use App\Observers\ModObserver;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\PublishedScope;
+use App\Observers\ModObserver;
 use App\Traits\CanModerate;
 use Database\Factories\ModFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;

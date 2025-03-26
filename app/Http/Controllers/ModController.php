@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\ModRequest;
 use App\Http\Resources\ModResource;
 use App\Models\Mod;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ModController extends Controller
 {
-
     public function index(): View
     {
         Gate::authorize('viewAny', Mod::class);

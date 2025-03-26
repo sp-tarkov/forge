@@ -12,7 +12,6 @@ use Livewire\Component;
 
 class ManageOauthConnections extends Component
 {
-
     /**
      * Store the current user.
      */

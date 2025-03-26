@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Gate;
 use App\Models\ModVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 
 class ModVersionController extends Controller
 {
-
     public function show(Request $request, int $modId, string $slug, string $version): RedirectResponse
     {
         $modVersion = ModVersion::whereModId($modId)
