@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use App\Observers\ModVersionObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Support\Version;
@@ -47,6 +50,8 @@ use Override;
  * @property-read SptVersion|null $latestSptVersion
  * @property-read Collection<int, SptVersion> $sptVersions
  */
+#[ScopedBy([PublishedScope::class])]
+#[ObservedBy([ModVersionObserver::class])]
 class ModVersion extends Model
 {
     use CanModerate;
@@ -67,7 +72,6 @@ class ModVersion extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::addGlobalScope(new PublishedScope);
 
         static::saving(function (ModVersion $modVersion): void {
             // Extract the version sections from the version string.
