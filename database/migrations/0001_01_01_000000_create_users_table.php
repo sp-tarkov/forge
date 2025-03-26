@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\UserRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -27,9 +29,9 @@ return new class extends Migration
                 ->constrained('user_roles')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
-            $table->rememberToken();
             $table->string('profile_photo_path', 2048)->nullable()->default(null);
             $table->string('cover_photo_path', 2048)->nullable()->default(null);
+            $table->rememberToken();
             $table->timestamps();
         });
 

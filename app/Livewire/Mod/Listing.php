@@ -83,7 +83,7 @@ class Listing extends Component
      */
     public function mount(): void
     {
-        // Fetch the
+        // Fetch all versions in the last three minor versions.
         $this->availableSptVersions ??= Cache::remember(
             'active-spt-versions',
             600,

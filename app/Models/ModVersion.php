@@ -30,7 +30,7 @@ use Override;
  * @property int $version_major
  * @property int $version_minor
  * @property int $version_patch
- * @property string $version_pre_release
+ * @property string $version_labels
  * @property string $description
  * @property string $link
  * @property string $spt_version_constraint
@@ -77,12 +77,12 @@ class ModVersion extends Model
                 $modVersion->version_major = $version->getMajor();
                 $modVersion->version_minor = $version->getMinor();
                 $modVersion->version_patch = $version->getPatch();
-                $modVersion->version_pre_release = $version->getPreRelease();
+                $modVersion->version_labels = $version->getLabels();
             } catch (InvalidVersionNumberException) {
                 $modVersion->version_major = 0;
                 $modVersion->version_minor = 0;
                 $modVersion->version_patch = 0;
-                $modVersion->version_pre_release = '';
+                $modVersion->version_labels = '';
             }
         });
     }
@@ -148,7 +148,7 @@ class ModVersion extends Model
             ->orderByDesc('spt_versions.version_major')
             ->orderByDesc('spt_versions.version_minor')
             ->orderByDesc('spt_versions.version_patch')
-            ->orderByDesc('spt_versions.version_pre_release')
+            ->orderByDesc('spt_versions.version_labels')
             ->limit(1);
     }
 
@@ -164,7 +164,7 @@ class ModVersion extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
-            ->orderByDesc('version_pre_release');
+            ->orderByDesc('version_labels');
     }
 
     /**

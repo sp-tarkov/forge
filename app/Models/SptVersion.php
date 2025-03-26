@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Override;
 use Throwable;
 
@@ -20,12 +21,11 @@ use Throwable;
  * SptVersion Model
  *
  * @property int $id
- * @property int|null $hub_id
  * @property string $version
  * @property int $version_major
  * @property int $version_minor
  * @property int $version_patch
- * @property string $version_pre_release
+ * @property string $version_labels
  * @property int $mod_count
  * @property string $link
  * @property string $color_class
@@ -65,7 +65,7 @@ class SptVersion extends Model
             ->orderBy('spt_versions.version_major', 'DESC')
             ->orderBy('spt_versions.version_minor', 'DESC')
             ->orderBy('spt_versions.version_patch', 'DESC')
-            ->orderBy('spt_versions.version_pre_release', 'ASC')
+            ->orderBy('spt_versions.version_labels', 'ASC')
             ->get();
     }
 
@@ -94,7 +94,7 @@ class SptVersion extends Model
     /**
      * Extract the version sections from the version string.
      *
-     * @return array{major: int, minor: int, patch: int, pre_release: string}
+     * @return array{major: int, minor: int, patch: int, labels: string}
      *
      * @throws InvalidVersionNumberException|Throwable
      */
@@ -111,7 +111,7 @@ class SptVersion extends Model
             'major' => $matches[1] ?? 0,
             'minor' => $matches[2] ?? 0,
             'patch' => $matches[3] ?? 0,
-            'pre_release' => $matches[4] ?? '',
+            'labels' => $matches[4] ?? '',
         ];
     }
 
@@ -129,12 +129,14 @@ class SptVersion extends Model
                 $sptVersion->version_major = $version->getMajor();
                 $sptVersion->version_minor = $version->getMinor();
                 $sptVersion->version_patch = $version->getPatch();
-                $sptVersion->version_pre_release = $version->getPreRelease();
-            } catch (InvalidVersionNumberException) {
+                $sptVersion->version_labels = $version->getLabels();
+            } catch (InvalidVersionNumberException $e) {
+                Log::warning('Invalid SPT version number: '.$e->getMessage());
+
                 $sptVersion->version_major = 0;
                 $sptVersion->version_minor = 0;
                 $sptVersion->version_patch = 0;
-                $sptVersion->version_pre_release = '';
+                $sptVersion->version_labels = '';
             }
         });
     }
@@ -193,7 +195,7 @@ class SptVersion extends Model
     public static function getLatest(): ?SptVersion
     {
         return self::query()
-            ->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_pre_release'])
+            ->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_labels'])
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')

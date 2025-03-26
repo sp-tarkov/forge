@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Mod;
-use App\Models\User;
+use App\Jobs\SearchSyncJob;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
 
 class SearchSyncCommand extends Command
 {
@@ -17,11 +15,8 @@ class SearchSyncCommand extends Command
 
     public function handle(): void
     {
-        Artisan::call('scout:delete-all-indexes');
-        Artisan::call('scout:sync-index-settings');
-        Artisan::call('scout:import', ['model' => Mod::class]);
-        Artisan::call('scout:import', ['model' => User::class]);
+        SearchSyncJob::dispatch()->onQueue('default');
 
-        $this->info('The search synchronisation jobs have been added to the queue');
+        $this->info('The search synchronisation job has been added to the queue');
     }
 }

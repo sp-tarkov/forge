@@ -143,7 +143,7 @@ class Mod extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
-            ->orderByDesc('version_pre_release')
+            ->orderByDesc('version_labels')
             ->chaperone();
     }
 
@@ -225,7 +225,7 @@ class Mod extends Model
                 'version_major' => 'max',
                 'version_minor' => 'max',
                 'version_patch' => 'max',
-                'version_pre_release' => 'max',
+                'version_labels' => 'max',
             ])
             ->chaperone();
     }

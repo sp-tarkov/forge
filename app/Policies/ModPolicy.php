@@ -29,7 +29,7 @@ class ModPolicy
 
         // Only allow authors, admins, and mods to view mods without an SPT version tag.
         if ($user && ($mod->users->pluck('id')->doesntContain($user->id) && ! $user->isModOrAdmin())) {
-            $hasValidVersion = $mod->versions->first(fn($version) => ! is_null($version->latestSptVersion));
+            $hasValidVersion = $mod->versions->first(fn ($version) => ! is_null($version->latestSptVersion));
             if (! $hasValidVersion) {
                 return false;
             }
