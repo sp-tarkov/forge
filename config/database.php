@@ -61,7 +61,7 @@ return [
             ]) : [],
         ],
 
-        'mysql_hub' => [
+        'hub' => [
             'driver' => 'mysql',
             'url' => env('DB_HUB_URL'),
             'host' => env('DB_HUB_HOST', '127.0.0.1'),

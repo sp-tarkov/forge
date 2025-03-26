@@ -7,6 +7,7 @@
     "require": {
         "php": "^8.3",
         "ext-curl": "*",
+        "ext-imagick": "*",
         "ext-intl": "*",
         "aws/aws-sdk-php": "^3.342.2",
         "composer/semver": "^3.4.3",
