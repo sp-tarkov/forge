@@ -62,9 +62,9 @@ class Version implements Stringable
             // Ensure that the semver is three parts with no leading zeros.
             $segments = explode('.', $semver);
             $segments = array_pad($segments, 3, '0');
-            $semver = implode('.', array_map(fn ($s) => (string) (int) $s, $segments));
+            $semver = implode('.', array_map(fn ($s): string => (string) (int) $s, $segments));
 
-            $cleanedVersion = $metadata ? "{$semver}+{$metadata}" : $semver;
+            $cleanedVersion = $metadata ? sprintf('%s+%s', $semver, $metadata) : $semver;
         } else {
             $cleanedVersion = '0.0.0';
         }
@@ -83,7 +83,7 @@ class Version implements Stringable
         // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         $pattern = "/^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildMetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/";
 
-        throw_unless(preg_match($pattern, $this->version, $matches), new InvalidVersionNumberException("Invalid SemVer: {$this->version}"));
+        throw_unless(preg_match($pattern, $this->version, $matches), new InvalidVersionNumberException('Invalid SemVer: '.$this->version));
 
         $this->major = (int) $matches['major'];
         $this->minor = (int) $matches['minor'];
@@ -91,11 +91,13 @@ class Version implements Stringable
 
         $labels = '';
         if (! empty($matches['prerelease'])) {
-            $labels .= Str::trim("-{$matches['prerelease']}");
+            $labels .= Str::trim('-'.$matches['prerelease']);
         }
+
         if (! empty($matches['buildMetadata'])) {
-            $labels .= Str::trim("+{$matches['buildMetadata']}");
+            $labels .= Str::trim('+'.$matches['buildMetadata']);
         }
+
         $this->labels = $labels;
     }
 

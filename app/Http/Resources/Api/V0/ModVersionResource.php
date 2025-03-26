@@ -32,7 +32,7 @@ class ModVersionResource extends JsonResource
                 'version_major' => $this->version_major,
                 'version_minor' => $this->version_minor,
                 'version_patch' => $this->version_patch,
-                'version_pre_release' => $this->version_pre_release,
+                'version_labels' => $this->version_labels,
 
                 // TODO: This should only be visible on the mod version show route(?) which doesn't exist.
                 // 'description' => $this->when(

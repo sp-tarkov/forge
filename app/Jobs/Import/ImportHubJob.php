@@ -99,7 +99,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     private function processUserBatch(Collection $hubUsers): void
     {
         // Prepare data for upsert.
-        $userData = $hubUsers->map(fn (HubUser $hubUser) => [
+        $userData = $hubUsers->map(fn (HubUser $hubUser): array => [
             'hub_id' => $hubUser->userID,
             'name' => $hubUser->username,
             'email' => $hubUser->getEmail(),
@@ -204,7 +204,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $now = Carbon::now('UTC')->toDateTimeString();
 
         $hubUserOptionValues
-            ->filter(fn (HubUserOptionValue $hubUserOptionValue) => $hubUserOptionValue->getAbout() !== '')
+            ->filter(fn (HubUserOptionValue $hubUserOptionValue): bool => $hubUserOptionValue->getAbout() !== '')
             ->each(function (HubUserOptionValue $hubUserOptionValue) use ($now): void {
                 User::withoutEvents(function () use ($hubUserOptionValue, $now): void {
                     User::query()->where('hub_id', $hubUserOptionValue->userID)
@@ -435,7 +435,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     private function processModLicenseBatch(Collection $hubModLicenses): void
     {
         // Prepare data for upsert.
-        $licenseData = $hubModLicenses->map(fn (HubModLicense $hubModLicense) => [
+        $licenseData = $hubModLicenses->map(fn (HubModLicense $hubModLicense): array => [
             'hub_id' => $hubModLicense->licenseID,
             'name' => $hubModLicense->licenseName,
             'link' => $hubModLicense->licenseURL,
@@ -630,7 +630,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     private function processModBatch(Collection $hubMods): void
     {
         // Prepare data for upsert.
-        $modData = $hubMods->map(fn (HubMod $hubMod) => [
+        $modData = $hubMods->map(fn (HubMod $hubMod): array => [
             'hub_id' => $hubMod->fileID,
             'name' => $hubMod->subject,
             'slug' => Str::slug($hubMod->subject),

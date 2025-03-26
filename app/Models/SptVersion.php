@@ -130,8 +130,8 @@ class SptVersion extends Model
                 $sptVersion->version_minor = $version->getMinor();
                 $sptVersion->version_patch = $version->getPatch();
                 $sptVersion->version_labels = $version->getLabels();
-            } catch (InvalidVersionNumberException $e) {
-                Log::warning('Invalid SPT version number: '.$e->getMessage());
+            } catch (InvalidVersionNumberException $invalidVersionNumberException) {
+                Log::warning('Invalid SPT version number: '.$invalidVersionNumberException->getMessage());
 
                 $sptVersion->version_major = 0;
                 $sptVersion->version_minor = 0;
