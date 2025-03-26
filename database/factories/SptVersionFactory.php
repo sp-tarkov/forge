@@ -13,8 +13,6 @@ use Illuminate\Support\Carbon;
  */
 class SptVersionFactory extends Factory
 {
-    protected $model = SptVersion::class;
-
     public function definition(): array
     {
         return [

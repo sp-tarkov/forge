@@ -15,8 +15,6 @@ use Illuminate\Support\Carbon;
  */
 class ModVersionFactory extends Factory
 {
-    protected $model = ModVersion::class;
-
     public function definition(): array
     {
         return [

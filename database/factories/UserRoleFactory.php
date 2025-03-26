@@ -13,8 +13,6 @@ use Illuminate\Support\Carbon;
  */
 class UserRoleFactory extends Factory
 {
-    protected $model = UserRole::class;
-
     public function definition(): array
     {
         return [
