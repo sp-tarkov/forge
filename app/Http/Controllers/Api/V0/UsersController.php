@@ -8,8 +8,8 @@ use App\Http\Filters\V1\UserFilter;
 use App\Http\Resources\Api\V0\UserResource;
 use App\Models\User;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Knuckles\Scribe\Attributes\QueryParam;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UsersController extends ApiController
 {
@@ -28,7 +28,11 @@ class UsersController extends ApiController
     #[QueryParam('sort', 'string', 'Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC.', required: false, example: 'created_at,-name')]
     public function index(UserFilter $userFilter): AnonymousResourceCollection
     {
-        return UserResource::collection(User::filter($userFilter)->paginate());
+        $users = User::filter($userFilter)->paginate();
+
+        throw_if($users->isEmpty(), new NotFoundHttpException);
+
+        return UserResource::collection($users);
     }
 
     /**
@@ -39,7 +43,7 @@ class UsersController extends ApiController
      * @group Users
      */
     #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'user_role')]
-    public function show(User $user): JsonResource
+    public function show(User $user): UserResource
     {
         return new UserResource($user);
     }

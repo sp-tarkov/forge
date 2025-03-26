@@ -7,10 +7,10 @@
     "require": {
         "php": "^8.3",
         "ext-curl": "*",
+        "ext-imagick": "*",
         "ext-intl": "*",
         "aws/aws-sdk-php": "^3.342.2",
         "composer/semver": "^3.4.3",
-        "filament/filament": "^3.3.3",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^11.44.1",
         "laravel/horizon": "^5.31.0",
@@ -66,8 +66,7 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",

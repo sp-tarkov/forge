@@ -53,9 +53,15 @@ class ModResource extends JsonResource
                         'id' => $user->id,
                     ],
                     'links' => [
-                        'self' => $user->profileUrl(),
+                        'self' => $user->profile_url,
                     ],
                 ])->toArray(),
+                'license' => [
+                    'data' => [
+                        'type' => 'license',
+                        'id' => $this->license_id,
+                    ],
+                ],
                 'versions' => $this->versions->map(fn (ModVersion $version): array => [
                     'data' => [
                         'type' => 'version',
@@ -64,27 +70,23 @@ class ModResource extends JsonResource
                     'links' => [
                         'self' => $version->downloadUrl(absolute: true),
                     ],
-
                 ])->toArray(),
-                'license' => [
-                    [
-                        'data' => [
-                            'type' => 'license',
-                            'id' => $this->license_id,
-                        ],
-                    ],
-                ],
             ],
             'includes' => $this->when(
-                ApiController::shouldInclude(['users', 'license', 'versions']),
-                fn () => collect([
-                    'users' => $this->users->map(fn ($user): UserResource => new UserResource($user)),
-                    'license' => new LicenseResource($this->license),
-                    'versions' => $this->versions->map(fn ($version): ModVersionResource => new ModVersionResource($version)),
-                ])
-                    ->filter(fn ($value, $key): bool => ApiController::shouldInclude($key))
-                    ->flatten(1)
-                    ->values()
+                ApiController::shouldInclude(['users', 'license', 'versions']), [
+                    'users' => $this->when(
+                        ApiController::shouldInclude('users'),
+                        $this->users->map(fn ($user): UserResource => new UserResource($user)),
+                    ),
+                    'license' => $this->when(
+                        ApiController::shouldInclude('license'),
+                        new LicenseResource($this->license),
+                    ),
+                    'versions' => $this->when(
+                        ApiController::shouldInclude('versions'),
+                        $this->versions->map(fn ($version): ModVersionResource => new ModVersionResource($version)),
+                    ),
+                ]
             ),
             'links' => [
                 'self' => $this->detailUrl(),

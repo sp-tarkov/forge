@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Knuckles\Scribe\Config\AuthIn;
 use Knuckles\Scribe\Config\Defaults;
 use Knuckles\Scribe\Extracting\Strategies\Responses\ResponseCalls;

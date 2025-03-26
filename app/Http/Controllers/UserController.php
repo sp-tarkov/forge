@@ -19,7 +19,7 @@ class UserController extends Controller
             ->with(['following', 'followers'])
             ->firstOrFail();
 
-        abort_if($user->slug() !== $username, 404);
+        abort_if($user->slug !== $username, 404);
         abort_if($request->user()?->cannot('view', $user), 403);
 
         return view('user.show', ['user' => $user]);

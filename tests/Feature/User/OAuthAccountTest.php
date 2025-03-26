@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 

@@ -44,6 +44,8 @@ use SensitiveParameter;
  * @property string|null $cover_photo_path
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read string $slug
+ * @property-read string $profile_url
  * @property-read string $profile_photo_url
  * @property-read UserRole|null $role
  * @property-read Collection<int, Mod> $mods
@@ -217,22 +219,30 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the relative URL to the user's profile page.
+     * The link to the user's profile page.
+     *
+     * @return Attribute<string, never>
      */
-    public function profileUrl(): string
+    protected function profileUrl(): Attribute
     {
-        return route('user.show', [
-            'user' => $this->id,
-            'username' => $this->slug(),
-        ]);
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): string => route('user.show', [
+                'user' => $attributes['id'],
+                'username' => Str::slug($attributes['name']),
+            ]),
+        )->shouldCache();
     }
 
     /**
      * Get the slug of the user's name.
+     *
+     * @return Attribute<string, never>
      */
-    public function slug(): string
+    protected function slug(): Attribute
     {
-        return Str::of($this->name)->slug('-')->toString();
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): string => Str::slug($attributes['name']),
+        )->shouldCache();
     }
 
     /**
@@ -284,7 +294,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function about(): Attribute
     {
         return Attribute::make(
-            set: function ($value) {
+            set: function ($value): string {
                 // MySQL will not allow you to set a default value of an empty string for a (LONG)TEXT column. *le sigh*
                 // NULL is the default. If NULL is saved, we'll swap it out for an empty string.
                 if (is_null($value)) {
