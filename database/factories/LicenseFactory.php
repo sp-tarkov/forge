@@ -13,8 +13,6 @@ use Illuminate\Support\Carbon;
  */
 class LicenseFactory extends Factory
 {
-    protected $model = License::class;
-
     public function definition(): array
     {
         return [

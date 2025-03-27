@@ -5,15 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Livewire\Profile\UpdatePasswordForm;
-use App\Models\Mod;
-use App\Models\ModDependency;
-use App\Models\ModVersion;
-use App\Models\SptVersion;
 use App\Models\User;
-use App\Observers\ModDependencyObserver;
-use App\Observers\ModObserver;
-use App\Observers\ModVersionObserver;
-use App\Observers\SptVersionObserver;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
@@ -69,13 +61,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register model observers.
      */
-    private function registerObservers(): void
-    {
-        Mod::observe(ModObserver::class);
-        ModVersion::observe(ModVersionObserver::class);
-        ModDependency::observe(ModDependencyObserver::class);
-        SptVersion::observe(SptVersionObserver::class);
-    }
+    private function registerObservers(): void {}
 
     /**
      * Register custom number macros.

@@ -14,8 +14,6 @@ use Illuminate\Support\Str;
  */
 class OAuthConnectionFactory extends Factory
 {
-    protected $model = OAuthConnection::class;
-
     /**
      * Define the model's default state.
      */

@@ -15,8 +15,6 @@ use Illuminate\Support\Carbon;
  */
 class ModVersionFactory extends Factory
 {
-    protected $model = ModVersion::class;
-
     public function definition(): array
     {
         return [
@@ -69,7 +67,7 @@ class ModVersionFactory extends Factory
         foreach ($requiredVersions as $version) {
             SptVersion::firstOrCreate(['version' => $version], [
                 'color_class' => $this->faker->randomElement(['red', 'green', 'emerald', 'lime', 'yellow', 'grey']),
-                'link' => $this->faker->url,
+                'link' => $this->faker->url(),
             ]);
         }
 

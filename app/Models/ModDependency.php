@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Observers\ModDependencyObserver;
 use Carbon\Carbon;
 use Database\Factories\ModDependencyFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Mod $dependentMod
  * @property-read Collection<int, ModResolvedDependency> $resolvedDependencies
  */
+#[ObservedBy([ModDependencyObserver::class])]
 class ModDependency extends Model
 {
     /** @use HasFactory<ModDependencyFactory> */

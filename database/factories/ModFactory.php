@@ -15,8 +15,6 @@ use Illuminate\Support\Str;
  */
 class ModFactory extends Factory
 {
-    protected $model = Mod::class;
-
     public function definition(): array
     {
         $name = fake()->sentence(rand(3, 5));
