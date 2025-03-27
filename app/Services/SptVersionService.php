@@ -26,6 +26,10 @@ class SptVersionService
      */
     private function satisfyConstraint(ModVersion $modVersion): array
     {
+        if ($modVersion->spt_version_constraint === '') {
+            return [];
+        }
+
         $availableVersions = SptVersion::query()
             ->orderBy('version', 'desc')
             ->pluck('id', 'version')

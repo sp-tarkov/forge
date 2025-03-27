@@ -191,7 +191,7 @@ return [
             'balanceMaxShift' => 1,
             'balanceCooldown' => 3,
             'tries' => 3,
-            'timeout' => 75,
+            'timeout' => 120,
         ],
         'supervisor-long' => [
             'connection' => 'redis',

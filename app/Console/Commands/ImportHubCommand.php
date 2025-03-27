@@ -29,7 +29,7 @@ class ImportHubCommand extends Command
             new ResolveDependenciesJob,
             new SptVersionModCountsJob,
             new UpdateModDownloadsJob,
-            (new SearchSyncJob)->delay(Carbon::now()->addSeconds(30)),
+            (new SearchSyncJob)->onQueue('long')->delay(Carbon::now()->addSeconds(30)),
             fn () => Artisan::call('cache:clear'),
         ])->dispatch();
 

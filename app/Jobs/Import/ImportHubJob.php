@@ -50,6 +50,13 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     use SerializesModels;
 
     /**
+     * Accumulator for SPT version constraints across batches.
+     *
+     * @var array<int, <int, string>>
+     */
+    private array $sptVersionConstraints = [];
+
+    /**
      * @throws ConnectionException|RequestException|InvalidVersionNumberException
      */
     public function handle(): void
@@ -760,6 +767,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      **/
     private function getHubModVersions(): void
     {
+        $this->sptVersionConstraints = [];
+
         DB::connection('hub')
             ->table('filebase1_file_version as version')
             ->select(
@@ -784,6 +793,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
                 $this->processModVersionBatch($hubModVersion);
             });
+
+        $this->processModVersionSptConstraints();
     }
 
     /**
@@ -795,12 +806,18 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     {
         // Prepare data for upsert.
         $modVersionData = $hubModVersions
-            ->map(function (HubModVersion $hubModVersion) {
+            ->map(function (HubModVersion $hubModVersion): array {
                 $version = Version::cleanModImport($hubModVersion->versionNumber);
+
+                // Find the mod ID based on the version's hub_id.
+                $modId = Mod::whereHubId($hubModVersion->fileID)->value('id');
+
+                // Accumulate the SPT version constraints for separate processing.
+                $this->sptVersionConstraints[$modId][$hubModVersion->versionID] = $hubModVersion->getSptVersionConstraint();
 
                 return [
                     'hub_id' => $hubModVersion->versionID,
-                    'mod_id' => Mod::whereHubId($hubModVersion->fileID)->value('id'),
+                    'mod_id' => $modId,
                     'version' => $version->getVersion(),
                     'version_major' => $version->getMajor(),
                     'version_minor' => $version->getMinor(),
@@ -808,7 +825,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     'version_labels' => $version->getLabels(),
                     'description' => $hubModVersion->getCleanDescription(),
                     'link' => $hubModVersion->downloadURL,
-                    'spt_version_constraint' => $hubModVersion->getSptVersionConstraint(),
                     'virus_total_link' => $hubModVersion->getVirusTotalLink(),
                     'downloads' => max($hubModVersion->downloads, 0), // At least 0.
                     'disabled' => (bool) $hubModVersion->isDisabled,
@@ -824,10 +840,35 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         ModVersion::withoutEvents(function () use ($modVersionData): void {
             ModVersion::query()->upsert($modVersionData, ['hub_id'], [
                 'mod_id', 'version', 'version_major', 'version_minor', 'version_patch', 'version_labels', 'description',
-                'link', 'spt_version_constraint', 'virus_total_link', 'downloads', 'disabled', 'published_at',
-                'created_at', 'updated_at',
+                'link', 'virus_total_link', 'downloads', 'disabled', 'published_at', 'created_at', 'updated_at',
             ]);
         });
+    }
+
+    /**
+     * Update the latest versions of mods with their SPT version constraints.
+     */
+    private function processModVersionSptConstraints(): void
+    {
+        foreach ($this->sptVersionConstraints as $modId => $versionConstraints) {
+            $latestModVersion = ModVersion::where('mod_id', $modId)
+                ->orderByDesc('version_major')
+                ->orderByDesc('version_minor')
+                ->orderByDesc('version_patch')
+                ->orderBy('version_labels')
+                ->first();
+
+            if (! $latestModVersion) {
+                continue;
+            }
+
+            // Check if the latest version's hub_id is in the accumulated constraints.
+            $versionId = $latestModVersion->hub_id;
+            if (isset($versionConstraints[$versionId])) {
+                // Update only the latest version's constraint.
+                $latestModVersion->updateQuietly(['spt_version_constraint' => $versionConstraints[$versionId]]);
+            }
+        }
     }
 
     /**
