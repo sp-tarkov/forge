@@ -39,9 +39,6 @@ class AppServiceProvider extends ServiceProvider
         // Disable lazy loading in non-production environments.
         Model::preventLazyLoading(! app()->isProduction());
 
-        // Register model observers.
-        $this->registerObservers();
-
         // Register custom macros.
         $this->registerNumberMacros();
         $this->registerCarbonMacros();
@@ -57,11 +54,6 @@ class AppServiceProvider extends ServiceProvider
             $socialiteWasCalled->extendSocialite('discord', Provider::class);
         });
     }
-
-    /**
-     * Register model observers.
-     */
-    private function registerObservers(): void {}
 
     /**
      * Register custom number macros.
