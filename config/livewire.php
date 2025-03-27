@@ -66,9 +66,9 @@ return [
     */
 
     'temporary_file_upload' => [
-        'disk' => null,
+        'disk' => 'local',
         'rules' => ['file', 'max:12288'],
-        'directory' => null,
+        'directory' => 'livewire-tmp',
         'middleware' => 'throttle:5,1',
         'preview_mimes' => [
             'png', 'gif', 'bmp', 'svg', 'wav', 'mp4',
