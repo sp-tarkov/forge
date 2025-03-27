@@ -9,7 +9,7 @@
     class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end"
 >
     <div class="w-full max-w-lg lg:max-w-md">
-        <label for="search" class="sr-only">{{ __('Search') }}</label>
+        <label for="global-search" class="sr-only">{{ __('Search') }}</label>
         <search
             x-trap.noreturn="query.length && show"
             @click.away="show = false"

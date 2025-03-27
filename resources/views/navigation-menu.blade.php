@@ -15,7 +15,7 @@
                 </div>
             </div>
 
-            @livewire('global-search')
+            <livewire:global-search />
 
             <div class="flex lg:hidden">
                 {{-- Mobile Menu Button --}}
