@@ -52,7 +52,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     /**
      * Accumulator for SPT version constraints across batches.
      *
-     * @var array<int, <int, string>>
+     * @var array<int, array<int, string>>
      */
     private array $sptVersionConstraints = [];
 
