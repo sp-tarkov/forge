@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
-use App\Traits\CanModerate;
 use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -57,8 +56,6 @@ use Laravel\Scout\Searchable;
 #[ObservedBy([ModObserver::class])]
 class Mod extends Model
 {
-    use CanModerate;
-
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 

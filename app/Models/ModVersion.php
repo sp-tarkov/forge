@@ -8,7 +8,6 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
-use App\Traits\CanModerate;
 use Database\Factories\ModVersionFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -54,8 +53,6 @@ use Override;
 #[ObservedBy([ModVersionObserver::class])]
 class ModVersion extends Model
 {
-    use CanModerate;
-
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
 

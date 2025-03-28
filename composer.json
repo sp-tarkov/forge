@@ -23,6 +23,7 @@
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "^3.29",
         "league/html-to-markdown": "^5.1.1",
+        "livewire/flux": "^2.1",
         "livewire/livewire": "^3.6.1",
         "mchev/banhammer": "^2.3.2",
         "meilisearch/meilisearch-php": "^1.13",

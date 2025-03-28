@@ -24,25 +24,18 @@ class Moderation extends Component
     public string $currentRoute = '';
 
     /**
-     * Mount the component.
-     */
-    public function mount(Mod $mod): void
-    {
-        $this->mod = $mod;
-    }
-
-    /**
      * Soft delete the mod.
      */
     public function delete(): void
     {
         $this->authorize('delete', $this->mod);
 
-        defer(fn () => $this->mod->delete());
+        $this->mod->delete();
 
-        flash()->success('Mod deleted successfully!');
+        $this->modal('moderation-mod-delete-'.$this->mod->id)->close();
 
-        // Fire an event so that the listings can be updated.
+        flash()->success('Mod successfully deleted!');
+
         $this->dispatch('mod-delete', $this->mod->id);
 
         if ($this->currentRoute === 'mod.show') {
@@ -54,7 +47,7 @@ class Moderation extends Component
     /**
      * Toggles the disabled property of the mod.
      */
-    public function disabledToggle(): void
+    public function toggleDisabled(): void
     {
         $this->authorize('update', $this->mod);
 
@@ -62,7 +55,9 @@ class Moderation extends Component
         $this->mod->save();
         $this->mod->refresh();
 
-        flash()->success('Mod updated successfully!');
+        $this->modal('moderation-mod-disable-'.$this->mod->id)->close();
+
+        flash()->success('Mod successfully disabled!');
 
         $this->dispatch('mod-updated.'.$this->mod->id, $this->mod->disabled, $this->mod->featured);
     }

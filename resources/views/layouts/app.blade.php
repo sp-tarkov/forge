@@ -15,6 +15,7 @@
     <link href="{{ config('app.asset_url') }}" rel="dns-prefetch">
 
     @livewireStyles
+    @fluxAppearance
     @vite(['resources/css/app.css'])
 
     <script>
@@ -56,9 +57,10 @@
 
     <x-footer/>
 
-    @vite(['resources/js/app.js'])
     @stack('modals')
     @livewireScriptConfig
+    @fluxScripts
+    @vite(['resources/js/app.js'])
     @include('includes.analytics')
 </body>
 </html>
