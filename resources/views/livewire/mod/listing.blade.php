@@ -12,15 +12,22 @@
             <input wire:model.live.debounce.300ms="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
         </search>
 
-        <section x-data="{ isFilterOpen: false }"
-                 @click.away="isFilterOpen = false"
-                 aria-labelledby="filter-heading"
-                 class="my-8 grid items-center border-t border-gray-400 dark:border-gray-700">
+        <section
+            x-data="{ isFilterOpen: false }"
+            x-on:click.away="isFilterOpen = false"
+            aria-labelledby="filter-heading"
+            class="my-8 grid items-center border-t border-gray-400 dark:border-gray-700"
+        >
             <h2 id="filter-heading" class="sr-only">{{ __('Filters') }}</h2>
             <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-400 dark:border-gray-700">
                 <div class="mx-auto flex max-w-7xl text-sm">
-
-                    <button type="button" x-on:click="isFilterOpen = !isFilterOpen" class="group flex items-center font-medium text-gray-800 dark:text-gray-300 mx-0 pr-6 border-r border-gray-400 dark:border-gray-700" aria-controls="disclosure-1" aria-expanded="false">
+                    <button
+                        type="button"
+                        x-on:click="isFilterOpen = !isFilterOpen"
+                        class="group flex items-center font-medium text-gray-800 dark:text-gray-300 mx-0 pr-6 border-r border-gray-400 dark:border-gray-700"
+                        aria-controls="disclosure-1"
+                        aria-expanded="false"
+                    >
                         <svg class="mr-2 h-5 w-5 flex-none text-gray-500 group-hover:text-gray-600 dark:text-gray-600" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" />
                         </svg>
@@ -49,16 +56,18 @@
                     </div>
                 </div>
             </div>
-            <div x-cloak
-                 x-show="isFilterOpen"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 transform -translate-y-10"
-                 x-transition:enter-end="opacity-100 transform translate-y-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100 transform translate-y-0"
-                 x-transition:leave-end="opacity-0 transform -translate-y-10"
-                 id="disclosure-1"
-                 class="py-10 border-b border-gray-400 dark:border-gray-700">
+            <div
+                x-cloak
+                x-show="isFilterOpen"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform -translate-y-10"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 transform translate-y-0"
+                x-transition:leave-end="opacity-0 transform -translate-y-10"
+                id="disclosure-1"
+                class="py-10 border-b border-gray-400 dark:border-gray-700"
+            >
                 <div class="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
                     <div class="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
                         <fieldset>
@@ -93,33 +102,57 @@
             <div class="col-start-1 row-start-1 py-4">
                 <div class="mx-auto flex max-w-7xl justify-end px-4 sm:px-6 lg:px-8 gap-6">
                     {{-- Results Per Page Dropdown --}}
-                    <div class="relative inline-block" x-data="{ isResultsPerPageOpen: false }" @click.away="isResultsPerPageOpen = false">
+                    <div
+                        class="relative inline-block"
+                        x-data="{ isResultsPerPageOpen: false }"
+                        x-on:click.away="isResultsPerPageOpen = false"
+                    >
                         <div class="flex">
                             {{-- Large display can show full text --}}
-                            <button type="button" x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen" class="hidden group lg:inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true">
+                            <button
+                                type="button"
+                                x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
+                                class="hidden group lg:inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                id="menu-button"
+                                :aria-expanded="isResultsPerPageOpen.toString()"
+                                aria-haspopup="true"
+                            >
                                 {{ __('Per Page') }}
                                 <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                             {{-- Only show selected number on smaller screens --}}
-                            <button type="button" x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen" class="lg:hidden group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isResultsPerPageOpen.toString()" aria-haspopup="true" title="{{ __(':perPage results per page', ['perPage' => $perPage]) }}">
+                            <button
+                                type="button"
+                                x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
+                                class="lg:hidden group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                id="menu-button"
+                                :aria-expanded="isResultsPerPageOpen.toString()"
+                                aria-haspopup="true"
+                                title="{{ __(':perPage results per page', ['perPage' => $perPage]) }}"
+                            >
                                 {{ __(':perPage/p', ['perPage' => $perPage]) }}
                                 <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </div>
-                        <div x-cloak
-                             x-show="isResultsPerPageOpen"
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
-                             role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                        <div
+                            x-cloak
+                            x-show="isResultsPerPageOpen"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="menu-button"
+                            tabindex="-1"
+                        >
                             <div class="flex flex-col py-1.5">
                                 @foreach($perPageOptions as $option)
                                     <x-filter-menu-item filterName="perPage" :filter="$option" :currentFilter="$perPage">{{ $option }}</x-filter-menu-item>
@@ -129,25 +162,41 @@
                     </div>
 
                     {{-- Sort Dropdown --}}
-                    <div class="relative inline-block" x-data="{ isSortOpen: false }" @click.away="isSortOpen = false">
+                    <div
+                        class="relative inline-block"
+                        x-data="{ isSortOpen: false }"
+                        x-on:click.away="isSortOpen = false"
+                    >
                         <div class="flex">
-                            <button type="button" x-on:click="isSortOpen = !isSortOpen" class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" id="menu-button" :aria-expanded="isSortOpen.toString()" aria-haspopup="true">
+                            <button
+                                type="button"
+                                x-on:click="isSortOpen = !isSortOpen"
+                                class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                id="menu-button"
+                                :aria-expanded="isSortOpen.toString()"
+                                aria-haspopup="true"
+                            >
                                 {{ __('Sort') }}
                                 <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </div>
-                        <div x-cloak
-                             x-show="isSortOpen"
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
-                             role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                        <div
+                            x-cloak
+                            x-show="isSortOpen"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="menu-button"
+                            tabindex="-1"
+                        >
                             <div class="flex flex-col py-1.5">
                                 <x-filter-menu-item filterName="order" filter="created" :currentFilter="$order">{{ __('Newest') }}</x-filter-menu-item>
                                 <x-filter-menu-item filterName="order" filter="updated" :currentFilter="$order">{{ __('Recently Updated') }}</x-filter-menu-item>

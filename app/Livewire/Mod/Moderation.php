@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Mod;
 
 use App\Models\Mod;
+use Flux\Flux;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -32,7 +33,7 @@ class Moderation extends Component
 
         $this->mod->delete();
 
-        $this->modal('moderation-mod-delete-'.$this->mod->id)->close();
+        Flux::modals()->close();
 
         flash()->success('Mod successfully deleted!');
 
@@ -55,9 +56,7 @@ class Moderation extends Component
         $this->mod->save();
         $this->mod->refresh();
 
-        $this->modal('moderation-mod-disable-'.$this->mod->id)->close();
-
-        flash()->success('Mod successfully disabled!');
+        Flux::modals()->close();
 
         $this->dispatch('mod-updated.'.$this->mod->id, $this->mod->disabled, $this->mod->featured);
     }

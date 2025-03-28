@@ -16,7 +16,7 @@
         "laravel/horizon": "^5.31.0",
         "laravel/jetstream": "^5.3.5",
         "laravel/octane": "^2.8.1",
-        "laravel/pulse": "^1.4.0",
+        "laravel/pulse": "^1.4",
         "laravel/sanctum": "^4.0.8",
         "laravel/scout": "^10.13.1",
         "laravel/socialite": "^5.18.0",

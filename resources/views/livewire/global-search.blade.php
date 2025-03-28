@@ -12,10 +12,10 @@
         <label for="global-search" class="sr-only">{{ __('Search') }}</label>
         <search
             x-trap.noreturn="query.length && show"
-            @click.away="show = false"
-            @keydown.down.prevent="$focus.wrap().next()"
-            @keydown.up.prevent="$focus.wrap().previous()"
-            @keydown.escape.window="$wire.query = '';"
+            x-on:click.away="show = false"
+            x-on:keydown.down.prevent="$focus.wrap().next()"
+            x-on:keydown.up.prevent="$focus.wrap().previous()"
+            x-on:keydown.escape.window="$wire.query = '';"
             class="relative group"
             role="search"
         >
