@@ -39,7 +39,7 @@
                         <p>
                             {{ __('Created by') }}
                             @foreach ($mod->users as $user)
-                                <a href="{{ $user->profile_url }}" class="text-slate-800 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                                <a href="{{ $user->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
@@ -113,7 +113,7 @@
                                     {{-- TODO: <livewire:modVersion.moderation :modVersion="$version" /> --}}
                                 @endif
                                 <div class="flex items-center justify-between">
-                                    <a class="text-2xl font-extrabold text-gray-900 dark:text-white" href="{{ $version->downloadUrl() }}">
+                                    <a class="text-2xl font-extrabold underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white" href="{{ $version->downloadUrl() }}">
                                         {{ __('Version') }} {{ $version->version }}
                                     </a>
                                     <p class="text-gray-800 dark:text-gray-300"
@@ -129,7 +129,7 @@
                                             {{ __('Unknown SPT Version') }}
                                         </span>
                                     @endif
-                                    <a href="{{ $version->virus_total_link }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{__('Virus Total Results')}}</a>
+                                    <a href="{{ $version->virus_total_link }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{__('Virus Total Results')}}</a>
                                 </div>
                                 <div class="flex items-center justify-between text-gray-700 dark:text-gray-400">
                                     <span>{{ __('Created') }} {{ Carbon::dynamicFormat($version->created_at) }}</span>
@@ -141,7 +141,7 @@
                                     <div class="text-gray-700 dark:text-gray-400">
                                         {{ __('Dependencies:') }}
                                         @foreach ($version->latestResolvedDependencies as $resolvedDependency)
-                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last)
+                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last)
                                                 ,
                                             @endif
                                         @endforeach
@@ -179,7 +179,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('License') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->license->name }}
                                 </a>
                             </p>
@@ -189,7 +189,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Source Code') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->source_code_link }}" title="{{ $mod->source_code_link }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                <a href="{{ $mod->source_code_link }}" title="{{ $mod->source_code_link }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->source_code_link }}
                                 </a>
                             </p>
@@ -199,7 +199,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version VirusTotal Result') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->latestVersion->virus_total_link }}
                                 </a>
                             </p>
@@ -210,7 +210,7 @@
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
-                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                         {{ $dependency->resolvedVersion->mod->name }}
                                         &nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />

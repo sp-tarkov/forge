@@ -39,6 +39,16 @@ class Moderation extends Component
     public bool $confirmModEnable = false;
 
     /**
+     * The state of the confirmation dialog for featuring the mod.
+     */
+    public bool $confirmModFeature = false;
+
+    /**
+     * The state of the confirmation dialog for unfeaturing the mod.
+     */
+    public bool $confirmModUnfeature = false;
+
+    /**
      * Deletes the mod.
      */
     public function delete(): void
@@ -57,6 +67,44 @@ class Moderation extends Component
             // On a mod show page, we can redirect to the mods listing page as the mod no longer exists.
             $this->redirectRoute('mods');
         }
+    }
+
+    /**
+     * Features the mod.
+     */
+    public function feature(): void
+    {
+        $this->authorize('feature', $this->mod);
+
+        $this->mod->featured = true;
+        $this->mod->save();
+
+        $this->mod->refresh();
+
+        $this->confirmModFeature = false;
+
+        flash()->success('Mod successfully featured!');
+
+        $this->emitUpdateEvent();
+    }
+
+    /**
+     * Features the mod.
+     */
+    public function unfeature(): void
+    {
+        $this->authorize('unfeature', $this->mod);
+
+        $this->mod->featured = false;
+        $this->mod->save();
+
+        $this->mod->refresh();
+
+        $this->confirmModUnfeature = false;
+
+        flash()->success('Mod successfully unfeatured!');
+
+        $this->emitUpdateEvent();
     }
 
     /**

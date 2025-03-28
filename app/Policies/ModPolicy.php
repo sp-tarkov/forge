@@ -93,4 +93,20 @@ class ModPolicy
     {
         return $user->isModOrAdmin();
     }
+
+    /**
+     * Determine whether the user can disable the model.
+     */
+    public function feature(User $user, Mod $mod): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can enable the model.
+     */
+    public function unfeature(User $user, Mod $mod): bool
+    {
+        return $user->isAdmin();
+    }
 }

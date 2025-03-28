@@ -7,7 +7,7 @@
 
         <x-slot name="description">
             {{ __('API tokens allow third-party services to authenticate with our application on your behalf.') }}<br /><br />
-            {!! __('Please read the <a href="/docs/index.html">API documentation</a> for examples and details on the available API endpoints. Build something great! :D') !!}
+            {!! __('Please read the <a href="/docs/index.html" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">API documentation</a> for examples and details on the available API endpoints. Build something great! :D') !!}
         </x-slot>
 
         <x-slot name="form">
@@ -82,7 +82,7 @@
                                         </button>
                                     @endif
 
-                                    <button class="cursor-pointer ms-6 text-sm text-red-500" wire:click="confirmApiTokenDeletion({{ $token->id }})">
+                                    <button class="cursor-pointer ms-6 text-sm underline text-red-500" wire:click="confirmApiTokenDeletion({{ $token->id }})">
                                         {{ __('Delete') }}
                                     </button>
                                 </div>

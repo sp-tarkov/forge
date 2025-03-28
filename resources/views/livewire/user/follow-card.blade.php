@@ -37,7 +37,7 @@
     @if ($this->followUsersCount > $limit)
         {{-- View All Button --}}
         <div class="flex justify-center items-center">
-            <button wire:click="toggleFollowDialog" class="hover:underline active:underline">View All</button>
+            <button wire:click="toggleFollowDialog" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">View All</button>
         </div>
     @endif
 

@@ -47,10 +47,6 @@ button {
     @apply cursor-pointer;
 }
 
-main a:not(.mod-list-component > a):not(.tab):not([role="menuitem"]) {
-    @apply underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white;
-}
-
 .badge-version {
     @apply bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100;
 
