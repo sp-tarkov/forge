@@ -62,7 +62,8 @@
                 <flux:heading size="lg">Confirm Delete</flux:heading>
                 <flux:text class="mt-2">
                     <p class="my-2">Are you sure you want to delete the "{{ $mod->name }}" mod?</p>
-                    <p class="my-2">This <strong>is not</strong> a soft-delete; the mod will be permanently deleted, along with all mod versions, mod comments, and any other data tied directly to the mod. If this isn't necessary you should simply disable the mod instead.</p>
+                    <p class="my-2">The mod will be permanently deleted, along with all mod versions, mod comments, and any other data tied directly to the mod.</p>
+                    <p class="my-2">If this isn't necessary you should simply disable the mod instead.</p>
                 </flux:text>
             </div>
             <div class="flex gap-2">
@@ -78,13 +79,7 @@
     <flux:modal name="moderation-mod-disable-{{ $mod->id }}" class="min-w-[22rem]">
         <div class="space-y-6">
             <div>
-                <flux:heading size="lg">
-                    @if ($mod->disabled)
-                        Confirm Enable
-                    @else
-                        Confirm Disable
-                    @endif
-                </flux:heading>
+                <flux:heading size="lg">@if ($mod->disabled) Confirm Enable @else Confirm Disable @endif</flux:heading>
                 <flux:text class="mt-2">
                     <p>Are you sure you want to @if ($mod->disabled) enable @else disable @endif the "{{ $mod->name }}" mod?</p>
                 </flux:text>
@@ -95,11 +90,7 @@
                     <flux:button variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
                 <flux:button type="submit" variant="danger" wire:click="toggleDisabled">
-                    @if ($mod->disabled)
-                        Enable Mod
-                    @else
-                        Disable Mod
-                    @endif
+                    @if ($mod->disabled) Enable Mod @else Disable Mod @endif
                 </flux:button>
             </div>
         </div>
