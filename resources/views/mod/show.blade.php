@@ -103,11 +103,12 @@
 
                 {{-- Mod Versions --}}
                 <div x-show="selectedTab === 'versions'">
-                    @foreach($mod->versions as $version)
+                    @foreach($versions as $version)
                         <div wire:key="mod-version-{{ $mod->id }}-{{ $version->id }}">
                             <livewire:mod.version :version="$version" />
                         </div>
                     @endforeach
+                    {{ $versions->links() }}
                 </div>
 
                 {{-- Comments --}}

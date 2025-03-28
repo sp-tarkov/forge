@@ -11,22 +11,24 @@
             <div class="flex flex-col items-start">
                 <a href="{{ $version->downloadUrl() }}" class="self-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                     {{ __('Version') }} {{ $version->version }}
-                    <flux:tooltip content="Download">
+                    <flux:tooltip content="Download Mod Version" position="right">
                         <flux:icon icon="arrow-down-on-square-stack" class="inline-block size-6 ml-2 relative -top-1" />
                     </flux:tooltip>
                 </a>
                 <div class="mt-3 flex flex-row justify-start">
-                    <p>
-                        @if ($version->latestSptVersion)
-                            <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                {{ $version->latestSptVersion->version_formatted }}
-                            </span>
-                        @else
-                            <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                {{ __('Unknown SPT Version') }}
-                            </span>
-                        @endif
-                    </p>
+                    <flux:tooltip content="Latest Compatible SPT Version" position="right">
+                        <p>
+                            @if ($version->latestSptVersion)
+                                <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                    {{ $version->latestSptVersion->version_formatted }}
+                                </span>
+                            @else
+                                <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                    {{ __('Unknown SPT Version') }}
+                                </span>
+                            @endif
+                        </p>
+                    </flux:tooltip>
                     <p class="ml-2.5 self-center text-sm text-gray-800 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">
                         {{ Number::downloads($version->downloads) }} {{ __('Downloads') }}
                     </p>

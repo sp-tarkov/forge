@@ -30,10 +30,6 @@ class ModController extends Controller
     {
         $mod = Mod::query()
             ->with([
-                'versions',
-                'versions.latestSptVersion',
-                'versions.latestResolvedDependencies',
-                'versions.latestResolvedDependencies.mod',
                 'license',
                 'users',
             ])
@@ -43,7 +39,20 @@ class ModController extends Controller
 
         Gate::authorize('view', $mod);
 
-        return view('mod.show', ['mod' => $mod]);
+        $versions = $mod->versions()
+            ->with([
+                'latestSptVersion',
+                'latestResolvedDependencies',
+                'latestResolvedDependencies.mod',
+            ])
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderBy('version_labels')
+            ->paginate(6)
+            ->fragment('versions');
+
+        return view('mod.show', ['mod' => $mod, 'versions' => $versions]);
     }
 
     public function update(ModRequest $modRequest, Mod $mod): ModResource
