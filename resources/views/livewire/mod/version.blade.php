@@ -1,10 +1,10 @@
-<div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+<div class="relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
 
     <livewire:mod.ribbon key="mod-version-ribbon-{{ $version->id }}" :id="$version->id" :disabled="$version->disabled" />
 
     <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
         @if (auth()->user()?->isModOrAdmin())
-            {{-- TODO: <livewire:modVersion.moderation :modVersion="$version" /> --}}
+            <livewire:mod.version-moderation :version="$version" />
         @endif
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">

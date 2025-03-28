@@ -3,16 +3,16 @@
         <flux:button icon="shield-exclamation" />
         <flux:navmenu>
             @if ($mod->featured)
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModUnfeature')" icon="arrow-trending-down">Unfeature</flux:navmenu.item>
+                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModUnfeature')" icon="arrow-trending-down">Remove Featured</flux:navmenu.item>
             @else
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModFeature')" icon="sparkles">Feature</flux:navmenu.item>
+                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModFeature')" icon="sparkles">Feature Mod</flux:navmenu.item>
             @endif
             @if ($mod->disabled)
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModEnable')" icon="eye">Enable</flux:navmenu.item>
+                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModEnable')" icon="eye">Enable Mod</flux:navmenu.item>
             @else
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModDisable')" icon="eye-slash">Disable</flux:navmenu.item>
+                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModDisable')" icon="eye-slash">Disable Mod</flux:navmenu.item>
             @endif
-            <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModDelete')" icon="trash" variant="danger">Delete</flux:navmenu.item>
+            <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModDelete')" icon="trash" variant="danger">Delete Mod</flux:navmenu.item>
         </flux:navmenu>
     </flux:dropdown>
 

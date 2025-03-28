@@ -11,7 +11,7 @@ use Livewire\Component;
 class Ribbon extends Component
 {
     /**
-     * The ID of the mod that the ribbon is applied to.
+     * The ID of the model that the ribbon is applied to.
      */
     public int $id;
 
@@ -31,13 +31,16 @@ class Ribbon extends Component
     public bool $isHomePage = false;
 
     /**
-     * Triggered when the mod has had its relevant properties updated and the ribbon needs to reflect the changes.
+     * Triggered when the model has been updated.
      */
     #[On('mod-updated.{id}')]
-    public function handleUpdateProperties(bool $newDisabled, bool $newFeatured): void
+    #[On('mod-version-updated.{id}')]
+    public function handleUpdateProperties(bool $newDisabled, ?bool $newFeatured = null): void
     {
         $this->disabled = $newDisabled;
-        $this->featured = $newFeatured;
+        if ($newFeatured !== null) {
+            $this->featured = $newFeatured;
+        }
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -25,6 +26,11 @@ class ModVersionPolicy
      */
     public function view(?User $user, ModVersion $modVersion): bool
     {
+        // Disabled versions will not be shown to normal users.
+        if ($modVersion->disabled && ! $user?->isModOrAdmin()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -41,7 +47,7 @@ class ModVersionPolicy
      */
     public function update(User $user, ModVersion $modVersion): bool
     {
-        return false;
+        return $user->isModOrAdmin() || $modVersion->mod->users->contains($user);
     }
 
     /**
@@ -49,7 +55,7 @@ class ModVersionPolicy
      */
     public function delete(User $user, ModVersion $modVersion): bool
     {
-        return false;
+        return $user->isAdmin() || $modVersion->mod->users->contains($user);
     }
 
     /**
@@ -66,5 +72,21 @@ class ModVersionPolicy
     public function forceDelete(User $user, ModVersion $modVersion): bool
     {
         return false;
+    }
+
+    /**
+     * Determine whether the user can disable the model.
+     */
+    public function disable(User $user, ModVersion $modVersion): bool
+    {
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can enable the model.
+     */
+    public function enable(User $user, ModVersion $modVersion): bool
+    {
+        return $user->isModOrAdmin();
     }
 }
