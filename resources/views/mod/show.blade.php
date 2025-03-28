@@ -10,7 +10,7 @@
         <div class="lg:col-span-2 flex flex-col gap-6">
 
             {{-- Main Mod Details Card --}}
-            <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
                 @if (auth()->user()?->isModOrAdmin())
                     <livewire:mod.moderation :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
                 @endif

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Mod;
 
 use App\Models\Mod;
-use Flux\Flux;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -25,7 +24,22 @@ class Moderation extends Component
     public string $currentRoute = '';
 
     /**
-     * Soft delete the mod.
+     * The state of the confirmation dialog for deleting the mod.
+     */
+    public bool $confirmModDelete = false;
+
+    /**
+     * The state of the confirmation dialog for deleting the mod.
+     */
+    public bool $confirmModDisable = false;
+
+    /**
+     * The state of the confirmation dialog for deleting the mod.
+     */
+    public bool $confirmModEnable = false;
+
+    /**
+     * Deletes the mod.
      */
     public function delete(): void
     {
@@ -33,7 +47,7 @@ class Moderation extends Component
 
         $this->mod->delete();
 
-        Flux::modals()->close();
+        $this->confirmModDelete = false;
 
         flash()->success('Mod successfully deleted!');
 
@@ -46,18 +60,48 @@ class Moderation extends Component
     }
 
     /**
-     * Toggles the disabled property of the mod.
+     * Disables the mod.
      */
-    public function toggleDisabled(): void
+    public function disable(): void
     {
-        $this->authorize('update', $this->mod);
+        $this->authorize('disable', $this->mod);
 
-        $this->mod->disabled = ! $this->mod->disabled;
+        $this->mod->disabled = true;
         $this->mod->save();
+
         $this->mod->refresh();
 
-        Flux::modals()->close();
+        $this->confirmModDisable = false;
 
+        flash()->success('Mod successfully disabled!');
+
+        $this->emitUpdateEvent();
+    }
+
+    /**
+     * Enables the mod.
+     */
+    public function enable(): void
+    {
+        $this->authorize('enable', $this->mod);
+
+        $this->mod->disabled = false;
+        $this->mod->save();
+
+        $this->mod->refresh();
+
+        $this->confirmModEnable = false;
+
+        flash()->success('Mod successfully enabled!');
+
+        $this->emitUpdateEvent();
+    }
+
+    /**
+     * Emit an event that the mod has been updated.
+     */
+    protected function emitUpdateEvent(): void
+    {
         $this->dispatch('mod-updated.'.$this->mod->id, $this->mod->disabled, $this->mod->featured);
     }
 

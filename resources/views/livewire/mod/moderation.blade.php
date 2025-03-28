@@ -32,9 +32,35 @@
                 role="menu"
             >
                 <div class="flex flex-col py-1.5">
+                    @if ($mod->disabled)
+                        <button
+                            type="button"
+                            x-on:click="moderationMenu = false; moderationMenuKeyboard = false; $wire.confirmModEnable = true;"
+                            class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
+                            role="menuitem"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                            {{ __('Enable') }}
+                        </button>
+                    @else
+                        <button
+                            type="button"
+                            x-on:click="moderationMenu = false; moderationMenuKeyboard = false; $wire.confirmModDisable = true;"
+                            class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
+                            role="menuitem"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                            </svg>
+                            {{ __('Disable') }}
+                        </button>
+                    @endif
                     <button
                         type="button"
-                        x-on:click="moderationMenu = false; moderationMenuKeyboard = false; $flux.modal('moderation-mod-delete-{{ $mod->id }}').show();"
+                        x-on:click="moderationMenu = false; moderationMenuKeyboard = false; $wire.confirmModDelete = true;"
                         class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
                         role="menuitem"
                     >
@@ -43,80 +69,72 @@
                         </svg>
                         {{ __('Delete') }}
                     </button>
-
-                    <button
-                        type="button"
-                        x-on:click="moderationMenu = false; moderationMenuKeyboard = false; $flux.modal('moderation-mod-disable-{{ $mod->id }}').show();"
-                        class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
-                        role="menuitem"
-                    >
-                        @if ($mod->disabled)
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-                            {{ __('Enable') }}
-                        @else
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-                            </svg>
-                            {{ __('Disable') }}
-                        @endif
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <flux:modal name="moderation-mod-delete-{{ $mod->id }}" class="min-w-[22rem]">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">Confirm Delete</flux:heading>
-                <flux:text class="mt-2">
-                    <p class="my-2">Are you sure you want to delete the "{{ $mod->name }}" mod?</p>
-                    <p class="my-2">The mod will be permanently deleted, along with all mod versions, mod comments, and any other data tied directly to the mod.</p>
-                    <p class="my-2">If this isn't necessary you should simply disable the mod instead.</p>
-                </flux:text>
-            </div>
-            <div class="flex gap-2">
-                <flux:spacer />
-                <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
-                </flux:modal.close>
-                <flux:button
-                    type="submit"
-                    variant="danger"
-                    wire:click="delete"
-                    wire:loading.attr="disabled"
-                >
-                    Delete Mod
-                </flux:button>
-            </div>
-        </div>
-    </flux:modal>
+    <x-confirmation-modal wire:model.live="confirmModDisable">
+        <x-slot name="title">
+            {{ __('Disable Mod') }}
+        </x-slot>
 
-    <flux:modal name="moderation-mod-disable-{{ $mod->id }}" class="min-w-[22rem]">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">@if ($mod->disabled) Confirm Enable @else Confirm Disable @endif</flux:heading>
-                <flux:text class="mt-2">
-                    <p>Are you sure you want to @if ($mod->disabled) enable @else disable @endif the "{{ $mod->name }}" mod?</p>
-                </flux:text>
-            </div>
-            <div class="flex gap-2">
-                <flux:spacer />
-                <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
-                </flux:modal.close>
-                <flux:button
-                    type="submit"
-                    variant="danger"
-                    wire:click="toggleDisabled"
-                    wire:loading.attr="disabled"
-                >
-                    @if ($mod->disabled) Enable Mod @else Disable Mod @endif
-                </flux:button>
-            </div>
-        </div>
-    </flux:modal>
+        <x-slot name="content">
+            <p class="my-2.5">Are you sure you want to disable the "{{ $mod->name }}" mod?</p>
+            <p class="my-2.5">This will prevent visitors on the site from seeing the mod.</p>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$toggle('confirmModDisable')" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-danger-button class="ms-3" wire:click="disable" wire:loading.attr="disabled">
+                {{ __('Disable') }}
+            </x-danger-button>
+        </x-slot>
+    </x-confirmation-modal>
+
+    <x-confirmation-modal wire:model.live="confirmModEnable">
+        <x-slot name="title">
+            {{ __('Enable Mod') }}
+        </x-slot>
+
+        <x-slot name="content">
+            <p class="my-2.5">Are you sure you want to enable the "{{ $mod->name }}" mod?</p>
+            <p class="my-2.5">This will allow visitors on the site to see the mod.</p>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$toggle('confirmModEnable')" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-danger-button class="ms-3" wire:click="enable" wire:loading.attr="disabled">
+                {{ __('Enable') }}
+            </x-danger-button>
+        </x-slot>
+    </x-confirmation-modal>
+
+    <x-confirmation-modal wire:model.live="confirmModDelete">
+        <x-slot name="title">
+            {{ __('Delete Mod') }}
+        </x-slot>
+
+        <x-slot name="content">
+            <p class="my-2.5">Are you sure you want to delete the "{{ $mod->name }}" mod?</p>
+            <p class="my-2.5">The mod will be permanently deleted, along with all mod versions, mod comments, and any other data tied directly to the mod.</p>
+            <p class="my-2.5">If this isn't necessary you should simply disable the mod instead.</p>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$toggle('confirmModDelete')" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-danger-button class="ms-3" wire:click="delete" wire:loading.attr="disabled">
+                {{ __('Delete') }}
+            </x-danger-button>
+        </x-slot>
+    </x-confirmation-modal>
 </div>

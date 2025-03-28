@@ -77,4 +77,20 @@ class ModPolicy
     {
         return false;
     }
+
+    /**
+     * Determine whether the user can disable the model.
+     */
+    public function disable(User $user, Mod $mod): bool
+    {
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can enable the model.
+     */
+    public function enable(User $user, Mod $mod): bool
+    {
+        return $user->isModOrAdmin();
+    }
 }
