@@ -30,9 +30,9 @@
                    type="search"
                    wire:model.live="query"
                    @focus="show = true"
-                   placeholder="{{ __('Search') }}"
+                   placeholder="{{ __('Search everything') }}"
                    aria-controls="search-results"
-                   aria-label="{{ __('Search') }}"
+                   aria-label="{{ __('Search everything') }}"
                    class="block w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
             />
             <div id="search-results"
