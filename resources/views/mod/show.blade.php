@@ -103,55 +103,9 @@
 
                 {{-- Mod Versions --}}
                 <div x-show="selectedTab === 'versions'">
-                    @foreach ($mod->versions as $version)
-                        <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-
-                            <livewire:mod.ribbon key="mod-version-ribbon-{{ $version->id }}" :id="$version->id" :disabled="$version->disabled" />
-
-                            <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
-                                @if (auth()->user()?->isModOrAdmin())
-                                    {{-- TODO: <livewire:modVersion.moderation :modVersion="$version" /> --}}
-                                @endif
-                                <div class="flex items-center justify-between">
-                                    <a class="text-2xl font-extrabold underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white" href="{{ $version->downloadUrl() }}">
-                                        {{ __('Version') }} {{ $version->version }}
-                                    </a>
-                                    <p class="text-gray-800 dark:text-gray-300"
-                                       title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    @if ($version->latestSptVersion)
-                                        <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                            {{ $version->latestSptVersion->version_formatted }}
-                                        </span>
-                                    @else
-                                        <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                            {{ __('Unknown SPT Version') }}
-                                        </span>
-                                    @endif
-                                    <a href="{{ $version->virus_total_link }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{__('Virus Total Results')}}</a>
-                                </div>
-                                <div class="flex items-center justify-between text-gray-700 dark:text-gray-400">
-                                    <span>{{ __('Created') }} {{ Carbon::dynamicFormat($version->created_at) }}</span>
-                                    <span>{{ __('Updated') }} {{ Carbon::dynamicFormat($version->updated_at) }}</span>
-                                </div>
-
-                                {{-- Display latest resolved dependencies --}}
-                                @if ($version->latestResolvedDependencies->isNotEmpty())
-                                    <div class="text-gray-700 dark:text-gray-400">
-                                        {{ __('Dependencies:') }}
-                                        @foreach ($version->latestResolvedDependencies as $resolvedDependency)
-                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last)
-                                                ,
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="py-3 user-markdown text-gray-700 dark:text-gray-400">
-                                {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
-                                {!! Str::markdown($version->description) !!}
-                            </div>
+                    @foreach($mod->versions as $version)
+                        <div wire:key="mod-version-{{ $mod->id }}-{{ $version->id }}">
+                            <livewire:mod.version :version="$version" />
                         </div>
                     @endforeach
                 </div>
