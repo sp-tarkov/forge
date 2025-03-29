@@ -6,16 +6,17 @@ use App\Http\Controllers\ModController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\UserController;
+use App\Livewire\Homepage;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.banned'])->group(function (): void {
+
+    Route::get('/', Homepage::class)->name('home');
 
     Route::controller(SocialiteController::class)->group(function (): void {
         Route::get('/login/{provider}/redirect', 'redirect')->name('login.socialite');
         Route::get('/login/{provider}/callback', 'callback');
     });
-
-    Route::get('/', fn () => view('home'))->name('home');
 
     Route::controller(ModController::class)->group(function (): void {
         Route::get('/mods', 'index')->name('mods');
