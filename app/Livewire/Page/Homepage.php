@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire;
+namespace App\Livewire\Page;
 
 use App\Models\Mod;
+use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -13,6 +14,8 @@ use Livewire\Component;
 
 class Homepage extends Component
 {
+    use ModeratesMod;
+
     /**
      * Featured mods for the homepage listing.
      *
@@ -102,49 +105,9 @@ class Homepage extends Component
     }
 
     /**
-     * Deletes the mod.
-     */
-    public function delete(Mod $mod): void
-    {
-        $this->authorize('delete', $mod);
-
-        $mod->delete();
-
-        $this->clearCache();
-
-        flash()->success('Mod successfully deleted!');
-    }
-
-    /**
-     * Unfeatures the mod.
-     *
-     * This should only be used in the homepage featured context so the listing can be updated. In any other context,
-     * the Card component should be used to process the unfeature action.
-     */
-    public function unfeature(Mod $mod): void
-    {
-        $this->authorize('unfeature', $mod);
-
-        $mod->featured = false;
-        $mod->save();
-
-        $this->clearCache();
-
-        flash()->success('Mod successfully unfeatured!');
-    }
-
-    /**
-     * Render the component.
-     */
-    public function render(): View|string
-    {
-        return view('livewire.homepage');
-    }
-
-    /**
      * Clear the cache for the homepage mods.
      */
-    private function clearCache(): void
+    protected function clearCache(): void
     {
         // Clear the Laravel query caches.
         foreach ([
@@ -160,5 +123,13 @@ class Homepage extends Component
 
         // Clear the Livewire computed caches.
         unset($this->featured, $this->newest, $this->updated);
+    }
+
+    /**
+     * Render the component.
+     */
+    public function render(): View|string
+    {
+        return view('livewire.homepage');
     }
 }

@@ -214,9 +214,11 @@
         @if ($mods->isNotEmpty())
             <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 @foreach ($mods as $mod)
-                    <div wire:key="mod-card-{{ $mod->id }}">
-                        <x-mod-card :mod="$mod" :version="$mod->latestVersion" />
-                    </div>
+                    <livewire:mod.card
+                        wire:key="mod-listing-{{ $mod->id }}"
+                        :mod="$mod"
+                        :version="$mod->latestVersion"
+                    />
                 @endforeach
             </div>
         @else

@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Mod;
+namespace App\Livewire\Page;
 
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\SptVersion;
+use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,11 +20,9 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * @property-read array<int, string> $defaultSptVersions
- */
 class Listing extends Component
 {
+    use ModeratesMod;
     use WithPagination;
 
     /**
@@ -127,26 +126,6 @@ class Listing extends Component
     }
 
     /**
-     * Render the component's view.
-     */
-    public function render(): View
-    {
-        // Fetch the mods using the filters saved to the component properties.
-        $filters = new ModFilter([
-            'query' => $this->query,
-            'featured' => $this->featured,
-            'order' => $this->order,
-            'sptVersions' => $this->sptVersions,
-        ]);
-
-        $paginatedMods = $filters->apply()->paginate($this->perPage);
-
-        $this->redirectOutOfBoundsPage($paginatedMods);
-
-        return view('livewire.mod.listing', ['mods' => $paginatedMods]);
-    }
-
-    /**
      * Validate that the selected perPage value is an allowed option, resetting to the closest valid option.
      */
     public function updatedPerPage(int $value): void
@@ -186,7 +165,7 @@ class Listing extends Component
     /**
      * Compute the split of the active SPT versions.
      *
-     * @return array<int, Collection<int, SptVersion>>
+     * @return array<int, string>
      */
     #[Computed]
     public function splitSptVersions(): array
@@ -216,5 +195,25 @@ class Listing extends Component
         }
 
         return $count + count($this->sptVersions);
+    }
+
+    /**
+     * Render the component.
+     */
+    public function render(): View
+    {
+        // Fetch the mods using the filters saved to the component properties.
+        $filters = new ModFilter([
+            'query' => $this->query,
+            'featured' => $this->featured,
+            'order' => $this->order,
+            'sptVersions' => $this->sptVersions,
+        ]);
+
+        $paginatedMods = $filters->apply()->paginate($this->perPage);
+
+        $this->redirectOutOfBoundsPage($paginatedMods);
+
+        return view('livewire.mod.listing', ['mods' => $paginatedMods]);
     }
 }
