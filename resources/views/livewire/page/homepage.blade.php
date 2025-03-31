@@ -22,35 +22,28 @@
                 <div class="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
                     <x-page-content-title :title="__('Featured Mods')" :button-text="__('View All')" button-link="/mods?featured=only" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        @foreach ($this->featured as $mod)
-                            <livewire:mod.card
-                                wire:key="homepage-featured-{{ $mod->id }}"
-                                :mod="$mod"
-                                :version="$mod->latestVersion"
-                                :homepage-featured="true"
-                            />
+                        @foreach ($featured as $mod)
+                            <div wire:key="homepage-featured-{{ $mod->id }}">
+                                <x-mod.card :mod="$mod" :version="$mod->latestVersion" section="featured" homepage-featured />
+                            </div>
                         @endforeach
                     </div>
 
                     <x-page-content-title :title="__('Newest Mods')" :button-text="__('View All')" button-link="/mods" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        @foreach ($this->newest as $mod)
-                            <livewire:mod.card
-                                wire:key="homepage-newest-{{ $mod->id }}"
-                                :mod="$mod"
-                                :version="$mod->latestVersion"
-                            />
+                        @foreach ($newest as $mod)
+                            <div wire:key="homepage-newest-{{ $mod->id }}">
+                                <x-mod.card :mod="$mod" :version="$mod->latestVersion" section="newest" />
+                            </div>
                         @endforeach
                     </div>
 
                     <x-page-content-title :title="__('Recently Updated Mods')" :button-text="__('View All')" button-link="/mods?order=updated" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        @foreach ($this->updated as $mod)
-                            <livewire:mod.card
-                                wire:key="homepage-updated-{{ $mod->id }}"
-                                :mod="$mod"
-                                :version="$mod->latestUpdatedVersion"
-                            />
+                        @foreach ($updated as $mod)
+                            <div wire:key="homepage-updated-{{ $mod->id }}">
+                                <x-mod.card :mod="$mod" :version="$mod->latestUpdatedVersion" section="updated" />
+                            </div>
                         @endforeach
                     </div>
                 </div>

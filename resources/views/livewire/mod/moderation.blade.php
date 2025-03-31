@@ -3,16 +3,16 @@
         <flux:button icon="shield-exclamation" />
         <flux:navmenu>
             @if ($mod->featured)
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModUnfeature')" icon="arrow-trending-down">Remove Featured</flux:navmenu.item>
+                <flux:navmenu.item x-on:click.prevent="$wire.confirmModUnfeature = true" icon="arrow-trending-down">Remove Featured</flux:navmenu.item>
             @else
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModFeature')" icon="sparkles">Feature Mod</flux:navmenu.item>
+                <flux:navmenu.item x-on:click.prevent="$wire.confirmModFeature = true" icon="sparkles">Feature Mod</flux:navmenu.item>
             @endif
             @if ($mod->disabled)
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModEnable')" icon="eye">Enable Mod</flux:navmenu.item>
+                <flux:navmenu.item x-on:click.prevent="$wire.confirmModEnable = true" icon="eye">Enable Mod</flux:navmenu.item>
             @else
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModDisable')" icon="eye-slash">Disable Mod</flux:navmenu.item>
+                <flux:navmenu.item x-on:click.prevent="$wire.confirmModDisable = true" icon="eye-slash">Disable Mod</flux:navmenu.item>
             @endif
-            <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmModDelete')" icon="trash" variant="danger">Delete Mod</flux:navmenu.item>
+            <flux:navmenu.item x-on:click.prevent="$wire.confirmModDelete = true" icon="trash" variant="danger">Delete Mod</flux:navmenu.item>
         </flux:navmenu>
     </flux:dropdown>
 
@@ -27,11 +27,12 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmModUnfeature')" wire:loading.attr="disabled">
+            <x-secondary-button x-on:click="$wire.confirmModUnfeature = false" wire:loading.attr="disabled">
                 {{ __('Cancel') }}
             </x-secondary-button>
 
-            <x-danger-button class="ms-3" wire:click="unfeature" wire:loading.attr="disabled">
+            {{-- In the homepage featured section, the parent must handle the action so the listing can be updated --}}
+            <x-danger-button wire:click="{{ ($homepageFeatured ? '$parent.unfeatureMod('.$mod->id.')' : 'unfeature') }}" wire:loading.attr="disabled" class="ms-3">
                 {{ __('Unfeature') }}
             </x-danger-button>
         </x-slot>
@@ -48,7 +49,7 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmModFeature')" wire:loading.attr="disabled">
+            <x-secondary-button x-on:click="$wire.confirmModFeature = false" wire:loading.attr="disabled">
                 {{ __('Cancel') }}
             </x-secondary-button>
 
@@ -69,7 +70,7 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmModDisable')" wire:loading.attr="disabled">
+            <x-secondary-button x-on:click="$wire.confirmModDisable = false" wire:loading.attr="disabled">
                 {{ __('Cancel') }}
             </x-secondary-button>
 
@@ -90,7 +91,7 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmModEnable')" wire:loading.attr="disabled">
+            <x-secondary-button x-on:click="$wire.confirmModEnable = false" wire:loading.attr="disabled">
                 {{ __('Cancel') }}
             </x-secondary-button>
 
@@ -112,11 +113,11 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmModDelete')" wire:loading.attr="disabled">
+            <x-secondary-button x-on:click="$wire.confirmModDelete = false" wire:loading.attr="disabled">
                 {{ __('Cancel') }}
             </x-secondary-button>
 
-            <x-danger-button class="ms-3" wire:click="delete" wire:loading.attr="disabled">
+            <x-danger-button class="ms-3" wire:click="$parent.deleteMod({{ $mod->id }}, '{{ $routeName }}')" wire:loading.attr="disabled">
                 {{ __('Delete') }}
             </x-danger-button>
         </x-slot>

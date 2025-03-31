@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Page;
+namespace App\Livewire\Page\Mod;
 
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\SptVersion;
 use App\Traits\Livewire\ModeratesMod;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -20,7 +20,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class Listing extends Component
+class Index extends Component
 {
     use ModeratesMod;
     use WithPagination;
@@ -117,15 +117,6 @@ class Listing extends Component
     }
 
     /**
-     * Refresh the mod listing.
-     */
-    #[On('mod-delete')]
-    public function refreshListing(): void
-    {
-        $this->render();
-    }
-
-    /**
      * Validate that the selected perPage value is an allowed option, resetting to the closest valid option.
      */
     public function updatedPerPage(int $value): void
@@ -214,6 +205,6 @@ class Listing extends Component
 
         $this->redirectOutOfBoundsPage($paginatedMods);
 
-        return view('livewire.mod.listing', ['mods' => $paginatedMods]);
+        return view('livewire.page.mod.index', ['mods' => $paginatedMods]);
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Mod;
+namespace App\Livewire;
 
 use Illuminate\View\View;
 use Livewire\Attributes\On;
@@ -28,26 +28,28 @@ class Ribbon extends Component
     /**
      * Whether the ribbon is the home page.
      */
-    public bool $isHomePage = false;
+    public bool $homepageFeatured = false;
 
     /**
      * Triggered when the model has been updated.
      */
     #[On('mod-updated.{id}')]
     #[On('mod-version-updated.{id}')]
-    public function handleUpdateProperties(bool $newDisabled, ?bool $newFeatured = null): void
+    public function update(?bool $disabled = null, ?bool $featured = null): void
     {
-        $this->disabled = $newDisabled;
-        if ($newFeatured !== null) {
-            $this->featured = $newFeatured;
+        if ($disabled !== null) {
+            $this->disabled = $disabled;
+        }
+        if ($featured !== null) {
+            $this->featured = $featured;
         }
     }
 
     /**
      * Render the component.
      */
-    public function render(): string|View
+    public function render(): View
     {
-        return view('livewire.mod.ribbon');
+        return view('livewire.ribbon');
     }
 }

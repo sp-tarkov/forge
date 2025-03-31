@@ -69,7 +69,6 @@ class ModVersion extends Model
     #[Override]
     protected static function booted(): void
     {
-
         static::saving(function (ModVersion $modVersion): void {
             // Extract the version sections from the version string.
             try {

@@ -7,9 +7,7 @@ namespace App\Livewire\Page;
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
-use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class Homepage extends Component
@@ -17,33 +15,40 @@ class Homepage extends Component
     use ModeratesMod;
 
     /**
+     * If the user can view disabled mods.
+     */
+    protected bool $viewDisabled = false;
+
+    /**
+     * Executed when the component is first loaded.
+     */
+    public function mount(): void
+    {
+        $this->viewDisabled = auth()->user()?->isModOrAdmin() ?? false;
+    }
+
+    /**
      * Featured mods for the homepage listing.
      *
      * @return Collection<int, Mod>
      */
-    #[Computed(persist: true, seconds: 60)]
-    public function featured(): Collection
+    protected function featured(): Collection
     {
-        $viewDisabled = auth()->user()?->isModOrAdmin() ?? false;
-        $cacheKey = 'featured_homepage_mods_'.($viewDisabled ? 'admin' : 'user');
+        $query = Mod::query()
+            ->whereFeatured(true)
+            ->whereHas('latestVersion')
+            ->with([
+                'latestVersion',
+                'latestVersion.latestSptVersion',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->inRandomOrder()
+            ->limit(6);
 
-        return Cache::flexible($cacheKey, [45, 60], function () use ($viewDisabled): Collection {
-            $query = Mod::query()
-                ->whereFeatured(true)
-                ->whereHas('latestVersion')
-                ->with([
-                    'latestVersion',
-                    'latestVersion.latestSptVersion',
-                    'users:id,name',
-                    'license:id,name,link',
-                ])
-                ->inRandomOrder()
-                ->limit(6);
+        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
 
-            $query->unless($viewDisabled, fn ($q) => $q->whereDisabled(false));
-
-            return $query->get();
-        });
+        return $query->get();
     }
 
     /**
@@ -51,28 +56,22 @@ class Homepage extends Component
      *
      * @return Collection<int, Mod>
      */
-    #[Computed(persist: true, seconds: 60)]
-    public function newest(): Collection
+    protected function newest(): Collection
     {
-        $viewDisabled = auth()->user()?->isModOrAdmin() ?? false;
-        $cacheKey = 'newest_homepage_mods_'.($viewDisabled ? 'admin' : 'user');
+        $query = Mod::query()
+            ->whereHas('latestVersion')
+            ->with([
+                'latestVersion',
+                'latestVersion.latestSptVersion',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->orderByDesc('created_at')
+            ->limit(6);
 
-        return Cache::flexible($cacheKey, [45, 60], function () use ($viewDisabled): Collection {
-            $query = Mod::query()
-                ->whereHas('latestVersion')
-                ->with([
-                    'latestVersion',
-                    'latestVersion.latestSptVersion',
-                    'users:id,name',
-                    'license:id,name,link',
-                ])
-                ->orderByDesc('created_at')
-                ->limit(6);
+        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
 
-            $query->unless($viewDisabled, fn ($q) => $q->whereDisabled(false));
-
-            return $query->get();
-        });
+        return $query->get();
     }
 
     /**
@@ -80,49 +79,22 @@ class Homepage extends Component
      *
      * @return Collection<int, Mod>
      */
-    #[Computed(persist: true, seconds: 60)]
-    public function updated(): Collection
+    protected function updated(): Collection
     {
-        $viewDisabled = auth()->user()?->isModOrAdmin() ?? false;
-        $cacheKey = 'updated_homepage_mods_'.($viewDisabled ? 'admin' : 'user');
+        $query = Mod::query()
+            ->whereHas('latestVersion')
+            ->with([
+                'latestUpdatedVersion',
+                'latestUpdatedVersion.latestSptVersion',
+                'users:id,name',
+                'license:id,name,link',
+            ])
+            ->orderByDesc('updated_at')
+            ->limit(6);
 
-        return Cache::flexible($cacheKey, [45, 60], function () use ($viewDisabled): Collection {
-            $query = Mod::query()
-                ->whereHas('latestVersion')
-                ->with([
-                    'latestUpdatedVersion',
-                    'latestUpdatedVersion.latestSptVersion',
-                    'users:id,name',
-                    'license:id,name,link',
-                ])
-                ->orderByDesc('updated_at')
-                ->limit(6);
+        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
 
-            $query->unless($viewDisabled, fn ($q) => $q->whereDisabled(false));
-
-            return $query->get();
-        });
-    }
-
-    /**
-     * Clear the cache for the homepage mods.
-     */
-    protected function clearCache(): void
-    {
-        // Clear the Laravel query caches.
-        foreach ([
-            'featured_homepage_mods_admin',
-            'featured_homepage_mods_user',
-            'newest_homepage_mods_admin',
-            'newest_homepage_mods_user',
-            'updated_homepage_mods_admin',
-            'updated_homepage_mods_user',
-        ] as $cacheKey) {
-            Cache::forget($cacheKey);
-        }
-
-        // Clear the Livewire computed caches.
-        unset($this->featured, $this->newest, $this->updated);
+        return $query->get();
     }
 
     /**
@@ -130,6 +102,10 @@ class Homepage extends Component
      */
     public function render(): View|string
     {
-        return view('livewire.homepage');
+        return view('livewire.page.homepage', [
+            'featured' => $this->featured(),
+            'newest' => $this->newest(),
+            'updated' => $this->updated(),
+        ]);
     }
 }

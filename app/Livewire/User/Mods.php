@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Mods extends Component
@@ -41,16 +40,6 @@ class Mods extends Component
             ->orderByDesc('created_at')
             ->paginate(10)
             ->fragment('mods');
-    }
-
-    /**
-     * Refresh the mod listing.
-     */
-    #[On('mod-delete')]
-    public function refreshListing(): void
-    {
-        unset($this->mods);
-        $this->render();
     }
 
     /**

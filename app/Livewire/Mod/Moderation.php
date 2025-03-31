@@ -12,21 +12,23 @@ use Livewire\Component;
 class Moderation extends Component
 {
     /**
-     * The mod being moderated.
+     * The mod instance.
      */
     #[Locked]
     public Mod $mod;
 
     /**
-     * The current route that this component is being rendered on.
+     * The route name of the current page on initialization of the component.
      */
     #[Locked]
-    public string $currentRoute = '';
+    public string $routeName = '';
 
     /**
-     * The state of the confirmation dialog for deleting the mod.
+     * Is this mod card is in the featured section of the homepage. Changing the featured state in this context requires
+     * processing the action through the homepage component so the listing can be updated.
      */
-    public bool $confirmModDelete = false;
+    #[Locked]
+    public bool $homepageFeatured = false;
 
     /**
      * The state of the confirmation dialog for deleting the mod.
@@ -49,24 +51,16 @@ class Moderation extends Component
     public bool $confirmModUnfeature = false;
 
     /**
-     * Deletes the mod.
+     * The state of the confirmation dialog for deleting the mod.
      */
-    public function delete(): void
+    public bool $confirmModDelete = false;
+
+    /**
+     * Executed when the component is first loaded.
+     */
+    public function mount(): void
     {
-        $this->authorize('delete', $this->mod);
-
-        $this->mod->delete();
-
-        $this->confirmModDelete = false;
-
-        flash()->success('Mod successfully deleted!');
-
-        $this->dispatch('mod-delete', $this->mod->id);
-
-        if ($this->currentRoute === 'mod.show') {
-            // On a mod show page, we can redirect to the mods listing page as the mod no longer exists.
-            $this->redirectRoute('mods');
-        }
+        $this->routeName = request()->route()->getName();
     }
 
     /**
@@ -74,37 +68,33 @@ class Moderation extends Component
      */
     public function feature(): void
     {
+        $this->confirmModFeature = false;
+
         $this->authorize('feature', $this->mod);
 
         $this->mod->featured = true;
         $this->mod->save();
 
-        $this->mod->refresh();
-
-        $this->confirmModFeature = false;
+        $this->dispatch("mod-updated.{$this->mod->id}", featured: true); // Ribbon update.
 
         flash()->success('Mod successfully featured!');
-
-        $this->emitUpdateEvent();
     }
 
     /**
-     * Features the mod.
+     * Unfeatures the mod.
      */
     public function unfeature(): void
     {
+        $this->confirmModUnfeature = false;
+
         $this->authorize('unfeature', $this->mod);
 
         $this->mod->featured = false;
         $this->mod->save();
 
-        $this->mod->refresh();
-
-        $this->confirmModUnfeature = false;
+        $this->dispatch("mod-updated.{$this->mod->id}", featured: false); // Ribbon update.
 
         flash()->success('Mod successfully unfeatured!');
-
-        $this->emitUpdateEvent();
     }
 
     /**
@@ -112,18 +102,16 @@ class Moderation extends Component
      */
     public function disable(): void
     {
+        $this->confirmModDisable = false;
+
         $this->authorize('disable', $this->mod);
 
         $this->mod->disabled = true;
         $this->mod->save();
 
-        $this->mod->refresh();
-
-        $this->confirmModDisable = false;
+        $this->dispatch("mod-updated.{$this->mod->id}", disabled: true); // Ribbon update.
 
         flash()->success('Mod successfully disabled!');
-
-        $this->emitUpdateEvent();
     }
 
     /**
@@ -131,32 +119,22 @@ class Moderation extends Component
      */
     public function enable(): void
     {
+        $this->confirmModEnable = false;
+
         $this->authorize('enable', $this->mod);
 
         $this->mod->disabled = false;
         $this->mod->save();
 
-        $this->mod->refresh();
-
-        $this->confirmModEnable = false;
+        $this->dispatch("mod-updated.{$this->mod->id}", disabled: false); // Ribbon update.
 
         flash()->success('Mod successfully enabled!');
-
-        $this->emitUpdateEvent();
-    }
-
-    /**
-     * Emit an event that the mod has been updated.
-     */
-    protected function emitUpdateEvent(): void
-    {
-        $this->dispatch('mod-updated.'.$this->mod->id, $this->mod->disabled, $this->mod->featured);
     }
 
     /**
      * Render the component.
      */
-    public function render(): string|View
+    public function render(): View
     {
         return view('livewire.mod.moderation');
     }

@@ -9,38 +9,32 @@ use App\Models\Mod;
 trait ModeratesMod
 {
     /**
-     * Deletes the mod.
+     * Delete the mod. Will automatically synchronize the listing.
      */
-    public function delete(Mod $mod): void
+    public function deleteMod(Mod $mod, string $route = ''): void
     {
         $this->authorize('delete', $mod);
 
         $mod->delete();
 
-        if (method_exists($this, 'clearCache')) {
-            $this->clearCache();
-        }
-
         flash()->success('Mod successfully deleted!');
+
+        // Redirect to the listing if the mod was deleted from the detail page.
+        if ($route === 'mod.show') {
+            $this->redirectRoute('mods');
+        }
     }
 
     /**
-     * Unfeatures the mod.
-     *
-     * This should only be used for moderation on mod cards which are located in the context of the homepage featured
-     * section. It ensures that the listing is updated when a featured mod is removed from the list. In any other
-     * context the unfeature method within the Mod Card component should be used.
+     * Remove the featured flag from the mod. Will automatically synchronize the listing. This should only be used in
+     * the context of the homepage featured section; otherwise, use the moderation->unfeature method.
      */
-    public function unfeature(Mod $mod): void
+    public function unfeatureMod(Mod $mod): void
     {
         $this->authorize('unfeature', $mod);
 
         $mod->featured = false;
         $mod->save();
-
-        if (method_exists($this, 'clearCache')) {
-            $this->clearCache();
-        }
 
         flash()->success('Mod successfully unfeatured!');
     }
