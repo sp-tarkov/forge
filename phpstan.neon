@@ -12,3 +12,13 @@ parameters:
     - routes
   excludePaths:
     - tests/**/*
+  ignoreErrors:
+    # Can be removed when PHPStan issue is resolved: https://github.com/laravel/framework/pull/55086
+    - '#Method App\\Models\\Mod::users\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
+    - '#Method App\\Models\\ModVersion::resolvedDependencies\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
+    - '#Method App\\Models\\ModVersion::latestResolvedDependencies\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
+    - '#Method App\\Models\\ModVersion::sptVersions\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
+    - '#Method App\\Models\\SptVersion::modVersions\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
+    - '#Method App\\Models\\User::mods\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
+    - '#Method App\\Models\\User::followers\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
+    - '#Method App\\Models\\User::following\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
