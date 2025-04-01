@@ -29,6 +29,7 @@
         "meilisearch/meilisearch-php": "^1.13",
         "php-flasher/flasher-laravel": "^2.1.6",
         "socialiteproviders/discord": "^4.2",
+        "spatie/laravel-ignition": "^2.9",
         "stevebauman/purify": "^6.3.0"
     },
     "require-dev": {
@@ -43,7 +44,6 @@
         "nunomaduro/collision": "^8.6.1",
         "pestphp/pest": "^3.7.4",
         "rector/rector": "^2.0.10",
-        "spatie/laravel-ignition": "^2.9.1",
         "laravel/pail": "^1.2.2"
     },
     "autoload": {
