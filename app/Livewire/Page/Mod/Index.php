@@ -91,7 +91,7 @@ class Index extends Component
 
         // Only set the default version filter values if the property is empty after URL and session hydration.
         if ($this->sptVersions === null) {
-            $this->sptVersions = $this->defaultSptVersions;
+            $this->sptVersions = $this->defaultSptVersions();
         }
     }
 
@@ -101,7 +101,7 @@ class Index extends Component
     public function resetFilters(): void
     {
         $this->query = '';
-        $this->sptVersions = $this->defaultSptVersions;
+        $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
     }
 
@@ -110,7 +110,6 @@ class Index extends Component
      *
      * @return array<int, string>
      */
-    #[Computed]
     public function defaultSptVersions(): array
     {
         return SptVersion::getLatestMinorVersions()->pluck('version')->toArray();
@@ -156,7 +155,7 @@ class Index extends Component
     /**
      * Compute the split of the active SPT versions.
      *
-     * @return array<int, string>
+     * @return array<int, Collection<int, SptVersion>>
      */
     #[Computed]
     public function splitSptVersions(): array

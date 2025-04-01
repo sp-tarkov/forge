@@ -60,7 +60,7 @@ class Moderation extends Component
      */
     public function mount(): void
     {
-        $this->routeName = request()->route()->getName();
+        $this->routeName = request()->route()?->getName() ?? '';
     }
 
     /**

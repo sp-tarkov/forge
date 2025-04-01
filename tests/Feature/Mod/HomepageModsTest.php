@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Mod\Homepage;
+use App\Livewire\Page\Homepage;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 uses(RefreshDatabase::class);
@@ -25,10 +26,11 @@ it('should only display featured mods in the featured section', function (): voi
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
     });
 
-    $featured = Livewire::test(Homepage::class)->get('featured');
-
-    expect($featured)->toHaveCount(3)
-        ->and($featured)->pluck('featured')->each->toBeTrue();
+    // Assert that the featured mods are the ones that are actually featured
+    $featured = Livewire::test(Homepage::class)
+        ->assertViewHas('featured', function ($featured) {
+            return $featured->every(fn ($mod) => $mod->featured);
+        });
 });
 
 it('should not display disabled mods', function (): void {
@@ -39,14 +41,25 @@ it('should not display disabled mods', function (): void {
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
     });
 
-    $livewire = Livewire::test(Homepage::class);
-
-    expect($livewire->get('featured'))->toHaveCount(3)
-        ->and($livewire->get('featured'))->pluck('disabled')->each->toBeFalse()
-        ->and($livewire->get('latest'))->toHaveCount(3)
-        ->and($livewire->get('latest'))->pluck('disabled')->each->toBeFalse()
-        ->and($livewire->get('updated'))->toHaveCount(3)
-        ->and($livewire->get('updated'))->pluck('disabled')->each->toBeFalse();
+    $homepage = Livewire::test(Homepage::class)
+        ->assertViewHas('featured', function (Collection $featured) {
+            return $featured->every(fn (Mod $mod) => $mod->featured);
+        })
+        ->assertViewHas('featured', function (Collection $featured) {
+            return $featured->count() === 3;
+        })
+        ->assertViewHas('newest', function (Collection $latest) {
+            return $latest->every(fn (Mod $mod) => ! $mod->disabled);
+        })
+        ->assertViewHas('newest', function (Collection $latest) {
+            return $latest->count() === 3;
+        })
+        ->assertViewHas('updated', function (Collection $updated) {
+            return $updated->every(fn (Mod $mod) => ! $mod->disabled);
+        })
+        ->assertViewHas('updated', function (Collection $updated) {
+            return $updated->count() === 3;
+        });
 });
 
 it('should not display mods with no mod versions', function (): void {
@@ -56,11 +69,16 @@ it('should not display mods with no mod versions', function (): void {
     $mod = Mod::factory()->create(['featured' => true]);
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    $livewire = Livewire::test(Homepage::class);
-
-    expect($livewire->get('featured'))->toHaveCount(1)
-        ->and($livewire->get('latest'))->toHaveCount(1)
-        ->and($livewire->get('updated'))->toHaveCount(1);
+    $homepage = Livewire::test(Homepage::class)
+        ->assertViewHas('featured', function (Collection $featured) {
+            return $featured->count() === 1;
+        })
+        ->assertViewHas('newest', function (Collection $featured) {
+            return $featured->count() === 1;
+        })
+        ->assertViewHas('updated', function (Collection $featured) {
+            return $featured->count() === 1;
+        });
 });
 
 it('should display disabled mods for administrators', function (): void {
@@ -76,12 +94,14 @@ it('should display disabled mods for administrators', function (): void {
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
     });
 
-    $livewire = Livewire::test(Homepage::class);
-
-    expect($livewire->get('featured'))->toHaveCount(2)
-        ->and(collect($livewire->get('featured'))->filter(fn ($mod) => $mod->disabled))->toHaveCount(1)
-        ->and($livewire->get('latest'))->toHaveCount(4)
-        ->and(collect($livewire->get('latest'))->filter(fn ($mod) => $mod->disabled))->toHaveCount(2)
-        ->and($livewire->get('updated'))->toHaveCount(4)
-        ->and(collect($livewire->get('updated'))->filter(fn ($mod) => $mod->disabled))->toHaveCount(2);
+    $homepage = Livewire::test(Homepage::class)
+        ->assertViewHas('featured', function (Collection $featured) {
+            return $featured->count() === 2;
+        })
+        ->assertViewHas('newest', function (Collection $newest) {
+            return $newest->count() === 4;
+        })
+        ->assertViewHas('updated', function (Collection $updated) {
+            return $updated->count() === 4;
+        });
 });

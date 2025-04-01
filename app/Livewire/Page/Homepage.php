@@ -100,7 +100,7 @@ class Homepage extends Component
     /**
      * Render the component.
      */
-    public function render(): View|string
+    public function render(): View
     {
         return view('livewire.page.homepage', [
             'featured' => $this->featured(),

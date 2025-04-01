@@ -11,7 +11,6 @@ use App\Traits\Livewire\ModeratesModVersion;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,35 +21,35 @@ class Show extends Component
     use WithPagination;
 
     /**
-     * The ID of the mod being shown.
+     * The mod being shown.
      */
-    public int $modId;
+    public Mod $mod;
 
     /**
-     * The slug of the mod being shown.
+     * Mount the component.
      */
-    public string $slug;
-
-    /**
-     * Fetch the mod.
-     */
-    #[Computed]
-    public function mod(): Mod
+    public function mount(int $modId, string $slug): void
     {
-        $mod = Mod::query()
+        $this->mod = $this->getMod($modId);
+
+        $this->enforceCanonicalSlug($this->mod, $slug);
+
+        Gate::authorize('view', $this->mod);
+    }
+
+    /**
+     * Get the mod by ID.
+     */
+    protected function getMod(int $modId): Mod
+    {
+        return Mod::query()
             ->with([
                 'license',
                 'users',
+                'latestVersion',
+                'latestVersion.latestSptVersion',
             ])
-            ->findOrFail($this->modId);
-
-        if ($mod->slug !== $this->slug) {
-            abort(404);
-        }
-
-        Gate::authorize('view', $mod);
-
-        return $mod;
+            ->findOrFail($modId);
     }
 
     /**
@@ -58,10 +57,9 @@ class Show extends Component
      *
      * @return LengthAwarePaginator<ModVersion>
      */
-    #[Computed]
-    public function versions(): LengthAwarePaginator
+    protected function versions(): LengthAwarePaginator
     {
-        return $this->mod()->versions()
+        return $this->mod->versions()
             ->with([
                 'latestSptVersion',
                 'latestResolvedDependencies',
@@ -71,8 +69,27 @@ class Show extends Component
             ->fragment('versions');
     }
 
+    /**
+     * Redirect to the canonical slug route if the given slug is incorrect.
+     */
+    protected function enforceCanonicalSlug(Mod $mod, string $slug): void
+    {
+        if ($mod->slug !== $slug) {
+            $this->redirectRoute('mod.show', [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ]);
+        }
+    }
+
+    /**
+     * Render the component.
+     */
     public function render(): View
     {
-        return view('livewire.page.mod.show');
+        return view('livewire.page.mod.show', [
+            'mod' => $this->mod,
+            'versions' => $this->versions(),
+        ]);
     }
 }

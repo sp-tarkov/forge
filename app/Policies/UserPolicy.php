@@ -28,7 +28,15 @@ class UserPolicy
      */
     public function viewDisabledUserMods(?User $user, User $userPageOwner): bool
     {
-        return $user && ($user->isModOrAdmin() || $user->id === $userPageOwner->id);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        if ($user->id === $userPageOwner->id) {
+            return true;
+        }
+
+        return false;
     }
 
     public function create(User $user): bool

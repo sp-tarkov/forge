@@ -7,7 +7,6 @@ namespace App\Livewire\Page\User;
 use App\Models\Mod;
 use App\Models\User;
 use App\Traits\Livewire\ModeratesMod;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -25,17 +24,21 @@ class Show extends Component
     /**
      * Mount the component.
      */
-    public function mount(int $userId, string $slug): ?RedirectResponse
+    public function mount(int $userId, string $slug): void
     {
-        $this->user = User::with(['following', 'followers'])->findOrFail($userId);
+        $this->user = $this->getUser($userId);
 
-        if ($response = $this->enforceCanonicalSlug($slug)) {
-            return $response;
-        }
+        $this->enforceCanonicalSlug($this->user, $slug);
 
         Gate::authorize('view', $this->user);
+    }
 
-        return null;
+    /**
+     * Mount the component.
+     */
+    public function getUser(int $userId): User
+    {
+        return User::with(['following', 'followers'])->findOrFail($userId);
     }
 
     /**
@@ -43,7 +46,7 @@ class Show extends Component
      *
      * @return LengthAwarePaginator<Mod>
      */
-    protected function userMods(): LengthAwarePaginator
+    protected function getUserMods(): LengthAwarePaginator
     {
         $query = $this->user->mods()
             ->with([
@@ -53,9 +56,12 @@ class Show extends Component
             ])
             ->orderByDesc('created_at');
 
-        $query->unless(request()->user()?->can('view-disabled-user-mods', $this->user), fn ($q) => $q
-            ->whereDisabled(false))
-            ->whereHas('latestVersion');
+        $query->unless(
+            request()->user()?->can('view-disabled-user-mods', $this->user),
+            fn ($q) => $q
+                ->whereDisabled(false)
+                ->whereHas('latestVersion')
+        );
 
         return $query->paginate(10)
             ->fragment('mods');
@@ -64,16 +70,14 @@ class Show extends Component
     /**
      * Redirect to the canonical slug route if the given slug is incorrect.
      */
-    protected function enforceCanonicalSlug(string $slug): ?RedirectResponse
+    protected function enforceCanonicalSlug(User $user, string $slug): void
     {
-        if ($this->user->slug !== $slug) {
+        if ($user->slug !== $slug) {
             $this->redirectRoute('user.show', [
-                'userId' => $this->user->id,
-                'slug' => $this->user->slug,
+                'userId' => $user->id,
+                'slug' => $user->slug,
             ]);
         }
-
-        return null;
     }
 
     /**
@@ -83,7 +87,7 @@ class Show extends Component
     {
         return view('livewire.page.user.show', [
             'user' => $this->user,
-            'mods' => $this->userMods(),
+            'mods' => $this->getUserMods(),
         ]);
     }
 }
