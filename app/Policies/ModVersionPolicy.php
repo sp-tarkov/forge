@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -26,8 +25,11 @@ class ModVersionPolicy
      */
     public function view(?User $user, ModVersion $modVersion): bool
     {
-        // Disabled versions will not be shown to normal users.
-        if ($modVersion->disabled && ! $user?->isModOrAdmin()) {
+        if ($user?->isModOrAdmin()) {
+            return true;
+        }
+
+        if ($modVersion->disabled) {
             return false;
         }
 
@@ -72,6 +74,22 @@ class ModVersionPolicy
     public function forceDelete(User $user, ModVersion $modVersion): bool
     {
         return false;
+    }
+
+    /**
+     * Determine whether the user can download the mod version.
+     */
+    public function download(?User $user, ModVersion $modVersion): bool
+    {
+        if ($user?->isModOrAdmin()) {
+            return true;
+        }
+
+        if ($modVersion->mod->disabled || $modVersion->disabled) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

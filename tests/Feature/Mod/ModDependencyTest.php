@@ -295,7 +295,7 @@ it('displays the latest resolved dependencies on the mod detail page', function 
         ->toContain($dependentMod1Version2->version) // Latest version of dependentMod1
         ->toContain($dependentMod2Version4->version); // Latest version of dependentMod2
 
-    $response = $this->get(route('mod.show', ['mod' => $mod->id, 'slug' => $mod->slug]));
+    $response = $this->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]));
 
     $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod1->name, $dependentMod1Version2->version)));
     $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod2->name, $dependentMod2Version4->version)));

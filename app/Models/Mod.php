@@ -135,7 +135,7 @@ class Mod extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
-            ->orderByDesc('version_labels')
+            ->orderBy('version_labels')
             ->chaperone();
     }
 

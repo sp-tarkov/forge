@@ -61,6 +61,5 @@
     @livewireScriptConfig
     @fluxScripts
     @vite(['resources/js/app.js'])
-    @include('includes.analytics')
 </body>
 </html>

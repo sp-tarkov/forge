@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Mod;
 
-use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
@@ -34,41 +33,20 @@ class VersionModeration extends Component
     public bool $confirmVersionEnable = false;
 
     /**
-     * Deletes the version.
-     *
-     * TODO: While this *does* delete the version, the listing doesn't react as the versions are pulled outside of
-     *       livewire. I want to migrate to using full page livewire components to help with this.
-     */
-    public function delete(): void
-    {
-        $this->authorize('delete', $this->version);
-
-        $this->version->delete();
-
-        $this->confirmVersionDelete = false;
-
-        flash()->success('Mod version successfully deleted!');
-
-        // $this->dispatch('mod-version-delete', $this->version->id);
-    }
-
-    /**
      * Disables the version.
      */
     public function disable(): void
     {
+        $this->confirmVersionDisable = false;
+
         $this->authorize('disable', $this->version);
 
         $this->version->disabled = true;
         $this->version->save();
 
-        $this->version->refresh();
-
-        $this->confirmVersionDisable = false;
-
         flash()->success('Mod version successfully disabled!');
 
-        $this->emitUpdateEvent();
+        $this->dispatch('mod-version-updated.'.$this->version->id, disabled: true); // Ribbon update.
     }
 
     /**
@@ -76,26 +54,16 @@ class VersionModeration extends Component
      */
     public function enable(): void
     {
+        $this->confirmVersionEnable = false;
+
         $this->authorize('enable', $this->version);
 
         $this->version->disabled = false;
         $this->version->save();
 
-        $this->version->refresh();
-
-        $this->confirmVersionEnable = false;
-
         flash()->success('Mod version successfully enabled!');
 
-        $this->emitUpdateEvent();
-    }
-
-    /**
-     * Emit an event for the version being updated.
-     */
-    protected function emitUpdateEvent(): void
-    {
-        $this->dispatch('mod-version-updated.'.$this->version->id, $this->version->disabled);
+        $this->dispatch('mod-version-updated.'.$this->version->id, disabled: false); // Ribbon update.
     }
 
     /**

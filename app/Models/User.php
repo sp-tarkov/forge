@@ -227,8 +227,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Attribute::make(
             get: fn (mixed $value, array $attributes): string => route('user.show', [
-                'user' => $attributes['id'],
-                'username' => Str::slug($attributes['name']),
+                'userId' => $attributes['id'],
+                'slug' => Str::slug($attributes['name']),
             ]),
         )->shouldCache();
     }

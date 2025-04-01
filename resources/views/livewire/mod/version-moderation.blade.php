@@ -69,7 +69,7 @@
                 {{ __('Cancel') }}
             </x-secondary-button>
 
-            <x-danger-button class="ms-3" wire:click="delete" wire:loading.attr="disabled">
+            <x-danger-button class="ms-3" wire:click="$parent.deleteModVersion({{ $version->id }})" wire:loading.attr="disabled">
                 {{ __('Delete') }}
             </x-danger-button>
         </x-slot>

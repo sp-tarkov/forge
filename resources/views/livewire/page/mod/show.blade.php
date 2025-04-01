@@ -1,5 +1,4 @@
-<x-app-layout>
-
+<div>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Mod Details') }}
@@ -12,10 +11,15 @@
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
                 @if (auth()->user()?->isModOrAdmin())
-                    <livewire:mod.moderation :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
+                    <livewire:mod.moderation wire:key="mod-moderation-show-{{ $mod->id }}" :mod="$mod" />
                 @endif
 
-                <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" />
+                <livewire:ribbon
+                    wire:key="mod-ribbon-show-{{ $mod->id }}"
+                    :id="$mod->id"
+                    :disabled="$mod->disabled"
+                    :featured="$mod->featured"
+                />
 
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
@@ -103,20 +107,25 @@
 
                 {{-- Mod Versions --}}
                 <div x-show="selectedTab === 'versions'">
-                    @foreach($versions as $version)
+                    @forelse($versions as $version)
                         @can('view', $version)
-                            <div wire:key="mod-version-{{ $mod->id }}-{{ $version->id }}">
-                                <livewire:mod.version :version="$version" />
+                            <div wire:key="mod-show-version-{{ $mod->id }}-{{ $version->id }}">
+                                <x-mod.version-card :version="$version" />
                             </div>
                         @endcan
-                    @endforeach
+                    @empty
+                        <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                            <p class="text-gray-900 dark:text-gray-200">{{ __('No versions found.') }}</p>
+                        </div>
+                    @endforelse
                     {{ $versions->links() }}
                 </div>
 
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-gray-700 dark:text-gray-400">
-                    <p>Not quite yet...</p>
+                <div x-show="selectedTab === 'comments'" class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <p class="text-gray-900 dark:text-gray-200">{{ __('Not quite yet...') }}</p>
                 </div>
+
             </div>
         </div>
 
@@ -199,5 +208,4 @@
             </div>
         </div>
     </div>
-
-</x-app-layout>
+</div>
