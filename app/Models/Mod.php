@@ -6,8 +6,10 @@ namespace App\Models;
 
 use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\PublishedScope;
-use App\Traits\CanModerate;
+use App\Observers\ModObserver;
 use Database\Factories\ModFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,7 +25,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
-use Override;
 
 /**
  * Mod Model
@@ -51,23 +52,14 @@ use Override;
  * @property-read ModVersion|null $latestVersion
  * @property-read ModVersion|null $latestUpdatedVersion
  */
+#[ScopedBy([PublishedScope::class])]
+#[ObservedBy([ModObserver::class])]
 class Mod extends Model
 {
-    use CanModerate;
-
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 
     use Searchable;
-
-    /**
-     * Post boot method to configure the model.
-     */
-    #[Override]
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new PublishedScope);
-    }
 
     /**
      * Calculate the total number of downloads for the mod.
@@ -143,7 +135,7 @@ class Mod extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
-            ->orderByDesc('version_labels')
+            ->orderBy('version_labels')
             ->chaperone();
     }
 

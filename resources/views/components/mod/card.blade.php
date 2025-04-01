@@ -2,11 +2,19 @@
     'mod',
     'version',
     'section' => 'default',
-    'isHomePage' => false,
+    'homepageFeatured' => false,
 ])
 
-<div class="mod-list-component relative mx-auto max-w-2xl h-full w-full">
-    <livewire:mod.ribbon key="mod-ribbon-{{ $section }}-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" :is-home-page="$isHomePage" />
+<div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
+
+    <livewire:ribbon
+        wire:key="mod-card-ribbon-{{ $section }}-{{ $mod->id }}"
+        :id="$mod->id"
+        :disabled="$mod->disabled"
+        :featured="$mod->featured"
+        :homepage-featured="$homepageFeatured"
+    />
+
     <a href="{{ $mod->detailUrl() }}" class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black hover:shadow-gray-400 dark:hover:shadow-black transition-colors ease-out duration-700">
         <div class="h-auto md:h-full md:flex">
             <div class="relative h-auto md:h-full md:shrink-0 overflow-hidden">
@@ -16,6 +24,7 @@
                     <img src="https://placehold.co/450x450/31343C/EEE?font=source-sans-pro&text={{ urlencode($mod->name) }}" alt="{{ $mod->name }}" class="h-48 w-full object-cover md:h-full md:w-48 group-hover:scale-110 transition-transform ease-in-out duration-500">
                 @endif
             </div>
+
             <div class="flex flex-col w-full justify-between p-5">
                 <div class="pb-3">
                     <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
@@ -28,9 +37,10 @@
                         </p>
                     @endif
                     <p class="text-slate-500 dark:text-gray-300">
-                        {{ Str::limit($mod->teaser, 100) }}
+                        {{ Str::limit($mod->teaser) }}
                     </p>
                 </div>
+
                 <div class="text-slate-700 dark:text-gray-300 text-sm">
                     <div class="flex items-end w-full text-sm">
                         @if (($mod->updated_at || $mod->created_at) && $version)
@@ -56,7 +66,12 @@
             </div>
         </div>
     </a>
+
     @if (auth()->user()?->isModOrAdmin())
-        <livewire:mod.moderation key="mod-moderation-{{ $section }}-{{ $mod->id }}" :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
+        <livewire:mod.moderation
+            wire:key="mod-moderation-{{ $section }}-{{ $mod->id }}"
+            :mod="$mod"
+            :homepage-featured="$homepageFeatured"
+        />
     @endif
 </div>

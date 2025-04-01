@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\ModVersion;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 
 class ModVersionController extends Controller
 {
-    use AuthorizesRequests;
-
     public function show(Request $request, int $modId, string $slug, string $version): RedirectResponse
     {
         $modVersion = ModVersion::whereModId($modId)
@@ -22,10 +20,11 @@ class ModVersionController extends Controller
 
         abort_if($modVersion->mod->slug !== $slug, 404);
 
-        $this->authorize('view', $modVersion);
+        Gate::authorize('download', $modVersion);
 
         // Rate limit the downloads to 5 per minute.
-        $rateKey = 'mod.version.download.'.$modId.'.'.($request->user()?->id ?: $request->session()->getId());
+        $rateIdentifier = $request->user()?->id ?: $request->session()->getId();
+        $rateKey = sprintf('mod.version.download.%s.%d', $rateIdentifier, $modId);
         abort_if(RateLimiter::tooManyAttempts($rateKey, maxAttempts: 5), 429);
 
         // Increment downloads counts in the background.
@@ -34,15 +33,7 @@ class ModVersionController extends Controller
         // Increment the rate limiter.
         RateLimiter::increment($rateKey);
 
-        // Use the new method for redirection.
-        return $this->redirectToDownload($modVersion);
-    }
-
-    /**
-     * Redirect to the download link, using a 307 status code to prevent browsers from caching.
-     */
-    protected function redirectToDownload(ModVersion $modVersion): RedirectResponse
-    {
+        // Redirect to the download link, using a 307 status code to prevent browsers from caching.
         return redirect($modVersion->link, 307);
     }
 }

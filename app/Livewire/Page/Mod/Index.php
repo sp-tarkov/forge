@@ -2,28 +2,26 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Mod;
+namespace App\Livewire\Page\Mod;
 
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\SptVersion;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\View\View;
+use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\On;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * @property-read array<int, string> $defaultSptVersions
- */
-class Listing extends Component
+class Index extends Component
 {
+    use ModeratesMod;
     use WithPagination;
 
     /**
@@ -92,7 +90,7 @@ class Listing extends Component
 
         // Only set the default version filter values if the property is empty after URL and session hydration.
         if ($this->sptVersions === null) {
-            $this->sptVersions = $this->defaultSptVersions;
+            $this->sptVersions = $this->defaultSptVersions();
         }
     }
 
@@ -102,7 +100,7 @@ class Listing extends Component
     public function resetFilters(): void
     {
         $this->query = '';
-        $this->sptVersions = $this->defaultSptVersions;
+        $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
     }
 
@@ -111,39 +109,9 @@ class Listing extends Component
      *
      * @return array<int, string>
      */
-    #[Computed]
     public function defaultSptVersions(): array
     {
         return SptVersion::getLatestMinorVersions()->pluck('version')->toArray();
-    }
-
-    /**
-     * Refresh the mod listing.
-     */
-    #[On('mod-delete')]
-    public function refreshListing(): void
-    {
-        $this->render();
-    }
-
-    /**
-     * Render the component's view.
-     */
-    public function render(): View
-    {
-        // Fetch the mods using the filters saved to the component properties.
-        $filters = new ModFilter([
-            'query' => $this->query,
-            'featured' => $this->featured,
-            'order' => $this->order,
-            'sptVersions' => $this->sptVersions,
-        ]);
-
-        $paginatedMods = $filters->apply()->paginate($this->perPage);
-
-        $this->redirectOutOfBoundsPage($paginatedMods);
-
-        return view('livewire.mod.listing', ['mods' => $paginatedMods]);
     }
 
     /**
@@ -216,5 +184,25 @@ class Listing extends Component
         }
 
         return $count + count($this->sptVersions);
+    }
+
+    /**
+     * Render the component.
+     */
+    public function render(): View
+    {
+        // Fetch the mods using the filters saved to the component properties.
+        $filters = new ModFilter([
+            'query' => $this->query,
+            'featured' => $this->featured,
+            'order' => $this->order,
+            'sptVersions' => $this->sptVersions,
+        ]);
+
+        $paginatedMods = $filters->apply()->paginate($this->perPage);
+
+        $this->redirectOutOfBoundsPage($paginatedMods);
+
+        return view('livewire.page.mod.index', ['mods' => $paginatedMods]);
     }
 }

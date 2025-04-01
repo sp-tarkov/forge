@@ -30,13 +30,15 @@
                     <x-checkbox id="remember_me" name="remember" />
                     <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
                 </label>
-                <div class="items-center justify-end inline-block ml-auto">
-                    @if (Route::has('password.request'))
-                        <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                           href="{{ route('password.request') }}">
-                            {{ __('Forgot your password?') }}
-                        </a>
-                    @endif
+                <div class="items-center justify-end inline-block ml-auto text-right">
+                    <a class="inline-block underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                       href="{{ route('register') }}">
+                        {{ __('Register') }}
+                    </a>
+                    <a class="inline-block ml-1 underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                       href="{{ route('password.request') }}">
+                        {{ __('Forgot password?') }}
+                    </a>
                 </div>
             </div>
 
@@ -46,14 +48,7 @@
         </form>
 
         @if (config('services.discord.client_id') && config('services.discord.client_secret'))
-            <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div class="w-full border-t border-gray-300 dark:border-gray-700"></div>
-                </div>
-                <div class="relative flex justify-center">
-                    <span class="bg-white dark:bg-black px-2 text-sm text-gray-500 dark:text-gray-500">OR</span>
-                </div>
-            </div>
+            <flux:separator text="or" class="my-6" />
 
             <a href="{{ route('login.socialite', ['provider' => 'discord']) }}" class="w-full text-white bg-[#5865F2] hover:bg-[#5865F2]/90 focus:ring-4 focus:outline-hidden focus:ring-[#5865F2]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center justify-center dark:focus:ring-[#5865F2]/55 me-2 mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4 mr-2" viewBox="0 0 16 16">

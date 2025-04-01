@@ -1,4 +1,7 @@
-<nav x-data="{ profileDropdownOpen: false, mobileMenuOpen: false }" class="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
+<nav
+    x-data="{ profileDropdownOpen: false, mobileMenuOpen: false }"
+    class="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800"
+>
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="relative flex h-16 items-center justify-between">
             <div class="flex items-center px-2 lg:px-0">
@@ -15,11 +18,17 @@
                 </div>
             </div>
 
-            @livewire('global-search')
+            <livewire:global-search />
 
             <div class="flex lg:hidden">
                 {{-- Mobile Menu Button --}}
-                <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" :aria-expanded="mobileMenuOpen">
+                <button
+                    x-on:click="mobileMenuOpen = !mobileMenuOpen"
+                    type="button"
+                    class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-white"
+                    aria-controls="mobile-menu"
+                    :aria-expanded="mobileMenuOpen"
+                >
                     <span class="absolute -inset-0.5"></span>
                     <span class="sr-only">{{ __('Open main menu') }}</span>
                     <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -46,24 +55,37 @@
 
                     @auth
                         {{-- Profile Dropdown --}}
-                        <div x-data="{ profileDropdownOpen: false, openedWithKeyboard: false }"
-                             @keydown.esc.window="profileDropdownOpen = false, openedWithKeyboard = false"
-                             class="relative"
+                        <div
+                            x-data="{ profileDropdownOpen: false, openedWithKeyboard: false }"
+                            x-on:keydown.esc.window="profileDropdownOpen = false, openedWithKeyboard = false"
+                            class="relative"
                         >
-                            <button id="user-menu-button" type="button" @click="profileDropdownOpen = ! profileDropdownOpen" @keydown.space.prevent="openedWithKeyboard = true" @keydown.enter.prevent="openedWithKeyboard = true" @keydown.down.prevent="openedWithKeyboard = true" class="relative flex rounded-full bg-gray-800 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" :class="profileDropdownOpen || openedWithKeyboard ? 'text-black dark:text-white' : 'text-slate-700 dark:text-slate-300'" :aria-expanded="profileDropdownOpen || openedWithKeyboard" aria-haspopup="true">
+                            <button
+                                id="user-menu-button"
+                                type="button"
+                                x-on:click="profileDropdownOpen = ! profileDropdownOpen"
+                                x-on:keydown.space.prevent="openedWithKeyboard = true"
+                                x-on:keydown.enter.prevent="openedWithKeyboard = true"
+                                x-on:keydown.down.prevent="openedWithKeyboard = true"
+                                class="relative flex rounded-full bg-gray-800 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                                :class="profileDropdownOpen || openedWithKeyboard ? 'text-black dark:text-white' : 'text-slate-700 dark:text-slate-300'"
+                                :aria-expanded="profileDropdownOpen || openedWithKeyboard"
+                                aria-haspopup="true"
+                            >
                                 <span class="absolute -inset-1.5"></span>
                                 <span class="sr-only">{{ __('Open user menu') }}</span>
                                 <img class="h-8 w-8 rounded-full" src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}">
                             </button>
-                            <div x-cloak
-                                 x-show="profileDropdownOpen || openedWithKeyboard"
-                                 x-transition
-                                 x-trap="openedWithKeyboard"
-                                 @click.outside="profileDropdownOpen = false, openedWithKeyboard = false"
-                                 @keydown.down.prevent="$focus.wrap().next()"
-                                 @keydown.up.prevent="$focus.wrap().previous()"
-                                 class="absolute top-11 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
-                                 role="menu"
+                            <div
+                                x-cloak
+                                x-show="profileDropdownOpen || openedWithKeyboard"
+                                x-transition
+                                x-trap="openedWithKeyboard"
+                                x-on:click.outside="profileDropdownOpen = false, openedWithKeyboard = false"
+                                x-on:keydown.down.prevent="$focus.wrap().next()"
+                                x-on:keydown.up.prevent="$focus.wrap().previous()"
+                                class="absolute top-11 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                role="menu"
                             >
                                 <div class="flex flex-col py-1.5">
                                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
@@ -114,7 +136,12 @@
                                 <div class="flex flex-col py-1.5">
                                     <form method="POST" action="{{ route('logout') }}" x-data>
                                         @csrf
-                                        <a href="{{ route('logout') }}" @click.prevent="$root.submit();" class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
+                                        <a
+                                            href="{{ route('logout') }}"
+                                            x-on:click.prevent="$root.submit();"
+                                            class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
+                                            role="menuitem"
+                                        >
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
                                                 <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-2.625 6c-.54 0-.828.419-.936.634a1.96 1.96 0 0 0-.189.866c0 .298.059.605.189.866.108.215.395.634.936.634.54 0 .828-.419.936-.634.13-.26.189-.568.189-.866 0-.298-.059-.605-.189-.866-.108-.215-.395-.634-.936-.634Zm4.314.634c.108-.215.395-.634.936-.634.54 0 .828.419.936.634.13.26.189.568.189.866 0 .298-.059.605-.189.866-.108.215-.395.634-.936.634-.54 0-.828-.419-.936-.634a1.96 1.96 0 0 1-.189-.866c0-.298.059-.605.189-.866Zm-4.34 7.964a.75.75 0 0 1-1.061-1.06 5.236 5.236 0 0 1 3.73-1.538 5.236 5.236 0 0 1 3.695 1.538.75.75 0 1 1-1.061 1.06 3.736 3.736 0 0 0-2.639-1.098 3.736 3.736 0 0 0-2.664 1.098Z" clip-rule="evenodd" />
                                             </svg>
@@ -137,7 +164,11 @@
     </div>
 
     {{-- Mobile Menu --}}
-    <div class="lg:hidden" x-show="mobileMenuOpen" id="mobile-menu">
+    <div
+        class="lg:hidden"
+        x-show="mobileMenuOpen"
+        id="mobile-menu"
+    >
         <div class="space-y-1 px-2 pb-3 pt-2">
             <x-responsive-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-responsive-nav-link>
             {{-- Additional menu links here --}}
@@ -182,7 +213,7 @@
 
                     <form method="POST" action="{{ route('logout') }}" x-data>
                         @csrf
-                        <x-responsive-nav-link href="{{ route('logout') }}" @click.prevent="$root.submit();" :active="request()->routeIs('logout')">{{ __('Log Out') }}</x-responsive-nav-link>
+                        <x-responsive-nav-link href="{{ route('logout') }}" x-on:click.prevent="$root.submit();" :active="request()->routeIs('logout')">{{ __('Log Out') }}</x-responsive-nav-link>
                     </form>
                 @endauth
 

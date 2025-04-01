@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Mod;
 
 use App\Models\Mod;
 use Illuminate\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class DownloadButton extends Component
@@ -11,6 +14,7 @@ class DownloadButton extends Component
     /**
      * The mod to show the download button for.
      */
+    #[Locked]
     public Mod $mod;
 
     /**
@@ -29,13 +33,5 @@ class DownloadButton extends Component
     public function render(): string|View
     {
         return view('livewire.mod.download-button');
-    }
-
-    /**
-     * Toggle the download dialog.
-     */
-    public function toggleDownloadDialog(): void
-    {
-        $this->showDownloadDialog = ! $this->showDownloadDialog;
     }
 }

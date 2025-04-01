@@ -1,7 +1,7 @@
 @props(['name'])
 
 <button
-    @click="selectedTab = '{{ Str::lower($name) }}'"
+    x-on:click="selectedTab = '{{ Str::lower($name) }}'"
     :aria-selected="selectedTab == '{{ Str::lower($name) }}'"
     :class="{
         'font-extrabold': selectedTab == '{{ Str::lower($name) }}',

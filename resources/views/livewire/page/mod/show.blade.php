@@ -1,5 +1,4 @@
-<x-app-layout>
-
+<div>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Mod Details') }}
@@ -10,12 +9,17 @@
         <div class="lg:col-span-2 flex flex-col gap-6">
 
             {{-- Main Mod Details Card --}}
-            <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
                 @if (auth()->user()?->isModOrAdmin())
-                    <livewire:mod.moderation :mod="$mod" :current-route="request()->route()->getName() ?? ''" />
+                    <livewire:mod.moderation wire:key="mod-moderation-show-{{ $mod->id }}" :mod="$mod" />
                 @endif
 
-                <livewire:mod.ribbon key="mod-ribbon-{{ $mod->id }}" :id="$mod->id" :disabled="$mod->disabled" :featured="$mod->featured" />
+                <livewire:ribbon
+                    wire:key="mod-ribbon-show-{{ $mod->id }}"
+                    :id="$mod->id"
+                    :disabled="$mod->disabled"
+                    :featured="$mod->featured"
+                />
 
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">
@@ -39,7 +43,7 @@
                         <p>
                             {{ __('Created by') }}
                             @foreach ($mod->users as $user)
-                                <a href="{{ $user->profile_url }}" class="text-slate-800 dark:text-gray-200 hover:underline">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                                <a href="{{ $user->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
                             @endforeach
                         </p>
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
@@ -103,63 +107,25 @@
 
                 {{-- Mod Versions --}}
                 <div x-show="selectedTab === 'versions'">
-                    @foreach ($mod->versions as $version)
-                        <div class="p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-
-                            <livewire:mod.ribbon key="mod-version-ribbon-{{ $version->id }}" :id="$version->id" :disabled="$version->disabled" />
-
-                            <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
-                                @if (auth()->user()?->isModOrAdmin())
-                                    {{-- TODO: <livewire:modVersion.moderation :modVersion="$version" /> --}}
-                                @endif
-                                <div class="flex items-center justify-between">
-                                    <a class="text-2xl font-extrabold text-gray-900 dark:text-white" href="{{ $version->downloadUrl() }}">
-                                        {{ __('Version') }} {{ $version->version }}
-                                    </a>
-                                    <p class="text-gray-800 dark:text-gray-300"
-                                       title="{{ __('Exactly') }} {{ $version->downloads }}">{{ Number::downloads($version->downloads) }} {{ __('Downloads') }}</p>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    @if ($version->latestSptVersion)
-                                        <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                            {{ $version->latestSptVersion->version_formatted }}
-                                        </span>
-                                    @else
-                                        <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                            {{ __('Unknown SPT Version') }}
-                                        </span>
-                                    @endif
-                                    <a href="{{ $version->virus_total_link }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{__('Virus Total Results')}}</a>
-                                </div>
-                                <div class="flex items-center justify-between text-gray-700 dark:text-gray-400">
-                                    <span>{{ __('Created') }} {{ Carbon::dynamicFormat($version->created_at) }}</span>
-                                    <span>{{ __('Updated') }} {{ Carbon::dynamicFormat($version->updated_at) }}</span>
-                                </div>
-
-                                {{-- Display latest resolved dependencies --}}
-                                @if ($version->latestResolvedDependencies->isNotEmpty())
-                                    <div class="text-gray-700 dark:text-gray-400">
-                                        {{ __('Dependencies:') }}
-                                        @foreach ($version->latestResolvedDependencies as $resolvedDependency)
-                                            <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">{{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})</a>@if (!$loop->last)
-                                                ,
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                @endif
+                    @forelse($versions as $version)
+                        @can('view', $version)
+                            <div wire:key="mod-show-version-{{ $mod->id }}-{{ $version->id }}">
+                                <x-mod.version-card :version="$version" />
                             </div>
-                            <div class="py-3 user-markdown text-gray-700 dark:text-gray-400">
-                                {{-- The description below is safe to write directly because it has been run though HTMLPurifier during the import process. --}}
-                                {!! Str::markdown($version->description) !!}
-                            </div>
+                        @endcan
+                    @empty
+                        <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                            <p class="text-gray-900 dark:text-gray-200">{{ __('No versions found.') }}</p>
                         </div>
-                    @endforeach
+                    @endforelse
+                    {{ $versions->links() }}
                 </div>
 
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-gray-700 dark:text-gray-400">
-                    <p>Not quite yet...</p>
+                <div x-show="selectedTab === 'comments'" class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <p class="text-gray-900 dark:text-gray-200">{{ __('Not quite yet...') }}</p>
                 </div>
+
             </div>
         </div>
 
@@ -179,7 +145,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('License') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->license->name }}
                                 </a>
                             </p>
@@ -189,7 +155,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Source Code') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->source_code_link }}" title="{{ $mod->source_code_link }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                <a href="{{ $mod->source_code_link }}" title="{{ $mod->source_code_link }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->source_code_link }}
                                 </a>
                             </p>
@@ -199,7 +165,7 @@
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Latest Version VirusTotal Result') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->latestVersion->virus_total_link }}
                                 </a>
                             </p>
@@ -210,7 +176,7 @@
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
-                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="text-cyan-600 dark:text-cyan-400 hover:underline">
+                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                         {{ $dependency->resolvedVersion->mod->name }}
                                         &nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />
@@ -242,5 +208,4 @@
             </div>
         </div>
     </div>
-
-</x-app-layout>
+</div>

@@ -1,0 +1,38 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [ Tests ]
+    types: [ completed ]
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Deploy
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Sentry release
+        uses: getsentry/action-release@v3
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: production
+
+      - name: Make Forge Build Request
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.FORGE_BUILD_URL }})
+          if [ $response -eq 200 ]; then
+            echo "Successfully sent build request to Forge"
+          else
+            echo "Forge build request failed with status code: $response"
+            exit 1
+          fi

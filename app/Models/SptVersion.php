@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
+use App\Observers\SptVersionObserver;
 use App\Support\Version;
 use Carbon\Carbon;
 use Database\Factories\SptVersionFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +36,7 @@ use Throwable;
  * @property-read Collection<int, ModVersion> $modVersions
  * @property-read string $version_formatted
  */
+#[ObservedBy([SptVersionObserver::class])]
 class SptVersion extends Model
 {
     /** @use HasFactory<SptVersionFactory> */

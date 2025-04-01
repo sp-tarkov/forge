@@ -27,12 +27,11 @@ jobs:
       - run: mkdir -p .rector/cache
 
       - name: Execute Rector Analysis
-        run: php vendor/bin/rector process --dry-run --config=rector.php
+        run: php vendor/bin/rector process --config=rector.php
 
-# Disable automated changes until we have a better understanding of the impact
-#      - uses: stefanzweifel/git-auto-commit-action@v5
-#        with:
-#          commit_message: Rector Fixes [no ci]
-#          commit_user_name: Rector Bot
-#          skip_fetch: true
-#          file_pattern: '*.php'
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Rector Fixes
+          commit_user_name: Rector Bot
+          skip_fetch: true
+          file_pattern: '*.php'

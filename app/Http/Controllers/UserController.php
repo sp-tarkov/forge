@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    use AuthorizesRequests;
-
     public function show(Request $request, int $userId, string $username): View
     {
         $user = User::whereId($userId)

@@ -9,13 +9,13 @@
     class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end"
 >
     <div class="w-full max-w-lg lg:max-w-md">
-        <label for="search" class="sr-only">{{ __('Search') }}</label>
+        <label for="global-search" class="sr-only">{{ __('Search') }}</label>
         <search
             x-trap.noreturn="query.length && show"
-            @click.away="show = false"
-            @keydown.down.prevent="$focus.wrap().next()"
-            @keydown.up.prevent="$focus.wrap().previous()"
-            @keydown.escape.window="$wire.query = '';"
+            x-on:click.away="show = false"
+            x-on:keydown.down.prevent="$focus.wrap().next()"
+            x-on:keydown.up.prevent="$focus.wrap().previous()"
+            x-on:keydown.escape.window="$wire.query = '';"
             class="relative group"
             role="search"
         >
@@ -30,9 +30,9 @@
                    type="search"
                    wire:model.live="query"
                    @focus="show = true"
-                   placeholder="{{ __('Search') }}"
+                   placeholder="{{ __('Search everything') }}"
                    aria-controls="search-results"
-                   aria-label="{{ __('Search') }}"
+                   aria-label="{{ __('Search everything') }}"
                    class="block w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
             />
             <div id="search-results"
