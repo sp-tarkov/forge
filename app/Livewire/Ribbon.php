@@ -40,6 +40,7 @@ class Ribbon extends Component
         if ($disabled !== null) {
             $this->disabled = $disabled;
         }
+
         if ($featured !== null) {
             $this->featured = $featured;
         }

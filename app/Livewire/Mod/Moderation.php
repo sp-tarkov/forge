@@ -75,7 +75,7 @@ class Moderation extends Component
         $this->mod->featured = true;
         $this->mod->save();
 
-        $this->dispatch("mod-updated.{$this->mod->id}", featured: true); // Ribbon update.
+        $this->dispatch('mod-updated.'.$this->mod->id, featured: true); // Ribbon update.
 
         flash()->success('Mod successfully featured!');
     }
@@ -92,7 +92,7 @@ class Moderation extends Component
         $this->mod->featured = false;
         $this->mod->save();
 
-        $this->dispatch("mod-updated.{$this->mod->id}", featured: false); // Ribbon update.
+        $this->dispatch('mod-updated.'.$this->mod->id, featured: false); // Ribbon update.
 
         flash()->success('Mod successfully unfeatured!');
     }
@@ -109,7 +109,7 @@ class Moderation extends Component
         $this->mod->disabled = true;
         $this->mod->save();
 
-        $this->dispatch("mod-updated.{$this->mod->id}", disabled: true); // Ribbon update.
+        $this->dispatch('mod-updated.'.$this->mod->id, disabled: true); // Ribbon update.
 
         flash()->success('Mod successfully disabled!');
     }
@@ -126,7 +126,7 @@ class Moderation extends Component
         $this->mod->disabled = false;
         $this->mod->save();
 
-        $this->dispatch("mod-updated.{$this->mod->id}", disabled: false); // Ribbon update.
+        $this->dispatch('mod-updated.'.$this->mod->id, disabled: false); // Ribbon update.
 
         flash()->success('Mod successfully enabled!');
     }

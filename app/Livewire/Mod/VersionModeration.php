@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Mod;
 
-use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
@@ -47,7 +46,7 @@ class VersionModeration extends Component
 
         flash()->success('Mod version successfully disabled!');
 
-        $this->dispatch("mod-version-updated.{$this->version->id}", disabled: true); // Ribbon update.
+        $this->dispatch('mod-version-updated.'.$this->version->id, disabled: true); // Ribbon update.
     }
 
     /**
@@ -64,7 +63,7 @@ class VersionModeration extends Component
 
         flash()->success('Mod version successfully enabled!');
 
-        $this->dispatch("mod-version-updated.{$this->version->id}", disabled: false); // Ribbon update.
+        $this->dispatch('mod-version-updated.'.$this->version->id, disabled: false); // Ribbon update.
     }
 
     /**

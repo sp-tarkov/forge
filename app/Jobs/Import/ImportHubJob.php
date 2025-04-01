@@ -851,7 +851,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     private function processModVersionSptConstraints(): void
     {
         foreach ($this->sptVersionConstraints as $modId => $versionConstraints) {
-            $latestModVersion = ModVersion::where('mod_id', $modId)
+            $latestModVersion = ModVersion::query()->where('mod_id', $modId)
                 ->orderByDesc('version_major')
                 ->orderByDesc('version_minor')
                 ->orderByDesc('version_patch')

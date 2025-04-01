@@ -24,7 +24,7 @@ class ModVersionController extends Controller
 
         // Rate limit the downloads to 5 per minute.
         $rateIdentifier = $request->user()?->id ?: $request->session()->getId();
-        $rateKey = "mod.version.download.{$rateIdentifier}.{$modId}";
+        $rateKey = sprintf('mod.version.download.%s.%d', $rateIdentifier, $modId);
         abort_if(RateLimiter::tooManyAttempts($rateKey, maxAttempts: 5), 429);
 
         // Increment downloads counts in the background.
