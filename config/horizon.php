@@ -212,7 +212,7 @@ return [
                 'maxProcesses' => 10,
             ],
             'supervisor-long' => [
-                'maxProcesses' => 2,
+                'maxProcesses' => 3,
             ],
         ],
         'local' => [

@@ -84,7 +84,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->removeDeletedHubMods();
 
         Bus::chain([
-            new ResolveSptVersionsJob,
+            (new ResolveSptVersionsJob)->onQueue('long'),
             new ResolveDependenciesJob,
             new SptVersionModCountsJob,
             new UpdateModDownloadsJob,
