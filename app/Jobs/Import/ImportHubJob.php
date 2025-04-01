@@ -13,6 +13,11 @@ use App\Jobs\Import\DataTransferObjects\HubUser;
 use App\Jobs\Import\DataTransferObjects\HubUserAvatar;
 use App\Jobs\Import\DataTransferObjects\HubUserFollow;
 use App\Jobs\Import\DataTransferObjects\HubUserOptionValue;
+use App\Jobs\ResolveDependenciesJob;
+use App\Jobs\ResolveSptVersionsJob;
+use App\Jobs\SearchSyncJob;
+use App\Jobs\SptVersionModCountsJob;
+use App\Jobs\UpdateModDownloadsJob;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -20,7 +25,6 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Support\Version;
-use Carbon\Carbon;
 use Composer\Semver\Semver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -30,7 +34,10 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -75,6 +82,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->getHubMods();
         $this->getHubModVersions();
         $this->removeDeletedHubMods();
+
+        Bus::chain([
+            (new ResolveSptVersionsJob)->onQueue('long'),
+            new ResolveDependenciesJob,
+            new SptVersionModCountsJob,
+            new UpdateModDownloadsJob,
+            (new SearchSyncJob)->onQueue('long')->delay(Carbon::now()->addSeconds(30)),
+            fn () => Artisan::call('cache:clear'),
+        ])->dispatch();
     }
 
     /**
