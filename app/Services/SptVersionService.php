@@ -26,7 +26,7 @@ class SptVersionService
      */
     private function satisfyConstraint(ModVersion $modVersion): array
     {
-        if ($modVersion->spt_version_constraint === '') {
+        if ($modVersion->spt_version_constraint === '' || $modVersion->spt_version_constraint === '0.0.0') {
             return [];
         }
 

@@ -5,15 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Jobs\Import\ImportHubJob;
-use App\Jobs\ResolveDependenciesJob;
-use App\Jobs\ResolveSptVersionsJob;
-use App\Jobs\SearchSyncJob;
-use App\Jobs\SptVersionModCountsJob;
-use App\Jobs\UpdateModDownloadsJob;
 use Illuminate\Console\Command;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Bus;
 
 class ImportHubCommand extends Command
 {
@@ -23,16 +15,8 @@ class ImportHubCommand extends Command
 
     public function handle(): void
     {
-        Bus::chain([
-            (new ImportHubJob)->onQueue('long'),
-            new ResolveSptVersionsJob,
-            new ResolveDependenciesJob,
-            new SptVersionModCountsJob,
-            new UpdateModDownloadsJob,
-            (new SearchSyncJob)->onQueue('long')->delay(Carbon::now()->addSeconds(30)),
-            fn () => Artisan::call('cache:clear'),
-        ])->dispatch();
+        ImportHubJob::dispatch()->onQueue('long');
 
-        $this->info('The import-hub bus chain has been added to the queue');
+        $this->info('The import-hub job has been added to the queue');
     }
 }

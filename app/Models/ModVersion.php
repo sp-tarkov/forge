@@ -148,7 +148,7 @@ class ModVersion extends Model
             ->orderByDesc('spt_versions.version_major')
             ->orderByDesc('spt_versions.version_minor')
             ->orderByDesc('spt_versions.version_patch')
-            ->orderByDesc('spt_versions.version_labels')
+            ->orderBy('spt_versions.version_labels')
             ->limit(1);
     }
 
@@ -164,7 +164,7 @@ class ModVersion extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
-            ->orderByDesc('version_labels');
+            ->orderBy('version_labels');
     }
 
     /**
