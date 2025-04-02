@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
-it('allows a user with correct credentials to log in and receive a token', function () {
+it('allows a user with correct credentials to log in and receive a token', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
         'password' => Hash::make('password123'),
@@ -31,10 +31,10 @@ it('allows a user with correct credentials to log in and receive a token', funct
             ],
         ])
         ->assertJsonFragment(['success' => true])
-        ->assertJsonPath('data.token', fn ($token) => is_string($token) && strlen($token) > 0);
+        ->assertJsonPath('data.token', fn ($token): bool => is_string($token) && strlen($token) > 0);
 });
 
-it('creates a token with a custom name when provided', function () {
+it('creates a token with a custom name when provided', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
         'password' => Hash::make('password123'),
@@ -56,7 +56,7 @@ it('creates a token with a custom name when provided', function () {
     ]);
 });
 
-it('creates a token with specified valid abilities', function () {
+it('creates a token with specified valid abilities', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
         'password' => Hash::make('password123'),
@@ -77,7 +77,7 @@ it('creates a token with specified valid abilities', function () {
         ->and($token->abilities)->toEqual($abilities);
 });
 
-it('creates a token with default abilities when abilities array is empty or omitted', function () {
+it('creates a token with default abilities when abilities array is empty or omitted', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
         'password' => Hash::make('password123'),
@@ -108,7 +108,7 @@ it('creates a token with default abilities when abilities array is empty or omit
     expect($tokenEmpty->abilities)->toEqual($defaultAbilities);
 });
 
-it('returns error for incorrect password', function () {
+it('returns error for incorrect password', function (): void {
     User::factory()->create([
         'email' => 'test@example.com',
         'password' => Hash::make('password123'),
@@ -128,7 +128,7 @@ it('returns error for incorrect password', function () {
         ]);
 });
 
-it('returns error for non-existent email', function () {
+it('returns error for non-existent email', function (): void {
     $response = $this->postJson('/api/v0/auth/login', [
         'email' => 'nouser@example.com',
         'password' => 'password123',
@@ -140,7 +140,7 @@ it('returns error for non-existent email', function () {
         ->assertJsonValidationErrorFor('email');
 });
 
-it('returns error for oauth user trying password login', function () {
+it('returns error for oauth user trying password login', function (): void {
     // Create user with NULL password
     User::factory()->create([
         'email' => 'oauth@example.com',
@@ -161,7 +161,7 @@ it('returns error for oauth user trying password login', function () {
         ]);
 });
 
-it('returns validation error if email is missing', function () {
+it('returns validation error if email is missing', function (): void {
     $response = $this->postJson('/api/v0/auth/login', [
         // 'email' => 'test@example.com', // Missing
         'password' => 'password123',
@@ -172,7 +172,7 @@ it('returns validation error if email is missing', function () {
         ->assertJsonValidationErrorFor('email');
 });
 
-it('returns validation error if password is missing', function () {
+it('returns validation error if password is missing', function (): void {
     $response = $this->postJson('/api/v0/auth/login', [
         'email' => 'test@example.com',
         // 'password' => 'password123', // Missing
@@ -183,7 +183,7 @@ it('returns validation error if password is missing', function () {
         ->assertJsonValidationErrorFor('password');
 });
 
-it('returns validation error if email format is invalid', function () {
+it('returns validation error if email format is invalid', function (): void {
     $response = $this->postJson('/api/v0/auth/login', [
         'email' => 'not-an-email',
         'password' => 'password123',
@@ -194,7 +194,7 @@ it('returns validation error if email format is invalid', function () {
         ->assertJsonValidationErrorFor('email');
 });
 
-it('returns validation error if abilities contains invalid value', function () {
+it('returns validation error if abilities contains invalid value', function (): void {
     User::factory()->create([
         'email' => 'test@example.com',
         'password' => Hash::make('password123'),
@@ -211,7 +211,7 @@ it('returns validation error if abilities contains invalid value', function () {
         ->assertJsonValidationErrorFor('abilities.1'); // Validation rule targets the specific invalid item
 });
 
-it('returns validation error if abilities is not an array', function () {
+it('returns validation error if abilities is not an array', function (): void {
     User::factory()->create([
         'email' => 'test@example.com',
         'password' => Hash::make('password123'),
@@ -228,7 +228,7 @@ it('returns validation error if abilities is not an array', function () {
         ->assertJsonValidationErrorFor('abilities');
 });
 
-it('allows an authenticated user to log out (revoke current token)', function () {
+it('allows an authenticated user to log out (revoke current token)', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('password123'),
     ]);
@@ -253,7 +253,7 @@ it('allows an authenticated user to log out (revoke current token)', function ()
     $this->assertDatabaseMissing('personal_access_tokens', ['id' => $tokenId]);
 });
 
-it('allows an authenticated user to log out from all devices (revoke all tokens)', function () {
+it('allows an authenticated user to log out from all devices (revoke all tokens)', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('password123'),
     ]);
@@ -282,7 +282,7 @@ it('allows an authenticated user to log out from all devices (revoke all tokens)
     expect($user->refresh()->tokens()->count())->toBe(0); // Another check
 });
 
-it('prevents unauthenticated users from accessing logout endpoints', function () {
+it('prevents unauthenticated users from accessing logout endpoints', function (): void {
     // No token provided
     $responseLogout = $this->postJson('/api/v0/auth/logout');
     $responseLogout
@@ -295,7 +295,7 @@ it('prevents unauthenticated users from accessing logout endpoints', function ()
         ->assertJsonFragment(['message' => 'Unauthenticated.']);
 });
 
-it('retrieves basic user details for authenticated user', function () {
+it('retrieves basic user details for authenticated user', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('password123'),
         'email_verified_at' => now(),
@@ -326,7 +326,7 @@ it('retrieves basic user details for authenticated user', function () {
         ->assertJsonMissingPath('data.role');
 });
 
-it('includes role when requested via include parameter', function () {
+it('includes role when requested via include parameter', function (): void {
     $role = UserRole::factory()->create(['name' => 'Tester']);
     $user = User::factory()->create([
         'password' => Hash::make('password123'),
@@ -361,7 +361,7 @@ it('includes role when requested via include parameter', function () {
         ->assertJsonPath('data.role.name', $role->name);
 });
 
-it('ignores invalid include parameters', function () {
+it('ignores invalid include parameters', function (): void {
     $role = UserRole::factory()->create(['name' => 'Tester']);
     $user = User::factory()->create([
         'password' => Hash::make('password123'),
@@ -396,7 +396,7 @@ it('ignores invalid include parameters', function () {
         ->assertJsonMissingPath('data.invalid_relation'); // Should not appear
 });
 
-it('should handle a null role gracefully when the role is requested', function () {
+it('should handle a null role gracefully when the role is requested', function (): void {
     $user = User::factory()->create([
         'password' => Hash::make('password123'),
         'user_role_id' => null,
@@ -425,7 +425,7 @@ it('should handle a null role gracefully when the role is requested', function (
         ->assertJsonMissingPath('data.role.id');
 });
 
-it('prevents unauthenticated users from accessing the user endpoint', function () {
+it('prevents unauthenticated users from accessing the user endpoint', function (): void {
     $response = $this->getJson('/api/v0/auth/user');
     $response
         ->assertStatus(Response::HTTP_UNAUTHORIZED)

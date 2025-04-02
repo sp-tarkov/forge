@@ -65,6 +65,9 @@
         "rector": [
             "./vendor/bin/rector process --dry-run --config=rector.php"
         ],
+        "rector-fix": [
+            "./vendor/bin/rector process --config=rector.php"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

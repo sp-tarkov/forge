@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Api\V0;
 
 use App\Enums\Api\V0\ApiErrorCode;
+use Exception;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
-it('returns correct json for not found exception', function () {
+it('returns correct json for not found exception', function (): void {
     $response = $this->getJson('/api/v0/this-route-does-not-exist');
 
     $response->assertStatus(Response::HTTP_NOT_FOUND)
@@ -19,8 +20,8 @@ it('returns correct json for not found exception', function () {
         ]);
 });
 
-it('returns correct json for validation exception', function () {
-    Route::post('/api/v0/test-validation', function () {
+it('returns correct json for validation exception', function (): void {
+    Route::post('/api/v0/test-validation', function (): void {
         request()->validate(['name' => 'required']);
     });
 
@@ -41,12 +42,12 @@ it('returns correct json for validation exception', function () {
         ->assertJsonValidationErrorFor('name');
 });
 
-it('returns correct json for generic server error', function () {
+it('returns correct json for generic server error', function (): void {
     config(['app.debug' => false]); // Temporarily disable debug.
 
     // Define a route that throws a generic exception.
-    Route::get('/api/v0/test-server-error', function () {
-        throw new \Exception('Something went really wrong!');
+    Route::get('/api/v0/test-server-error', function (): void {
+        throw new Exception('Something went really wrong!');
     });
 
     $response = $this->getJson('/api/v0/test-server-error');
@@ -71,7 +72,7 @@ it('returns correct json for generic server error', function () {
         ]);
 });
 
-it('does not return json for not found exceptions for non-api routes', function () {
+it('does not return json for not found exceptions for non-api routes', function (): void {
     $response = $this->get('/this-route-does-not-exist');
 
     $response->assertStatus(Response::HTTP_NOT_FOUND);

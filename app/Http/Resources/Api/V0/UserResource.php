@@ -7,6 +7,7 @@ namespace App\Http\Resources\Api\V0;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Override;
 
 /**
  * @mixin User
@@ -18,6 +19,7 @@ class UserResource extends JsonResource
      *
      * @return array<int|string, mixed>
      */
+    #[Override]
     public function toArray(Request $request): array
     {
         // Determine if the current request is for the authenticated user's own details
@@ -38,9 +40,7 @@ class UserResource extends JsonResource
             ]),
 
             // Conditionally include loaded relationships based on the 'include' parameter
-            'role' => $this->whenLoaded('role', function () {
-                return $this->role ? new RoleResource($this->role) : null;
-            }),
+            'role' => $this->whenLoaded('role', fn (): ?RoleResource => $this->role ? new RoleResource($this->role) : null),
         ];
     }
 }

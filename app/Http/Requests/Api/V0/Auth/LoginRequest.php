@@ -7,6 +7,7 @@ namespace App\Http\Requests\Api\V0\Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Override;
 
 class LoginRequest extends FormRequest
 {
@@ -43,6 +44,7 @@ class LoginRequest extends FormRequest
      *
      * @return array<string, string>
      */
+    #[Override]
     public function messages(): array
     {
         return [
@@ -60,12 +62,12 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => [
-                'description' => 'The user\'s email address.',
+                'description' => "The user's email address.",
                 'required' => true,
                 'example' => 'test@example.com',
             ],
             'password' => [
-                'description' => 'The user\'s password.',
+                'description' => "The user's password.",
                 'required' => true,
                 'example' => 'secretPassword',
             ],
