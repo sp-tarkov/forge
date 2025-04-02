@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Http\Filters\V1\QueryFilter;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use Database\Factories\ModFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -256,17 +254,6 @@ class Mod extends Model
             'testing' => config('filesystems.asset_upload_disk.testing', 'public'),
             default => config('filesystems.asset_upload_disk.local', 'public'),
         };
-    }
-
-    /**
-     * Scope a query by applying QueryFilter filters.
-     *
-     * @param  Builder<Model>  $builder
-     * @return Builder<Model>
-     */
-    public function scopeFilter(Builder $builder, QueryFilter $queryFilter): Builder
-    {
-        return $queryFilter->apply($builder);
     }
 
     /**
