@@ -13,6 +13,7 @@ caddy
 /data
 node_modules
 /public/build
+/public/docs
 /public/hot
 /public/storage
 /storage/*.key
@@ -32,4 +33,3 @@ yarn-error.log
 .scribe
 .rector
 /.nova
-/public/docs
