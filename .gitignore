@@ -32,3 +32,4 @@ yarn-error.log
 .scribe
 .rector
 /.nova
+/public/docs

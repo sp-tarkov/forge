@@ -10,23 +10,23 @@
     ],
     "info": {
         "name": "The Forge API Documentation",
-        "_postman_id": "d8c67322-662b-4802-81aa-c74a269202f1",
+        "_postman_id": "8c7fa6ff-ad5c-49e6-afb1-8630e31f7bae",
         "description": "The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Craft your vision. Transform the game.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
     "item": [
         {
             "name": "Authentication",
-            "description": "",
+            "description": "\nEndpoints for user authentication and token management.",
             "item": [
                 {
-                    "name": "Login",
+                    "name": "User Login & Token Creation",
                     "request": {
                         "url": {
                             "host": "{{baseUrl}}",
-                            "path": "api\/login",
+                            "path": "api\/v0\/auth\/login",
                             "query": [],
-                            "raw": "{{baseUrl}}\/api\/login"
+                            "raw": "{{baseUrl}}\/api\/v0\/auth\/login"
                         },
                         "method": "POST",
                         "header": [
@@ -41,9 +41,65 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"email\":\"orn.leann@example.org\",\"password\":\"6JSH`@|8&D!+fCY_?k2O\",\"token_name\":\"Dynamic API Token\"}"
+                            "raw": "{\"email\":\"test@example.com\",\"password\":\"secretPassword\",\"token_name\":\"my-data-script-token\",\"abilities\":[\"update\"]}"
                         },
-                        "description": "Authenticates the user and returns a read-only API token. This API token can then be saved and used for future\nrequests that require authentication. <aside class=\"warning\">This method is made available for mod authors to\nincorporate into their mods so that users can easily authenticate using their own API token. For typical API use,\nyou should log into the website, create an API token, and use that token for your API requests.<\/aside>",
+                        "description": "Authenticates a user with email and password and returns an API token. Users who registered via OAuth (and\nhaven't set a password) cannot use this endpoint."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n    \"success\": true,\n    \"data\": { \"token\": \"{YOUR_API_TOKEN}\" }\n}",
+                            "name": "Successful Login"
+                        },
+                        {
+                            "header": [],
+                            "code": 401,
+                            "body": "{\n    \"success\": false,\n    \"code\": \"UNAUTHENTICATED\",\n    \"message\": \"Invalid credentials provided.\"\n}",
+                            "name": "Invalid Credentials"
+                        },
+                        {
+                            "header": [],
+                            "code": 403,
+                            "body": "{\n    \"success\": false,\n    \"code\": \"PASSWORD_LOGIN_UNAVAILABLE\",\n    \"message\": \"Password login is not available for accounts created via OAuth. Please use the original login method or set a password for your account.\"\n}",
+                            "name": "OAuth User Attempt"
+                        },
+                        {
+                            "header": [],
+                            "code": 422,
+                            "body": "{\n    \"success\": false,\n    \"code\": \"VALIDATION_FAILED\",\n    \"message\": \"Validation failed.\",\n    \"errors\": {\n        \"email\": [ \"The email field is required.\" ],\n        \"password\": [ \"The password field is required.\" ],\n        \"abilities.0\": [ \"The selected ability read-invalid is invalid. Allowed abilities are: create, read, update, delete\" ]\n    }\n}",
+                            "name": "Validation Error"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "General",
+            "description": "\nAPIs for general application status and information.",
+            "item": [
+                {
+                    "name": "Check API Health",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v0\/ping",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v0\/ping"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Returns a simple 'pong' message to indicate that the API endpoint\nis available and responding correctly. This endpoint is typically used\nfor health checks or basic connectivity tests.\n\nIt does not require authentication.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -52,422 +108,8 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"message\":\"authenticated\",\"data\":{\"token\":\"YOUR_API_KEY\"},\"status\":200}",
-                            "name": "Authenticated successfully"
-                        },
-                        {
-                            "header": [],
-                            "code": 401,
-                            "body": "{\"message\":\"invalid credentials\",\"status\":401}",
-                            "name": "Invalid credentials"
-                        }
-                    ]
-                },
-                {
-                    "name": "Logout",
-                    "request": {
-                        "url": {
-                            "host": "{{baseUrl}}",
-                            "path": "api\/logout",
-                            "query": [],
-                            "raw": "{{baseUrl}}\/api\/logout"
-                        },
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application\/json"
-                            },
-                            {
-                                "key": "Accept",
-                                "value": "application\/json"
-                            }
-                        ],
-                        "body": null,
-                        "description": "Destroys the user's current API token, effectively logging them out."
-                    },
-                    "response": [
-                        {
-                            "header": [],
-                            "code": 200,
-                            "body": "{\"message\":\"success\",\"status\":200}",
-                            "name": "Token destroyed successfully"
-                        }
-                    ]
-                },
-                {
-                    "name": "Logout All",
-                    "request": {
-                        "url": {
-                            "host": "{{baseUrl}}",
-                            "path": "api\/logout\/all",
-                            "query": [],
-                            "raw": "{{baseUrl}}\/api\/logout\/all"
-                        },
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application\/json"
-                            },
-                            {
-                                "key": "Accept",
-                                "value": "application\/json"
-                            }
-                        ],
-                        "body": null,
-                        "description": "Destroys all the user's API tokens, effectively logging everyone out of the account."
-                    },
-                    "response": [
-                        {
-                            "header": [],
-                            "code": 200,
-                            "body": "{\"message\":\"success\",\"status\":200}",
-                            "name": "Tokens destroyed successfully"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "Mods",
-            "description": "",
-            "item": [
-                {
-                    "name": "Get Mods",
-                    "request": {
-                        "url": {
-                            "host": "{{baseUrl}}",
-                            "path": "api\/v0\/mods",
-                            "query": [
-                                {
-                                    "key": "include",
-                                    "value": "users%2Cversions%2Clicense",
-                                    "description": "The relationships to include within the `includes` key. By default no relationships are automatically included.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bid%5D",
-                                    "value": "5%2C10%2C15",
-                                    "description": "Filter by the `id`. Select multiple by separating the IDs with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bhub_id%5D",
-                                    "value": "20",
-                                    "description": "Filter by the `hub_id` attribute. Select multiple by separating the IDs with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bname%5D",
-                                    "value": "%2ASAIN%2A",
-                                    "description": "Filter by the `name` attribute. Use `*` as the wildcard character.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bslug%5D",
-                                    "value": "%2Araid-times",
-                                    "description": "Filter by the `slug` attribute. Use `*` as the wildcard character.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bteaser%5D",
-                                    "value": "%2Aweighted%2Arandom%2Atimes%2A",
-                                    "description": "Filter by the `teaser` attribute. Use `*` as the wildcard character.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bsource_code_link%5D",
-                                    "value": "%2Ahttps%2A.net%2A",
-                                    "description": "Filter by the `source_code_link` attribute. Use `*` as the wildcard character.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bfeatured%5D",
-                                    "value": "true",
-                                    "description": "Filter by the `featured` attribute. All \"truthy\" or \"falsy\" values are supported.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bcontains_ads%5D",
-                                    "value": "true",
-                                    "description": "Filter by the `contains_ads` attribute. All \"truthy\" or \"falsy\" values are supported.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bcontains_ai_content%5D",
-                                    "value": "true",
-                                    "description": "Filter by the `contains_ai_content` attribute. All \"truthy\" or \"falsy\" values are supported.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bcreated_at%5D",
-                                    "value": "2023-12-31%2C2024-12-31",
-                                    "description": "Filter by the `created_at` attribute. Ranges are possible by separating the dates with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bupdated_at%5D",
-                                    "value": "2023-12-31%2C2024-12-31",
-                                    "description": "Filter by the `updated_at` attribute. Ranges are possible by separating the dates with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bpublished_at%5D",
-                                    "value": "2023-12-31%2C2024-12-31",
-                                    "description": "Filter by the `published_at` attribute. Ranges are possible by seperating the dates with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "sort",
-                                    "value": "-featured%2Cname",
-                                    "description": "Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC.",
-                                    "disabled": false
-                                }
-                            ],
-                            "raw": "{{baseUrl}}\/api\/v0\/mods?include=users%2Cversions%2Clicense&filter%5Bid%5D=5%2C10%2C15&filter%5Bhub_id%5D=20&filter%5Bname%5D=%2ASAIN%2A&filter%5Bslug%5D=%2Araid-times&filter%5Bteaser%5D=%2Aweighted%2Arandom%2Atimes%2A&filter%5Bsource_code_link%5D=%2Ahttps%2A.net%2A&filter%5Bfeatured%5D=true&filter%5Bcontains_ads%5D=true&filter%5Bcontains_ai_content%5D=true&filter%5Bcreated_at%5D=2023-12-31%2C2024-12-31&filter%5Bupdated_at%5D=2023-12-31%2C2024-12-31&filter%5Bpublished_at%5D=2023-12-31%2C2024-12-31&sort=-featured%2Cname"
-                        },
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application\/json"
-                            },
-                            {
-                                "key": "Accept",
-                                "value": "application\/json"
-                            }
-                        ],
-                        "body": null,
-                        "description": "List, filter, and sort basic information about mods."
-                    },
-                    "response": [
-                        {
-                            "header": [
-                                {
-                                    "key": "cache-control",
-                                    "value": "no-cache, private"
-                                },
-                                {
-                                    "key": "content-type",
-                                    "value": "application\/json"
-                                },
-                                {
-                                    "key": "access-control-allow-origin",
-                                    "value": "*"
-                                }
-                            ],
-                            "code": 401,
-                            "body": "{\"message\":\"Unauthenticated.\"}",
-                            "name": ""
-                        }
-                    ]
-                },
-                {
-                    "name": "Get Mod",
-                    "request": {
-                        "url": {
-                            "host": "{{baseUrl}}",
-                            "path": "api\/v0\/mods\/:id",
-                            "query": [
-                                {
-                                    "key": "include",
-                                    "value": "users%2Cversions%2Clicense",
-                                    "description": "The relationships to include within the `includes` key. By default no relationships are automatically included.",
-                                    "disabled": false
-                                }
-                            ],
-                            "raw": "{{baseUrl}}\/api\/v0\/mods\/:id?include=users%2Cversions%2Clicense",
-                            "variable": [
-                                {
-                                    "id": "id",
-                                    "key": "id",
-                                    "value": "558",
-                                    "description": "The ID of the mod."
-                                }
-                            ]
-                        },
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application\/json"
-                            },
-                            {
-                                "key": "Accept",
-                                "value": "application\/json"
-                            }
-                        ],
-                        "body": null,
-                        "description": "Display more detailed information about a specific mod."
-                    },
-                    "response": [
-                        {
-                            "header": [
-                                {
-                                    "key": "cache-control",
-                                    "value": "no-cache, private"
-                                },
-                                {
-                                    "key": "content-type",
-                                    "value": "application\/json"
-                                },
-                                {
-                                    "key": "access-control-allow-origin",
-                                    "value": "*"
-                                }
-                            ],
-                            "code": 401,
-                            "body": "{\"message\":\"Unauthenticated.\"}",
-                            "name": ""
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "Users",
-            "description": "",
-            "item": [
-                {
-                    "name": "Get Users",
-                    "request": {
-                        "url": {
-                            "host": "{{baseUrl}}",
-                            "path": "api\/v0\/users",
-                            "query": [
-                                {
-                                    "key": "include",
-                                    "value": "user_role",
-                                    "description": "The relationships to include within the `includes` key. By default no relationships are automatically included.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bid%5D",
-                                    "value": "5%2C10%2C15",
-                                    "description": "Filter by the `id`. Select multiple by separating the IDs with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bname%5D",
-                                    "value": "%2Afringe",
-                                    "description": "Filter by the `name` attribute. Use `*` as the wildcard character.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bcreated_at%5D",
-                                    "value": "2023-12-31%2C2024-12-31",
-                                    "description": "Filter by the `created_at` attribute. Ranges are possible by separating the dates with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "filter%5Bupdated_at%5D",
-                                    "value": "2023-12-31%2C2024-12-31",
-                                    "description": "Filter by the `updated_at` attribute. Ranges are possible by separating the dates with a comma.",
-                                    "disabled": false
-                                },
-                                {
-                                    "key": "sort",
-                                    "value": "created_at%2C-name",
-                                    "description": "Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC.",
-                                    "disabled": false
-                                }
-                            ],
-                            "raw": "{{baseUrl}}\/api\/v0\/users?include=user_role&filter%5Bid%5D=5%2C10%2C15&filter%5Bname%5D=%2Afringe&filter%5Bcreated_at%5D=2023-12-31%2C2024-12-31&filter%5Bupdated_at%5D=2023-12-31%2C2024-12-31&sort=created_at%2C-name"
-                        },
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application\/json"
-                            },
-                            {
-                                "key": "Accept",
-                                "value": "application\/json"
-                            }
-                        ],
-                        "body": null,
-                        "description": "List, filter, and sort basic information about users."
-                    },
-                    "response": [
-                        {
-                            "header": [
-                                {
-                                    "key": "cache-control",
-                                    "value": "no-cache, private"
-                                },
-                                {
-                                    "key": "content-type",
-                                    "value": "application\/json"
-                                },
-                                {
-                                    "key": "access-control-allow-origin",
-                                    "value": "*"
-                                }
-                            ],
-                            "code": 401,
-                            "body": "{\"message\":\"Unauthenticated.\"}",
-                            "name": ""
-                        }
-                    ]
-                },
-                {
-                    "name": "Get User",
-                    "request": {
-                        "url": {
-                            "host": "{{baseUrl}}",
-                            "path": "api\/v0\/users\/:id",
-                            "query": [
-                                {
-                                    "key": "include",
-                                    "value": "user_role",
-                                    "description": "The relationships to include within the `includes` key. By default no relationships are automatically included.",
-                                    "disabled": false
-                                }
-                            ],
-                            "raw": "{{baseUrl}}\/api\/v0\/users\/:id?include=user_role",
-                            "variable": [
-                                {
-                                    "id": "id",
-                                    "key": "id",
-                                    "value": "1",
-                                    "description": "The ID of the user."
-                                }
-                            ]
-                        },
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application\/json"
-                            },
-                            {
-                                "key": "Accept",
-                                "value": "application\/json"
-                            }
-                        ],
-                        "body": null,
-                        "description": "Display more detailed information about a specific user."
-                    },
-                    "response": [
-                        {
-                            "header": [
-                                {
-                                    "key": "cache-control",
-                                    "value": "no-cache, private"
-                                },
-                                {
-                                    "key": "content-type",
-                                    "value": "application\/json"
-                                },
-                                {
-                                    "key": "access-control-allow-origin",
-                                    "value": "*"
-                                }
-                            ],
-                            "code": 401,
-                            "body": "{\"message\":\"Unauthenticated.\"}",
-                            "name": ""
+                            "body": "{\n    \"success\": true,\n    \"data\": { \"message\": \"pong\" }\n}",
+                            "name": "Successful Ping"
                         }
                     ]
                 }

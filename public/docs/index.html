@@ -75,40 +75,18 @@
                     <a href="#authentication">Authentication</a>
                 </li>
                                     <ul id="tocify-subheader-authentication" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="authentication-POSTapi-login">
-                                <a href="#authentication-POSTapi-login">Login</a>
-                            </li>
-                                                                                <li class="tocify-item level-2" data-unique="authentication-DELETEapi-logout">
-                                <a href="#authentication-DELETEapi-logout">Logout</a>
-                            </li>
-                                                                                <li class="tocify-item level-2" data-unique="authentication-DELETEapi-logout-all">
-                                <a href="#authentication-DELETEapi-logout-all">Logout All</a>
+                                                    <li class="tocify-item level-2" data-unique="authentication-POSTapi-v0-auth-login">
+                                <a href="#authentication-POSTapi-v0-auth-login">User Login & Token Creation</a>
                             </li>
                                                                         </ul>
                             </ul>
-                    <ul id="tocify-header-mods" class="tocify-header">
-                <li class="tocify-item level-1" data-unique="mods">
-                    <a href="#mods">Mods</a>
+                    <ul id="tocify-header-general" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="general">
+                    <a href="#general">General</a>
                 </li>
-                                    <ul id="tocify-subheader-mods" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="mods-GETapi-v0-mods">
-                                <a href="#mods-GETapi-v0-mods">Get Mods</a>
-                            </li>
-                                                                                <li class="tocify-item level-2" data-unique="mods-GETapi-v0-mods--id-">
-                                <a href="#mods-GETapi-v0-mods--id-">Get Mod</a>
-                            </li>
-                                                                        </ul>
-                            </ul>
-                    <ul id="tocify-header-users" class="tocify-header">
-                <li class="tocify-item level-1" data-unique="users">
-                    <a href="#users">Users</a>
-                </li>
-                                    <ul id="tocify-subheader-users" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="users-GETapi-v0-users">
-                                <a href="#users-GETapi-v0-users">Get Users</a>
-                            </li>
-                                                                                <li class="tocify-item level-2" data-unique="users-GETapi-v0-users--id-">
-                                <a href="#users-GETapi-v0-users--id-">Get User</a>
+                                    <ul id="tocify-subheader-general" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="general-GETapi-v0-ping">
+                                <a href="#general-GETapi-v0-ping">Check API Health</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -121,7 +99,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: March 10, 2025</li>
+        <li>Last updated: April 2, 2025</li>
     </ul>
 </div>
 
@@ -142,49 +120,56 @@
 
         <h1 id="authentication">Authentication</h1>
 
-    
+    <p>Endpoints for user authentication and token management.</p>
 
-                                <h2 id="authentication-POSTapi-login">Login</h2>
+                                <h2 id="authentication-POSTapi-v0-auth-login">User Login &amp; Token Creation</h2>
 
 <p>
+<small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Authenticates the user and returns a read-only API token. This API token can then be saved and used for future
-requests that require authentication. <aside class="warning">This method is made available for mod authors to
-incorporate into their mods so that users can easily authenticate using their own API token. For typical API use,
-you should log into the website, create an API token, and use that token for your API requests.</aside></p>
+<p>Authenticates a user with email and password and returns an API token. Users who registered via OAuth (and
+haven't set a password) cannot use this endpoint.</p>
 
-<span id="example-requests-POSTapi-login">
+<span id="example-requests-POSTapi-v0-auth-login">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://forge.sp-tarkov.com/api/login" \
+    "https://forge.sp-tarkov.com/api/v0/auth/login" \
+    --header "Authorization: Bearer YOUR_API_KEY" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"email\": \"orn.leann@example.org\",
-    \"password\": \"6JSH`@|8&amp;D!+fCY_?k2O\",
-    \"token_name\": \"Dynamic API Token\"
+    \"email\": \"test@example.com\",
+    \"password\": \"secretPassword\",
+    \"token_name\": \"my-data-script-token\",
+    \"abilities\": [
+        \"update\"
+    ]
 }"
 </code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://forge.sp-tarkov.com/api/login"
+    "https://forge.sp-tarkov.com/api/v0/auth/login"
 );
 
 const headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
     "Content-Type": "application/json",
     "Accept": "application/json",
 };
 
 let body = {
-    "email": "orn.leann@example.org",
-    "password": "6JSH`@|8&amp;D!+fCY_?k2O",
-    "token_name": "Dynamic API Token"
+    "email": "test@example.com",
+    "password": "secretPassword",
+    "token_name": "my-data-script-token",
+    "abilities": [
+        "update"
+    ]
 };
 
 fetch(url, {
@@ -196,18 +181,22 @@ fetch(url, {
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://forge.sp-tarkov.com/api/login';
+$url = 'https://forge.sp-tarkov.com/api/v0/auth/login';
 $response = $client-&gt;post(
     $url,
     [
         'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer YOUR_API_KEY',
             'Content-Type' =&gt; 'application/json',
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'email' =&gt; 'orn.leann@example.org',
-            'password' =&gt; '6JSH`@|8&amp;D!+fCY_?k2O',
-            'token_name' =&gt; 'Dynamic API Token',
+            'email' =&gt; 'test@example.com',
+            'password' =&gt; 'secretPassword',
+            'token_name' =&gt; 'my-data-script-token',
+            'abilities' =&gt; [
+                'update',
+            ],
         ],
     ]
 );
@@ -219,13 +208,17 @@ print_r(json_decode((string) $body));</code></pre></div>
     <pre><code class="language-python">import requests
 import json
 
-url = 'https://forge.sp-tarkov.com/api/login'
+url = 'https://forge.sp-tarkov.com/api/v0/auth/login'
 payload = {
-    "email": "orn.leann@example.org",
-    "password": "6JSH`@|8&amp;D!+fCY_?k2O",
-    "token_name": "Dynamic API Token"
+    "email": "test@example.com",
+    "password": "secretPassword",
+    "token_name": "my-data-script-token",
+    "abilities": [
+        "update"
+    ]
 }
 headers = {
+  'Authorization': 'Bearer YOUR_API_KEY',
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 }
@@ -235,68 +228,101 @@ response.json()</code></pre></div>
 
 </span>
 
-<span id="example-responses-POSTapi-login">
+<span id="example-responses-POSTapi-v0-auth-login">
             <blockquote>
-            <p>Example response (200, Authenticated successfully):</p>
+            <p>Example response (200, Successful Login):</p>
         </blockquote>
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;authenticated&quot;,
+    &quot;success&quot;: true,
     &quot;data&quot;: {
-        &quot;token&quot;: &quot;YOUR_API_KEY&quot;
-    },
-    &quot;status&quot;: 200
+        &quot;token&quot;: &quot;{YOUR_API_TOKEN}&quot;
+    }
 }</code>
  </pre>
             <blockquote>
-            <p>Example response (401, Invalid credentials):</p>
+            <p>Example response (401, Invalid Credentials):</p>
         </blockquote>
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;invalid credentials&quot;,
-    &quot;status&quot;: 401
+    &quot;success&quot;: false,
+    &quot;code&quot;: &quot;UNAUTHENTICATED&quot;,
+    &quot;message&quot;: &quot;Invalid credentials provided.&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (403, OAuth User Attempt):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;code&quot;: &quot;PASSWORD_LOGIN_UNAVAILABLE&quot;,
+    &quot;message&quot;: &quot;Password login is not available for accounts created via OAuth. Please use the original login method or set a password for your account.&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (422, Validation Error):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;code&quot;: &quot;VALIDATION_FAILED&quot;,
+    &quot;message&quot;: &quot;Validation failed.&quot;,
+    &quot;errors&quot;: {
+        &quot;email&quot;: [
+            &quot;The email field is required.&quot;
+        ],
+        &quot;password&quot;: [
+            &quot;The password field is required.&quot;
+        ],
+        &quot;abilities.0&quot;: [
+            &quot;The selected ability read-invalid is invalid. Allowed abilities are: create, read, update, delete&quot;
+        ]
+    }
 }</code>
  </pre>
     </span>
-<span id="execution-results-POSTapi-login" hidden>
+<span id="execution-results-POSTapi-v0-auth-login" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-POSTapi-login"></span>:
+                id="execution-response-status-POSTapi-v0-auth-login"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-POSTapi-login"
+    <pre class="json"><code id="execution-response-content-POSTapi-v0-auth-login"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-POSTapi-login" hidden>
+<span id="execution-error-POSTapi-v0-auth-login" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-POSTapi-login">
+    <pre><code id="execution-error-message-POSTapi-v0-auth-login">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-POSTapi-login" data-method="POST"
-      data-path="api/login"
-      data-authed="0"
+<form id="form-POSTapi-v0-auth-login" data-method="POST"
+      data-path="api/v0/auth/login"
+      data-authed="1"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('POSTapi-login', this);">
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v0-auth-login', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-POSTapi-login"
-                    onclick="tryItOut('POSTapi-login');">Try it out ⚡
+                    id="btn-tryout-POSTapi-v0-auth-login"
+                    onclick="tryItOut('POSTapi-v0-auth-login');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-POSTapi-login"
-                    onclick="cancelTryOut('POSTapi-login');" hidden>Cancel 🛑
+                    id="btn-canceltryout-POSTapi-v0-auth-login"
+                    onclick="cancelTryOut('POSTapi-v0-auth-login');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-POSTapi-login"
+                    id="btn-executetryout-POSTapi-v0-auth-login"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
@@ -304,15 +330,26 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </h3>
             <p>
             <small class="badge badge-black">POST</small>
-            <b><code>api/login</code></b>
+            <b><code>api/v0/auth/login</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="POSTapi-v0-auth-login"
+               value="Bearer YOUR_API_KEY"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer YOUR_API_KEY</code></p>
+            </div>
                                 <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="POSTapi-login"
+                              name="Content-Type"                data-endpoint="POSTapi-v0-auth-login"
                value="application/json"
                data-component="header">
     <br>
@@ -323,7 +360,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="POSTapi-login"
+                              name="Accept"                data-endpoint="POSTapi-v0-auth-login"
                value="application/json"
                data-component="header">
     <br>
@@ -335,90 +372,99 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small>string</small>&nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="email"                data-endpoint="POSTapi-login"
-               value="orn.leann@example.org"
+                              name="email"                data-endpoint="POSTapi-v0-auth-login"
+               value="test@example.com"
                data-component="body">
     <br>
-<p>Must be a valid email address. Example: <code>orn.leann@example.org</code></p>
+<p>The user's email address. Must be a valid email address. The <code>email</code> of an existing record in the users table. Example: <code>test@example.com</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
 <small>string</small>&nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="password"                data-endpoint="POSTapi-login"
-               value="6JSH`@|8&D!+fCY_?k2O"
+                              name="password"                data-endpoint="POSTapi-v0-auth-login"
+               value="secretPassword"
                data-component="body">
     <br>
-<p>Example: <code>6JSH</code>@|8&amp;D!+fCY_?k2O`</p>
+<p>The user's password. Example: <code>secretPassword</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>token_name</code></b>&nbsp;&nbsp;
 <small>string</small>&nbsp;
 <i>optional</i> &nbsp;
                 <input type="text" style="display: none"
-                              name="token_name"                data-endpoint="POSTapi-login"
-               value="Dynamic API Token"
+                              name="token_name"                data-endpoint="POSTapi-v0-auth-login"
+               value="my-data-script-token"
                data-component="body">
     <br>
-<p>The name of the API token. Example: <code>Dynamic API Token</code></p>
+<p>A descriptive name for the API token. Must not be greater than 255 characters. Example: <code>my-data-script-token</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>abilities</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+                <input type="text" style="display: none"
+                              name="abilities[0]"                data-endpoint="POSTapi-v0-auth-login"
+               data-component="body">
+        <input type="text" style="display: none"
+               name="abilities[1]"                data-endpoint="POSTapi-v0-auth-login"
+               data-component="body">
+    <br>
+
+Must be one of:
+<ul style="list-style-type: square;"><li><code>create</code></li> <li><code>read</code></li> <li><code>update</code></li> <li><code>delete</code></li></ul>
         </div>
         </form>
 
-    <h3>Response</h3>
-    <h4 class="fancy-heading-panel"><b>Response Fields</b></h4>
-    <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
- &nbsp;
-<br>
-<p>The newly created read-only API token to use for future authenticated requests.</p>
-        </div>
-                        <h2 id="authentication-DELETEapi-logout">Logout</h2>
+                <h1 id="general">General</h1>
+
+    <p>APIs for general application status and information.</p>
+
+                                <h2 id="general-GETapi-v0-ping">Check API Health</h2>
 
 <p>
-<small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Destroys the user's current API token, effectively logging them out.</p>
+<p>Returns a simple 'pong' message to indicate that the API endpoint
+is available and responding correctly. This endpoint is typically used
+for health checks or basic connectivity tests.</p>
+<p>It does not require authentication.</p>
 
-<span id="example-requests-DELETEapi-logout">
+<span id="example-requests-GETapi-v0-ping">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
-    <pre><code class="language-bash">curl --request DELETE \
-    "https://forge.sp-tarkov.com/api/logout" \
-    --header "Authorization: Bearer YOUR_API_KEY" \
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://forge.sp-tarkov.com/api/v0/ping" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://forge.sp-tarkov.com/api/logout"
+    "https://forge.sp-tarkov.com/api/v0/ping"
 );
 
 const headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
     "Content-Type": "application/json",
     "Accept": "application/json",
 };
 
 fetch(url, {
-    method: "DELETE",
+    method: "GET",
     headers,
 }).then(response =&gt; response.json());</code></pre></div>
 
 
 <div class="php-example">
     <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://forge.sp-tarkov.com/api/logout';
-$response = $client-&gt;delete(
+$url = 'https://forge.sp-tarkov.com/api/v0/ping';
+$response = $client-&gt;get(
     $url,
     [
         'headers' =&gt; [
-            'Authorization' =&gt; 'Bearer YOUR_API_KEY',
             'Content-Type' =&gt; 'application/json',
             'Accept' =&gt; 'application/json',
         ],
@@ -432,94 +478,84 @@ print_r(json_decode((string) $body));</code></pre></div>
     <pre><code class="language-python">import requests
 import json
 
-url = 'https://forge.sp-tarkov.com/api/logout'
+url = 'https://forge.sp-tarkov.com/api/v0/ping'
 headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 }
 
-response = requests.request('DELETE', url, headers=headers)
+response = requests.request('GET', url, headers=headers)
 response.json()</code></pre></div>
 
 </span>
 
-<span id="example-responses-DELETEapi-logout">
+<span id="example-responses-GETapi-v0-ping">
             <blockquote>
-            <p>Example response (200, Token destroyed successfully):</p>
+            <p>Example response (200, Successful Ping):</p>
         </blockquote>
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;success&quot;,
-    &quot;status&quot;: 200
+    &quot;success&quot;: true,
+    &quot;data&quot;: {
+        &quot;message&quot;: &quot;pong&quot;
+    }
 }</code>
  </pre>
     </span>
-<span id="execution-results-DELETEapi-logout" hidden>
+<span id="execution-results-GETapi-v0-ping" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-DELETEapi-logout"></span>:
+                id="execution-response-status-GETapi-v0-ping"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-DELETEapi-logout"
+    <pre class="json"><code id="execution-response-content-GETapi-v0-ping"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-DELETEapi-logout" hidden>
+<span id="execution-error-GETapi-v0-ping" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-DELETEapi-logout">
+    <pre><code id="execution-error-message-GETapi-v0-ping">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-DELETEapi-logout" data-method="DELETE"
-      data-path="api/logout"
-      data-authed="1"
+<form id="form-GETapi-v0-ping" data-method="GET"
+      data-path="api/v0/ping"
+      data-authed="0"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('DELETEapi-logout', this);">
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v0-ping', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-DELETEapi-logout"
-                    onclick="tryItOut('DELETEapi-logout');">Try it out ⚡
+                    id="btn-tryout-GETapi-v0-ping"
+                    onclick="tryItOut('GETapi-v0-ping');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-DELETEapi-logout"
-                    onclick="cancelTryOut('DELETEapi-logout');" hidden>Cancel 🛑
+                    id="btn-canceltryout-GETapi-v0-ping"
+                    onclick="cancelTryOut('GETapi-v0-ping');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-DELETEapi-logout"
+                    id="btn-executetryout-GETapi-v0-ping"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
             </button>
             </h3>
             <p>
-            <small class="badge badge-red">DELETE</small>
-            <b><code>api/logout</code></b>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v0/ping</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="DELETEapi-logout"
-               value="Bearer YOUR_API_KEY"
-               data-component="header">
-    <br>
-<p>Example: <code>Bearer YOUR_API_KEY</code></p>
-            </div>
                                 <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="DELETEapi-logout"
+                              name="Content-Type"                data-endpoint="GETapi-v0-ping"
                value="application/json"
                data-component="header">
     <br>
@@ -530,1267 +566,13 @@ You can check the Dev Tools console for debugging information.</code></pre>
 &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="DELETEapi-logout"
+                              name="Accept"                data-endpoint="GETapi-v0-ping"
                value="application/json"
                data-component="header">
     <br>
 <p>Example: <code>application/json</code></p>
             </div>
                         </form>
-
-                    <h2 id="authentication-DELETEapi-logout-all">Logout All</h2>
-
-<p>
-<small class="badge badge-darkred">requires authentication</small>
-</p>
-
-<p>Destroys all the user's API tokens, effectively logging everyone out of the account.</p>
-
-<span id="example-requests-DELETEapi-logout-all">
-<blockquote>Example request:</blockquote>
-
-
-<div class="bash-example">
-    <pre><code class="language-bash">curl --request DELETE \
-    "https://forge.sp-tarkov.com/api/logout/all" \
-    --header "Authorization: Bearer YOUR_API_KEY" \
-    --header "Content-Type: application/json" \
-    --header "Accept: application/json"</code></pre></div>
-
-
-<div class="javascript-example">
-    <pre><code class="language-javascript">const url = new URL(
-    "https://forge.sp-tarkov.com/api/logout/all"
-);
-
-const headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-};
-
-fetch(url, {
-    method: "DELETE",
-    headers,
-}).then(response =&gt; response.json());</code></pre></div>
-
-
-<div class="php-example">
-    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://forge.sp-tarkov.com/api/logout/all';
-$response = $client-&gt;delete(
-    $url,
-    [
-        'headers' =&gt; [
-            'Authorization' =&gt; 'Bearer YOUR_API_KEY',
-            'Content-Type' =&gt; 'application/json',
-            'Accept' =&gt; 'application/json',
-        ],
-    ]
-);
-$body = $response-&gt;getBody();
-print_r(json_decode((string) $body));</code></pre></div>
-
-
-<div class="python-example">
-    <pre><code class="language-python">import requests
-import json
-
-url = 'https://forge.sp-tarkov.com/api/logout/all'
-headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-response = requests.request('DELETE', url, headers=headers)
-response.json()</code></pre></div>
-
-</span>
-
-<span id="example-responses-DELETEapi-logout-all">
-            <blockquote>
-            <p>Example response (200, Tokens destroyed successfully):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;success&quot;,
-    &quot;status&quot;: 200
-}</code>
- </pre>
-    </span>
-<span id="execution-results-DELETEapi-logout-all" hidden>
-    <blockquote>Received response<span
-                id="execution-response-status-DELETEapi-logout-all"></span>:
-    </blockquote>
-    <pre class="json"><code id="execution-response-content-DELETEapi-logout-all"
-      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
-</span>
-<span id="execution-error-DELETEapi-logout-all" hidden>
-    <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-DELETEapi-logout-all">
-
-Tip: Check that you&#039;re properly connected to the network.
-If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
-You can check the Dev Tools console for debugging information.</code></pre>
-</span>
-<form id="form-DELETEapi-logout-all" data-method="DELETE"
-      data-path="api/logout/all"
-      data-authed="1"
-      data-hasfiles="0"
-      data-isarraybody="0"
-      autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('DELETEapi-logout-all', this);">
-    <h3>
-        Request&nbsp;&nbsp;&nbsp;
-                    <button type="button"
-                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-DELETEapi-logout-all"
-                    onclick="tryItOut('DELETEapi-logout-all');">Try it out ⚡
-            </button>
-            <button type="button"
-                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-DELETEapi-logout-all"
-                    onclick="cancelTryOut('DELETEapi-logout-all');" hidden>Cancel 🛑
-            </button>&nbsp;&nbsp;
-            <button type="submit"
-                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-DELETEapi-logout-all"
-                    data-initial-text="Send Request 💥"
-                    data-loading-text="⏱ Sending..."
-                    hidden>Send Request 💥
-            </button>
-            </h3>
-            <p>
-            <small class="badge badge-red">DELETE</small>
-            <b><code>api/logout/all</code></b>
-        </p>
-                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="DELETEapi-logout-all"
-               value="Bearer YOUR_API_KEY"
-               data-component="header">
-    <br>
-<p>Example: <code>Bearer YOUR_API_KEY</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="DELETEapi-logout-all"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="DELETEapi-logout-all"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                        </form>
-
-                <h1 id="mods">Mods</h1>
-
-    
-
-                                <h2 id="mods-GETapi-v0-mods">Get Mods</h2>
-
-<p>
-<small class="badge badge-darkred">requires authentication</small>
-</p>
-
-<p>List, filter, and sort basic information about mods.</p>
-
-<span id="example-requests-GETapi-v0-mods">
-<blockquote>Example request:</blockquote>
-
-
-<div class="bash-example">
-    <pre><code class="language-bash">curl --request GET \
-    --get "https://forge.sp-tarkov.com/api/v0/mods?include=users%2Cversions%2Clicense&amp;filter%5Bid%5D=5%2C10%2C15&amp;filter%5Bhub_id%5D=20&amp;filter%5Bname%5D=%2ASAIN%2A&amp;filter%5Bslug%5D=%2Araid-times&amp;filter%5Bteaser%5D=%2Aweighted%2Arandom%2Atimes%2A&amp;filter%5Bsource_code_link%5D=%2Ahttps%2A.net%2A&amp;filter%5Bfeatured%5D=true&amp;filter%5Bcontains_ads%5D=true&amp;filter%5Bcontains_ai_content%5D=true&amp;filter%5Bcreated_at%5D=2023-12-31%2C2024-12-31&amp;filter%5Bupdated_at%5D=2023-12-31%2C2024-12-31&amp;filter%5Bpublished_at%5D=2023-12-31%2C2024-12-31&amp;sort=-featured%2Cname" \
-    --header "Authorization: Bearer YOUR_API_KEY" \
-    --header "Content-Type: application/json" \
-    --header "Accept: application/json"</code></pre></div>
-
-
-<div class="javascript-example">
-    <pre><code class="language-javascript">const url = new URL(
-    "https://forge.sp-tarkov.com/api/v0/mods"
-);
-
-const params = {
-    "include": "users,versions,license",
-    "filter[id]": "5,10,15",
-    "filter[hub_id]": "20",
-    "filter[name]": "*SAIN*",
-    "filter[slug]": "*raid-times",
-    "filter[teaser]": "*weighted*random*times*",
-    "filter[source_code_link]": "*https*.net*",
-    "filter[featured]": "true",
-    "filter[contains_ads]": "true",
-    "filter[contains_ai_content]": "true",
-    "filter[created_at]": "2023-12-31,2024-12-31",
-    "filter[updated_at]": "2023-12-31,2024-12-31",
-    "filter[published_at]": "2023-12-31,2024-12-31",
-    "sort": "-featured,name",
-};
-Object.keys(params)
-    .forEach(key =&gt; url.searchParams.append(key, params[key]));
-
-const headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-};
-
-fetch(url, {
-    method: "GET",
-    headers,
-}).then(response =&gt; response.json());</code></pre></div>
-
-
-<div class="php-example">
-    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://forge.sp-tarkov.com/api/v0/mods';
-$response = $client-&gt;get(
-    $url,
-    [
-        'headers' =&gt; [
-            'Authorization' =&gt; 'Bearer YOUR_API_KEY',
-            'Content-Type' =&gt; 'application/json',
-            'Accept' =&gt; 'application/json',
-        ],
-        'query' =&gt; [
-            'include' =&gt; 'users,versions,license',
-            'filter[id]' =&gt; '5,10,15',
-            'filter[hub_id]' =&gt; '20',
-            'filter[name]' =&gt; '*SAIN*',
-            'filter[slug]' =&gt; '*raid-times',
-            'filter[teaser]' =&gt; '*weighted*random*times*',
-            'filter[source_code_link]' =&gt; '*https*.net*',
-            'filter[featured]' =&gt; 'true',
-            'filter[contains_ads]' =&gt; 'true',
-            'filter[contains_ai_content]' =&gt; 'true',
-            'filter[created_at]' =&gt; '2023-12-31,2024-12-31',
-            'filter[updated_at]' =&gt; '2023-12-31,2024-12-31',
-            'filter[published_at]' =&gt; '2023-12-31,2024-12-31',
-            'sort' =&gt; '-featured,name',
-        ],
-    ]
-);
-$body = $response-&gt;getBody();
-print_r(json_decode((string) $body));</code></pre></div>
-
-
-<div class="python-example">
-    <pre><code class="language-python">import requests
-import json
-
-url = 'https://forge.sp-tarkov.com/api/v0/mods'
-params = {
-  'include': 'users,versions,license',
-  'filter[id]': '5,10,15',
-  'filter[hub_id]': '20',
-  'filter[name]': '*SAIN*',
-  'filter[slug]': '*raid-times',
-  'filter[teaser]': '*weighted*random*times*',
-  'filter[source_code_link]': '*https*.net*',
-  'filter[featured]': 'true',
-  'filter[contains_ads]': 'true',
-  'filter[contains_ai_content]': 'true',
-  'filter[created_at]': '2023-12-31,2024-12-31',
-  'filter[updated_at]': '2023-12-31,2024-12-31',
-  'filter[published_at]': '2023-12-31,2024-12-31',
-  'sort': '-featured,name',
-}
-headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-response = requests.request('GET', url, headers=headers, params=params)
-response.json()</code></pre></div>
-
-</span>
-
-<span id="example-responses-GETapi-v0-mods">
-            <blockquote>
-            <p>Example response (401):</p>
-        </blockquote>
-                <details class="annotation">
-            <summary style="cursor: pointer;">
-                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
-            </summary>
-            <pre><code class="language-http">cache-control: no-cache, private
-content-type: application/json
-access-control-allow-origin: *
- </code></pre></details>         <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Unauthenticated.&quot;
-}</code>
- </pre>
-    </span>
-<span id="execution-results-GETapi-v0-mods" hidden>
-    <blockquote>Received response<span
-                id="execution-response-status-GETapi-v0-mods"></span>:
-    </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-v0-mods"
-      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
-</span>
-<span id="execution-error-GETapi-v0-mods" hidden>
-    <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-v0-mods">
-
-Tip: Check that you&#039;re properly connected to the network.
-If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
-You can check the Dev Tools console for debugging information.</code></pre>
-</span>
-<form id="form-GETapi-v0-mods" data-method="GET"
-      data-path="api/v0/mods"
-      data-authed="1"
-      data-hasfiles="0"
-      data-isarraybody="0"
-      autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-v0-mods', this);">
-    <h3>
-        Request&nbsp;&nbsp;&nbsp;
-                    <button type="button"
-                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-v0-mods"
-                    onclick="tryItOut('GETapi-v0-mods');">Try it out ⚡
-            </button>
-            <button type="button"
-                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-v0-mods"
-                    onclick="cancelTryOut('GETapi-v0-mods');" hidden>Cancel 🛑
-            </button>&nbsp;&nbsp;
-            <button type="submit"
-                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-v0-mods"
-                    data-initial-text="Send Request 💥"
-                    data-loading-text="⏱ Sending..."
-                    hidden>Send Request 💥
-            </button>
-            </h3>
-            <p>
-            <small class="badge badge-green">GET</small>
-            <b><code>api/v0/mods</code></b>
-        </p>
-                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v0-mods"
-               value="Bearer YOUR_API_KEY"
-               data-component="header">
-    <br>
-<p>Example: <code>Bearer YOUR_API_KEY</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-v0-mods"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-v0-mods"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>include</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="include"                data-endpoint="GETapi-v0-mods"
-               value="users,versions,license"
-               data-component="query">
-    <br>
-<p>The relationships to include within the <code>includes</code> key. By default no relationships are automatically included. Example: <code>users,versions,license</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[id]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[id]"                data-endpoint="GETapi-v0-mods"
-               value="5,10,15"
-               data-component="query">
-    <br>
-<p>Filter by the <code>id</code>. Select multiple by separating the IDs with a comma. Example: <code>5,10,15</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[hub_id]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[hub_id]"                data-endpoint="GETapi-v0-mods"
-               value="20"
-               data-component="query">
-    <br>
-<p>Filter by the <code>hub_id</code> attribute. Select multiple by separating the IDs with a comma. Example: <code>20</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[name]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[name]"                data-endpoint="GETapi-v0-mods"
-               value="*SAIN*"
-               data-component="query">
-    <br>
-<p>Filter by the <code>name</code> attribute. Use <code>*</code> as the wildcard character. Example: <code>*SAIN*</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[slug]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[slug]"                data-endpoint="GETapi-v0-mods"
-               value="*raid-times"
-               data-component="query">
-    <br>
-<p>Filter by the <code>slug</code> attribute. Use <code>*</code> as the wildcard character. Example: <code>*raid-times</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[teaser]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[teaser]"                data-endpoint="GETapi-v0-mods"
-               value="*weighted*random*times*"
-               data-component="query">
-    <br>
-<p>Filter by the <code>teaser</code> attribute. Use <code>*</code> as the wildcard character. Example: <code>*weighted*random*times*</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[source_code_link]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[source_code_link]"                data-endpoint="GETapi-v0-mods"
-               value="*https*.net*"
-               data-component="query">
-    <br>
-<p>Filter by the <code>source_code_link</code> attribute. Use <code>*</code> as the wildcard character. Example: <code>*https*.net*</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[featured]</code></b>&nbsp;&nbsp;
-<small>boolean</small>&nbsp;
-<i>optional</i> &nbsp;
-                <label data-endpoint="GETapi-v0-mods" style="display: none">
-            <input type="radio" name="filter[featured]"
-                   value="1"
-                   data-endpoint="GETapi-v0-mods"
-                   data-component="query"             >
-            <code>true</code>
-        </label>
-        <label data-endpoint="GETapi-v0-mods" style="display: none">
-            <input type="radio" name="filter[featured]"
-                   value="0"
-                   data-endpoint="GETapi-v0-mods"
-                   data-component="query"             >
-            <code>false</code>
-        </label>
-    <br>
-<p>Filter by the <code>featured</code> attribute. All &quot;truthy&quot; or &quot;falsy&quot; values are supported. Example: <code>true</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[contains_ads]</code></b>&nbsp;&nbsp;
-<small>boolean</small>&nbsp;
-<i>optional</i> &nbsp;
-                <label data-endpoint="GETapi-v0-mods" style="display: none">
-            <input type="radio" name="filter[contains_ads]"
-                   value="1"
-                   data-endpoint="GETapi-v0-mods"
-                   data-component="query"             >
-            <code>true</code>
-        </label>
-        <label data-endpoint="GETapi-v0-mods" style="display: none">
-            <input type="radio" name="filter[contains_ads]"
-                   value="0"
-                   data-endpoint="GETapi-v0-mods"
-                   data-component="query"             >
-            <code>false</code>
-        </label>
-    <br>
-<p>Filter by the <code>contains_ads</code> attribute. All &quot;truthy&quot; or &quot;falsy&quot; values are supported. Example: <code>true</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[contains_ai_content]</code></b>&nbsp;&nbsp;
-<small>boolean</small>&nbsp;
-<i>optional</i> &nbsp;
-                <label data-endpoint="GETapi-v0-mods" style="display: none">
-            <input type="radio" name="filter[contains_ai_content]"
-                   value="1"
-                   data-endpoint="GETapi-v0-mods"
-                   data-component="query"             >
-            <code>true</code>
-        </label>
-        <label data-endpoint="GETapi-v0-mods" style="display: none">
-            <input type="radio" name="filter[contains_ai_content]"
-                   value="0"
-                   data-endpoint="GETapi-v0-mods"
-                   data-component="query"             >
-            <code>false</code>
-        </label>
-    <br>
-<p>Filter by the <code>contains_ai_content</code> attribute. All &quot;truthy&quot; or &quot;falsy&quot; values are supported. Example: <code>true</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[created_at]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[created_at]"                data-endpoint="GETapi-v0-mods"
-               value="2023-12-31,2024-12-31"
-               data-component="query">
-    <br>
-<p>Filter by the <code>created_at</code> attribute. Ranges are possible by separating the dates with a comma. Example: <code>2023-12-31,2024-12-31</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[updated_at]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[updated_at]"                data-endpoint="GETapi-v0-mods"
-               value="2023-12-31,2024-12-31"
-               data-component="query">
-    <br>
-<p>Filter by the <code>updated_at</code> attribute. Ranges are possible by separating the dates with a comma. Example: <code>2023-12-31,2024-12-31</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[published_at]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[published_at]"                data-endpoint="GETapi-v0-mods"
-               value="2023-12-31,2024-12-31"
-               data-component="query">
-    <br>
-<p>Filter by the <code>published_at</code> attribute. Ranges are possible by seperating the dates with a comma. Example: <code>2023-12-31,2024-12-31</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>sort</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="sort"                data-endpoint="GETapi-v0-mods"
-               value="-featured,name"
-               data-component="query">
-    <br>
-<p>Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC. Example: <code>-featured,name</code></p>
-            </div>
-                </form>
-
-                    <h2 id="mods-GETapi-v0-mods--id-">Get Mod</h2>
-
-<p>
-<small class="badge badge-darkred">requires authentication</small>
-</p>
-
-<p>Display more detailed information about a specific mod.</p>
-
-<span id="example-requests-GETapi-v0-mods--id-">
-<blockquote>Example request:</blockquote>
-
-
-<div class="bash-example">
-    <pre><code class="language-bash">curl --request GET \
-    --get "https://forge.sp-tarkov.com/api/v0/mods/558?include=users%2Cversions%2Clicense" \
-    --header "Authorization: Bearer YOUR_API_KEY" \
-    --header "Content-Type: application/json" \
-    --header "Accept: application/json"</code></pre></div>
-
-
-<div class="javascript-example">
-    <pre><code class="language-javascript">const url = new URL(
-    "https://forge.sp-tarkov.com/api/v0/mods/558"
-);
-
-const params = {
-    "include": "users,versions,license",
-};
-Object.keys(params)
-    .forEach(key =&gt; url.searchParams.append(key, params[key]));
-
-const headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-};
-
-fetch(url, {
-    method: "GET",
-    headers,
-}).then(response =&gt; response.json());</code></pre></div>
-
-
-<div class="php-example">
-    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://forge.sp-tarkov.com/api/v0/mods/558';
-$response = $client-&gt;get(
-    $url,
-    [
-        'headers' =&gt; [
-            'Authorization' =&gt; 'Bearer YOUR_API_KEY',
-            'Content-Type' =&gt; 'application/json',
-            'Accept' =&gt; 'application/json',
-        ],
-        'query' =&gt; [
-            'include' =&gt; 'users,versions,license',
-        ],
-    ]
-);
-$body = $response-&gt;getBody();
-print_r(json_decode((string) $body));</code></pre></div>
-
-
-<div class="python-example">
-    <pre><code class="language-python">import requests
-import json
-
-url = 'https://forge.sp-tarkov.com/api/v0/mods/558'
-params = {
-  'include': 'users,versions,license',
-}
-headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-response = requests.request('GET', url, headers=headers, params=params)
-response.json()</code></pre></div>
-
-</span>
-
-<span id="example-responses-GETapi-v0-mods--id-">
-            <blockquote>
-            <p>Example response (401):</p>
-        </blockquote>
-                <details class="annotation">
-            <summary style="cursor: pointer;">
-                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
-            </summary>
-            <pre><code class="language-http">cache-control: no-cache, private
-content-type: application/json
-access-control-allow-origin: *
- </code></pre></details>         <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Unauthenticated.&quot;
-}</code>
- </pre>
-    </span>
-<span id="execution-results-GETapi-v0-mods--id-" hidden>
-    <blockquote>Received response<span
-                id="execution-response-status-GETapi-v0-mods--id-"></span>:
-    </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-v0-mods--id-"
-      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
-</span>
-<span id="execution-error-GETapi-v0-mods--id-" hidden>
-    <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-v0-mods--id-">
-
-Tip: Check that you&#039;re properly connected to the network.
-If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
-You can check the Dev Tools console for debugging information.</code></pre>
-</span>
-<form id="form-GETapi-v0-mods--id-" data-method="GET"
-      data-path="api/v0/mods/{id}"
-      data-authed="1"
-      data-hasfiles="0"
-      data-isarraybody="0"
-      autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-v0-mods--id-', this);">
-    <h3>
-        Request&nbsp;&nbsp;&nbsp;
-                    <button type="button"
-                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-v0-mods--id-"
-                    onclick="tryItOut('GETapi-v0-mods--id-');">Try it out ⚡
-            </button>
-            <button type="button"
-                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-v0-mods--id-"
-                    onclick="cancelTryOut('GETapi-v0-mods--id-');" hidden>Cancel 🛑
-            </button>&nbsp;&nbsp;
-            <button type="submit"
-                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-v0-mods--id-"
-                    data-initial-text="Send Request 💥"
-                    data-loading-text="⏱ Sending..."
-                    hidden>Send Request 💥
-            </button>
-            </h3>
-            <p>
-            <small class="badge badge-green">GET</small>
-            <b><code>api/v0/mods/{id}</code></b>
-        </p>
-                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v0-mods--id-"
-               value="Bearer YOUR_API_KEY"
-               data-component="header">
-    <br>
-<p>Example: <code>Bearer YOUR_API_KEY</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-v0-mods--id-"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-v0-mods--id-"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
-                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
-<small>integer</small>&nbsp;
- &nbsp;
-                <input type="number" style="display: none"
-               step="any"               name="id"                data-endpoint="GETapi-v0-mods--id-"
-               value="558"
-               data-component="url">
-    <br>
-<p>The ID of the mod. Example: <code>558</code></p>
-            </div>
-                        <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>include</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="include"                data-endpoint="GETapi-v0-mods--id-"
-               value="users,versions,license"
-               data-component="query">
-    <br>
-<p>The relationships to include within the <code>includes</code> key. By default no relationships are automatically included. Example: <code>users,versions,license</code></p>
-            </div>
-                </form>
-
-                <h1 id="users">Users</h1>
-
-    
-
-                                <h2 id="users-GETapi-v0-users">Get Users</h2>
-
-<p>
-<small class="badge badge-darkred">requires authentication</small>
-</p>
-
-<p>List, filter, and sort basic information about users.</p>
-
-<span id="example-requests-GETapi-v0-users">
-<blockquote>Example request:</blockquote>
-
-
-<div class="bash-example">
-    <pre><code class="language-bash">curl --request GET \
-    --get "https://forge.sp-tarkov.com/api/v0/users?include=user_role&amp;filter%5Bid%5D=5%2C10%2C15&amp;filter%5Bname%5D=%2Afringe&amp;filter%5Bcreated_at%5D=2023-12-31%2C2024-12-31&amp;filter%5Bupdated_at%5D=2023-12-31%2C2024-12-31&amp;sort=created_at%2C-name" \
-    --header "Authorization: Bearer YOUR_API_KEY" \
-    --header "Content-Type: application/json" \
-    --header "Accept: application/json"</code></pre></div>
-
-
-<div class="javascript-example">
-    <pre><code class="language-javascript">const url = new URL(
-    "https://forge.sp-tarkov.com/api/v0/users"
-);
-
-const params = {
-    "include": "user_role",
-    "filter[id]": "5,10,15",
-    "filter[name]": "*fringe",
-    "filter[created_at]": "2023-12-31,2024-12-31",
-    "filter[updated_at]": "2023-12-31,2024-12-31",
-    "sort": "created_at,-name",
-};
-Object.keys(params)
-    .forEach(key =&gt; url.searchParams.append(key, params[key]));
-
-const headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-};
-
-fetch(url, {
-    method: "GET",
-    headers,
-}).then(response =&gt; response.json());</code></pre></div>
-
-
-<div class="php-example">
-    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://forge.sp-tarkov.com/api/v0/users';
-$response = $client-&gt;get(
-    $url,
-    [
-        'headers' =&gt; [
-            'Authorization' =&gt; 'Bearer YOUR_API_KEY',
-            'Content-Type' =&gt; 'application/json',
-            'Accept' =&gt; 'application/json',
-        ],
-        'query' =&gt; [
-            'include' =&gt; 'user_role',
-            'filter[id]' =&gt; '5,10,15',
-            'filter[name]' =&gt; '*fringe',
-            'filter[created_at]' =&gt; '2023-12-31,2024-12-31',
-            'filter[updated_at]' =&gt; '2023-12-31,2024-12-31',
-            'sort' =&gt; 'created_at,-name',
-        ],
-    ]
-);
-$body = $response-&gt;getBody();
-print_r(json_decode((string) $body));</code></pre></div>
-
-
-<div class="python-example">
-    <pre><code class="language-python">import requests
-import json
-
-url = 'https://forge.sp-tarkov.com/api/v0/users'
-params = {
-  'include': 'user_role',
-  'filter[id]': '5,10,15',
-  'filter[name]': '*fringe',
-  'filter[created_at]': '2023-12-31,2024-12-31',
-  'filter[updated_at]': '2023-12-31,2024-12-31',
-  'sort': 'created_at,-name',
-}
-headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-response = requests.request('GET', url, headers=headers, params=params)
-response.json()</code></pre></div>
-
-</span>
-
-<span id="example-responses-GETapi-v0-users">
-            <blockquote>
-            <p>Example response (401):</p>
-        </blockquote>
-                <details class="annotation">
-            <summary style="cursor: pointer;">
-                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
-            </summary>
-            <pre><code class="language-http">cache-control: no-cache, private
-content-type: application/json
-access-control-allow-origin: *
- </code></pre></details>         <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Unauthenticated.&quot;
-}</code>
- </pre>
-    </span>
-<span id="execution-results-GETapi-v0-users" hidden>
-    <blockquote>Received response<span
-                id="execution-response-status-GETapi-v0-users"></span>:
-    </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-v0-users"
-      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
-</span>
-<span id="execution-error-GETapi-v0-users" hidden>
-    <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-v0-users">
-
-Tip: Check that you&#039;re properly connected to the network.
-If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
-You can check the Dev Tools console for debugging information.</code></pre>
-</span>
-<form id="form-GETapi-v0-users" data-method="GET"
-      data-path="api/v0/users"
-      data-authed="1"
-      data-hasfiles="0"
-      data-isarraybody="0"
-      autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-v0-users', this);">
-    <h3>
-        Request&nbsp;&nbsp;&nbsp;
-                    <button type="button"
-                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-v0-users"
-                    onclick="tryItOut('GETapi-v0-users');">Try it out ⚡
-            </button>
-            <button type="button"
-                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-v0-users"
-                    onclick="cancelTryOut('GETapi-v0-users');" hidden>Cancel 🛑
-            </button>&nbsp;&nbsp;
-            <button type="submit"
-                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-v0-users"
-                    data-initial-text="Send Request 💥"
-                    data-loading-text="⏱ Sending..."
-                    hidden>Send Request 💥
-            </button>
-            </h3>
-            <p>
-            <small class="badge badge-green">GET</small>
-            <b><code>api/v0/users</code></b>
-        </p>
-                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v0-users"
-               value="Bearer YOUR_API_KEY"
-               data-component="header">
-    <br>
-<p>Example: <code>Bearer YOUR_API_KEY</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-v0-users"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-v0-users"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>include</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="include"                data-endpoint="GETapi-v0-users"
-               value="user_role"
-               data-component="query">
-    <br>
-<p>The relationships to include within the <code>includes</code> key. By default no relationships are automatically included. Example: <code>user_role</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[id]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[id]"                data-endpoint="GETapi-v0-users"
-               value="5,10,15"
-               data-component="query">
-    <br>
-<p>Filter by the <code>id</code>. Select multiple by separating the IDs with a comma. Example: <code>5,10,15</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[name]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[name]"                data-endpoint="GETapi-v0-users"
-               value="*fringe"
-               data-component="query">
-    <br>
-<p>Filter by the <code>name</code> attribute. Use <code>*</code> as the wildcard character. Example: <code>*fringe</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[created_at]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[created_at]"                data-endpoint="GETapi-v0-users"
-               value="2023-12-31,2024-12-31"
-               data-component="query">
-    <br>
-<p>Filter by the <code>created_at</code> attribute. Ranges are possible by separating the dates with a comma. Example: <code>2023-12-31,2024-12-31</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>filter[updated_at]</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="filter[updated_at]"                data-endpoint="GETapi-v0-users"
-               value="2023-12-31,2024-12-31"
-               data-component="query">
-    <br>
-<p>Filter by the <code>updated_at</code> attribute. Ranges are possible by separating the dates with a comma. Example: <code>2023-12-31,2024-12-31</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>sort</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="sort"                data-endpoint="GETapi-v0-users"
-               value="created_at,-name"
-               data-component="query">
-    <br>
-<p>Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC. Example: <code>created_at,-name</code></p>
-            </div>
-                </form>
-
-                    <h2 id="users-GETapi-v0-users--id-">Get User</h2>
-
-<p>
-<small class="badge badge-darkred">requires authentication</small>
-</p>
-
-<p>Display more detailed information about a specific user.</p>
-
-<span id="example-requests-GETapi-v0-users--id-">
-<blockquote>Example request:</blockquote>
-
-
-<div class="bash-example">
-    <pre><code class="language-bash">curl --request GET \
-    --get "https://forge.sp-tarkov.com/api/v0/users/1?include=user_role" \
-    --header "Authorization: Bearer YOUR_API_KEY" \
-    --header "Content-Type: application/json" \
-    --header "Accept: application/json"</code></pre></div>
-
-
-<div class="javascript-example">
-    <pre><code class="language-javascript">const url = new URL(
-    "https://forge.sp-tarkov.com/api/v0/users/1"
-);
-
-const params = {
-    "include": "user_role",
-};
-Object.keys(params)
-    .forEach(key =&gt; url.searchParams.append(key, params[key]));
-
-const headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-};
-
-fetch(url, {
-    method: "GET",
-    headers,
-}).then(response =&gt; response.json());</code></pre></div>
-
-
-<div class="php-example">
-    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
-$url = 'https://forge.sp-tarkov.com/api/v0/users/1';
-$response = $client-&gt;get(
-    $url,
-    [
-        'headers' =&gt; [
-            'Authorization' =&gt; 'Bearer YOUR_API_KEY',
-            'Content-Type' =&gt; 'application/json',
-            'Accept' =&gt; 'application/json',
-        ],
-        'query' =&gt; [
-            'include' =&gt; 'user_role',
-        ],
-    ]
-);
-$body = $response-&gt;getBody();
-print_r(json_decode((string) $body));</code></pre></div>
-
-
-<div class="python-example">
-    <pre><code class="language-python">import requests
-import json
-
-url = 'https://forge.sp-tarkov.com/api/v0/users/1'
-params = {
-  'include': 'user_role',
-}
-headers = {
-  'Authorization': 'Bearer YOUR_API_KEY',
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
-}
-
-response = requests.request('GET', url, headers=headers, params=params)
-response.json()</code></pre></div>
-
-</span>
-
-<span id="example-responses-GETapi-v0-users--id-">
-            <blockquote>
-            <p>Example response (401):</p>
-        </blockquote>
-                <details class="annotation">
-            <summary style="cursor: pointer;">
-                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
-            </summary>
-            <pre><code class="language-http">cache-control: no-cache, private
-content-type: application/json
-access-control-allow-origin: *
- </code></pre></details>         <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Unauthenticated.&quot;
-}</code>
- </pre>
-    </span>
-<span id="execution-results-GETapi-v0-users--id-" hidden>
-    <blockquote>Received response<span
-                id="execution-response-status-GETapi-v0-users--id-"></span>:
-    </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-v0-users--id-"
-      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
-</span>
-<span id="execution-error-GETapi-v0-users--id-" hidden>
-    <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-v0-users--id-">
-
-Tip: Check that you&#039;re properly connected to the network.
-If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
-You can check the Dev Tools console for debugging information.</code></pre>
-</span>
-<form id="form-GETapi-v0-users--id-" data-method="GET"
-      data-path="api/v0/users/{id}"
-      data-authed="1"
-      data-hasfiles="0"
-      data-isarraybody="0"
-      autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-v0-users--id-', this);">
-    <h3>
-        Request&nbsp;&nbsp;&nbsp;
-                    <button type="button"
-                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-v0-users--id-"
-                    onclick="tryItOut('GETapi-v0-users--id-');">Try it out ⚡
-            </button>
-            <button type="button"
-                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-v0-users--id-"
-                    onclick="cancelTryOut('GETapi-v0-users--id-');" hidden>Cancel 🛑
-            </button>&nbsp;&nbsp;
-            <button type="submit"
-                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-v0-users--id-"
-                    data-initial-text="Send Request 💥"
-                    data-loading-text="⏱ Sending..."
-                    hidden>Send Request 💥
-            </button>
-            </h3>
-            <p>
-            <small class="badge badge-green">GET</small>
-            <b><code>api/v0/users/{id}</code></b>
-        </p>
-                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v0-users--id-"
-               value="Bearer YOUR_API_KEY"
-               data-component="header">
-    <br>
-<p>Example: <code>Bearer YOUR_API_KEY</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-v0-users--id-"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-v0-users--id-"
-               value="application/json"
-               data-component="header">
-    <br>
-<p>Example: <code>application/json</code></p>
-            </div>
-                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
-                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
-<small>integer</small>&nbsp;
- &nbsp;
-                <input type="number" style="display: none"
-               step="any"               name="id"                data-endpoint="GETapi-v0-users--id-"
-               value="1"
-               data-component="url">
-    <br>
-<p>The ID of the user. Example: <code>1</code></p>
-            </div>
-                        <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>include</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
-                <input type="text" style="display: none"
-                              name="include"                data-endpoint="GETapi-v0-users--id-"
-               value="user_role"
-               data-component="query">
-    <br>
-<p>The relationships to include within the <code>includes</code> key. By default no relationships are automatically included. Example: <code>user_role</code></p>
-            </div>
-                </form>
 
             
 
