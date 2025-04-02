@@ -7,8 +7,10 @@ namespace App\Http\Controllers\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V0\Auth\LoginRequest;
+use App\Http\Resources\Api\V0\UserResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\User;
+use App\Traits\Api\V0\HandlesIncludes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -22,6 +24,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AuthController extends Controller
 {
+    use HandlesIncludes;
+
     /**
      * User Login & Token Creation
      *
@@ -162,5 +166,63 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
 
         return ApiResponse::success(['message' => 'All tokens revoked successfully.']);
+    }
+
+    /**
+     * Get Authenticated User
+     *
+     * Retrieves the details for the currently authenticated user based on the provided API token.
+     *
+     * @authenticated
+     *
+     * @queryParam include string optional Comma-separated list of relationships to include. Available relationships: `role`. Example: role
+     *
+     * @response status=200 scenario="Success (No Includes)"
+     * {
+     *     "success": true,
+     *     "data": {
+     *         "id": 1,
+     *         "name": "Test User",
+     *         "email": "test@example.com",
+     *         "email_verified_at": "2025-04-02T20:44:38.000000Z",
+     *         "profile_photo_url": "https://example.com/path/to/profile.jpg",
+     *         "cover_photo_url": "https://example.com/path/to/cover.jpg",
+     *         "created_at": "2025-04-01T10:00:00.000000Z"
+     *      }
+     * }
+     * @response status=200 scenario="Success (Include Role)"
+     * {
+     *     "success": true,
+     *     "data": {
+     *         "id": 1,
+     *         "name": "Test User",
+     *         "email": "test@example.com",
+     *         "email_verified_at": "2025-04-02T20:44:38.000000Z",
+     *         "profile_photo_url": "https://example.com/path/to/profile.jpg",
+     *         "cover_photo_url": "https://example.com/path/to/cover.jpg",
+     *         "role": {
+     *             "id": 2,
+     *             "name": "Moderator",
+     *             "short_name": "Mod",
+     *             "description": "Moderate user content.",
+     *             "color_class": "emerald",
+     *          },
+     *          "created_at": "2025-04-01T10:00:00.000000Z"
+     *      }
+     * }
+     * @response status=401 scenario="Unauthenticated"
+     * {
+     *     "success": false,
+     *     "code": "UNAUTHENTICATED",
+     *     "message": "Unauthenticated."
+     * }
+     */
+    public function user(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $this->loadIncludes($request, model: $user, allowedIncludes: ['role']);
+
+        return ApiResponse::success(new UserResource($user));
     }
 }
