@@ -55,6 +55,8 @@ class ModController extends ApiController
     #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'authors,versions,license')]
     public function show(Mod $mod): ModResource
     {
+        $mod->loadMissing(['owner', 'authors', 'versions', 'license']);
+
         return new ModResource($mod);
     }
 }

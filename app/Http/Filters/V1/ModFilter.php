@@ -6,6 +6,7 @@ namespace App\Http\Filters\V1;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Override;
 
 class ModFilter extends QueryFilter
 {
@@ -26,6 +27,20 @@ class ModFilter extends QueryFilter
         'updated_at',
         'published_at',
     ];
+
+    #[Override]
+    public function apply(Builder $builder): Builder
+    {
+        // Apply Mod-specific base filters.
+        $builder->with('owner');
+        $builder->where('disabled', false);
+        $builder->whereHas('latestVersion', function (Builder $query): void {
+            $query->whereHas('latestSptVersion');
+        });
+
+        // Parent apply method handles request-specific filters & sorting.
+        return parent::apply($builder);
+    }
 
     /**
      * Filter by ID.

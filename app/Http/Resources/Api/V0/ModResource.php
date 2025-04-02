@@ -47,6 +47,15 @@ class ModResource extends JsonResource
                 'published_at' => $this->published_at,
             ],
             'relationships' => [
+                'owner' => [
+                    'data' => [
+                        'type' => 'user',
+                        'id' => $this->owner_id,
+                    ],
+                    'links' => [
+                        'self' => $this->owner->profile_url,
+                    ],
+                ],
                 'authors' => $this->authors->map(fn (User $user): array => [
                     'data' => [
                         'type' => 'user',
@@ -73,7 +82,11 @@ class ModResource extends JsonResource
                 ])->toArray(),
             ],
             'includes' => $this->when(
-                ApiController::shouldInclude(['authors', 'license', 'versions']), [
+                ApiController::shouldInclude(['owner', 'authors', 'license', 'versions']), [
+                    'owner' => $this->when(
+                        ApiController::shouldInclude('owner'),
+                        new UserResource($this->whenLoaded('owner'))
+                    ),
                     'authors' => $this->when(
                         ApiController::shouldInclude('authors'),
                         $this->authors->map(fn ($user): UserResource => new UserResource($user)),

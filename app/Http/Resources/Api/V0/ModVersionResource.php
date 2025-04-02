@@ -77,10 +77,10 @@ class ModVersionResource extends JsonResource
                     ],
                 ])->toArray(),
                 'latest_spt_version' => [
-                    'data' => [
+                    'data' => $this->latestSptVersion ? [
                         'type' => 'spt_version',
                         'id' => $this->latestSptVersion->id,
-                    ],
+                    ] : null,
                 ],
             ],
             //            // TODO: give the options to include detailed relationship data.
