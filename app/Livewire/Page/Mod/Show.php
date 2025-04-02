@@ -45,7 +45,8 @@ class Show extends Component
         return Mod::query()
             ->with([
                 'license',
-                'users',
+                'owner:id,name',
+                'authors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
             ])

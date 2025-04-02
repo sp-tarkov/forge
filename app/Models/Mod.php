@@ -31,6 +31,7 @@ use Laravel\Scout\Searchable;
  *
  * @property int $id
  * @property int|null $hub_id
+ * @property int|null $owner_id
  * @property string $name
  * @property string $slug
  * @property string $teaser
@@ -46,8 +47,9 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
+ * @property-read User|null $owner
  * @property-read License|null $license
- * @property-read Collection<int, User> $users
+ * @property-read Collection<int, User> $authors
  * @property-read Collection<int, ModVersion> $versions
  * @property-read ModVersion|null $latestVersion
  * @property-read ModVersion|null $latestUpdatedVersion
@@ -60,6 +62,16 @@ class Mod extends Model
     use HasFactory;
 
     use Searchable;
+
+    /**
+     * The relationship between a mod and its owner (User).
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
 
     /**
      * Calculate the total number of downloads for the mod.
@@ -92,13 +104,13 @@ class Mod extends Model
     }
 
     /**
-     * The relationship between a mod and its users.
+     * The relationship between a mod and its authors (Users).
      *
      * @return BelongsToMany<User, $this>
      */
-    public function users(): BelongsToMany
+    public function authors(): BelongsToMany
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class, 'mod_authors');
     }
 
     /**
@@ -156,13 +168,13 @@ class Mod extends Model
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'thumbnail' => $this->thumbnail,
+            'thumbnail' => $this->thumbnailUrl,
             'featured' => $this->featured,
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,
-            'published_at' => $this->published_at->timestamp,
-            'latestVersion' => $this->latestVersion->latestSptVersion->version_formatted,
-            'latestVersionColorClass' => $this->latestVersion->latestSptVersion->color_class,
+            'published_at' => $this->published_at?->timestamp,
+            'latestVersion' => $this->latestVersion?->latestSptVersion?->version_formatted,
+            'latestVersionColorClass' => $this->latestVersion?->latestSptVersion?->color_class,
         ];
     }
 
@@ -182,26 +194,26 @@ class Mod extends Model
         }
 
         // Eager load the latest mod version, and it's latest SPT version.
-        $this->load([
+        $this->loadMissing([
             'latestVersion',
             'latestVersion.latestSptVersion',
         ]);
 
         // Ensure the mod has a latest version.
-        if ($this->latestVersion()->doesntExist()) {
+        if (! $this->latestVersion) {
             return false;
         }
 
         // Ensure the latest version has a latest SPT version.
-        if ($this->latestVersion->latestSptVersion()->doesntExist()) {
+        if (! $this->latestVersion->latestSptVersion) {
             return false;
         }
 
         // Ensure the latest SPT version is within the last three minor versions.
-        $activeSptVersions = Cache::remember('active-spt-versions', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
+        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
 
         // All conditions are met; the mod should be searchable.
-        return in_array($this->latestVersion->latestSptVersion->version, $activeSptVersions->pluck('version')->toArray());
+        return $activeSptVersions->contains('version', $this->latestVersion->latestSptVersion->version);
     }
 
     /**
@@ -240,8 +252,9 @@ class Mod extends Model
     protected function thumbnailDisk(): string
     {
         return match (config('app.env')) {
-            'production' => 'r2', // Cloudflare R2 Storage
-            default => 'public', // Local
+            'production' => config('filesystems.asset_upload_disk.production', 'r2'),
+            'testing' => config('filesystems.asset_upload_disk.testing', 'public'),
+            default => config('filesystems.asset_upload_disk.local', 'public'),
         };
     }
 
@@ -270,6 +283,7 @@ class Mod extends Model
     protected function casts(): array
     {
         return [
+            'owner_id' => 'integer',
             'featured' => 'boolean',
             'contains_ai_content' => 'boolean',
             'contains_ads' => 'boolean',
@@ -288,8 +302,8 @@ class Mod extends Model
     protected function slug(): Attribute
     {
         return Attribute::make(
-            get: fn (string $value) => Str::lower($value),
-            set: fn (string $value) => Str::slug($value),
+            get: fn (?string $value) => $value ? Str::lower($value) : '',
+            set: fn (?string $value) => $value ? Str::slug($value) : '',
         );
     }
 }

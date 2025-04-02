@@ -146,27 +146,26 @@ class HubMod
     }
 
     /**
-     * Get all authors.
+     * Get the local User IDs for the additional authors based on their Hub IDs.
      *
      * @return array<int>
      */
-    public function getAllAuthors(): array
+    public function getAdditionalAuthorIds(): array
     {
-        $additionalAuthorIds = $this->additional_authors
+        $additionalAuthorHubIds = $this->additional_authors
             ? collect(explode(',', $this->additional_authors))
-            : collect();
+                ->map(fn ($id): string => trim((string) $id))
+                ->filter()
+                ->all()
+            : []; // Default to an empty array.
 
-        return collect()
-            ->merge($additionalAuthorIds)
-            ->add($this->userID)
-            ->map(function (int|string $authorHubId): ?int {
-                $user = User::query()->whereHubId($authorHubId)->first();
+        if (empty($additionalAuthorHubIds)) {
+            return [];
+        }
 
-                return $user ? $user->id : null;
-            })
-            ->filter()
-            ->unique()
-            ->values()
+        return User::query()
+            ->whereIn('hub_id', $additionalAuthorHubIds)
+            ->pluck('id')
             ->all();
     }
 

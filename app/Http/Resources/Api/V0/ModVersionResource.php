@@ -85,10 +85,10 @@ class ModVersionResource extends JsonResource
             ],
             //            // TODO: give the options to include detailed relationship data.
             //            'includes' => $this->when(
-            //                ApiController::shouldInclude(['users', 'license', 'versions']), [
-            //                    'users' => $this->when(
-            //                        ApiController::shouldInclude('users'),
-            //                        $this->users->map(fn ($user): UserResource => new UserResource($user)),
+            //                ApiController::shouldInclude(['authors', 'license', 'versions']), [
+            //                    'authors' => $this->when(
+            //                        ApiController::shouldInclude('authors'),
+            //                        $this->authors->map(fn ($user): UserResource => new UserResource($user)),
             //                    ),
             //                    'license' => $this->when(
             //                        ApiController::shouldInclude('license'),

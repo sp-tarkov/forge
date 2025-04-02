@@ -21,7 +21,7 @@ class ModController extends ApiController
      *
      * @group Mods
      */
-    #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'users,versions,license')]
+    #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'authors,versions,license')]
     #[QueryParam('filter[id]', 'string', 'Filter by the `id`. Select multiple by separating the IDs with a comma.', required: false, example: '5,10,15')]
     #[QueryParam('filter[hub_id]', 'string', 'Filter by the `hub_id` attribute. Select multiple by separating the IDs with a comma.', required: false, example: '20')]
     #[QueryParam('filter[name]', 'string', 'Filter by the `name` attribute. Use `*` as the wildcard character.', required: false, example: '*SAIN*')]
@@ -52,7 +52,7 @@ class ModController extends ApiController
      * @group Mods
      */
     #[UrlParam('id', 'integer', 'The ID of the mod.', required: true, example: 558)]
-    #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'users,versions,license')]
+    #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'authors,versions,license')]
     public function show(Mod $mod): ModResource
     {
         return new ModResource($mod);

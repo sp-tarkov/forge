@@ -22,15 +22,14 @@ class ModPolicy
      */
     public function view(?User $user, Mod $mod): bool
     {
-        // Disabled mods will not be shown to normal users.
-        if ($mod->disabled && ! $user?->isModOrAdmin()) {
-            return false;
+        // Only mods/admins can view disabled mods. Everyone else is denied immediately.
+        if ($mod->disabled) {
+            return $user?->isModOrAdmin() ?? false;
         }
 
-        // Only allow authors, admins, and mods to view mods without an SPT version tag.
-        if ($user && ($mod->users->pluck('id')->doesntContain($user->id) && ! $user->isModOrAdmin())) {
-            $hasValidVersion = $mod->versions->first(fn ($version): bool => ! is_null($version->latestSptVersion));
-            if (! $hasValidVersion) {
+        if (! $this->hasValidSptVersion($mod)) {
+            $isPrivilegedUser = $user && ($this->isAuthorOrOwner($user, $mod) || $user->isModOrAdmin());
+            if (! $isPrivilegedUser) {
                 return false;
             }
         }
@@ -51,7 +50,7 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->users->contains($user);
+        return $user->isModOrAdmin() || $mod->authors->contains($user);
     }
 
     /**
@@ -59,7 +58,7 @@ class ModPolicy
      */
     public function delete(User $user, Mod $mod): bool
     {
-        return $user->isAdmin() || $mod->users->contains($user);
+        return $user->isAdmin() || $mod->owner->id === $user->id;
     }
 
     /**
@@ -108,5 +107,27 @@ class ModPolicy
     public function unfeature(User $user, Mod $mod): bool
     {
         return $user->isAdmin();
+    }
+
+    /**
+     * Check if a version has a valid SPT version tag.
+     */
+    private function hasValidSptVersion(Mod $mod): bool
+    {
+        $mod->loadMissing(['versions.latestSptVersion']);
+
+        return $mod->versions->contains(fn ($version): bool => ! is_null($version->latestSptVersion));
+    }
+
+    /**
+     * Check if the user is an author or the owner of the mod.
+     */
+    private function isAuthorOrOwner(?User $user, Mod $mod): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        return $user->id === $mod->owner?->id || $mod->authors->pluck('id')->contains($user->id);
     }
 }

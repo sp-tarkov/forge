@@ -23,7 +23,7 @@ class ModResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
-        $this->load(['users', 'versions', 'license']);
+        $this->load(['authors', 'versions', 'license']);
 
         return [
             'type' => 'mod',
@@ -47,7 +47,7 @@ class ModResource extends JsonResource
                 'published_at' => $this->published_at,
             ],
             'relationships' => [
-                'users' => $this->users->map(fn (User $user): array => [
+                'authors' => $this->authors->map(fn (User $user): array => [
                     'data' => [
                         'type' => 'user',
                         'id' => $user->id,
@@ -73,10 +73,10 @@ class ModResource extends JsonResource
                 ])->toArray(),
             ],
             'includes' => $this->when(
-                ApiController::shouldInclude(['users', 'license', 'versions']), [
-                    'users' => $this->when(
-                        ApiController::shouldInclude('users'),
-                        $this->users->map(fn ($user): UserResource => new UserResource($user)),
+                ApiController::shouldInclude(['authors', 'license', 'versions']), [
+                    'authors' => $this->when(
+                        ApiController::shouldInclude('authors'),
+                        $this->authors->map(fn ($user): UserResource => new UserResource($user)),
                     ),
                     'license' => $this->when(
                         ApiController::shouldInclude('license'),

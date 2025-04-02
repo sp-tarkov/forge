@@ -103,7 +103,8 @@ it('allows a mod author to view their mod without a resolved SPT version', funct
 
     SptVersion::factory()->create(['version' => '9.9.9']);
     $mod = Mod::factory()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
 
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
 

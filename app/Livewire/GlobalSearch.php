@@ -58,17 +58,6 @@ class GlobalSearch extends Component
     }
 
     /**
-     * Render the component.
-     */
-    public function render(): View
-    {
-        $this->result = $this->executeSearch($this->query);
-        $this->count = $this->countTotalResults($this->result);
-
-        return view('livewire.global-search');
-    }
-
-    /**
      * Execute the search against each of the searchable models.
      *
      * @return array<string, Collection<int, mixed>>
@@ -121,5 +110,16 @@ class GlobalSearch extends Component
     protected function countTotalResults(array $results): int
     {
         return (int) collect($results)->reduce(fn (int $carry, Collection $result): int => $carry + $result->count(), 0);
+    }
+
+    /**
+     * Render the component.
+     */
+    public function render(): View
+    {
+        $this->result = $this->executeSearch($this->query);
+        $this->count = $this->countTotalResults($this->result);
+
+        return view('livewire.global-search');
     }
 }

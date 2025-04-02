@@ -655,6 +655,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         // Prepare data for upsert.
         $modData = $hubMods->map(fn (HubMod $hubMod): array => [
             'hub_id' => $hubMod->fileID,
+            'owner_id' => User::whereHubId($hubMod->userID)->value('id') ?? null,
             'name' => $hubMod->subject,
             'slug' => Str::slug($hubMod->subject),
             'teaser' => $hubMod->getTeaser(),
@@ -681,10 +682,10 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         // Attach the authors to the mods.
         $hubMods->each(function (HubMod $hubMod): void {
-            $authors = $hubMod->getAllAuthors();
+            $authors = $hubMod->getAdditionalAuthorIds();
 
             Mod::withoutEvents(function () use ($hubMod, $authors): void {
-                Mod::query()->whereHubId($hubMod->fileID)->first()->users()->sync($authors);
+                Mod::query()->whereHubId($hubMod->fileID)->first()->authors()->sync($authors);
             });
         });
     }

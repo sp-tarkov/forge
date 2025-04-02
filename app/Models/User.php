@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
@@ -48,7 +50,8 @@ use SensitiveParameter;
  * @property-read string $profile_url
  * @property-read string $profile_photo_url
  * @property-read UserRole|null $role
- * @property-read Collection<int, Mod> $mods
+ * @property-read Collection<int, Mod> $ownedMods
+ * @property-read Collection<int, Mod> $authoredMods
  * @property-read Collection<int, User> $followers
  * @property-read Collection<int, User> $following
  * @property-read Collection<int, OAuthConnection> $oAuthConnections
@@ -76,6 +79,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $appends = [
         'profile_photo_url',
+        'cover_photo_url',
     ];
 
     /**
@@ -87,13 +91,23 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * The relationship between a user and their mods.
+     * The relationship between a user and the mods they own.
+     *
+     * @return HasMany<Mod, $this>
+     */
+    public function mods(): HasMany
+    {
+        return $this->hasMany(Mod::class, 'owner_id');
+    }
+
+    /**
+     * The relationship between a user and the mods they are an author of.
      *
      * @return BelongsToMany<Mod, $this>
      */
-    public function mods(): BelongsToMany
+    public function modsAuthored(): BelongsToMany
     {
-        return $this->belongsToMany(Mod::class);
+        return $this->belongsToMany(Mod::class, 'mod_authors');
     }
 
     /**
@@ -173,7 +187,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function shouldBeSearchable(): bool
     {
-        $this->load(['bans']);
+        $this->loadMissing(['bans']);
 
         return $this->isNotBanned();
     }
@@ -191,7 +205,10 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isMod(): bool
     {
-        return Str::lower($this->role?->name) === 'moderator';
+        // Cache role lookup for performance
+        $roleName = $this->rememberRoleName();
+
+        return $roleName === 'moderator';
     }
 
     /**
@@ -199,7 +216,22 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isAdmin(): bool
     {
-        return Str::lower($this->role?->name) === 'administrator';
+        // Cache role lookup for performance
+        $roleName = $this->rememberRoleName();
+
+        return $roleName === 'administrator';
+    }
+
+    /**
+     * Get and cache the user's role name.
+     */
+    protected function rememberRoleName(): ?string
+    {
+        return Cache::remember(sprintf('user_%d_role_name', $this->id), now()->addHour(), function () {
+            $this->loadMissing('role');
+
+            return $this->role ? Str::lower($this->role->name) : null;
+        });
     }
 
     /**
@@ -228,7 +260,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return Attribute::make(
             get: fn (mixed $value, array $attributes): string => route('user.show', [
                 'userId' => $attributes['id'],
-                'slug' => Str::slug($attributes['name']),
+                'slug' => $this->slug,
             ]),
         )->shouldCache();
     }
@@ -248,9 +280,21 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Assign a role to the user.
      */
-    public function assignRole(UserRole $userRole): bool
+    public function assignRole(UserRole|int $userRole): bool
     {
-        $this->role()->associate($userRole);
+        $roleId = $userRole instanceof UserRole ? $userRole->id : $userRole;
+
+        // Check if the role exists before associating
+        if (! UserRole::query()->where('id', $roleId)->exists()) {
+            Log::warning(sprintf('Attempted to assign non-existent role ID: %d to user ID: %d', $roleId, $this->id));
+
+            return false;
+        }
+
+        $this->role()->associate($roleId); // Associate by ID
+
+        // Forget cached role name after assignment
+        Cache::forget(sprintf('user_%d_role_name', $this->id));
 
         return $this->save();
     }
@@ -287,22 +331,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Handle the about default value if empty. Thanks, MySQL!
+     * Handle the about default value if empty. Ensures an empty string is retrieved if the DB value is NULL, and an
+     * empty string is saved if the input is NULL or empty.
      *
-     * @return Attribute<string[], never>
+     * @return Attribute<string, string>
      */
     protected function about(): Attribute
     {
         return Attribute::make(
-            set: function ($value): string {
-                // MySQL will not allow you to set a default value of an empty string for a (LONG)TEXT column. *le sigh*
-                // NULL is the default. If NULL is saved, we'll swap it out for an empty string.
-                if (is_null($value)) {
-                    return '';
-                }
-
-                return $value;
-            },
+            get: fn (?string $value): string => $value ?? '', // If DB value is NULL, return ''
+            set: fn (?string $value): string => $value ?? '', // If input value is NULL, set as ''
         );
     }
 
@@ -311,7 +349,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected function profilePhotoDisk(): string
     {
-        return config('filesystems.asset_upload', 'public');
+        return config('filesystems.asset_upload_disk.profile', config('jetstream.profile_photo_disk', 'public'));
     }
 
     /**
@@ -322,6 +360,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'id' => 'integer',
             'hub_id' => 'integer',
+            'discord_id' => 'integer',
+            'user_role_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'created_at' => 'datetime',

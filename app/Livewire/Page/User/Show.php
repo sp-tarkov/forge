@@ -50,7 +50,8 @@ class Show extends Component
     {
         $query = $this->user->mods()
             ->with([
-                'users',
+                'owner:id,name',
+                'authors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
             ])
