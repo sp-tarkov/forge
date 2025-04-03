@@ -8,6 +8,7 @@ use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V0\Auth\LoginRequest;
 use App\Http\Requests\Api\V0\Auth\RegisterRequest;
+use App\Http\Requests\Api\V0\Auth\ResendVerificationRequest;
 use App\Http\Resources\Api\V0\UserResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\User;
@@ -276,5 +277,52 @@ class AuthController extends Controller
         $user->sendEmailVerificationNotification();
 
         return ApiResponse::success(new UserResource($user), Response::HTTP_CREATED);
+    }
+
+    /**
+     * Resend Email Verification
+     *
+     * Allows anyone to request a verification email resend by providing an email address. Use this if a user registered
+     * but did not receive the initial email and cannot log in. For security, this endpoint always returns a success
+     * message, regardless of whether the email exists or is already verified, to prevent email enumeration.
+     *
+     * This endpoint is heavily rate-limited.
+     *
+     * @unauthenticated
+     *
+     * @response status=200 scenario="Request Accepted"
+     * {
+     *     "success": true,
+     *     "data": {
+     *         "message": "If an account matching that email exists and requires verification, a new link has been sent."
+     *     }
+     * }
+     * @response status=422 scenario="Validation Error"
+     * {
+     *     "success": false,
+     *     "code": "VALIDATION_FAILED",
+     *     "message": "Validation failed.",
+     *     "errors": {
+     *         "email": [
+     *             "The email field is required."
+     *         ]
+     *     }
+     * }
+     */
+    public function resend(ResendVerificationRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $user = User::where('email', $validated['email'])->first();
+
+        // Only send if user exists AND is not verified.
+        if ($user && ! $user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        // Always return the same generic success message.
+        return ApiResponse::success([
+            'message' => 'If an account matching that email exists and requires verification, a new link has been sent.',
+        ]);
     }
 }
