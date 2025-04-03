@@ -11,6 +11,7 @@ Route::get('/ping', PingController::class)->name('api.v0.ping');
 
 // Authentication
 Route::post('/auth/login', [AuthController::class, 'login'])->name('api.v0.auth.login');
+Route::post('/auth/register', [AuthController::class, 'register'])->name('api.v0.auth.register');
 
 // Authenticated (Requires Sanctum Token)
 Route::middleware('auth:sanctum')->group(function (): void {

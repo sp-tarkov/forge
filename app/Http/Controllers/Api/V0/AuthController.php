@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V0\Auth\LoginRequest;
+use App\Http\Requests\Api\V0\Auth\RegisterRequest;
 use App\Http\Resources\Api\V0\UserResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\User;
@@ -224,5 +225,56 @@ class AuthController extends Controller
         $this->loadIncludes($request, model: $user, allowedIncludes: ['role']);
 
         return ApiResponse::success(new UserResource($user));
+    }
+
+    /**
+     * User Registration
+     *
+     * Creates a new user account. Email verification is still required.
+     *
+     * @unauthenticated
+     *
+     * @response status=201 scenario="Successful Registration"
+     * {
+     *     "success": true,
+     *     "data": {
+     *         "id": 2,
+     *         "name": "NewUser123",
+     *         "profile_photo_url": "https://ui-avatars.com/api/?name=NewUser123&color=...",
+     *         "cover_photo_url": "https://picsum.photos/seed/NewUser123/...",
+     *         "created_at": "2025-04-02T21:30:00.000000Z"
+     *     }
+     * }
+     * @response status=422 scenario="Validation Error"
+     * {
+     *     "success": false,
+     *     "code": "VALIDATION_FAILED",
+     *     "message": "Validation failed.",
+     *     "errors": {
+     *         "name": [
+     *             "The name has already been taken."
+     *         ],
+     *         "email": [
+     *             "The email must be a valid email address."
+     *         ],
+     *         "password": [
+     *             "The password must be at least 8 characters."
+     *         ]
+     *     }
+     * }
+     */
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        $user->sendEmailVerificationNotification();
+
+        return ApiResponse::success(new UserResource($user), Response::HTTP_CREATED);
     }
 }
