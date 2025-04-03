@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V0\AuthController;
+use App\Http\Controllers\Api\V0\ModController;
 use App\Http\Controllers\Api\V0\PingController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,4 +23,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.v0.auth.logout');
     Route::post('/auth/logout/all', [AuthController::class, 'logoutAll'])->name('api.v0.auth.logout-all');
+
+    // Mods
+    Route::get('/mods', [ModController::class, 'index'])->name('api.v0.mods.index');
+    Route::get('/mods/{mod}', [ModController::class, 'show'])->name('api.v0.mods.show');
 });

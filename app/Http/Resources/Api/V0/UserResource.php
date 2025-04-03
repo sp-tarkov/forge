@@ -26,21 +26,17 @@ class UserResource extends JsonResource
         $isCurrentUserRequest = $request->user()?->id === $this->id;
 
         return [
-            // Public fields
             'id' => $this->id,
             'name' => $this->name,
             'profile_photo_url' => $this->profile_photo_url,
             'cover_photo_url' => $this->cover_photo_url,
-            'created_at' => $this->created_at->toISOString(),
-
-            // Conditionally include sensitive fields only for the user themselves
-            $this->mergeWhen($isCurrentUserRequest, [
+            $this->mergeWhen($isCurrentUserRequest, [ // Include these fields if the request is for the current user
                 'email' => $this->email,
                 'email_verified_at' => $this->email_verified_at?->toISOString(),
             ]),
-
-            // Conditionally include loaded relationships based on the 'include' parameter
             'role' => $this->whenLoaded('role', fn (): ?RoleResource => $this->role ? new RoleResource($this->role) : null),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

@@ -6,11 +6,10 @@ namespace Tests\Feature\Api\V0;
 
 use App\Models\User;
 use App\Notifications\VerifyEmail;
-use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 
-it('allows resend request for unverified user and sends notification', function () {
+it('allows resend request for unverified user and sends notification', function (): void {
     Notification::fake();
 
     $user = User::factory()->create(['email_verified_at' => null]);
@@ -32,7 +31,7 @@ it('allows resend request for unverified user and sends notification', function 
     Notification::assertSentTo($user, VerifyEmail::class);
 });
 
-it('accepts resend request for verified user but sends no notification', function () {
+it('accepts resend request for verified user but sends no notification', function (): void {
     Notification::fake();
 
     $user = User::factory()->create(['email_verified_at' => now()]); // Already verified
@@ -55,7 +54,7 @@ it('accepts resend request for verified user but sends no notification', functio
     Notification::assertNothingSent();
 });
 
-it('accepts resend request for non-existent user but sends no notification', function () {
+it('accepts resend request for non-existent user but sends no notification', function (): void {
     Notification::fake();
 
     $nonExistentEmail = 'nobody@example.com';
@@ -78,7 +77,7 @@ it('accepts resend request for non-existent user but sends no notification', fun
     Notification::assertNothingSent();
 });
 
-it('returns validation error if public resend email is missing', function () {
+it('returns validation error if public resend email is missing', function (): void {
     $response = $this->postJson('/api/v0/auth/email/resend', [
         // email missing
     ]);
@@ -88,7 +87,7 @@ it('returns validation error if public resend email is missing', function () {
         ->assertJsonValidationErrorFor('email');
 });
 
-it('returns validation error if public resend email is invalid', function () {
+it('returns validation error if public resend email is invalid', function (): void {
     $response = $this->postJson('/api/v0/auth/email/resend', [
         'email' => 'not-a-valid-email',
     ]);
@@ -98,7 +97,7 @@ it('returns validation error if public resend email is invalid', function () {
         ->assertJsonValidationErrorFor('email');
 });
 
-it('rate limits the public resend endpoint', function () {
+it('rate limits the public resend endpoint', function (): void {
     $user = User::factory()->create(['email_verified_at' => null]);
     $email = $user->email;
 

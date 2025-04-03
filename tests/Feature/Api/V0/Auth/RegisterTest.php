@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 
-it('allows a new user to register', function () {
+it('allows a new user to register', function (): void {
     $userData = [
         'name' => 'NewRegisterUser',
         'email' => 'register@example.com',
@@ -41,12 +41,12 @@ it('allows a new user to register', function () {
     ]);
 
     // Assert password was hashed (by checking it's not the plain text one)
-    $user = User::where('email', $userData['email'])->first();
+    $user = User::query()->where('email', $userData['email'])->first();
     expect(Hash::check($userData['password'], $user->password))->toBeTrue()
         ->and($user->password)->not->toEqual($userData['password']);
 });
 
-it('returns validation error if registration name is missing', function () {
+it('returns validation error if registration name is missing', function (): void {
     $response = $this->postJson('/api/v0/auth/register', [
         // name missing
         'email' => 'register@example.com',
@@ -57,7 +57,7 @@ it('returns validation error if registration name is missing', function () {
         ->assertJsonValidationErrorFor('name');
 });
 
-it('returns validation error if registration email is invalid', function () {
+it('returns validation error if registration email is invalid', function (): void {
     $response = $this->postJson('/api/v0/auth/register', [
         'name' => 'NewRegisterUser',
         'email' => 'not-an-email',
@@ -68,7 +68,7 @@ it('returns validation error if registration email is invalid', function () {
         ->assertJsonValidationErrorFor('email');
 });
 
-it('returns validation error if registration email is already taken', function () {
+it('returns validation error if registration email is already taken', function (): void {
     $existingUser = User::factory()->create(['email' => 'taken@example.com']);
 
     $response = $this->postJson('/api/v0/auth/register', [
@@ -81,7 +81,7 @@ it('returns validation error if registration email is already taken', function (
         ->assertJsonValidationErrorFor('email');
 });
 
-it('returns validation error if registration password is too short', function () {
+it('returns validation error if registration password is too short', function (): void {
     $response = $this->postJson('/api/v0/auth/register', [
         'name' => 'NewRegisterUser',
         'email' => 'register@example.com',
@@ -92,7 +92,7 @@ it('returns validation error if registration password is too short', function ()
         ->assertJsonValidationErrorFor('password');
 });
 
-it('sends verification email upon registration', function () {
+it('sends verification email upon registration', function (): void {
     Notification::fake();
 
     $userData = [
@@ -105,7 +105,7 @@ it('sends verification email upon registration', function () {
 
     $response->assertStatus(Response::HTTP_CREATED);
 
-    $user = User::where('email', $userData['email'])->first();
+    $user = User::query()->where('email', $userData['email'])->first();
     expect($user)->not->toBeNull();
 
     Notification::assertSentTo($user, VerifyEmail::class);

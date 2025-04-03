@@ -7,8 +7,10 @@ namespace App\Models;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use Database\Factories\ModFactory;
+use Exception;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -292,5 +294,62 @@ class Mod extends Model
             get: fn (?string $value) => $value ? Str::lower($value) : '',
             set: fn (?string $value) => $value ? Str::slug($value) : '',
         );
+    }
+
+    /**
+     * Scope a query to only include mods created between the given dates.
+     *
+     * @param  Builder<Mod>  $query
+     * @param  string|array<int, string>  $dates
+     */
+    public function scopeCreatedAtBetween(Builder $query, string|array ...$dates): void
+    {
+        if (count($dates) === 2) {
+            try {
+                $start = Carbon::parse(Str::trim($dates[0]))->startOfDay();
+                $end = Carbon::parse(Str::trim($dates[1]))->endOfDay();
+                $query->whereBetween('created_at', [$start, $end]);
+            } catch (Exception) {
+                // Ignore
+            }
+        }
+    }
+
+    /**
+     * Scope a query to only include mods updated between the given dates.
+     *
+     * @param  Builder<Mod>  $query
+     * @param  string|array<int, string>  $dates
+     */
+    public function scopeUpdatedAtBetween(Builder $query, string|array ...$dates): void
+    {
+        if (count($dates) === 2) {
+            try {
+                $start = Carbon::parse(Str::trim($dates[0]))->startOfDay();
+                $end = Carbon::parse(Str::trim($dates[1]))->endOfDay();
+                $query->whereBetween('updated_at', [$start, $end]);
+            } catch (Exception) {
+                // Ignore
+            }
+        }
+    }
+
+    /**
+     * Scope a query to only include mods published between the given dates.
+     *
+     * @param  Builder<Mod>  $query
+     * @param  string|array<int, string>  $dates
+     */
+    public function scopePublishedAtBetween(Builder $query, string|array ...$dates): void
+    {
+        if (count($dates) === 2) {
+            try {
+                $start = Carbon::parse(Str::trim($dates[0]))->startOfDay();
+                $end = Carbon::parse(Str::trim($dates[1]))->endOfDay();
+                $query->whereBetween('published_at', [$start, $end]);
+            } catch (Exception) {
+                // Ignore
+            }
+        }
     }
 }

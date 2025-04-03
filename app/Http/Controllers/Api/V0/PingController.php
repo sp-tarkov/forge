@@ -28,10 +28,12 @@ class PingController extends Controller
      * @unauthenticated
      *
      * @response status=200 scenario="Successful Ping"
-     * {
-     *     "success": true,
-     *     "data": { "message": "pong" }
-     * }
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "message": "pong"
+     *      }
+     *  }
      */
     public function __invoke(Request $request): JsonResponse
     {

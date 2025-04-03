@@ -76,7 +76,7 @@ it('includes role when requested via include parameter', function (): void {
         ->assertJsonPath('data.role.name', $role->name);
 });
 
-it('ignores invalid include parameters', function (): void {
+it('throws error on invalid include parameters', function (): void {
     $role = UserRole::factory()->create(['name' => 'Tester']);
     $user = User::factory()->create([
         'password' => Hash::make('password123'),
@@ -88,27 +88,13 @@ it('ignores invalid include parameters', function (): void {
     $response = $this->withToken($token)->getJson('/api/v0/auth/user?include=role,invalid_relation');
 
     $response
-        ->assertStatus(Response::HTTP_OK)
+        ->assertStatus(Response::HTTP_BAD_REQUEST)
         ->assertJsonStructure([
             'success',
-            'data' => [
-                'id',
-                'name',
-                'email',
-                'email_verified_at',
-                'profile_photo_url',
-                'cover_photo_url',
-                'role' => [
-                    'id',
-                    'name',
-                    'short_name',
-                    'description',
-                    'color_class',
-                ],
-                'created_at',
-            ],
+            'code',
+            'message',
         ])
-        ->assertJsonMissingPath('data.invalid_relation'); // Should not appear
+        ->assertJsonPath('success', false);
 });
 
 it('should handle a null role gracefully when the role is requested', function (): void {

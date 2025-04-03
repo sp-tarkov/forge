@@ -6,6 +6,8 @@ namespace App\Http\Responses\Api\V0;
 
 use App\Enums\Api\V0\ApiErrorCode;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
 use Symfony\Component\HttpFoundation\Response;
 
 class ApiResponse
@@ -22,10 +24,20 @@ class ApiResponse
         int $status = Response::HTTP_OK,
         array $headers = []
     ): JsonResponse {
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ], $status, $headers);
+        $payload = ['success' => true];
+
+        // Check if the data is a paginated resource collection
+        if (
+            $data instanceof AnonymousResourceCollection &&
+            $data->resource instanceof AbstractPaginator
+        ) {
+            // If paginated, merge the paginator's structure (data, links, meta)
+            $payload = array_merge($payload, $data->response()->getData(true));
+        } elseif (! empty($data) || is_object($data) || is_array($data)) {
+            $payload['data'] = $data;
+        }
+
+        return response()->json($payload, $status, $headers);
     }
 
     /**

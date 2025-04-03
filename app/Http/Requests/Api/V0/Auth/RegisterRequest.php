@@ -46,7 +46,7 @@ class RegisterRequest extends FormRequest
                 'example' => 'NewUser123',
             ],
             'email' => [
-                'description' => 'The user\'s email address.',
+                'description' => "The user's email address.",
                 'required' => true,
                 'example' => 'newuser@example.com',
             ],

@@ -12,11 +12,12 @@ use App\Http\Requests\Api\V0\Auth\ResendVerificationRequest;
 use App\Http\Resources\Api\V0\UserResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\User;
-use App\Traits\Api\V0\HandlesIncludes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\QueryBuilder\AllowedInclude;
+use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -26,8 +27,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AuthController extends Controller
 {
-    use HandlesIncludes;
-
     /**
      * User Login & Token Creation
      *
@@ -35,33 +34,35 @@ class AuthController extends Controller
      * haven't set a password) cannot use this endpoint.
      *
      * @response status=200 scenario="Successful Login"
-     * {
-     *     "success": true,
-     *     "data": { "token": "{YOUR_API_TOKEN}" }
-     * }
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "token": "{YOUR_API_TOKEN}"
+     *      }
+     *  }
      * @response status=401 scenario="Invalid Credentials"
-     * {
-     *     "success": false,
-     *     "code": "UNAUTHENTICATED",
-     *     "message": "Invalid credentials provided."
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "UNAUTHENTICATED",
+     *      "message": "Invalid credentials provided."
+     *  }
      * @response status=403 scenario="OAuth User Attempt"
-     * {
-     *     "success": false,
-     *     "code": "PASSWORD_LOGIN_UNAVAILABLE",
-     *     "message": "Password login is not available for accounts created via OAuth. Please use the original login method or set a password for your account."
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "PASSWORD_LOGIN_UNAVAILABLE",
+     *      "message": "Password login is not available for accounts created via OAuth. Please use the original login method or set a password for your account."
+     *  }
      * @response status=422 scenario="Validation Error"
-     * {
-     *     "success": false,
-     *     "code": "VALIDATION_FAILED",
-     *     "message": "Validation failed.",
-     *     "errors": {
-     *         "email": [ "The email field is required." ],
-     *         "password": [ "The password field is required." ],
-     *         "abilities.0": [ "The selected ability read-invalid is invalid. Allowed abilities are: create, read, update, delete" ]
-     *     }
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "VALIDATION_FAILED",
+     *      "message": "Validation failed.",
+     *      "errors": {
+     *          "email": [ "The email field is required." ],
+     *          "password": [ "The password field is required." ],
+     *          "abilities.0": [ "The selected ability read-invalid is invalid. Allowed abilities are: create, read, update, delete" ]
+     *      }
+     *  }
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -122,18 +123,18 @@ class AuthController extends Controller
      * @authenticated
      *
      * @response status=200 scenario="Successful Logout"
-     * {
-     *     "success": true,
-     *     "data": {
-     *         "message": "Current token revoked successfully."
-     *     }
-     * }
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "message": "Current token revoked successfully."
+     *      }
+     *  }
      * @response status=401 scenario="Unauthenticated"
-     * {
-     *     "success": false,
-     *     "code": "UNAUTHENTICATED",
-     *     "message": "Unauthenticated."
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "UNAUTHENTICATED",
+     *      "message": "Unauthenticated."
+     *  }
      */
     public function logout(Request $request): JsonResponse
     {
@@ -150,18 +151,18 @@ class AuthController extends Controller
      * @authenticated
      *
      * @response status=200 scenario="Successful Logout All"
-     * {
-     *     "success": true,
-     *     "data": {
-     *         "message": "All tokens revoked successfully."
-     *     }
-     * }
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "message": "All tokens revoked successfully."
+     *      }
+     *  }
      * @response status=401 scenario="Unauthenticated"
-     * {
-     *     "success": false,
-     *     "code": "UNAUTHENTICATED",
-     *     "message": "Unauthenticated."
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "UNAUTHENTICATED",
+     *      "message": "Unauthenticated."
+     *  }
      */
     public function logoutAll(Request $request): JsonResponse
     {
@@ -180,50 +181,58 @@ class AuthController extends Controller
      * @queryParam include string optional Comma-separated list of relationships to include. Available relationships: `role`. Example: role
      *
      * @response status=200 scenario="Success (No Includes)"
-     * {
-     *     "success": true,
-     *     "data": {
-     *         "id": 1,
-     *         "name": "Test User",
-     *         "email": "test@example.com",
-     *         "email_verified_at": "2025-04-02T20:44:38.000000Z",
-     *         "profile_photo_url": "https://example.com/path/to/profile.jpg",
-     *         "cover_photo_url": "https://example.com/path/to/cover.jpg",
-     *         "created_at": "2025-04-01T10:00:00.000000Z"
-     *      }
-     * }
-     * @response status=200 scenario="Success (Include Role)"
-     * {
-     *     "success": true,
-     *     "data": {
-     *         "id": 1,
-     *         "name": "Test User",
-     *         "email": "test@example.com",
-     *         "email_verified_at": "2025-04-02T20:44:38.000000Z",
-     *         "profile_photo_url": "https://example.com/path/to/profile.jpg",
-     *         "cover_photo_url": "https://example.com/path/to/cover.jpg",
-     *         "role": {
-     *             "id": 2,
-     *             "name": "Moderator",
-     *             "short_name": "Mod",
-     *             "description": "Moderate user content.",
-     *             "color_class": "emerald",
-     *          },
+     *  {
+     *      "success": true,
+     *      "data": {
+     *      "id": 1,
+     *          "name": "Test User",
+     *          "email": "test@example.com",
+     *          "email_verified_at": "2025-04-02T20:44:38.000000Z",
+     *          "profile_photo_url": "https://example.com/path/to/profile.jpg",
+     *          "cover_photo_url": "https://example.com/path/to/cover.jpg",
      *          "created_at": "2025-04-01T10:00:00.000000Z"
      *      }
-     * }
+     *  }
+     * @response status=200 scenario="Success (Include Role)"
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "id": 1,
+     *          "name": "Test User",
+     *          "email": "test@example.com",
+     *          "email_verified_at": "2025-04-02T20:44:38.000000Z",
+     *          "profile_photo_url": "https://example.com/path/to/profile.jpg",
+     *          "cover_photo_url": "https://example.com/path/to/cover.jpg",
+     *          "role": {
+     *              "id": 2,
+     *              "name": "Moderator",
+     *              "short_name": "Mod",
+     *              "description": "Moderate user content.",
+     *              "color_class": "emerald",
+     *          },
+     *          "created_at": "2025-04-01T10:00:00.000000Z",
+     *          "updated_at": "2025-04-01T10:00:00.000000Z"
+     *      }
+     *  }
      * @response status=401 scenario="Unauthenticated"
-     * {
-     *     "success": false,
-     *     "code": "UNAUTHENTICATED",
-     *     "message": "Unauthenticated."
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "UNAUTHENTICATED",
+     *      "message": "Unauthenticated."
+     *  }
      */
     public function user(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        $this->loadIncludes($request, model: $user, allowedIncludes: ['role']);
+        $user = QueryBuilder::for(User::where('id', $request->user()->id))
+            ->allowedIncludes([
+                AllowedInclude::relationship('role'),
+                // TODO:
+                // AllowedInclude::relationship('ownedMods'),
+                // AllowedInclude::relationship('authoredMods'),
+                // AllowedInclude::relationship('followers'),
+                // AllowedInclude::relationship('following'),
+            ])
+            ->firstOrFail();
 
         return ApiResponse::success(new UserResource($user));
     }
@@ -236,39 +245,40 @@ class AuthController extends Controller
      * @unauthenticated
      *
      * @response status=201 scenario="Successful Registration"
-     * {
-     *     "success": true,
-     *     "data": {
-     *         "id": 2,
-     *         "name": "NewUser123",
-     *         "profile_photo_url": "https://ui-avatars.com/api/?name=NewUser123&color=...",
-     *         "cover_photo_url": "https://picsum.photos/seed/NewUser123/...",
-     *         "created_at": "2025-04-02T21:30:00.000000Z"
-     *     }
-     * }
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "id": 2,
+     *          "name": "NewUser123",
+     *          "profile_photo_url": "https://ui-avatars.com/api/?name=NewUser123&color=...",
+     *          "cover_photo_url": "https://picsum.photos/seed/NewUser123/...",
+     *          "created_at": "2025-04-02T21:30:00.000000Z",
+     *          "updated_at": "2025-04-01T10:00:00.000000Z"
+     *      }
+     *  }
      * @response status=422 scenario="Validation Error"
-     * {
-     *     "success": false,
-     *     "code": "VALIDATION_FAILED",
-     *     "message": "Validation failed.",
-     *     "errors": {
-     *         "name": [
-     *             "The name has already been taken."
-     *         ],
-     *         "email": [
-     *             "The email must be a valid email address."
-     *         ],
-     *         "password": [
-     *             "The password must be at least 8 characters."
-     *         ]
-     *     }
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "VALIDATION_FAILED",
+     *      "message": "Validation failed.",
+     *      "errors": {
+     *          "name": [
+     *              "The name has already been taken."
+     *          ],
+     *          "email": [
+     *              "The email must be a valid email address."
+     *          ],
+     *          "password": [
+     *              "The password must be at least 8 characters."
+     *          ]
+     *      }
+     *  }
      */
     public function register(RegisterRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        $user = User::create([
+        $user = User::query()->create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
@@ -291,29 +301,29 @@ class AuthController extends Controller
      * @unauthenticated
      *
      * @response status=200 scenario="Request Accepted"
-     * {
-     *     "success": true,
-     *     "data": {
-     *         "message": "If an account matching that email exists and requires verification, a new link has been sent."
-     *     }
-     * }
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "message": "If an account matching that email exists and requires verification, a new link has been sent."
+     *      }
+     *  }
      * @response status=422 scenario="Validation Error"
-     * {
-     *     "success": false,
-     *     "code": "VALIDATION_FAILED",
-     *     "message": "Validation failed.",
-     *     "errors": {
-     *         "email": [
-     *             "The email field is required."
-     *         ]
-     *     }
-     * }
+     *  {
+     *      "success": false,
+     *      "code": "VALIDATION_FAILED",
+     *      "message": "Validation failed.",
+     *      "errors": {
+     *          "email": [
+     *              "The email field is required."
+     *          ]
+     *      }
+     *  }
      */
     public function resend(ResendVerificationRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = User::query()->where('email', $validated['email'])->first();
 
         // Only send if user exists AND is not verified.
         if ($user && ! $user->hasVerifiedEmail()) {

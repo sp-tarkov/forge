@@ -9,6 +9,7 @@ use App\Http\Responses\Api\V0\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Spatie\QueryBuilder\Exceptions\InvalidQuery;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -46,12 +47,19 @@ class Handler
             );
         }
 
+        if ($e instanceof InvalidQuery) {
+            return ApiResponse::error(
+                $e->getMessage(),
+                Response::HTTP_BAD_REQUEST,
+                ApiErrorCode::INVALID_QUERY_PARAMETER
+            );
+        }
+
         // Generic fallbacks for other exceptions.
         $statusCode = $this->determineStatusCode($e);
         $message = $this->determineMessage($e, $statusCode);
         $errorCode = match ($statusCode) {
             Response::HTTP_FORBIDDEN => ApiErrorCode::FORBIDDEN,
-            Response::HTTP_NOT_FOUND => ApiErrorCode::NOT_FOUND,
             Response::HTTP_UNPROCESSABLE_ENTITY => ApiErrorCode::VALIDATION_FAILED,
             Response::HTTP_INTERNAL_SERVER_ERROR => ApiErrorCode::SERVER_ERROR,
             default => ApiErrorCode::UNEXPECTED_ERROR,
