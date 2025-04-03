@@ -33,7 +33,7 @@ class ApiResponse
         ) {
             // If paginated, merge the paginator's structure (data, links, meta)
             $payload = array_merge($payload, $data->response()->getData(true));
-        } elseif (! empty($data) || is_object($data) || is_array($data)) {
+        } elseif (is_array($data) || is_object($data) || ! empty($data)) {
             $payload['data'] = $data;
         }
 

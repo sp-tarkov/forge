@@ -27,7 +27,7 @@ class ModVersionResource extends JsonResource
             'hub_id' => $this->hub_id,
             'mod' => $this->when(
                 $this->relationLoaded('mod') && ! $request->routeIs('api.v0.mods.index'),
-                fn () => new ModResource($this->mod)
+                fn (): ModResource => new ModResource($this->mod)
             ),
             'version' => $this->version,
             'description' => $this->description,

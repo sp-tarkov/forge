@@ -223,7 +223,7 @@ class AuthController extends Controller
      */
     public function user(Request $request): JsonResponse
     {
-        $user = QueryBuilder::for(User::where('id', $request->user()->id))
+        $user = QueryBuilder::for(User::query()->where('id', $request->user()->id))
             ->allowedIncludes([
                 AllowedInclude::relationship('role'),
                 // TODO:
