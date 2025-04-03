@@ -18,7 +18,7 @@ it('verifies a user with a valid signed url', function () {
 
     $user = User::factory()->create(['email_verified_at' => null]);
     $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify.api',
+        'api.v0.auth.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
     );
@@ -42,7 +42,7 @@ it('verifies a user with a valid signed url', function () {
 it('returns error if verification url signature is invalid', function () {
     $user = User::factory()->create(['email_verified_at' => null]);
     $baseUrl = URL::route(
-        'verification.verify.api',
+        'api.v0.auth.verify',
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())],
         absolute: false
     );
@@ -57,7 +57,7 @@ it('returns error if verification url signature is invalid', function () {
 it('returns error if verification url hash is invalid', function () {
     $user = User::factory()->create(['email_verified_at' => null]);
     $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify.api',
+        'api.v0.auth.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => 'invalid-hash']
     );
@@ -77,7 +77,7 @@ it('returns error if verification url hash is invalid', function () {
 it('returns error if user is already verified', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $verificationUrl = URL::temporarySignedRoute(
-        'verification.verify.api',
+        'api.v0.auth.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
     );

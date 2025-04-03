@@ -17,10 +17,10 @@ Route::post('/auth/register', [AuthController::class, 'register'])->name('api.v0
 // Email Verification Handling
 Route::get('/auth/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
     ->middleware(['signed', 'throttle:6,1'])
-    ->name('verification.verify.api');
+    ->name('api.v0.auth.verify');
 Route::post('/auth/email/resend', [VerificationController::class, 'resend'])
     ->middleware('throttle:3,60')
-    ->name('verification.resend.api');
+    ->name('api.v0.auth.resend');
 
 // Authenticated (Requires Sanctum Token)
 Route::middleware('auth:sanctum')->group(function (): void {
@@ -28,8 +28,4 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.v0.auth.logout');
     Route::post('/auth/logout/all', [AuthController::class, 'logoutAll'])->name('api.v0.auth.logout-all');
-
-    // Resend Verification Email
-    Route::post('/auth/email/resend-verification', [VerificationController::class, 'resend'])
-        ->name('verification.resend.api');
 });
