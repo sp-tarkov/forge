@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
 class AuthController extends Controller
 {
     /**
-     * User Login & Token Creation
+     * Login & Token Creation
      *
      * Authenticates a user with email and password and returns an API token. Users who registered via OAuth (and
      * haven't set a password) cannot use this endpoint.
@@ -116,7 +116,7 @@ class AuthController extends Controller
     }
 
     /**
-     * User Logout (Current Token)
+     * Logout & Delete Current Token
      *
      * Revokes the specific API token that was used to make this request.
      *
@@ -144,7 +144,7 @@ class AuthController extends Controller
     }
 
     /**
-     * User Logout (All Tokens)
+     * Logout & Delete All Tokens
      *
      * Revokes all API tokens associated with the authenticated user.
      *
@@ -238,7 +238,7 @@ class AuthController extends Controller
     }
 
     /**
-     * User Registration
+     * Registration
      *
      * Creates a new user account. Email verification is still required.
      *
