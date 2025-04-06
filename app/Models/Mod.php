@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
+use Composer\Semver\Semver;
 use Database\Factories\ModFactory;
 use Exception;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -22,9 +23,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use UnexpectedValueException;
 
 /**
  * Mod Model
@@ -297,6 +300,22 @@ class Mod extends Model
     }
 
     /**
+     * Scope a query to only include mods suitable for public API listing.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    public function scopeApiQueryable(Builder $query): void
+    {
+        // Ensure the mod is not disabled.
+        $query->where('mods.disabled', false);
+
+        // Ensure the relationship exists AND the related version is not disabled.
+        $query->whereHas('latestVersion', function (Builder $versionQuery): void {
+            $versionQuery->where('disabled', false);
+        });
+    }
+
+    /**
      * Scope a query to only include mods created between the given dates.
      *
      * @param  Builder<Mod>  $query
@@ -310,7 +329,7 @@ class Mod extends Model
                 $end = Carbon::parse(Str::trim($dates[1]))->endOfDay();
                 $query->whereBetween('created_at', [$start, $end]);
             } catch (Exception) {
-                // Ignore
+                Log::debug('Invalid date format for created_at filter', ['dates' => $dates]);
             }
         }
     }
@@ -329,7 +348,7 @@ class Mod extends Model
                 $end = Carbon::parse(Str::trim($dates[1]))->endOfDay();
                 $query->whereBetween('updated_at', [$start, $end]);
             } catch (Exception) {
-                // Ignore
+                Log::debug('Invalid date format for updated_at filter', ['dates' => $dates]);
             }
         }
     }
@@ -348,8 +367,42 @@ class Mod extends Model
                 $end = Carbon::parse(Str::trim($dates[1]))->endOfDay();
                 $query->whereBetween('published_at', [$start, $end]);
             } catch (Exception) {
-                // Ignore
+                Log::debug('Invalid date format for published_at filter', ['dates' => $dates]);
             }
         }
+    }
+
+    /**
+     * Scope a query to only include mods that have at least one version associated with an SPT version satisfying the
+     * given constraint string.
+     *
+     * @param  Builder<Mod>  $query
+     * @param  string  $constraintString  The SemVer constraint string (e.g., "^3.8.0")
+     */
+    public function scopeSptVersion(Builder $query, string $constraintString): void
+    {
+        $availableSptVersions = SptVersion::allValidVersions();
+
+        try {
+            $satisfyingVersionStrings = Semver::satisfiedBy($availableSptVersions, $constraintString);
+        } catch (UnexpectedValueException $unexpectedValueException) {
+            $satisfyingVersionStrings = [];
+            Log::debug('scopeForSptVersion: Invalid constraint string provided to Semver.', ['constraint' => $constraintString, 'error' => $unexpectedValueException->getMessage()]);
+        }
+
+        if (empty($satisfyingVersionStrings)) {
+            // If no versions satisfy the constraint, ensure no mods are returned by this filter.
+            $query->whereHas('versions', fn ($q) => $q->whereRaw('1 = 0'));
+
+            return;
+        }
+
+        // Filter mods where at least one mod version has an associated spt version whose version string is IN the list
+        // of satisfying versions.
+        $query->whereHas('versions', function (Builder $versionQuery) use ($satisfyingVersionStrings): void {
+            $versionQuery->whereHas('sptVersions', function (Builder $sptQuery) use ($satisfyingVersionStrings): void {
+                $sptQuery->whereIn('spt_versions.version', $satisfyingVersionStrings);
+            });
+        });
     }
 }

@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V0;
 
-use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Sequence;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
 beforeEach(function (): void {
+    Cache::forget('all_spt_versions_list');
+
     $this->user = User::factory()->create([
         'password' => Hash::make('password'),
     ]);
@@ -19,7 +24,7 @@ beforeEach(function (): void {
 });
 
 it('returns a paginated list of mods', function (): void {
-    Mod::factory()->count(20)->create();
+    Mod::factory()->count(20)->hasVersions(2)->create();
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?per_page=10');
 
@@ -56,8 +61,8 @@ it('returns a paginated list of mods', function (): void {
 });
 
 it('filters mods by id', function (): void {
-    $mod1 = Mod::factory()->create();
-    $mod2 = Mod::factory()->create();
+    $mod1 = Mod::factory()->hasVersions(1)->create();
+    $mod2 = Mod::factory()->hasVersions(1)->create();
     Mod::factory()->create();
 
     $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mods?filter[id]=%d,%d', $mod1->id, $mod2->id));
@@ -73,11 +78,11 @@ it('filters mods by id', function (): void {
 });
 
 it('filters mods by name wildcard', function (): void {
-    $mod1 = Mod::factory()->create(['name' => 'Awesome Mod']);
-    Mod::factory()->create(['name' => 'Another Mod']);
-    $mod2 = Mod::factory()->create(['name' => 'Awesome Feature']);
-    Mod::factory()->create(['name' => 'Mod Again']);
-    $mod3 = Mod::factory()->create(['name' => 'FeatureAwesomeMod']);
+    $mod1 = Mod::factory()->hasVersions(1)->create(['name' => 'Awesome Mod']);
+    Mod::factory()->hasVersions(1)->create(['name' => 'Another Mod']);
+    $mod2 = Mod::factory()->hasVersions(1)->create(['name' => 'Awesome Feature']);
+    Mod::factory()->hasVersions(1)->create(['name' => 'Mod Again']);
+    $mod3 = Mod::factory()->hasVersions(1)->create(['name' => 'FeatureAwesomeMod']);
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[name]=Awesome');
 
@@ -93,8 +98,8 @@ it('filters mods by name wildcard', function (): void {
 });
 
 it('filters mods by boolean featured', function (): void {
-    Mod::factory()->create(['featured' => true]);
-    Mod::factory()->count(2)->create(['featured' => false]);
+    Mod::factory()->hasVersions(1)->create(['featured' => true]);
+    Mod::factory()->count(2)->hasVersions(1)->create(['featured' => false]);
 
     // Test true
     $responseTrue = $this->withToken($this->token)->getJson('/api/v0/mods?filter[featured]=1');
@@ -106,9 +111,9 @@ it('filters mods by boolean featured', function (): void {
 });
 
 it('filters mods by created_at range', function (): void {
-    Mod::factory()->create(['name' => 'Five Ago', 'created_at' => now()->subDays(5)]);
-    $targetMod = Mod::factory()->create(['name' => 'Two Ago', 'created_at' => now()->subDays(2)]);
-    Mod::factory()->create(['name' => 'Now', 'created_at' => now()]);
+    Mod::factory()->hasVersions(1)->create(['name' => 'Five Ago', 'created_at' => now()->subDays(5)]);
+    $targetMod = Mod::factory()->hasVersions(1)->create(['name' => 'Two Ago', 'created_at' => now()->subDays(2)]);
+    Mod::factory()->hasVersions(1)->create(['name' => 'Now', 'created_at' => now()]);
 
     $startDate = now()->subDays(3)->format('Y-m-d');
     $endDate = now()->subDays(1)->format('Y-m-d');
@@ -122,9 +127,9 @@ it('filters mods by created_at range', function (): void {
 });
 
 it('sorts mods by name ascending', function (): void {
-    Mod::factory()->create(['name' => 'Charlie Mod']);
-    Mod::factory()->create(['name' => 'Alpha Mod']);
-    Mod::factory()->create(['name' => 'Bravo Mod']);
+    Mod::factory()->hasVersions(1)->create(['name' => 'Charlie Mod']);
+    Mod::factory()->hasVersions(1)->create(['name' => 'Alpha Mod']);
+    Mod::factory()->hasVersions(1)->create(['name' => 'Bravo Mod']);
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?sort=name');
     $response->assertStatus(Response::HTTP_OK)->assertJsonCount(3, 'data');
@@ -134,9 +139,9 @@ it('sorts mods by name ascending', function (): void {
 });
 
 it('sorts mods by created_at descending', function (): void {
-    $modOld = Mod::factory()->create(['created_at' => now()->subDays(2)]);
-    $modNew = Mod::factory()->create(['created_at' => now()]);
-    $modMid = Mod::factory()->create(['created_at' => now()->subDay()]);
+    $modOld = Mod::factory()->hasVersions(1)->create(['created_at' => now()->subDays(2)]);
+    $modNew = Mod::factory()->hasVersions(1)->create(['created_at' => now()]);
+    $modMid = Mod::factory()->hasVersions(1)->create(['created_at' => now()->subDay()]);
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?sort=-created_at');
     $response->assertStatus(Response::HTTP_OK)->assertJsonCount(3, 'data');
@@ -146,21 +151,184 @@ it('sorts mods by created_at descending', function (): void {
 });
 
 it('includes owner relationship', function (): void {
-    $owner = User::factory()->create();
-    Mod::factory()->create(['owner_id' => $owner->id]);
+    $mod = Mod::factory()->hasVersions(1)->create();
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=owner');
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJsonStructure(['data' => ['*' => ['owner' => ['id', 'name']]]]);
-    $response->assertJsonPath('data.0.owner.id', $owner->id);
+    $response->assertJsonPath('data.0.owner.id', $mod->owner->id);
 });
 
 it('includes license relationship', function (): void {
-    $license = License::factory()->create();
-    Mod::factory()->create(['license_id' => $license->id]);
+    $mod = Mod::factory()->hasVersions(1)->create(); // Factory includes license by default
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=license');
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJsonStructure(['data' => ['*' => ['license' => ['id', 'name']]]]);
-    $response->assertJsonPath('data.0.license.id', $license->id);
+    $response->assertJsonPath('data.0.license.id', $mod->license->id);
+});
+
+it('includes enabled mods with an enabled latest version', function (): void {
+    $mod = Mod::factory()->hasVersions(1)->create();
+
+    $result = Mod::apiQueryable()->get();
+
+    expect($result)->toHaveCount(1)
+        ->and($result->first()->id)->toBe($mod->id);
+});
+
+it('excludes disabled mods', function (): void {
+    // Mod disabled, latest version enabled
+    $mod = Mod::factory()->hasVersions(1)->disabled()->create();
+
+    $result = Mod::apiQueryable()->get();
+
+    expect($result)->toBeEmpty();
+});
+
+it('excludes mods with only disabled version(s)', function (): void {
+    // Mod enabled, versions disabled
+    $mod = Mod::factory()->hasVersions(2, ['disabled' => true])->create();
+
+    $result = Mod::apiQueryable()->get();
+
+    expect($result)->toBeEmpty();
+});
+
+it('excludes mods with no versions', function (): void {
+    // No versions
+    $mod = Mod::factory()->create();
+
+    $result = Mod::apiQueryable()->get();
+
+    expect($result)->toBeEmpty();
+});
+
+it('filters mods by spt_version constraint using caret (^)', function (): void {
+    SptVersion::factory()->count(4)->state(new Sequence(
+        ['version' => '3.9.0'],
+        ['version' => '3.8.1'],
+        ['version' => '3.8.0'],
+        ['version' => '3.7.1'],
+    ))->create();
+
+    $modFor390 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.9.0'])->create();
+    $modFor381 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.1'])->create();
+    $modFor380 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+    $modFor371 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.7.1'])->create();
+
+    $constraint = urlencode('^3.8.0');
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[spt_version]='.$constraint);
+
+    $response->assertOk()->assertJsonCount(3, 'data');
+
+    $returnedIds = collect($response->json('data'))->pluck('id')->all();
+
+    expect($returnedIds)
+        ->toContain($modFor380->id, $modFor381->id, $modFor390->id)
+        ->not
+        ->toContain($modFor371->id);
+});
+
+it('filters mods by spt_version constraint using tilde (~)', function (): void {
+    SptVersion::factory()->count(4)->state(new Sequence(
+        ['version' => '3.8.1'],
+        ['version' => '3.8.0'],
+        ['version' => '3.7.1'],
+        ['version' => '3.7.0'],
+    ))->create();
+
+    $modFor381 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.1'])->create();
+    $modFor380 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+    $modFor371 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.7.1'])->create();
+    $modFor370 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.7.0'])->create();
+
+    $constraint = urlencode('~3.7.0');
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[spt_version]='.$constraint);
+
+    $response->assertOk()->assertJsonCount(2, 'data');
+
+    $returnedIds = collect($response->json('data'))->pluck('id')->all();
+
+    expect($returnedIds)
+        ->toContain($modFor370->id, $modFor371->id)
+        ->not
+        ->toContain($modFor380->id, $modFor381->id);
+});
+
+it('filters mods by spt_version constraint using gte (>=)', function (): void {
+    SptVersion::factory()->count(4)->state(new Sequence(
+        ['version' => '3.9.0'],
+        ['version' => '3.8.1'],
+        ['version' => '3.8.0'],
+        ['version' => '3.7.1'],
+        ['version' => '3.7.0'],
+    ))->create();
+
+    $modFor390 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.9.0'])->create();
+    $modFor381 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.1'])->create();
+    $modFor380 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+    $modFor371 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.7.1'])->create();
+    $modFor370 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.7.0'])->create();
+
+    $constraint = urlencode('>=3.8.1');
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[spt_version]='.$constraint);
+
+    $response->assertOk()->assertJsonCount(2, 'data');
+
+    $returnedIds = collect($response->json('data'))->pluck('id')->all();
+
+    expect($returnedIds)
+        ->toContain($modFor381->id, $modFor390->id)
+        ->not
+        ->toContain($modFor380->id, $modFor371->id, $modFor370->id);
+});
+
+it('returns no mods if spt_version constraint matches nothing', function (): void {
+    SptVersion::factory()->count(4)->state(new Sequence(
+        ['version' => '3.9.0'],
+        ['version' => '3.8.1'],
+        ['version' => '3.8.0'],
+        ['version' => '3.7.1'],
+        ['version' => '3.7.0'],
+    ))->create();
+
+    Mod::factory()->hasVersions(1, ['spt_version_constraint' => '<=3.9.0'])->create();
+
+    $constraint = urlencode('^4.0.0');
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[spt_version]='.$constraint);
+
+    $response->assertOk()->assertJsonCount(0, 'data');
+});
+
+it('filters included versions based on spt_version constraint', function (): void {
+    SptVersion::factory()->count(2)->state(new Sequence(
+        ['version' => '3.8.0'],
+        ['version' => '3.7.1'],
+    ))->create();
+
+    // Mod with two versions, one matching the constraint, one not
+    $mod = Mod::factory()
+        ->has(ModVersion::factory()->count(2)->sequence(
+            ['spt_version_constraint' => '3.8.0'],
+            ['spt_version_constraint' => '3.7.1'],
+        ), 'versions')
+        ->create();
+
+    $version380 = $mod->versions()->where('spt_version_constraint', '3.8.0')->first();
+    $version371 = $mod->versions()->where('spt_version_constraint', '3.7.1')->first();
+
+    // Filter for ^3.8.0 and include versions
+    $constraint = urlencode('^3.8.0');
+    $response = $this->withToken($this->token)
+        ->getJson(sprintf('/api/v0/mods?include=versions&filter[spt_version]=%s&versions_limit=2', $constraint));
+
+    $response
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonCount(1, 'data.0.versions')
+        ->assertJsonPath('data.0.versions.0.id', $version380->id);
+
+    $includedVersionIds = collect($response->json('data.0.versions'))->pluck('id');
+    expect($includedVersionIds)->not->toContain($version371->id);
 });

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\ModResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\Mod;
+use App\Support\QueryBuilder\Includes\ConditionalVersionsInclude;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\UrlParam;
@@ -110,9 +111,11 @@ class ModController extends Controller
     #[UrlParam('filter[featured]', description: 'Filter by featured status (1, true, 0, false).', required: false, example: 'true')]
     #[UrlParam('filter[contains_ads]', description: 'Filter by contains_ads status (1, true, 0, false).', required: false, example: 'false')]
     #[UrlParam('filter[contains_ai_content]', description: 'Filter by contains_ai_content status (1, true, 0, false).', required: false, example: 'false')]
+    #[UrlParam('filter[spt_version]', description: 'Filter mods compatible with an SPT version SemVer constraint.', required: false, example: '^3.8.0')]
     #[UrlParam('filter[created_between]', description: 'Filter by creation date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[UrlParam('versions_limit', description: 'Limit the number of versions returned in the `versions` relationship (if included). Default is 1. Max is 10.', required: false, example: 5)]
     #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `id`, `name`, `slug`, `created_at`, `updated_at`, `published_at`.', required: false, example: '-created_at,name')]
     #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
@@ -120,7 +123,7 @@ class ModController extends Controller
     {
         $perPage = min((int) $request->query('per_page', '12'), 50);
 
-        $mods = QueryBuilder::for(Mod::class)
+        $mods = QueryBuilder::for(Mod::apiQueryable())
             ->allowedFilters([
                 AllowedFilter::exact('id'),
                 AllowedFilter::exact('hub_id'),
@@ -131,16 +134,16 @@ class ModController extends Controller
                 AllowedFilter::exact('featured'),
                 AllowedFilter::exact('contains_ads'),
                 AllowedFilter::exact('contains_ai_content'),
+                AllowedFilter::scope('spt_version', 'sptVersion'),
                 AllowedFilter::scope('created_between', 'createdAtBetween'),
                 AllowedFilter::scope('updated_between', 'updatedAtBetween'),
                 AllowedFilter::scope('published_between', 'publishedAtBetween'),
             ])
             ->allowedIncludes([
-                'owner',
-                'authors',
-                'versions',
-                AllowedInclude::relationship('latest_version', 'latestVersion'),
-                'license',
+                AllowedInclude::relationship('owner'),
+                AllowedInclude::relationship('authors'),
+                AllowedInclude::relationship('license'),
+                AllowedInclude::custom('versions', new ConditionalVersionsInclude),
             ])
             ->allowedSorts(['id', 'name', 'slug', 'created_at', 'updated_at', 'published_at'])
             ->defaultSort('-created_at')
