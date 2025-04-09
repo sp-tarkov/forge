@@ -5,21 +5,28 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Mod;
-use App\Models\ModVersion;
-use App\Models\SptVersion;
-use Composer\Semver\Semver;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use Override;
-use UnexpectedValueException;
 
 /**
  * @mixin Mod
  */
 class ModResource extends JsonResource
 {
+    /**
+     * The fields requested by the client.
+     *
+     * @var array<string>
+     */
+    protected array $requestedFields = [];
+
+    /**
+     * Whether to show all fields (no specific fields requested).
+     */
+    protected bool $showAllFields = true;
+
     /**
      * Transform the resource into an array.
      *
@@ -28,86 +35,86 @@ class ModResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
-        $processedVersions = $this->processVersions($request);
+        $this->requestedFields = $request->string('fields', '')
+            ->explode(',')
+            ->map(fn (string $field): string => trim($field))
+            ->filter()
+            ->toArray();
 
-        return [
-            'id' => $this->id,
-            'hub_id' => $this->hub_id,
-            'owner' => $this->whenLoaded('owner', fn (): ?UserResource => $this->owner ? new UserResource($this->owner) : null),
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'teaser' => $this->teaser,
-            'description' => $this->when($request->routeIs('api.v0.mods.show'), $this->description),
-            'source_code_link' => $this->source_code_link,
-            'featured' => (bool) $this->featured,
-            'contains_ads' => (bool) $this->contains_ads,
-            'contains_ai_content' => (bool) $this->contains_ai_content,
-            'published_at' => $this->published_at?->toISOString(),
-            'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at->toISOString(),
-            'authors' => UserResource::collection($this->whenLoaded('authors')),
-            'versions' => ModVersionResource::collection($processedVersions),
-            'license' => $this->whenLoaded('license', fn (): ?LicenseResource => $this->license ? new LicenseResource($this->license) : null),
-        ];
+        $this->showAllFields = empty($this->requestedFields);
+
+        $data = [];
+
+        // Handle regular fields
+        if ($this->shouldInclude('id')) {
+            $data['id'] = $this->id;
+        }
+
+        if ($this->shouldInclude('hub_id')) {
+            $data['hub_id'] = $this->hub_id;
+        }
+
+        if ($this->shouldInclude('name')) {
+            $data['name'] = $this->name;
+        }
+
+        if ($this->shouldInclude('slug')) {
+            $data['slug'] = $this->slug;
+        }
+
+        if ($this->shouldInclude('teaser')) {
+            $data['teaser'] = $this->teaser;
+        }
+
+        if ($this->shouldInclude('description')) {
+            $data['description'] = $this->when($request->routeIs('api.v0.mods.show'), $this->description);
+        }
+
+        if ($this->shouldInclude('source_code_link')) {
+            $data['source_code_link'] = $this->source_code_link;
+        }
+
+        if ($this->shouldInclude('featured')) {
+            $data['featured'] = (bool) $this->featured;
+        }
+
+        if ($this->shouldInclude('contains_ads')) {
+            $data['contains_ads'] = (bool) $this->contains_ads;
+        }
+
+        if ($this->shouldInclude('contains_ai_content')) {
+            $data['contains_ai_content'] = (bool) $this->contains_ai_content;
+        }
+
+        if ($this->shouldInclude('published_at')) {
+            $data['published_at'] = $this->published_at?->toISOString();
+        }
+
+        if ($this->shouldInclude('created_at')) {
+            $data['created_at'] = $this->created_at->toISOString();
+        }
+
+        if ($this->shouldInclude('updated_at')) {
+            $data['updated_at'] = $this->updated_at->toISOString();
+        }
+
+        // Handle relationships separately... they're only included when loaded.
+        $data['owner'] = $this->whenLoaded('owner', fn (): ?UserResource => $this->owner ? new UserResource($this->owner) : null);
+        $data['authors'] = UserResource::collection($this->whenLoaded('authors'));
+        $data['versions'] = ModVersionResource::collection($this->whenLoaded('versions', fn (): Collection => $this->versions->take(10)));
+        $data['license'] = $this->whenLoaded('license', fn (): ?LicenseResource => $this->license ? new LicenseResource($this->license) : null);
+
+        return $data;
     }
 
     /**
-     * Filter and limit the loaded versions based on request parameters.
+     * Check if a field should be included in the response.
      *
-     * TODO: If you can figure out a way to do this within the query builder, do it. Every attempt that I made seamed to
-     *       be overwritten by the Spatie\QueryBuilder class or something... Major pain in the ass.
-     *
-     * @return Collection<int, ModVersion>
+     * @param  string  $field  The field name to check
+     * @return bool Whether the field should be included
      */
-    private function processVersions(Request $request): Collection
+    protected function shouldInclude(string $field): bool
     {
-        // Get the eager-loaded versions.
-        $versions = $this->whenLoaded('versions');
-
-        // If versions were not loaded or the relationship is empty, return an empty collection.
-        if (! $versions instanceof Collection || $versions->isEmpty()) {
-            return collect();
-        }
-
-        $sptConstraintFilter = $request->string('filter.spt_version', '')->toString();
-        $versionsLimit = min(max(1, $request->integer('versions_limit', 1)), 10); // Between 1 and 10
-
-        $filteredVersions = $versions;
-
-        // Apply SPT version filtering if the parameter is present.
-        if (! empty($sptConstraintFilter)) {
-
-            $satisfyingSptVersions = $this->getSatisfyingSptVersions($sptConstraintFilter);
-
-            if (! empty($satisfyingSptVersions)) {
-                $filteredVersions = $versions->filter(function (ModVersion $version) use ($satisfyingSptVersions) {
-                    return $version->sptVersions->pluck('version')->intersect($satisfyingSptVersions)->isNotEmpty();
-                });
-            } else {
-                $filteredVersions = collect(); // No satisfying versions found, return empty collection.
-            }
-        }
-
-        // Apply the limit to the filtered collection.
-        return $filteredVersions->take($versionsLimit);
-    }
-
-    /**
-     * Get satisfying SPT version strings based on a constraint.
-     *
-     * @return array<int, string>
-     */
-    private function getSatisfyingSptVersions(string $constraint): array
-    {
-        $availableSptVersions = SptVersion::allValidVersions();
-        $satisfyingVersionStrings = [];
-
-        try {
-            $satisfyingVersionStrings = Semver::satisfiedBy($availableSptVersions, $constraint);
-        } catch (UnexpectedValueException $unexpectedValueException) {
-            Log::error('ModResource: Invalid SemVer constraint processing.', ['constraint' => $constraint, 'error' => $unexpectedValueException->getMessage()]);
-        }
-
-        return $satisfyingVersionStrings;
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }

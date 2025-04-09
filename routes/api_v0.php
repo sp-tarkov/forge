@@ -26,5 +26,5 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Mods
     Route::get('/mods', [ModController::class, 'index'])->name('api.v0.mods.index');
-    Route::get('/mods/{mod}', [ModController::class, 'show'])->name('api.v0.mods.show');
+    Route::get('/mod/{modId}', [ModController::class, 'show'])->where('modId', '[0-9]+')->name('api.v0.mods.show');
 });
