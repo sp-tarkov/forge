@@ -96,7 +96,7 @@ it('filters mods by name wildcard', function (): void {
     Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'Another Mod']);
     $mod2 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'Awesome Feature']);
     Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'Mod Again']);
-    $mod3 = Mod::factory()->hasVersions(1)->create(['name' => 'FeatureAwesomeMod']);
+    $mod3 = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['name' => 'FeatureAwesomeMod']);
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[name]=Awesome');
 
@@ -238,10 +238,10 @@ it('includes enabled mods with an enabled version', function (): void {
     SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
     $mod1 = Mod::factory()->create();
-    $modVersion = ModVersion::factory()->create(['mod_id' => $mod1->id]);
+    $modVersion = ModVersion::factory()->create(['mod_id' => $mod1->id, 'spt_version_constraint' => '3.8.0']);
 
     $mod2 = Mod::factory()->create();
-    $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id]);
+    $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id, 'spt_version_constraint' => '3.8.0']);
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=versions');
     $response->assertStatus(Response::HTTP_OK);

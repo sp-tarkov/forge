@@ -33,7 +33,7 @@ it('returns a valid mod', function (): void {
         ->assertJsonStructure([
             'success',
             'data' => [
-                'id', 'hub_id', 'name', 'slug', 'teaser', 'description', 'source_code_link', 'featured', 'contains_ads',
+                'id', 'hub_id', 'name', 'slug', 'teaser', 'source_code_link', 'featured', 'contains_ads',
                 'contains_ai_content', 'published_at', 'created_at', 'updated_at',
             ],
         ]);
@@ -106,8 +106,8 @@ it('includes versions when requested', function (): void {
         ->assertJsonStructure([
             'success',
             'data' => ['versions' => [[
-                'id', 'hub_id', 'version', 'description', 'link', 'spt_version_constraint', 'virus_total_link',
-                'downloads', 'published_at', 'created_at', 'updated_at',
+                'id', 'hub_id', 'version', 'link', 'spt_version_constraint', 'virus_total_link', 'downloads',
+                'published_at', 'created_at', 'updated_at',
             ]]],
         ])
         ->assertJsonCount(3, 'data.versions');
