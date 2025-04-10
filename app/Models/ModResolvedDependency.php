@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ModResolvedDependency extends Model
 {
     /**
-     * The relationship between the resolved dependency and the mod version.
+     * The relationship between the resolved dependency and the *parent* mod version.
      *
      * @return BelongsTo<ModVersion, $this>
      */
@@ -34,7 +34,7 @@ class ModResolvedDependency extends Model
     }
 
     /**
-     * The relationship between the resolved dependency and the dependency.
+     * The relationship between the resolved dependency and the (unresolved) dependency.
      *
      * @return BelongsTo<ModDependency, $this>
      */
@@ -44,7 +44,7 @@ class ModResolvedDependency extends Model
     }
 
     /**
-     * The relationship between the resolved dependency and the resolved mod version.
+     * The relationship between the resolved dependency and the resolved *dependent* mod version.
      *
      * @return BelongsTo<ModVersion, $this>
      */

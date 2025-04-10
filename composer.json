@@ -30,6 +30,7 @@
         "php-flasher/flasher-laravel": "^2.1.6",
         "socialiteproviders/discord": "^4.2",
         "spatie/laravel-ignition": "^2.9",
+        "spatie/laravel-query-builder": "^6.3",
         "stevebauman/purify": "^6.3.0"
     },
     "require-dev": {
@@ -64,6 +65,12 @@
         ],
         "rector": [
             "./vendor/bin/rector process --dry-run --config=rector.php"
+        ],
+        "rector-fix": [
+            "./vendor/bin/rector process --config=rector.php"
+        ],
+        "pint": [
+            "./vendor/bin/pint --config pint.json"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

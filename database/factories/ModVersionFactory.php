@@ -24,7 +24,7 @@ class ModVersionFactory extends Factory
             'link' => fake()->url(),
 
             // Unless a custom constraint is provided, this will also generate the required SPT versions.
-            'spt_version_constraint' => $this->faker->randomElement(['^1.0', '^2.0', '>=3.0', '<4.0']),
+            'spt_version_constraint' => $this->faker->randomElement(['^1.0.0', '^2.0.0', '>=3.0.0', '<4.0.0']),
 
             'virus_total_link' => fake()->url(),
             'downloads' => fake()->randomNumber(),

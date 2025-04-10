@@ -6,17 +6,19 @@ use App\Models\Mod;
 use App\Models\ModDependency;
 use App\Models\ModResolvedDependency;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Services\DependencyVersionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 it('resolves mod version dependencies on create', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
     $modVersion = ModVersion::factory()->create();
 
     $dependentMod = Mod::factory()->create();
-    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0']);
-    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0']);
+    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
     // Create a dependency
     ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
@@ -30,12 +32,13 @@ it('resolves mod version dependencies on create', function (): void {
 });
 
 it('resolves multiple matching versions', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
     $modVersion = ModVersion::factory()->create();
 
     $dependentMod = Mod::factory()->create();
-    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0']);
-    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.1.0']);
-    $dependentVersion3 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0']);
+    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.1.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion3 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
     // Create a dependency
     ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
@@ -51,11 +54,12 @@ it('resolves multiple matching versions', function (): void {
 });
 
 it('does not resolve dependencies when no versions match', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
     $modVersion = ModVersion::factory()->create();
 
     $dependentMod = Mod::factory()->create();
-    ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0']);
-    ModVersion::factory()->recycle($dependentMod)->create(['version' => '3.0.0']);
+    ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
+    ModVersion::factory()->recycle($dependentMod)->create(['version' => '3.0.0', 'spt_version_constraint' => '3.8.0']);
 
     // Create a dependency
     ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
@@ -67,11 +71,12 @@ it('does not resolve dependencies when no versions match', function (): void {
 });
 
 it('updates resolved dependencies when constraint changes', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
     $modVersion = ModVersion::factory()->create();
 
     $dependentMod = Mod::factory()->create();
-    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0']);
-    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0']);
+    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
     // Create a dependency with an initial constraint
     $dependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
@@ -89,10 +94,11 @@ it('updates resolved dependencies when constraint changes', function (): void {
 });
 
 it('removes resolved dependencies when dependency is removed', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
     $modVersion = ModVersion::factory()->create();
 
     $dependentMod = Mod::factory()->create();
-    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0']);
+    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
     // Create a dependency
     $dependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
@@ -110,9 +116,11 @@ it('removes resolved dependencies when dependency is removed', function (): void
 });
 
 it('handles mod versions with no dependencies gracefully', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
     $serviceSpy = $this->spy(DependencyVersionService::class);
 
-    $modVersion = ModVersion::factory()->create(['version' => '1.0.0']);
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
     // Check that the service was called and that no resolved dependencies were created.
     $serviceSpy->shouldHaveReceived('resolve');
@@ -120,14 +128,16 @@ it('handles mod versions with no dependencies gracefully', function (): void {
 });
 
 it('resolves the correct versions with a complex semver constraint', function (): void {
-    $modVersion = ModVersion::factory()->create(['version' => '1.0.0']);
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
     $dependentMod = Mod::factory()->create();
-    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0']);
-    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.2.0']);
-    $dependentVersion3 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.5.0']);
-    $dependentVersion4 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0']);
-    $dependentVersion5 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.5.0']);
+    $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.2.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion3 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.5.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion4 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion5 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.5.0', 'spt_version_constraint' => '3.8.0']);
 
     // Create a complex SemVer constraint
     ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
@@ -144,15 +154,17 @@ it('resolves the correct versions with a complex semver constraint', function ()
 });
 
 it('resolves overlapping version constraints from multiple dependencies correctly', function (): void {
-    $modVersion = ModVersion::factory()->create(['version' => '1.0.0']);
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
     $dependentMod1 = Mod::factory()->create();
-    $dependentVersion1_1 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '1.0.0']);
-    $dependentVersion1_2 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '1.5.0']);
+    $dependentVersion1_1 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion1_2 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '1.5.0', 'spt_version_constraint' => '3.8.0']);
 
     $dependentMod2 = Mod::factory()->create();
-    $dependentVersion2_1 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.0.0']);
-    $dependentVersion2_2 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.5.0']);
+    $dependentVersion2_1 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentVersion2_2 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.5.0', 'spt_version_constraint' => '3.8.0']);
 
     // Create two dependencies with overlapping constraints
     ModDependency::factory()->recycle([$modVersion, $dependentMod1])->create([
@@ -173,7 +185,9 @@ it('resolves overlapping version constraints from multiple dependencies correctl
 });
 
 it('handles the case where a dependent mod has no versions available', function (): void {
-    $modVersion = ModVersion::factory()->create(['version' => '1.0.0']);
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
     $dependentMod = Mod::factory()->create();
 
     // Create a dependency where the dependent mod has no versions.
@@ -186,12 +200,14 @@ it('handles the case where a dependent mod has no versions available', function 
 });
 
 it('handles a large number of versions efficiently', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
     $startTime = microtime(true);
     $versionCount = 100;
 
     $dependentMod = Mod::factory()->create();
     for ($i = 0; $i < $versionCount; $i++) {
-        ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.'.$i]);
+        ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.'.$i, 'spt_version_constraint' => '3.8.0']);
     }
 
     // Create a mod and mod version, and then create a dependency for all versions of the dependent mod.
@@ -208,6 +224,8 @@ it('handles a large number of versions efficiently', function (): void {
 })->skip('This is a performance test and is skipped by default. It will probably fail.');
 
 it('calls DependencyVersionService when a Mod is updated', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
     $mod = Mod::factory()->create();
     ModVersion::factory(2)->recycle($mod)->create();
 
@@ -224,7 +242,9 @@ it('calls DependencyVersionService when a Mod is updated', function (): void {
 });
 
 it('calls DependencyVersionService when a ModVersion is updated', function (): void {
-    $modVersion = ModVersion::factory()->create();
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
     $serviceSpy = $this->spy(DependencyVersionService::class);
 
@@ -234,7 +254,9 @@ it('calls DependencyVersionService when a ModVersion is updated', function (): v
 });
 
 it('calls DependencyVersionService when a ModVersion is deleted', function (): void {
-    $modVersion = ModVersion::factory()->create();
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
     $serviceSpy = $this->spy(DependencyVersionService::class);
 
@@ -244,7 +266,9 @@ it('calls DependencyVersionService when a ModVersion is deleted', function (): v
 });
 
 it('calls DependencyVersionService when a ModDependency is updated', function (): void {
-    $modVersion = ModVersion::factory()->create(['version' => '1.0.0']);
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
     $dependentMod = Mod::factory()->create();
     $modDependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
         'constraint' => '^1.0',
@@ -258,7 +282,9 @@ it('calls DependencyVersionService when a ModDependency is updated', function ()
 });
 
 it('calls DependencyVersionService when a ModDependency is deleted', function (): void {
-    $modVersion = ModVersion::factory()->create(['version' => '1.0.0']);
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
     $dependentMod = Mod::factory()->create();
     $modDependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
         'constraint' => '^1.0',
@@ -272,18 +298,20 @@ it('calls DependencyVersionService when a ModDependency is deleted', function ()
 });
 
 it('displays the latest resolved dependencies on the mod detail page', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
     $dependentMod1 = Mod::factory()->create();
-    $dependentMod1Version1 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '1.0.0']);
-    $dependentMod1Version2 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '2.0.0']);
+    $dependentMod1Version1 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentMod1Version2 = ModVersion::factory()->recycle($dependentMod1)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
     $dependentMod2 = Mod::factory()->create();
-    $dependentMod2Version1 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.0.0']);
-    $dependentMod2Version2 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.1.0']);
-    $dependentMod2Version3 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.2.0']);
-    $dependentMod2Version4 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.2.1']);
+    $dependentMod2Version1 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentMod2Version2 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.1.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentMod2Version3 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.2.0', 'spt_version_constraint' => '3.8.0']);
+    $dependentMod2Version4 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.2.1', 'spt_version_constraint' => '3.8.0']);
 
     $mod = Mod::factory()->create();
-    $mainModVersion = ModVersion::factory()->recycle($mod)->create();
+    $mainModVersion = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
     ModDependency::factory()->recycle([$mainModVersion, $dependentMod1])->create(['constraint' => '>=1.0.0']);
     ModDependency::factory()->recycle([$mainModVersion, $dependentMod2])->create(['constraint' => '>=1.0.0']);

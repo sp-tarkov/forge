@@ -4,59 +4,189 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V0;
 
-use App\Http\Filters\V1\ModFilter;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\ModResource;
-use App\Models\Mod;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Knuckles\Scribe\Attributes\QueryParam;
+use App\Http\Responses\Api\V0\ApiResponse;
+use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\UrlParam;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ModController extends ApiController
+/**
+ * @group Mods
+ *
+ * Endpoints for managing and retrieving mods.
+ */
+class ModController extends Controller
 {
     /**
      * Get Mods
      *
-     * List, filter, and sort basic information about mods.
+     * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
-     * @group Mods
+     * Fields available:<br /><code>id, hub_id, name, slug, teaser, thumbnail, downloads, source_code_link, featured,
+     * contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
+     *
+     * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
+     * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
+     *
+     * @response status=200 scenario="Success (All fields, No Includes)"
+     *  {
+     *      "success": true,
+     *      "data": [
+     *          {
+     *              "id": 1,
+     *              "hub_id": null,
+     *              "name": "Recusandae velit incidunt.",
+     *              "slug": "recusandae-velit-incidunt",
+     *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
+     *              "thumbnail": "",
+     *              "downloads": 55212644,
+     *              "source_code_link": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *              "featured": true,
+     *              "contains_ads": true,
+     *              "contains_ai_content": false,
+     *              "published_at": "2025-01-09T17:48:53.000000Z",
+     *              "created_at": "2024-12-11T14:48:53.000000Z",
+     *              "updated_at": "2025-04-10T13:50:00.000000Z"
+     *          },
+     *          {
+     *              "id": 2,
+     *              "hub_id": null,
+     *              "name": "Adipisci iusto voluptas nihil.",
+     *              "slug": "adipisci-iusto-voluptas-nihil",
+     *              "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
+     *              "thumbnail": "",
+     *              "downloads": 219598104,
+     *              "source_code_link": "http://baumbach.net/",
+     *              "featured": false,
+     *              "contains_ads": true,
+     *              "contains_ai_content": true,
+     *              "published_at": "2024-08-30T14:48:53.000000Z",
+     *              "created_at": "2024-06-22T04:48:53.000000Z",
+     *              "updated_at": "2025-04-10T13:50:21.000000Z"
+     *          }
+     *      ],
+     *      "links": {
+     *          "first": "https://forge.test/api/v0/mods?page=1",
+     *          "last": "https://forge.test/api/v0/mods?page=1",
+     *          "prev": null,
+     *          "next": null
+     *      },
+     *      "meta": {
+     *          "current_page": 1,
+     *          "from": 1,
+     *          "last_page": 1,
+     *          "links": [
+     *              {
+     *                  "url": null,
+     *                  "label": "&laquo; Previous",
+     *                  "active": false
+     *              },
+     *              {
+     *                  "url": "https://forge.test/api/v0/mods?page=1",
+     *                  "label": "1",
+     *                  "active": true
+     *              },
+     *              {
+     *                  "url": null,
+     *                  "label": "Next &raquo;",
+     *                  "active": false
+     *              }
+     *          ],
+     *          "path": "https://forge.test/api/v0/mods",
+     *          "per_page": 12,
+     *          "to": 2,
+     *          "total": 2
+     *      }
+     *  }
+     * @response status=401 scenario="Unauthenticated"
+     *  {
+     *      "success": false,
+     *      "code": "UNAUTHENTICATED",
+     *      "message": "Unauthenticated."
+     *  }
      */
-    #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'authors,versions,license')]
-    #[QueryParam('filter[id]', 'string', 'Filter by the `id`. Select multiple by separating the IDs with a comma.', required: false, example: '5,10,15')]
-    #[QueryParam('filter[hub_id]', 'string', 'Filter by the `hub_id` attribute. Select multiple by separating the IDs with a comma.', required: false, example: '20')]
-    #[QueryParam('filter[name]', 'string', 'Filter by the `name` attribute. Use `*` as the wildcard character.', required: false, example: '*SAIN*')]
-    #[QueryParam('filter[slug]', 'string', 'Filter by the `slug` attribute. Use `*` as the wildcard character.', required: false, example: '*raid-times')]
-    #[QueryParam('filter[teaser]', 'string', 'Filter by the `teaser` attribute. Use `*` as the wildcard character.', required: false, example: '*weighted*random*times*')]
-    #[QueryParam('filter[source_code_link]', 'string', 'Filter by the `source_code_link` attribute. Use `*` as the wildcard character.', required: false, example: '*https*.net*')]
-    #[QueryParam('filter[featured]', 'boolean', 'Filter by the `featured` attribute. All "truthy" or "falsy" values are supported.', required: false, example: 'true')]
-    #[QueryParam('filter[contains_ads]', 'boolean', 'Filter by the `contains_ads` attribute. All "truthy" or "falsy" values are supported.', required: false, example: 'true')]
-    #[QueryParam('filter[contains_ai_content]', 'boolean', 'Filter by the `contains_ai_content` attribute. All "truthy" or "falsy" values are supported.', required: false, example: 'true')]
-    #[QueryParam('filter[created_at]', 'string', 'Filter by the `created_at` attribute. Ranges are possible by separating the dates with a comma.', required: false, example: '2023-12-31,2024-12-31')]
-    #[QueryParam('filter[updated_at]', 'string', 'Filter by the `updated_at` attribute. Ranges are possible by separating the dates with a comma.', required: false, example: '2023-12-31,2024-12-31')]
-    #[QueryParam('filter[published_at]', 'string', 'Filter by the `published_at` attribute. Ranges are possible by seperating the dates with a comma.', required: false, example: '2023-12-31,2024-12-31')]
-    #[QueryParam('sort', 'string', 'Sort the results by a comma seperated list of attributes. The default sort direction is ASC, append the attribute name with a minus to sort DESC.', required: false, example: '-featured,name')]
-    public function index(ModFilter $modFilter): AnonymousResourceCollection
+    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,name,slug,featured,created_at')]
+    #[UrlParam('filter[id]', description: 'Filter by comma-separated Mod IDs.', required: false, example: '1,5,10')]
+    #[UrlParam('filter[hub_id]', description: 'Filter by comma-separated Hub IDs.', required: false, example: '123,456')]
+    #[UrlParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Raid Time')]
+    #[UrlParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-mod')]
+    #[UrlParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
+    #[UrlParam('filter[source_code_link]', description: 'Filter by source code link (fuzzy filter).', required: false, example: 'github.com')]
+    #[UrlParam('filter[featured]', description: 'Filter by featured status (1, true, 0, false).', required: false, example: 'true')]
+    #[UrlParam('filter[contains_ads]', type: 'boolean', description: 'Filter by contains_ads status (1, true, 0, false).', required: false, example: 'false')]
+    #[UrlParam('filter[contains_ai_content]', type: 'boolean', description: 'Filter by contains_ai_content status (1, true, 0, false).', required: false, example: 'false')]
+    #[UrlParam('filter[created_between]', description: 'Filter by creation date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[UrlParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[UrlParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
+    #[UrlParam('filter[spt_version]', description: 'Filter mods that are compatible with an SPT version SemVer constraint. This will only filter the mods, not the mod versions.', required: false, example: '^3.8.0')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `versions`, `license`.', required: false, example: 'owner,versions')]
+    #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `id`, `name`, `slug`, `created_at`, `updated_at`, `published_at`.', required: false, example: '-created_at,name')]
+    #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
+    #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
+    public function index(Request $request): JsonResponse
     {
-        $mods = Mod::filter($modFilter)->paginate();
+        $queryBuilder = (new ModQueryBuilder)
+            ->withFilters($request->input('filter'))
+            ->withIncludes($request->string('include')->explode(',')->toArray())
+            ->withFields($request->string('fields')->explode(',')->toArray())
+            ->withSorts($request->string('sort')->explode(',')->toArray());
 
-        throw_if($mods->isEmpty(), new NotFoundHttpException);
+        $mods = $queryBuilder->paginate($request->integer('per_page', 12));
 
-        return ModResource::collection($mods);
+        return ApiResponse::success(ModResource::collection($mods));
     }
 
     /**
-     * Get Mod
+     * Get Mod Details
      *
-     * Display more detailed information about a specific mod.
+     * Retrieves details for a single mod, allowing relationship inclusion.
      *
-     * @group Mods
+     * Fields available:<br /><code>id, hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_link,
+     * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
+     *
+     * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
+     * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
+     *
+     * @response status=200 scenario="Success (All fields, No Includes)"
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "id": 2,
+     *          "hub_id": null,
+     *          "name": "Adipisci iusto voluptas nihil.",
+     *          "slug": "adipisci-iusto-voluptas-nihil",
+     *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
+     *          "thumbnail": "",
+     *          "downloads": 219598104,
+     *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
+     *          "source_code_link": "http://baumbach.net/",
+     *          "featured": false,
+     *          "contains_ads": true,
+     *          "contains_ai_content": true,
+     *          "published_at": "2024-08-30T14:48:53.000000Z",
+     *          "created_at": "2024-06-22T04:48:53.000000Z",
+     *          "updated_at": "2025-04-10T13:50:21.000000Z"
+     *      }
+     *  }
+     * @response status=404 scenario="Mod Does Not Exist"
+     *  {
+     *      "success": false,
+     *      "code": "NOT_FOUND",
+     *      "message": "Resource not found."
+     *  }
      */
-    #[UrlParam('id', 'integer', 'The ID of the mod.', required: true, example: 558)]
-    #[QueryParam('include', 'string', 'The relationships to include within the `includes` key. By default no relationships are automatically included.', required: false, example: 'authors,versions,license')]
-    public function show(Mod $mod): ModResource
+    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,name,slug,featured,created_at')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`.', required: false, example: 'owner,versions')]
+    public function show(Request $request, int $modId): JsonResponse
     {
-        $mod->loadMissing(['owner', 'authors', 'versions', 'license']);
+        $queryBuilder = (new ModQueryBuilder)
+            ->withIncludes($request->string('include')->explode(',')->toArray())
+            ->withFields($request->string('fields')->explode(',')->toArray());
 
-        return new ModResource($mod);
+        $mod = $queryBuilder->findOrFail($modId);
+
+        return ApiResponse::success(new ModResource($mod));
     }
 }
