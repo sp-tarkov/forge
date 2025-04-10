@@ -107,7 +107,7 @@ it('includes versions when requested', function (): void {
             'success',
             'data' => ['versions' => [[
                 'id', 'hub_id', 'version', 'description', 'link', 'spt_version_constraint', 'virus_total_link',
-                'downloads', 'disabled', 'published_at', 'created_at', 'updated_at',
+                'downloads', 'published_at', 'created_at', 'updated_at',
             ]]],
         ])
         ->assertJsonCount(3, 'data.versions');

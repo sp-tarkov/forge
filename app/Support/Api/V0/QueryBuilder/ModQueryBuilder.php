@@ -88,10 +88,10 @@ class ModQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'id' => function (Builder $query, string $ids): void {
-                $query->whereIn('mods.id', explode(',', $ids));
+                $query->whereIn('mods.id', self::parseCommaSeparatedInput($ids, 'integer'));
             },
             'hub_id' => function (Builder $query, string $hubIds): void {
-                $query->whereIn('mods.hub_id', explode(',', $hubIds));
+                $query->whereIn('mods.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
             },
             'name' => function (Builder $query, string $term): void {
                 $query->whereLike('mods.name', sprintf('%%%s%%', $term));
@@ -106,13 +106,13 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 $query->whereLike('mods.source_code_link', sprintf('%%%s%%', $term));
             },
             'featured' => function (Builder $query, string $value): void {
-                $query->where('mods.featured', $this->parseBooleanInput($value));
+                $query->where('mods.featured', self::parseBooleanInput($value));
             },
             'contains_ads' => function (Builder $query, string $value): void {
-                $query->where('mods.contains_ads', $this->parseBooleanInput($value));
+                $query->where('mods.contains_ads', self::parseBooleanInput($value));
             },
             'contains_ai_content' => function (Builder $query, string $value): void {
-                $query->where('mods.contains_ai_content', $this->parseBooleanInput($value));
+                $query->where('mods.contains_ai_content', self::parseBooleanInput($value));
             },
             'created_between' => function (Builder $query, string $range): void {
                 [$start, $end] = explode(',', $range);
@@ -135,17 +135,17 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Get the allowed includes for this query builder.
+     * Get the map of API include names to model relationship names.
      *
-     * @return array<string>
+     * @return array<string, string>
      */
     protected function getAllowedIncludes(): array
     {
         return [
-            'owner',
-            'authors',
-            'versions',
-            'license',
+            'owner' => 'owner',
+            'authors' => 'authors',
+            'versions' => 'versions',
+            'license' => 'license',
         ];
     }
 

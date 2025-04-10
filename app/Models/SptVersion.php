@@ -69,6 +69,7 @@ class SptVersion extends Model
             ->orderBy('spt_versions.version_major', 'DESC')
             ->orderBy('spt_versions.version_minor', 'DESC')
             ->orderBy('spt_versions.version_patch', 'DESC')
+            ->orderByRaw('CASE WHEN spt_versions.version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('spt_versions.version_labels', 'ASC')
             ->get();
     }
@@ -203,6 +204,8 @@ class SptVersion extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
             ->first();
     }
 
@@ -222,6 +225,8 @@ class SptVersion extends Model
             ->where('version_major', $latestMajor->version_major)
             ->where('version_minor', $latestMajor->version_minor)
             ->orderBy('version_patch', 'desc')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
             ->get();
     }
 
@@ -239,6 +244,7 @@ class SptVersion extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels')
             ->pluck('version')
             ->all());

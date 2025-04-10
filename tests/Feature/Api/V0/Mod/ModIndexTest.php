@@ -25,9 +25,9 @@ beforeEach(function (): void {
 
 it('returns a paginated list of mods', function (): void {
     SptVersion::factory()->state(['version' => '3.8.0'])->create();
-    Mod::factory()->count(20)->hasVersions(2, ['spt_version_constraint' => '3.8.0'])->create();
+    Mod::factory()->count(24)->hasVersions(2, ['spt_version_constraint' => '3.8.0'])->create();
 
-    $response = $this->withToken($this->token)->getJson('/api/v0/mods?per_page=10');
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods');
 
     $response
         ->assertStatus(Response::HTTP_OK)
@@ -57,8 +57,8 @@ it('returns a paginated list of mods', function (): void {
                 'total',
             ],
         ])
-        ->assertJsonCount(10, 'data')
-        ->assertJsonPath('meta.total', 20);
+        ->assertJsonCount(12, 'data')
+        ->assertJsonPath('meta.total', 24);
 });
 
 it('returns a paginated list of mods with a custom per_page', function (): void {

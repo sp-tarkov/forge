@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V0\AuthController;
 use App\Http\Controllers\Api\V0\ModController;
+use App\Http\Controllers\Api\V0\ModVersionController;
 use App\Http\Controllers\Api\V0\PingController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,4 +28,5 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Mods
     Route::get('/mods', [ModController::class, 'index'])->name('api.v0.mods.index');
     Route::get('/mod/{modId}', [ModController::class, 'show'])->where('modId', '[0-9]+')->name('api.v0.mods.show');
+    Route::get('/mod/{modId}/versions', [ModVersionController::class, 'index'])->where('modId', '[0-9]+')->name('api.v0.mod-versions.index');
 });

@@ -76,10 +76,6 @@ class ModVersionResource extends JsonResource
             $data['downloads'] = $this->downloads;
         }
 
-        if ($this->shouldInclude('disabled')) {
-            $data['disabled'] = (bool) $this->disabled;
-        }
-
         if ($this->shouldInclude('published_at')) {
             $data['published_at'] = $this->published_at?->toISOString();
         }
@@ -91,6 +87,8 @@ class ModVersionResource extends JsonResource
         if ($this->shouldInclude('updated_at')) {
             $data['updated_at'] = $this->updated_at->toISOString();
         }
+
+        $data['dependencies'] = new ModResolvedDependencyCollection($this->whenLoaded('resolvedDependencies'));
 
         return $data;
     }

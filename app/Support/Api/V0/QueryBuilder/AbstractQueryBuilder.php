@@ -82,9 +82,9 @@ abstract class AbstractQueryBuilder
     abstract protected function getAllowedFilters(): array;
 
     /**
-     * Get the allowed includes for this query builder.
+     * Get a map of API include names to model relationship names.
      *
-     * @return array<string>
+     * @return array<string, string|array<string>>
      */
     abstract protected function getAllowedIncludes(): array;
 
@@ -148,7 +148,8 @@ abstract class AbstractQueryBuilder
     }
 
     /**
-     * Apply the includes to the query.
+     * Apply includes to the query.
+     *
      *
      * @throws InvalidQuery
      */
@@ -161,17 +162,28 @@ abstract class AbstractQueryBuilder
             }
 
             $allowedIncludes = $this->getAllowedIncludes();
-            $invalidIncludes = array_diff($this->includes, $allowedIncludes);
+            $invalidIncludes = array_diff($this->includes, array_keys($allowedIncludes));
 
             if (! empty($invalidIncludes)) {
                 $invalidInclude = implode(', ', $invalidIncludes);
-                $validIncludes = implode(', ', $allowedIncludes);
+                $validIncludes = implode(', ', array_keys($allowedIncludes));
                 throw new InvalidQuery(
                     sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludes)
                 );
             }
 
-            $this->builder->with($this->includes);
+            // Map API include names to model relationship names.
+            $relationships = [];
+            foreach ($this->includes as $include) {
+                $relationship = $allowedIncludes[$include];
+                if (is_array($relationship)) {
+                    $relationships = array_merge($relationships, $relationship);
+                } else {
+                    $relationships[] = $relationship;
+                }
+            }
+
+            $this->builder->with($relationships);
         }
     }
 
@@ -333,7 +345,7 @@ abstract class AbstractQueryBuilder
     /**
      * Parse a boolean input string to a boolean value.
      */
-    protected function parseBooleanInput(string $value): bool
+    protected static function parseBooleanInput(string $value): bool
     {
         $value = Str::of($value)->trim()->lower()->toString();
 
@@ -343,5 +355,25 @@ abstract class AbstractQueryBuilder
         }
 
         return false;
+    }
+
+    /**
+     * Parse a comma-separated string to an array.
+     *
+     * @param  'string'|'integer'  $castReturn
+     * @return array<int, string|int>
+     */
+    protected static function parseCommaSeparatedInput(string $value, ?string $castReturn = null): array
+    {
+        return Str::of($value)
+            ->explode(',')
+            ->map(fn (string $value) => Str::trim($value))
+            ->filter()
+            ->map(fn (string $value): int|string => match ($castReturn) {
+                'string' => $value,
+                'integer' => (int) $value,
+                default => $value,
+            })
+            ->toArray();
     }
 }

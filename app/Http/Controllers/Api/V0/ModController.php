@@ -171,7 +171,6 @@ class ModController extends Controller
      *      "message": "Resource not found."
      *  }
      */
-    #[UrlParam('mod', type: 'integer', description: 'The ID of the Mod.', required: true, example: 234)]
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,name,slug,featured,created_at')]
     #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`.', required: false, example: 'owner,versions')]
     public function show(Request $request, int $modId): JsonResponse
