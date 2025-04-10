@@ -5,7 +5,7 @@
     "keywords": [],
     "license": "MPL-2.0",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "ext-curl": "*",
         "ext-imagick": "*",
         "ext-intl": "*",

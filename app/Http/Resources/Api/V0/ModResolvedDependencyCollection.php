@@ -71,7 +71,7 @@ class ModResolvedDependencyCollection extends ResourceCollection
                 }
 
                 $mod = $firstDependencyVersion->mod;
-                $modData = (new ModResource($mod))->toArray($request);
+                $modData = new ModResource($mod)->toArray($request);
 
                 // Collect all versions from the dependencies for this specific mod.
                 $modData['versions'] = $dependencyVersions->map(

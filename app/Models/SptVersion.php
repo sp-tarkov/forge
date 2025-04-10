@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Observers\SptVersionObserver;
 use App\Support\Version;
@@ -174,9 +175,9 @@ class SptVersion extends Model
     /**
      * Get the version with "SPT " prepended.
      */
-    public function getVersionFormattedAttribute(): string
+    protected function versionFormatted(): Attribute
     {
-        return __('SPT ').$this->version;
+        return Attribute::make(get: fn(): string => __('SPT ').$this->version);
     }
 
     /**
