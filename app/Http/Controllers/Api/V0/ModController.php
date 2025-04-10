@@ -20,12 +20,12 @@ use Knuckles\Scribe\Attributes\UrlParam;
 class ModController extends Controller
 {
     /**
-     * List Mods
+     * Get Mods
      *
      * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>id, hub_id, name, slug, teaser, source_code_link, featured, contains_ads,
-     * contains_ai_content, published_at, created_at, updated_at</code>
+     * Fields available:<br /><code>id, hub_id, name, slug, teaser, thumbnail, downloads, source_code_link, featured,
+     * contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -35,32 +35,36 @@ class ModController extends Controller
      *      "success": true,
      *      "data": [
      *          {
-     *              "id": 32,
-     *              "hub_id": 79,
-     *              "name": "Kiki-BiggerStash",
-     *              "slug": "kiki-biggerstash",
-     *              "teaser": "Finally you can Horde it all!",
-     *              "source_code_link": "https://github.com/kieran-boyle/Mods/tree/master/Kiki-BiggerStash",
-     *              "featured": false,
-     *              "contains_ads": false,
+     *              "id": 1,
+     *              "hub_id": null,
+     *              "name": "Recusandae velit incidunt.",
+     *              "slug": "recusandae-velit-incidunt",
+     *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
+     *              "thumbnail": "",
+     *              "downloads": 55212644,
+     *              "source_code_link": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *              "featured": true,
+     *              "contains_ads": true,
      *              "contains_ai_content": false,
-     *              "published_at": "2021-01-02T16:42:14.000000Z",
-     *              "created_at": "2021-01-02T16:42:14.000000Z",
-     *              "updated_at": "2024-07-13T12:11:38.000000Z"
+     *              "published_at": "2025-01-09T17:48:53.000000Z",
+     *              "created_at": "2024-12-11T14:48:53.000000Z",
+     *              "updated_at": "2025-04-10T13:50:00.000000Z"
      *          },
      *          {
-     *              "id": 42,
-     *              "hub_id": 98,
-     *              "name": "Speed Loader",
-     *              "slug": "speed-loader",
-     *              "teaser": "Allows large capacity magazines to be loaded/ unloaded with ammo faster.",
-     *              "source_code_link": "",
+     *              "id": 2,
+     *              "hub_id": null,
+     *              "name": "Adipisci iusto voluptas nihil.",
+     *              "slug": "adipisci-iusto-voluptas-nihil",
+     *              "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
+     *              "thumbnail": "",
+     *              "downloads": 219598104,
+     *              "source_code_link": "http://baumbach.net/",
      *              "featured": false,
-     *              "contains_ads": false,
-     *              "contains_ai_content": false,
-     *              "published_at": "2021-01-17T18:46:27.000000Z",
-     *              "created_at": "2021-01-17T18:46:27.000000Z",
-     *              "updated_at": "2023-03-12T10:48:20.000000Z"
+     *              "contains_ads": true,
+     *              "contains_ai_content": true,
+     *              "published_at": "2024-08-30T14:48:53.000000Z",
+     *              "created_at": "2024-06-22T04:48:53.000000Z",
+     *              "updated_at": "2025-04-10T13:50:21.000000Z"
      *          }
      *      ],
      *      "links": {
@@ -135,12 +139,12 @@ class ModController extends Controller
     }
 
     /**
-     * Show Mod Details
+     * Get Mod Details
      *
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
-     * Fields available:<br /><code>id, hub_id, name, slug, teaser, source_code_link, featured, contains_ads,
-     * contains_ai_content, published_at, created_at, updated_at</code>
+     * Fields available:<br /><code>id, hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_link,
+     * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -149,19 +153,21 @@ class ModController extends Controller
      *  {
      *      "success": true,
      *      "data": {
-     *          "id": 32,
-     *          "hub_id": 79,
-     *          "name": "Kiki-BiggerStash",
-     *          "slug": "kiki-biggerstash",
-     *          "teaser": "Finally you can Horde it all!",
-     *          "description": "Set your desired stash sizes in config.json.",
-     *          "source_code_link": "https://github.com/kieran-boyle/Mods/tree/master/Kiki-BiggerStash",
+     *          "id": 2,
+     *          "hub_id": null,
+     *          "name": "Adipisci iusto voluptas nihil.",
+     *          "slug": "adipisci-iusto-voluptas-nihil",
+     *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
+     *          "thumbnail": "",
+     *          "downloads": 219598104,
+     *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
+     *          "source_code_link": "http://baumbach.net/",
      *          "featured": false,
-     *          "contains_ads": false,
-     *          "contains_ai_content": false,
-     *          "published_at": "2021-01-02T16:42:14.000000Z",
-     *          "created_at": "2021-01-02T16:42:14.000000Z",
-     *          "updated_at": "2024-07-13T12:11:38.000000Z"
+     *          "contains_ads": true,
+     *          "contains_ai_content": true,
+     *          "published_at": "2024-08-30T14:48:53.000000Z",
+     *          "created_at": "2024-06-22T04:48:53.000000Z",
+     *          "updated_at": "2025-04-10T13:50:21.000000Z"
      *      }
      *  }
      * @response status=404 scenario="Mod Does Not Exist"

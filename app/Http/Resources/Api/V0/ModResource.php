@@ -66,6 +66,14 @@ class ModResource extends JsonResource
             $data['teaser'] = $this->teaser;
         }
 
+        if ($this->shouldInclude('thumbnail')) {
+            $data['thumbnail'] = $this->thumbnail;
+        }
+
+        if ($this->shouldInclude('downloads')) {
+            $data['downloads'] = $this->downloads;
+        }
+
         if ($this->shouldInclude('description')) {
             $data['description'] = $this->when($request->routeIs('api.v0.mods.show'), $this->description);
         }
