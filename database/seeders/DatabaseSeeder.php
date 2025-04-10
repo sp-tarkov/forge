@@ -90,8 +90,10 @@ class DatabaseSeeder extends Seeder
             label: 'Attaching users to mods...',
             steps: $mods,
             callback: function (Mod $mod, Progress $progress) use ($allUsers) {
-                $userIds = $allUsers->random(rand(1, 3))->pluck('id')->toArray();
-                $mod->users()->attach($userIds);
+                $userIds = $allUsers->random(rand(0, 2))->pluck('id')->toArray();
+                if (count($userIds)) {
+                    $mod->authors()->attach($userIds);
+                }
             }
         );
 

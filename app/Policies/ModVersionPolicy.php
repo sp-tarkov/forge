@@ -49,7 +49,7 @@ class ModVersionPolicy
      */
     public function update(User $user, ModVersion $modVersion): bool
     {
-        return $user->isModOrAdmin() || $modVersion->mod->users->contains($user);
+        return $user->isModOrAdmin() || $modVersion->mod->authors->contains($user);
     }
 
     /**
@@ -57,7 +57,7 @@ class ModVersionPolicy
      */
     public function delete(User $user, ModVersion $modVersion): bool
     {
-        return $user->isAdmin() || $modVersion->mod->users->contains($user);
+        return $user->isAdmin() || $modVersion->mod->owner->id === $user->id;
     }
 
     /**

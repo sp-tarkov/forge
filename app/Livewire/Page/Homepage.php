@@ -40,7 +40,8 @@ class Homepage extends Component
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
-                'users:id,name',
+                'owner:id,name',
+                'authors:id,name',
                 'license:id,name,link',
             ])
             ->inRandomOrder()
@@ -63,7 +64,8 @@ class Homepage extends Component
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
-                'users:id,name',
+                'owner:id,name',
+                'authors:id,name',
                 'license:id,name,link',
             ])
             ->orderByDesc('created_at')
@@ -86,7 +88,8 @@ class Homepage extends Component
             ->with([
                 'latestUpdatedVersion',
                 'latestUpdatedVersion.latestSptVersion',
-                'users:id,name',
+                'owner:id,name',
+                'authors:id,name',
                 'license:id,name,link',
             ])
             ->orderByDesc('updated_at')

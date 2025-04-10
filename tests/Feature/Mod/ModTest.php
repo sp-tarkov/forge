@@ -18,9 +18,10 @@ it('displays the latest version on the mod detail page', function (): void {
     ];
     $latestVersion = max($versions);
 
+    SptVersion::factory()->create(['version' => '3.8.0']);
     $mod = Mod::factory()->create();
     foreach ($versions as $version) {
-        ModVersion::factory()->recycle($mod)->create(['version' => $version]);
+        ModVersion::factory()->recycle($mod)->create(['version' => $version, 'spt_version_constraint' => '3.8.0']);
     }
 
     $response = $this->get($mod->detailUrl());
@@ -35,10 +36,11 @@ it('displays the latest version on the mod detail page', function (): void {
 });
 
 it('builds download links using the latest mod version', function (): void {
+    SptVersion::factory()->create(['version' => '3.8.0']);
     $mod = Mod::factory()->create(['id' => 1, 'slug' => 'test-mod']);
-    ModVersion::factory()->recycle($mod)->create(['version' => '1.2.3']);
-    ModVersion::factory()->recycle($mod)->create(['version' => '1.3.0']);
-    $modVersion = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.4']);
+    ModVersion::factory()->recycle($mod)->create(['version' => '1.2.3', 'spt_version_constraint' => '3.8.0']);
+    ModVersion::factory()->recycle($mod)->create(['version' => '1.3.0', 'spt_version_constraint' => '3.8.0']);
+    $modVersion = ModVersion::factory()->recycle($mod)->create(['version' => '1.3.4', 'spt_version_constraint' => '3.8.0']);
 
     expect($mod->downloadUrl())->toEqual(route('mod.version.download', [
         'mod' => $mod->id,
@@ -103,7 +105,8 @@ it('allows a mod author to view their mod without a resolved SPT version', funct
 
     SptVersion::factory()->create(['version' => '9.9.9']);
     $mod = Mod::factory()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
 
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
 

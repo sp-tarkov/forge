@@ -40,12 +40,9 @@
                                 @endif
                             </h2>
                         </div>
-                        <p>
-                            {{ __('Created by') }}
-                            @foreach ($mod->users as $user)
-                                <a href="{{ $user->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
-                            @endforeach
-                        </p>
+                        @if ($mod->owner)
+                            <p>{{ __('Created by') }}&nbsp;<a href="{{ $mod->owner->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $mod->owner->name }}</a></p>
+                        @endif
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
                         @if ($mod->latestVersion?->latestSptVersion)
                             <p class="mt-2">
@@ -141,6 +138,17 @@
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
                 <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100">
+
+                    @if ($mod->authors->isNotEmpty())
+                        <li class="px-4 py-4 sm:px-0">
+                            <h3>{{ __('Additional Authors') }}</h3>
+                            <p class="truncate">
+                                @foreach ($mod->authors->sortDesc() as $user)
+                                    <a href="{{ $user->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                                @endforeach
+                            </p>
+                        </li>
+                    @endif
                     @if ($mod->license)
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('License') }}</h3>

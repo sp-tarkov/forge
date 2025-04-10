@@ -44,13 +44,14 @@ class Show extends Component
     /**
      * Get the mods for the user.
      *
-     * @return LengthAwarePaginator<Mod>
+     * @return LengthAwarePaginator<int, Mod>
      */
     protected function getUserMods(): LengthAwarePaginator
     {
         $query = $this->user->mods()
             ->with([
-                'users',
+                'owner:id,name',
+                'authors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
             ])

@@ -45,7 +45,8 @@ class Show extends Component
         return Mod::query()
             ->with([
                 'license',
-                'users',
+                'owner:id,name',
+                'authors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
             ])
@@ -55,7 +56,7 @@ class Show extends Component
     /**
      * The mod's versions.
      *
-     * @return LengthAwarePaginator<ModVersion>
+     * @return LengthAwarePaginator<int, ModVersion>
      */
     protected function versions(): LengthAwarePaginator
     {

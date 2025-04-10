@@ -18,15 +18,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create Sentry release
-        uses: getsentry/action-release@v3
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: production
-
       - name: Make Forge Build Request
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.FORGE_BUILD_URL }})

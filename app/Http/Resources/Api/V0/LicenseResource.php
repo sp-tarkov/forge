@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
-/** @mixin License */
+/**
+ * @mixin License
+ */
 class LicenseResource extends JsonResource
 {
     /**
@@ -21,14 +23,12 @@ class LicenseResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'type' => 'license',
             'id' => $this->id,
-            'attributes' => [
-                'name' => $this->name,
-                'link' => $this->link,
-                'created_at' => $this->created_at,
-                'updated_at' => $this->updated_at,
-            ],
+            'hub_id' => $this->hub_id,
+            'name' => $this->name,
+            'link' => $this->link,
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

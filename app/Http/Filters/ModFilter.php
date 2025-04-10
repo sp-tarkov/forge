@@ -54,7 +54,8 @@ class ModFilter
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mods.disabled', false));
             })
             ->with([
-                'users:id,name',
+                'owner:id,name',
+                'authors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
             ]);

@@ -28,7 +28,9 @@ it('shows mods on a profile page', function (): void {
 
     SptVersion::factory()->create(['version' => '1.0.0']);
     $mod = Mod::factory()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
+
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
     $response = $this->get(route('user.show', [
@@ -44,7 +46,8 @@ it('does not show mods without versions to anonymous users', function (): void {
     $user = User::factory()->create();
 
     $mod = Mod::factory()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
 
     $response = $this->get(route('user.show', [
         'userId' => $user->id,
@@ -59,7 +62,8 @@ it('shows mods without versions to the author', function (): void {
     $user = User::factory()->create();
 
     $mod = Mod::factory()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
 
     $response = $this->actingAs($user)
         ->get(route('user.show', [
@@ -76,7 +80,8 @@ it('shows mods without versions to administrators', function (): void {
     $user = User::factory()->create(['user_role_id' => $role->id]);
 
     $mod = Mod::factory()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
 
     $response = $this->actingAs($user)
         ->get(route('user.show', [
@@ -93,7 +98,8 @@ it('does not show anonymous users disabled mods on a profile page', function ():
 
     SptVersion::factory()->create(['version' => '1.0.0']);
     $mod = Mod::factory()->disabled()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
     $response = $this->get(route('user.show', [
@@ -110,7 +116,8 @@ it('shows the author their disabled mods on their profile page', function (): vo
 
     SptVersion::factory()->create(['version' => '1.0.0']);
     $mod = Mod::factory()->disabled()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
     $response = $this->actingAs($user)
@@ -129,7 +136,8 @@ it('shows administrators disabled mods on a profile page', function (): void {
 
     SptVersion::factory()->create(['version' => '1.0.0']);
     $mod = Mod::factory()->disabled()->create();
-    $mod->users()->attach($user->id);
+    $mod->owner()->associate($user);
+    $mod->save();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
     $response = $this->actingAs($user)

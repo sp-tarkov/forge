@@ -129,6 +129,11 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'flare' => [
+            'driver' => 'flare',
+            'level' => 'critical',
+        ],
+
     ],
 
 ];

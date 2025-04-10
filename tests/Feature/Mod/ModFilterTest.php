@@ -32,7 +32,7 @@ it('filters mods by a single SPT version', function (): void {
 
     // Apply the filter
     $filters = ['sptVersions' => [$sptVersion1->version]];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     // Assert that only the correct mod is returned
     expect($filteredMods)->toHaveCount(1)
@@ -68,7 +68,7 @@ it('filters mods by multiple SPT versions', function (): void {
 
     // Apply the filter with multiple SPT versions
     $filters = ['sptVersions' => [$sptVersion1->version, $sptVersion3->version]];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     // Assert that the correct mods are returned
     expect($filteredMods)->toHaveCount(2)
@@ -97,7 +97,7 @@ it('returns no mods when no SPT versions match', function (): void {
 
     // Apply the filter with a non-matching SPT version
     $filters = ['sptVersions' => ['3.0.0']]; // Version '3.0.0' does not exist in associations
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     // Assert that no mods are returned
     expect($filteredMods)->toBeEmpty();
@@ -113,7 +113,7 @@ it('filters mods based on a exact search term', function (): void {
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
 
     $filters = ['query' => 'BigBrain'];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
 });
@@ -128,7 +128,7 @@ it('filters mods based featured status', function (): void {
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '^1.0.0']);
 
     $filters = ['featured' => 'only'];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod->id);
 });
@@ -159,7 +159,7 @@ it('filters mods correctly with combined filters', function (): void {
         'featured' => 'only',
         'sptVersions' => [$sptVersion1->version],
     ];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     // Assert that only the correct mod is returned
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($mod1->id);
@@ -187,7 +187,7 @@ it('handles an empty SPT versions array correctly', function (): void {
 
     // Apply the filter with an empty SPT versions array
     $filters = ['sptVersions' => []];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     // Assert that the behavior is as expected (return all mods, or none, depending on intended behavior)
     expect($filteredMods)->toHaveCount(2); // Modify this assertion to reflect your desired behavior
@@ -206,7 +206,7 @@ it('does not show disabled mods to unauthorised users', function (): void {
 
     // Apply an empty filter
     $filters = [];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     // Assert that only the enabled mod is returned
     expect($filteredMods)->toHaveCount(1)->and($filteredMods->first()->id)->toBe($modEnabled->id)
@@ -230,7 +230,7 @@ it('does show disabled mods to administrators and moderators', function (): void
 
     // Apply an empty filter
     $filters = [];
-    $filteredMods = (new ModFilter($filters))->apply()->get();
+    $filteredMods = new ModFilter($filters)->apply()->get();
 
     // Assert that both the enabled and disabled mods are returned
     expect($filteredMods)

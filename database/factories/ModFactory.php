@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -20,6 +21,7 @@ class ModFactory extends Factory
         $name = fake()->sentence(rand(3, 5));
 
         return [
+            'owner_id' => User::factory(),
             'name' => $name,
             'slug' => Str::slug($name),
             'teaser' => fake()->sentence(),
