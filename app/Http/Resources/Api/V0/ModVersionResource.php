@@ -11,6 +11,8 @@ use Override;
 
 /**
  * @mixin ModVersion
+ *
+ * @property ModVersion $resource
  */
 class ModVersionResource extends JsonResource
 {
@@ -45,50 +47,52 @@ class ModVersionResource extends JsonResource
         $data = [];
 
         if ($this->shouldInclude('id')) {
-            $data['id'] = $this->id;
+            $data['id'] = $this->resource->id;
         }
 
         if ($this->shouldInclude('hub_id')) {
-            $data['hub_id'] = $this->hub_id;
+            $data['hub_id'] = $this->resource->hub_id;
         }
 
         if ($this->shouldInclude('version')) {
-            $data['version'] = $this->version;
+            $data['version'] = $this->resource->version;
         }
 
         if ($this->shouldInclude('description')) {
-            $data['description'] = $this->description;
+            $data['description'] = $this->resource->description;
         }
 
         if ($this->shouldInclude('link')) {
-            $data['link'] = $this->link;
+            $data['link'] = $this->resource->link;
         }
 
         if ($this->shouldInclude('spt_version_constraint')) {
-            $data['spt_version_constraint'] = $this->spt_version_constraint;
+            $data['spt_version_constraint'] = $this->resource->spt_version_constraint;
         }
 
         if ($this->shouldInclude('virus_total_link')) {
-            $data['virus_total_link'] = $this->virus_total_link;
+            $data['virus_total_link'] = $this->resource->virus_total_link;
         }
 
         if ($this->shouldInclude('downloads')) {
-            $data['downloads'] = $this->downloads;
+            $data['downloads'] = $this->resource->downloads;
         }
 
         if ($this->shouldInclude('published_at')) {
-            $data['published_at'] = $this->published_at?->toISOString();
+            $data['published_at'] = $this->resource->published_at?->toISOString();
         }
 
         if ($this->shouldInclude('created_at')) {
-            $data['created_at'] = $this->created_at->toISOString();
+            $data['created_at'] = $this->resource->created_at->toISOString();
         }
 
         if ($this->shouldInclude('updated_at')) {
-            $data['updated_at'] = $this->updated_at->toISOString();
+            $data['updated_at'] = $this->resource->updated_at->toISOString();
         }
 
-        $data['dependencies'] = new ModResolvedDependencyCollection($this->whenLoaded('resolvedDependencies'));
+        $data['dependencies'] = new ModResolvedDependencyCollection(
+            $this->whenLoaded('resolvedDependencies')
+        );
 
         return $data;
     }

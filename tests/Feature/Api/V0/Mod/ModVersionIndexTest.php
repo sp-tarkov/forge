@@ -55,6 +55,23 @@ it('returns a paginated list of mod versions with per_page parameter', function 
     $response->assertJsonPath('meta.total', 25);
 });
 
+it('only returns the versions for the requested mod', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+    $mod1 = Mod::factory()->hasVersions(5, ['spt_version_constraint' => '3.8.0'])->create();
+    $mod2 = Mod::factory()->hasVersions(5, ['spt_version_constraint' => '3.8.0'])->create();
+
+    $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s/versions', $mod1->id));
+
+    $response
+        ->assertOk()
+        ->assertJsonCount(5, 'data')
+        ->assertJsonPath('meta.total', 5);
+
+    $returnedIds = collect($response->json('data'))->pluck('id')->all();
+    expect($returnedIds)
+        ->not->toContain($mod2->versions->pluck('id')->all());
+});
+
 it('filters mod versions by id', function (): void {
     SptVersion::factory()->state(['version' => '3.8.0'])->create();
     $mod = Mod::factory()->create();
@@ -282,8 +299,8 @@ it('includes version dependencies', function (): void {
     ModVersion::factory()->create(['mod_id' => $childMod2->id, 'spt_version_constraint' => '3.8.0', 'version' => '1.1.0']);
 
     // Define the dependencies with a semver constraint.
-    $dependency1 = ModDependency::factory()->create(['mod_version_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod1->id, 'constraint' => '^1.0.0']);
-    $dependency2 = ModDependency::factory()->create(['mod_version_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod2->id, 'constraint' => '^1.0.0']);
+    ModDependency::factory()->create(['mod_version_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod1->id, 'constraint' => '^1.0.0']);
+    ModDependency::factory()->create(['mod_version_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod2->id, 'constraint' => '^1.0.0']);
 
     $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?include=dependencies', $parentMod->id));
 
