@@ -6,21 +6,21 @@
         "build": "vite build"
     },
     "devDependencies": {
-        "@tailwindcss/forms": "^0.5.7",
-        "@tailwindcss/postcss": "^4.0.17",
-        "@tailwindcss/typography": "^0.5.10",
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/postcss": "^4.1.3",
+        "@tailwindcss/typography": "^0.5.16",
         "autoprefixer": "^10.4.21",
-        "axios": "^1.7.8",
-        "chokidar": "^4.0.1",
-        "laravel-vite-plugin": "^1.0",
-        "postcss": "^8.4.49",
-        "prettier": "^3.4.1",
+        "axios": "^1.8.4",
+        "chokidar": "^4.0.3",
+        "laravel-vite-plugin": "^1.2",
+        "postcss": "^8.5.3",
+        "prettier": "^3.5.3",
         "prettier-plugin-tailwindcss": "^0.6.11",
-        "tailwindcss": "^4.0.17",
-        "vite": "^6.0",
-        "concurrently": "^9.0.1"
+        "tailwindcss": "^4.1.3",
+        "vite": "^6.2",
+        "concurrently": "^9.1.2"
     },
     "dependencies": {
-        "@alpinejs/focus": "^3.14.4"
+        "@alpinejs/focus": "^3.14.9"
     }
 }
