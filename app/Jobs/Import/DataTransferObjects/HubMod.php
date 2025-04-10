@@ -154,7 +154,7 @@ class HubMod
     {
         $additionalAuthorHubIds = $this->additional_authors
             ? collect(explode(',', $this->additional_authors))
-                ->map(fn ($id): string => trim((string) $id))
+                ->map(fn ($id): string => trim($id))
                 ->filter()
                 ->all()
             : []; // Default to an empty array.

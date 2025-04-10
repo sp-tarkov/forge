@@ -4,51 +4,39 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V0;
 
-use App\Http\Controllers\Api\V0\ApiController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
-/** @mixin User */
+/**
+ * @mixin User
+ */
 class UserResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     #[Override]
     public function toArray(Request $request): array
     {
-        $this->load('role');
+        // Determine if the current request is for the authenticated user's own details
+        $isCurrentUserRequest = $request->user()?->id === $this->id;
 
         return [
-            'type' => 'user',
             'id' => $this->id,
-            'attributes' => [
-                'name' => $this->name,
-                'user_role_id' => $this->user_role_id,
-                'profile_photo_url' => $this->profile_photo_url,
-                'cover_photo_url' => $this->cover_photo_url,
-                'created_at' => $this->created_at,
-                'updated_at' => $this->updated_at,
-            ],
-            'relationships' => [
-                'user_role' => [
-                    'data' => [
-                        'type' => 'user_role',
-                        'id' => $this->user_role_id,
-                    ],
-                ],
-            ],
-            'includes' => $this->when(
-                ApiController::shouldInclude('user_role'),
-                new UserRoleResource($this->role),
-            ),
-            'links' => [
-                'self' => $this->profile_url,
-            ],
+            'name' => $this->name,
+            'profile_photo_url' => $this->profile_photo_url,
+            'cover_photo_url' => $this->cover_photo_url,
+            $this->mergeWhen($isCurrentUserRequest, [ // Include these fields if the request is for the current user
+                'email' => $this->email,
+                'email_verified_at' => $this->email_verified_at?->toISOString(),
+            ]),
+            'role' => $this->whenLoaded('role', fn (): ?RoleResource => $this->role ? new RoleResource($this->role) : null),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Override;
 
@@ -148,6 +149,7 @@ class ModVersion extends Model
             ->orderByDesc('spt_versions.version_major')
             ->orderByDesc('spt_versions.version_minor')
             ->orderByDesc('spt_versions.version_patch')
+            ->orderByRaw('CASE WHEN spt_versions.version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('spt_versions.version_labels')
             ->limit(1);
     }
@@ -164,6 +166,7 @@ class ModVersion extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels');
     }
 
@@ -209,5 +212,27 @@ class ModVersion extends Model
             'deleted_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get all the version numbers for a mod.
+     *
+     * @cached 2h
+     *
+     * @return array<int, string>
+     */
+    public static function versionNumbers(int $modId): array
+    {
+        return Cache::remember('mod_version_numbers_'.$modId, now()->addHour(), fn () => self::query()
+            ->where('mod_id', $modId)
+            ->where('version', '!=', '0.0.0')
+            ->whereNotNull('version')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->pluck('version')
+            ->all());
     }
 }

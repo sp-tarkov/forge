@@ -50,8 +50,7 @@ class ModDependency extends Model
      */
     public function resolvedDependencies(): HasMany
     {
-        return $this->hasMany(ModResolvedDependency::class, 'dependency_id')
-            ->chaperone();
+        return $this->hasMany(ModResolvedDependency::class, 'dependency_id')->chaperone();
     }
 
     /**

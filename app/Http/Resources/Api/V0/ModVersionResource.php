@@ -9,9 +9,25 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
-/** @mixin ModVersion */
+/**
+ * @mixin ModVersion
+ *
+ * @property ModVersion $resource
+ */
 class ModVersionResource extends JsonResource
 {
+    /**
+     * The fields requested in the request.
+     *
+     * @var array<int, string>
+     */
+    protected array $requestedFields = [];
+
+    /**
+     * Whether to show all fields.
+     */
+    protected bool $showAllFields = true;
+
     /**
      * Transform the resource into an array.
      *
@@ -20,85 +36,82 @@ class ModVersionResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
-        $this->load(['resolvedDependencies', 'latestResolvedDependencies', 'sptVersions', 'latestSptVersion']);
+        $this->requestedFields = $request->string('fields', '')
+            ->explode(',')
+            ->map(fn (string $field): string => trim($field))
+            ->filter()
+            ->toArray();
 
-        return [
-            'type' => 'mod_version',
-            'id' => $this->id,
-            'attributes' => [
-                'hub_id' => $this->hub_id,
-                'mod_id' => $this->mod_id,
-                'version' => $this->version,
-                'version_major' => $this->version_major,
-                'version_minor' => $this->version_minor,
-                'version_patch' => $this->version_patch,
-                'version_labels' => $this->version_labels,
+        $this->showAllFields = empty($this->requestedFields);
 
-                // TODO: This should only be visible on the mod version show route(?) which doesn't exist.
-                // 'description' => $this->when(
-                //    $request->routeIs('api.v0.modversion.show'),
-                //    $this->description
-                // ),
+        $data = [];
 
-                'link' => $this->downloadUrl(absolute: true),
-                'spt_version_constraint' => $this->spt_version_constraint,
-                'virus_total_link' => $this->virus_total_link,
-                'downloads' => $this->downloads,
-                'created_at' => $this->created_at,
-                'updated_at' => $this->updated_at,
-                'published_at' => $this->published_at,
-            ],
-            'relationships' => [
-                'mod' => [
-                    'data' => [
-                        'type' => 'mod',
-                        'id' => $this->mod_id,
-                    ],
-                    'links' => [
-                        'self' => $this->mod->detailUrl(),
-                    ],
-                ],
-                'dependencies' => $this->resolvedDependencies->map(fn (ModVersion $modVersion): array => [
-                    'data' => [
-                        'type' => 'dependency',
-                        'id' => $modVersion->id,
-                    ],
-                ])->toArray(),
-                'latest_dependencies' => $this->latestResolvedDependencies->map(fn (ModVersion $modVersion): array => [
-                    'data' => [
-                        'type' => 'dependency',
-                        'id' => $modVersion->id,
-                    ],
-                ])->toArray(),
-                'spt_versions' => $this->sptVersions->map(fn ($sptVersion): array => [
-                    'data' => [
-                        'type' => 'spt_version',
-                        'id' => $sptVersion->id,
-                    ],
-                ])->toArray(),
-                'latest_spt_version' => [
-                    'data' => $this->latestSptVersion ? [
-                        'type' => 'spt_version',
-                        'id' => $this->latestSptVersion->id,
-                    ] : null,
-                ],
-            ],
-            //            // TODO: give the options to include detailed relationship data.
-            //            'includes' => $this->when(
-            //                ApiController::shouldInclude(['authors', 'license', 'versions']), [
-            //                    'authors' => $this->when(
-            //                        ApiController::shouldInclude('authors'),
-            //                        $this->authors->map(fn ($user): UserResource => new UserResource($user)),
-            //                    ),
-            //                    'license' => $this->when(
-            //                        ApiController::shouldInclude('license'),
-            //                        new LicenseResource($this->license),
-            //                    ),
-            //                ]
-            //            ),
-            'links' => [
-                'self' => $this->mod->detailUrl(),
-            ],
-        ];
+        if ($this->shouldInclude('id')) {
+            $data['id'] = $this->resource->id;
+        }
+
+        if ($this->shouldInclude('hub_id')) {
+            $data['hub_id'] = $this->resource->hub_id;
+        }
+
+        if ($this->shouldInclude('version')) {
+            $data['version'] = $this->resource->version;
+        }
+
+        if ($this->shouldInclude('description')) {
+            $data['description'] = $this->resource->description;
+        }
+
+        if ($this->shouldInclude('description')) {
+            $data['description'] = $this->when(
+                $request->routeIs('api.v0.mod-versions.index'),
+                $this->resource->description
+            );
+        }
+
+        if ($this->shouldInclude('link')) {
+            $data['link'] = $this->resource->link;
+        }
+
+        if ($this->shouldInclude('spt_version_constraint')) {
+            $data['spt_version_constraint'] = $this->resource->spt_version_constraint;
+        }
+
+        if ($this->shouldInclude('virus_total_link')) {
+            $data['virus_total_link'] = $this->resource->virus_total_link;
+        }
+
+        if ($this->shouldInclude('downloads')) {
+            $data['downloads'] = $this->resource->downloads;
+        }
+
+        if ($this->shouldInclude('published_at')) {
+            $data['published_at'] = $this->resource->published_at?->toISOString();
+        }
+
+        if ($this->shouldInclude('created_at')) {
+            $data['created_at'] = $this->resource->created_at->toISOString();
+        }
+
+        if ($this->shouldInclude('updated_at')) {
+            $data['updated_at'] = $this->resource->updated_at->toISOString();
+        }
+
+        $data['dependencies'] = new ModResolvedDependencyCollection(
+            $this->whenLoaded('resolvedDependencies')
+        );
+
+        return $data;
+    }
+
+    /**
+     * Check if a field should be included in the response.
+     *
+     * @param  string  $field  The field name to check
+     * @return bool Whether the field should be included
+     */
+    protected function shouldInclude(string $field): bool
+    {
+        return $this->showAllFields || in_array($field, $this->requestedFields, true);
     }
 }

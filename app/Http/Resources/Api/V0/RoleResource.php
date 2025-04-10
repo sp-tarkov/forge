@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V0;
 
-use App\Models\License;
+use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
 /**
- * @mixin License
+ * @mixin UserRole
  */
-class LicenseResource extends JsonResource
+class RoleResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -24,11 +24,10 @@ class LicenseResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'hub_id' => $this->hub_id,
             'name' => $this->name,
-            'link' => $this->link,
-            'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at->toISOString(),
+            'short_name' => $this->short_name,
+            'description' => $this->description,
+            'color_class' => $this->color_class,
         ];
     }
 }

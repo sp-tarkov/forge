@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Override;
@@ -68,6 +69,7 @@ class SptVersion extends Model
             ->orderBy('spt_versions.version_major', 'DESC')
             ->orderBy('spt_versions.version_minor', 'DESC')
             ->orderBy('spt_versions.version_patch', 'DESC')
+            ->orderByRaw('CASE WHEN spt_versions.version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('spt_versions.version_labels', 'ASC')
             ->get();
     }
@@ -202,6 +204,8 @@ class SptVersion extends Model
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
             ->first();
     }
 
@@ -221,7 +225,29 @@ class SptVersion extends Model
             ->where('version_major', $latestMajor->version_major)
             ->where('version_minor', $latestMajor->version_minor)
             ->orderBy('version_patch', 'desc')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
             ->get();
+    }
+
+    /**
+     * Get all the valid SPT versions.
+     *
+     * @cached 1h
+     *
+     * @return array<int, string>
+     */
+    public static function allValidVersions(): array
+    {
+        return Cache::remember('all_spt_versions_list', now()->addHour(), fn () => self::query()
+            ->where('version', '!=', '0.0.0')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->pluck('version')
+            ->all());
     }
 
     /**
