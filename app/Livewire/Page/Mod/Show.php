@@ -56,7 +56,7 @@ class Show extends Component
     /**
      * The mod's versions.
      *
-     * @return LengthAwarePaginator<ModVersion>
+     * @return LengthAwarePaginator<int, ModVersion>
      */
     protected function versions(): LengthAwarePaginator
     {

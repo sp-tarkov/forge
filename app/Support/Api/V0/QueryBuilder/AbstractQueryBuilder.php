@@ -325,7 +325,7 @@ abstract class AbstractQueryBuilder
     /**
      * Get the paginated query results.
      *
-     * @return LengthAwarePaginator<TModel>
+     * @return LengthAwarePaginator<int, TModel>
      */
     public function paginate(int $perPage = 12): LengthAwarePaginator
     {

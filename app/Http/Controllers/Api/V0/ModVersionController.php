@@ -156,7 +156,7 @@ class ModVersionController extends Controller
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request, int $modId): JsonResponse
     {
-        $queryBuilder = (new ModVersionQueryBuilder($modId))
+        $queryBuilder = new ModVersionQueryBuilder($modId)
             ->withFilters($request->input('filter'))
             ->withIncludes($request->string('include')->explode(',')->toArray())
             ->withFields($request->string('fields')->explode(',')->toArray())

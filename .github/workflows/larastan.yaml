@@ -12,7 +12,7 @@ jobs:
       - name: Setup
         uses: ./.github/action/setup
         with:
-          php-version: 8.3
+          php-version: 8.4
 
       - name: Install Composer Dependencies
         run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader

@@ -142,7 +142,7 @@ class Index extends Component
     /**
      * Check if the current page is greater than the last page. Redirect if it is.
      *
-     * @param  LengthAwarePaginator<Mod>  $paginatedMods
+     * @param  LengthAwarePaginator<int, Mod>  $paginatedMods
      */
     private function redirectOutOfBoundsPage(LengthAwarePaginator $paginatedMods): void
     {

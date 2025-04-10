@@ -10,6 +10,7 @@ use App\Support\Version;
 use Carbon\Carbon;
 use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Override;
 use Throwable;
 
@@ -173,10 +175,15 @@ class SptVersion extends Model
 
     /**
      * Get the version with "SPT " prepended.
+     *
+     * @return Attribute<string, string>
      */
-    public function getVersionFormattedAttribute(): string
+    protected function versionFormatted(): Attribute
     {
-        return __('SPT ').$this->version;
+        return Attribute::make(
+            get: fn (): string => 'SPT '.$this->version,
+            set: fn (string $value): string => Str::after($value, 'SPT '),
+        );
     }
 
     /**
