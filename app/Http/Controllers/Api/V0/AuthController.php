@@ -33,6 +33,8 @@ class AuthController extends Controller
      * Authenticates a user with email and password and returns an API token. Users who registered via OAuth (and
      * haven't set a password) cannot use this endpoint.
      *
+     * @unauthenticated
+     *
      * @response status=200 scenario="Successful Login"
      *  {
      *      "success": true,
