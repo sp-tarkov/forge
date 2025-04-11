@@ -129,7 +129,7 @@ abstract class AbstractQueryBuilder
      */
     protected function applySearch(): void
     {
-        if ($this->searchQuery === null) {
+        if (empty($this->searchQuery)) {
             return;
         }
 
@@ -148,9 +148,8 @@ abstract class AbstractQueryBuilder
         $searchResults = $model->search($this->searchQuery)->raw();
 
         if (empty($searchResults['hits'])) {
-            // If no search results, ensure no records are returned
+            // If no search results, force no records to be returned
             $this->builder->whereRaw('1 = 0');
-
             return;
         }
 
@@ -158,10 +157,9 @@ abstract class AbstractQueryBuilder
         /** @var list<int|string> $orderedIds */
         $orderedIds = collect($searchResults['hits'])->pluck('id')->all();
 
-        // If IDs array is empty after pluck (e.g., all hits lacked 'id'), prevent query errors
+        // If IDs array is empty after pluck (e.g., all hits lacked 'id'), force no records
         if (empty($orderedIds)) {
             $this->builder->whereRaw('1 = 0');
-
             return;
         }
 
