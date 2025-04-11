@@ -146,7 +146,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     {
         $hubUsers->each(function (HubUser $hubUser): void {
             if ($hubUser->banned > 0) {
-                if ($user = User::whereHubId($hubUser->userID)->first()) {
+                $user = User::whereHubId($hubUser->userID)->first();
+                if (! empty($user) && $user->isNotBanned()) {
                     $user->ban([
                         'comment' => $hubUser->banReason ?? '',
                         'expired_at' => $hubUser->getBanExpires(),
