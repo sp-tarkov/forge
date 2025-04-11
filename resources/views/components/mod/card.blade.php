@@ -29,7 +29,7 @@
                 <div class="pb-3">
                     <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">{{ $mod->name }}</h3>
                     <p class="no-underline mb-2 text-sm italic text-slate-600 dark:text-gray-200">
-                        {{ __('Created by :owner', ['owner' => $mod->owner->name]) }}
+                        {{ __('Created by :owner', ['owner' => $mod->owner?->name ?? '']) }}
                     </p>
                     @if ($version?->latestSptVersion)
                         <p class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 mb-2 text-xs font-medium text-nowrap">

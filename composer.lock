@@ -6234,16 +6234,16 @@
         },
         {
             "name": "spatie/laravel-package-tools",
-            "version": "1.92.2",
+            "version": "1.92.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-package-tools.git",
-                "reference": "d55de371a6f609772c79a8d4d5e5b8fae11398f5"
+                "reference": "45001525ccbb3804edb46a3410157f40de2ddd89"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-package-tools/zipball/d55de371a6f609772c79a8d4d5e5b8fae11398f5",
-                "reference": "d55de371a6f609772c79a8d4d5e5b8fae11398f5",
+                "url": "https://api.github.com/repos/spatie/laravel-package-tools/zipball/45001525ccbb3804edb46a3410157f40de2ddd89",
+                "reference": "45001525ccbb3804edb46a3410157f40de2ddd89",
                 "shasum": ""
             },
             "require": {
@@ -6282,7 +6282,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-package-tools/issues",
-                "source": "https://github.com/spatie/laravel-package-tools/tree/1.92.2"
+                "source": "https://github.com/spatie/laravel-package-tools/tree/1.92.3"
             },
             "funding": [
                 {
@@ -6290,7 +6290,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-04-10T14:16:34+00:00"
+            "time": "2025-04-10T21:50:03+00:00"
         },
         {
             "name": "spatie/laravel-query-builder",
