@@ -675,8 +675,9 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         // Upsert batch of mods based on their hub_id.
         Mod::withoutEvents(function () use ($modData): void {
             Mod::query()->upsert($modData, ['hub_id'], [
-                'name', 'slug', 'teaser', 'description', 'thumbnail', 'license_id', 'source_code_link', 'featured',
-                'contains_ai_content', 'contains_ads', 'disabled', 'published_at', 'created_at', 'updated_at',
+                'owner_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'license_id', 'source_code_link',
+                'featured', 'contains_ai_content', 'contains_ads', 'disabled', 'published_at', 'created_at',
+                'updated_at',
             ]);
         });
 
