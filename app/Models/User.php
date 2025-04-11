@@ -335,7 +335,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected function profilePhotoDisk(): string
     {
-        return config('filesystems.asset_upload_disk.profile', config('jetstream.profile_photo_disk', 'public'));
+        return config('filesystems.asset_upload', config('jetstream.profile_photo_disk', 'public'));
     }
 
     /**
