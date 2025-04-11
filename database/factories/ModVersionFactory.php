@@ -9,6 +9,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @extends Factory<ModVersion>
@@ -52,10 +53,10 @@ class ModVersionFactory extends Factory
         $constraint = $modVersion->spt_version_constraint;
 
         $requiredVersions = match ($constraint) {
-            '^1.0' => ['1.0.0', '1.1.0', '1.2.0'],
-            '^2.0' => ['2.0.0', '2.1.0'],
-            '>=3.0' => ['3.0.0', '3.1.0', '3.2.0', '4.0.0'],
-            '<4.0' => ['1.0.0', '2.0.0', '3.0.0'],
+            '^1.0.0' => ['1.0.0', '1.1.0', '1.2.0'],
+            '^2.0.0' => ['2.0.0', '2.1.0'],
+            '>=3.0.0' => ['3.0.0', '3.1.0', '3.2.0', '4.0.0'],
+            '<4.0.0' => ['1.0.0', '2.0.0', '3.0.0'],
             default => [],
         };
 
@@ -65,13 +66,24 @@ class ModVersionFactory extends Factory
         }
 
         foreach ($requiredVersions as $version) {
-            SptVersion::firstOrCreate(['version' => $version], [
-                'color_class' => $this->faker->randomElement(['red', 'green', 'emerald', 'lime', 'yellow', 'grey']),
-                'link' => $this->faker->url(),
-            ]);
+            try {
+                $sptVersion = SptVersion::firstOrCreate(['version' => $version], [
+                    'color_class' => $this->faker->randomElement(['red', 'green', 'emerald', 'lime', 'yellow', 'grey']),
+                    'link' => $this->faker->url(),
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to create SPT version {$version} for mod version {$modVersion->id}: " . $e->getMessage());
+                throw $e;
+            }
         }
 
-        $modVersion->sptVersions()->sync(SptVersion::whereIn('version', $requiredVersions)->pluck('id')->toArray());
+        try {
+            $sptVersionIds = SptVersion::whereIn('version', $requiredVersions)->pluck('id')->toArray();
+            $modVersion->sptVersions()->sync($sptVersionIds);
+        } catch (\Exception $e) {
+            Log::error("Failed to sync SPT versions for mod version {$modVersion->id}: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
