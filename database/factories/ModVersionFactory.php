@@ -72,7 +72,7 @@ class ModVersionFactory extends Factory
                     'link' => $this->faker->url(),
                 ]);
             } catch (\Exception $e) {
-                Log::error("Failed to create SPT version {$version} for mod version {$modVersion->id}: " . $e->getMessage());
+                Log::error("Failed to create SPT version {$version} for mod version {$modVersion->id}: ".$e->getMessage());
                 throw $e;
             }
         }
@@ -81,7 +81,7 @@ class ModVersionFactory extends Factory
             $sptVersionIds = SptVersion::whereIn('version', $requiredVersions)->pluck('id')->toArray();
             $modVersion->sptVersions()->sync($sptVersionIds);
         } catch (\Exception $e) {
-            Log::error("Failed to sync SPT versions for mod version {$modVersion->id}: " . $e->getMessage());
+            Log::error("Failed to sync SPT versions for mod version {$modVersion->id}: ".$e->getMessage());
             throw $e;
         }
     }
