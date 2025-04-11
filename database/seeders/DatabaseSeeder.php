@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Increase memory limit for seeding
+        ini_set('memory_limit', '512M');
+
         // How many of each entity to create.
         $counts = [
             'license' => 10,
