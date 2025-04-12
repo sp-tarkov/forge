@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Laravel\Scout\Searchable;
 
 /**
  * @template TModel of Model
@@ -51,6 +52,11 @@ abstract class AbstractQueryBuilder
      * @var array<string, string>
      */
     protected array $sorts = [];
+
+    /**
+     * The search query to use with Scout.
+     */
+    protected ?string $searchQuery = null;
 
     /**
      * Create a new query builder instance.
@@ -113,8 +119,53 @@ abstract class AbstractQueryBuilder
         $this->applyIncludes();
         $this->applyFields();
         $this->applySorts();
+        $this->applySearch();
 
         return $this->builder;
+    }
+
+    /**
+     * Apply the search query using Scout if available.
+     */
+    protected function applySearch(): void
+    {
+        if (empty($this->searchQuery)) {
+            return;
+        }
+
+        $modelClass = $this->getModelClass();
+        $model = new $modelClass;
+
+        if (! in_array(Searchable::class, class_uses_recursive($model), true)) {
+            // Model doesn't use Searchable trait, cannot perform Scout search.
+            return;
+        }
+
+        /** @phpstan-var TModel&Searchable $model */
+
+        // Get the search results with their relevance ordering
+        /** @phpstan-var array{hits: list<array{id: int|string, ...}>, ...} $searchResults */
+        $searchResults = $model->search($this->searchQuery)->raw();
+
+        if (empty($searchResults['hits'])) {
+            // If no search results, force no records to be returned
+            $this->builder->whereRaw('1 = 0');
+            return;
+        }
+
+        // Get the IDs in the order they were returned from Scout
+        /** @var list<int|string> $orderedIds */
+        $orderedIds = collect($searchResults['hits'])->pluck('id')->all();
+
+        // If IDs array is empty after pluck (e.g., all hits lacked 'id'), force no records
+        if (empty($orderedIds)) {
+            $this->builder->whereRaw('1 = 0');
+            return;
+        }
+
+        // Filter the main query by these IDs and preserve the order from Scout
+        $this->builder->whereIn($model->getQualifiedKeyName(), $orderedIds)
+            ->orderByRaw('FIELD('.$model->getQualifiedKeyName().', '.implode(',', array_map('intval', $orderedIds)).')');
     }
 
     /**
@@ -248,9 +299,8 @@ abstract class AbstractQueryBuilder
 
             foreach ($this->sorts as $sort) {
                 $isReverse = Str::startsWith($sort, '-');
-                $cleanName = $isReverse ? Str::substr($sort, 1) : $sort;
-                $direction = $isReverse ? 'desc' : 'asc';
-                $this->builder->orderBy($cleanName, $direction);
+                $column = $isReverse ? Str::substr($sort, 1) : $sort;
+                $this->builder->orderBy($column, $isReverse ? 'desc' : 'asc');
             }
         }
     }
@@ -259,11 +309,13 @@ abstract class AbstractQueryBuilder
      * Set the filters for the query.
      *
      * @param  array<string, mixed>|null  $filters
-     * @return $this
+     * @return self<TModel>
      */
     public function withFilters(?array $filters): self
     {
-        $this->filters = $filters ?? [];
+        if ($filters !== null) {
+            $this->filters = $filters;
+        }
 
         return $this;
     }
@@ -272,15 +324,12 @@ abstract class AbstractQueryBuilder
      * Set the includes for the query.
      *
      * @param  array<string>|null  $includes
-     * @return $this
+     * @return self<TModel>
      */
     public function withIncludes(?array $includes): self
     {
-        $this->includes = [];
-
         if ($includes !== null) {
-            // Filter out empty values and ensure all values are strings
-            $this->includes = array_filter($includes, fn ($include): bool => ! empty($include));
+            $this->includes = $includes;
         }
 
         return $this;
@@ -290,11 +339,13 @@ abstract class AbstractQueryBuilder
      * Set the fields for the query.
      *
      * @param  array<string>|null  $fields
-     * @return $this
+     * @return self<TModel>
      */
     public function withFields(?array $fields): self
     {
-        $this->fields = $fields ?? [];
+        if ($fields !== null) {
+            $this->fields = $fields;
+        }
 
         return $this;
     }
@@ -302,18 +353,34 @@ abstract class AbstractQueryBuilder
     /**
      * Set the sorts for the query.
      *
-     * @param  array<string, string>|null  $sorts
-     * @return $this
+     * @param  array<string>|null  $sorts
+     * @return self<TModel>
      */
     public function withSorts(?array $sorts): self
     {
-        $this->sorts = $sorts ?? [];
+        if ($sorts !== null) {
+            $this->sorts = $sorts;
+        }
 
         return $this;
     }
 
     /**
-     * Get the query results.
+     * Set the search query for the query.
+     *
+     * @return self<TModel>
+     */
+    public function withSearch(?string $query): self
+    {
+        if ($query !== null) {
+            $this->searchQuery = $query;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the results of the query.
      *
      * @return Collection<int, TModel>
      */
@@ -323,7 +390,7 @@ abstract class AbstractQueryBuilder
     }
 
     /**
-     * Get the paginated query results.
+     * Get the paginated results of the query.
      *
      * @return LengthAwarePaginator<int, TModel>
      */
@@ -335,6 +402,8 @@ abstract class AbstractQueryBuilder
     /**
      * Find a model by its primary key or throw an exception.
      *
+     * @return TModel
+     *
      * @throws ModelNotFoundException
      */
     public function findOrFail(int $id): Model
@@ -343,37 +412,31 @@ abstract class AbstractQueryBuilder
     }
 
     /**
-     * Parse a boolean input string to a boolean value.
+     * Parse a boolean input value.
      */
     protected static function parseBooleanInput(string $value): bool
     {
-        $value = Str::of($value)->trim()->lower()->toString();
-
-        // Truthy values
-        if (in_array($value, ['true', 'yes', 'on', '1'], true)) {
-            return true;
-        }
-
-        return false;
+        return in_array(strtolower($value), ['1', 'true', 'yes', 'on'], true);
     }
 
     /**
-     * Parse a comma-separated string to an array.
+     * Parse a comma-separated input value.
      *
-     * @param  'string'|'integer'  $castReturn
-     * @return array<int, string|int>
+     * @return array<mixed>
      */
     protected static function parseCommaSeparatedInput(string $value, ?string $castReturn = null): array
     {
-        return Str::of($value)
-            ->explode(',')
-            ->map(fn (string $value) => Str::trim($value))
-            ->filter()
-            ->map(fn (string $value): int|string => match ($castReturn) {
-                'string' => $value,
-                'integer' => (int) $value,
-                default => $value,
-            })
-            ->toArray();
+        $values = array_filter(explode(',', $value), fn ($value): bool => ! empty($value));
+
+        if ($castReturn === null) {
+            return $values;
+        }
+
+        return array_map(fn ($value): mixed => match ($castReturn) {
+            'integer' => (int) $value,
+            'float' => (float) $value,
+            'boolean' => self::parseBooleanInput($value),
+            default => $value,
+        }, $values);
     }
 }
