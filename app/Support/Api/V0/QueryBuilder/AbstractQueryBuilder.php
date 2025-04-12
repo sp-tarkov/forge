@@ -150,6 +150,7 @@ abstract class AbstractQueryBuilder
         if (empty($searchResults['hits'])) {
             // If no search results, force no records to be returned
             $this->builder->whereRaw('1 = 0');
+
             return;
         }
 
@@ -160,6 +161,7 @@ abstract class AbstractQueryBuilder
         // If IDs array is empty after pluck (e.g., all hits lacked 'id'), force no records
         if (empty($orderedIds)) {
             $this->builder->whereRaw('1 = 0');
+
             return;
         }
 
