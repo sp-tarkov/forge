@@ -11,10 +11,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Show extends Component
 {
     use ModeratesMod;
+    use WithPagination;
 
     /**
      * The user being viewed.

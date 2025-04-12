@@ -234,6 +234,18 @@ it('includes license relationship', function (): void {
     $response->assertJsonPath('data.0.license.id', $mod->license->id);
 });
 
+it('includes license relationship when a filter is applied', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $mod = Mod::factory(['name' => 'MegaMod'])->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[name]=MegaMod&include=license');
+
+    $response->assertStatus(Response::HTTP_OK);
+    $response->assertJsonStructure(['data' => ['*' => ['license' => ['id', 'name']]]]);
+    $response->assertJsonPath('data.0.license.id', $mod->license->id);
+});
+
 it('includes enabled mods with an enabled version', function (): void {
     SptVersion::factory()->state(['version' => '3.8.0'])->create();
 

@@ -13,20 +13,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup
-        uses: ./.github/action/setup
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
+          extensions: json, dom, curl, libxml, mbstring
+          coverage: none
 
-      - name: Install Composer Dependencies
-        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+      - name: Install Pint
+        run: composer global require laravel/pint
 
-      - name: Run Pint Code Style Fixer
-        run: ./vendor/bin/pint
+      - name: Run Pint
+        run: pint
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Pint PHP Style Fixes
           commit_user_name: Pint Bot
-          skip_fetch: true
-          file_pattern: '*.php'

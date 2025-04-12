@@ -463,11 +463,13 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'hub_id' => $hubModLicense->licenseID,
             'name' => $hubModLicense->licenseName,
             'link' => $hubModLicense->licenseURL,
+            'created_at' => Carbon::now('UTC')->toDateTimeString(),
+            'updated_at' => Carbon::now('UTC')->toDateTimeString(),
         ])->toArray();
 
-        // Upsert batch of users based on their hub_id.
+        // Upsert batch of licenses based on their hub_id.
         License::withoutEvents(function () use ($licenseData): void {
-            License::query()->upsert($licenseData, ['hub_id'], ['name', 'link']);
+            License::query()->upsert($licenseData, ['hub_id'], ['name', 'link', 'created_at', 'updated_at']);
         });
     }
 
