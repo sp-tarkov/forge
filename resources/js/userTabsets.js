@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Find all elements with the "tabset" class within the user-markdown container.
     const userMarkdownArea = document.querySelector(".user-markdown");
     if (!userMarkdownArea) {
-        console.warn("Could not find the '.user-markdown' container.");
         return;
     }
 
