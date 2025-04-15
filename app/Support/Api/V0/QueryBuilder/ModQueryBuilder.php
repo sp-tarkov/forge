@@ -91,60 +91,70 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 if ($ids === null) {
                     return;
                 }
+
                 $query->whereIn('mods.id', self::parseCommaSeparatedInput($ids, 'integer'));
             },
             'hub_id' => function (Builder $query, ?string $hubIds): void {
                 if ($hubIds === null) {
                     return;
                 }
+
                 $query->whereIn('mods.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
             },
             'name' => function (Builder $query, ?string $term): void {
                 if ($term === null) {
                     return;
                 }
+
                 $query->whereLike('mods.name', sprintf('%%%s%%', $term));
             },
             'slug' => function (Builder $query, ?string $term): void {
                 if ($term === null) {
                     return;
                 }
+
                 $query->whereLike('mods.slug', sprintf('%%%s%%', $term));
             },
             'teaser' => function (Builder $query, ?string $term): void {
                 if ($term === null) {
                     return;
                 }
+
                 $query->whereLike('mods.teaser', sprintf('%%%s%%', $term));
             },
             'source_code_link' => function (Builder $query, ?string $term): void {
                 if ($term === null) {
                     return;
                 }
+
                 $query->whereLike('mods.source_code_link', sprintf('%%%s%%', $term));
             },
             'featured' => function (Builder $query, ?string $value): void {
                 if ($value === null) {
                     return;
                 }
+
                 $query->where('mods.featured', self::parseBooleanInput($value));
             },
             'contains_ads' => function (Builder $query, ?string $value): void {
                 if ($value === null) {
                     return;
                 }
+
                 $query->where('mods.contains_ads', self::parseBooleanInput($value));
             },
             'contains_ai_content' => function (Builder $query, ?string $value): void {
                 if ($value === null) {
                     return;
                 }
+
                 $query->where('mods.contains_ai_content', self::parseBooleanInput($value));
             },
             'created_between' => function (Builder $query, ?string $range): void {
                 if ($range === null) {
                     return;
                 }
+
                 [$start, $end] = explode(',', $range);
                 $query->whereBetween('mods.created_at', [$start, $end]);
             },
@@ -152,6 +162,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 if ($range === null) {
                     return;
                 }
+
                 [$start, $end] = explode(',', $range);
                 $query->whereBetween('mods.updated_at', [$start, $end]);
             },
@@ -159,6 +170,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 if ($range === null) {
                     return;
                 }
+
                 [$start, $end] = explode(',', $range);
                 $query->whereBetween('mods.published_at', [$start, $end]);
             },
@@ -166,6 +178,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 if ($version === null) {
                     return;
                 }
+
                 $validSptVersions = SptVersion::allValidVersions();
                 $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
                 $this->applySptVersionCondition($query, $compatibleSptVersions);

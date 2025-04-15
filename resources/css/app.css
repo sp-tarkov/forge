@@ -72,6 +72,10 @@ button {
 }
 
 .user-markdown {
+    a {
+        @apply underline text-cyan-800 dark:text-cyan-200 hover:text-black dark:hover:text-white transition-colors;
+    }
+
     b, strong {
         @apply font-bold;
     }
@@ -122,6 +126,26 @@ button {
 
     li {
         @apply my-2 ml-7 text-gray-800 dark:text-gray-300;
+    }
+
+    .tab-navigation {
+        @apply flex flex-row gap-1 flex-wrap;
+
+        .tab-link {
+            @apply text-nowrap rounded-t-sm py-1 px-3 uppercase cursor-pointer border-b-2 border-transparent bg-slate-900 dark:bg-slate-900 hover:bg-slate-800 dark:hover:bg-slate-800 hover:border-b-cyan-500 dark:hover:border-b-cyan-600 text-cyan-800 dark:text-white hover:text-cyan-600 dark:hover:text-cyan-200 transition-colors;
+
+            &.active {
+                @apply font-bold bg-slate-800 dark:bg-slate-800 border-b-cyan-500 dark:border-b-cyan-600 text-cyan-300 dark:text-cyan-300 transition-colors;
+            }
+        }
+    }
+
+    .tab-title {
+        @apply hidden;
+    }
+
+    .tab-content {
+        @apply mt-1 rounded-t-sm rounded-b-2xl bg-slate-900 dark:bg-gray-900 p-4;
     }
 }
 

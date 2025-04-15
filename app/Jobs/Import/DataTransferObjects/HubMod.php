@@ -182,11 +182,48 @@ class HubMod
      */
     public function getCleanMessage(): string
     {
+        // Replace the old tab system with the new.
+        $dirty = preg_replace(
+            '/<woltlab-metacode\s+data-name="tabmenu"\s+data-attributes=".*?"\s*>/s',
+            '<h1>Tabs {.tabset}</h1>',
+            $this->message
+        );
+
+        // Decode the tab names and replace them with H2 tags.
+        $dirty = preg_replace_callback(
+            '/<woltlab-metacode\s+data-name="tab"\s+data-attributes="(.*?)"\s*>/s',
+            function ($matches) {
+                $decoded = base64_decode((string) $matches[1]);
+                if (empty($decoded)) {
+                    return '<h2>&nbsp;</h2>';
+                }
+
+                $decoded = str_replace(['[', ']', '"', "'", '\\/'], ['', '', '', '', '/'], $decoded);
+                $title = htmlspecialchars($decoded, ENT_QUOTES, 'UTF-8');
+
+                return '<h2>'.$title.'</h2>';
+            },
+            (string) $dirty
+        );
+
+        // Remove the closing tag for the old tab system.
+        $dirty = preg_replace('/<\/woltlab-metacode>/', '', (string) $dirty);
+
         // Use HTML Purifier to ensure it's safe and strip out any unsupported formatting.
-        $clean = Purify::clean($this->message);
+        $clean = Purify::clean($dirty);
 
         // Convert the HTML to Markdown.
-        return (new HtmlConverter)->convert($clean);
+        $markdown = (new HtmlConverter)->convert($clean);
+
+        // Replace the old tab system with the new.
+        $markdown = str_replace('\[tabmenu\]', '# Tabs {.tabset}', $markdown);
+        $markdown = preg_replace('/\\\\\[tab=\\\'(.*?)\\\'\\\\\]/s', '## $1', $markdown);
+        $markdown = preg_replace('/\\\\\[\/tab\\\\\]\R?/', '', (string) $markdown);
+
+        // Remove the old media tags.
+        $markdown = str_replace(['\[media\]', '\[/media\]'], '', $markdown);
+
+        return $markdown;
     }
 
     /**
