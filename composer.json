@@ -11,6 +11,9 @@
         "ext-intl": "*",
         "aws/aws-sdk-php": "^3.342.25",
         "composer/semver": "^3.4.3",
+        "elgigi/commonmark-emoji": "^2.0",
+        "embed/embed": "^4.4",
+        "graham-campbell/markdown": "^16.0",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^12.8.1",
         "laravel/horizon": "^5.31.1",
@@ -31,7 +34,8 @@
         "socialiteproviders/discord": "^4.2",
         "spatie/laravel-ignition": "^2.9.1",
         "spatie/laravel-query-builder": "^6.3.1",
-        "stevebauman/purify": "^6.3.0"
+        "stevebauman/purify": "^6.3.0",
+        "zoon/commonmark-ext-youtube-iframe": "^2.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15.3",
