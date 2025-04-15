@@ -179,23 +179,31 @@ class HubMod
 
     /**
      * Get the clean message (mod description).
+     *
+     * Drakia wrote this...
      */
     public function getCleanMessage(): string
     {
-        // Replace the old tab system with the new.
+        $dirty = $this->message;
+        $countTabmenuReplaced = 0;
+
+        // Replace the old tabmenu tag system with the new H1 tag.
         $dirty = preg_replace(
             '/<woltlab-metacode\s+data-name="tabmenu"\s+data-attributes=".*?"\s*>/s',
             '<h1>Tabs {.tabset}</h1>',
-            $this->message
+            $dirty,
+            limit: -1, // All occurrences.
+            count: $countTabmenuReplaced // Store the number of replacements made.
         );
 
-        // Decode the tab names and replace them with H2 tags.
+        // Decode the Woltlab tab names and replace them with H2 tags.
         $dirty = preg_replace_callback(
             '/<woltlab-metacode\s+data-name="tab"\s+data-attributes="(.*?)"\s*>/s',
             function ($matches) {
-                $decoded = base64_decode((string) $matches[1]);
+                $base64Value = $matches[1];
+                $decoded = base64_decode($base64Value);
                 if (empty($decoded)) {
-                    return '<h2>&nbsp;</h2>';
+                    return '<h2>Tab</h2>';
                 }
 
                 $decoded = str_replace(['[', ']', '"', "'", '\\/'], ['', '', '', '', '/'], $decoded);
@@ -203,11 +211,33 @@ class HubMod
 
                 return '<h2>'.$title.'</h2>';
             },
-            (string) $dirty
+            $dirty
         );
 
-        // Remove the closing tag for the old tab system.
-        $dirty = preg_replace('/<\/woltlab-metacode>/', '', (string) $dirty);
+        // Conditionally handle the closing "</woltlab-metacode>" tag.
+        $tagToRemove = '</woltlab-metacode>';
+        $pattern = '/'.preg_quote($tagToRemove, '/').'/';
+
+        // Check if the tabmenu tag was actually replaced earlier...
+        if ($countTabmenuReplaced > 0) {
+            // Replace only the LAST tag
+            $replacementForLast = '<p>{.endtabset}</p>'; // Text for the last tag replacement.
+            $lastPos = strrpos($dirty, $tagToRemove);
+            if ($lastPos !== false) {
+                $beforeLast = substr($dirty, 0, $lastPos);
+                $lastAndAfter = substr($dirty, $lastPos);
+                $processedBeforeLast = preg_replace($pattern, '', $beforeLast);
+                $processedLastAndAfter = preg_replace($pattern, $replacementForLast, $lastAndAfter, 1);
+
+                // Combine only if both regex operations were successful
+                if ($processedBeforeLast !== null && $processedLastAndAfter !== null) {
+                    $dirty = $processedBeforeLast.$processedLastAndAfter;
+                }
+            }
+        } else {
+            // Remove all closing tags.
+            $dirty = preg_replace($pattern, '', $dirty);
+        }
 
         // Use HTML Purifier to ensure it's safe and strip out any unsupported formatting.
         $clean = Purify::clean($dirty);
@@ -215,15 +245,16 @@ class HubMod
         // Convert the HTML to Markdown.
         $markdown = (new HtmlConverter)->convert($clean);
 
-        // Replace the old tab system with the new.
+        // Replace the old escaped markdown tab system.
         $markdown = str_replace('\[tabmenu\]', '# Tabs {.tabset}', $markdown);
         $markdown = preg_replace('/\\\\\[tab=\\\'(.*?)\\\'\\\\\]/s', '## $1', $markdown);
         $markdown = preg_replace('/\\\\\[\/tab\\\\\]\R?/', '', (string) $markdown);
 
-        // Remove the old media tags.
+        // Remove the old escaped markdown media tags.
         $markdown = str_replace(['\[media\]', '\[/media\]'], '', $markdown);
 
-        return $markdown;
+        // Final trim for any leading/trailing whitespace
+        return trim($markdown);
     }
 
     /**

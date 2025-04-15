@@ -15,6 +15,8 @@ use Stringable;
 
 class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterface
 {
+    public const int MAX_TITLE_LEN = 40;
+
     /**
      * Renders the TabPanelNode into HTML.
      */
@@ -23,14 +25,14 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
         TabPanelNode::assertInstanceOf($node);
 
         /** @var TabPanelNode $node */
-        $tabTitle = $node->tabTitle;
+        $tabTitle = Str::limit($node->tabTitle, limit: self::MAX_TITLE_LEN, end: '');
 
         $attrs = $node->data->get('attributes', []);
         if (! is_array($attrs)) {
             $attrs = [];
         }
 
-        // Add the 'tab-panel' class by merging with existing classes.
+        // Add the "tab-panel" class by merging with existing classes.
         $existingClasses = $attrs['class'] ?? '';
         $separator = ! empty($existingClasses) ? ' ' : '';
         $attrs['class'] = trim($existingClasses.$separator.'tab-panel');
@@ -44,6 +46,7 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
         }
 
         // Create title element.
+
         $titleElement = new HtmlElement('div', ['class' => 'tab-title'], $tabTitle);
 
         // Create content element using the nodes from the custom array
