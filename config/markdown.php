@@ -18,7 +18,7 @@ use League\CommonMark\Extension\Table\TableExtension;
 $embedLibrary = new Embed;
 $embedLibrary->setSettings([
     'oembed:query_parameters' => [
-        'maxwidth' => 800,
+        'maxwidth' => 700,
         'maxheight' => 600,
     ],
 ]);

@@ -128,6 +128,10 @@ button {
         @apply my-2 ml-7 text-gray-800 dark:text-gray-300;
     }
 
+    iframe {
+        width: 100%;
+    }
+
     .tab-navigation {
         @apply flex flex-row gap-1 flex-wrap;
 
