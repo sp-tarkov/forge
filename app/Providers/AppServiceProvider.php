@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Log;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Carbon\Carbon;
@@ -14,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use League\CommonMark\Environment\Environment;
@@ -138,7 +138,7 @@ class AppServiceProvider extends ServiceProvider
                 if (class_exists($extensionClass)) {
                     $environment->addExtension(new $extensionClass);
                 } else {
-                    Log::warning('Markdown extension class not found: ' . $extensionClass);
+                    Log::warning('Markdown extension class not found: '.$extensionClass);
                 }
             }
 
