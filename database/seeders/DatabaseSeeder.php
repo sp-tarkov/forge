@@ -125,6 +125,13 @@ class DatabaseSeeder extends Seeder
             }
         );
 
+        // Load the content of the tests/Mock/MarkdownContent.md and create a new Mod with the content as the description.
+        $mod = Mod::factory()->hasVersions(3)->create([
+            'name' => 'Markdown Test',
+            'slug' => 'markdown-test',
+            'description' => file_get_contents(__DIR__ . '/../../tests/Mock/MarkdownContent.md'),
+        ]);
+
         $this->command->outputComponents()->success('Initial seeding complete');
 
         Artisan::call('app:search-sync');
