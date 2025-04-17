@@ -253,6 +253,16 @@ class HubMod
         // Remove the old escaped markdown media tags.
         $markdown = str_replace(['\[media\]', '\[/media\]'], '', $markdown);
 
+        // Convert short Youtube links to the full versions
+        $markdown = preg_replace(
+            '/\[youtube\]\s*https?:\/\/(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]+)\s*\[\/youtube\]/',
+            '[youtube]https://www.youtube.com/watch?v=$1[/youtube]',
+            $markdown
+        );
+
+        // Remove hashs from the beginning of youtube links.
+        $markdown = preg_replace('/#+\s*(https?:\/\/(www\.)?youtu(be\.com|\.be).+)/', '$1', $markdown);
+
         // Final trim for any leading/trailing whitespace
         return trim($markdown);
     }
