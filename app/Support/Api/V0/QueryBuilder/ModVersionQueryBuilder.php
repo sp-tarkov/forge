@@ -103,18 +103,21 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 if ($ids === null) {
                     return;
                 }
+
                 $query->whereIn('mod_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
             },
             'hub_id' => function (Builder $query, ?string $hubIds): void {
                 if ($hubIds === null) {
                     return;
                 }
+
                 $query->whereIn('mod_versions.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
             },
             'version' => function (Builder $query, ?string $semverConstraint): void {
                 if ($semverConstraint === null) {
                     return;
                 }
+
                 $allVersionNumbers = ModVersion::versionNumbers($this->modId);
                 $compatibleVersions = Semver::satisfiedBy($allVersionNumbers, $semverConstraint);
                 $query->whereIn('mod_versions.version', $compatibleVersions);
@@ -123,24 +126,28 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 if ($term === null) {
                     return;
                 }
+
                 $query->whereLike('mod_versions.description', sprintf('%%%s%%', $term));
             },
             'link' => function (Builder $query, ?string $term): void {
                 if ($term === null) {
                     return;
                 }
+
                 $query->whereLike('mod_versions.link', sprintf('%%%s%%', $term));
             },
             'virus_total_link' => function (Builder $query, ?string $term): void {
                 if ($term === null) {
                     return;
                 }
+
                 $query->whereLike('mod_versions.virus_total_link', sprintf('%%%s%%', $term));
             },
             'published_between' => function (Builder $query, ?string $range): void {
                 if ($range === null) {
                     return;
                 }
+
                 [$start, $end] = explode(',', $range);
                 $query->whereBetween('mod_versions.published_at', [$start, $end]);
             },
@@ -148,6 +155,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 if ($range === null) {
                     return;
                 }
+
                 [$start, $end] = explode(',', $range);
                 $query->whereBetween('mod_versions.created_at', [$start, $end]);
             },
@@ -155,6 +163,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 if ($range === null) {
                     return;
                 }
+
                 [$start, $end] = explode(',', $range);
                 $query->whereBetween('mod_versions.updated_at', [$start, $end]);
             },
@@ -162,6 +171,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 if ($version === null) {
                     return;
                 }
+
                 $validSptVersions = SptVersion::allValidVersions();
                 $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
                 $this->applySptVersionCondition($query, $compatibleSptVersions);

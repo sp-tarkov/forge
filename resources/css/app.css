@@ -72,6 +72,10 @@ button {
 }
 
 .user-markdown {
+    a {
+        @apply underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors;
+    }
+
     b, strong {
         @apply font-bold;
     }
@@ -85,31 +89,39 @@ button {
     }
 
     h1 {
-        @apply text-2xl;
+        @apply text-3xl;
     }
 
     h2 {
-        @apply text-xl;
+        @apply text-2xl;
     }
 
     h3 {
-        @apply text-lg;
+        @apply text-xl;
     }
 
     h4 {
-        @apply text-base;
+        @apply text-lg;
     }
 
     h5 {
-        @apply text-sm;
+        @apply text-base;
     }
 
     h6 {
-        @apply text-xs;
+        @apply text-sm;
     }
 
     p {
         @apply my-2 text-gray-800 dark:text-gray-300;
+    }
+
+    hr {
+        border: 0;
+        height: 2px;
+        background: #333;
+        background-image: linear-gradient(to right, var(--color-gray-950), var(--color-cyan-600), var(--color-gray-950));
+        margin: 1rem 0;
     }
 
     ul {
@@ -122,6 +134,43 @@ button {
 
     li {
         @apply my-2 ml-7 text-gray-800 dark:text-gray-300;
+    }
+
+    blockquote {
+        @apply p-4 my-4 border-s-4 border-cyan-400 bg-gray-100 dark:border-cyan-600 dark:bg-gray-900;
+
+        p {
+            @apply text-lg italic font-medium leading-relaxed text-gray-900 dark:text-white;
+        }
+    }
+
+    pre > code {
+        @apply rounded-md text-sm;
+    }
+
+    iframe {
+        width: 100%;
+        @apply my-1;
+    }
+
+    .tab-navigation {
+        @apply flex flex-row gap-1 flex-wrap;
+
+        .tab-link {
+            @apply text-nowrap rounded-t-sm py-1 px-3 uppercase cursor-pointer border-b-2 border-transparent bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 hover:border-b-cyan-400 dark:hover:border-b-cyan-600 text-black dark:text-white hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors;
+
+            &.active {
+                @apply font-bold bg-slate-200 dark:bg-slate-800 border-b-cyan-400 dark:border-b-cyan-600 text-cyan-700 dark:text-cyan-300 transition-colors;
+            }
+        }
+    }
+
+    .tab-title {
+        @apply hidden;
+    }
+
+    .tab-content {
+        @apply mt-1 rounded-t-sm rounded-b-2xl bg-slate-100 dark:bg-gray-900 p-4;
     }
 }
 
