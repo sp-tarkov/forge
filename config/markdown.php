@@ -4,24 +4,16 @@ declare(strict_types=1);
 
 use App\Markdown\Extension\Tabset\TabsetExtension;
 use ElGigi\CommonMarkEmoji\EmojiExtension;
-use Embed\Embed;
 use League\CommonMark\Extension\Autolink\AutolinkExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\DescriptionList\DescriptionListExtension;
 use League\CommonMark\Extension\DisallowedRawHtml\DisallowedRawHtmlExtension;
-use League\CommonMark\Extension\Embed\Bridge\OscaroteroEmbedAdapter;
 use League\CommonMark\Extension\Embed\EmbedExtension;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use League\CommonMark\Extension\Footnote\FootnoteExtension;
+use League\CommonMark\Extension\SmartPunct\SmartPunctExtension;
 use League\CommonMark\Extension\Strikethrough\StrikethroughExtension;
 use League\CommonMark\Extension\Table\TableExtension;
-
-$embedLibrary = new Embed;
-$embedLibrary->setSettings([
-    'oembed:query_parameters' => [
-        'maxwidth' => 700,
-        'maxheight' => 600,
-    ],
-]);
 
 return [
 
@@ -59,15 +51,16 @@ return [
     'extensions' => [
         CommonMarkCoreExtension::class,
         DisallowedRawHtmlExtension::class,
-        // League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension::class,
-        StrikethroughExtension::class,
-        ExternalLinkExtension::class,
+        TabsetExtension::class,
+        DescriptionListExtension::class,
+        EmbedExtension::class,
         AutolinkExtension::class,
+        ExternalLinkExtension::class,
+        StrikethroughExtension::class,
         FootnoteExtension::class,
         TableExtension::class,
-        EmbedExtension::class,
         EmojiExtension::class,
-        TabsetExtension::class,
+        SmartPunctExtension::class,
     ],
 
     /*
@@ -192,12 +185,6 @@ return [
         'disallowed_tags' => ['title', 'textarea', 'style', 'xmp', 'iframe', 'noembed', 'noframes', 'script', 'plaintext'],
     ],
 
-    'embed' => [
-        'adapter' => new OscaroteroEmbedAdapter($embedLibrary),
-        'allowed_domains' => ['youtube.com', 'github.com'],
-        'fallback' => 'link',
-    ],
-
     'footnote' => [
         'backref_class' => 'footnote-backref',
         'backref_symbol' => '↩',
@@ -209,18 +196,12 @@ return [
         'footnote_id_prefix' => 'fn:',
     ],
 
-    // 'heading_permalink' => [
-    //     'html_class' => 'heading-permalink',
-    //     'id_prefix' => 'content',
-    //     'apply_id_to_heading' => false,
-    //     'heading_class' => '',
-    //     'fragment_prefix' => 'content',
-    //     'insert' => 'before',
-    //     'min_heading_level' => 1,
-    //     'max_heading_level' => 6,
-    //     'title' => 'Permalink',
-    //     'symbol' => HeadingPermalinkRenderer::DEFAULT_SYMBOL,
-    //     'aria_hidden' => true,
-    // ],
-
+    'embed' => [
+        'oembed_query_parameters' => [
+            'maxwidth' => 700,
+            'maxheight' => 400,
+        ],
+        'allowed_domains' => ['youtube.com', 'youtu.be'],
+        'fallback' => 'link',
+    ],
 ];
