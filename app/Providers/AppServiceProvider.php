@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Log;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Carbon\Carbon;
@@ -18,7 +19,6 @@ use Illuminate\Support\ServiceProvider;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\Embed\Bridge\OscaroteroEmbedAdapter;
 use Livewire\Livewire;
-use Log;
 use Override;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -138,7 +138,7 @@ class AppServiceProvider extends ServiceProvider
                 if (class_exists($extensionClass)) {
                     $environment->addExtension(new $extensionClass);
                 } else {
-                    Log::warning("Markdown extension class not found: {$extensionClass}");
+                    Log::warning('Markdown extension class not found: ' . $extensionClass);
                 }
             }
 

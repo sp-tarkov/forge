@@ -211,7 +211,7 @@ class HubMod
 
                 return '<h2>'.$title.'</h2>';
             },
-            $dirty
+            (string) $dirty
         );
 
         // Conditionally handle the closing "</woltlab-metacode>" tag.
@@ -222,10 +222,10 @@ class HubMod
         if ($countTabmenuReplaced > 0) {
             // Replace only the LAST tag
             $replacementForLast = '<p>{.endtabset}</p>'; // Text for the last tag replacement.
-            $lastPos = strrpos($dirty, $tagToRemove);
+            $lastPos = strrpos((string) $dirty, $tagToRemove);
             if ($lastPos !== false) {
-                $beforeLast = substr($dirty, 0, $lastPos);
-                $lastAndAfter = substr($dirty, $lastPos);
+                $beforeLast = substr((string) $dirty, 0, $lastPos);
+                $lastAndAfter = substr((string) $dirty, $lastPos);
                 $processedBeforeLast = preg_replace($pattern, '', $beforeLast);
                 $processedLastAndAfter = preg_replace($pattern, $replacementForLast, $lastAndAfter, 1);
 
@@ -236,7 +236,7 @@ class HubMod
             }
         } else {
             // Remove all closing tags.
-            $dirty = preg_replace($pattern, '', $dirty);
+            $dirty = preg_replace($pattern, '', (string) $dirty);
         }
 
         // Use HTML Purifier to ensure it's safe and strip out any unsupported formatting.
@@ -261,10 +261,10 @@ class HubMod
         );
 
         // Remove hashs from the beginning of youtube links.
-        $markdown = preg_replace('/#+\s*(https?:\/\/(www\.)?youtu(be\.com|\.be).+)/', '$1', $markdown);
+        $markdown = preg_replace('/#+\s*(https?:\/\/(www\.)?youtu(be\.com|\.be).+)/', '$1', (string) $markdown);
 
         // Final trim for any leading/trailing whitespace
-        return trim($markdown);
+        return trim((string) $markdown);
     }
 
     /**
