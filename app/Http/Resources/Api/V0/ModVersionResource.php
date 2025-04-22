@@ -7,6 +7,7 @@ namespace App\Http\Resources\Api\V0;
 use App\Models\ModVersion;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Support\Api\V0\QueryBuilder\ModVersionQueryBuilder;
 use Override;
 
 /**
@@ -90,11 +91,11 @@ class ModVersionResource extends JsonResource
         }
 
         if ($this->shouldInclude('created_at')) {
-            $data['created_at'] = $this->resource->created_at->toISOString();
+            $data['created_at'] = $this->resource->created_at?->toISOString();
         }
 
         if ($this->shouldInclude('updated_at')) {
-            $data['updated_at'] = $this->resource->updated_at->toISOString();
+            $data['updated_at'] = $this->resource->updated_at?->toISOString();
         }
 
         $data['dependencies'] = new ModResolvedDependencyCollection(
@@ -112,6 +113,10 @@ class ModVersionResource extends JsonResource
      */
     protected function shouldInclude(string $field): bool
     {
-        return $this->showAllFields || in_array($field, $this->requestedFields, true);
+        $requiredFields = ModVersionQueryBuilder::getRequiredFields();
+
+        return $this->showAllFields
+            || in_array($field, $this->requestedFields, true)
+            || in_array($field, $requiredFields, true);
     }
 }

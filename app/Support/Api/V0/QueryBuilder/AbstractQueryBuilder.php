@@ -85,28 +85,35 @@ abstract class AbstractQueryBuilder
      *
      * @return array<string, callable>
      */
-    abstract protected function getAllowedFilters(): array;
+    abstract public static function getAllowedFilters(): array;
 
     /**
      * Get a map of API include names to model relationship names.
      *
-     * @return array<string, string|array<string>>
+     * @return array<string, string|array<array<string>>>
      */
-    abstract protected function getAllowedIncludes(): array;
+    abstract public static function getAllowedIncludes(): array;
 
     /**
      * Get the allowed fields for this query builder.
      *
      * @return array<string>
      */
-    abstract protected function getAllowedFields(): array;
+    abstract public static function getAllowedFields(): array;
 
     /**
      * Get the allowed sorts for this query builder.
      *
      * @return array<string>
      */
-    abstract protected function getAllowedSorts(): array;
+    abstract public static function getAllowedSorts(): array;
+
+    /**
+     * Get the required fields that should always be loaded for relationships.
+     *
+     * @return array<string>
+     */
+    abstract public static function getRequiredFields(): array;
 
     /**
      * Apply the filters to the query.
@@ -181,7 +188,7 @@ abstract class AbstractQueryBuilder
             return;
         }
 
-        $allowedFilters = $this->getAllowedFilters();
+        $allowedFilters = static::getAllowedFilters();
         $allowedFilterKeys = array_keys($allowedFilters);
         $requestedFilterKeys = array_keys($this->filters);
 
@@ -196,13 +203,12 @@ abstract class AbstractQueryBuilder
         }
 
         foreach ($this->filters as $filter => $value) {
-            $allowedFilters[$filter]($this->builder, $value);
+            $allowedFilters[$filter]->bindTo($this)($this->builder, $value);
         }
     }
 
     /**
      * Apply includes to the query.
-     *
      *
      * @throws InvalidQuery
      */
@@ -214,29 +220,42 @@ abstract class AbstractQueryBuilder
                 return; // All includes were empty and filtered out, return early.
             }
 
-            $allowedIncludes = $this->getAllowedIncludes();
-            $invalidIncludes = array_diff($this->includes, array_keys($allowedIncludes));
+            $allowedIncludes = static::getAllowedIncludes();
+
+            // Check if we have a key-value array or a simple array
+            $isKeyValueArray = ! empty($allowedIncludes) && ! is_numeric(key($allowedIncludes));
+
+            if ($isKeyValueArray) {
+                /** @var array<string, string|array<array<string>>> $allowedIncludes */
+                $invalidIncludes = array_diff($this->includes, array_keys($allowedIncludes));
+                $validIncludes = array_keys($allowedIncludes);
+
+                // Map API includes to actual relationships
+                $relationships = [];
+                foreach ($this->includes as $include) {
+                    $relationship = $allowedIncludes[$include];
+                    if (is_array($relationship)) {
+                        $relationships = array_merge($relationships, $relationship);
+                    } else {
+                        $relationships[] = $relationship;
+                    }
+                }
+
+                $this->builder->with($relationships);
+            } else {
+                /** @var array<string> $allowedIncludes */
+                $invalidIncludes = array_diff($this->includes, $allowedIncludes);
+                $validIncludes = $allowedIncludes;
+                $this->builder->with($this->includes);
+            }
 
             if (! empty($invalidIncludes)) {
                 $invalidInclude = implode(', ', $invalidIncludes);
-                $validIncludes = implode(', ', array_keys($allowedIncludes));
+                $validIncludeList = implode(', ', $validIncludes);
                 throw new InvalidQuery(
-                    sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludes)
+                    sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludeList)
                 );
             }
-
-            // Map API include names to model relationship names.
-            $relationships = [];
-            foreach ($this->includes as $include) {
-                $relationship = $allowedIncludes[$include];
-                if (is_array($relationship)) {
-                    $relationships = array_merge($relationships, $relationship);
-                } else {
-                    $relationships[] = $relationship;
-                }
-            }
-
-            $this->builder->with($relationships);
         }
     }
 
@@ -247,24 +266,32 @@ abstract class AbstractQueryBuilder
      */
     protected function applyFields(): void
     {
-        if (! empty($this->fields)) {
-            $this->fields = array_filter($this->fields, fn ($field): bool => ! empty($field));
-            if (empty($this->fields)) {
-                return; // All fields were empty and filtered out, return early.
+        $fields = array_filter($this->fields, fn ($field): bool => ! empty($field));
+        $requiredFields = array_filter(static::getRequiredFields(), fn ($field): bool => ! empty($field));
+
+        if (! empty($fields)) {
+            // Get fields that need validation (excluding required fields)
+            $fieldsToValidate = array_diff($fields, $requiredFields);
+
+            if (! empty($fieldsToValidate)) {
+                $allowedFields = static::getAllowedFields();
+                $invalidFields = array_diff($fieldsToValidate, $allowedFields);
+
+                if (! empty($invalidFields)) {
+                    $invalidField = implode(', ', $invalidFields);
+                    $validFields = implode(', ', $allowedFields);
+                    throw new InvalidQuery(
+                        sprintf('Invalid field(s): %s. Valid fields are: %s', $invalidField, $validFields)
+                    );
+                }
             }
 
-            $allowedFields = $this->getAllowedFields();
-            $invalidFields = array_diff($this->fields, $allowedFields);
-
-            if (! empty($invalidFields)) {
-                $invalidField = implode(', ', $invalidFields);
-                $validFields = implode(', ', $allowedFields);
-                throw new InvalidQuery(
-                    sprintf('Invalid field(s): %s. Valid fields are: %s', $invalidField, $validFields)
-                );
-            }
-
-            $this->builder->select($this->fields);
+            // Merge required fields with validated fields
+            $this->builder->select(array_merge($fields, $requiredFields));
+        } else {
+            // When no fields are specified, include all allowed fields plus required fields
+            $allowedFields = static::getAllowedFields();
+            $this->builder->select(array_merge($allowedFields, $requiredFields));
         }
     }
 
@@ -281,7 +308,7 @@ abstract class AbstractQueryBuilder
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = $this->getAllowedSorts();
+            $allowedSorts = static::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {

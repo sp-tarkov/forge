@@ -38,7 +38,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     protected function getBaseQuery(): Builder
     {
         $query = ModVersion::query()
-            ->select('mod_versions.*')
             ->whereModId($this->modId)
             ->where('mod_versions.disabled', false);
 
@@ -96,7 +95,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string, callable>
      */
-    protected function getAllowedFilters(): array
+    public static function getAllowedFilters(): array
     {
         return [
             'id' => function (Builder $query, ?string $ids): void {
@@ -184,7 +183,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string, string|array<string>>
      */
-    protected function getAllowedIncludes(): array
+    public static function getAllowedIncludes(): array
     {
         return [
             'dependencies' => [
@@ -195,11 +194,41 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
+     * Get the required fields that should always be loaded for relationships.
+     * These fields are not subject to field whitelisting and will be automatically included when needed.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'mod_id',
+            'version',
+        ];
+    }
+
+    /**
+     * Get the required fields that should always be loaded for relationships.
+     * These fields are not subject to field whitelisting and will be automatically included when needed.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'mod_id',
+            'version',
+        ];
+    }
+
+    /**
      * Get the allowed fields for this query builder.
      *
      * @return array<string>
      */
-    protected function getAllowedFields(): array
+    public static function getAllowedFields(): array
     {
         return [
             'id',
@@ -221,7 +250,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string>
      */
-    protected function getAllowedSorts(): array
+    public static function getAllowedSorts(): array
     {
         return [
             'id',

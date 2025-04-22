@@ -8,6 +8,7 @@ use App\Models\Mod;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
+use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Override;
 
 /**
@@ -99,11 +100,11 @@ class ModResource extends JsonResource
         }
 
         if ($this->shouldInclude('created_at')) {
-            $data['created_at'] = $this->created_at->toISOString();
+            $data['created_at'] = $this->created_at?->toISOString();
         }
 
         if ($this->shouldInclude('updated_at')) {
-            $data['updated_at'] = $this->updated_at->toISOString();
+            $data['updated_at'] = $this->updated_at?->toISOString();
         }
 
         // Handle relationships separately... they're only included when loaded.
@@ -123,6 +124,10 @@ class ModResource extends JsonResource
      */
     protected function shouldInclude(string $field): bool
     {
-        return $this->showAllFields || in_array($field, $this->requestedFields, true);
+        $requiredFields = ModQueryBuilder::getRequiredFields();
+
+        return $this->showAllFields
+            || in_array($field, $this->requestedFields, true)
+            || in_array($field, $requiredFields, true);
     }
 }

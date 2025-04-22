@@ -43,8 +43,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
     protected function applySptVersionCondition(Builder $query, ?array $compatibleVersions = null): void
     {
         $query->whereExists(function ($query) use ($compatibleVersions): void {
-
-            // By default, get all mods that have at least one version that is compatible with the SPT version
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
@@ -84,7 +82,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string, callable>
      */
-    protected function getAllowedFilters(): array
+    public static function getAllowedFilters(): array
     {
         return [
             'id' => function (Builder $query, ?string $ids): void {
@@ -187,17 +185,31 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Get the map of API include names to model relationship names.
+     * Get the allowed relationships that can be included.
      *
-     * @return array<string, string>
+     * @return array<string>
      */
-    protected function getAllowedIncludes(): array
+    public static function getAllowedIncludes(): array
     {
         return [
-            'owner' => 'owner',
-            'authors' => 'authors',
-            'versions' => 'versions',
-            'license' => 'license',
+            'owner',
+            'authors',
+            'versions',
+            'license',
+        ];
+    }
+
+    /**
+     * Get the required fields that should always be loaded for relationships.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'owner_id',
+            'license_id',
         ];
     }
 
@@ -206,10 +218,9 @@ class ModQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string>
      */
-    protected function getAllowedFields(): array
+    public static function getAllowedFields(): array
     {
         return [
-            'id',
             'hub_id',
             'name',
             'slug',
@@ -232,7 +243,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string>
      */
-    protected function getAllowedSorts(): array
+    public static function getAllowedSorts(): array
     {
         return [
             'id',
