@@ -141,6 +141,8 @@ class TabsetProcessor
 
     /**
      * Handles the case where no valid child tabs were found after a trigger.
+     *
+     * @param array<Node> $nodesToRemove
      */
     private function abortTabsetProcessing(Heading $tabsetHeading, array $nodesToRemove, bool $endMarkerFound): void
     {
@@ -155,6 +157,8 @@ class TabsetProcessor
 
     /**
      * Builds the TabSetContainerNode with TabPanelNodes from the collected nodes.
+     *
+     * @param array<Node> $nodesToProcess
      */
     private function buildTabsetStructure(array $nodesToProcess, int $childLevel): TabSetContainerNode
     {
@@ -181,6 +185,8 @@ class TabsetProcessor
 
     /**
      * Replaces the original trigger heading and detaches all original processed nodes.
+     *
+     * @param array<Node> $nodesToRemove
      */
     private function modifyAst(Heading $tabsetHeading, TabSetContainerNode $tabSetContainer, array $nodesToRemove): void
     {
