@@ -7,11 +7,17 @@ namespace App\Providers;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Carbon\Carbon;
+use Embed\Embed;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\Embed\Bridge\OscaroteroEmbedAdapter;
 use Livewire\Livewire;
 use Override;
 use SocialiteProviders\Discord\Provider;
@@ -25,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        //
+        $this->MarkdownEnvironmentOverwrite();
     }
 
     /**
@@ -94,5 +100,49 @@ class AppServiceProvider extends ServiceProvider
     private function registerLivewireOverrides(): void
     {
         Livewire::component('profile.update-password-form', UpdatePasswordForm::class);
+    }
+
+    /**
+     * Overwrite the Markdown environment provided by the `graham-campbell/markdown` package so that we can inject some
+     * custom configuration options for the Embed commonmark library.
+     */
+    private function MarkdownEnvironmentOverwrite(): void
+    {
+        $this->app->singleton('markdown.environment', function (Container $app): Environment {
+            $configData = config('markdown');
+
+            // Configure the Embed library for the Embed adapter.
+            $embedLibrary = new Embed;
+            if (! empty($configData['embed']['oembed_query_parameters'])) {
+                $embedLibrary->setSettings([
+                    'oembed:query_parameters' => $configData['embed']['oembed_query_parameters'],
+                ]);
+            }
+
+            // Instance the Embed adapter using the Embed library.
+            $embedAdapter = new OscaroteroEmbedAdapter($embedLibrary);
+
+            // Rebuild the environment configuration.
+            $environmentConfig = Arr::except($configData, ['extensions', 'views', 'embed']);
+            $environmentConfig['embed'] = [
+                'adapter' => $embedAdapter,
+                'allowed_domains' => $configData['embed']['allowed_domains'] ?? [],
+                'fallback' => $configData['embed']['fallback'] ?? 'link',
+            ];
+
+            // Create the environment with the custom configuration.
+            $environment = new Environment($environmentConfig);
+
+            // Add each of the extensions specified in the configuration into the environment.
+            foreach ((array) Arr::get($configData, 'extensions', []) as $extensionClass) {
+                if (class_exists($extensionClass)) {
+                    $environment->addExtension(new $extensionClass);
+                } else {
+                    Log::warning('Markdown extension class not found: '.$extensionClass);
+                }
+            }
+
+            return $environment;
+        });
     }
 }

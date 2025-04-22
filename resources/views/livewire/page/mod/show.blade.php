@@ -98,8 +98,7 @@
 
                 {{-- Mod Description --}}
                 <div x-show="selectedTab === 'description'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    {{-- The description below is safe to write directly because it has been run though HTMLPurifier. --}}
-                    {!! Str::markdown($mod->description) !!}
+                    @markdown($mod->description)
                 </div>
 
                 {{-- Mod Versions --}}
