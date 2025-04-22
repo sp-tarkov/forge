@@ -109,7 +109,7 @@ class AppServiceProvider extends ServiceProvider
     private function MarkdownEnvironmentOverwrite(): void
     {
         $this->app->singleton('markdown.environment', function (Container $app): Environment {
-            $configData = $app->config->get('markdown');
+            $configData = config('markdown');
 
             // Configure the Embed library for the Embed adapter.
             $embedLibrary = new Embed;

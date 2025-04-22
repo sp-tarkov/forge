@@ -129,7 +129,7 @@ class DatabaseSeeder extends Seeder
         $mod = Mod::factory()->hasVersions(3)->create([
             'name' => 'Markdown Test',
             'slug' => 'markdown-test',
-            'description' => file_get_contents(__DIR__.'/../../tests/Mock/MarkdownContent.md'),
+            'description' => file_get_contents(__DIR__.'/../../resources/markdown/exampleModDescription.md'),
         ]);
 
         $this->command->outputComponents()->success('Initial seeding complete');
