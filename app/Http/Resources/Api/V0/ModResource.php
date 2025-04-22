@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Mod;
+use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
-use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Override;
 
 /**
