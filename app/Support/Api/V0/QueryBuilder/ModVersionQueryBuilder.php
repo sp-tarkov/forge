@@ -277,7 +277,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = $this->getAllowedSorts();
+            $allowedSorts = static::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {
