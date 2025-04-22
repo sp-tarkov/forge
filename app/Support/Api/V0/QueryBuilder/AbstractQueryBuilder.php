@@ -203,7 +203,8 @@ abstract class AbstractQueryBuilder
         }
 
         foreach ($this->filters as $filter => $value) {
-            $allowedFilters[$filter]->bindTo($this)($this->builder, $value);
+            $method = $allowedFilters[$filter];
+            $this->{$method}($this->builder, $value);
         }
     }
 
