@@ -130,8 +130,7 @@ class Mod extends Model
     {
         return $this->versions()
             ->one()
-            ->ofMany('updated_at', 'max')
-            ->chaperone();
+            ->ofMany('updated_at', 'max');
     }
 
     /**
@@ -146,8 +145,7 @@ class Mod extends Model
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->chaperone();
+            ->orderBy('version_labels');
     }
 
     /**
@@ -229,8 +227,7 @@ class Mod extends Model
                 'version_minor' => 'max',
                 'version_patch' => 'max',
                 'version_labels' => 'max',
-            ])
-            ->chaperone();
+            ]);
     }
 
     /**
