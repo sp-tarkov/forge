@@ -42,7 +42,8 @@ class ModPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // TODO: check MFA
+        return auth()->check();
     }
 
     /**

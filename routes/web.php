@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Livewire\Page\Homepage;
+use App\Livewire\Page\Mod\CreateModForm as ModCreateForm;
 use App\Livewire\Page\Mod\Index as ModIndex;
 use App\Livewire\Page\Mod\Show as ModShow;
 use App\Livewire\Page\User\Show as UserShow;
@@ -19,6 +20,10 @@ Route::middleware(['auth.banned'])->group(function (): void {
     Route::get('/mods', ModIndex::class)
         ->can('viewAny', Mod::class)
         ->name('mods');
+
+    Route::get('/mod/create', ModCreateForm::class)
+        ->can('create', Mod::class)
+        ->name('mod.create');
 
     Route::get('/mod/{modId}/{slug}', ModShow::class)
         ->where(['modId' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
