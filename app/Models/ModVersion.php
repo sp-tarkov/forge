@@ -41,8 +41,8 @@ use Override;
  * @property int $downloads
  * @property bool $disabled
  * @property Carbon|null $published_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Mod $mod
  * @property-read Collection<int, ModDependency> $dependencies
  * @property-read Collection<int, ModVersion> $resolvedDependencies

@@ -24,7 +24,7 @@ class ModController extends Controller
      *
      * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>id, hub_id, name, slug, teaser, thumbnail, downloads, source_code_link, featured,
+     * Fields available:<br /><code>hub_id, name, slug, teaser, thumbnail, downloads, source_code_link, featured,
      * contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
@@ -107,7 +107,7 @@ class ModController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,name,slug,featured,created_at')]
+    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
     #[UrlParam('filter[id]', description: 'Filter by comma-separated Mod IDs.', required: false, example: '1,5,10')]
     #[UrlParam('filter[hub_id]', description: 'Filter by comma-separated Hub IDs.', required: false, example: '123,456')]
     #[UrlParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Raid Time')]
@@ -145,7 +145,7 @@ class ModController extends Controller
      *
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
-     * Fields available:<br /><code>id, hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_link,
+     * Fields available:<br /><code>hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_link,
      * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
@@ -179,7 +179,7 @@ class ModController extends Controller
      *      "message": "Resource not found."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,name,slug,featured,created_at')]
+    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
     #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`.', required: false, example: 'owner,versions')]
     public function show(Request $request, int $modId): JsonResponse
     {
