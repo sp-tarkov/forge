@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property string $email
  * @property string $avatar
+ * @property bool $mfa_enabled
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user
