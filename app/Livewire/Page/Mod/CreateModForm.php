@@ -8,16 +8,19 @@ use Livewire\Component;
 
 class CreateModForm extends Component
 {
-    // placeholder
-    public $title = '';
-
-    // placeholder
-    public $content = '';
+    public $modName = '';
+    public $modVersion = '';
+    public $modTeaser = '';
+    public $modDescription = '';
+    public $modExternalUrl = '';
+    public $modCategory = '';
+    public $modIcon = '';
+    public \DateTime $publishDate;
 
     public function save()
     {
         // TODO: this lol
-        flash()->success('save test');
+        flash()->success("Mod '$this->modName' Created. Publishing at {$this->publishDate->format('Y-m-d')}");
     }
 
     public function render()
