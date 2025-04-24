@@ -1,3 +1,11 @@
-<div class="p-2 text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full">
-    <button wire:click="newMod">{{ __('New Mod') }}</button>
+<div>
+    @if(auth()->check() && auth()->user()->hasMFAEnabled())
+        <flux:button wire:click="newMod">{{ __('New Mod') }}</flux:button>
+    @else
+        <flux:tooltip content="You must be logged in and have MFA enabled to create a new mod">
+            <div>
+                <flux:button disabled="true">{{ __('New Mod') }}</flux:button>
+            </div>
+        </flux:tooltip>
+    @endif
 </div>
