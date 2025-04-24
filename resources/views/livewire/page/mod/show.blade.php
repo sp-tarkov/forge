@@ -183,7 +183,7 @@
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
-                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                                    <a href="{{ $dependency->resolvedVersion->mod->detail_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                         {{ $dependency->resolvedVersion->mod->name }}
                                         &nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />

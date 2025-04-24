@@ -24,8 +24,8 @@ class ModController extends Controller
      *
      * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>hub_id, name, slug, teaser, thumbnail, downloads, source_code_link, featured,
-     * contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
+     * Fields available:<br /><code>hub_id, name, slug, teaser, thumbnail, downloads, source_code_link, detail_url,
+     * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -43,6 +43,7 @@ class ModController extends Controller
      *              "thumbnail": "",
      *              "downloads": 55212644,
      *              "source_code_link": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *              "detail_url": https://forge.sp-tarkov.com/mods/1/recusandae-velit-incidunt,
      *              "featured": true,
      *              "contains_ads": true,
      *              "contains_ai_content": false,
@@ -59,6 +60,7 @@ class ModController extends Controller
      *              "thumbnail": "",
      *              "downloads": 219598104,
      *              "source_code_link": "http://baumbach.net/",
+     *              "detail_url": https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil,
      *              "featured": false,
      *              "contains_ads": true,
      *              "contains_ai_content": true,
@@ -146,7 +148,7 @@ class ModController extends Controller
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
      * Fields available:<br /><code>hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_link,
-     * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
+     * detail_url, featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -164,6 +166,7 @@ class ModController extends Controller
      *          "downloads": 219598104,
      *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
      *          "source_code_link": "http://baumbach.net/",
+     *          "detail_url": https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil,
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,

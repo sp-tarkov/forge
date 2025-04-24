@@ -116,6 +116,30 @@ abstract class AbstractQueryBuilder
     abstract public static function getRequiredFields(): array;
 
     /**
+     * Get the dynamic attributes that can be included in the response.
+     * The keys are the attribute names and the values are arrays of required database fields.
+     *
+     * @return array<string, array<string>>
+     */
+    protected static function getDynamicAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * Get all allowed fields (database columns and dynamic attributes).
+     *
+     * @return array<string>
+     */
+    public static function getAllAllowedFields(): array
+    {
+        return array_merge(
+            static::getAllowedFields(),
+            array_keys(static::getDynamicAttributes())
+        );
+    }
+
+    /**
      * Apply the filters to the query.
      *
      * @return Builder<TModel>
@@ -275,7 +299,7 @@ abstract class AbstractQueryBuilder
             $fieldsToValidate = array_diff($fields, $requiredFields);
 
             if (! empty($fieldsToValidate)) {
-                $allowedFields = static::getAllowedFields();
+                $allowedFields = static::getAllAllowedFields();
                 $invalidFields = array_diff($fieldsToValidate, $allowedFields);
 
                 if (! empty($invalidFields)) {
@@ -287,8 +311,21 @@ abstract class AbstractQueryBuilder
                 }
             }
 
-            // Merge required fields with validated fields
-            $this->builder->select(array_merge($fields, $requiredFields));
+            // Get dynamic attributes that are requested
+            $dynamicAttributes = static::getDynamicAttributes();
+            $requestedDynamicAttributes = array_intersect($fields, array_keys($dynamicAttributes));
+
+            // Get required database fields for requested dynamic attributes
+            $requiredDependencies = [];
+            foreach ($requestedDynamicAttributes as $attribute) {
+                $requiredDependencies = array_merge($requiredDependencies, $dynamicAttributes[$attribute]);
+            }
+
+            // Filter out dynamic attributes from the select statement
+            $dbFields = array_filter($fields, fn ($field): bool => ! array_key_exists($field, $dynamicAttributes));
+
+            // Merge required fields, database fields, and dynamic attribute dependencies
+            $this->builder->select(array_merge($dbFields, $requiredFields, $requiredDependencies));
         } else {
             // When no fields are specified, include all allowed fields plus required fields
             $allowedFields = static::getAllowedFields();

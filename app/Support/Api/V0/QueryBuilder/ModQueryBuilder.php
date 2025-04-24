@@ -9,6 +9,7 @@ use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 /**
  * @extends AbstractQueryBuilder<Mod>
@@ -339,6 +340,20 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'published_at',
             'created_at',
             'updated_at',
+        ];
+    }
+
+    /**
+     * Get the dynamic attributes that can be included in the response. Keys are the attribute names and the values are
+     * arrays of required database fields that are used to compute the attribute.
+     *
+     * @return array<string, array<string>>
+     */
+    #[Override]
+    protected static function getDynamicAttributes(): array
+    {
+        return [
+            'detail_url' => ['slug'],
         ];
     }
 

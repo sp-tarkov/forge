@@ -45,6 +45,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
+ * @property-read string $detail_url
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read Collection<int, User> $authors
@@ -60,6 +61,10 @@ class Mod extends Model
     use HasFactory;
 
     use Searchable;
+
+    protected $appends = [
+        'detail_url',
+    ];
 
     /**
      * The relationship between a mod and its owner (User).
@@ -255,11 +260,13 @@ class Mod extends Model
     }
 
     /**
-     * Build the URL to the mod's detail page.
+     * Get the URL to the mod's detail page.
+     *
+     * @return Attribute<string, string>
      */
-    public function detailUrl(): string
+    protected function detailUrl(): Attribute
     {
-        return route('mod.show', [$this->id, $this->slug]);
+        return Attribute::get(fn () => route('mod.show', [$this->id, $this->slug]));
     }
 
     /**

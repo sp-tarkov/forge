@@ -24,7 +24,7 @@ it('displays the latest version on the mod detail page', function (): void {
         ModVersion::factory()->recycle($mod)->create(['version' => $version, 'spt_version_constraint' => '3.8.0']);
     }
 
-    $response = $this->get($mod->detailUrl());
+    $response = $this->get($mod->detail_url);
 
     expect($latestVersion)->toBe('2.1.0');
 
@@ -54,14 +54,14 @@ it('displays unauthorised if the mod has been disabled', function (): void {
     $mod = Mod::factory()->create();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    $response = $this->get($mod->detailUrl());
+    $response = $this->get($mod->detail_url);
     $response->assertOk();
 
     // Disable the mod
     $mod->disabled = true;
     $mod->save();
 
-    $notFoundResponse = $this->get($mod->detailUrl());
+    $notFoundResponse = $this->get($mod->detail_url);
     $notFoundResponse->assertForbidden();
 });
 
@@ -73,7 +73,7 @@ it('allows an administrator to view a disabled mod', function (): void {
     $mod = Mod::factory()->disabled()->create();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    $response = $this->get($mod->detailUrl());
+    $response = $this->get($mod->detail_url);
     $response->assertOk();
 });
 
@@ -84,7 +84,7 @@ it('allows a normal user to view a mod in a valid state', function (): void {
     $mod = Mod::factory()->create();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']);
 
-    $response = $this->get($mod->detailUrl());
+    $response = $this->get($mod->detail_url);
     $response->assertOk();
 });
 
@@ -95,7 +95,7 @@ it('does not allow a normal user to view a mod without a resolved SPT version', 
     $mod = Mod::factory()->create();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
 
-    $response = $this->get($mod->detailUrl());
+    $response = $this->get($mod->detail_url);
     $response->assertForbidden();
 });
 
@@ -110,6 +110,6 @@ it('allows a mod author to view their mod without a resolved SPT version', funct
 
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
 
-    $response = $this->get($mod->detailUrl());
+    $response = $this->get($mod->detail_url);
     $response->assertOk();
 });

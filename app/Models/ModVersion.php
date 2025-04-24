@@ -65,7 +65,7 @@ class ModVersion extends Model
     protected $touches = ['mod'];
 
     /**
-     * Post boot method to configure the model.
+     * Post-boot method to configure the model.
      */
     #[Override]
     protected static function booted(): void
