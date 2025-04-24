@@ -9,12 +9,19 @@ use Livewire\Component;
 class CreateModForm extends Component
 {
     public $modName = '';
+
     public $modVersion = '';
+
     public $modTeaser = '';
+
     public $modDescription = '';
+
     public $modExternalUrl = '';
+
     public $modCategory = '';
+
     public $modIcon = '';
+
     public \DateTime $publishDate;
 
     public function save()
