@@ -166,8 +166,6 @@ class SocialiteController extends Controller
 
     /**
      * Get the MFA status from the provider user based on the provider.
-     *
-     * @return bool|null
      */
     protected function getMfaStatus(string $provider, ProviderUser $providerUser): ?bool
     {
