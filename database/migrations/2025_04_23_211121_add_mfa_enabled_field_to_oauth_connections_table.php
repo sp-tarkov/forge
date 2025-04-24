@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('oauth_connections', function (Blueprint $table) {
+            $table->boolean('mfa_enabled')
+                ->after('avatar')
+                ->nullable()
+                ->default(null);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('oauth_connections', function (Blueprint $table) {
+            $table->dropColumn('mfa_enabled');
+        });
+    }
+};

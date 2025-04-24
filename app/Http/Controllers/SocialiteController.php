@@ -80,6 +80,7 @@ class SocialiteController extends Controller
                 'name' => $providerUser->getName() ?? '',
                 'email' => $providerUser->getEmail() ?? '',
                 'avatar' => $providerUser->getAvatar() ?? '',
+                'mfa_enabled' => $providerUser->user['mfa_enabled'] ?? null,
             ]);
 
             return $oauthConnection->user;

@@ -42,15 +42,7 @@ class Show extends Component
      */
     protected function getMod(int $modId): Mod
     {
-        return Mod::query()
-            ->with([
-                'license',
-                'owner:id,name',
-                'authors:id,name',
-                'latestVersion',
-                'latestVersion.latestSptVersion',
-            ])
-            ->findOrFail($modId);
+        return Mod::query()->findOrFail($modId);
     }
 
     /**
@@ -61,11 +53,6 @@ class Show extends Component
     protected function versions(): LengthAwarePaginator
     {
         return $this->mod->versions()
-            ->with([
-                'latestSptVersion',
-                'latestResolvedDependencies',
-                'latestResolvedDependencies.mod',
-            ])
             ->paginate(6)
             ->fragment('versions');
     }

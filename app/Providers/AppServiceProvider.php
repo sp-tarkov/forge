@@ -45,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
         // Disable lazy loading in non-production environments.
         Model::preventLazyLoading(! app()->isProduction());
 
+        // Have Laravel automatically eager load Model relationships.
+        Model::automaticallyEagerLoadRelationships();
+
         // Register custom macros.
         $this->registerNumberMacros();
         $this->registerCarbonMacros();

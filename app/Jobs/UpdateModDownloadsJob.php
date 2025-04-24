@@ -23,10 +23,12 @@ class UpdateModDownloadsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Mod::with('versions')->chunk(100, function ($mods): void {
-            foreach ($mods as $mod) {
-                $mod->calculateDownloads();
-            }
-        });
+        Mod::query()
+            ->with('versions')
+            ->chunk(100, function ($mods): void {
+                foreach ($mods as $mod) {
+                    $mod->calculateDownloads();
+                }
+            });
     }
 }
