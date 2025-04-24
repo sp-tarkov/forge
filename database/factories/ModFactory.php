@@ -27,7 +27,7 @@ class ModFactory extends Factory
             'teaser' => fake()->sentence(),
             'description' => fake()->paragraphs(rand(4, 20), true),
             'license_id' => License::factory(),
-            'source_code_link' => fake()->url(),
+            'source_code_url' => fake()->url(),
             'featured' => fake()->boolean(),
             'contains_ai_content' => fake()->boolean(),
             'contains_ads' => fake()->boolean(),

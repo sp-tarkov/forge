@@ -37,7 +37,7 @@ use Laravel\Scout\Searchable;
  * @property string $thumbnail
  * @property int|null $license_id
  * @property int $downloads
- * @property string $source_code_link
+ * @property string $source_code_url
  * @property bool $featured
  * @property bool $contains_ai_content
  * @property bool $contains_ads
