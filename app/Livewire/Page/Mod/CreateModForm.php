@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Mod;
 
 use App\Models\Mod;
 use App\Rules\Semver;
+use App\Rules\SemverConstraint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -22,7 +23,7 @@ class CreateModForm extends Component
     #[Validate(['required', 'string', new Semver])]
     public $modVersion = '';
 
-    #[Validate(['required', 'string', new Semver])]
+    #[Validate(['required', 'string', new SemverConstraint])]
     public $modSptVersionConstraint = '';
 
     #[Validate('string|max:255')]
