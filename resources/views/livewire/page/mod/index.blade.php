@@ -1,6 +1,11 @@
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
+        <div class="flex">
+            <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
+            <div class="items-center ml-auto flex-shrink-0">
+                <livewire:mod.new-mod-button />
+            </div>
+        </div>
         <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __('Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}</p>
 
         <search class="md:hidden relative group mt-6">
