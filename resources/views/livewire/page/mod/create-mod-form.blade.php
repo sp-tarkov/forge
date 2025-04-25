@@ -20,6 +20,12 @@
         </flux:field>
 
         <flux:field>
+            <flux:label>{{ __('SPT Version Constraint') }}</flux:label>
+            <flux:input type="text" wire:model="modSptVersionConstraint" />
+            <flux:error name="modSptVersionConstraint" />
+        </flux:field>
+
+        <flux:field>
             <flux:label>{{ __('Mod Teaser') }}</flux:label>
             <flux:input type="text" wire:model="modTeaser" />
             <flux:error name="modTeaser" />
