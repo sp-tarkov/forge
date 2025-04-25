@@ -48,19 +48,16 @@ class CreateModForm extends Component
         $validated = $this->validate();
 
         if ($validated) {
-
             try {
                 DB::beginTransaction();
 
-                $mod = Mod::create([
+                $mod = Mod::query()->create([
                     'name' => $this->modName,
                     'slug' => Str::slug($this->modName),
                     'description' => $this->modDescription,
                     'teaser' => $this->modTeaser,
                     'source_code_url' => $this->modSourceCodeUrl,
                 ]);
-
-                Log::info(json_encode($mod));
 
                 $modVersion = $mod->versions()->create([
                     'version' => $this->modVersion,
@@ -71,13 +68,11 @@ class CreateModForm extends Component
                     'downloads' => 0,
                 ]);
 
-                Log::info(json_encode($modVersion));
-
                 DB::commit();
 
-                flash()->success("Mod '$this->modName' Created");
-                $this->redirect("mod/$mod->id/$mod->slug");
-            } catch (\Exception $e) {
+                flash()->success(sprintf("Mod '%s' Created", $this->modName));
+                $this->redirect($mod->detail_url);
+            } catch (Exception $e) {
                 DB::rollBack();
                 Log::error('Error creating mod/version: '.$e->getMessage());
 
