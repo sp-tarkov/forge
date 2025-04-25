@@ -7,17 +7,22 @@ namespace App\Livewire\Page\Mod;
 use App\Models\Mod;
 use App\Rules\Semver;
 use App\Rules\SemverConstraint;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class CreateModForm extends Component
 {
+    use WithFileUploads;
+
     #[Validate('required|string|max:255')]
     public $modName = '';
 
+    #[Validate('image|mimes:jpg,jpeg,png|max:2048')] // 2MB Max
     public $modAvatar;
 
     #[Validate(['required', 'string', new Semver])]
@@ -54,8 +59,8 @@ class CreateModForm extends Component
                 $mod = Mod::query()->create([
                     'name' => $this->modName,
                     'slug' => Str::slug($this->modName),
-                    'description' => $this->modDescription,
                     'teaser' => $this->modTeaser,
+                    'description' => $this->modDescription,
                     'source_code_url' => $this->modSourceCodeUrl,
                 ]);
 
@@ -67,6 +72,12 @@ class CreateModForm extends Component
                     'link' => $this->modExternalUrl,
                     'downloads' => 0,
                 ]);
+
+                $mod->thumbnail = $this->modAvatar->storePublicly(
+                    path: 'mods',
+                    options: config('filesystems.asset_upload_disk', 'public'),
+                );
+                $mod->save();
 
                 DB::commit();
 

@@ -1,11 +1,22 @@
 <div>
     <form wire:submit="save" class="space-y-4 m-6">
         @csrf
-{{--        requires a trait to be added for file uploads? --}}
-{{--        <flux:field>--}}
-{{--            <flux:label>{{ __('Avatar') }}</flux:label>--}}
-{{--            <flux:input type="file" wire:model="modAvatar" />--}}
-{{--        </flux:field>--}}
+
+        <flux:field>
+            <flux:label>{{ __('Avatar') }}</flux:label>
+            <flux:input type="file" wire:model="modAvatar" accept="image/*" />
+            <flux:error name="modAvatar" />
+            <div wire:loading wire:target="modAvatar" class="mt-2">
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-cyan-500 h-2.5 rounded-full" style="width: 0%" wire:loading.class="animate-pulse"></div>
+                </div>
+            </div>
+            @if ($modAvatar)
+                <div class="mt-2">
+                    <img src="{{ $modAvatar->temporaryUrl() }}" class="h-20 w-20 object-cover rounded" alt="Avatar preview">
+                </div>
+            @endif
+        </flux:field>
 
         <flux:field>
             <flux:label>{{ __('Mod Name') }}</flux:label>
