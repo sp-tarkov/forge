@@ -4,30 +4,40 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
+use App\Rules\Semver;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class CreateModForm extends Component
 {
+    #[Validate('required|string|max:255')]
     public $modName = '';
 
+    public $modAvatar;
+
+    #[Validate(['required', 'string', new Semver])]
     public $modVersion = '';
 
+    #[Validate('string|max:255')]
     public $modTeaser = '';
 
+    #[Validate('string')]
     public $modDescription = '';
 
-    public $modExternalUrl = '';
+    //public $modExternalUrl = '';
+    //public $modVirusTotalUrl = '';
 
-    public $modCategory = '';
-
-    public $modIcon = '';
-
-    public \DateTime $publishDate;
+    //public \DateTime $publishDate;
 
     public function save()
     {
-        // TODO: this lol
-        flash()->success("Mod '$this->modName' Created. Publishing at {$this->publishDate->format('Y-m-d')}");
+        $validated = $this->validate();
+
+        if ($validated) {
+            // TODO: actually save data here
+
+            flash()->success("Mod '$this->modName' Created");
+        }
     }
 
     public function render()
