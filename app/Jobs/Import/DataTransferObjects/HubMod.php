@@ -113,7 +113,7 @@ class HubMod
 
     public string $additional_authors;
 
-    public string $source_code_link;
+    public string $source_code_url;
 
     public string $contains_ai;
 
@@ -296,7 +296,7 @@ class HubMod
      */
     public function getSourceCodeLink(): string
     {
-        return collect(explode(',', $this->source_code_link))->map(fn ($link): string => trim($link))->reject(fn ($link): bool => empty($link))->first() ?? '';
+        return collect(explode(',', $this->source_code_url))->map(fn ($link): string => trim($link))->reject(fn ($link): bool => empty($link))->first() ?? '';
     }
 
     /**

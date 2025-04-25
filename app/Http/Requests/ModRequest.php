@@ -21,7 +21,7 @@ class ModRequest extends FormRequest
             'slug' => ['required'],
             'description' => ['required'],
             'license_id' => ['required', 'exists:licenses'],
-            'source_code_link' => ['required'],
+            'source_code_url' => ['required'],
         ];
     }
 

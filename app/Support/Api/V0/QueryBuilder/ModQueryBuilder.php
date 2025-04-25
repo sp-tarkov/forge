@@ -9,6 +9,7 @@ use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 /**
  * @extends AbstractQueryBuilder<Mod>
@@ -90,7 +91,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'name' => 'filterByName',
             'slug' => 'filterBySlug',
             'teaser' => 'filterByTeaser',
-            'source_code_link' => 'filterBySourceCodeLink',
+            'source_code_url' => 'filterBySourceCodeLink',
             'featured' => 'filterByFeatured',
             'contains_ads' => 'filterByContainsAds',
             'contains_ai_content' => 'filterByContainsAiContent',
@@ -182,7 +183,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->whereLike('mods.source_code_link', sprintf('%%%s%%', $term));
+        $query->whereLike('mods.source_code_url', sprintf('%%%s%%', $term));
     }
 
     /**
@@ -332,13 +333,27 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'description',
             'thumbnail',
             'downloads',
-            'source_code_link',
+            'source_code_url',
             'featured',
             'contains_ai_content',
             'contains_ads',
             'published_at',
             'created_at',
             'updated_at',
+        ];
+    }
+
+    /**
+     * Get the dynamic attributes that can be included in the response. Keys are the attribute names and the values are
+     * arrays of required database fields that are used to compute the attribute.
+     *
+     * @return array<string, array<string>>
+     */
+    #[Override]
+    protected static function getDynamicAttributes(): array
+    {
+        return [
+            'detail_url' => ['slug'],
         ];
     }
 

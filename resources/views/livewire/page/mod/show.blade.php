@@ -158,12 +158,12 @@
                             </p>
                         </li>
                     @endif
-                    @if ($mod->source_code_link)
+                    @if ($mod->source_code_url)
                         <li class="px-4 py-4 sm:px-0">
                             <h3>{{ __('Source Code') }}</h3>
                             <p class="truncate">
-                                <a href="{{ $mod->source_code_link }}" title="{{ $mod->source_code_link }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
-                                    {{ $mod->source_code_link }}
+                                <a href="{{ $mod->source_code_url }}" title="{{ $mod->source_code_url }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                                    {{ $mod->source_code_url }}
                                 </a>
                             </p>
                         </li>
@@ -183,7 +183,7 @@
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
-                                    <a href="{{ $dependency->resolvedVersion->mod->detailUrl() }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                                    <a href="{{ $dependency->resolvedVersion->mod->detail_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                         {{ $dependency->resolvedVersion->mod->name }}
                                         &nbsp;({{ $dependency->resolvedVersion->version }})
                                     </a><br />
