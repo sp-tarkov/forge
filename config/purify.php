@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Stevebauman\Purify\Cache\CacheDefinitionCache;
-use Stevebauman\Purify\Definitions\Html5Definition;
 
 return [
 

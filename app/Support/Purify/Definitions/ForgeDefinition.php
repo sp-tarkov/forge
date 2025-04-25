@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support\Purify\Definitions;
 
 use HTMLPurifier_HTMLDefinition;
@@ -9,10 +11,6 @@ class ForgeDefinition implements Definition
 {
     /**
      * Apply rules to the HTML Purifier definition.
-     *
-     * @param HTMLPurifier_HTMLDefinition $definition
-     *
-     * @return void
      */
     public static function apply(HTMLPurifier_HTMLDefinition $definition): void
     {
