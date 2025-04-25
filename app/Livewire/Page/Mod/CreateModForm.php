@@ -23,7 +23,7 @@ class CreateModForm extends Component
     #[Validate('string|max:255')]
     public $modTeaser = '';
 
-    #[Validate('string')]  // should this have a max length?
+    #[Validate('string')] // should this have a max length?
     public $modDescription = '';
 
     #[Validate('required|url')]
@@ -43,9 +43,8 @@ class CreateModForm extends Component
 
         if ($validated) {
 
-
-            $mod = new Mod();
-            $newVersion = new ModVersion();
+            $mod = new Mod;
+            $newVersion = new ModVersion;
 
             $newVersion->version = $this->modVersion;
             $newVersion->description = $this->modDescription;
@@ -66,7 +65,8 @@ class CreateModForm extends Component
         }
     }
 
-    public function cancel() {
+    public function cancel()
+    {
         $this->redirectRoute('mods');
     }
 
