@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Rules;
 
 use App\Support\Version;
@@ -17,8 +19,7 @@ class Semver implements ValidationRule
     {
         try {
             $version = new Version($value);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $fail($e->getMessage());
         }
     }

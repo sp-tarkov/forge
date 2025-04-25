@@ -24,10 +24,10 @@ class CreateModForm extends Component
     #[Validate('string')]
     public $modDescription = '';
 
-    //public $modExternalUrl = '';
-    //public $modVirusTotalUrl = '';
+    // public $modExternalUrl = '';
+    // public $modVirusTotalUrl = '';
 
-    //public \DateTime $publishDate;
+    // public \DateTime $publishDate;
 
     public function save()
     {
