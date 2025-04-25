@@ -57,6 +57,7 @@ class CreateModForm extends Component
                 DB::beginTransaction();
 
                 $mod = Mod::query()->create([
+                    'user_id' => auth()->id(),
                     'name' => $this->modName,
                     'slug' => Str::slug($this->modName),
                     'teaser' => $this->modTeaser,
