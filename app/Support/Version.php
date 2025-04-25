@@ -167,28 +167,15 @@ class Version implements Stringable
     }
 
     /**
-     * Get the normalized version string.
+     * Get the normalized full version string (SemVer compliant).
      */
     public function getVersion(): string
     {
+        // Construct the base version (major.minor.patch)
         $version = $this->major.'.'.$this->minor.'.'.$this->patch;
 
         if (! empty($this->labels)) {
-            // Check if labels contain build metadata (indicated by +).
-            if (Str::contains($this->labels, '+')) {
-                $labelParts = explode('+', $this->labels, 2);
-                $prerelease = $labelParts[0];
-                $buildMetaData = $labelParts[1];
-
-                if (! empty($prerelease)) {
-                    $version .= '-'.$prerelease;
-                }
-
-                $version .= '+'.$buildMetaData;
-            } else {
-                // No build metadata, treat entire labels as pre-release.
-                $version .= '-'.$this->labels;
-            }
+            $version .= $this->labels;
         }
 
         return $version;
