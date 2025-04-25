@@ -43,7 +43,9 @@ class ModVersionObserver
     protected function updateRelatedMod(ModVersion $modVersion): void
     {
         $mod = $modVersion->mod;
-        $mod->calculateDownloads();
+        if (! empty($mod)) {
+            $mod->calculateDownloads();
+        }
     }
 
     /**
