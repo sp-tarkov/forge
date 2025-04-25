@@ -71,7 +71,6 @@ class CreateModForm extends Component
                     'virus_total_link' => $this->modVirusTotalUrl,
                     'spt_version_constraint' => $this->modSptVersionConstraint,
                     'link' => $this->modExternalUrl,
-                    'downloads' => 0,
                 ]);
 
                 $mod->thumbnail = $this->modAvatar->storePublicly(
