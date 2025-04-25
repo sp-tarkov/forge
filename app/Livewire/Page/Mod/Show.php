@@ -8,6 +8,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModeratesMod;
 use App\Traits\Livewire\ModeratesModVersion;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;

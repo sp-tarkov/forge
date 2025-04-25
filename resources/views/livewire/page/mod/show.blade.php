@@ -98,7 +98,13 @@
 
                 {{-- Mod Description --}}
                 <div x-show="selectedTab === 'description'" class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    @markdown($mod->description)
+                    {{--
+                        !DANGER ZONE!
+
+                        This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
+                        fields like this when you're absolutly sure that the data is safe. Which is almost never.
+                     --}}
+                    {!! $mod->description_html !!}
                 </div>
 
                 {{-- Mod Versions --}}
