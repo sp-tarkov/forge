@@ -46,7 +46,8 @@ class CreateModForm extends Component
     #[Validate('required|url')]
     public $modSourceCodeUrl = '';
 
-    // public \DateTime $publishDate;
+    #[Validate('nullable|date')]
+    public $modPublishDate = null;
 
     public function save()
     {
@@ -66,6 +67,10 @@ class CreateModForm extends Component
                     'description' => $this->modDescription,
                     'source_code_url' => $this->modSourceCodeUrl,
                 ]);
+
+                if ($this->modPublishDate) {
+                    $mod->published_at = $this->modPublishDate;
+                }
 
                 $modVersion = $mod->versions()->create([
                     'version' => $this->modVersion,
