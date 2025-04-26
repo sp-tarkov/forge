@@ -164,20 +164,12 @@ This should not be in a tab.
 >
 > UTF-8 MB Emojies: 🔥 🚀 🎉 ⭐ ❤️
 
-### [Subscript](https://github.com/markdown-it/markdown-it-sub) / [Superscript](https://github.com/markdown-it/markdown-it-sup)
+### Subscript / Superscript
 
 - 19^th^
 - H~2~O
 
-### [\<ins>](https://github.com/markdown-it/markdown-it-ins)
-
-++Inserted text++
-
-### [\<mark>](https://github.com/markdown-it/markdown-it-mark)
-
-==Marked text==
-
-### [Footnotes](https://github.com/markdown-it/markdown-it-footnote)
+### Footnotes
 
 Footnote 1 link[^first].
 
@@ -193,7 +185,7 @@ Duplicated footnote reference[^second].
 
 [^second]: Footnote text.
 
-### [Definition lists](https://github.com/markdown-it/markdown-it-deflist)
+### Definition lists
 
 Term 1
 
