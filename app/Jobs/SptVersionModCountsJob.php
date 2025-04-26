@@ -25,7 +25,6 @@ class SptVersionModCountsJob implements ShouldBeUnique, ShouldQueue
     public function handle(): void
     {
         SptVersion::query()
-            ->with('modVersions')
             ->get()
             ->each(function (SptVersion $sptVersion): void {
                 $sptVersion->updateModCount();

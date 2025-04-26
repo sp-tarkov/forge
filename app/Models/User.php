@@ -354,4 +354,17 @@ class User extends Authenticatable implements MustVerifyEmail
             'updated_at' => 'datetime',
         ];
     }
+
+    /**
+     * Check to see if the user has two-factor authentication enabled. If the user has any OAuth connections, check if
+     * every connection has MFA enabled.
+     */
+    public function hasMfaEnabled(): bool
+    {
+        return $this->hasEnabledTwoFactorAuthentication()
+            || (
+                $this->oAuthConnections->isNotEmpty()
+                && $this->oAuthConnections->every(fn ($connection) => $connection->mfa_enabled)
+            );
+    }
 }

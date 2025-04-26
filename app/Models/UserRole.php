@@ -35,7 +35,6 @@ class UserRole extends Model
      */
     public function users(): HasMany
     {
-        return $this->hasMany(User::class)
-            ->chaperone();
+        return $this->hasMany(User::class);
     }
 }

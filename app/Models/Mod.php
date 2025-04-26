@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use Database\Factories\ModFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * Mod Model
@@ -37,7 +39,7 @@ use Laravel\Scout\Searchable;
  * @property string $thumbnail
  * @property int|null $license_id
  * @property int $downloads
- * @property string $source_code_link
+ * @property string $source_code_url
  * @property bool $featured
  * @property bool $contains_ai_content
  * @property bool $contains_ads
@@ -45,6 +47,8 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
+ * @property-read string $detail_url
+ * @property-read string $description_html
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read Collection<int, User> $authors
@@ -60,6 +64,10 @@ class Mod extends Model
     use HasFactory;
 
     use Searchable;
+
+    protected $appends = [
+        'detail_url',
+    ];
 
     /**
      * The relationship between a mod and its owner (User).
@@ -130,8 +138,7 @@ class Mod extends Model
     {
         return $this->versions()
             ->one()
-            ->ofMany('updated_at', 'max')
-            ->chaperone();
+            ->ofMany('updated_at', 'max');
     }
 
     /**
@@ -146,8 +153,7 @@ class Mod extends Model
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->chaperone();
+            ->orderBy('version_labels');
     }
 
     /**
@@ -229,8 +235,7 @@ class Mod extends Model
                 'version_minor' => 'max',
                 'version_patch' => 'max',
                 'version_labels' => 'max',
-            ])
-            ->chaperone();
+            ]);
     }
 
     /**
@@ -258,11 +263,13 @@ class Mod extends Model
     }
 
     /**
-     * Build the URL to the mod's detail page.
+     * Get the URL to the mod's detail page.
+     *
+     * @return Attribute<string, string>
      */
-    public function detailUrl(): string
+    protected function detailUrl(): Attribute
     {
-        return route('mod.show', [$this->id, $this->slug]);
+        return Attribute::get(fn () => route('mod.show', [$this->id, $this->slug]));
     }
 
     /**
@@ -293,5 +300,19 @@ class Mod extends Model
             get: fn (?string $value) => $value ? Str::lower($value) : '',
             set: fn (?string $value) => $value ? Str::slug($value) : '',
         );
+    }
+
+    /**
+     * Generate the cleaned version of the HTML description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Purify::config('description')->clean(
+                Markdown::convert($this->description)->getContent()
+            )
+        )->shouldCache();
     }
 }

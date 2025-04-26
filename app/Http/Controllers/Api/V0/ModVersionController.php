@@ -22,7 +22,7 @@ class ModVersionController extends Controller
      *
      * Retrieves a paginated list of mod versions, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>id, hub_id, version, description, link, spt_version_constraint, virus_total_link,
+     * Fields available:<br /><code>hub_id, version, description, link, spt_version_constraint, virus_total_link,
      * downloads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited mod version dependency information. Only the immediate

@@ -35,7 +35,7 @@ it('returns a paginated list of mods', function (): void {
             'success',
             'data' => [
                 '*' => [
-                    'id', 'hub_id', 'name', 'slug', 'teaser', 'source_code_link', 'featured', 'contains_ads',
+                    'id', 'hub_id', 'name', 'slug', 'teaser', 'source_code_url', 'featured', 'contains_ads',
                     'contains_ai_content', 'published_at', 'created_at', 'updated_at',
                 ],
             ],
@@ -186,6 +186,7 @@ it('sorts mods by created_at descending', function (): void {
     $modMid = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(['created_at' => now()->subDay()]);
 
     $response = $this->withToken($this->token)->getJson('/api/v0/mods?sort=-created_at');
+
     $response->assertStatus(Response::HTTP_OK)->assertJsonCount(3, 'data');
     $response->assertJsonPath('data.0.id', $modNew->id);
     $response->assertJsonPath('data.1.id', $modMid->id);
@@ -244,6 +245,17 @@ it('includes license relationship when a filter is applied', function (): void {
     $response->assertStatus(Response::HTTP_OK);
     $response->assertJsonStructure(['data' => ['*' => ['license' => ['id', 'name']]]]);
     $response->assertJsonPath('data.0.license.id', $mod->license->id);
+});
+
+it('includes a relationship when fields are specified', function (): void {
+    SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+    $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods?fields=id,name&include=owner');
+
+    $response->assertStatus(Response::HTTP_OK);
+    $response->assertJsonStructure(['data' => ['*' => ['id', 'name', 'owner' => ['id', 'name']]]]);
 });
 
 it('includes enabled mods with an enabled version', function (): void {
@@ -403,7 +415,13 @@ it('returns only the fields requested', function (): void {
 
     $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
-    $response = $this->withToken($this->token)->getJson('/api/v0/mods?fields=id,name');
+    $response = $this->withToken($this->token)->getJson('/api/v0/mods?fields=name');
 
-    $response->assertOk()->assertJsonStructure(['data' => ['*' => ['id', 'name']]]);
+    $response->assertOk();
+
+    // Assert that the id (required) and name (requested) fields are present
+    $response->assertJsonStructure(['data' => ['*' => ['id', 'name']]]);
+
+    // Assert that the created_at and updated_at fields are not present
+    $response->assertJsonMissing(['data' => ['*' => ['created_at', 'updated_at']]]);
 });

@@ -606,7 +606,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 DB::raw('ANY_VALUE(content.teaser) AS teaser'),
                 DB::raw('ANY_VALUE(content.message) AS message'),
                 DB::raw("IFNULL(GROUP_CONCAT(TRIM(additionalAuthors.userID) ORDER BY additionalAuthors.userID SEPARATOR ','), '') AS additional_authors"),
-                DB::raw("IFNULL(GROUP_CONCAT(TRIM(optionSourceCode.optionValue) ORDER BY optionSourceCode.optionValue SEPARATOR ','), '') AS source_code_link"),
+                DB::raw("IFNULL(GROUP_CONCAT(TRIM(optionSourceCode.optionValue) ORDER BY optionSourceCode.optionValue SEPARATOR ','), '') AS source_code_url"),
                 DB::raw('IFNULL(ANY_VALUE(optionContainsAI.optionValue), 0) AS contains_ai'),
                 DB::raw('IFNULL(ANY_VALUE(optionContainsAds.optionValue), 0) AS contains_ads'),
                 DB::raw("IFNULL(ANY_VALUE(spt_version.label), '') AS spt_version_label"),
@@ -665,7 +665,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'description' => $hubMod->getCleanMessage(),
             'thumbnail' => $this->fetchModThumbnail($hubMod),
             'license_id' => $hubMod->getLicenseId(),
-            'source_code_link' => $hubMod->getSourceCodeLink(),
+            'source_code_url' => $hubMod->getSourceCodeLink(),
             'featured' => (bool) $hubMod->isFeatured,
             'contains_ai_content' => (bool) $hubMod->contains_ai,
             'contains_ads' => (bool) $hubMod->contains_ads,
@@ -678,7 +678,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         // Upsert batch of mods based on their hub_id.
         Mod::withoutEvents(function () use ($modData): void {
             Mod::query()->upsert($modData, ['hub_id'], [
-                'owner_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'license_id', 'source_code_link',
+                'owner_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'license_id', 'source_code_url',
                 'featured', 'contains_ai_content', 'contains_ads', 'disabled', 'published_at', 'created_at',
                 'updated_at',
             ]);

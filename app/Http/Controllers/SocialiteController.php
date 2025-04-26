@@ -80,6 +80,7 @@ class SocialiteController extends Controller
                 'name' => $providerUser->getName() ?? '',
                 'email' => $providerUser->getEmail() ?? '',
                 'avatar' => $providerUser->getAvatar() ?? '',
+                'mfa_enabled' => $this->getMfaStatus($provider, $providerUser),
             ]);
 
             return $oauthConnection->user;
@@ -161,5 +162,16 @@ class SocialiteController extends Controller
         $user->forceFill([
             'profile_photo_path' => $relativePath,
         ])->save();
+    }
+
+    /**
+     * Get the MFA status from the provider user based on the provider.
+     */
+    protected function getMfaStatus(string $provider, ProviderUser $providerUser): ?bool
+    {
+        return match ($provider) {
+            'discord' => $providerUser->user['mfa_enabled'] ?? null,
+            default => null,
+        };
     }
 }

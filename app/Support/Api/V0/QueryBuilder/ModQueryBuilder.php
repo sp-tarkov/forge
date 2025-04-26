@@ -9,6 +9,7 @@ use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 /**
  * @extends AbstractQueryBuilder<Mod>
@@ -43,8 +44,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
     protected function applySptVersionCondition(Builder $query, ?array $compatibleVersions = null): void
     {
         $query->whereExists(function ($query) use ($compatibleVersions): void {
-
-            // By default, get all mods that have at least one version that is compatible with the SPT version
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
@@ -82,70 +81,240 @@ class ModQueryBuilder extends AbstractQueryBuilder
     /**
      * Get the allowed filters for this query builder.
      *
-     * @return array<string, callable>
+     * @return array<string, string>
      */
-    protected function getAllowedFilters(): array
+    public static function getAllowedFilters(): array
     {
         return [
-            'id' => function (Builder $query, string $ids): void {
-                $query->whereIn('mods.id', self::parseCommaSeparatedInput($ids, 'integer'));
-            },
-            'hub_id' => function (Builder $query, string $hubIds): void {
-                $query->whereIn('mods.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
-            },
-            'name' => function (Builder $query, string $term): void {
-                $query->whereLike('mods.name', sprintf('%%%s%%', $term));
-            },
-            'slug' => function (Builder $query, string $term): void {
-                $query->whereLike('mods.slug', sprintf('%%%s%%', $term));
-            },
-            'teaser' => function (Builder $query, string $term): void {
-                $query->whereLike('mods.teaser', sprintf('%%%s%%', $term));
-            },
-            'source_code_link' => function (Builder $query, string $term): void {
-                $query->whereLike('mods.source_code_link', sprintf('%%%s%%', $term));
-            },
-            'featured' => function (Builder $query, string $value): void {
-                $query->where('mods.featured', self::parseBooleanInput($value));
-            },
-            'contains_ads' => function (Builder $query, string $value): void {
-                $query->where('mods.contains_ads', self::parseBooleanInput($value));
-            },
-            'contains_ai_content' => function (Builder $query, string $value): void {
-                $query->where('mods.contains_ai_content', self::parseBooleanInput($value));
-            },
-            'created_between' => function (Builder $query, string $range): void {
-                [$start, $end] = explode(',', $range);
-                $query->whereBetween('mods.created_at', [$start, $end]);
-            },
-            'updated_between' => function (Builder $query, string $range): void {
-                [$start, $end] = explode(',', $range);
-                $query->whereBetween('mods.updated_at', [$start, $end]);
-            },
-            'published_between' => function (Builder $query, string $range): void {
-                [$start, $end] = explode(',', $range);
-                $query->whereBetween('mods.published_at', [$start, $end]);
-            },
-            'spt_version' => function (Builder $query, string $version): void {
-                $validSptVersions = SptVersion::allValidVersions();
-                $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
-                $this->applySptVersionCondition($query, $compatibleSptVersions);
-            },
+            'id' => 'filterById',
+            'hub_id' => 'filterByHubId',
+            'name' => 'filterByName',
+            'slug' => 'filterBySlug',
+            'teaser' => 'filterByTeaser',
+            'source_code_url' => 'filterBySourceCodeLink',
+            'featured' => 'filterByFeatured',
+            'contains_ads' => 'filterByContainsAds',
+            'contains_ai_content' => 'filterByContainsAiContent',
+            'created_between' => 'filterByCreatedBetween',
+            'updated_between' => 'filterByUpdatedBetween',
+            'published_between' => 'filterByPublishedBetween',
+            'spt_version' => 'filterBySptVersion',
         ];
     }
 
     /**
-     * Get the map of API include names to model relationship names.
+     * Filter by mod IDs.
      *
-     * @return array<string, string>
+     * @param  Builder<Mod>  $query
      */
-    protected function getAllowedIncludes(): array
+    protected function filterById(Builder $query, ?string $ids): void
+    {
+        if ($ids === null) {
+            return;
+        }
+
+        $query->whereIn('mods.id', self::parseCommaSeparatedInput($ids, 'integer'));
+    }
+
+    /**
+     * Filter by hub IDs.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByHubId(Builder $query, ?string $hubIds): void
+    {
+        if ($hubIds === null) {
+            return;
+        }
+
+        $query->whereIn('mods.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
+    }
+
+    /**
+     * Filter by name.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByName(Builder $query, ?string $term): void
+    {
+        if ($term === null) {
+            return;
+        }
+
+        $query->whereLike('mods.name', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by slug.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterBySlug(Builder $query, ?string $term): void
+    {
+        if ($term === null) {
+            return;
+        }
+
+        $query->whereLike('mods.slug', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by teaser.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByTeaser(Builder $query, ?string $term): void
+    {
+        if ($term === null) {
+            return;
+        }
+
+        $query->whereLike('mods.teaser', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by source code link.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterBySourceCodeLink(Builder $query, ?string $term): void
+    {
+        if ($term === null) {
+            return;
+        }
+
+        $query->whereLike('mods.source_code_url', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by featured status.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByFeatured(Builder $query, ?string $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $query->where('mods.featured', self::parseBooleanInput($value));
+    }
+
+    /**
+     * Filter by contains ads status.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByContainsAds(Builder $query, ?string $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $query->where('mods.contains_ads', self::parseBooleanInput($value));
+    }
+
+    /**
+     * Filter by contains AI content status.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByContainsAiContent(Builder $query, ?string $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $query->where('mods.contains_ai_content', self::parseBooleanInput($value));
+    }
+
+    /**
+     * Filter by creation date range.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByCreatedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('mods.created_at', [$start, $end]);
+    }
+
+    /**
+     * Filter by update date range.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByUpdatedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('mods.updated_at', [$start, $end]);
+    }
+
+    /**
+     * Filter by publication date range.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByPublishedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('mods.published_at', [$start, $end]);
+    }
+
+    /**
+     * Filter by SPT version.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterBySptVersion(Builder $query, ?string $version): void
+    {
+        if ($version === null) {
+            return;
+        }
+
+        $validSptVersions = SptVersion::allValidVersions();
+        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+        $this->applySptVersionCondition($query, $compatibleSptVersions);
+    }
+
+    /**
+     * Get the allowed relationships that can be included.
+     *
+     * @return array<string>
+     */
+    public static function getAllowedIncludes(): array
     {
         return [
-            'owner' => 'owner',
-            'authors' => 'authors',
-            'versions' => 'versions',
-            'license' => 'license',
+            'owner',
+            'authors',
+            'versions',
+            'license',
+        ];
+    }
+
+    /**
+     * Get the required fields that should always be loaded for relationships.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'owner_id',
+            'license_id',
         ];
     }
 
@@ -154,10 +323,9 @@ class ModQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string>
      */
-    protected function getAllowedFields(): array
+    public static function getAllowedFields(): array
     {
         return [
-            'id',
             'hub_id',
             'name',
             'slug',
@@ -165,7 +333,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'description',
             'thumbnail',
             'downloads',
-            'source_code_link',
+            'source_code_url',
             'featured',
             'contains_ai_content',
             'contains_ads',
@@ -176,11 +344,25 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
+     * Get the dynamic attributes that can be included in the response. Keys are the attribute names and the values are
+     * arrays of required database fields that are used to compute the attribute.
+     *
+     * @return array<string, array<string>>
+     */
+    #[Override]
+    protected static function getDynamicAttributes(): array
+    {
+        return [
+            'detail_url' => ['slug'],
+        ];
+    }
+
+    /**
      * Get the allowed sorts for this query builder.
      *
      * @return array<string>
      */
-    protected function getAllowedSorts(): array
+    public static function getAllowedSorts(): array
     {
         return [
             'id',

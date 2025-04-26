@@ -41,8 +41,8 @@ use Override;
  * @property int $downloads
  * @property bool $disabled
  * @property Carbon|null $published_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Mod $mod
  * @property-read Collection<int, ModDependency> $dependencies
  * @property-read Collection<int, ModVersion> $resolvedDependencies
@@ -65,7 +65,7 @@ class ModVersion extends Model
     protected $touches = ['mod'];
 
     /**
-     * Post boot method to configure the model.
+     * Post-boot method to configure the model.
      */
     #[Override]
     protected static function booted(): void
@@ -105,8 +105,7 @@ class ModVersion extends Model
      */
     public function dependencies(): HasMany
     {
-        return $this->hasMany(ModDependency::class)
-            ->chaperone();
+        return $this->hasMany(ModDependency::class);
     }
 
     /**

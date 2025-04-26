@@ -52,13 +52,7 @@ class ModFilter
                     ->whereColumn('mod_versions.mod_id', 'mods.id')
                     ->where('spt_versions.version', '!=', '0.0.0')
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mods.disabled', false));
-            })
-            ->with([
-                'owner:id,name',
-                'authors:id,name',
-                'latestVersion',
-                'latestVersion.latestSptVersion',
-            ]);
+            });
     }
 
     /**

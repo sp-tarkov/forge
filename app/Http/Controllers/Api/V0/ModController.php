@@ -24,8 +24,8 @@ class ModController extends Controller
      *
      * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>id, hub_id, name, slug, teaser, thumbnail, downloads, source_code_link, featured,
-     * contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
+     * Fields available:<br /><code>hub_id, name, slug, teaser, thumbnail, downloads, source_code_url, detail_url,
+     * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -42,7 +42,8 @@ class ModController extends Controller
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
      *              "thumbnail": "",
      *              "downloads": 55212644,
-     *              "source_code_link": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *              "source_code_url": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *              "detail_url": https://forge.sp-tarkov.com/mods/1/recusandae-velit-incidunt,
      *              "featured": true,
      *              "contains_ads": true,
      *              "contains_ai_content": false,
@@ -58,7 +59,8 @@ class ModController extends Controller
      *              "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
      *              "thumbnail": "",
      *              "downloads": 219598104,
-     *              "source_code_link": "http://baumbach.net/",
+     *              "source_code_url": "http://baumbach.net/",
+     *              "detail_url": https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil,
      *              "featured": false,
      *              "contains_ads": true,
      *              "contains_ai_content": true,
@@ -107,13 +109,13 @@ class ModController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,name,slug,featured,created_at')]
+    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
     #[UrlParam('filter[id]', description: 'Filter by comma-separated Mod IDs.', required: false, example: '1,5,10')]
     #[UrlParam('filter[hub_id]', description: 'Filter by comma-separated Hub IDs.', required: false, example: '123,456')]
     #[UrlParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Raid Time')]
     #[UrlParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-mod')]
     #[UrlParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
-    #[UrlParam('filter[source_code_link]', description: 'Filter by source code link (fuzzy filter).', required: false, example: 'github.com')]
+    #[UrlParam('filter[source_code_url]', description: 'Filter by source code link (fuzzy filter).', required: false, example: 'github.com')]
     #[UrlParam('filter[featured]', description: 'Filter by featured status (1, true, 0, false).', required: false, example: 'true')]
     #[UrlParam('filter[contains_ads]', type: 'boolean', description: 'Filter by contains_ads status (1, true, 0, false).', required: false, example: 'false')]
     #[UrlParam('filter[contains_ai_content]', type: 'boolean', description: 'Filter by contains_ai_content status (1, true, 0, false).', required: false, example: 'false')]
@@ -145,8 +147,8 @@ class ModController extends Controller
      *
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
-     * Fields available:<br /><code>id, hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_link,
-     * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
+     * Fields available:<br /><code>hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_url,
+     * detail_url, featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -163,7 +165,8 @@ class ModController extends Controller
      *          "thumbnail": "",
      *          "downloads": 219598104,
      *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
-     *          "source_code_link": "http://baumbach.net/",
+     *          "source_code_url": "http://baumbach.net/",
+     *          "detail_url": https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil,
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
@@ -179,7 +182,7 @@ class ModController extends Controller
      *      "message": "Resource not found."
      *  }
      */
-    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,name,slug,featured,created_at')]
+    #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
     #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`.', required: false, example: 'owner,versions')]
     public function show(Request $request, int $modId): JsonResponse
     {

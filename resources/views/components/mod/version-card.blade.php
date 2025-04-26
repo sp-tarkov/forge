@@ -59,7 +59,7 @@
             <ul>
                 @foreach ($version->latestResolvedDependencies as $resolvedDependency)
                     <li>
-                        <a href="{{ $resolvedDependency->mod->detailUrl() }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                        <a href="{{ $resolvedDependency->mod->detail_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                             {{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})
                         </a>
                     </li>

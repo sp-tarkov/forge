@@ -7,22 +7,22 @@ use App\Support\Version;
 test('versions can be parsed', function (): void {
     $versions = [
         // These should all be valid Semantic Versions
-        '1.0.0' => [1, 0, 0, ''],
-        '1.0.0-alpha' => [1, 0, 0, '-alpha'],
-        '1.0.0-alpha.1' => [1, 0, 0, '-alpha.1'],
-        '1.0.0-0.3.7' => [1, 0, 0, '-0.3.7'],
-        '1.0.0-x.7.z.92' => [1, 0, 0, '-x.7.z.92'],
-        '1.0.0-x.7.z.92+meta' => [1, 0, 0, '-x.7.z.92+meta'],
-        '1.0.0+meta' => [1, 0, 0, '+meta'],
-        '1.0.0+meta-valid' => [1, 0, 0, '+meta-valid'],
-        '1.0.0-rc.1+build.1' => [1, 0, 0, '-rc.1+build.1'],
-        '1.0.0-beta+exp.sha.5114f85' => [1, 0, 0, '-beta+exp.sha.5114f85'],
-        '1.0.0+21AF26D3--117B344092BD' => [1, 0, 0, '+21AF26D3--117B344092BD'],
-        '1.0.0-0A.12.0' => [1, 0, 0, '-0A.12.0'],
-        '1.0.0-0A.12.0+meta' => [1, 0, 0, '-0A.12.0+meta'],
-        '1.0.0-0A.12.0+meta-valid' => [1, 0, 0, '-0A.12.0+meta-valid'],
-        '1.0.0-0A.12.0-rc.1+build.1' => [1, 0, 0, '-0A.12.0-rc.1+build.1'],
-        'v1.0.0-0A.12.0-rc.1+build.1' => [1, 0, 0, '-0A.12.0-rc.1+build.1'], // Should handle leading 'v'
+        '1.0.0' => [1, 0, 0, '', '1.0.0'],
+        '1.0.0-alpha' => [1, 0, 0, '-alpha', '1.0.0-alpha'],
+        '1.0.0-alpha.1' => [1, 0, 0, '-alpha.1', '1.0.0-alpha.1'],
+        '1.0.0-0.3.7' => [1, 0, 0, '-0.3.7', '1.0.0-0.3.7'],
+        '1.0.0-x.7.z.92' => [1, 0, 0, '-x.7.z.92', '1.0.0-x.7.z.92'],
+        '1.0.0-x.7.z.92+meta' => [1, 0, 0, '-x.7.z.92+meta', '1.0.0-x.7.z.92+meta'],
+        '1.0.0+meta' => [1, 0, 0, '+meta', '1.0.0+meta'],
+        '1.0.0+meta-valid' => [1, 0, 0, '+meta-valid', '1.0.0+meta-valid'],
+        '1.0.0-rc.1+build.1' => [1, 0, 0, '-rc.1+build.1', '1.0.0-rc.1+build.1'],
+        '1.0.0-beta+exp.sha.5114f85' => [1, 0, 0, '-beta+exp.sha.5114f85', '1.0.0-beta+exp.sha.5114f85'],
+        '1.0.0+21AF26D3--117B344092BD' => [1, 0, 0, '+21AF26D3--117B344092BD', '1.0.0+21AF26D3--117B344092BD'],
+        '1.0.0-0A.12.0' => [1, 0, 0, '-0A.12.0', '1.0.0-0A.12.0'],
+        '1.0.0-0A.12.0+meta' => [1, 0, 0, '-0A.12.0+meta', '1.0.0-0A.12.0+meta'],
+        '1.0.0-0A.12.0+meta-valid' => [1, 0, 0, '-0A.12.0+meta-valid', '1.0.0-0A.12.0+meta-valid'],
+        '1.0.0-0A.12.0-rc.1+build.1' => [1, 0, 0, '-0A.12.0-rc.1+build.1', '1.0.0-0A.12.0-rc.1+build.1'],
+        'v1.0.0-0A.12.0-rc.1+build.1' => [1, 0, 0, '-0A.12.0-rc.1+build.1', '1.0.0-0A.12.0-rc.1+build.1'], // Leading 'v'
     ];
 
     foreach ($versions as $version => $properties) {
@@ -31,7 +31,8 @@ test('versions can be parsed', function (): void {
         expect($version->getMajor())->toBe($properties[0])
             ->and($version->getMinor())->toBe($properties[1])
             ->and($version->getPatch())->toBe($properties[2])
-            ->and($version->getLabels())->toBe($properties[3]);
+            ->and($version->getLabels())->toBe($properties[3])
+            ->and($version->getVersion())->toBe($properties[4]);
     }
 });
 

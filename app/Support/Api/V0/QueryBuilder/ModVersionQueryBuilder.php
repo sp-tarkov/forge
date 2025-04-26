@@ -38,7 +38,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     protected function getBaseQuery(): Builder
     {
         $query = ModVersion::query()
-            ->select('mod_versions.*')
             ->whereModId($this->modId)
             ->where('mod_versions.disabled', false);
 
@@ -94,49 +93,170 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     /**
      * Get the allowed filters for this query builder.
      *
-     * @return array<string, callable>
+     * @return array<string, string>
      */
-    protected function getAllowedFilters(): array
+    public static function getAllowedFilters(): array
     {
         return [
-            'id' => function (Builder $query, string $ids): void {
-                $query->whereIn('mod_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
-            },
-            'hub_id' => function (Builder $query, string $hubIds): void {
-                $query->whereIn('mod_versions.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
-            },
-            'version' => function (Builder $query, string $semverConstraint): void {
-                $allVersionNumbers = ModVersion::versionNumbers($this->modId);
-                $compatibleVersions = Semver::satisfiedBy($allVersionNumbers, $semverConstraint);
-                $query->whereIn('mod_versions.version', $compatibleVersions);
-            },
-            'description' => function (Builder $query, string $term): void {
-                $query->whereLike('mod_versions.description', sprintf('%%%s%%', $term));
-            },
-            'link' => function (Builder $query, string $term): void {
-                $query->whereLike('mod_versions.link', sprintf('%%%s%%', $term));
-            },
-            'virus_total_link' => function (Builder $query, string $term): void {
-                $query->whereLike('mod_versions.virus_total_link', sprintf('%%%s%%', $term));
-            },
-            'published_between' => function (Builder $query, string $range): void {
-                [$start, $end] = explode(',', $range);
-                $query->whereBetween('mod_versions.published_at', [$start, $end]);
-            },
-            'created_between' => function (Builder $query, string $range): void {
-                [$start, $end] = explode(',', $range);
-                $query->whereBetween('mod_versions.created_at', [$start, $end]);
-            },
-            'updated_between' => function (Builder $query, string $range): void {
-                [$start, $end] = explode(',', $range);
-                $query->whereBetween('mod_versions.updated_at', [$start, $end]);
-            },
-            'spt_version' => function (Builder $query, string $version): void {
-                $validSptVersions = SptVersion::allValidVersions();
-                $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
-                $this->applySptVersionCondition($query, $compatibleSptVersions);
-            },
+            'id' => 'filterById',
+            'hub_id' => 'filterByHubId',
+            'version' => 'filterByVersion',
+            'description' => 'filterByDescription',
+            'link' => 'filterByLink',
+            'virus_total_link' => 'filterByVirusTotalLink',
+            'published_between' => 'filterByPublishedBetween',
+            'created_between' => 'filterByCreatedBetween',
+            'updated_between' => 'filterByUpdatedBetween',
+            'spt_version' => 'filterBySptVersion',
         ];
+    }
+
+    /**
+     * Filter by mod version IDs.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterById(Builder $query, ?string $ids): void
+    {
+        if ($ids === null) {
+            return;
+        }
+
+        $query->whereIn('mod_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
+    }
+
+    /**
+     * Filter by hub IDs.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByHubId(Builder $query, ?string $hubIds): void
+    {
+        if ($hubIds === null) {
+            return;
+        }
+
+        $query->whereIn('mod_versions.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
+    }
+
+    /**
+     * Filter by version.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByVersion(Builder $query, ?string $semverConstraint): void
+    {
+        if ($semverConstraint === null) {
+            return;
+        }
+
+        $allVersionNumbers = ModVersion::versionNumbers($this->modId);
+        $compatibleVersions = Semver::satisfiedBy($allVersionNumbers, $semverConstraint);
+        $query->whereIn('mod_versions.version', $compatibleVersions);
+    }
+
+    /**
+     * Filter by description.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByDescription(Builder $query, ?string $term): void
+    {
+        if ($term === null) {
+            return;
+        }
+
+        $query->whereLike('mod_versions.description', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by link.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByLink(Builder $query, ?string $term): void
+    {
+        if ($term === null) {
+            return;
+        }
+
+        $query->whereLike('mod_versions.link', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by VirusTotal link.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByVirusTotalLink(Builder $query, ?string $term): void
+    {
+        if ($term === null) {
+            return;
+        }
+
+        $query->whereLike('mod_versions.virus_total_link', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by publication date range.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByPublishedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('mod_versions.published_at', [$start, $end]);
+    }
+
+    /**
+     * Filter by creation date range.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByCreatedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('mod_versions.created_at', [$start, $end]);
+    }
+
+    /**
+     * Filter by update date range.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByUpdatedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('mod_versions.updated_at', [$start, $end]);
+    }
+
+    /**
+     * Filter by SPT version.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterBySptVersion(Builder $query, ?string $version): void
+    {
+        if ($version === null) {
+            return;
+        }
+
+        $validSptVersions = SptVersion::allValidVersions();
+        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+
+        $this->applySptVersionCondition($query, $compatibleSptVersions);
     }
 
     /**
@@ -144,7 +264,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string, string|array<string>>
      */
-    protected function getAllowedIncludes(): array
+    public static function getAllowedIncludes(): array
     {
         return [
             'dependencies' => [
@@ -155,11 +275,26 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
+     * Get the required fields that should always be loaded for relationships.
+     * These fields are not subject to field whitelisting and will be automatically included when needed.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'mod_id',
+            'version',
+        ];
+    }
+
+    /**
      * Get the allowed fields for this query builder.
      *
      * @return array<string>
      */
-    protected function getAllowedFields(): array
+    public static function getAllowedFields(): array
     {
         return [
             'id',
@@ -181,7 +316,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      *
      * @return array<string>
      */
-    protected function getAllowedSorts(): array
+    public static function getAllowedSorts(): array
     {
         return [
             'id',
@@ -208,7 +343,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = $this->getAllowedSorts();
+            $allowedSorts = static::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {

@@ -25,7 +25,7 @@ class ModResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'source_code_link' => $this->source_code_link,
+            'source_code_url' => $this->source_code_url,
             'license_id' => $this->license_id,
             'license' => new LicenseResource($this->whenLoaded('license')),
             'created_at' => $this->created_at,
