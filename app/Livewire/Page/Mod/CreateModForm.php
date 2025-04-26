@@ -22,8 +22,8 @@ class CreateModForm extends Component
     #[Validate('required|string|max:255')]
     public $modName = '';
 
-    #[Validate('image|mimes:jpg,jpeg,png|max:2048')] // 2MB Max
-    public $modAvatar;
+    #[Validate('nullable|image|mimes:jpg,jpeg,png|max:2048')] // 2MB Max
+    public $modAvatar = null;
 
     #[Validate(['required', 'string', new Semver])]
     public $modVersion = '';
@@ -50,6 +50,8 @@ class CreateModForm extends Component
 
     public function save()
     {
+        Log::info('Creating mod');
+
         $validated = $this->validate();
 
         if ($validated) {
@@ -57,7 +59,7 @@ class CreateModForm extends Component
                 DB::beginTransaction();
 
                 $mod = Mod::query()->create([
-                    'user_id' => auth()->id(),
+                    'owner_id' => auth()->id(),
                     'name' => $this->modName,
                     'slug' => Str::slug($this->modName),
                     'teaser' => $this->modTeaser,
@@ -73,13 +75,19 @@ class CreateModForm extends Component
                     'link' => $this->modExternalUrl,
                 ]);
 
-                $mod->thumbnail = $this->modAvatar->storePublicly(
-                    path: 'mods',
-                    options: config('filesystems.asset_upload_disk', 'public'),
-                );
+                // I think this is how to make avatar optional?
+                if ($this->modAvatar) {
+                    $mod->thumbnail = $this->modAvatar->storePublicly(
+                        path: 'mods',
+                        options: config('filesystems.asset_upload_disk', 'public'),
+                    );
+                }
+
                 $mod->save();
 
                 DB::commit();
+
+                Log::info(json_encode($mod));
 
                 flash()->success(sprintf("Mod '%s' Created", $this->modName));
                 $this->redirect($mod->detail_url);
