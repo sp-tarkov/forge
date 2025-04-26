@@ -66,8 +66,11 @@
             <flux:error name="modVirusTotalUrl" />
         </flux:field>
 
-
-{{--        <flux:input type="date" wire:model="publishDate"/>--}}
+        <flux:field>
+            <flux:label>{{ __('Mod Publish Date') }}</flux:label>
+            <flux:input type="date" wire:model="modPublishDate"/>
+            <flux:error name="modPublishDate" />
+        </flux:field>
 
         <flux:button variant="primary" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Create Mod') }}</flux:button>
         <flux:button wire:click="cancel">{{ __('Cancel') }}</flux:button>
