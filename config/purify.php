@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Support\Purify\Definitions\ForgeDefinition;
 use Stevebauman\Purify\Cache\CacheDefinitionCache;
 
 return [
@@ -94,7 +95,7 @@ return [
     |
     */
 
-    'definitions' => \App\Support\Purify\Definitions\ForgeDefinition::class,
+    'definitions' => ForgeDefinition::class,
 
     /*
     |--------------------------------------------------------------------------

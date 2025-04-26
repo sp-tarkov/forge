@@ -24,26 +24,55 @@ class TabsetProcessor
      */
     public const string END_TABSET_MARKER = '{.endtabset}';
 
+    /** @var list<Heading> */
+    private array $tabsetStartNodes = [];
+
+    private int $tabsetInstanceCounter = 0;
+
     public function __invoke(DocumentParsedEvent $e): void
     {
         $document = $e->getDocument();
         $walker = $document->walker();
+        $this->tabsetStartNodes = [];
 
+        // Collect Tabset starting nodes.
         while ($event = $walker->next()) {
             $node = $event->getNode();
 
+            // Only check when entering a Heading node.
             if ($event->isEntering() && $node instanceof Heading) {
                 if ($this->isTabsetHeading($node)) {
-                    $this->processTabset($node);
+                    // Store the heading node that starts a tabset.
+                    $this->tabsetStartNodes[] = $node;
                 }
+            }
+        }
+
+        // Process collected tabsets in reverse order.
+        $this->processCollectedTabsets();
+    }
+
+    /**
+     * Process all collected tabset starting headings in reverse order.
+     */
+    private function processCollectedTabsets(): void
+    {
+        foreach (array_reverse($this->tabsetStartNodes) as $startNode) {
+            // Ensure the node hasn't been removed by a previous processing step.
+            if ($startNode->parent() !== null) {
+                $this->processTabset($startNode);
             }
         }
     }
 
+    /**
+     * Checks if a heading node marks the start of a tabset.
+     */
     private function isTabsetHeading(Heading $heading): bool
     {
         $lastInline = $heading->lastChild();
         if ($lastInline instanceof Text) {
+            // Check if the literal text *ends* with the marker
             return str_ends_with(rtrim($lastInline->getLiteral()), self::TABSET_MARKER);
         }
 
@@ -51,85 +80,120 @@ class TabsetProcessor
     }
 
     /**
-     * Orchestrates the processing of a detected tabset.
+     * Orchestrates the processing of a single detected tabset. Called during the second pass for each identified
+     * starting heading.
      */
     private function processTabset(Heading $tabsetHeading): void
     {
+        // Double-check the node is still attached.
+        if ($tabsetHeading->parent() === null) {
+            return;
+        }
+
         $parentLevel = $tabsetHeading->getLevel();
         $childLevel = $parentLevel + 1;
 
-        // Validate heading levels.
         if ($parentLevel < 1 || $parentLevel > 5) {
             return;
         }
 
-        // Collect relevant nodes following the trigger heading.
+        // Collect relevant nodes following this specific trigger heading.
         $collectionResult = $this->collectTabsetNodes($tabsetHeading, $parentLevel, $childLevel);
-        $nodesToProcess = $collectionResult['nodesToProcess'];
-        $nodesToRemove = $collectionResult['nodesToRemove'];
-        $endMarkerFound = $collectionResult['endMarkerFound'];
+        $nodesToProcess = $collectionResult['nodesToProcess']; // Nodes for building panels
+        $nodesToRemove = $collectionResult['nodesToRemove']; // All original nodes to detach
 
-        // If no actual tab content headings were found, abort processing.
+        // Abort if no actual tab content headings were found for this tabset.
         if (empty($nodesToProcess)) {
-            $this->abortTabsetProcessing($tabsetHeading, $nodesToRemove, $endMarkerFound);
+            $this->abortTabsetProcessing($tabsetHeading, $nodesToRemove);
 
             return;
         }
 
-        // Build the new TabSetContainer structure from the processed nodes.
+        // Build the new TabSetContainer structure.
         $tabSetContainer = $this->buildTabsetStructure($nodesToProcess, $childLevel);
 
-        // Replace original heading and detach original nodes.
+        // Assign unique IDs to each panel based on the instance counter.
+        $this->assignUniquePanelIds($tabSetContainer);
+
+        // Replace the original heading and detach the original nodes.
         $this->modifyAst($tabsetHeading, $tabSetContainer, $nodesToRemove);
     }
 
     /**
-     * Collects headings and content nodes belonging to a tabset.
-     * Stops at an explicit end marker, an implicit end (heading level), or end of siblings.
+     * Iterates through TabPanelNodes within a TabSetContainerNode and assigns guaranteed unique IDs based on tabset
+     * instance and panel index. This ensures DOM IDs are unique even if tab titles are identical.
+     */
+    private function assignUniquePanelIds(TabSetContainerNode $container): void
+    {
+        // Increment counter for each tabset processed this request.
+        $this->tabsetInstanceCounter++;
+        $panelIndex = 0;
+
+        foreach ($container->children() as $panelNode) {
+            // Ensure we're only modifying panel nodes.
+            if ($panelNode instanceof TabPanelNode) {
+                $panelIndex++;
+                $attributes = $panelNode->data->get('attributes', []);
+                if (! is_array($attributes)) {
+                    $attributes = [];
+                }
+
+                $uniqueId = sprintf('tabset-%d-panel-%d', $this->tabsetInstanceCounter, $panelIndex);
+
+                // Assign the unique ID, preserving any other attributes.
+                $attributes['id'] = $uniqueId;
+                $panelNode->data->set('attributes', $attributes);
+            }
+        }
+    }
+
+    /**
+     * Collects headings and content nodes belonging to a specific tabset instance. Differentiates content before the
+     * first tab heading. Stops at an explicit end marker, an implicit end (heading level), or end of siblings.
      *
      * @return array{nodesToProcess: list<Node>, nodesToRemove: list<Node>, endMarkerFound: bool}
      */
     private function collectTabsetNodes(Heading $tabsetHeading, int $parentLevel, int $childLevel): array
     {
-        $nodesToProcess = []; // Nodes to use for building panels (child headings and content).
-        $nodesToRemove = [$tabsetHeading]; // All original nodes to be detached later.
+        $nodesToProcess = [];
+        $nodesToRemove = [$tabsetHeading]; // Start with the trigger heading.
         $endMarkerFound = false;
+        $firstTabHeadingFound = false;
 
         $sibling = $tabsetHeading->next();
         while ($sibling !== null) {
+            $nextSibling = $sibling->next(); // Store reference to the next sibling.
 
-            // Check for explicit "{.endtabset}" marker first.
+            // Check for explicit end marker.
             if ($sibling instanceof Paragraph && trim($this->getParagraphTextContent($sibling)) === self::END_TABSET_MARKER) {
-                $nodesToRemove[] = $sibling; // Mark marker for removal.
+                $nodesToRemove[] = $sibling;
                 $endMarkerFound = true;
                 break;
             }
 
-            $processedSibling = false;
+            $isChildHeading = ($sibling instanceof Heading && $sibling->getLevel() === $childLevel);
+            $isHigherOrEqualHeading = ($sibling instanceof Heading && $sibling->getLevel() <= $parentLevel);
 
-            // Check if sibling is a heading.
-            if ($sibling instanceof Heading) {
-                $siblingLevel = $sibling->getLevel();
-                if ($siblingLevel === $childLevel) { // Found child heading (new tab).
-                    $nodesToProcess[] = $sibling;
-                    $processedSibling = true;
-                } elseif ($siblingLevel <= $parentLevel) { // Found same/higher heading (implicit end).
-                    break;
-                }
+            // Check for implicit end of tabset.
+            if ($isHigherOrEqualHeading) {
+                break;
             }
 
-            // Add as content if we are "inside" a tab (after first child heading).
-            if (! empty($nodesToProcess) && ! $processedSibling) {
+            if ($isChildHeading) {
+                // Found a child heading, which indicates a new tab panel.
+                $firstTabHeadingFound = true;
                 $nodesToProcess[] = $sibling;
-                $processedSibling = true;
-            }
-
-            // If node was processed, mark for removal.
-            if ($processedSibling) {
+                $nodesToRemove[] = $sibling;
+            } elseif ($firstTabHeadingFound) {
+                // Content after the first tab heading.
+                $nodesToProcess[] = $sibling;
+                $nodesToRemove[] = $sibling;
+            } else {
+                // Content before the first tab heading. Mark for removal, not processing.
                 $nodesToRemove[] = $sibling;
             }
 
-            $sibling = $sibling->next();
+            $sibling = $nextSibling;
         }
 
         return [
@@ -140,25 +204,25 @@ class TabsetProcessor
     }
 
     /**
-     * Handles the case where no valid child tabs were found after a trigger.
+     * Handles the case where no valid child tabs were found for a tabset trigger. Removes the trigger and any collected
+     * intermediate nodes.
      *
-     * @param  array<Node>  $nodesToRemove
+     * @param  array<Node>  $nodesToRemove  Nodes initially marked for removal.
      */
-    private function abortTabsetProcessing(Heading $tabsetHeading, array $nodesToRemove, bool $endMarkerFound): void
+    private function abortTabsetProcessing(Heading $tabsetHeading, array $nodesToRemove): void
     {
-        // Detach the end marker.
-        if ($endMarkerFound && isset($nodesToRemove[1])) {
-            $nodesToRemove[1]->detach();
+        // Detach all collected nodes in reverse to minimize walker issues.
+        foreach (array_reverse($nodesToRemove) as $node) {
+            if ($node->parent() !== null) {
+                $node->detach();
+            }
         }
-
-        // Detach the original trigger heading.
-        $tabsetHeading->detach();
     }
 
     /**
      * Builds the TabSetContainerNode with TabPanelNodes from the collected nodes.
      *
-     * @param  array<Node>  $nodesToProcess
+     * @param  array<Node>  $nodesToProcess  Nodes identified as part of the tabset structure.
      */
     private function buildTabsetStructure(array $nodesToProcess, int $childLevel): TabSetContainerNode
     {
@@ -171,11 +235,9 @@ class TabsetProcessor
                 // Start a new tab panel.
                 $tabTitle = $this->getHeadingTitleText($node);
                 $currentTabPanel = new TabPanelNode(tabTitle: $tabTitle);
-
-                // Add panel to container.
                 $tabSetContainer->appendChild($currentTabPanel);
             } elseif ($currentTabPanel !== null) {
-                // Add subsequent node to the current panel's custom content array
+                // Add subsequent node to the current panel's custom content array.
                 $currentTabPanel->contentNodes[] = $node;
             }
         }
@@ -190,14 +252,13 @@ class TabsetProcessor
      */
     private function modifyAst(Heading $tabsetHeading, TabSetContainerNode $tabSetContainer, array $nodesToRemove): void
     {
-        // Replace the original trigger heading with the new container
+        // Replace the original trigger heading with the new container.
         $tabsetHeading->replaceWith($tabSetContainer);
 
-        // Detach all other original nodes (child headings, content, end marker)
-        foreach ($nodesToRemove as $node) {
-            // Skip trigger heading
+        // Detach all other original nodes in reverse order.
+        foreach (array_reverse($nodesToRemove) as $node) {
             if ($node === $tabsetHeading) {
-                continue;
+                continue; // Already replaced.
             }
 
             if ($node->parent() !== null) {
@@ -220,8 +281,13 @@ class TabsetProcessor
             }
         }
 
+        // Remove the marker if it's at the very end after trimming.
         if (str_ends_with(rtrim($content), self::TABSET_MARKER)) {
-            $content = rtrim(substr(rtrim($content), 0, -strlen(self::TABSET_MARKER)));
+            $markerPos = strrpos(rtrim($content), self::TABSET_MARKER);
+            if ($markerPos !== false) {
+                // Get substring before the marker.
+                $content = substr(rtrim($content), 0, $markerPos);
+            }
         }
 
         return trim($content);

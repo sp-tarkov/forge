@@ -309,10 +309,10 @@ class Mod extends Model
      */
     protected function descriptionHtml(): Attribute
     {
-        return Attribute::get(function () {
-            $markdown = Markdown::convert($this->description)->getContent();
-
-            return Purify::config('description')->clean($markdown);
-        })->shouldCache();
+        return Attribute::make(
+            get: fn (): string => Purify::config('description')->clean(
+                Markdown::convert($this->description)->getContent()
+            )
+        )->shouldCache();
     }
 }
