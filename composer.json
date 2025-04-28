@@ -42,13 +42,14 @@
         "fakerphp/faker": "^1.24.1",
         "knuckleswtf/scribe": "^5.2",
         "larastan/larastan": "^3.4.0",
+        "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.22",
         "laravel/sail": "^1.41.1",
+        "laravel/telescope": "^5.7",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.8.0",
         "pestphp/pest": "^3.8.2",
-        "rector/rector": "^2.0.12",
-        "laravel/pail": "^1.2.2"
+        "rector/rector": "^2.0.12"
     },
     "autoload": {
         "psr-4": {
@@ -98,7 +99,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "laravel/telescope"
+            ]
         }
     },
     "config": {
