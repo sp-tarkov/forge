@@ -72,7 +72,9 @@
             <flux:error name="modPublishDate" />
         </flux:field>
 
-        <flux:button variant="primary" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Create Mod') }}</flux:button>
-        <flux:button wire:click="cancel">{{ __('Cancel') }}</flux:button>
+        <div class="flex space-x-4">
+            <flux:button variant="primary" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Create Mod') }}</flux:button>
+            <flux:button wire:click="cancel">{{ __('Cancel') }}</flux:button>
+        </div>
     </form>
 </div>
