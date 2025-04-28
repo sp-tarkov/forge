@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use Database\Factories\ModFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * Mod Model
@@ -46,6 +48,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
  * @property-read string $detail_url
+ * @property-read string $description_html
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read Collection<int, User> $authors
@@ -297,5 +300,19 @@ class Mod extends Model
             get: fn (?string $value) => $value ? Str::lower($value) : '',
             set: fn (?string $value) => $value ? Str::slug($value) : '',
         );
+    }
+
+    /**
+     * Generate the cleaned version of the HTML description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Purify::config('description')->clean(
+                Markdown::convert($this->description)->getContent()
+            )
+        )->shouldCache();
     }
 }

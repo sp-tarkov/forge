@@ -25,7 +25,8 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
         TabPanelNode::assertInstanceOf($node);
 
         /** @var TabPanelNode $node */
-        $tabTitle = Str::limit($node->tabTitle, limit: self::MAX_TITLE_LEN, end: '');
+        $fullTitle = $node->tabTitle;
+        $displayTitle = Str::limit($node->tabTitle, limit: self::MAX_TITLE_LEN, end: '');
 
         $attrs = $node->data->get('attributes', []);
         if (! is_array($attrs)) {
@@ -40,23 +41,26 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
             unset($attrs['class']);
         }
 
-        // Add ID based on title if not already set.
-        if (! isset($attrs['id'])) {
-            $attrs['id'] = 'tab-'.Str::slug($tabTitle);
+        // Fallback ID attribute.
+        if (empty($attrs['id'])) {
+            $fallbackId = 'tab-'.Str::slug($fullTitle).'-'.spl_object_hash($node);
+            $attrs['id'] = $fallbackId;
         }
 
-        // Create title element.
+        // Create inner HTML structure.
+        $titleElement = new HtmlElement('div', ['class' => 'tab-title'], $displayTitle);
+        $contentInnerHtml = $childRenderer->renderNodes($node->contentNodes);
+        $contentWrapperHtml = '';
+        if (trim($contentInnerHtml) !== '') {
+            $contentWrapperHtml = (string) new HtmlElement('div', ['class' => 'tab-content'], $contentInnerHtml);
+        }
 
-        $titleElement = new HtmlElement('div', ['class' => 'tab-title'], $tabTitle);
+        $innerHtml = (string) $titleElement;
+        if ($contentWrapperHtml !== '') {
+            $innerHtml .= "\n".$contentWrapperHtml;
+        }
 
-        // Create content element using the nodes from the custom array
-        $contentElement = new HtmlElement(
-            'div',
-            ['class' => 'tab-content'],
-            $childRenderer->renderNodes($node->contentNodes),
-        );
-
-        return new HtmlElement('div', $attrs, $titleElement."\n".$contentElement);
+        return new HtmlElement('div', $attrs, $innerHtml);
     }
 
     /**
@@ -82,8 +86,8 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
 
         $xmlAttrs['title'] = $node->tabTitle;
 
-        if (! isset($xmlAttrs['id'])) {
-            $xmlAttrs['id'] = 'tab-'.Str::slug($node->tabTitle);
+        if (empty($xmlAttrs['id'])) {
+            $xmlAttrs['id'] = 'tab-'.Str::slug($node->tabTitle).'-'.spl_object_hash($node);
         }
 
         return $xmlAttrs;

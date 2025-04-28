@@ -78,7 +78,10 @@ class ModResource extends JsonResource
         }
 
         if ($this->shouldInclude('description')) {
-            $data['description'] = $this->when($request->routeIs('api.v0.mods.show'), $this->resource->description);
+            $data['description'] = $this->when(
+                $request->routeIs('api.v0.mods.show'),
+                $this->resource->description_html,
+            );
         }
 
         if ($this->shouldInclude('source_code_url')) {

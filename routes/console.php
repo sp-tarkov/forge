@@ -7,3 +7,4 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command(ImportHubCommand::class)->everyThirtyMinutes();
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
+Schedule::command('telescope:prune --hours=48')->daily();
