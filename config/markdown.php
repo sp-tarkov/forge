@@ -8,7 +8,6 @@ use League\CommonMark\Extension\Autolink\AutolinkExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\DescriptionList\DescriptionListExtension;
 use League\CommonMark\Extension\DisallowedRawHtml\DisallowedRawHtmlExtension;
-use League\CommonMark\Extension\Embed\EmbedExtension;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use League\CommonMark\Extension\Footnote\FootnoteExtension;
 use League\CommonMark\Extension\SmartPunct\SmartPunctExtension;
@@ -53,7 +52,6 @@ return [
         DisallowedRawHtmlExtension::class,
         TabsetExtension::class,
         DescriptionListExtension::class,
-        EmbedExtension::class,
         AutolinkExtension::class,
         ExternalLinkExtension::class,
         StrikethroughExtension::class,

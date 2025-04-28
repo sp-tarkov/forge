@@ -12,7 +12,6 @@
         "aws/aws-sdk-php": "^3.342.32",
         "composer/semver": "^3.4.3",
         "elgigi/commonmark-emoji": "^2.0",
-        "embed/embed": "^4.4.15",
         "graham-campbell/markdown": "^16.0",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^12.10.0",
