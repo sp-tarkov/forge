@@ -24,7 +24,7 @@ class Ribbon extends Component
     /**
      * Whether the mod is unpublished
      */
-    public Carbon|null $publishedAt = null;
+    public ?Carbon $publishedAt = null;
 
     /**
      * Whether the mod is featured Defaults to false.
@@ -41,7 +41,7 @@ class Ribbon extends Component
      */
     #[On('mod-updated.{id}')]
     #[On('mod-version-updated.{id}')]
-    public function update(?bool $disabled = null, ?bool $featured = null, Carbon|null $publishedAt = null): void
+    public function update(?bool $disabled = null, ?bool $featured = null, ?Carbon $publishedAt = null): void
     {
         if ($disabled !== null) {
             $this->disabled = $disabled;
