@@ -194,6 +194,10 @@ button {
     &.red {
         @apply text-white bg-red-500 dark:bg-red-700;
     }
+
+    &.gray {
+        @apply text-white bg-gray-500 dark:bg-gray-700;
+    }
 }
 
 .rainbow {
