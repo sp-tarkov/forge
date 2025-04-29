@@ -26,7 +26,7 @@ class CreateModForm extends Component
     #[Validate('nullable|image|mimes:jpg,jpeg,png|max:2048')] // 2MB Max
     public $modAvatar;
 
-    #[Validate(['required', 'string', new Semver])]
+    #[Validate(['required', 'string', new \App\Rules\Semver])]
     public $modVersion = '';
 
     #[Validate(['required', 'string', new SemverConstraint])]
