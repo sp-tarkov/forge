@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Livewire\Page\Mod;
 
 use App\Models\Mod;
-use App\Rules\Semver;
+use App\Models\SptVersion;
 use App\Rules\SemverConstraint;
+use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +24,7 @@ class CreateModForm extends Component
     public $modName = '';
 
     #[Validate('nullable|image|mimes:jpg,jpeg,png|max:2048')] // 2MB Max
-    public $modAvatar = null;
+    public $modAvatar;
 
     #[Validate(['required', 'string', new Semver])]
     public $modVersion = '';
@@ -47,7 +48,47 @@ class CreateModForm extends Component
     public $modSourceCodeUrl = '';
 
     #[Validate('nullable|date')]
-    public $modPublishDate = null;
+    public $modPublishDate;
+
+    /**
+     * The matching SPT versions for the current constraint.
+     *
+     * @var array<int, array{version: string, color_class: string}>
+     */
+    public array $matchingSptVersions = [];
+
+    /**
+     * Update the matching SPT versions when the constraint changes.
+     */
+    public function updatedModSptVersionConstraint(): void
+    {
+        if (empty($this->modSptVersionConstraint)) {
+            $this->matchingSptVersions = [];
+
+            return;
+        }
+
+        try {
+            $validSptVersions = SptVersion::allValidVersions();
+            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->modSptVersionConstraint);
+
+            $this->matchingSptVersions = SptVersion::query()
+                ->whereIn('version', $compatibleSptVersions)
+                ->select(['version', 'color_class'])
+                ->orderByDesc('version_major')
+                ->orderByDesc('version_minor')
+                ->orderByDesc('version_patch')
+                ->orderBy('version_labels')
+                ->get()
+                ->map(fn (SptVersion $version): array => [
+                    'version' => $version->version,
+                    'color_class' => $version->color_class,
+                ])
+                ->toArray();
+        } catch (Exception) {
+            $this->matchingSptVersions = [];
+        }
+    }
 
     public function save()
     {

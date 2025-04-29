@@ -32,8 +32,20 @@
 
         <flux:field>
             <flux:label>{{ __('SPT Version Constraint') }}</flux:label>
-            <flux:input type="text" wire:model="modSptVersionConstraint" />
+            <flux:input type="text" wire:model.live.debounce="modSptVersionConstraint" />
             <flux:error name="modSptVersionConstraint" />
+            @if (count($matchingSptVersions) > 0)
+                <div class="mt-2 space-y-1">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Matching SPT Versions:') }}</p>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($matchingSptVersions as $version)
+                            <span class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                {{ $version['version'] }}
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </flux:field>
 
         <flux:field>
