@@ -122,7 +122,6 @@ class Create extends Component
             'link' => $validated['link'],
             'spt_version_constraint' => $validated['sptVersionConstraint'],
             'virus_total_link' => $validated['virusTotalLink'],
-            'downloads' => 0, // TODO: Needs to be defaulted in migration.
         ]);
 
         flash()->success('Mod version has been successfully created.');
