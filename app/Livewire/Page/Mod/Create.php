@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Livewire\Page\Mod;
 
 use App\Models\Mod;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Http\UploadedFile;
+
 class Create extends Component
 {
     use WithFileUploads;
