@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-        <flux:callout icon="exclamation-triangle" color="sky" inline="inline">
+        <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
             <flux:callout.heading>Permanence Warning</flux:callout.heading>
             <flux:callout.text>
                 Due to the Forge being in active development, mod versions created using this form may be removed at

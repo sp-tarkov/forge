@@ -195,6 +195,18 @@ button {
         @apply text-white bg-red-500 dark:bg-red-700;
     }
 
+    &.amber {
+        @apply text-white bg-amber-500 dark:bg-amber-700;
+    }
+
+    &.emerald {
+        @apply text-white bg-emerald-500 dark:bg-emerald-700;
+    }
+
+    &.sky {
+        @apply text-white bg-sky-500 dark:bg-sky-700;
+    }
+
     &.gray {
         @apply text-white bg-gray-500 dark:bg-gray-700;
     }

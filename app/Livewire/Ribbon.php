@@ -22,7 +22,7 @@ class Ribbon extends Component
     public bool $disabled;
 
     /**
-     * Whether the mod is unpublished
+     * The mod published date.
      */
     public ?Carbon $publishedAt = null;
 
@@ -47,7 +47,7 @@ class Ribbon extends Component
             $this->disabled = $disabled;
         }
 
-        if ($publishedAt !== null) { // not sure where to put the events for this, so for now I'm just putting this here
+        if ($publishedAt !== null) {
             $this->publishedAt = $publishedAt;
         }
 
