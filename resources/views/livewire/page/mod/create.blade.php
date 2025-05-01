@@ -6,6 +6,17 @@
         </h2>
     </x-slot>
 
+    <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+        <flux:callout icon="exclamation-triangle" color="sky" inline="inline">
+            <flux:callout.heading>Permanence Warning</flux:callout.heading>
+            <flux:callout.text>
+                Due to the Forge being in active development, mods created using this form may be removed at any time,
+                for any reason. This form should only be used for testing. If you are creating a new mod with the
+                expectation that it remain on this site, please upload it to the Hub and wait for it to sync.
+            </flux:callout.text>
+        </flux:callout>
+    </div>
+
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
         <div class="md:grid md:grid-cols-3 md:gap-6">
             <div class="md:col-span-1 flex justify-between">
@@ -13,8 +24,8 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mod Information</h3>
                     <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Add your mod to the Forge by filling out this form. After the mod has been created, you will be able to submit mod versions/files with additional information.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
-                        Please ensure you follow the <a href="#" target="_blank" class="text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-500">community guidelines</a>
-                        and the <a href="#" target="_blank" class="text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-500">file submission guidelines</a>.
+                        Please ensure you follow the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">community guidelines</a>
+                        and the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">file submission guidelines</a>.
                         Failing to do so will result in your mod being removed from the Forge and possible action being taken against your account.
                     </p>
                 </div>
@@ -80,7 +91,7 @@
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Source Code Link') }}</flux:label>
-                                <flux:description>{!! __('Provide a link to the source code for your mod. The source code for mods is required to be publicly available. This will be displayed on the mod page. We recommend using a service like <a href="https://github.com" target="_blank">GitHub</a> or <a href="https://gitlab.com" target="_blank">GitLab</a>.') !!}</flux:description>
+                                <flux:description>{!! __('Provide a link to the source code for your mod. The source code for mods is required to be publicly available. This will be displayed on the mod page. We recommend using a service like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.') !!}</flux:description>
                                 <flux:input type="text" wire:model.blur="sourceCodeUrl" placeholder="https://github.com/username/mod-name" />
                                 <flux:error name="sourceCodeUrl" />
                             </flux:field>

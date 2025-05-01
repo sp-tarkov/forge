@@ -13,7 +13,7 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 class SemverConstraint implements ValidationRule
 {
     /**
-     * Run the validation rule.
+     * Run the validation rule to ensure the value is a valid semantic version constraint.
      *
      * @param  Closure(string, ?string=):PotentiallyTranslatedString  $fail
      */
@@ -21,9 +21,9 @@ class SemverConstraint implements ValidationRule
     {
         try {
             // Attempt to parse the version constraint using the Semver library.
-            Semver::satisfiedBy(versions: ['1.0.0'], constraints: $value); // Fake versions
+            Semver::satisfiedBy(versions: ['1.0.0'], constraints: $value); // Fake versions passed.
         } catch (Exception) {
-            $fail(__('Please enter a valid semver constraint.'));
+            $fail(__('Please enter a valid semantic version constraint.'));
         }
     }
 }

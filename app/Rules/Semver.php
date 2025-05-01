@@ -13,7 +13,7 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 class Semver implements ValidationRule
 {
     /**
-     * Run the validation rule.
+     * Run the validation rule to ensure the value is a valid semantic version number.
      *
      * @param  Closure(string, ?string=):PotentiallyTranslatedString  $fail
      */
@@ -22,8 +22,8 @@ class Semver implements ValidationRule
         try {
             // Attempt to parse the version using the Version class.
             new Version($value);
-        } catch (Exception $exception) {
-            $fail($exception->getMessage());
+        } catch (Exception) {
+            $fail(__('Please enter a valid semantic version number.'));
         }
     }
 }

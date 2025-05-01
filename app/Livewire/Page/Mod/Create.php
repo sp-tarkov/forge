@@ -40,8 +40,15 @@ class Create extends Component
     #[Validate('boolean')]
     public bool $containsAds = false;
 
+    public function mount(): void
+    {
+        $this->authorize('create', Mod::class);
+    }
+
     public function save(): void
     {
+        $this->authorize('create', Mod::class);
+
         // Validate the form.
         $validated = $this->validate();
         if (! $validated) {
@@ -50,7 +57,7 @@ class Create extends Component
 
         // Create a new mod instance.
         $mod = new Mod([
-            'owner_id' => auth()->id(),
+            'owner_id' => auth()->user()->id,
             'name' => $this->name,
             'slug' => Str::slug($this->name),
             'teaser' => $this->teaser,
@@ -62,7 +69,7 @@ class Create extends Component
         ]);
 
         // Set the thumbnail if an avatar was uploaded.
-        if ($this->avatar) {
+        if ($this->avatar !== null) {
             $mod->thumbnail = $this->avatar->storePublicly(
                 path: 'mods',
                 options: config('filesystems.asset_upload', 'public'),
@@ -72,7 +79,7 @@ class Create extends Component
         // Save the mod.
         $mod->save();
 
-        flash()->success(sprintf("Mod '%s' Successfully Created", $this->name));
+        flash()->success('Mod has been Successfully Created');
 
         $this->redirect($mod->detail_url);
     }

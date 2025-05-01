@@ -8,6 +8,7 @@ use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Create as ModCreate;
 use App\Livewire\Page\Mod\Index as ModIndex;
 use App\Livewire\Page\Mod\Show as ModShow;
+use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
 use App\Livewire\Page\User\Show as UserShow;
 use App\Models\Mod;
 use Illuminate\Support\Facades\Route;
@@ -22,12 +23,15 @@ Route::middleware(['auth.banned'])->group(function (): void {
         ->name('mods');
 
     Route::get('/mod/create', ModCreate::class)
-        ->can('create', Mod::class)
         ->name('mod.create');
 
     Route::get('/mod/{modId}/{slug}', ModShow::class)
         ->where(['modId' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
         ->name('mod.show');
+
+    Route::get('/mod/{mod}/version/create', ModVersionCreate::class)
+        ->where(['mod' => '[0-9]+'])
+        ->name('mod.version.create');
 
     Route::get('/mod/download/{mod}/{slug}/{version}', [ModVersionController::class, 'show'])
         ->where(['mod' => '[0-9]+', 'slug' => '[a-z0-9-]+'])

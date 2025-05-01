@@ -45,7 +45,7 @@ class ModPolicy
     {
         return auth()->check() && $user->hasMfaEnabled()
             ? Response::allow()
-            : Response::deny(__('You need to be logged in and have MFA enabled to create a mod.'));
+            : Response::deny(__('Your account must have MFA enabled to create a new mod.'));
     }
 
     /**
