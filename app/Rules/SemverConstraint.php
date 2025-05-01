@@ -22,8 +22,8 @@ class SemverConstraint implements ValidationRule
         try {
             // Attempt to parse the version constraint using the Semver library.
             Semver::satisfiedBy(versions: ['1.0.0'], constraints: $value); // Fake versions
-        } catch (Exception $exception) {
-            $fail($exception->getMessage());
+        } catch (Exception) {
+            $fail(__('Please enter a valid semver constraint.'));
         }
     }
 }

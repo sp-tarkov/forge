@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Mod;
 
+use Illuminate\View\View;
 use Livewire\Component;
 
 class NewModButton extends Component
@@ -13,7 +14,7 @@ class NewModButton extends Component
         $this->redirectRoute('mod.create');
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.mod.new-mod-button');
     }
