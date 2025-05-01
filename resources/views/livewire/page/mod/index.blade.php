@@ -3,7 +3,17 @@
         <div class="flex">
             <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
             <div class="items-center ml-auto flex-shrink-0">
-                <livewire:mod.new-mod-button />
+                @auth
+                    @if(auth()->user()->hasMFAEnabled())
+                        <flux:button href="{{ route('mod.create') }}">{{ __('Create New Mod') }}</flux:button>
+                    @else
+                        <flux:tooltip content="Your account must have MFA enabled to create a new mod.">
+                            <div>
+                                <flux:button disabled="true">{{ __('Create New Mod') }}</flux:button>
+                            </div>
+                        </flux:tooltip>
+                    @endif
+                @endauth
             </div>
         </div>
         <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __('Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}</p>
