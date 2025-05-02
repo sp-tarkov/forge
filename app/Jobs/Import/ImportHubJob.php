@@ -113,12 +113,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
                 /** @var Collection<int, HubUser> $hubUsers */
                 $hubUsers = $records->map(fn (object $record): HubUser => HubUser::fromArray((array) $record));
-                $hubUserIds = $hubUsers->pluck('userID');
 
-                /** @var EloquentCollection<int, User> $localUsers */
-                $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
-
-                $this->processUserBatch($hubUsers);
+                $localUsers = $this->processUserBatch($hubUsers);
                 $this->processUserBatchBans($hubUsers, $localUsers);
                 $this->processUserBatchRoles($hubUsers, $localUsers, $roles);
             });
@@ -128,8 +124,9 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of Hub users.
      *
      * @param  Collection<int, HubUser>  $hubUsers
+     * @return EloquentCollection<int, User>
      */
-    private function processUserBatch(Collection $hubUsers): void
+    private function processUserBatch(Collection $hubUsers): EloquentCollection
     {
         // Prepare data for upsert.
         $userData = $hubUsers->map(fn (HubUser $hubUser): array => [
@@ -145,6 +142,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         User::withoutEvents(function () use ($userData): void {
             User::query()->upsert($userData, ['hub_id'], ['name', 'email', 'password', 'created_at', 'updated_at']);
         });
+
+        // Fetch and return the up-to-date local users
+        $hubUserIds = $hubUsers->pluck('userID');
+
+        /** @var EloquentCollection<int, User> $localUsers */
+        $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+        return $localUsers;
     }
 
     /**
@@ -186,7 +191,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             if (! empty($hubUser->rankID) && $rankTitle && ($user = $localUsers->get($hubUser->userID))) {
                 $role = $roles->get($rankTitle);
 
-                // If the role is not found in pre-fetched data (ideally shouldn't happen) then create it.
+                // If the role is not found in pre-fetched data then create it.
                 if (! $role) {
                     $role = UserRole::query()->firstOrCreate(['name' => $rankTitle], match ($rankTitle) {
                         'Administrator' => [
