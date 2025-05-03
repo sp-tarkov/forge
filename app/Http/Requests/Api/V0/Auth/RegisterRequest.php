@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V0\Auth;
 
+use DateTimeZone;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -29,6 +30,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:36', 'unique:users,name'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
+            'timezone' => ['required', 'string', 'in:'.implode(',', DateTimeZone::listIdentifiers())],
         ];
     }
 
@@ -54,6 +56,11 @@ class RegisterRequest extends FormRequest
                 'description' => 'The desired password (must meet complexity requirements).',
                 'required' => true,
                 'example' => 'StrongP@ssw0rd!',
+            ],
+            'timezone' => [
+                'description' => "The user's timezone (IANA identifier).",
+                'required' => true,
+                'example' => 'America/New_York',
             ],
         ];
     }
