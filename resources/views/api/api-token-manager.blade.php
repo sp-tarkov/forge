@@ -1,3 +1,7 @@
+<x-slot name="title">
+    {{ __('Manage API Tokens') }}
+</x-slot>
+
 <div>
     <!-- Generate API Token -->
     <x-form-section submit="createApiToken">

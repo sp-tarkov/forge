@@ -5,7 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'The Forge') }}</title>
+    <title>
+        @php
+            if (empty($title)) {
+                echo 'The Forge - Home of Single Player Tarkov Mods';
+            } else {
+                echo $title;
+                if (! Str::of($title)->lower()->contains('the forge')) {
+                    echo ' - The Forge';
+                }
+            }
+        @endphp
+    </title>
 
     <link rel="icon" href="data:image/x-icon;base64,AA">
 

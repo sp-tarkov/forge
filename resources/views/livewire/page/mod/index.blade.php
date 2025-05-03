@@ -1,3 +1,7 @@
+<x-slot name="title">
+    {{ __('Mods - Find the best SPT Mods') }}
+</x-slot>
+
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>

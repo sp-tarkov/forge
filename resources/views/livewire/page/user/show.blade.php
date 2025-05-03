@@ -1,3 +1,7 @@
+<x-slot name="title">
+    {{ __(':name - User Profile', ['name' => $user->name]) }}
+</x-slot>
+
 <div>
     <div class="sm:-mt-12 mb-6 dark:bg-gray-800 dark:text-gray-100">
         <div>

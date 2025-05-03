@@ -1,10 +1,14 @@
-<div>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-            {{ __('Mod Details') }}
-        </h2>
-    </x-slot>
+<x-slot name="title">
+    {{ __(':mod - Mod Details', ['mod' => $mod->name]) }}
+</x-slot>
 
+<x-slot name="header">
+    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+        {{ __('Mod Details') }}
+    </h2>
+</x-slot>
+
+<div>
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto py-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
 
