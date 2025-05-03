@@ -17,7 +17,7 @@
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">
-                <a href="{{ $version->downloadUrl() }}" class="self-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                <a href="{{ $version->downloadUrl() }}" class="self-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white" rel="nofollow">
                     {{ __('Version') }} {{ $version->version }}
                     <flux:tooltip content="Download Mod Version" position="right">
                         <flux:icon icon="arrow-down-on-square-stack" class="inline-block size-6 ml-2 relative -top-1" />
@@ -45,7 +45,7 @@
             <div class="flex flex-col items-start text-gray-700 dark:text-gray-400 sm:items-end mt-4 sm:mt-0">
                 <p class="text-left sm:text-right">{{ __('Created') }} {{ Carbon::dynamicFormat($version->created_at) }}</p>
                 <p class="text-left sm:text-right">{{ __('Updated') }} {{ Carbon::dynamicFormat($version->updated_at) }}</p>
-                <a href="{{ $version->virus_total_link }}" class="text-left sm:text-right underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                <a href="{{ $version->virus_total_link }}" class="text-left sm:text-right underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white" rel="nofollow">
                     {{__('Virus Total Results')}}
                 </a>
             </div>
