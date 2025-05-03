@@ -79,7 +79,7 @@
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('VirusTotal Link') }}</flux:label>
-                                <flux:description>{!! __('Provide a link to the <a href="https://www.virustotal.com" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod.') !!}</flux:description>
+                                <flux:description>{!! __('Provide a link to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod.') !!}</flux:description>
                                 <flux:input type="url" wire:model.blur="virusTotalLink" placeholder="https://www.virustotal.com..." />
                                 <flux:error name="virusTotalLink" />
                             </flux:field>
