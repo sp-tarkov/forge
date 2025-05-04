@@ -41,6 +41,7 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'user_role_id' => null,
             'profile_photo_path' => null,
+            'timezone' => fake()->timezone(),
         ];
     }
 

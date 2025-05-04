@@ -206,7 +206,6 @@
                     <x-responsive-nav-link href="{{ route('api-tokens.index') }}" :active="request()->routeIs('api-tokens.index')">{{ __('API Token') }}</x-responsive-nav-link>
 
                     @if (auth()->user()->isAdmin())
-                        <x-responsive-nav-link href="/admin" :active="request()->routeIs('api-tokens.index')">{{ __('Admin Panel') }}</x-responsive-nav-link>
                         <x-responsive-nav-link href="/pulse" :active="request()->routeIs('api-tokens.index')">{{ __('Pulse Stats') }}</x-responsive-nav-link>
                         <x-responsive-nav-link href="/horizon" :active="request()->routeIs('api-tokens.index')">{{ __('Horizon Queue') }}</x-responsive-nav-link>
                     @endif

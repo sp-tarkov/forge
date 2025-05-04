@@ -25,13 +25,15 @@ We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services
 
 ### Notable Routes
 
-| Service                          | Authentication | Access Via Host            |
-|----------------------------------|----------------|----------------------------|
-| Laravel Filament Admin Panel     | Via User Role  | <http://localhost/admin>   |
-| Redis Queue Management (Horizon) | Via User Role  | <http://localhost/horizon> |
-| Website Status (Pulse)           | Via User Role  | <http://localhost/pulse>   |
-| Meilisearch WebUI                | Local Only     | <http://localhost:7700>    |
-| Mailpit WebUI                    | Local Only     | <http://localhost:8025>    |
+| Service                          | Authentication | Access Via Host              |
+|----------------------------------|----------------|------------------------------|
+| Redis Queue Management (Horizon) | Via User Role  | <http://localhost/horizon>   |
+| Website Status (Pulse)           | Via User Role  | <http://localhost/pulse>     |
+| Meilisearch WebUI                | Local Only     | <http://localhost:7700>      |
+| Mailpit WebUI                    | Local Only     | <http://localhost:8025>      |
+| Debug Assistant (Telescope*)     | Local Only     | <http://localhost/telescope> |
+
+\*Telescope must be enabled in your `.env` before it is accessable, as it slows requests due to the data capture.
 
 Most of these connection settings should already be configured in the `.env.full` or `.env.light` example files. Simply save one of these (depending on your environment) as `.env` and adjust settings as needed.
 

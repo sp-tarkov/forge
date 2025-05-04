@@ -17,6 +17,7 @@ test('new users can register', function (): void {
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'timezone' => 'America/New_York',
         'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
     ]);
 

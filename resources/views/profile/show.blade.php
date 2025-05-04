@@ -1,4 +1,11 @@
 <x-app-layout>
+    <x-slot name="title">
+        {{ __('Edit your profile information') }}
+    </x-slot>
+    <x-slot name="description">
+        {{ __('Edit your profile information and password.') }}
+    </x-slot>
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
             {{ __('Profile') }}

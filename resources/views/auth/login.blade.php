@@ -1,4 +1,11 @@
 <x-guest-layout>
+    <x-slot name="title">
+        {{ __('Sign into your account') }}
+    </x-slot>
+    <x-slot name="description">
+        {{ __('Sign into your Forge account to access your mods, comments, and more.') }}
+    </x-slot>
+
     <x-authentication-card>
         <x-slot name="logo">
             <x-authentication-card-logo />

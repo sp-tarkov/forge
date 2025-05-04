@@ -5,9 +5,27 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'The Forge') }}</title>
+        @php
+            if (empty($title)) {
+                $title = 'The Forge - Home of Single Player Tarkov Mods';
+            } elseif (! Str::of($title)->lower()->contains('the forge')) {
+                $title .= ' - The Forge';
+            }
+        @endphp
+        <title>{{ $title }}</title>
+        <meta property="og:title" content="{{ $title }}">
+
+        @php
+            if (empty($description)) {
+                $description = 'The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Craft your vision. Transform the game.';
+            }
+        @endphp
+        <meta name="description" content="{{ $description }}">
+        <meta property="og:description" content="{{ $description }}">
 
         <link rel="icon" href="data:image/x-icon;base64,AA">
+
+        <link rel="canonical" href="{{ url()->current() }}">
 
         <link href="//fonts.bunny.net" rel="preconnect">
         <link href="//fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">

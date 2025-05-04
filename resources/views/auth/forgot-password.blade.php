@@ -1,4 +1,11 @@
 <x-guest-layout>
+    <x-slot name="title">
+        {{ __('Forgot your password?') }}
+    </x-slot>
+    <x-slot name="description">
+        {{ __('Forgot your Forge password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+    </x-slot>
+
     <x-authentication-card>
         <x-slot name="logo">
             <x-authentication-card-logo />

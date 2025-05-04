@@ -114,6 +114,22 @@ it('allows a mod author to view their mod without a resolved SPT version', funct
     $response->assertOk();
 });
 
+it('does not allow an anonymous user to view an unpublished mod', function (): void {
+    SptVersion::factory()->create(['version' => '1.1.1']);
+
+    $mod1 = Mod::factory()->create(['published_at' => null]); // Unpublished
+    $mod2 = Mod::factory()->create(['published_at' => now()->addDays(1)]); // Published in the future
+
+    ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => '1.1.1']);
+    ModVersion::factory()->recycle($mod2)->create(['spt_version_constraint' => '1.1.1']);
+
+    $response = $this->get($mod1->detail_url);
+    $response->assertNotFound();
+
+    $response = $this->get($mod2->detail_url);
+    $response->assertNotFound();
+});
+
 it('does not allow a normal user to view an unpublished mod', function (): void {
     $this->actingAs(User::factory()->create(['user_role_id' => null]));
 
