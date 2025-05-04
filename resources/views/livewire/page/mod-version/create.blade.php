@@ -84,6 +84,45 @@
                                 <flux:error name="virusTotalLink" />
                             </flux:field>
 
+                            <flux:field class="col-span-6" x-data="{
+                                now() {
+                                    // Format: YYYY-MM-DDTHH:MM
+                                    const pad = n => n.toString().padStart(2, '0');
+                                    const d = new Date();
+                                    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                                }
+                            }">
+                                <flux:label>{{ __('Publish Date') }}</flux:label>
+                                <flux:description>
+                                    {!! __('Select the date and time the mod will be published. If the mod is not published, it will not be discoverable by other users. Leave blank to keep the mod unpublished.') !!}
+                                    @if (auth()->user()->timezone === null)
+                                        <flux:callout icon="exclamation-triangle" color="orange" inline="inline" class="my-2">
+                                            <flux:callout.text>
+                                                You have not selected a timezone for your account. You may continue, but the published date will be interpreted as a UTC date. Alternatively, you can <a href="/user/profile" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">edit your profile</a> to set a specific timezone.
+                                            </flux:callout.text>
+                                        </flux:callout>
+                                    @else
+                                        {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
+                                    @endif
+                                </flux:description>
+                                <div class="flex gap-2 items-center">
+                                    <flux:input
+                                        type="datetime-local"
+                                        wire:model.defer="publishedAt"
+                                    />
+                                    @if (auth()->user()->timezone !== null)
+                                        <button
+                                            type="button"
+                                            class="px-2 py-1 rounded bg-cyan-500 text-white text-xs hover:bg-cyan-600 transition"
+                                            @click="$wire.set('publishedAt', now())"
+                                        >
+                                            {{ __('Now') }}
+                                        </button>
+                                    @endif
+                                </div>
+                                <flux:error name="publishedAt" />
+                            </flux:field>
+
                         </div>
                     </div>
                     <div class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">

@@ -22,7 +22,7 @@
             <div class="md:col-span-1 flex justify-between">
                 <div class="px-4 sm:px-0">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mod Information</h3>
-                    <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Add your mod to the Forge by filling out this form. After the mod has been created, you will be able to submit mod versions/files with additional information.</p>
+                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">Add your mod to the Forge by filling out this form. After the mod has been created, you will be able to submit mod versions/files with additional information.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
                         Please ensure you follow the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">community guidelines</a>
                         and the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">file submission guidelines</a>.
@@ -94,6 +94,45 @@
                                 <flux:description>{!! __('Provide a link to the source code for your mod. The source code for mods is required to be publicly available. This will be displayed on the mod page. We recommend using a service like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.') !!}</flux:description>
                                 <flux:input type="text" wire:model.blur="sourceCodeUrl" placeholder="https://github.com/username/mod-name" />
                                 <flux:error name="sourceCodeUrl" />
+                            </flux:field>
+
+                            <flux:field class="col-span-6" x-data="{
+                                now() {
+                                    // Format: YYYY-MM-DDTHH:MM
+                                    const pad = n => n.toString().padStart(2, '0');
+                                    const d = new Date();
+                                    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                                }
+                            }">
+                                <flux:label>{{ __('Publish Date') }}</flux:label>
+                                <flux:description>
+                                    {!! __('Select the date and time the mod will be published. If the mod is not published, it will not be discoverable by other users. Leave blank to keep the mod unpublished.') !!}
+                                    @if (auth()->user()->timezone === null)
+                                        <flux:callout icon="exclamation-triangle" color="orange" inline="inline" class="my-2">
+                                            <flux:callout.text>
+                                                You have not selected a timezone for your account. You may continue, but the published date will be interpreted as a UTC date. Alternatively, you can <a href="/user/profile" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">edit your profile</a> to set a specific timezone.
+                                            </flux:callout.text>
+                                        </flux:callout>
+                                    @else
+                                        {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
+                                    @endif
+                                </flux:description>
+                                <div class="flex gap-2 items-center">
+                                    <flux:input
+                                        type="datetime-local"
+                                        wire:model.defer="publishedAt"
+                                    />
+                                    @if (auth()->user()->timezone !== null)
+                                        <button
+                                            type="button"
+                                            class="px-2 py-1 rounded bg-cyan-500 text-white text-xs hover:bg-cyan-600 transition"
+                                            @click="$wire.set('publishedAt', now())"
+                                        >
+                                            {{ __('Now') }}
+                                        </button>
+                                    @endif
+                                </div>
+                                <flux:error name="publishedAt" />
                             </flux:field>
 
                             <flux:field class="col-span-6">

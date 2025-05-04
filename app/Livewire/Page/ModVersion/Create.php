@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Carbon\Carbon;
 
 class Create extends Component
 {
@@ -52,6 +53,12 @@ class Create extends Component
      */
     #[Validate('required|string|url|starts_with:https://www.virustotal.com/')]
     public string $virusTotalLink = '';
+
+    /**
+     * The published at date of the mod version.
+     */
+    #[Validate('nullable|date')]
+    public ?string $publishedAt = null;
 
     /**
      * The matching SPT versions for the current constraint.
@@ -115,6 +122,15 @@ class Create extends Component
             return;
         }
 
+        // Parse the published at date in the user's timezone, falling back to UTC if the user has no timezone, and
+        // convert it to UTC for DB storage.
+        if ($this->publishedAt !== null) {
+            $userTimezone = auth()->user()->timezone ?? 'UTC';
+            $this->publishedAt = Carbon::parse($this->publishedAt, $userTimezone)
+                ->setTimezone('UTC')
+                ->toDateTimeString();
+        }
+
         // Create the mod version.
         $this->mod->versions()->create([
             'version' => $validated['version'],
@@ -122,6 +138,7 @@ class Create extends Component
             'link' => $validated['link'],
             'spt_version_constraint' => $validated['sptVersionConstraint'],
             'virus_total_link' => $validated['virusTotalLink'],
+            'published_at' => $this->publishedAt,
         ]);
 
         flash()->success('Mod version has been successfully created.');
