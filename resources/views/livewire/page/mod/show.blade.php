@@ -1,6 +1,9 @@
 <x-slot name="title">
     {{ __(':mod - Mod Details', ['mod' => $mod->name]) }}
 </x-slot>
+<x-slot name="description">
+    {{ __('The details for :mod on The Forge. :teaser', ['mod' => $mod->name, 'teaser' => $mod->teaser]) }}
+</x-slot>
 
 <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">

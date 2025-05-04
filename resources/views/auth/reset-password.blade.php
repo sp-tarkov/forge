@@ -2,6 +2,9 @@
     <x-slot name="title">
         {{ __('Reset your password') }}
     </x-slot>
+    <x-slot name="description">
+        {{ __('Reset your Forge password by using the form below.') }}
+    </x-slot>
 
     <x-authentication-card>
         <x-slot name="logo">

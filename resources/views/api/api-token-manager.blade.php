@@ -1,6 +1,9 @@
 <x-slot name="title">
     {{ __('Manage API Tokens') }}
 </x-slot>
+<x-slot name="description">
+    {{ __('Manage your API tokens to access our API endpoints.') }}
+</x-slot>
 
 <div>
     <!-- Generate API Token -->

@@ -2,6 +2,9 @@
     <x-slot name="title">
         {{ __('Terms of Service') }}
     </x-slot>
+    <x-slot name="description">
+        {{ __('The terms of service for The Forge.') }}
+    </x-slot>
 
     <div class="pt-4 bg-gray-100">
         <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0">

@@ -2,6 +2,9 @@
     <x-slot name="title">
         {{ __('Register an account') }}
     </x-slot>
+    <x-slot name="description">
+        {{ __('Register an account to start using The Forge and join the community.') }}
+    </x-slot>
 
     <x-authentication-card>
         <x-slot name="logo">
