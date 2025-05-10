@@ -68,6 +68,8 @@
                     {{ __('Already registered?') }}
                 </a>
 
+                <x-honeypot />
+
                 <x-button class="ms-4">
                     {{ __('Register') }}
                 </x-button>

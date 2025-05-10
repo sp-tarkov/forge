@@ -55,6 +55,8 @@
                         {{ __('Use an authentication code') }}
                     </button>
 
+                    <x-honeypot />
+
                     <x-button class="ms-4">
                         {{ __('Log in') }}
                     </x-button>

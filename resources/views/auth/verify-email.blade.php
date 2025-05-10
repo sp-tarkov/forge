@@ -25,6 +25,8 @@
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
 
+                <x-honeypot />
+
                 <div>
                     <x-button type="submit">
                         {{ __('Send Verification Email') }}
