@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use DateTimeZone;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -23,6 +24,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
             'cover' => ['nullable', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'timezone' => ['required', 'string', 'in:'.implode(',', DateTimeZone::listIdentifiers())],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
@@ -39,6 +41,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'timezone' => $input['timezone'],
             ])->save();
         }
     }
@@ -53,6 +56,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         $user->forceFill([
             'name' => $input['name'],
             'email' => $input['email'],
+            'timezone' => $input['timezone'],
             'email_verified_at' => null,
         ])->save();
 

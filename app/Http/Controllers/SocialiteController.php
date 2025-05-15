@@ -72,6 +72,10 @@ class SocialiteController extends Controller
             ->whereProviderId($providerUser->getId())
             ->first();
 
+        $mfaStatus = $this->getMfaStatus($provider, $providerUser);
+
+        // If the user has already connected their account with this OAuth provider before, update the connection with
+        // the new information and return early.
         if ($oauthConnection !== null) {
             $oauthConnection->update([
                 'token' => $providerUser->token ?? '',
@@ -80,7 +84,7 @@ class SocialiteController extends Controller
                 'name' => $providerUser->getName() ?? '',
                 'email' => $providerUser->getEmail() ?? '',
                 'avatar' => $providerUser->getAvatar() ?? '',
-                'mfa_enabled' => $this->getMfaStatus($provider, $providerUser),
+                'mfa_enabled' => $mfaStatus,
             ]);
 
             return $oauthConnection->user;
@@ -99,7 +103,7 @@ class SocialiteController extends Controller
         // established. Check if the user has an account with the same email address that's passed in from the provider.
         // If one exists, connect that account. Otherwise, create a new one.
 
-        return DB::transaction(function () use ($providerUser, $provider, $username) {
+        return DB::transaction(function () use ($providerUser, $provider, $username, $mfaStatus) {
 
             $user = User::query()->firstOrCreate(['email' => $providerUser->getEmail()], [
                 'name' => $username,
@@ -115,6 +119,7 @@ class SocialiteController extends Controller
                 'name' => $providerUser->getName() ?? '',
                 'email' => $providerUser->getEmail() ?? '',
                 'avatar' => $providerUser->getAvatar() ?? '',
+                'mfa_enabled' => $mfaStatus,
             ]);
 
             $this->updateAvatar($user, $oAuthConnection->avatar);

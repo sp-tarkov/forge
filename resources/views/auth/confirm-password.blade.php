@@ -1,11 +1,18 @@
 <x-guest-layout>
+    <x-slot name="title">
+        {{ __('Confirm your password') }}
+    </x-slot>
+    <x-slot name="description">
+        {{ __('Please confirm your password to continue.') }}
+    </x-slot>
+
     <x-authentication-card>
         <x-slot name="logo">
             <x-authentication-card-logo />
         </x-slot>
 
         <div class="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+            {{ __('Please confirm your password to continue.') }}
         </div>
 
         <x-validation-errors class="mb-4" />
@@ -17,6 +24,8 @@
                 <x-label for="password" value="{{ __('Password') }}" />
                 <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" autofocus />
             </div>
+
+            <x-honeypot />
 
             <div class="flex justify-end mt-4">
                 <x-button class="ms-4">

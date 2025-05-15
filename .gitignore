@@ -19,6 +19,8 @@ node_modules
 /storage/*.key
 /storage/pail
 /storage/app/livewire-tmp
+/storage/app/private/livewire-tmp
+!/storage/app/private/livewire-tmp/.gitkeep
 /storage/app/public
 !/storage/app/public/cover-photos/.gitkeep
 !/storage/app/public/profile-photos/.gitkeep

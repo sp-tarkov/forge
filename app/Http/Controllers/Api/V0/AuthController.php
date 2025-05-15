@@ -254,6 +254,7 @@ class AuthController extends Controller
      *          "name": "NewUser123",
      *          "profile_photo_url": "https://ui-avatars.com/api/?name=NewUser123&color=...",
      *          "cover_photo_url": "https://picsum.photos/seed/NewUser123/...",
+     *          "timezone": "America/New_York",
      *          "created_at": "2025-04-02T21:30:00.000000Z",
      *          "updated_at": "2025-04-01T10:00:00.000000Z"
      *      }
@@ -272,6 +273,9 @@ class AuthController extends Controller
      *          ],
      *          "password": [
      *              "The password must be at least 8 characters."
+     *          ],
+     *          "timezone": [
+     *              "The timezone field is required."
      *          ]
      *      }
      *  }
@@ -284,6 +288,7 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'timezone' => $validated['timezone'],
         ]);
 
         $user->sendEmailVerificationNotification();

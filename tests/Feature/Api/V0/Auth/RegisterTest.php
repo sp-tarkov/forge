@@ -15,6 +15,7 @@ it('allows a new user to register', function (): void {
         'name' => 'NewRegisterUser',
         'email' => 'register@example.com',
         'password' => 'Password123!',
+        'timezone' => 'America/New_York',
     ];
 
     $response = $this->postJson('/api/v0/auth/register', $userData);
@@ -38,6 +39,7 @@ it('allows a new user to register', function (): void {
     $this->assertDatabaseHas('users', [
         'name' => $userData['name'],
         'email' => $userData['email'],
+        'timezone' => $userData['timezone'],
     ]);
 
     // Assert password was hashed (by checking it's not the plain text one)
@@ -51,6 +53,7 @@ it('returns validation error if registration name is missing', function (): void
         // name missing
         'email' => 'register@example.com',
         'password' => 'Password123!',
+        'timezone' => 'America/New_York',
     ]);
     $response
         ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
@@ -62,6 +65,7 @@ it('returns validation error if registration email is invalid', function (): voi
         'name' => 'NewRegisterUser',
         'email' => 'not-an-email',
         'password' => 'Password123!',
+        'timezone' => 'America/New_York',
     ]);
     $response
         ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
@@ -75,6 +79,7 @@ it('returns validation error if registration email is already taken', function (
         'name' => 'NewRegisterUser',
         'email' => $existingUser->email, // Existing email
         'password' => 'Password123!',
+        'timezone' => 'America/New_York',
     ]);
     $response
         ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
@@ -86,6 +91,7 @@ it('returns validation error if registration password is too short', function ()
         'name' => 'NewRegisterUser',
         'email' => 'register@example.com',
         'password' => 'short', // Minimum length is 8
+        'timezone' => 'America/New_York',
     ]);
     $response
         ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
@@ -99,6 +105,7 @@ it('sends verification email upon registration', function (): void {
         'name' => 'Verify Me',
         'email' => 'verify@example.com',
         'password' => 'Password123!',
+        'timezone' => 'America/New_York',
     ];
 
     $response = $this->postJson('/api/v0/auth/register', $userData);

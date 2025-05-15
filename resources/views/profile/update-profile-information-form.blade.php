@@ -123,6 +123,21 @@
                 @endif
             @endif
         </div>
+
+        <!-- Timezone -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="timezone" value="{{ __('Timezone') }}" />
+            <div class="flex items-center gap-2 mt-1">
+                <select id="timezone" class="block w-full rounded-md border-0 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm" wire:model="state.timezone" required>
+                    @foreach (\DateTimeZone::listIdentifiers() as $tz)
+                        <option value="{{ $tz }}">{{ $tz }}</option>
+                    @endforeach
+                </select>
+
+                <flux:button size="sm" id="detect-timezone">{{ __('Detect') }}</flux:button>
+            </div>
+            <x-input-error for="timezone" class="mt-2" />
+        </div>
     </x-slot>
 
     <x-slot name="actions">

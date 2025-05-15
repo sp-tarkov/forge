@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Markdown\Extension\Tabset\TabsetExtension;
+use App\Markdown\Extension\YouTube\YouTubeExtension;
 use ElGigi\CommonMarkEmoji\EmojiExtension;
 use League\CommonMark\Extension\Autolink\AutolinkExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\DescriptionList\DescriptionListExtension;
 use League\CommonMark\Extension\DisallowedRawHtml\DisallowedRawHtmlExtension;
-use League\CommonMark\Extension\Embed\EmbedExtension;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use League\CommonMark\Extension\Footnote\FootnoteExtension;
 use League\CommonMark\Extension\SmartPunct\SmartPunctExtension;
@@ -53,7 +53,7 @@ return [
         DisallowedRawHtmlExtension::class,
         TabsetExtension::class,
         DescriptionListExtension::class,
-        EmbedExtension::class,
+        YouTubeExtension::class,
         AutolinkExtension::class,
         ExternalLinkExtension::class,
         StrikethroughExtension::class,
@@ -196,12 +196,4 @@ return [
         'footnote_id_prefix' => 'fn:',
     ],
 
-    'embed' => [
-        'oembed_query_parameters' => [
-            'maxwidth' => 700,
-            'maxheight' => 400,
-        ],
-        'allowed_domains' => ['youtube.com', 'youtu.be'],
-        'fallback' => 'link',
-    ],
 ];

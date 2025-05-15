@@ -11,6 +11,7 @@
         wire:key="mod-card-ribbon-{{ $section }}-{{ $mod->id }}"
         :id="$mod->id"
         :disabled="$mod->disabled"
+        :publishedAt="$mod->published_at"
         :featured="$mod->featured"
         :homepage-featured="$homepageFeatured"
     />

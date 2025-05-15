@@ -245,21 +245,11 @@ class Mod extends Model
      */
     protected function thumbnailUrl(): Attribute
     {
-        return Attribute::get(fn (): string => $this->thumbnail
-            ? Storage::disk($this->thumbnailDisk())->url($this->thumbnail)
-            : '');
-    }
+        $disk = config('filesystems.asset_upload', 'public');
 
-    /**
-     * Get the disk where the thumbnail is stored based on the current environment.
-     */
-    protected function thumbnailDisk(): string
-    {
-        return match (config('app.env')) {
-            'production' => config('filesystems.asset_upload_disk.production', 'r2'),
-            'testing' => config('filesystems.asset_upload_disk.testing', 'public'),
-            default => config('filesystems.asset_upload_disk.local', 'public'),
-        };
+        return Attribute::get(fn (): string => $this->thumbnail
+            ? Storage::disk($disk)->url($this->thumbnail)
+            : '');
     }
 
     /**

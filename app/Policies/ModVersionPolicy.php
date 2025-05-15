@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class ModVersionPolicy
 {
@@ -39,9 +41,17 @@ class ModVersionPolicy
     /**
      * Determine whether the user can create mod versions.
      */
-    public function create(User $user): bool
+    public function create(User $user, Mod $mod): Response
     {
-        return false;
+        if ($user->id !== $mod->owner_id && $mod->authors->doesntContain($user)) {
+            return Response::deny(__('You must be the owner or an author of this mod to create a version.'));
+        }
+
+        if (! $user->hasMfaEnabled()) {
+            return Response::deny(__('Your account must have MFA enabled to create a new mod version.'));
+        }
+
+        return Response::allow();
     }
 
     /**

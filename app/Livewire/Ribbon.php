@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -21,6 +22,11 @@ class Ribbon extends Component
     public bool $disabled;
 
     /**
+     * The mod published date.
+     */
+    public ?Carbon $publishedAt = null;
+
+    /**
      * Whether the mod is featured Defaults to false.
      */
     public bool $featured = false;
@@ -35,10 +41,14 @@ class Ribbon extends Component
      */
     #[On('mod-updated.{id}')]
     #[On('mod-version-updated.{id}')]
-    public function update(?bool $disabled = null, ?bool $featured = null): void
+    public function update(?bool $disabled = null, ?bool $featured = null, ?Carbon $publishedAt = null): void
     {
         if ($disabled !== null) {
             $this->disabled = $disabled;
+        }
+
+        if ($publishedAt !== null) {
+            $this->publishedAt = $publishedAt;
         }
 
         if ($featured !== null) {

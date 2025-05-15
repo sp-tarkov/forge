@@ -41,6 +41,7 @@ use SensitiveParameter;
  * @property string|null $remember_token
  * @property string|null $profile_photo_path
  * @property string|null $cover_photo_path
+ * @property string|null $timezone
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read string $slug

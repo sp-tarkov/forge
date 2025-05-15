@@ -1,3 +1,11 @@
+<x-slot name="title">
+    {{ __(':name - User Profile', ['name' => $user->name]) }}
+</x-slot>
+
+<x-slot name="description">
+    {{ __('The profile for :name on The Forge. See their mods, activity, and comments.', ['name' => $user->name]) }}
+</x-slot>
+
 <div>
     <div class="sm:-mt-12 mb-6 dark:bg-gray-800 dark:text-gray-100">
         <div>

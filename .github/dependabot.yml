@@ -20,8 +20,6 @@ updates:
       prefix: "composer"
     labels:
       - "dependencies"
-    reviewers:
-      - "refringe"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -41,8 +39,6 @@ updates:
       prefix: "actions"
     labels:
       - "dependencies"
-    reviewers:
-      - "refringe"
 
   # npm modules (JavaScript)
   - package-ecosystem: "npm"
@@ -64,5 +60,3 @@ updates:
       prefix: "npm"
     labels:
       - "dependencies"
-    reviewers:
-      - "refringe"

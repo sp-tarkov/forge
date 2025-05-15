@@ -25,7 +25,7 @@
             <x-button x-on:click="show = false" class="mx-4">
                 {{ __('Close') }}
             </x-button>
-            <a href="{{ $mod->downloadUrl() }}" x-on:click="show = false" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold text-xs uppercase transition ease-in-out duration-150 cursor-pointer text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700 outline-none disabled:opacity-50" target="_blank">
+            <a href="{{ $mod->downloadUrl() }}" x-on:click="show = false" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold text-xs uppercase transition ease-in-out duration-150 cursor-pointer text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700 outline-none disabled:opacity-50" target="_blank" rel="nofollow">
                 Download
             </a>
         </x-slot>

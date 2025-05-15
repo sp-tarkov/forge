@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class ModPolicy
 {
@@ -40,9 +41,11 @@ class ModPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): Response
     {
-        return false;
+        return auth()->check() && $user->hasMfaEnabled()
+            ? Response::allow()
+            : Response::deny(__('Your account must have MFA enabled to create a new mod.'));
     }
 
     /**

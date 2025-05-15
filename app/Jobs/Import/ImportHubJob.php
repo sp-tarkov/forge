@@ -26,9 +26,11 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Support\Version;
 use Composer\Semver\Semver;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -82,6 +84,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->getHubMods();
         $this->getHubModVersions();
         $this->removeDeletedHubMods();
+        $this->removeModsWithoutHubVersions();
 
         Bus::chain([
             (new ResolveSptVersionsJob)->onQueue('long'),
@@ -98,19 +101,23 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      **/
     private function getHubUsers(): void
     {
+        /** @var EloquentCollection<string, UserRole> $roles */
+        $roles = UserRole::all()->keyBy('name');
+
         DB::connection('hub')
             ->table('wcf1_user as u')
             ->select('u.*', 'r.rankTitle')
             ->leftJoin('wcf1_user_rank as r', 'u.rankID', '=', 'r.rankID')
             ->orderBy('u.userID')
-            ->chunk(7500, function (Collection $records): void {
+            ->chunk(7500, function (Collection $records) use ($roles): void {
                 /** @var Collection<int, object> $records */
+
                 /** @var Collection<int, HubUser> $hubUsers */
                 $hubUsers = $records->map(fn (object $record): HubUser => HubUser::fromArray((array) $record));
 
-                $this->processUserBatch($hubUsers);
-                $this->processUserBatchBans($hubUsers);
-                $this->processUserBatchRoles($hubUsers);
+                $localUsers = $this->processUserBatch($hubUsers);
+                $this->processUserBatchBans($hubUsers, $localUsers);
+                $this->processUserBatchRoles($hubUsers, $localUsers, $roles);
             });
     }
 
@@ -118,8 +125,9 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of Hub users.
      *
      * @param  Collection<int, HubUser>  $hubUsers
+     * @return EloquentCollection<int, User>
      */
-    private function processUserBatch(Collection $hubUsers): void
+    private function processUserBatch(Collection $hubUsers): EloquentCollection
     {
         // Prepare data for upsert.
         $userData = $hubUsers->map(fn (HubUser $hubUser): array => [
@@ -135,19 +143,27 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         User::withoutEvents(function () use ($userData): void {
             User::query()->upsert($userData, ['hub_id'], ['name', 'email', 'password', 'created_at', 'updated_at']);
         });
+
+        // Fetch and return the up-to-date local users
+        $hubUserIds = $hubUsers->pluck('userID');
+
+        /** @var EloquentCollection<int, User> $localUsers */
+        $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+        return $localUsers;
     }
 
     /**
      * Process a batch of Hub users and ban them if necessary.
      *
      * @param  Collection<int, HubUser>  $hubUsers
+     * @param  EloquentCollection<int, User>  $localUsers
      */
-    private function processUserBatchBans(Collection $hubUsers): void
+    private function processUserBatchBans(Collection $hubUsers, EloquentCollection $localUsers): void
     {
-        $hubUsers->each(function (HubUser $hubUser): void {
-            if ($hubUser->banned > 0) {
-                $user = User::whereHubId($hubUser->userID)->first();
-                if (! empty($user) && $user->isNotBanned()) {
+        $hubUsers->each(function (HubUser $hubUser) use ($localUsers): void {
+            if ($hubUser->banned > 0 && ($user = $localUsers->get($hubUser->userID))) {
+                if ($user->isNotBanned()) {
                     $user->ban([
                         'comment' => $hubUser->banReason ?? '',
                         'expired_at' => $hubUser->getBanExpires(),
@@ -161,38 +177,45 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of Hub users and add their user roles.
      *
      * @param  Collection<int, HubUser>  $hubUsers
+     * @param  EloquentCollection<int, User>  $localUsers
+     * @param  EloquentCollection<string, UserRole>  $roles
      */
-    private function processUserBatchRoles(Collection $hubUsers): void
+    private function processUserBatchRoles(Collection $hubUsers, EloquentCollection $localUsers, EloquentCollection $roles): void
     {
-        $hubUsers->each(function (HubUser $hubUser): void {
+        $hubUsers->each(function (HubUser $hubUser) use ($localUsers, $roles): void {
             if ($hubUser->banned) {
                 return;
             }
 
             $rankTitle = $hubUser->getRankTitle();
 
-            if (! empty($hubUser->rankID) && $rankTitle) {
-                // Create the role if it doesn't exist by name.
-                $role = UserRole::query()->firstOrCreate(['name' => $rankTitle], match ($rankTitle) {
-                    'Administrator' => [
-                        'short_name' => 'Admin',
-                        'description' => 'Full access',
-                        'color_class' => 'sky',
-                    ],
-                    'Moderator' => [
-                        'short_name' => 'Mod',
-                        'description' => 'Moderate user content.',
-                        'color_class' => 'emerald',
-                    ],
-                    default => [
-                        'short_name' => '',
-                        'description' => '',
-                        'color_class' => '',
-                    ],
-                });
+            if (! empty($hubUser->rankID) && $rankTitle && ($user = $localUsers->get($hubUser->userID))) {
+                $role = $roles->get($rankTitle);
 
-                // Attach the role to the user.
-                $user = User::whereHubId($hubUser->userID)->first();
+                // If the role is not found in pre-fetched data then create it.
+                if (! $role) {
+                    $role = UserRole::query()->firstOrCreate(['name' => $rankTitle], match ($rankTitle) {
+                        'Administrator' => [
+                            'short_name' => 'Admin',
+                            'description' => 'Full access',
+                            'color_class' => 'sky',
+                        ],
+                        'Moderator' => [
+                            'short_name' => 'Mod',
+                            'description' => 'Moderate user content.',
+                            'color_class' => 'emerald',
+                        ],
+                        default => [
+                            'short_name' => '',
+                            'description' => '',
+                            'color_class' => '',
+                        ],
+                    });
+
+                    // Add the created role to our collection for this batch.
+                    $roles->put($rankTitle, $role);
+                }
+
                 $user->assignRole($role);
             }
         });
@@ -203,7 +226,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      */
     private function getHubUserOptions(): void
     {
-        // Currently we're only getting rows where the about text has value.
+        // Currently, we're only getting rows where the about text has value.
         DB::connection('hub')
             ->table('wcf1_user_option_value')
             ->whereNotNull('userOption1') // About field
@@ -213,8 +236,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 /** @var Collection<int, object> $records */
                 /** @var Collection<int, HubUserOptionValue> $hubUserOptionValues */
                 $hubUserOptionValues = $records->map(fn (object $record): HubUserOptionValue => HubUserOptionValue::fromArray((array) $record));
+                $hubUserIds = $hubUserOptionValues->pluck('userID');
 
-                $this->processUserOptionValueBatch($hubUserOptionValues);
+                /** @var EloquentCollection<int, User> $localUsers */
+                $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+                $this->processUserOptionValueBatch($hubUserOptionValues, $localUsers);
             });
     }
 
@@ -222,22 +249,26 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of Hub user option values.
      *
      * @param  Collection<int, HubUserOptionValue>  $hubUserOptionValues
+     * @param  EloquentCollection<int, User>  $localUsers
      */
-    private function processUserOptionValueBatch(Collection $hubUserOptionValues): void
+    private function processUserOptionValueBatch(Collection $hubUserOptionValues, EloquentCollection $localUsers): void
     {
         $now = Carbon::now('UTC')->toDateTimeString();
 
-        $hubUserOptionValues
-            ->filter(fn (HubUserOptionValue $hubUserOptionValue): bool => $hubUserOptionValue->getAbout() !== '')
-            ->each(function (HubUserOptionValue $hubUserOptionValue) use ($now): void {
-                User::withoutEvents(function () use ($hubUserOptionValue, $now): void {
-                    User::query()->where('hub_id', $hubUserOptionValue->userID)
-                        ->update([
-                            'about' => $hubUserOptionValue->getAbout(),
-                            'updated_at' => $now,
-                        ]);
+        User::withoutEvents(function () use ($hubUserOptionValues, $localUsers, $now): void {
+            $hubUserOptionValues
+                ->filter(fn (HubUserOptionValue $hubUserOptionValue): bool => $hubUserOptionValue->getAbout() !== '')
+                ->each(function (HubUserOptionValue $hubUserOptionValue) use ($localUsers, $now): void {
+                    if ($localUser = $localUsers->get($hubUserOptionValue->userID)) {
+                        User::query()
+                            ->where('id', $localUser->id)
+                            ->update([
+                                'about' => $hubUserOptionValue->getAbout(),
+                                'updated_at' => $now,
+                            ]);
+                    }
                 });
-            });
+        });
     }
 
     /**
@@ -254,8 +285,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 /** @var Collection<int, object> $records */
                 /** @var Collection<int, HubUserAvatar> $hubUserAvatars */
                 $hubUserAvatars = $records->map(fn (object $record): HubUserAvatar => HubUserAvatar::fromArray((array) $record));
+                $hubUserIds = $hubUserAvatars->pluck('userID')->filter()->unique();
 
-                $this->processUserAvatarBatch($hubUserAvatars);
+                /** @var EloquentCollection<int, User> $localUsers */
+                $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+                $this->processUserAvatarBatch($hubUserAvatars, $localUsers);
             });
     }
 
@@ -263,28 +298,33 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of Hub user avatars.
      *
      * @param  Collection<int, HubUserAvatar>  $hubUserAvatars
+     * @param  EloquentCollection<int, User>  $localUsers
      *
      * @throws ConnectionException
      */
-    private function processUserAvatarBatch(Collection $hubUserAvatars): void
+    private function processUserAvatarBatch(Collection $hubUserAvatars, EloquentCollection $localUsers): void
     {
-        $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar): void {
-            $relativePath = $this->processUserAvatarImage($hubUserAvatar);
+        $now = Carbon::now('UTC')->toDateTimeString();
 
-            if (! empty($relativePath)) {
-                User::withoutEvents(function () use ($hubUserAvatar, $relativePath): void {
-                    User::query()->where('hub_id', $hubUserAvatar->userID)
-                        ->update([
-                            'profile_photo_path' => $relativePath,
-                            'updated_at' => Carbon::now('UTC')->toDateTimeString(),
-                        ]);
-                });
-            }
+        User::withoutEvents(function () use ($hubUserAvatars, $localUsers, $now): void {
+            $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar) use ($localUsers, $now): void {
+                if ($hubUserAvatar->userID && ($localUser = $localUsers->get($hubUserAvatar->userID))) {
+                    $relativePath = $this->processUserAvatarImage($hubUserAvatar);
+                    if (! empty($relativePath)) {
+                        User::query()
+                            ->where('id', $localUser->id)
+                            ->update([
+                                'profile_photo_path' => $relativePath,
+                                'updated_at' => $now,
+                            ]);
+                    }
+                }
+            });
         });
     }
 
     /**
-     * Process (download) a user avatar image.
+     * Process/download a user avatar image.
      *
      * @throws ConnectionException
      */
@@ -316,8 +356,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 /** @var Collection<int, object> $records */
                 /** @var Collection<int, HubUser> $hubUsers */
                 $hubUsers = $records->map(fn (object $record): HubUser => HubUser::fromArray((array) $record));
+                $hubUserIds = $hubUsers->pluck('userID');
 
-                $this->processUserCoverPhotoBatch($hubUsers);
+                /** @var EloquentCollection<int, User> $localUsers */
+                $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+                $this->processUserCoverPhotoBatch($hubUsers, $localUsers);
             });
     }
 
@@ -325,23 +369,28 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of cover photos for Hub users.
      *
      * @param  Collection<int, HubUser>  $hubUsers
+     * @param  EloquentCollection<int, User>  $localUsers
      *
      * @throws ConnectionException
      */
-    private function processUserCoverPhotoBatch(Collection $hubUsers): void
+    private function processUserCoverPhotoBatch(Collection $hubUsers, EloquentCollection $localUsers): void
     {
-        $hubUsers->each(function (HubUser $hubUser): void {
-            $coverPhotoPath = $this->fetchUserCoverPhoto($hubUser);
+        $now = Carbon::now('UTC')->toDateTimeString();
 
-            if (! empty($coverPhotoPath)) {
-                User::withoutEvents(function () use ($hubUser, $coverPhotoPath): void {
-                    User::query()->where('hub_id', $hubUser->userID)
-                        ->update([
-                            'cover_photo_path' => $coverPhotoPath,
-                            'updated_at' => Carbon::now('UTC')->toDateTimeString(),
-                        ]);
-                });
-            }
+        User::withoutEvents(function () use ($hubUsers, $localUsers, $now): void {
+            $hubUsers->each(function (HubUser $hubUser) use ($localUsers, $now): void {
+                if ($localUser = $localUsers->get($hubUser->userID)) {
+                    $coverPhotoPath = $this->fetchUserCoverPhoto($hubUser);
+                    if (! empty($coverPhotoPath)) {
+                        User::query()
+                            ->where('id', $localUser->id)
+                            ->update([
+                                'cover_photo_path' => $coverPhotoPath,
+                                'updated_at' => $now,
+                            ]);
+                    }
+                }
+            });
         });
     }
 
@@ -365,7 +414,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * Process (download) and store an image from the given URL.
+     * Process/download and store an image from the given URL.
      *
      * @throws ConnectionException
      */
@@ -405,20 +454,49 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         /** @var array<int, array<int, array{created_at: Carbon, updated_at: Carbon}>> $followsGroupedByFollower */
         $followsGroupedByFollower = [];
 
+        /** @var array<int> $allRelevantHubUserIds */
+        $allRelevantHubUserIds = [];
+
+        // Collect all relevant Hub User IDs
         DB::connection('hub')
             ->table('wcf1_user_follow')
             ->orderBy('followID')
-            ->chunk(5000, function (Collection $records) use (&$followsGroupedByFollower): void {
+            ->chunk(5000, function (Collection $records) use (&$allRelevantHubUserIds): void {
+                $records->each(function (object $record) use (&$allRelevantHubUserIds): void {
+                    if (isset($record->userID)) {
+                        $allRelevantHubUserIds[] = $record->userID;
+                    }
+
+                    if (isset($record->followUserID)) {
+                        $allRelevantHubUserIds[] = $record->followUserID;
+                    }
+                });
+            });
+
+        // Fetch all relevant local users.
+        $uniqueHubUserIds = collect($allRelevantHubUserIds)->filter()->unique()->all();
+
+        /** @var EloquentCollection<int, User> $localUsers */
+        $localUsers = User::query()->whereIn('hub_id', $uniqueHubUserIds)->get()->keyBy('hub_id');
+
+        // Process follows using the fetched local users.
+        DB::connection('hub')
+            ->table('wcf1_user_follow')
+            ->orderBy('followID')
+            ->chunk(5000, function (Collection $records) use (&$followsGroupedByFollower, $localUsers): void {
                 /** @var Collection<int, object> $records */
                 $records
                     ->map(fn (object $record): HubUserFollow => HubUserFollow::fromArray((array) $record))
-                    ->each(function (HubUserFollow $hubUserFollow) use (&$followsGroupedByFollower): void {
-                        $followerId = User::whereHubId($hubUserFollow->userID)->value('id');
-                        $followingId = User::whereHubId($hubUserFollow->followUserID)->value('id');
+                    ->each(function (HubUserFollow $hubUserFollow) use (&$followsGroupedByFollower, $localUsers): void {
+                        $follower = $localUsers->get($hubUserFollow->userID);
+                        $following = $localUsers->get($hubUserFollow->followUserID);
 
-                        if (! $followerId || ! $followingId) {
+                        if (! $follower || ! $following) {
                             return;
                         }
+
+                        $followerId = $follower->id;
+                        $followingId = $following->id;
 
                         $followsGroupedByFollower[$followerId][$followingId] = [
                             'created_at' => Carbon::parse($hubUserFollow->time, 'UTC'),
@@ -427,11 +505,19 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     });
             });
 
-        foreach ($followsGroupedByFollower as $followerId => $followings) {
-            if ($user = User::query()->find($followerId)) {
-                $user->following()->sync($followings);
+        // Fetch follower Users needed for sync.
+        $followerIdsToSync = array_keys($followsGroupedByFollower);
+
+        /** @var EloquentCollection<int, User> $followersToUpdate */
+        $followersToUpdate = User::query()->findMany($followerIdsToSync)->keyBy('id');
+
+        User::withoutEvents(function () use ($followersToUpdate, $followsGroupedByFollower): void {
+            foreach ($followsGroupedByFollower as $followerId => $followings) {
+                if ($user = $followersToUpdate->get($followerId)) {
+                    $user->following()->syncWithoutDetaching($followings); // Don't remove existing relationships.
+                }
             }
-        }
+        });
     }
 
     /**
@@ -458,16 +544,16 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      */
     private function processModLicenseBatch(Collection $hubModLicenses): void
     {
-        // Prepare data for upsert.
+        $now = Carbon::now('UTC')->toDateTimeString();
+
         $licenseData = $hubModLicenses->map(fn (HubModLicense $hubModLicense): array => [
             'hub_id' => $hubModLicense->licenseID,
             'name' => $hubModLicense->licenseName,
             'link' => $hubModLicense->licenseURL,
-            'created_at' => Carbon::now('UTC')->toDateTimeString(),
-            'updated_at' => Carbon::now('UTC')->toDateTimeString(),
+            'created_at' => $now,
+            'updated_at' => $now,
         ])->toArray();
 
-        // Upsert batch of licenses based on their hub_id.
         License::withoutEvents(function () use ($licenseData): void {
             License::query()->upsert($licenseData, ['hub_id'], ['name', 'link', 'created_at', 'updated_at']);
         });
@@ -499,7 +585,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->map(fn (array $record): GitHubSptVersion => GitHubSptVersion::fromArray($record))
             ->reject(fn (GitHubSptVersion $release): bool => $release->draft || $release->prerelease)
             ->map(function (GitHubSptVersion $release): GitHubSptVersion {
-                $release->tag_name = Version::cleanSptImport($release->tag_name)->getVersion();
+                try {
+                    $release->tag_name = Version::cleanSptImport($release->tag_name)->getVersion();
+                } catch (InvalidVersionNumberException $invalidVersionNumberException) {
+                    Log::warning(sprintf("Invalid SPT version format from GitHub release '%s': %s", $release->tag_name, $invalidVersionNumberException->getMessage()));
+                    $release->tag_name = ''; // Filtered out
+                }
 
                 return $release;
             })
@@ -512,14 +603,13 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process the SPT versions, inserting them into the database.
      *
      * @param  Collection<int, GitHubSptVersion>  $releases
-     *
-     * @throws InvalidVersionNumberException
      */
     private function processSptVersions(Collection $releases): void
     {
         // Sort the releases by the tag_name using Semver::sort
         $sortedVersions = Semver::sort($releases->pluck('tag_name')->toArray());
         $latestVersion = end($sortedVersions);
+        $now = Carbon::now('UTC')->toDateTimeString();
 
         // Ensure a "dummy" version exists so we can resolve outdated mods to it.
         $versionData[] = [
@@ -529,24 +619,29 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'version_patch' => 0,
             'version_labels' => '',
             'link' => '',
-            'color_class' => 'black',
-            'created_at' => Carbon::now('UTC')->toDateTimeString(),
-            'updated_at' => Carbon::now('UTC')->toDateTimeString(),
+            'color_class' => 'gray',
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
 
         $releases->each(function (GitHubSptVersion $release) use ($latestVersion, &$versionData): void {
-            $version = new Version($release->tag_name);
-            $versionData[] = [
-                'version' => $version->getVersion(),
-                'version_major' => $version->getMajor(),
-                'version_minor' => $version->getMinor(),
-                'version_patch' => $version->getPatch(),
-                'version_labels' => $version->getLabels(),
-                'link' => $release->html_url,
-                'color_class' => self::detectSptVersionColor($release->tag_name, $latestVersion),
-                'created_at' => Carbon::parse($release->published_at, 'UTC')->toDateTimeString(),
-                'updated_at' => Carbon::parse($release->published_at, 'UTC')->toDateTimeString(),
-            ];
+            try {
+                $version = new Version($release->tag_name);
+                $publishedAt = Carbon::parse($release->published_at, 'UTC')->toDateTimeString();
+                $versionData[] = [
+                    'version' => $version->getVersion(),
+                    'version_major' => $version->getMajor(),
+                    'version_minor' => $version->getMinor(),
+                    'version_patch' => $version->getPatch(),
+                    'version_labels' => $version->getLabels(),
+                    'link' => $release->html_url,
+                    'color_class' => self::detectSptVersionColor($release->tag_name, $latestVersion),
+                    'created_at' => $publishedAt,
+                    'updated_at' => $publishedAt,
+                ];
+            } catch (InvalidVersionNumberException $invalidVersionNumberException) {
+                Log::warning(sprintf("Skipping processing GitHub release '%s' due to version parsing error: %s", $release->tag_name, $invalidVersionNumberException->getMessage()));
+            }
         });
 
         // Upsert SPT Versions based on their version string.
@@ -565,7 +660,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      */
     private static function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
     {
-        if ($rawVersion === '0.0.0') {
+        if ($rawVersion === '0.0.0' || $rawLatestVersion === false) {
             return 'gray';
         }
 
@@ -597,6 +692,9 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      **/
     private function getHubMods(): void
     {
+        /** @var EloquentCollection<int, License> $localLicenses */
+        $localLicenses = License::all()->keyBy('hub_id');
+
         DB::connection('hub')
             ->table('filebase1_file as file')
             ->select(
@@ -626,7 +724,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             })
             ->leftJoin('filebase1_file_option_value as optionContainsAds', function ($join): void {
                 $join->on('file.fileID', '=', 'optionContainsAds.fileID')
-                    ->where('optionContainsAds.optionID', 3); // Ads option
+                    ->where('optionContainsAds.optionID', 3); // Ad option
             })
             ->leftJoin('wcf1_label_object as label', function ($join): void {
                 $join->on('file.fileID', '=', 'label.objectID')
@@ -639,12 +737,34 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->groupBy('file.fileID')
             ->orderBy('file.fileID')
             ->having('spt_version_label', '!=', '')
-            ->chunk(1000, function (Collection $records): void {
+            ->chunk(1000, function (Collection $records) use ($localLicenses): void {
                 /** @var Collection<int, object> $records */
+
                 /** @var Collection<int, HubMod> $hubMods */
                 $hubMods = $records->map(fn (object $record): HubMod => HubMod::fromArray((array) $record));
+                $hubOwnerIds = $hubMods->pluck('userID')->filter()->unique();
 
-                $this->processModBatch($hubMods);
+                /** @var EloquentCollection<int, User> $localOwners */
+                $localOwners = User::query()->whereIn('hub_id', $hubOwnerIds)->get()->keyBy('hub_id');
+
+                // Fetch additional author users for this batch
+                $allAdditionalAuthorHubIds = $hubMods
+                    ->pluck('additional_authors')
+                    ->flatMap(fn ($ids) => empty($ids) ? [] : explode(',', $ids))
+                    ->map(fn ($id): string => trim($id))
+                    ->filter()
+                    ->unique()
+                    ->all();
+
+                /** @var EloquentCollection<int, User> $localAuthors */
+                $localAuthors = User::query()->whereIn('hub_id', $allAdditionalAuthorHubIds)->get()->keyBy('hub_id');
+
+                $this->processModBatch(
+                    $hubMods,
+                    $localOwners,
+                    $localLicenses,
+                    $localAuthors
+                );
             });
     }
 
@@ -652,19 +772,26 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of Hub mods.
      *
      * @param  Collection<int, HubMod>  $hubMods
+     * @param  EloquentCollection<int, User>  $localOwners
+     * @param  EloquentCollection<int, License>  $localLicenses
+     * @param  EloquentCollection<int, User>  $localAuthors
      */
-    private function processModBatch(Collection $hubMods): void
-    {
+    private function processModBatch(
+        Collection $hubMods,
+        EloquentCollection $localOwners,
+        EloquentCollection $localLicenses,
+        EloquentCollection $localAuthors
+    ): void {
         // Prepare data for upsert.
         $modData = $hubMods->map(fn (HubMod $hubMod): array => [
             'hub_id' => $hubMod->fileID,
-            'owner_id' => User::whereHubId($hubMod->userID)->value('id') ?? null,
+            'owner_id' => $localOwners->get($hubMod->userID)?->id,
+            'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
             'name' => $hubMod->subject,
             'slug' => Str::slug($hubMod->subject),
             'teaser' => $hubMod->getTeaser(),
             'description' => $hubMod->getCleanMessage(),
             'thumbnail' => $this->fetchModThumbnail($hubMod),
-            'license_id' => $hubMod->getLicenseId(),
             'source_code_url' => $hubMod->getSourceCodeLink(),
             'featured' => (bool) $hubMod->isFeatured,
             'contains_ai_content' => (bool) $hubMod->contains_ai,
@@ -675,22 +802,46 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'updated_at' => $hubMod->getLastChangeTime(),
         ])->toArray();
 
-        // Upsert batch of mods based on their hub_id.
+        // Upsert a batch of mods based on their hub_id.
         Mod::withoutEvents(function () use ($modData): void {
             Mod::query()->upsert($modData, ['hub_id'], [
-                'owner_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'license_id', 'source_code_url',
+                'owner_id', 'license_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'source_code_url',
                 'featured', 'contains_ai_content', 'contains_ads', 'disabled', 'published_at', 'created_at',
                 'updated_at',
             ]);
         });
 
-        // Attach the authors to the mods.
-        $hubMods->each(function (HubMod $hubMod): void {
-            $authors = $hubMod->getAdditionalAuthorIds();
+        $hubModIds = $hubMods->pluck('fileID');
 
-            Mod::withoutEvents(function () use ($hubMod, $authors): void {
-                Mod::query()->whereHubId($hubMod->fileID)->first()->authors()->sync($authors);
-            });
+        /** @var EloquentCollection<int, Mod> $localMods */
+        $localMods = Mod::query()->whereIn('hub_id', $hubModIds)->get()->keyBy('hub_id');
+
+        // Prepare author relationships for syncing
+        $authorSyncData = [];
+        $hubMods->each(function (HubMod $hubMod) use ($localMods, $localAuthors, &$authorSyncData): void {
+            if ($localMod = $localMods->get($hubMod->fileID)) {
+                $additionalAuthorHubIds = $hubMod->additional_authors
+                    ? collect(explode(',', $hubMod->additional_authors))
+                        ->map(fn ($id): string => trim($id))
+                        ->filter()
+                        ->all()
+                    : [];
+
+                $authorIdsToSync = collect($additionalAuthorHubIds)
+                    ->map(fn ($hubId) => $localAuthors->get((int) $hubId)?->id)
+                    ->filter()
+                    ->all();
+
+                $authorSyncData[$localMod->id] = $authorIdsToSync;
+            }
+        });
+
+        Mod::withoutEvents(function () use ($localMods, $authorSyncData): void {
+            foreach ($authorSyncData as $modId => $authorIds) {
+                if ($mod = $localMods->find($modId)) {
+                    $mod->authors()->sync($authorIds);
+                }
+            }
         });
     }
 
@@ -760,6 +911,11 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         // Set the Font Awesome path
         $fontPath = Storage::disk('local')->path('fonts/fontawesome-webfont.ttf');
+        if (! file_exists($fontPath)) {
+            Log::error('Font Awesome font file not found at: '.$fontPath);
+            throw new ImagickException('Font file not found.');
+        }
+
         $draw->setFont($fontPath);
         $draw->setFontSize($fontSize);
 
@@ -801,7 +957,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->leftJoin('filebase1_file_version_content as version_content', 'version.versionID', '=', 'version_content.versionID')
             ->leftJoin('filebase1_file_option_value as option_values', function ($join): void {
                 $join->on('version.fileID', '=', 'option_values.fileID')
-                    ->whereIn('option_values.optionID', [6, 2]);
+                    ->whereIn('option_values.optionID', [6, 2]); // VirusTotal links
             })
             ->leftJoin('wcf1_label_object as label', 'version.fileID', '=', 'label.objectID')
             ->leftJoin('wcf1_label as spt_version', 'label.labelID', '=', 'spt_version.labelID')
@@ -809,10 +965,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->orderBy('version.versionID', 'desc')
             ->chunk(2000, function (Collection $records): void {
                 /** @var Collection<int, object> $records */
-                /** @var Collection<int, HubModVersion> $hubModVersion */
-                $hubModVersion = $records->map(fn (object $record): HubModVersion => HubModVersion::fromArray((array) $record));
 
-                $this->processModVersionBatch($hubModVersion);
+                /** @var Collection<int, HubModVersion> $hubModVersions */
+                $hubModVersions = $records->map(fn (object $record): HubModVersion => HubModVersion::fromArray((array) $record));
+                $hubModIds = $hubModVersions->pluck('fileID')->unique();
+
+                /** @var EloquentCollection<int, Mod> $localMods */
+                $localMods = Mod::query()->whereIn('hub_id', $hubModIds)->get()->keyBy('hub_id');
+
+                $this->processModVersionBatch($hubModVersions, $localMods);
             });
 
         $this->processModVersionSptConstraints();
@@ -822,21 +983,33 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * Process a batch of Hub mod versions.
      *
      * @param  Collection<int, HubModVersion>  $hubModVersions
+     * @param  EloquentCollection<int, Mod>  $localMods
      */
-    private function processModVersionBatch(Collection $hubModVersions): void
+    private function processModVersionBatch(Collection $hubModVersions, EloquentCollection $localMods): void
     {
         // Prepare data for upsert.
-        $modVersionData = $hubModVersions
-            ->map(function (HubModVersion $hubModVersion): array {
+        $modVersionData = [];
+
+        $hubModVersions->each(function (HubModVersion $hubModVersion) use ($localMods, &$modVersionData): void {
+            try {
                 $version = Version::cleanModImport($hubModVersion->versionNumber);
+                $localMod = $localMods->get($hubModVersion->fileID);
 
-                // Find the mod ID based on the version's hub_id.
-                $modId = Mod::whereHubId($hubModVersion->fileID)->value('id');
+                // If mod doesn't exist locally, skip this version.
+                if (! $localMod) {
+                    return;
+                }
 
-                // Accumulate the SPT version constraints for separate processing.
-                $this->sptVersionConstraints[$modId][$hubModVersion->versionID] = $hubModVersion->getSptVersionConstraint();
+                $modId = $localMod->id;
 
-                return [
+                // Accumulate the SPT version constraints for separate processing. Store with local mod ID as the key.
+                $sptConstraint = $hubModVersion->getSptVersionConstraint();
+                $this->sptVersionConstraints[$modId][$hubModVersion->versionID] = $sptConstraint;
+
+                $publishedAt = $hubModVersion->getPublishedAt();
+                $createdAt = Carbon::parse($hubModVersion->uploadTime, 'UTC')->toDateTimeString();
+
+                $modVersionData[] = [
                     'hub_id' => $hubModVersion->versionID,
                     'mod_id' => $modId,
                     'version' => $version->getVersion(),
@@ -849,21 +1022,27 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     'virus_total_link' => $hubModVersion->getVirusTotalLink(),
                     'downloads' => max($hubModVersion->downloads, 0), // At least 0.
                     'disabled' => (bool) $hubModVersion->isDisabled,
-                    'published_at' => $hubModVersion->getPublishedAt(),
-                    'created_at' => Carbon::parse($hubModVersion->uploadTime, 'UTC')->toDateTimeString(),
-                    'updated_at' => Carbon::parse($hubModVersion->uploadTime, 'UTC')->toDateTimeString(),
+                    'published_at' => $publishedAt,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt,
                 ];
-            })
-            ->filter(fn (array $hubModVersion): bool => $hubModVersion['mod_id'] !== null)
-            ->toArray();
-
-        // Upsert batch of mods based on their hub_id.
-        ModVersion::withoutEvents(function () use ($modVersionData): void {
-            ModVersion::query()->upsert($modVersionData, ['hub_id'], [
-                'mod_id', 'version', 'version_major', 'version_minor', 'version_patch', 'version_labels', 'description',
-                'link', 'virus_total_link', 'downloads', 'disabled', 'published_at', 'created_at', 'updated_at',
-            ]);
+            } catch (InvalidVersionNumberException $e) {
+                Log::warning(sprintf('Skipping Hub mod version ID %d for Hub mod %d due to version parsing error: %s', $hubModVersion->versionID, $hubModVersion->fileID, $e->getMessage()));
+            } catch (Exception $e) {
+                Log::error(sprintf('Error processing Hub mod version ID %d: %s', $hubModVersion->versionID, $e->getMessage()));
+            }
         });
+
+        // Upsert a batch of mods based on their hub_id.
+        if (! empty($modVersionData)) {
+            ModVersion::withoutEvents(function () use ($modVersionData): void {
+                ModVersion::query()->upsert($modVersionData, ['hub_id'], [
+                    'mod_id', 'version', 'version_major', 'version_minor', 'version_patch', 'version_labels',
+                    'description', 'link', 'virus_total_link', 'downloads', 'disabled', 'published_at', 'created_at',
+                    'updated_at',
+                ]);
+            });
+        }
     }
 
     /**
@@ -871,25 +1050,52 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      */
     private function processModVersionSptConstraints(): void
     {
-        foreach ($this->sptVersionConstraints as $modId => $versionConstraints) {
-            $latestModVersion = ModVersion::query()->where('mod_id', $modId)
-                ->orderByDesc('version_major')
-                ->orderByDesc('version_minor')
-                ->orderByDesc('version_patch')
-                ->orderBy('version_labels')
-                ->first();
-
-            if (! $latestModVersion) {
-                continue;
-            }
-
-            // Check if the latest version's hub_id is in the accumulated constraints.
-            $versionId = $latestModVersion->hub_id;
-            if (isset($versionConstraints[$versionId])) {
-                // Update only the latest version's constraint.
-                $latestModVersion->updateQuietly(['spt_version_constraint' => $versionConstraints[$versionId]]);
-            }
+        if (empty($this->sptVersionConstraints)) {
+            return;
         }
+
+        $modIdsToProcess = array_keys($this->sptVersionConstraints);
+
+        /** @var EloquentCollection<int, ModVersion> $allRelevantVersions */
+        $allRelevantVersions = ModVersion::query()
+            ->whereIn('mod_id', $modIdsToProcess)
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderBy('version_labels')
+            ->get();
+
+        if ($allRelevantVersions->isEmpty()) {
+            return;
+        }
+
+        $versionsGroupedByMod = $allRelevantVersions->groupBy('mod_id');
+        $now = Carbon::now('UTC')->toDateTimeString();
+
+        ModVersion::withoutEvents(function () use ($versionsGroupedByMod, $now): void {
+            foreach ($versionsGroupedByMod as $modId => $modVersions) {
+                $latestModVersion = $modVersions->first();
+                if (! $latestModVersion) {
+                    continue;
+                }
+
+                $versionConstraintsForMod = $this->sptVersionConstraints[$modId] ?? null;
+                $latestVersionHubId = $latestModVersion->hub_id;
+
+                if ($versionConstraintsForMod && isset($versionConstraintsForMod[$latestVersionHubId])) {
+                    $constraintValue = $versionConstraintsForMod[$latestVersionHubId];
+
+                    if ($latestModVersion->spt_version_constraint !== $constraintValue) {
+                        ModVersion::query()
+                            ->where('id', $latestModVersion->id)
+                            ->update([
+                                'spt_version_constraint' => $constraintValue,
+                                'updated_at' => $now,
+                            ]);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -907,5 +1113,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         }
 
         Mod::query()->whereNotIn('hub_id', $hubModIds)->delete();
+    }
+
+    /**
+     * Remove mods that do not have a hub id. This ensures that anything uploaded directly to the Forge
+     * is removed as "testing" data.
+     */
+    private function removeModsWithoutHubVersions(): void
+    {
+        Mod::query()->whereNull('hub_id')->delete();
     }
 }

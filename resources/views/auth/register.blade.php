@@ -1,4 +1,11 @@
 <x-guest-layout>
+    <x-slot name="title">
+        {{ __('Register an account') }}
+    </x-slot>
+    <x-slot name="description">
+        {{ __('Register an account to start using The Forge and join the community.') }}
+    </x-slot>
+
     <x-authentication-card>
         <x-slot name="logo">
             <x-authentication-card-logo />
@@ -29,6 +36,16 @@
                 <x-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
             </div>
 
+            <div class="mt-4">
+                <x-label for="timezone" value="{{ __('Timezone') }}" />
+                <select id="timezone" name="timezone" class="block mt-1 w-full rounded-md border-0 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm" required>
+                    <option value="" @selected(!old('timezone')) selected>{{ __('Select your timezone') }}</option>
+                    @foreach (\DateTimeZone::listIdentifiers() as $tz)
+                        <option value="{{ $tz }}" @selected(old('timezone') === $tz)>{{ $tz }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                 <div class="mt-4">
                     <x-label for="terms">
@@ -50,6 +67,8 @@
                 <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" href="{{ route('login') }}">
                     {{ __('Already registered?') }}
                 </a>
+
+                <x-honeypot />
 
                 <x-button class="ms-4">
                     {{ __('Register') }}

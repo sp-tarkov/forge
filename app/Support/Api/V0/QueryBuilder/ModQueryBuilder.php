@@ -365,12 +365,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
     public static function getAllowedSorts(): array
     {
         return [
-            'id',
             'name',
-            'slug',
             'featured',
-            'contains_ads',
-            'contains_ai_content',
             'created_at',
             'updated_at',
             'published_at',

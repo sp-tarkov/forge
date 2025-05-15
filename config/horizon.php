@@ -168,7 +168,7 @@ return [
     |
     */
 
-    'memory_limit' => 64,
+    'memory_limit' => 128,
 
     /*
     |--------------------------------------------------------------------------
@@ -192,6 +192,7 @@ return [
             'balanceCooldown' => 3,
             'tries' => 3,
             'timeout' => 120,
+            'memory' => 256,
         ],
         'supervisor-long' => [
             'connection' => 'redis',
@@ -203,6 +204,7 @@ return [
             'balanceCooldown' => 3,
             'tries' => 3,
             'timeout' => 3600,
+            'memory' => 720,
         ],
     ],
 
