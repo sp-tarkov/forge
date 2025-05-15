@@ -49,6 +49,8 @@
                 </div>
             </div>
 
+            <x-honeypot />
+
             <x-primary-button type="submit" class="mt-6 w-full flex justify-center">
                 {{ __('Log in') }}
             </x-primary-button>

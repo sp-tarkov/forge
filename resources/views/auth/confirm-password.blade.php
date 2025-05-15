@@ -25,6 +25,8 @@
                 <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" autofocus />
             </div>
 
+            <x-honeypot />
+
             <div class="flex justify-end mt-4">
                 <x-button class="ms-4">
                     {{ __('Confirm') }}
