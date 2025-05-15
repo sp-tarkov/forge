@@ -16,13 +16,22 @@ use Exception;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
+use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 
 class Create extends Component
 {
+    use UsesSpamProtection;
+
     /**
      * The mod to create the version for.
      */
     public Mod $mod;
+
+    /**
+     * The honeypot data to be validated.
+     */
+    public HoneypotData $honeypotData;
 
     /**
      * The version number.
@@ -106,6 +115,8 @@ class Create extends Component
     public function mount(Mod $mod): void
     {
         $this->mod = $mod;
+        $this->honeypotData = new HoneypotData();
+
         $this->authorize('create', [ModVersion::class, $this->mod]);
     }
 
@@ -115,6 +126,9 @@ class Create extends Component
     public function save(): void
     {
         $this->authorize('create', [ModVersion::class, $this->mod]);
+
+        // Validate the honeypot data.
+        $this->protectAgainstSpam();
 
         // Validate the form.
         $validated = $this->validate();
