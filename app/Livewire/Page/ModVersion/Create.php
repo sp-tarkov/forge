@@ -16,8 +16,8 @@ use Exception;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
+use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 class Create extends Component
 {
@@ -115,7 +115,7 @@ class Create extends Component
     public function mount(Mod $mod): void
     {
         $this->mod = $mod;
-        $this->honeypotData = new HoneypotData();
+        $this->honeypotData = new HoneypotData;
 
         $this->authorize('create', [ModVersion::class, $this->mod]);
     }

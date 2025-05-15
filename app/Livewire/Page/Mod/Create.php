@@ -12,13 +12,13 @@ use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
+use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 class Create extends Component
 {
-    use WithFileUploads;
     use UsesSpamProtection;
+    use WithFileUploads;
 
     /**
      * The honeypot data to be validated.
@@ -84,7 +84,7 @@ class Create extends Component
      */
     public function mount(): void
     {
-        $this->honeypotData = new HoneypotData();
+        $this->honeypotData = new HoneypotData;
 
         $this->authorize('create', Mod::class);
     }
