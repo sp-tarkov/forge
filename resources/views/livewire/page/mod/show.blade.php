@@ -1,8 +1,9 @@
 <x-slot name="title">
-    {{ __(':mod - Mod Details', ['mod' => $mod->name]) }}
+    {!! __(':mod - Mod Details', ['mod' => $mod->name]) !!}
 </x-slot>
+
 <x-slot name="description">
-    {{ __('The details for :mod on The Forge. :teaser', ['mod' => $mod->name, 'teaser' => $mod->teaser]) }}
+    {!! __('The details for :mod on The Forge. :teaser', ['mod' => $mod->name, 'teaser' => $mod->teaser]) !!}
 </x-slot>
 
 <x-slot name="header">
@@ -12,6 +13,29 @@
 </x-slot>
 
 <div>
+    @auth
+        @can('create', [App\Models\ModVersion::class, $mod])
+            @if (! $mod->latestVersion)
+                <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+                    <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                        <flux:callout.heading>Not Discoverable</flux:callout.heading>
+                        <flux:callout.text>In order for this mod to be discoverable by other users you must first create a mod version.</flux:callout.text>
+                        <x-slot name="actions" class="@md:h-full m-0!">
+                            <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version</flux:button>
+                        </x-slot>
+                    </flux:callout>
+                </div>
+            @elseif ($mod->latestVersion && (is_null($mod->published_at) || $mod->published_at > now() || !$mod->versions()->whereNotNull('published_at')->where('published_at', '<=', now())->exists()))
+                <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+                    <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                        <flux:callout.heading>Not Discoverable</flux:callout.heading>
+                        <flux:callout.text>This mod is not yet published or scheduled for future publication. Once the mod (and at least one of its versions) are published, the mod will be become available to the public.</flux:callout.text>
+                    </flux:callout>
+                </div>
+            @endif
+        @endcan
+    @endauth
+
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto py-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
 
@@ -25,6 +49,7 @@
                     wire:key="mod-ribbon-show-{{ $mod->id }}"
                     :id="$mod->id"
                     :disabled="$mod->disabled"
+                    :publishedAt="$mod->published_at"
                     :featured="$mod->featured"
                 />
 

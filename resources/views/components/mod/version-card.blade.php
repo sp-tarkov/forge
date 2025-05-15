@@ -8,6 +8,7 @@
         wire:key="mod-version-show-ribbon-{{ $version->id }}"
         :id="$version->id"
         :disabled="$version->disabled"
+        :publishedAt="$version->published_at"
     />
 
     <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">

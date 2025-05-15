@@ -1,6 +1,7 @@
 <x-slot name="title">
     {{ __(':name - User Profile', ['name' => $user->name]) }}
 </x-slot>
+
 <x-slot name="description">
     {{ __('The profile for :name on The Forge. See their mods, activity, and comments.', ['name' => $user->name]) }}
 </x-slot>
