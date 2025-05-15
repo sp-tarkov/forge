@@ -84,6 +84,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->getHubMods();
         $this->getHubModVersions();
         $this->removeDeletedHubMods();
+        $this->removeModsWithoutHubVersions();
 
         Bus::chain([
             (new ResolveSptVersionsJob)->onQueue('long'),
@@ -1112,5 +1113,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         }
 
         Mod::query()->whereNotIn('hub_id', $hubModIds)->delete();
+    }
+
+    /**
+     * Remove mods that do not have a hub id. This ensures that anything uploaded directly to the Forge
+     * is removed as "testing" data.
+     */
+    private function removeModsWithoutHubVersions(): void
+    {
+        Mod::query()->whereNull('hub_id')->delete();
     }
 }

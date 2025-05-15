@@ -8,6 +8,7 @@ use App\Models\Mod;
 use App\Models\SptVersion;
 use App\Services\DependencyVersionService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class ModObserver
 {
@@ -44,5 +45,19 @@ class ModObserver
     public function deleted(Mod $mod): void
     {
         $this->updateRelatedSptVersions($mod);
+    }
+
+    /**
+     * Handle the Mod "deleting" event.
+     */
+    public function deleting(Mod $mod): void
+    {
+        // Remove the mod's thumbnail image from storage if it exists.
+        if ($mod->thumbnail) {
+            $disk = config('filesystems.asset_upload', 'public');
+            if (Storage::disk($disk)->exists($mod->thumbnail)) {
+                Storage::disk($disk)->delete($mod->thumbnail);
+            }
+        }
     }
 }
