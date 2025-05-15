@@ -1,10 +1,10 @@
-<div>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-            {{ __('Create a New Mod Version') }}
-        </h2>
-    </x-slot>
+<x-slot name="header">
+    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+        {{ __('Create a New Mod Version') }}
+    </h2>
+</x-slot>
 
+<div>
     <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
         <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
             <flux:callout.heading>Permanence Warning</flux:callout.heading>
@@ -111,13 +111,7 @@
                                         wire:model.defer="publishedAt"
                                     />
                                     @if (auth()->user()->timezone !== null)
-                                        <button
-                                            type="button"
-                                            class="px-2 py-1 rounded bg-cyan-500 text-white text-xs hover:bg-cyan-600 transition"
-                                            @click="$wire.set('publishedAt', now())"
-                                        >
-                                            {{ __('Now') }}
-                                        </button>
+                                        <flux:button size="sm" variant="outline" @click="$wire.set('publishedAt', now())">Now</flux:button>
                                     @endif
                                 </div>
                                 <flux:error name="publishedAt" />

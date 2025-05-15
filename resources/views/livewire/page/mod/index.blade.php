@@ -1,8 +1,9 @@
 <x-slot name="title">
-    {{ __('Mods - Find the best SPT Mods') }}
+    {!! __('Mods - Find the best SPT Mods') !!}
 </x-slot>
+
 <x-slot name="description">
-    {{ __('Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') }}
+    {!! __('Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}
 </x-slot>
 
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
