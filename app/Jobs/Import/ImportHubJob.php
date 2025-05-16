@@ -789,7 +789,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $activeHubMods = $hubMods->reject(fn (HubMod $hubMod): bool => (bool) $hubMod->isDeleted);
 
         // Delete mods from the database that are marked as deleted
-        if (!empty($deletedHubIds)) {
+        if (! empty($deletedHubIds)) {
             Mod::query()->whereIn('hub_id', $deletedHubIds)->delete();
         }
 
