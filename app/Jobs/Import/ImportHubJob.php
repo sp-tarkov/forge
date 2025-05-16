@@ -782,8 +782,19 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         EloquentCollection $localLicenses,
         EloquentCollection $localAuthors
     ): void {
-        // Prepare data for upsert.
-        $modData = $hubMods->map(fn (HubMod $hubMod): array => [
+        // Filter out deleted mods and collect their hub_ids for deletion
+        $deletedHubIds = $hubMods->filter(fn (HubMod $hubMod): bool => (bool) $hubMod->isDeleted)
+            ->pluck('fileID')
+            ->all();
+        $activeHubMods = $hubMods->reject(fn (HubMod $hubMod): bool => (bool) $hubMod->isDeleted);
+
+        // Delete mods from the database that are marked as deleted
+        if (!empty($deletedHubIds)) {
+            Mod::query()->whereIn('hub_id', $deletedHubIds)->delete();
+        }
+
+        // Prepare data for upsert for only active mods.
+        $modData = $activeHubMods->map(fn (HubMod $hubMod): array => [
             'hub_id' => $hubMod->fileID,
             'owner_id' => $localOwners->get($hubMod->userID)?->id,
             'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
@@ -811,14 +822,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ]);
         });
 
-        $hubModIds = $hubMods->pluck('fileID');
+        $hubModIds = $activeHubMods->pluck('fileID');
 
         /** @var EloquentCollection<int, Mod> $localMods */
         $localMods = Mod::query()->whereIn('hub_id', $hubModIds)->get()->keyBy('hub_id');
 
         // Prepare author relationships for syncing
         $authorSyncData = [];
-        $hubMods->each(function (HubMod $hubMod) use ($localMods, $localAuthors, &$authorSyncData): void {
+        $activeHubMods->each(function (HubMod $hubMod) use ($localMods, $localAuthors, &$authorSyncData): void {
             if ($localMod = $localMods->get($hubMod->fileID)) {
                 $additionalAuthorHubIds = $hubMod->additional_authors
                     ? collect(explode(',', $hubMod->additional_authors))
