@@ -366,6 +366,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'name',
+            'downloads',
             'featured',
             'created_at',
             'updated_at',
