@@ -12,9 +12,9 @@
     />
 
     <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
-        @if (auth()->user()?->isModOrAdmin())
-            <livewire:mod.version-moderation wire:key="mod-version-show-moderation-{{ $version->id }}" :version="$version" />
-        @endif
+        @can('update', $version)
+            <livewire:mod.version-action wire:key="mod-version-show-action-{{ $version->id }}" :version="$version" />
+        @endcan
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">

@@ -117,4 +117,24 @@ class ModVersionPolicy
     {
         return $user->isModOrAdmin();
     }
+
+    /**
+     * Determine whether the user can view actions for the model. Example: Edit, Delete, etc.
+     */
+    public function viewActions(User $user, ModVersion $modVersion): bool
+    {
+        return $this->isAuthorOrOwner($user, $modVersion);
+    }
+
+    /**
+     * Check if the user is an author or the owner of the mod.
+     */
+    private function isAuthorOrOwner(?User $user, ModVersion $modVersion): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        return $user->id === $modVersion->mod->owner?->id || $modVersion->mod->authors->pluck('id')->contains($user->id);
+    }
 }

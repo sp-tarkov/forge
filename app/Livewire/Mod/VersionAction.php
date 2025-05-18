@@ -9,7 +9,7 @@ use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class VersionModeration extends Component
+class VersionAction extends Component
 {
     /**
      * The mod being moderated.
@@ -71,6 +71,6 @@ class VersionModeration extends Component
      */
     public function render(): string|View
     {
-        return view('livewire.mod.version-moderation');
+        return view('livewire.mod.version-action');
     }
 }
