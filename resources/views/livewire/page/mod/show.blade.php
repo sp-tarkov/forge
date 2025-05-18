@@ -11,7 +11,7 @@
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Mod Details') }}
         </h2>
-        @if (auth()->user()->can('viewActions', [App\Models\Mod::class, $mod]))
+        @if (auth()->user()?->can('viewActions', [App\Models\Mod::class, $mod]))
             @if (auth()->user()?->hasMfaEnabled())
                 <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}" size="sm">
                     {{ __('Create Mod Version') }}
