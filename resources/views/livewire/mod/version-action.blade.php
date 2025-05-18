@@ -2,7 +2,7 @@
     <flux:dropdown position="bottom" align="end" class="absolute top-1.5 right-1.5">
         <flux:button icon="cog-8-tooth" />
         <flux:menu>
-            @can('viewActions', $version)
+            @can('viewActions', [App\Models\Mod::class, $version->mod])
                 <flux:menu.group heading="Mod Version Actions">
                     @if ($version->disabled)
                         @can('enable', $version)

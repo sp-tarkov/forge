@@ -62,7 +62,7 @@
 
             @if (isset($header))
                 <header class="bg-gray-50 dark:bg-gray-900 shadow-sm dark:shadow-gray-950">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-7xl min-h-[80px] flex items-center mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>

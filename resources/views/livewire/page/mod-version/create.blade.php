@@ -1,3 +1,11 @@
+<x-slot name="title">
+    {!! __('Create a New Mod Version') !!}
+</x-slot>
+
+<x-slot name="description">
+    {!! __('Create a new mod version to share with the community.') !!}
+</x-slot>
+
 <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
         {{ __('Create a New Mod Version') }}

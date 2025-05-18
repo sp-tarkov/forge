@@ -6,26 +6,27 @@
     {!! __('Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}
 </x-slot>
 
+<x-slot name="header">
+    <div class="flex items-center justify-between w-full">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+            {{ __('Mod Listings') }}
+        </h2>
+        @can('create', [App\Models\Mod::class])
+            <flux:button href="{{ route('mod.create') }}" size="sm">{{ __('Create New Mod') }}</flux:button>
+        @else
+            <flux:tooltip content="Must enable MFA to create mods.">
+                <div>
+                    <flux:button disabled="true" size="sm">{{ __('Create New Mod') }}</flux:button>
+                </div>
+            </flux:tooltip>
+        @endcan
+    </div>
+</x-slot>
+
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
-        <div class="flex">
-            <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
-            <div class="items-center ml-auto flex-shrink-0">
-                @auth
-                    @if(auth()->user()->hasMFAEnabled())
-                        <flux:button href="{{ route('mod.create') }}">{{ __('Create New Mod') }}</flux:button>
-                    @else
-                        <flux:tooltip content="Your account must have MFA enabled to create a new mod.">
-                            <div>
-                                <flux:button disabled="true">{{ __('Create New Mod') }}</flux:button>
-                            </div>
-                        </flux:tooltip>
-                    @endif
-                @endauth
-            </div>
-        </div>
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
         <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __('Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}</p>
-
         <search class="md:hidden relative group mt-6">
             <div class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-5 w-5 text-gray-500">
