@@ -145,6 +145,14 @@ class Create extends Component
     }
 
     /**
+     * Remove the uploaded avatar.
+     */
+    public function removeAvatar(): void
+    {
+        $this->avatar = null;
+    }
+
+    /**
      * Render the component.
      */
     public function render(): View

@@ -47,9 +47,14 @@
                                     </div>
                                 </div>
                                 @if ($avatar)
-                                    <div class="mt-2">
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Preview:</p>
-                                        <img src="{{ $avatar->temporaryUrl() }}" class="h-20 w-20 object-cover rounded" alt="Avatar preview">
+                                    <div class="mt-2 flex items-center gap-2">
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Preview:</p>
+                                            <img src="{{ $avatar->temporaryUrl() }}" class="h-20 w-20 object-cover rounded" alt="Avatar preview">
+                                        </div>
+                                        <flux:button size="sm" variant="outline" wire:click="removeAvatar" type="button">
+                                            {{ __('Remove Avatar') }}
+                                        </flux:button>
                                     </div>
                                 @endif
                             </flux:field>
