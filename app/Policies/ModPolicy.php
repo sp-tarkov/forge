@@ -53,7 +53,7 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->authors->contains($user);
+        return $user->isModOrAdmin() || $mod->owner->id === $user->id || $mod->authors->contains($user);
     }
 
     /**
@@ -85,7 +85,7 @@ class ModPolicy
      */
     public function disable(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin();
+        return $user->isModOrAdmin() || $mod->owner->id === $user->id;
     }
 
     /**
@@ -93,7 +93,7 @@ class ModPolicy
      */
     public function enable(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin();
+        return $user->isModOrAdmin() || $mod->owner->id === $user->id;
     }
 
     /**
@@ -110,6 +110,14 @@ class ModPolicy
     public function unfeature(User $user, Mod $mod): bool
     {
         return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can view actions for the model. Example: Edit, Delete, etc.
+     */
+    public function viewActions(User $user, Mod $mod): bool
+    {
+        return $this->isAuthorOrOwner($user, $mod);
     }
 
     /**

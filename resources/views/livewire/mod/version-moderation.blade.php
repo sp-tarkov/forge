@@ -1,6 +1,6 @@
 <div>
     <flux:dropdown position="bottom" align="end" class="absolute top-1.5 right-1.5">
-        <flux:button icon="shield-exclamation" />
+        <flux:button icon="cog-8-tooth" />
         <flux:navmenu>
             @if ($version->disabled)
                 <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmVersionEnable')" icon="eye">Enable Version</flux:navmenu.item>

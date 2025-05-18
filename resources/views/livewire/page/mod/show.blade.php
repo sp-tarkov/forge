@@ -41,9 +41,9 @@
 
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
-                @if (auth()->user()?->isModOrAdmin())
-                    <livewire:mod.moderation wire:key="mod-moderation-show-{{ $mod->id }}" :mod="$mod" />
-                @endif
+                @can('update', $mod)
+                    <livewire:mod.action wire:key="mod-action-show-{{ $mod->id }}" :mod="$mod" />
+                @endcan
 
                 <livewire:ribbon
                     wire:key="mod-ribbon-show-{{ $mod->id }}"
