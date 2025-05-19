@@ -7,6 +7,7 @@ namespace App\Livewire\Page\Mod;
 use App\Models\Mod;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
@@ -31,10 +32,10 @@ class Edit extends Component
     public Mod $mod;
 
     /**
-     * The avatar of the mod.
+     * The thumbnail of the mod.
      */
     #[Validate('nullable|image|mimes:jpg,jpeg,png|max:2048')]
-    public ?UploadedFile $avatar = null;
+    public ?UploadedFile $thumbnail = null;
 
     /**
      * The name of the mod.
@@ -91,9 +92,9 @@ class Edit extends Component
     {
         $this->honeypotData = new HoneypotData;
 
-        $this->authorize('update', $this->mod);
-
         $this->mod = Mod::query()->findOrFail($modId);
+
+        $this->authorize('update', $this->mod);
 
         // Prefill fields from the mod
         $this->name = $this->mod->name;
@@ -140,9 +141,16 @@ class Edit extends Component
         $this->mod->contains_ads = $this->containsAds;
         $this->mod->published_at = $publishedAtCarbon;
 
-        // Set the thumbnail if an avatar was uploaded.
-        if ($this->avatar !== null) {
-            $this->mod->thumbnail = $this->avatar->storePublicly(
+        // Set the thumbnail if a file was uploaded.
+        if ($this->thumbnail !== null) {
+
+            // Delete the old thumbnail file from storage
+            if ($this->mod->thumbnail) {
+                Storage::disk(config('filesystems.asset_upload', 'public'))->delete($this->mod->thumbnail);
+            }
+
+            // Store the new thumbnail.
+            $this->mod->thumbnail = $this->thumbnail->storePublicly(
                 path: 'mods',
                 options: config('filesystems.asset_upload', 'public'),
             );
@@ -156,11 +164,11 @@ class Edit extends Component
     }
 
     /**
-     * Remove the uploaded avatar.
+     * Remove the uploaded thumbnail from the form (does not affect the mod's thumbnail until saved).
      */
-    public function removeAvatar(): void
+    public function removeThumbnail(): void
     {
-        $this->avatar = null;
+        $this->thumbnail = null;
     }
 
     /**

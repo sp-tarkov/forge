@@ -26,10 +26,10 @@ class Create extends Component
     public HoneypotData $honeypotData;
 
     /**
-     * The avatar of the mod.
+     * The thumbnail of the mod.
      */
     #[Validate('nullable|image|mimes:jpg,jpeg,png|max:2048')]
-    public ?UploadedFile $avatar = null;
+    public ?UploadedFile $thumbnail = null;
 
     /**
      * The name of the mod.
@@ -128,9 +128,9 @@ class Create extends Component
             'published_at' => $this->publishedAt,
         ]);
 
-        // Set the thumbnail if an avatar was uploaded.
-        if ($this->avatar !== null) {
-            $mod->thumbnail = $this->avatar->storePublicly(
+        // Set the thumbnail if a file was uploaded.
+        if ($this->thumbnail !== null) {
+            $mod->thumbnail = $this->thumbnail->storePublicly(
                 path: 'mods',
                 options: config('filesystems.asset_upload', 'public'),
             );
@@ -145,11 +145,11 @@ class Create extends Component
     }
 
     /**
-     * Remove the uploaded avatar.
+     * Remove the uploaded thumbnail.
      */
-    public function removeAvatar(): void
+    public function removeThumbnail(): void
     {
-        $this->avatar = null;
+        $this->thumbnail = null;
     }
 
     /**

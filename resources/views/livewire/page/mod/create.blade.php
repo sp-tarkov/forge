@@ -45,23 +45,23 @@
                             @csrf
 
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('Avatar') }}</flux:label>
-                                <flux:description>{{ __('Optionally upload an image to use as the mod\'s avatar. This will be displayed on the mod page and in search results. The image should be square, JPG or PNG, and no larger than 2MB.') }}</flux:description>
-                                <flux:input type="file" wire:model.blur="avatar" accept="image/*" />
-                                <flux:error name="avatar" />
-                                <div wire:loading wire:target="avatar" class="mt-2">
+                                <flux:label>{{ __('Thumbnail') }}</flux:label>
+                                <flux:description>{{ __('Optionally upload an image to use as the mod\'s thumbnail. This will be displayed on the mod page and in search results. The image should be square, JPG or PNG, and no larger than 2MB.') }}</flux:description>
+                                <flux:input type="file" wire:model.blur="thumbnail" accept="image/*" />
+                                <flux:error name="thumbnail" />
+                                <div wire:loading wire:target="thumbnail" class="mt-2">
                                     <div class="w-full bg-gray-200 rounded-full h-2.5">
                                         <div class="bg-cyan-500 h-2.5 rounded-full" style="width: 0%" wire:loading.class="animate-pulse"></div>
                                     </div>
                                 </div>
-                                @if ($avatar)
+                                @if ($thumbnail)
                                     <div class="mt-2 flex items-center gap-2">
                                         <div>
                                             <p class="text-sm text-gray-600 dark:text-gray-400">Preview:</p>
-                                            <img src="{{ $avatar->temporaryUrl() }}" class="h-20 w-20 object-cover rounded" alt="Avatar preview">
+                                            <img src="{{ $thumbnail->temporaryUrl() }}" class="h-20 w-20 object-cover rounded" alt="Thumbnail preview">
                                         </div>
-                                        <flux:button size="sm" variant="outline" wire:click="removeAvatar" type="button">
-                                            {{ __('Remove Avatar') }}
+                                        <flux:button size="sm" variant="outline" wire:click="removeThumbnail" type="button">
+                                            {{ __('Remove Thumbnail') }}
                                         </flux:button>
                                     </div>
                                 @endif
