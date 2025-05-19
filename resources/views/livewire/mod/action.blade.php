@@ -4,11 +4,9 @@
         <flux:menu>
             @can('viewActions', $mod)
                 <flux:menu.group heading="Mod Actions">
-                    {{--
                     @can('update', $mod)
-                        <flux:menu.item icon:trailing="pencil-square">Edit Mod</flux:menu.item>
+                        <flux:menu.item href="{{ route('mod.edit', $mod->id) }}" icon:trailing="pencil-square">Edit Mod</flux:menu.item>
                     @endcan
-                    --}}
                     @if ($mod->disabled)
                         @can('enable', $mod)
                             <flux:menu.item x-on:click.prevent="$wire.confirmModEnable = true" icon:trailing="eye">Enable Mod</flux:menu.item>
@@ -25,11 +23,9 @@
             @endcan
             @if (auth()->user()?->isModOrAdmin())
                 <flux:menu.group heading="{{ auth()->user()->role->name }} Actions">
-                    {{--
                     @can('update', $mod)
-                        <flux:menu.item icon:trailing="pencil-square">Edit Mod</flux:menu.item>
+                        <flux:menu.item href="{{ route('mod.edit', $mod->id) }}" icon:trailing="pencil-square">Edit Mod</flux:menu.item>
                     @endcan
-                    --}}
                     @if ($mod->featured)
                         @can('unfeature', $mod)
                             <flux:menu.item x-on:click.prevent="$wire.confirmModUnfeature = true" icon:trailing="arrow-trending-down">Remove Featured</flux:menu.item>
