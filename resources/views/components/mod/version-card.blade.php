@@ -70,9 +70,11 @@
     </div>
     <div class="py-3 user-markdown text-gray-700 dark:text-gray-400">
         {{--
-        The description below is safe to write directly because it has been run though HTMLPurifier during the import.
-        TODO: Push the parsed markdown HTML through HTMLPurifier again on display.
+        !DANGER ZONE!
+
+        This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
+        fields like this when you're absolutly sure that the data is safe. Which is almost never.
         --}}
-        {!! Str::markdown($version->description) !!}
+        {!! $version->description_html !!}
     </div>
 </div>

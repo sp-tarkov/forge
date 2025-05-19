@@ -9,8 +9,10 @@ use App\Models\Scopes\PublishedScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
 use Database\Factories\ModVersionFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +24,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Override;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * ModVersion Model
@@ -43,6 +46,7 @@ use Override;
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read string $description_html
  * @property-read Mod $mod
  * @property-read Collection<int, ModDependency> $dependencies
  * @property-read Collection<int, ModVersion> $resolvedDependencies
@@ -233,5 +237,19 @@ class ModVersion extends Model
             ->orderBy('version_labels')
             ->pluck('version')
             ->all());
+    }
+
+    /**
+     * Generate the cleaned version of the HTML description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Purify::config('description')->clean(
+                Markdown::convert($this->description)->getContent()
+            )
+        )->shouldCache();
     }
 }
