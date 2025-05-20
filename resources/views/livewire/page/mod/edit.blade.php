@@ -46,7 +46,7 @@
                                     @if ($mod && $mod->thumbnail)
                                         <div>
                                             <p class="text-sm text-gray-600 dark:text-gray-400">Current Thumbnail:</p>
-                                            <img src="{{ asset('storage/' . $mod->thumbnail) }}" class="h-20 w-20 object-cover rounded border border-gray-300 dark:border-gray-700" alt="Current thumbnail">
+                                            <img src="{{ asset($mod->thumbnail) }}" class="h-20 w-20 object-cover rounded border border-gray-300 dark:border-gray-700" alt="Current thumbnail">
                                         </div>
                                     @endif
                                     @if ($thumbnail)
