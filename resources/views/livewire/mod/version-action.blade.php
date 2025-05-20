@@ -4,6 +4,9 @@
         <flux:menu>
             @can('viewActions', [App\Models\Mod::class, $version->mod])
                 <flux:menu.group heading="Mod Version Actions">
+                    @can('update', $version)
+                        <flux:menu.item href="{{ route('mod.version.edit', [$version->mod->id, $version->id]) }}" icon="pencil">Edit Version</flux:menu.item>
+                    @endcan
                     @if ($version->disabled)
                         @can('enable', $version)
                             <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionEnable')" icon="eye">Enable Version</flux:menu.item>
@@ -20,6 +23,9 @@
             @endcan
             @if (auth()->user()?->isModOrAdmin())
                 <flux:menu.group heading="{{ auth()->user()->role->name }} Actions">
+                    @can('update', $version)
+                        <flux:menu.item href="{{ route('mod.version.edit', [$version->mod->id, $version->id]) }}" icon="pencil">Edit Version</flux:menu.item>
+                    @endcan
                     @if ($version->disabled)
                         @can('enable', $version)
                             <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionEnable')" icon="eye">Enable Version</flux:menu.item>
