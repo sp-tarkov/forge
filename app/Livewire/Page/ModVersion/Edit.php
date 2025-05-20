@@ -9,9 +9,9 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
-use Carbon\Carbon;
 use Composer\Semver\Semver;
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -76,7 +76,7 @@ class Edit extends Component
     /**
      * The matching SPT versions for the current constraint.
      *
-     * @var array<int, MatchingSptVersion>
+     * @var array<int, array{version: string, color_class: string}>
      */
     public array $matchingSptVersions = [];
 
