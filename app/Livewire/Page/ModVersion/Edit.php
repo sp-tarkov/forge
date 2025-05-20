@@ -29,62 +29,46 @@ class Edit extends Component
 
     /**
      * The mod being edited.
-     *
-     * @var Mod
      */
     public Mod $mod;
 
     /**
      * The mod version being edited.
-     *
-     * @var ModVersion
      */
     public ModVersion $modVersion;
 
     /**
      * The version number.
-     *
-     * @var string
      */
     #[Validate(['required', 'string', 'max:50', new SemverRule])]
     public string $version = '';
 
     /**
      * The description of the mod version.
-     *
-     * @var string
      */
     #[Validate('required|string')]
     public string $description = '';
 
     /**
      * The link to the mod version.
-     *
-     * @var string
      */
     #[Validate('required|string|url|starts_with:https://,http://')]
     public string $link = '';
 
     /**
      * The SPT version constraint.
-     *
-     * @var string
      */
     #[Validate(['required', 'string', 'max:75', new SemverConstraintRule])]
     public string $sptVersionConstraint = '';
 
     /**
      * The link to the virus total scan of the mod version.
-     *
-     * @var string
      */
     #[Validate('required|string|url|starts_with:https://www.virustotal.com/')]
     public string $virusTotalLink = '';
 
     /**
      * The published at date of the mod version.
-     *
-     * @var string|null
      */
     #[Validate('nullable|date')]
     public ?string $publishedAt = null;
@@ -98,10 +82,6 @@ class Edit extends Component
 
     /**
      * Mount the component.
-     *
-     * @param Mod $mod
-     * @param ModVersion $modVersion
-     * @return void
      */
     public function mount(Mod $mod, ModVersion $modVersion): void
     {
@@ -125,13 +105,12 @@ class Edit extends Component
 
     /**
      * Update the matching SPT versions when the constraint changes.
-     *
-     * @return void
      */
     public function updatedSptVersionConstraint(): void
     {
         if (empty($this->sptVersionConstraint)) {
             $this->matchingSptVersions = [];
+
             return;
         }
 
@@ -159,8 +138,6 @@ class Edit extends Component
 
     /**
      * Save the mod version changes.
-     *
-     * @return void
      */
     public function save(): void
     {
@@ -197,8 +174,6 @@ class Edit extends Component
 
     /**
      * Render the component.
-     *
-     * @return View
      */
     public function render(): View
     {
