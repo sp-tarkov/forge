@@ -12,9 +12,9 @@
     />
 
     <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
-        @if (auth()->user()?->isModOrAdmin())
-            <livewire:mod.version-moderation wire:key="mod-version-show-moderation-{{ $version->id }}" :version="$version" />
-        @endif
+        @can('update', $version)
+            <livewire:mod.version-action wire:key="mod-version-show-action-{{ $version->id }}" :version="$version" />
+        @endcan
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">
@@ -70,9 +70,11 @@
     </div>
     <div class="py-3 user-markdown text-gray-700 dark:text-gray-400">
         {{--
-        The description below is safe to write directly because it has been run though HTMLPurifier during the import.
-        TODO: Push the parsed markdown HTML through HTMLPurifier again on display.
+        !DANGER ZONE!
+
+        This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
+        fields like this when you're absolutly sure that the data is safe. Which is almost never.
         --}}
-        {!! Str::markdown($version->description) !!}
+        {!! $version->description_html !!}
     </div>
 </div>

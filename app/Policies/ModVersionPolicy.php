@@ -8,7 +8,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 
 class ModVersionPolicy
 {
@@ -41,17 +40,9 @@ class ModVersionPolicy
     /**
      * Determine whether the user can create mod versions.
      */
-    public function create(User $user, Mod $mod): Response
+    public function create(User $user, Mod $mod): bool
     {
-        if ($user->id !== $mod->owner_id && $mod->authors->doesntContain($user)) {
-            return Response::deny(__('You must be the owner or an author of this mod to create a version.'));
-        }
-
-        if (! $user->hasMfaEnabled()) {
-            return Response::deny(__('Your account must have MFA enabled to create a new mod version.'));
-        }
-
-        return Response::allow();
+        return $this->isAuthorOrOwner($user, $mod) && $user->hasMfaEnabled();
     }
 
     /**
@@ -59,7 +50,7 @@ class ModVersionPolicy
      */
     public function update(User $user, ModVersion $modVersion): bool
     {
-        return $user->isModOrAdmin() || $modVersion->mod->authors->contains($user);
+        return $user->isModOrAdmin() || $this->isAuthorOrOwner($user, $modVersion->mod);
     }
 
     /**
@@ -116,5 +107,17 @@ class ModVersionPolicy
     public function enable(User $user, ModVersion $modVersion): bool
     {
         return $user->isModOrAdmin();
+    }
+
+    /**
+     * Check if the user is an author or the owner of the mod.
+     */
+    private function isAuthorOrOwner(?User $user, Mod $mod): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        return $user->id === $mod->owner?->id || $mod->authors->pluck('id')->contains($user->id);
     }
 }

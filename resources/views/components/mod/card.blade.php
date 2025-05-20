@@ -68,11 +68,11 @@
         </div>
     </a>
 
-    @if (auth()->user()?->isModOrAdmin())
-        <livewire:mod.moderation
-            wire:key="mod-moderation-{{ $section }}-{{ $mod->id }}"
+    @can('update', $mod)
+        <livewire:mod.action
+            wire:key="mod-action-{{ $section }}-{{ $mod->id }}"
             :mod="$mod"
             :homepage-featured="$homepageFeatured"
         />
-    @endif
+    @endcan
 </div>

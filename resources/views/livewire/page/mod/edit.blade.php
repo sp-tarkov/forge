@@ -1,39 +1,27 @@
 <x-slot name="title">
-    {!! __('Create a New Mod') !!}
+    {!! __('Edit Mod') !!}
 </x-slot>
 
 <x-slot name="description">
-    {!! __('Create a new mod to share with the community.') !!}
+    {!! __('Edit your mod details below.') !!}
 </x-slot>
 
 <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Create a New Mod') }}
+        {{ __('Edit Mod') }}
     </h2>
 </x-slot>
 
 <div>
-    <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-        <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-            <flux:callout.heading>Permanence Warning</flux:callout.heading>
-            <flux:callout.text>
-                Due to the Forge being in active development, mods created using this form may be removed at any time,
-                for any reason. This form should only be used for testing. If you are creating a new mod with the
-                expectation that it remain on this site, please upload it to the Hub and wait for it to sync.
-            </flux:callout.text>
-        </flux:callout>
-    </div>
-
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
         <div class="md:grid md:grid-cols-3 md:gap-6">
             <div class="md:col-span-1 flex justify-between">
                 <div class="px-4 sm:px-0">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mod Information</h3>
-                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">Add your mod to the Forge by filling out this form. After the mod has been created, you will be able to submit mod versions/files with additional information.</p>
+                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">You may update your mod details using this form. Changes will be visible immediately after saving.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
                         Please ensure you follow the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">community guidelines</a>
                         and the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">file submission guidelines</a>.
-                        Failing to do so will result in your mod being removed from the Forge and possible action being taken against your account.
                     </p>
                 </div>
                 <div class="px-4 sm:px-0"></div>
@@ -54,20 +42,28 @@
                                         <div class="bg-cyan-500 h-2.5 rounded-full" style="width: 0%" wire:loading.class="animate-pulse"></div>
                                     </div>
                                 </div>
-                                @if ($thumbnail)
-                                    <div class="mt-2 flex items-center gap-2">
+                                <div class="mt-2 flex items-center gap-6">
+                                    @if ($mod && $mod->thumbnail)
                                         <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">Preview:</p>
-                                            <img src="{{ $thumbnail->temporaryUrl() }}" class="h-20 w-20 object-cover rounded" alt="Thumbnail preview">
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Current Thumbnail:</p>
+                                            <img src="{{ asset('storage/' . $mod->thumbnail) }}" class="h-20 w-20 object-cover rounded border border-gray-300 dark:border-gray-700" alt="Current thumbnail">
                                         </div>
-                                        <flux:button size="sm" variant="outline" wire:click="removeThumbnail" type="button">
-                                            {{ __('Remove Thumbnail') }}
-                                        </flux:button>
-                                    </div>
-                                @endif
+                                    @endif
+                                    @if ($thumbnail)
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">New Thumbnail:</p>
+                                            <img src="{{ $thumbnail->temporaryUrl() }}" class="h-20 w-20 object-cover rounded border border-gray-300 dark:border-gray-700" alt="New thumbnail">
+                                        </div>
+                                        <div>
+                                            <flux:button size="sm" variant="outline" wire:click="removeThumbnail" type="button">
+                                                {{ __('Cancel Thumbnail Change') }}
+                                            </flux:button>
+                                        </div>
+                                    @endif
+                                </div>
                             </flux:field>
 
-                            <flux:field class="col-span-6" x-data="{ count: 0, text: '' }">
+                            <flux:field class="col-span-6" x-data="{ count: $wire.name.length, text: $wire.name }">
                                 <flux:label>{{ __('Name') }}</flux:label>
                                 <flux:description>{{ __('Make it catchy, short, and sweet. Displayed on the mod page and in search results.') }}</flux:description>
                                 <flux:input type="text" wire:model.blur="name" maxlength="75" x-model="text" @input="count = text.length" />
@@ -75,7 +71,7 @@
                                 <flux:error name="name" />
                             </flux:field>
 
-                            <flux:field class="col-span-6" x-data="{ count: 0, text: '' }">
+                            <flux:field class="col-span-6" x-data="{ count: $wire.teaser.length, text: $wire.teaser }">
                                 <flux:label>{{ __('Teaser') }}</flux:label>
                                 <flux:description>{{ __('Describe the mod in a few words. This will be displayed on the mod card in search results and the top of the mod page.') }}</flux:description>
                                 <flux:input type="text" wire:model.blur="teaser" maxlength="255" x-model="text" @input="count = text.length" />
@@ -163,7 +159,7 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
-                        <flux:button variant="primary" size="sm" class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Create Mod') }}</flux:button>
+                        <flux:button variant="primary" size="sm" class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Update Mod') }}</flux:button>
                     </div>
                 </form>
             </div>

@@ -7,43 +7,56 @@
 </x-slot>
 
 <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Mod Details') }}
-    </h2>
+    <div class="flex items-center justify-between w-full">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+            {{ __('Mod Details') }}
+        </h2>
+        @if (auth()->user()?->can('viewActions', [App\Models\Mod::class, $mod]))
+            @if (auth()->user()?->hasMfaEnabled())
+                <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}" size="sm">
+                    {{ __('Create Mod Version') }}
+                </flux:button>
+            @else
+                <flux:tooltip content="Must enable MFA to create mod versions.">
+                    <div>
+                        <flux:button disabled="true" size="sm">{{ __('Create Mod Version') }}</flux:button>
+                    </div>
+                </flux:tooltip>
+            @endif
+        @endif
+    </div>
 </x-slot>
 
 <div>
-    @auth
-        @can('create', [App\Models\ModVersion::class, $mod])
-            @if (! $mod->latestVersion)
-                <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-                    <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                        <flux:callout.heading>Not Discoverable</flux:callout.heading>
-                        <flux:callout.text>In order for this mod to be discoverable by other users you must first create a mod version.</flux:callout.text>
-                        <x-slot name="actions" class="@md:h-full m-0!">
-                            <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version</flux:button>
-                        </x-slot>
-                    </flux:callout>
-                </div>
-            @elseif ($mod->latestVersion && (is_null($mod->published_at) || $mod->published_at > now() || !$mod->versions()->whereNotNull('published_at')->where('published_at', '<=', now())->exists()))
-                <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-                    <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                        <flux:callout.heading>Not Discoverable</flux:callout.heading>
-                        <flux:callout.text>This mod is not yet published or scheduled for future publication. Once the mod (and at least one of its versions) are published, the mod will be become available to the public.</flux:callout.text>
-                    </flux:callout>
-                </div>
-            @endif
-        @endcan
-    @endauth
+    @can('create', [App\Models\ModVersion::class, $mod])
+        @if (! $mod->latestVersion)
+            <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                    <flux:callout.heading>Not Discoverable</flux:callout.heading>
+                    <flux:callout.text>In order for this mod to be discoverable by other users you must first create a mod version.</flux:callout.text>
+                    <x-slot name="actions" class="@md:h-full m-0!">
+                        <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version</flux:button>
+                    </x-slot>
+                </flux:callout>
+            </div>
+        @elseif ($mod->latestVersion && (is_null($mod->published_at) || $mod->published_at > now() || !$mod->versions()->whereNotNull('published_at')->where('published_at', '<=', now())->exists()))
+            <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                    <flux:callout.heading>Not Discoverable</flux:callout.heading>
+                    <flux:callout.text>This mod is not yet published or scheduled for future publication. Once the mod (and at least one of its versions) are published, the mod will be become available to the public.</flux:callout.text>
+                </flux:callout>
+            </div>
+        @endif
+    @endcan
 
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto py-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
 
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
-                @if (auth()->user()?->isModOrAdmin())
-                    <livewire:mod.moderation wire:key="mod-moderation-show-{{ $mod->id }}" :mod="$mod" />
-                @endif
+                @can('update', $mod)
+                    <livewire:mod.action wire:key="mod-action-show-{{ $mod->id }}" :mod="$mod" />
+                @endcan
 
                 <livewire:ribbon
                     wire:key="mod-ribbon-show-{{ $mod->id }}"

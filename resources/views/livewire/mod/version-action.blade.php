@@ -1,14 +1,46 @@
 <div>
     <flux:dropdown position="bottom" align="end" class="absolute top-1.5 right-1.5">
-        <flux:button icon="shield-exclamation" />
-        <flux:navmenu>
-            @if ($version->disabled)
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmVersionEnable')" icon="eye">Enable Version</flux:navmenu.item>
-            @else
-                <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmVersionDisable')" icon="eye-slash">Disable Version</flux:navmenu.item>
+        <flux:button icon="cog-8-tooth" />
+        <flux:menu>
+            @can('viewActions', [App\Models\Mod::class, $version->mod])
+                <flux:menu.group heading="Mod Version Actions">
+                    @can('update', $version)
+                        <flux:menu.item href="{{ route('mod.version.edit', [$version->mod->id, $version->id]) }}" icon="pencil">Edit Version</flux:menu.item>
+                    @endcan
+                    @if ($version->disabled)
+                        @can('enable', $version)
+                            <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionEnable')" icon="eye">Enable Version</flux:menu.item>
+                        @endcan
+                    @else
+                        @can('disable', $version)
+                            <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionDisable')" icon="eye-slash">Disable Version</flux:menu.item>
+                        @endcan
+                    @endif
+                    @can('delete', $version)
+                        <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionDelete')" icon="trash" variant="danger">Delete Version</flux:menu.item>
+                    @endcan
+                </flux:menu.group>
+            @endcan
+            @if (auth()->user()?->isModOrAdmin())
+                <flux:menu.group heading="{{ auth()->user()->role->name }} Actions">
+                    @can('update', $version)
+                        <flux:menu.item href="{{ route('mod.version.edit', [$version->mod->id, $version->id]) }}" icon="pencil">Edit Version</flux:menu.item>
+                    @endcan
+                    @if ($version->disabled)
+                        @can('enable', $version)
+                            <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionEnable')" icon="eye">Enable Version</flux:menu.item>
+                        @endcan
+                    @else
+                        @can('disable', $version)
+                            <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionDisable')" icon="eye-slash">Disable Version</flux:menu.item>
+                        @endcan
+                    @endif
+                    @can('delete', $version)
+                        <flux:menu.item href="#" wire:click.prevent="$toggle('confirmVersionDelete')" icon="trash" variant="danger">Delete Version</flux:menu.item>
+                    @endcan
+                </flux:menu.group>
             @endif
-            <flux:navmenu.item href="#" wire:click.prevent="$toggle('confirmVersionDelete')" icon="trash" variant="danger">Delete Version</flux:navmenu.item>
-        </flux:navmenu>
+        </flux:menu>
     </flux:dropdown>
 
     <x-confirmation-modal wire:model.live="confirmVersionEnable">

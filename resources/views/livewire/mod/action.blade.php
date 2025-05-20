@@ -1,19 +1,55 @@
 <div>
     <flux:dropdown position="bottom" align="end" class="absolute top-1.5 right-1.5">
-        <flux:button icon="shield-exclamation" />
-        <flux:navmenu>
-            @if ($mod->featured)
-                <flux:navmenu.item x-on:click.prevent="$wire.confirmModUnfeature = true" icon="arrow-trending-down">Remove Featured</flux:navmenu.item>
-            @else
-                <flux:navmenu.item x-on:click.prevent="$wire.confirmModFeature = true" icon="sparkles">Feature Mod</flux:navmenu.item>
+        <flux:button icon="cog-8-tooth" />
+        <flux:menu>
+            @can('viewActions', $mod)
+                <flux:menu.group heading="Mod Actions">
+                    @can('update', $mod)
+                        <flux:menu.item href="{{ route('mod.edit', $mod->id) }}" icon:trailing="pencil-square">Edit Mod</flux:menu.item>
+                    @endcan
+                    @if ($mod->disabled)
+                        @can('enable', $mod)
+                            <flux:menu.item x-on:click.prevent="$wire.confirmModEnable = true" icon:trailing="eye">Enable Mod</flux:menu.item>
+                        @endcan
+                    @else
+                        @can('disable', $mod)
+                            <flux:menu.item x-on:click.prevent="$wire.confirmModDisable = true" icon:trailing="eye-slash">Disable Mod</flux:menu.item>
+                        @endcan
+                    @endif
+                    @can('delete', $mod)
+                        <flux:menu.item x-on:click.prevent="$wire.confirmModDelete = true" icon:trailing="trash" variant="danger">Delete Mod</flux:menu.item>
+                    @endcan
+                </flux:menu.group>
+            @endcan
+            @if (auth()->user()?->isModOrAdmin())
+                <flux:menu.group heading="{{ auth()->user()->role->name }} Actions">
+                    @can('update', $mod)
+                        <flux:menu.item href="{{ route('mod.edit', $mod->id) }}" icon:trailing="pencil-square">Edit Mod</flux:menu.item>
+                    @endcan
+                    @if ($mod->featured)
+                        @can('unfeature', $mod)
+                            <flux:menu.item x-on:click.prevent="$wire.confirmModUnfeature = true" icon:trailing="arrow-trending-down">Remove Featured</flux:menu.item>
+                        @endcan
+                    @else
+                        @can('feature', $mod)
+                            <flux:menu.item x-on:click.prevent="$wire.confirmModFeature = true" icon:trailing="sparkles">Feature Mod</flux:menu.item>
+                        @endcan
+                    @endif
+                    @if ($mod->disabled)
+                        @can('enable', $mod)
+                            <flux:menu.item x-on:click.prevent="$wire.confirmModEnable = true" icon:trailing="eye">Enable Mod</flux:menu.item>
+                        @endcan
+                    @else
+                        @can('disable', $mod)
+                            <flux:menu.item x-on:click.prevent="$wire.confirmModDisable = true" icon:trailing="eye-slash">Disable Mod</flux:menu.item>
+                        @endcan
+                    @endif
+                    @can('delete', $mod)
+                        <flux:menu.item x-on:click.prevent="$wire.confirmModDelete = true" icon:trailing="trash" variant="danger">Delete Mod</flux:menu.item>
+                    @endcan
+                </flux:menu.group>
             @endif
-            @if ($mod->disabled)
-                <flux:navmenu.item x-on:click.prevent="$wire.confirmModEnable = true" icon="eye">Enable Mod</flux:navmenu.item>
-            @else
-                <flux:navmenu.item x-on:click.prevent="$wire.confirmModDisable = true" icon="eye-slash">Disable Mod</flux:navmenu.item>
-            @endif
-            <flux:navmenu.item x-on:click.prevent="$wire.confirmModDelete = true" icon="trash" variant="danger">Delete Mod</flux:navmenu.item>
-        </flux:navmenu>
+        </flux:menu>
     </flux:dropdown>
 
     <x-confirmation-modal wire:model.live="confirmModUnfeature">

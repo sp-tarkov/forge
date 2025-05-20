@@ -14,7 +14,7 @@
         "elgigi/commonmark-emoji": "^2.0",
         "graham-campbell/markdown": "^16.0",
         "http-interop/http-factory-guzzle": "^1.2",
-        "laravel/framework": "^12.10.0",
+        "laravel/framework": "^12.15",
         "laravel/horizon": "^5.31.2",
         "laravel/jetstream": "^5.3.6",
         "laravel/octane": "^2.9.1",

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Mod\Moderation;
+use App\Livewire\Mod\Action;
 use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Index as ModIndex;
 use App\Livewire\Page\Mod\Show as ModShow;
@@ -13,6 +13,7 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -32,7 +33,7 @@ it('does not display on mod detail pages for normal users', function (): void {
             'modId' => $mod->id,
             'slug' => $mod->slug,
         ]))
-        ->assertDontSeeLivewire(Moderation::class);
+        ->assertDontSeeLivewire(Action::class);
 });
 
 it('displays on mod detail pages for administrators', function (): void {
@@ -48,13 +49,13 @@ it('displays on mod detail pages for administrators', function (): void {
             'modId' => $mod->id,
             'slug' => $mod->slug,
         ]))
-        ->assertSeeLivewire(Moderation::class);
+        ->assertSeeLivewire(Action::class);
 });
 
 it('mounts the component with the provided mod', function (): void {
     $mod = Mod::factory()->create();
 
-    Livewire::test(Moderation::class, ['mod' => $mod])
+    Livewire::test(Action::class, ['mod' => $mod])
         ->assertSet('mod.id', $mod->id);
 });
 

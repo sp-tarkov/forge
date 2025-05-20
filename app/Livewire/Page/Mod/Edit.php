@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Livewire\Page\Mod;
 
 use App\Models\Mod;
-use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
@@ -15,7 +16,7 @@ use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
-class Create extends Component
+class Edit extends Component
 {
     use UsesSpamProtection;
     use WithFileUploads;
@@ -24,6 +25,11 @@ class Create extends Component
      * The honeypot data to be validated.
      */
     public HoneypotData $honeypotData;
+
+    /**
+     * The mod being edited.
+     */
+    public Mod $mod;
 
     /**
      * The thumbnail of the mod.
@@ -82,11 +88,23 @@ class Create extends Component
     /**
      * Mount the component.
      */
-    public function mount(): void
+    public function mount(int $modId): void
     {
         $this->honeypotData = new HoneypotData;
 
-        $this->authorize('create', Mod::class);
+        $this->mod = Mod::query()->findOrFail($modId);
+
+        $this->authorize('update', $this->mod);
+
+        // Prefill fields from the mod
+        $this->name = $this->mod->name;
+        $this->teaser = $this->mod->teaser;
+        $this->description = $this->mod->description;
+        $this->license = (string) $this->mod->license_id;
+        $this->sourceCodeUrl = $this->mod->source_code_url;
+        $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->toDateTimeString() : null;
+        $this->containsAiContent = (bool) $this->mod->contains_ai_content;
+        $this->containsAds = (bool) $this->mod->contains_ads;
     }
 
     /**
@@ -94,7 +112,7 @@ class Create extends Component
      */
     public function save(): void
     {
-        $this->authorize('create', Mod::class);
+        $this->authorize('update', $this->mod);
 
         // Validate the honeypot data.
         $this->protectAgainstSpam();
@@ -105,47 +123,48 @@ class Create extends Component
             return;
         }
 
-        // Parse the published at date in the user's timezone, falling back to UTC if the user has no timezone, and
-        // convert it to UTC for DB storage.
+        // Parse the published at date in the user's timezone, convert to UTC for DB storage.
+        $publishedAtCarbon = null;
+        $userTimezone = auth()->user()->timezone ?? 'UTC';
         if ($this->publishedAt !== null) {
-            $userTimezone = auth()->user()->timezone ?? 'UTC';
-            $this->publishedAt = Carbon::parse($this->publishedAt, $userTimezone)
-                ->setTimezone('UTC')
-                ->toDateTimeString();
+            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC');
         }
 
-        // Create a new mod instance.
-        $mod = new Mod([
-            'owner_id' => auth()->user()->id,
-            'name' => $this->name,
-            'slug' => Str::slug($this->name),
-            'teaser' => $this->teaser,
-            'description' => $this->description,
-            'license_id' => $this->license,
-            'source_code_url' => $this->sourceCodeUrl,
-            'contains_ai_content' => $this->containsAiContent,
-            'contains_ads' => $this->containsAds,
-            'published_at' => $this->publishedAt,
-        ]);
+        // Update mod fields
+        $this->mod->name = $this->name;
+        $this->mod->slug = Str::slug($this->name);
+        $this->mod->teaser = $this->teaser;
+        $this->mod->description = $this->description;
+        $this->mod->license_id = (int) $this->license;
+        $this->mod->source_code_url = $this->sourceCodeUrl;
+        $this->mod->contains_ai_content = $this->containsAiContent;
+        $this->mod->contains_ads = $this->containsAds;
+        $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
         if ($this->thumbnail !== null) {
-            $mod->thumbnail = $this->thumbnail->storePublicly(
+
+            // Delete the old thumbnail file from storage
+            if ($this->mod->thumbnail) {
+                Storage::disk(config('filesystems.asset_upload', 'public'))->delete($this->mod->thumbnail);
+            }
+
+            // Store the new thumbnail.
+            $this->mod->thumbnail = $this->thumbnail->storePublicly(
                 path: 'mods',
                 options: config('filesystems.asset_upload', 'public'),
             );
         }
 
-        // Save the mod.
-        $mod->save();
+        $this->mod->save();
 
-        flash()->success('Mod has been Successfully Created');
+        flash()->success('Mod has been Successfully Updated');
 
-        $this->redirect($mod->detail_url);
+        $this->redirect($this->mod->detail_url);
     }
 
     /**
-     * Remove the uploaded thumbnail.
+     * Remove the uploaded thumbnail from the form (does not affect the mod's thumbnail until saved).
      */
     public function removeThumbnail(): void
     {
@@ -157,6 +176,8 @@ class Create extends Component
      */
     public function render(): View
     {
-        return view('livewire.page.mod.create');
+        return view('livewire.page.mod.edit', [
+            'mod' => $this->mod,
+        ]);
     }
 }

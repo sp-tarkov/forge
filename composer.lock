@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ffa08534be48462b808b4e153434e434",
+    "content-hash": "99f17a79406babf650356a73a2dd3114",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.343.12",
+            "version": "3.343.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d4b21990410d023e9c5303487d3248e8d7c8c2b6"
+                "reference": "554d983fbe1a9fd388d0e916cbeec2a5c48d58ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d4b21990410d023e9c5303487d3248e8d7c8c2b6",
-                "reference": "d4b21990410d023e9c5303487d3248e8d7c8c2b6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/554d983fbe1a9fd388d0e916cbeec2a5c48d58ef",
+                "reference": "554d983fbe1a9fd388d0e916cbeec2a5c48d58ef",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.12"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.15"
             },
-            "time": "2025-05-15T18:14:32+00:00"
+            "time": "2025-05-20T18:05:45+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -1900,16 +1900,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v12.14.1",
+            "version": "v12.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "84b142958d1638a7e89de94ce75c2821c601d3d7"
+                "reference": "2ef7fb183f18e547af4eb9f5a55b2ac1011f0b77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/84b142958d1638a7e89de94ce75c2821c601d3d7",
-                "reference": "84b142958d1638a7e89de94ce75c2821c601d3d7",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/2ef7fb183f18e547af4eb9f5a55b2ac1011f0b77",
+                "reference": "2ef7fb183f18e547af4eb9f5a55b2ac1011f0b77",
                 "shasum": ""
             },
             "require": {
@@ -2111,7 +2111,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2025-05-13T17:50:51+00:00"
+            "time": "2025-05-20T15:10:44+00:00"
         },
         {
             "name": "laravel/horizon",

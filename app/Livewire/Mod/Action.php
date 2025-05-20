@@ -9,7 +9,7 @@ use Illuminate\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-class Moderation extends Component
+class Action extends Component
 {
     /**
      * The mod instance.
@@ -136,6 +136,6 @@ class Moderation extends Component
      */
     public function render(): View
     {
-        return view('livewire.mod.moderation');
+        return view('livewire.mod.action');
     }
 }

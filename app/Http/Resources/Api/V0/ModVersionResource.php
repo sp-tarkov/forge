@@ -66,7 +66,7 @@ class ModVersionResource extends JsonResource
         if ($this->shouldInclude('description')) {
             $data['description'] = $this->when(
                 $request->routeIs('api.v0.mod-versions.index'),
-                $this->resource->description
+                $this->resource->description_html
             );
         }
 

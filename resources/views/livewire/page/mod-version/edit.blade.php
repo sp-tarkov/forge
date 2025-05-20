@@ -1,36 +1,24 @@
 <x-slot name="title">
-    {!! __('Create a New Mod Version') !!}
+    {!! __('Edit Mod Version') !!}
 </x-slot>
 
 <x-slot name="description">
-    {!! __('Create a new mod version to share with the community.') !!}
+    {!! __('Edit the details of your mod version.') !!}
 </x-slot>
 
 <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Create a New Mod Version') }}
+        {{ __('Edit Mod Version') }}
     </h2>
 </x-slot>
 
 <div>
-    <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-        <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-            <flux:callout.heading>Permanence Warning</flux:callout.heading>
-            <flux:callout.text>
-                Due to the Forge being in active development, mod versions created using this form may be removed at
-                any time, for any reason. This form should only be used for testing. If you are creating a new version
-                for a mod with the expectation that it remain on this site, please upload it to the Hub and wait for it
-                to sync.
-            </flux:callout.text>
-        </flux:callout>
-    </div>
-
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
         <div class="md:grid md:grid-cols-3 md:gap-6">
             <div class="md:col-span-1 flex justify-between">
                 <div class="px-4 sm:px-0">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Version Information</h3>
-                    <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Add a new version to your mod by filling out this form. It will be unpublished by default.</p>
+                    <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Update the details for this mod version. Changes will be saved immediately.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
                         Please ensure you follow the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">community guidelines</a>
                         and the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">file submission guidelines</a>.
@@ -118,7 +106,7 @@
                                         type="datetime-local"
                                         wire:model.defer="publishedAt"
                                     />
-                                    @if (auth()->user()->timezone !== null)
+                                    @if (Auth::user()?->timezone !== null)
                                         <flux:button size="sm" variant="outline" @click="$wire.set('publishedAt', now())">Now</flux:button>
                                     @endif
                                 </div>
@@ -130,7 +118,7 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
-                        <flux:button variant="primary" size="sm" class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Create Version') }}</flux:button>
+                        <flux:button variant="primary" size="sm" class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Save Changes') }}</flux:button>
                     </div>
                 </form>
             </div>
