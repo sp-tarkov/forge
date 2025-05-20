@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.343.14",
+            "version": "3.343.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8bb5b542b28c4538b44de4335396e77bf9fbedf6"
+                "reference": "554d983fbe1a9fd388d0e916cbeec2a5c48d58ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8bb5b542b28c4538b44de4335396e77bf9fbedf6",
-                "reference": "8bb5b542b28c4538b44de4335396e77bf9fbedf6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/554d983fbe1a9fd388d0e916cbeec2a5c48d58ef",
+                "reference": "554d983fbe1a9fd388d0e916cbeec2a5c48d58ef",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.14"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.15"
             },
-            "time": "2025-05-19T18:02:45+00:00"
+            "time": "2025-05-20T18:05:45+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -13305,7 +13305,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -13314,7 +13314,7 @@
         "ext-imagick": "*",
         "ext-intl": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "ext-pcntl": "8.0",
         "ext-posix": "8.0"
