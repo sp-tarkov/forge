@@ -14,6 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('spt_versions', function (Blueprint $table) {
+            $table->dropUnique('spt_versions_hub_id_unique');
             $table->dropColumn('hub_id');
         });
     }
