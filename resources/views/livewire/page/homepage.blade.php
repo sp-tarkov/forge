@@ -20,6 +20,12 @@
 
             <div class="pb-10">
                 <div class="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
+                    <x-page-content-title :title="'Official Uploads'" :button-text="''" button-link="''" />
+                    <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <x-static-card :link="'/releases'" :name="'Releases'" :desc="'Pre-Built SPT Releases'"/>
+                        <x-static-card :link="'/installer'" :name="'Installer'" :desc="'Simple fully automated installer for SPT'"/>
+                    </div>
+
                     <x-page-content-title :title="__('Featured Mods')" :button-text="__('View All')" button-link="/mods?featured=only" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                         @foreach ($featured as $mod)
