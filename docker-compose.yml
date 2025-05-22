@@ -19,7 +19,7 @@ services:
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
-            SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --host=localhost --port=80 --admin-port=2019 --watch"
+            SUPERVISOR_PHP_COMMAND: "/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan octane:start --max-requests=10 --host=localhost --port=80 --admin-port=2019 --watch"
             XDG_CONFIG_HOME: /var/www/html/config
             XDG_DATA_HOME: /var/www/html/data
         volumes:
