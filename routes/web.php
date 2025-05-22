@@ -63,3 +63,12 @@ Route::middleware(['auth.banned'])->group(function (): void {
         Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
     });
 });
+
+// static pages
+Route::view('/disclaimer', 'static.disclaimer');
+Route::view('/dmca', 'static.dmca');
+Route::view('/guidelines', 'static.guidelines');
+Route::view('/installer', 'static.installer');
+Route::view('/privacy-policy', 'static.privacy');
+Route::view('/releases', 'static.releases');
+Route::view('/terms-of-service', 'static.tos');
