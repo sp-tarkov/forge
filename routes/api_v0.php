@@ -29,4 +29,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/mods', [ModController::class, 'index'])->name('api.v0.mods.index');
     Route::get('/mod/{modId}', [ModController::class, 'show'])->where('modId', '[0-9]+')->name('api.v0.mods.show');
     Route::get('/mod/{modId}/versions', [ModVersionController::class, 'index'])->where('modId', '[0-9]+')->name('api.v0.mod-versions.index');
+
+    // SPT
+    // TODO: ya mum
+    //    Route::get('/spt/versions')
 });
