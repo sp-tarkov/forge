@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 use Spatie\QueryBuilder\AllowedInclude;
 use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
@@ -341,5 +342,23 @@ class AuthController extends Controller
         return ApiResponse::success([
             'message' => 'If an account matching that email exists and requires verification, a new link has been sent.',
         ]);
+    }
+
+    /**
+     * Token Abilities
+     *
+     * Get the current token's abilities
+     */
+    public function tokenAbilities(Request $request): JsonResponse
+    {
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+
+        if (! $token) {
+            return ApiResponse::error('bad request', 401);
+        }
+
+        $abilities = $token->abilities;
+
+        return ApiResponse::success($abilities);
     }
 }

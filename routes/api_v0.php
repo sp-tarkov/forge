@@ -21,6 +21,7 @@ Route::post('/auth/email/resend', [AuthController::class, 'resend'])
 // Authenticated (Requires Sanctum Token)
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/auth/user', [AuthController::class, 'user'])->name('api.v0.auth.user');
+    Route::get('/auth/tokenAbilities', [AuthController::class, 'tokenAbilities'])->name('api.v0.auth.tokenAbilities');
 
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.v0.auth.logout');
     Route::post('/auth/logout/all', [AuthController::class, 'logoutAll'])->name('api.v0.auth.logout-all');
