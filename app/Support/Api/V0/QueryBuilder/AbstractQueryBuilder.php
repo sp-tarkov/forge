@@ -464,6 +464,7 @@ abstract class AbstractQueryBuilder
     public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
     {
         $perPage = min($perPage, $allowed_max);
+
         return $this->apply()->paginate($perPage);
     }
 

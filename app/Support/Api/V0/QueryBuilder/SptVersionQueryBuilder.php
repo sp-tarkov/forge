@@ -44,7 +44,7 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'id' => 'filterById',
-            'version' => 'filterBySptVersion',
+            'spt_version' => 'filterBySptVersion',
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
         ];
