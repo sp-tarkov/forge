@@ -461,8 +461,10 @@ abstract class AbstractQueryBuilder
      *
      * @return LengthAwarePaginator<int, TModel>
      */
-    public function paginate(int $perPage = 12): LengthAwarePaginator
+    public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
     {
+        $perPage = min($perPage, $allowed_max);
+
         return $this->apply()->paginate($perPage);
     }
 
