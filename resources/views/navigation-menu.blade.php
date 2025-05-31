@@ -42,9 +42,8 @@
             <div class="hidden lg:ml-4 lg:block">
                 <div class="flex items-center gap-4">
                     {{-- Desktop Theme Toggle --}}
-                    <button type="button" class="theme-toggle relative shrink-0 rounded-full p-1 bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-white focus:outline-hidden focus:ring-2 focus:ring-gray-500 dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                    <button x-data x-on:click="$flux.dark =! $flux.dark" type="button" class="theme-toggle relative shrink-0 rounded-full p-1 bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-white focus:outline-hidden focus:ring-2 focus:ring-gray-500 dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                         <span class="absolute -inset-1.5"></span>
-                        <span class="sr-only">{{ __('Toggle themes') }}</span>
                         <svg class="theme-toggle-dark-icon w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                         </svg>
@@ -186,9 +185,8 @@
                 @endauth
 
                 {{-- Mobile Theme Toggle --}}
-                <button type="button" class="theme-toggle relative ml-auto shrink-0 rounded-full p-1 bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-white focus:outline-hidden focus:ring-2 focus:ring-gray-500 dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+                <button x-data x-on:click="$flux.dark =! $flux.dark" type="button" class="theme-toggle relative ml-auto shrink-0 rounded-full p-1 bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-white focus:outline-hidden focus:ring-2 focus:ring-gray-500 dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                     <span class="absolute -inset-1.5"></span>
-                    <span class="sr-only">{{ __('Toggle themes') }}</span>
                     <svg class="theme-toggle-dark-icon w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                     </svg>

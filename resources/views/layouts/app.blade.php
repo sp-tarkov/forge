@@ -35,22 +35,6 @@
     @livewireStyles
     @fluxAppearance
     @vite(['resources/css/app.css'])
-
-    <script>
-        // Immediately set the theme to prevent a flash of the default theme when another is set.
-        // Must be located inline, in the head, and before any CSS is loaded.
-        (function () {
-            let theme = localStorage.getItem('forge-theme');
-            if (!theme) {
-                theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-                localStorage.setItem('forge-theme', theme);
-            }
-            document.documentElement.classList.add(theme);
-            if (theme === 'dark') {
-                document.documentElement.classList.add('fl-dark');
-            }
-        })();
-    </script>
 </head>
 <body class="font-sans antialiased">
     <x-warning/>
