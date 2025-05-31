@@ -42,15 +42,19 @@
             <div class="hidden lg:ml-4 lg:block">
                 <div class="flex items-center gap-4">
                     {{-- Desktop Theme Toggle --}}
-                    <button x-data x-on:click="$flux.dark =! $flux.dark" type="button" class="theme-toggle relative shrink-0 rounded-full p-1 bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-white focus:outline-hidden focus:ring-2 focus:ring-gray-500 dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                        <span class="absolute -inset-1.5"></span>
-                        <svg class="theme-toggle-dark-icon w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                        </svg>
-                        <svg class="theme-toggle-light-icon hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
-                        </svg>
-                    </button>
+                    <flux:dropdown align="end" x-data="">
+                        <flux:button variant="subtle" class="group" aria-label="Preferred color scheme" square="true">
+                            <flux:icon.sun x-show="$flux.appearance === 'light'" variant="mini" class="text-zinc-500 dark:text-white" />
+                            <flux:icon.moon x-show="$flux.appearance === 'dark'" variant="mini" class="text-zinc-500 dark:text-white" />
+                            <flux:icon.moon x-show="$flux.appearance === 'system' && $flux.dark" variant="mini" />
+                            <flux:icon.sun x-show="$flux.appearance === 'system' && ! $flux.dark" variant="mini" />
+                        </flux:button>
+                        <flux:menu>
+                            <flux:menu.item icon="sun" x-on:click="$flux.appearance = 'light'">Light</flux:menu.item>
+                            <flux:menu.item icon="moon" x-on:click="$flux.appearance = 'dark'">Dark</flux:menu.item>
+                            <flux:menu.item icon="computer-desktop" x-on:click="$flux.appearance = 'system'">System</flux:menu.item>
+                        </flux:menu>
+                    </flux:dropdown>
 
                     @auth
                         {{-- Profile Dropdown --}}
@@ -168,57 +172,50 @@
         x-show="mobileMenuOpen"
         id="mobile-menu"
     >
-        <div class="space-y-1 px-2 pb-3 pt-2">
+        <div class="py-3">
+            <div class="flex justify-center px-5">
+                {{-- Mobile Theme Toggle --}}
+                <flux:radio.group x-data="" variant="segmented" x-model="$flux.appearance">
+                    <flux:radio value="light" icon="sun" />
+                    <flux:radio value="dark" icon="moon" />
+                    <flux:radio value="system" icon="computer-desktop" />
+                </flux:radio.group>
+            </div>
+        </div>
+        <div class="border-y border-gray-300 dark:border-gray-700 space-y-1 mx-3 py-3">
             <x-responsive-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-responsive-nav-link>
             {{-- Additional menu links here --}}
         </div>
-        <div class="border-t border-gray-300 dark:border-gray-700 pb-3 pt-4">
-            <div class="flex items-center px-5">
-                @auth
-                    <div class="shrink-0">
-                        <img class="h-10 w-10 rounded-full" src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}">
-                    </div>
-                    <div class="ml-3">
-                        <div class="text-base font-medium text-gray-900 dark:text-gray-100">{{ auth()->user()->name }}</div>
-                        <div class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ auth()->user()->email }}</div>
-                    </div>
-                @endauth
-
-                {{-- Mobile Theme Toggle --}}
-                <button x-data x-on:click="$flux.dark =! $flux.dark" type="button" class="theme-toggle relative ml-auto shrink-0 rounded-full p-1 bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-white focus:outline-hidden focus:ring-2 focus:ring-gray-500 dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-                    <span class="absolute -inset-1.5"></span>
-                    <svg class="theme-toggle-dark-icon w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                    </svg>
-                    <svg class="theme-toggle-light-icon hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
+        @auth
+            <div class="flex items-center px-5 pt-3">
+                <div class="shrink-0">
+                    <img class="h-10 w-10 rounded-full" src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}">
+                </div>
+                <div class="ml-3">
+                    <div class="text-base font-medium text-gray-900 dark:text-gray-100">{{ auth()->user()->name }}</div>
+                    <div class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ auth()->user()->email }}</div>
+                </div>
             </div>
-            <div class="mt-3 space-y-1 px-2">
-                @auth
-                    <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ auth()->user()->profile_url }}" :active="request()->routeIs('user.show')">{{ __('Profile') }}</x-responsive-nav-link>
-
-                    <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">{{ __('Edit Profile') }}</x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('api-tokens.index') }}" :active="request()->routeIs('api-tokens.index')">{{ __('API Token') }}</x-responsive-nav-link>
-
-                    @if (auth()->user()->isAdmin())
-                        <x-responsive-nav-link href="/pulse" :active="request()->routeIs('api-tokens.index')">{{ __('Pulse Stats') }}</x-responsive-nav-link>
-                        <x-responsive-nav-link href="/horizon" :active="request()->routeIs('api-tokens.index')">{{ __('Horizon Queue') }}</x-responsive-nav-link>
-                    @endif
-
-                    <form method="POST" action="{{ route('logout') }}" x-data>
-                        @csrf
-                        <x-responsive-nav-link href="{{ route('logout') }}" x-on:click.prevent="$root.submit();" :active="request()->routeIs('logout')">{{ __('Log Out') }}</x-responsive-nav-link>
-                    </form>
-                @endauth
-
-                @guest
-                    <x-responsive-nav-link href="{{ route('login') }}" :active="request()->routeIs('login')">{{ __('Log in') }}</x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('register') }}" :active="request()->routeIs('register')">{{ __('Register') }}</x-responsive-nav-link>
-                @endguest
+            <div class="space-y-1 mx-3 py-3">
+                <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ auth()->user()->profile_url }}" :active="request()->routeIs('user.show')">{{ __('Profile') }}</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">{{ __('Edit Profile') }}</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('api-tokens.index') }}" :active="request()->routeIs('api-tokens.index')">{{ __('API Token') }}</x-responsive-nav-link>
+                @if (auth()->user()->isAdmin())
+                    <x-responsive-nav-link href="/pulse" :active="request()->routeIs('api-tokens.index')">{{ __('Pulse Stats') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link href="/horizon" :active="request()->routeIs('api-tokens.index')">{{ __('Horizon Queue') }}</x-responsive-nav-link>
+                @endif
+                <form method="POST" action="{{ route('logout') }}" x-data>
+                    @csrf
+                    <x-responsive-nav-link href="{{ route('logout') }}" x-on:click.prevent="$root.submit();" :active="request()->routeIs('logout')">{{ __('Log Out') }}</x-responsive-nav-link>
+                </form>
             </div>
-        </div>
+        @endauth
+        @guest
+            <div class="space-y-1 mx-3 py-3">
+                <x-responsive-nav-link href="{{ route('login') }}" :active="request()->routeIs('login')">{{ __('Log in') }}</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('register') }}" :active="request()->routeIs('register')">{{ __('Register') }}</x-responsive-nav-link>
+            </div>
+        @endguest
     </div>
 </nav>
