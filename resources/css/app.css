@@ -113,7 +113,7 @@ button {
     }
 
     p {
-        @apply my-2 text-gray-800 dark:text-gray-300;
+        @apply my-2 text-gray-800 dark:text-gray-300 wrap-anywhere;
     }
 
     hr {
