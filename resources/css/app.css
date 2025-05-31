@@ -73,7 +73,7 @@ button {
 
 .user-markdown {
     a {
-        @apply underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors;
+        @apply underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors break-all;
     }
 
     b, strong {
