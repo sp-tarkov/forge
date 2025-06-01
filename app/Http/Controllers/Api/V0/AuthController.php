@@ -347,17 +347,46 @@ class AuthController extends Controller
     /**
      * Token Abilities
      *
-     * Get the current token's abilities
+     * Get the current token's abilities.
+     *
+     * @authenticated
+     *
+     * @response status=200 scenario="Success"
+     * {
+     *     "success": true,
+     *     "data": [
+     *         "read",
+     *         "create",
+     *         "update",
+     *         "delete"
+     *     ]
+     * }
+     * @response status=401 scenario="Unauthenticated"
+     * {
+     *     "success": false,
+     *     "code": "UNAUTHENTICATED",
+     *     "message": "Unauthenticated."
+     * }
      */
-    public function tokenAbilities(Request $request): JsonResponse
+    public function abilities(Request $request): JsonResponse
     {
         $token = PersonalAccessToken::findToken($request->bearerToken());
 
         if (! $token) {
-            return ApiResponse::error('bad request', 401);
+            // This should never happen, as the middleware should ensure a valid token is present. Just in case...
+            return ApiResponse::error(
+                'Invalid token provided.',
+                Response::HTTP_BAD_REQUEST,
+                ApiErrorCode::UNEXPECTED_ERROR
+            );
         }
 
         $abilities = $token->abilities;
+
+        // Ensure empty abilities are returned as an empty array
+        if (empty($abilities)) {
+            $abilities = [];
+        }
 
         return ApiResponse::success($abilities);
     }
