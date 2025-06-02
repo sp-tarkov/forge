@@ -73,14 +73,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Check if a specific filter is being used in the current request.
-     */
-    protected function hasFilter(string $filterName): bool
-    {
-        return request()->has('filter.'.$filterName);
-    }
-
-    /**
      * Get the model class for this query builder.
      *
      * @return class-string<ModVersion>
@@ -91,7 +83,8 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Get the allowed filters for this query builder.
+     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
+     * methods that apply the filter to the builder.
      *
      * @return array<string, string>
      */
@@ -275,8 +268,8 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Get the required fields that should always be loaded for relationships.
-     * These fields are not subject to field whitelisting and will be automatically included when needed.
+     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
+     * white-listing and will be automatically included when needed.
      *
      * @return array<string>
      */

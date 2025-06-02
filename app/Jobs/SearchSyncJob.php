@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Bus;
 
 class SearchSyncJob implements ShouldBeUnique, ShouldQueue
@@ -19,12 +18,12 @@ class SearchSyncJob implements ShouldBeUnique, ShouldQueue
     public function handle(): void
     {
         Bus::chain([
-            fn () => Artisan::call('cache:clear'),
+            new ArtisanCallJob('cache:clear'),
             (new ResolveSptVersionsJob)->onQueue('long'),
-            fn () => Artisan::call('scout:delete-all-indexes'),
-            fn () => Artisan::call('scout:sync-index-settings'),
-            fn () => Artisan::call('scout:import', ['model' => Mod::class]),
-            fn () => Artisan::call('scout:import', ['model' => User::class]),
+            new ArtisanCallJob('scout:delete-all-indexes'),
+            new ArtisanCallJob('scout:sync-index-settings'),
+            new ArtisanCallJob('scout:import', ['model' => Mod::class]),
+            new ArtisanCallJob('scout:import', ['model' => User::class]),
         ])->dispatch();
     }
 }
