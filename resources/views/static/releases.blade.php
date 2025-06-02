@@ -11,7 +11,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
                 {{ __('Releases') }}
             </h2>
-            <a href="https://github.com/sp-tarkov/build/releases">
+            <a href="https://github.com/sp-tarkov/build/releases" target="_blank">
                 <button
                     class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-sm w-full h-10 px-4">
                     Latest Release
