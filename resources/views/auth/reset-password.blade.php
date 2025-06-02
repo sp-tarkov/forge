@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-layouts.base variant="simple">
     <x-slot:title>
         {{ __('Reset your password') }}
     </x-slot>

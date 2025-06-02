@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-layouts.base variant="simple">
     <x-slot:title>
         {{ __('Register an account') }}
     </x-slot>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.base>
     <x-slot:title>
         {{ __('Your Dashboard - The Forge') }}
     </x-slot>
@@ -30,4 +30,4 @@
             <x-welcome />
         </div>
     </div>
-</x-app-layout>
+</x-layouts.base>

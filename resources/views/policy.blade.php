@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-layouts.base variant="simple">
     <x-slot:title>
         {{ __('Privacy Policy - The Forge') }}
     </x-slot>
@@ -20,4 +20,4 @@
             </div>
         </div>
     </div>
-</x-guest-layout>
+</x-layouts.base>

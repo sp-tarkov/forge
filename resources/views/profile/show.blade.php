@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.base>
     <x-slot:title>
         {{ __('Edit your profile information') }}
     </x-slot>
@@ -58,4 +58,4 @@
             @endif
         </div>
     </div>
-</x-app-layout>
+</x-layouts.base>
