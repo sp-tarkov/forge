@@ -1,8 +1,9 @@
 <x-guest-layout>
-    <x-slot name="title">
+    <x-slot:title>
         {{ __('Reset your password') }}
     </x-slot>
-    <x-slot name="description">
+
+    <x-slot:description>
         {{ __('Reset your Forge password by using the form below.') }}
     </x-slot>
 

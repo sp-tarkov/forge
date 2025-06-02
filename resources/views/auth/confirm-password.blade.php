@@ -1,8 +1,9 @@
 <x-guest-layout>
-    <x-slot name="title">
+    <x-slot:title>
         {{ __('Confirm your password') }}
     </x-slot>
-    <x-slot name="description">
+
+    <x-slot:description>
         {{ __('Please confirm your password to continue.') }}
     </x-slot>
 

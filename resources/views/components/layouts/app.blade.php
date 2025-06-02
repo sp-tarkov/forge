@@ -5,23 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        @php
-            if (empty($title)) {
-                $title = 'The Forge - Home of Single Player Tarkov Mods';
-            } elseif (! Str::of($title)->lower()->contains('the forge')) {
-                $title .= ' - The Forge';
-            }
-        @endphp
-        <title>{{ $title }}</title>
-        <meta property="og:title" content="{{ $title }}">
+        <title>{{ filled($title) ? $title : 'The Forge - Home of Single Player Tarkov Mods' }}</title>
+        <meta property="og:title" content="{{ filled($title) ? $title : 'The Forge - Home of Single Player Tarkov Mods' }}">
 
-        @php
-            if (empty($description)) {
-                $description = 'The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Craft your vision. Transform the game.';
-            }
-        @endphp
-        <meta name="description" content="{{ $description }}">
-        <meta property="og:description" content="{{ $description }}">
+        <meta name="description" content="{{ filled($description) ? $description : 'The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Transform the game.' }}">
+        <meta property="og:description" content="{{ filled($description) ? $description : 'The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Transform the game.' }}">
 
         <link rel="icon" href="data:image/x-icon;base64,AA">
 
@@ -44,7 +32,7 @@
         <div class="min-h-screen bg-gray-100 dark:bg-gray-800">
             @livewire('navigation-menu')
 
-            @if (isset($header))
+            @if (filled($header))
                 <header class="bg-gray-50 dark:bg-gray-900 shadow-sm dark:shadow-gray-950">
                     <div class="max-w-7xl min-h-[80px] flex items-center mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}

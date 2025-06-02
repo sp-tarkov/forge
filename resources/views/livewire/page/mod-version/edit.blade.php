@@ -1,12 +1,12 @@
-<x-slot name="title">
-    {!! __('Edit Mod Version') !!}
+<x-slot:title>
+    {!! __('Edit Mod Version - The Forge') !!}
 </x-slot>
 
-<x-slot name="description">
+<x-slot:description>
     {!! __('Edit the details of your mod version.') !!}
 </x-slot>
 
-<x-slot name="header">
+<x-slot:header>
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
         {{ __('Edit Mod Version') }}
     </h2>

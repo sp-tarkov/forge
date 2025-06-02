@@ -1,13 +1,13 @@
 <x-form-section submit="updateProfileInformation">
-    <x-slot name="title">
+    <x-slot:title>
         {{ __('Profile Information') }}
     </x-slot>
 
-    <x-slot name="description">
+    <x-slot:description>
         {{ __('Update your account\'s profile information and email address.') }}
     </x-slot>
 
-    <x-slot name="form">
+    <x-slot:form>
         <!-- Profile Picture -->
         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
             <div x-data="{photoName: null, photoPreview: null}" class="col-span-6 sm:col-span-4">

@@ -1,12 +1,13 @@
 <x-app-layout>
-    <x-slot name="title">
-        {{ __('Your Dashboard') }}
+    <x-slot:title>
+        {{ __('Your Dashboard - The Forge') }}
     </x-slot>
-    <x-slot name="description">
+
+    <x-slot:description>
         {{ __('The dashboard for your account on The Forge.') }}
     </x-slot>
 
-    <x-slot name="header">
+    <x-slot:header>
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
             {{ __('Dashboard') }}
         </h2>

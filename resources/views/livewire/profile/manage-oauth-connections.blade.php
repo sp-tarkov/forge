@@ -1,9 +1,9 @@
 <x-action-section>
-    <x-slot name="title">
+    <x-slot:title>
         {{ __('Connected Accounts') }}
     </x-slot>
 
-    <x-slot name="description">
+    <x-slot:description>
         {{ __('Manage your connected OAuth accounts.') }}
     </x-slot>
 

@@ -1,8 +1,9 @@
 <x-guest-layout>
-    <x-slot name="title">
+    <x-slot:title>
         {{ __('Register an account') }}
     </x-slot>
-    <x-slot name="description">
+
+    <x-slot:description>
         {{ __('Register an account to start using The Forge and join the community.') }}
     </x-slot>
 
