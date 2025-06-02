@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 use Spatie\QueryBuilder\AllowedInclude;
 use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
@@ -341,5 +342,52 @@ class AuthController extends Controller
         return ApiResponse::success([
             'message' => 'If an account matching that email exists and requires verification, a new link has been sent.',
         ]);
+    }
+
+    /**
+     * Token Abilities
+     *
+     * Get the current token's abilities.
+     *
+     * @authenticated
+     *
+     * @response status=200 scenario="Success"
+     * {
+     *     "success": true,
+     *     "data": [
+     *         "read",
+     *         "create",
+     *         "update",
+     *         "delete"
+     *     ]
+     * }
+     * @response status=401 scenario="Unauthenticated"
+     * {
+     *     "success": false,
+     *     "code": "UNAUTHENTICATED",
+     *     "message": "Unauthenticated."
+     * }
+     */
+    public function abilities(Request $request): JsonResponse
+    {
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+
+        if (! $token) {
+            // This should never happen, as the middleware should ensure a valid token is present. Just in case...
+            return ApiResponse::error(
+                'Invalid token provided.',
+                Response::HTTP_BAD_REQUEST,
+                ApiErrorCode::UNEXPECTED_ERROR
+            );
+        }
+
+        $abilities = $token->abilities;
+
+        // Ensure empty abilities are returned as an empty array
+        if (empty($abilities)) {
+            $abilities = [];
+        }
+
+        return ApiResponse::success($abilities);
     }
 }
