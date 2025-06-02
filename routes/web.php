@@ -65,7 +65,7 @@ Route::middleware(['auth.banned'])->group(function (): void {
 });
 
 // static pages
-Route::view('/disclaimer', 'static.disclaimer');
+Route::view('/mods-disclaimer', 'static.mods-disclaimer');
 Route::view('/dmca', 'static.dmca');
 Route::view('/guidelines', 'static.guidelines');
 Route::view('/installer', 'static.installer');
