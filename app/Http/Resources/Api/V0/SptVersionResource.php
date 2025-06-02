@@ -7,6 +7,7 @@ namespace App\Http\Resources\Api\V0;
 use App\Support\Api\V0\QueryBuilder\SptVersionQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Override;
 
 class SptVersionResource extends JsonResource
 {

@@ -61,14 +61,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Check if a specific filter is being used in the current request.
-     */
-    protected function hasFilter(string $filterName): bool
-    {
-        return request()->has('filter.'.$filterName);
-    }
-
-    /**
      * Get the model class for this query builder.
      *
      * @return class-string<Mod>
@@ -79,7 +71,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Get the allowed filters for this query builder.
+     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
+     * methods that apply the filter to the builder.
      *
      * @return array<string, string>
      */
@@ -215,7 +208,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Filter by contains AI content status.
+     * Filter by 'contains AI content' status.
      *
      * @param  Builder<Mod>  $query
      */
@@ -305,7 +298,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Get the required fields that should always be loaded for relationships.
+     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
+     * white-listing and will be automatically included when needed.
      *
      * @return array<string>
      */
@@ -344,20 +338,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Get the dynamic attributes that can be included in the response. Keys are the attribute names and the values are
-     * arrays of required database fields that are used to compute the attribute.
-     *
-     * @return array<string, array<string>>
-     */
-    #[Override]
-    protected static function getDynamicAttributes(): array
-    {
-        return [
-            'detail_url' => ['slug'],
-        ];
-    }
-
-    /**
      * Get the allowed sorts for this query builder.
      *
      * @return array<string>
@@ -371,6 +351,20 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'created_at',
             'updated_at',
             'published_at',
+        ];
+    }
+
+    /**
+     * Get the dynamic attributes that can be included in the response. The keys are the attribute names, and the values
+     * are arrays of required database fields.
+     *
+     * @return array<string, array<string>>
+     */
+    #[Override]
+    protected static function getDynamicAttributes(): array
+    {
+        return [
+            'detail_url' => ['slug'],
         ];
     }
 }

@@ -11,26 +11,26 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Override;
 
+/**
+ * @extends AbstractQueryBuilder<SptVersion>
+ */
 class SptVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
-     * {@inheritDoc}
+     * Get the base query for the model.
+     *
+     * @return Builder<SptVersion>
      */
     protected function getBaseQuery(): Builder
     {
-        return SptVersion::query();
+        return SptVersion::query()
+            ->where('version', '!=', '0.0.0'); // Always exclude the base version.
     }
 
     /**
-     * Check if a specific filter is being used in the current request.
-     */
-    protected function hasFilter(string $filterName): bool
-    {
-        return request()->has('filter.'.$filterName);
-    }
-
-    /**
-     * {@inheritDoc}
+     * Get the model class for this query builder.
+     *
+     * @return class-string<SptVersion>
      */
     protected function getModelClass(): string
     {
@@ -38,7 +38,10 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * {@inheritDoc}
+     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
+     * methods that apply the filter to the builder.
+     *
+     * @return array<string, string>
      */
     public static function getAllowedFilters(): array
     {
@@ -51,7 +54,7 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Filter by mod version IDs.
+     * Filter by SPT version IDs.
      *
      * @param  Builder<SptVersion>  $query
      */
@@ -62,6 +65,22 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         $query->whereIn('spt_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
+    }
+
+    /**
+     * Filter by SPT version.
+     *
+     * @param  Builder<SptVersion>  $query
+     */
+    protected function filterBySptVersion(Builder $query, ?string $version): void
+    {
+        if ($version === null) {
+            return;
+        }
+
+        $validSptVersions = SptVersion::allValidVersions();
+        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+        $query->whereIn('spt_versions.version', $compatibleSptVersions);
     }
 
     /**
@@ -95,34 +114,33 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Filter by SPT version.
+     * Get a map of API include names to model relationship names.
      *
-     * @param  Builder<SptVersion>  $query
-     */
-    protected function filterBySptVersion(Builder $query, ?string $version): void
-    {
-        if ($version === null) {
-            return;
-        }
-
-        $validSptVersions = SptVersion::allValidVersions();
-        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
-
-        if ($compatibleSptVersions !== null) {
-            $query->whereIn('spt_versions.version', $compatibleSptVersions);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
+     * @return array<string, string|array<string>>
      */
     public static function getAllowedIncludes(): array
     {
-        return []; // nothing to include afaik -waffle
+        return [];
     }
 
     /**
-     * {@inheritDoc}
+     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
+     * white-listing and will be automatically included when needed.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'version',
+        ];
+    }
+
+    /**
+     * Get the allowed fields for this query builder.
+     *
+     * @return array<string>
      */
     public static function getAllowedFields(): array
     {
@@ -142,7 +160,9 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * {@inheritDoc}
+     * Get the allowed sorts for this query builder.
+     *
+     * @return array<string>
      */
     public static function getAllowedSorts(): array
     {
@@ -152,17 +172,6 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
             'mod_count',
             'created_at',
             'updated_at',
-        ];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public static function getRequiredFields(): array
-    {
-        return [
-            'id',
-            'version',
         ];
     }
 

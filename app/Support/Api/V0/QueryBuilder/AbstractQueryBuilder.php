@@ -81,9 +81,10 @@ abstract class AbstractQueryBuilder
     abstract protected function getModelClass(): string;
 
     /**
-     * Get the allowed filters for this query builder.
+     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
+     * methods that apply the filter to the builder.
      *
-     * @return array<string, callable>
+     * @return array<string, string>
      */
     abstract public static function getAllowedFilters(): array;
 
@@ -109,15 +110,16 @@ abstract class AbstractQueryBuilder
     abstract public static function getAllowedSorts(): array;
 
     /**
-     * Get the required fields that should always be loaded for relationships.
+     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
+     * white-listing and will be automatically included when needed.
      *
      * @return array<string>
      */
     abstract public static function getRequiredFields(): array;
 
     /**
-     * Get the dynamic attributes that can be included in the response.
-     * The keys are the attribute names and the values are arrays of required database fields.
+     * Get the dynamic attributes that can be included in the response. The keys are the attribute names, and the values
+     * are arrays of required database fields.
      *
      * @return array<string, array<string>>
      */
@@ -230,6 +232,14 @@ abstract class AbstractQueryBuilder
             $method = $allowedFilters[$filter];
             $this->{$method}($this->builder, $value);
         }
+    }
+
+    /**
+     * Check if a specific filter is being used in the current request.
+     */
+    protected function hasFilter(string $filterName): bool
+    {
+        return request()->has('filter.'.$filterName);
     }
 
     /**
