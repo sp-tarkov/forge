@@ -27,12 +27,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+
+        // Register the Flare exception handler.
+        \Spatie\LaravelFlare\Facades\Flare::handles($exceptions);
+
+        // Register the custom exception handler for the API.
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/v0/*') || $request->expectsJson()) {
                 return (new ApiV0ExceptionHandler)->render($e, $request);
             }
-
-            return null;
         });
     })
     ->create();
