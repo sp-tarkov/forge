@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"window.title": "SPT Forge",
+		"emeraldwalk.runonsave": {
+			"showElapsed": true,
+			"commands": [
+				{
+					"match": ".*",
+					"cmd": ".\\vendor\\bin\\pint",
+				}
+			]
+		}
+	},
+	"extensions": {
+		"recommendations": [
+			"devsense.phptools-vscode",
+			"emeraldwalk.runonsave",
+		]
+	}
+}
