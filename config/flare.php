@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Spatie\FlareClient\Sampling\RateSampler;
 use Spatie\LaravelFlare\FlareConfig;
 
 return [
@@ -138,7 +139,7 @@ return [
         |
         */
     'sampler' => [
-        'class' => \Spatie\FlareClient\Sampling\RateSampler::class,
+        'class' => RateSampler::class,
         'config' => [
             'rate' => 0.1,
         ],

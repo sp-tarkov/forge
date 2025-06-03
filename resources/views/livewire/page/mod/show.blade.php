@@ -27,7 +27,10 @@
     </div>
 </x-slot>
 
+<x-slot:openGraphImage>{{ $openGraphImage }}</x-slot>
+
 <div>
+
     @can('create', [App\Models\ModVersion::class, $mod])
         @if (! $mod->latestVersion)
             <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
