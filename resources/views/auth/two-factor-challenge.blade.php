@@ -1,13 +1,14 @@
-<x-guest-layout>
-    <x-slot name="title">
+<x-layouts.base variant="simple">
+    <x-slot:title>
         {{ __('Two-Factor Authentication') }}
     </x-slot>
-    <x-slot name="description">
+
+    <x-slot:description>
         {{ __('Two-factor authentication is a security measure that requires a second form of identification to access your account. This is to ensure that only you can access your account.') }}
     </x-slot>
 
     <x-authentication-card>
-        <x-slot name="logo">
+        <x-slot:logo>
             <x-authentication-card-logo />
         </x-slot>
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -174,6 +175,7 @@ class Edit extends Component
     /**
      * Render the component.
      */
+    #[Layout('components.layouts.base')]
     public function render(): View
     {
         return view('livewire.page.mod.edit', [

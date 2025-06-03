@@ -1,9 +1,9 @@
 <x-action-section>
-    <x-slot name="title">
+    <x-slot:title>
         {{ __('Browser Sessions') }}
     </x-slot>
 
-    <x-slot name="description">
+    <x-slot:description>
         {{ __('Manage and log out your active sessions on other browsers and devices.') }}
     </x-slot>
 

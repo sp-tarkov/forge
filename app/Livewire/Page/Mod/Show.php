@@ -11,6 +11,7 @@ use App\Traits\Livewire\ModeratesModVersion;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -73,6 +74,7 @@ class Show extends Component
     /**
      * Render the component.
      */
+    #[Layout('components.layouts.base')]
     public function render(): View
     {
         return view('livewire.page.mod.show', [

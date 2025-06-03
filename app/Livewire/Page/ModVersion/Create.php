@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Composer\Semver\Semver;
 use Exception;
 use Illuminate\View\View;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
@@ -164,6 +165,7 @@ class Create extends Component
     /**
      * Render the component.
      */
+    #[Layout('components.layouts.base')]
     public function render(): View
     {
         return view('livewire.page.mod-version.create');

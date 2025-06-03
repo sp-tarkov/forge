@@ -8,6 +8,7 @@ use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class Homepage extends Component
@@ -103,6 +104,7 @@ class Homepage extends Component
     /**
      * Render the component.
      */
+    #[Layout('components.layouts.base')]
     public function render(): View
     {
         return view('livewire.page.homepage', [

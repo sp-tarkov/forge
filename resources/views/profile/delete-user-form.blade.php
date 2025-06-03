@@ -1,9 +1,9 @@
 <x-action-section>
-    <x-slot name="title">
+    <x-slot:title>
         {{ __('Delete Account') }}
     </x-slot>
 
-    <x-slot name="description">
+    <x-slot:description>
         {{ __('Permanently delete your account.') }}
     </x-slot>
 

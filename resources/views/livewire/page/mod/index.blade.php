@@ -1,12 +1,12 @@
-<x-slot name="title">
-    {!! __('Mods - Find the best SPT Mods') !!}
+<x-slot:title>
+    {!! __('Mods - Find the best SPT Mods - The Forge') !!}
 </x-slot>
 
-<x-slot name="description">
+<x-slot:description>
     {!! __('Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}
 </x-slot>
 
-<x-slot name="header">
+<x-slot:header>
     <div class="flex items-center justify-between w-full">
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Mod Listings') }}

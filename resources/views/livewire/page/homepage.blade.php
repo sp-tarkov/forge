@@ -1,3 +1,13 @@
+<x-slot:title>
+    The Forge - Home of Single Player Tarkov Mods
+</x-slot>
+
+<x-slot:description>
+    The greatest resource available for Single Player Tarkov modifications. Where modding legends are made. Discover powerful tools, expert-written guides, and exclusive mods. Transform the game.
+</x-slot>
+
+<x-slot:header></x-slot>
+
 <div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
