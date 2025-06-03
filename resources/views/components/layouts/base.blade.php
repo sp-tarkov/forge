@@ -17,8 +17,15 @@
         <meta name="description" content="{{ $description }}">
         <meta property="og:description" content="{{ $description }}">
 
-        <link rel="icon" href="data:image/x-icon;base64,AA">
         <link rel="canonical" href="{{ url()->current() }}">
+        <meta property="og:url" content="{{ url()->current() }}">
+
+        @if (! empty($openGraphImage))
+            @openGraphImageTags($openGraphImage, $title)
+        @endif
+
+        <link rel="icon" href="data:image/x-icon;base64,AA">
+
         <link href="//fonts.bunny.net" rel="preconnect">
         <link href="//fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
         <link href="{{ config('app.asset_url') }}" rel="dns-prefetch">

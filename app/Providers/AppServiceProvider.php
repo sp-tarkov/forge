@@ -8,6 +8,7 @@ use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
@@ -49,6 +50,9 @@ class AppServiceProvider extends ServiceProvider
         // Register custom macros.
         $this->registerNumberMacros();
         $this->registerCarbonMacros();
+
+        // Register custom Blade directives.
+        $this->registerBladeDirectives();
 
         // Register Livewire component overrides.
         $this->registerLivewireOverrides();
@@ -101,5 +105,45 @@ class AppServiceProvider extends ServiceProvider
     private function registerLivewireOverrides(): void
     {
         Livewire::component('profile.update-password-form', UpdatePasswordForm::class);
+    }
+
+    /**
+     * Register custom Blade directives.
+     */
+    private function registerBladeDirectives(): void
+    {
+        Blade::directive('openGraphImageTags', fn (string $expression): string => "<?php
+                \$__ogImageArgs = [{$expression}];
+                \$__ogImagePath = \$__ogImageArgs[0] ?? null;
+                \$__ogImageAlt = Str::before(\$__ogImageArgs[1] ?? '', ' - ');
+                \$__ogImageDisk = config('filesystems.asset_upload', 'public');
+                \$__ogImageCacheKey = 'og_image_data:' . \$__ogImageDisk . ':' . md5(\$__ogImagePath);
+                \$__ogImageData = Cache::remember(\$__ogImageCacheKey, 3600, function () use (\$__ogImagePath, \$__ogImageDisk) {
+                    try {
+                        \$disk = Storage::disk(\$__ogImageDisk);
+                        if (!\$disk->exists(\$__ogImagePath)) return null;
+                        \$contents = \$disk->get(\$__ogImagePath);
+                        if (!\$contents) return null;
+                        \$info = getimagesizefromstring(\$contents);
+                        if (!\$info) return null;
+                        return [
+                            'url' => \$disk->url(\$__ogImagePath),
+                            'type' => \$info['mime'] ?? 'image/jpeg',
+                            'width' => \$info[0] ?? 400,
+                            'height' => \$info[1] ?? 300,
+                        ];
+                    } catch (\\Throwable \$e) {
+                        Log::error('OG Image Blade Directive Exception', ['exception' => \$e]);
+                        return null;
+                    }
+                });
+                if (\$__ogImageData) {
+                    echo '<meta property=\"og:image\" content=\"' . e(\$__ogImageData['url']) . '\" />';
+                    echo '<meta property=\"og:image:type\" content=\"' . e(\$__ogImageData['type']) . '\" />';
+                    echo '<meta property=\"og:image:width\" content=\"' . e(\$__ogImageData['width']) . '\" />';
+                    echo '<meta property=\"og:image:height\" content=\"' . e(\$__ogImageData['height']) . '\" />';
+                    echo '<meta property=\"og:image:alt\" content=\"' . e(\$__ogImageAlt) . '\" />';
+                }
+            ?>");
     }
 }

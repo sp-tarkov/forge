@@ -8,6 +8,8 @@
 
 <x-slot:header></x-slot>
 
+<x-slot:openGraphImage>{{ $openGraphImage }}</x-slot>
+
 <div>
     <div class="sm:-mt-12 mb-6 dark:bg-gray-800 dark:text-gray-100">
         <div>
