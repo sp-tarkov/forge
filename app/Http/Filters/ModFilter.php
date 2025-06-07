@@ -60,8 +60,12 @@ class ModFilter
      *
      * @return Builder<Mod>
      */
-    private function query(string $term): Builder
+    private function query(mixed $term): Builder
     {
+        if (! is_string($term)) {
+            return $this->builder;
+        }
+
         return $this->builder->whereLike('mods.name', sprintf('%%%s%%', $term));
     }
 
@@ -86,8 +90,12 @@ class ModFilter
      *
      * @return Builder<Mod>
      */
-    private function order(string $type): Builder
+    private function order(mixed $type): Builder
     {
+        if (! is_string($type)) {
+            return $this->builder;
+        }
+
         return match ($type) {
             'updated' => $this->builder->orderByDesc('mods.updated_at'),
             'downloaded' => $this->builder->orderByDesc('mods.downloads'),
@@ -100,8 +108,12 @@ class ModFilter
      *
      * @return Builder<Mod>
      */
-    private function featured(string $option): Builder
+    private function featured(mixed $option): Builder
     {
+        if (! is_string($option)) {
+            return $this->builder;
+        }
+
         return match ($option) {
             'exclude' => $this->builder->where('mods.featured', false),
             'only' => $this->builder->where('mods.featured', true),
@@ -112,11 +124,15 @@ class ModFilter
     /**
      * Filter the results to specific SPT versions.
      *
-     * @param  array<int, string>  $versions
+     * @param  string|array<int, string>  $versions
      * @return Builder<Mod>
      */
-    private function sptVersions(array $versions): Builder
+    private function sptVersions(mixed $versions): Builder
     {
+        if (! is_array($versions)) {
+            return $this->builder;
+        }
+
         return $this->builder->whereExists(function ($query) use ($versions): void {
             $query->select(DB::raw(1))
                 ->from('mod_versions')
