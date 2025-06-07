@@ -60,13 +60,18 @@ class SocialiteController extends Controller
         }
 
         $user = $this->findOrCreateUser($provider, $providerUser);
+        if ($user === null) {
+            return redirect()
+                ->route('login')
+                ->withErrors('Unable to retrieve email from Discord. Please ensure your Discord account has a verified email address and you have granted email access permission.');
+        }
 
         Auth::login($user, remember: true);
 
         return redirect()->route('dashboard');
     }
 
-    protected function findOrCreateUser(string $provider, ProviderUser $providerUser): User
+    protected function findOrCreateUser(string $provider, ProviderUser $providerUser): ?User
     {
         $oauthConnection = OAuthConnection::whereProvider($provider)
             ->whereProviderId($providerUser->getId())
@@ -90,6 +95,18 @@ class SocialiteController extends Controller
             return $oauthConnection->user;
         }
 
+        // Validate that we have an email from the provider
+        if (empty($providerUser->getEmail())) {
+            Log::error('Discord OAuth: Unable to retrieve email from provider', [
+                'provider' => $provider,
+                'provider_id' => $providerUser->getId(),
+                'name' => $providerUser->getName(),
+                'nickname' => $providerUser->getNickname(),
+            ]);
+
+            return null;
+        }
+
         // If the username already exists in the database, append a random string to it to ensure uniqueness.
         $username = $providerUser->getName() ?? $providerUser->getNickname();
         $random = '';
@@ -104,7 +121,6 @@ class SocialiteController extends Controller
         // If one exists, connect that account. Otherwise, create a new one.
 
         return DB::transaction(function () use ($providerUser, $provider, $username, $mfaStatus) {
-
             $user = User::query()->firstOrCreate(['email' => $providerUser->getEmail()], [
                 'name' => $username,
                 'password' => null,
