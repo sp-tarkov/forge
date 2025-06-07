@@ -109,7 +109,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->select('u.*', 'r.rankTitle')
             ->leftJoin('wcf1_user_rank as r', 'u.rankID', '=', 'r.rankID')
             ->orderBy('u.userID')
-            ->chunk(7500, function (Collection $records) use ($roles): void {
+            ->chunk(4000, function (Collection $records) use ($roles): void {
                 /** @var Collection<int, object> $records */
 
                 /** @var Collection<int, HubUser> $hubUsers */
