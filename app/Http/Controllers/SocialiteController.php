@@ -73,27 +73,8 @@ class SocialiteController extends Controller
 
     protected function findOrCreateUser(string $provider, ProviderUser $providerUser): ?User
     {
-        $oauthConnection = OAuthConnection::whereProvider($provider)
-            ->whereProviderId($providerUser->getId())
-            ->first();
-
-        $mfaStatus = $this->getMfaStatus($provider, $providerUser);
-
-        // If the user has already connected their account with this OAuth provider before, update the connection with
-        // the new information and return early.
-        if ($oauthConnection !== null) {
-            $oauthConnection->update([
-                'token' => $providerUser->token ?? '',
-                'refresh_token' => $providerUser->refreshToken ?? '',
-                'nickname' => $providerUser->getNickname() ?? '',
-                'name' => $providerUser->getName() ?? '',
-                'email' => $providerUser->getEmail() ?? '',
-                'avatar' => $providerUser->getAvatar() ?? '',
-                'mfa_enabled' => $mfaStatus,
-            ]);
-
-            return $oauthConnection->user;
-        }
+        // Socialite returns the user as an interface, so we let PHPStan know the actual concrete class.
+        /** @var \Laravel\Socialite\Two\User $providerUser */
 
         // Validate that we have an email from the provider
         if (empty($providerUser->getEmail())) {
@@ -107,8 +88,30 @@ class SocialiteController extends Controller
             return null;
         }
 
+        $oauthConnection = OAuthConnection::whereProvider($provider)
+            ->whereProviderId($providerUser->getId())
+            ->first();
+
+        $mfaStatus = $this->getMfaStatus($provider, $providerUser);
+
+        // If the user has already connected their account with this OAuth provider before, update the connection with
+        // the new information and return early.
+        if ($oauthConnection !== null) {
+            $oauthConnection->update([
+                'token' => $providerUser->token,
+                'refresh_token' => $providerUser->refreshToken,
+                'nickname' => $providerUser->getNickname() ?? '',
+                'name' => $providerUser->getName() ?? '',
+                'email' => $providerUser->getEmail(),
+                'avatar' => $providerUser->getAvatar() ?? '',
+                'mfa_enabled' => $mfaStatus,
+            ]);
+
+            return $oauthConnection->user;
+        }
+
         // If the username already exists in the database, append a random string to it to ensure uniqueness.
-        $username = $providerUser->getName() ?? $providerUser->getNickname();
+        $username = $providerUser->getName() ?: $providerUser->getNickname();
         $random = '';
         while (User::whereName($username.$random)->exists()) {
             $random = '-'.Str::random(5);
@@ -129,11 +132,11 @@ class SocialiteController extends Controller
             $oAuthConnection = $user->oAuthConnections()->create([
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
-                'token' => $providerUser->token ?? '',
-                'refresh_token' => $providerUser->refreshToken ?? '',
+                'token' => $providerUser->token,
+                'refresh_token' => $providerUser->refreshToken,
                 'nickname' => $providerUser->getNickname() ?? '',
                 'name' => $providerUser->getName() ?? '',
-                'email' => $providerUser->getEmail() ?? '',
+                'email' => $providerUser->getEmail(),
                 'avatar' => $providerUser->getAvatar() ?? '',
                 'mfa_enabled' => $mfaStatus,
             ]);
