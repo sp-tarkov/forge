@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.base>
     <x-slot name="title">
         {{ __('Terms of Service') }}
     </x-slot>
@@ -146,4 +146,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layouts.base>

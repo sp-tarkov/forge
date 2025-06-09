@@ -45,7 +45,7 @@
                         <li><a href="/guidelines" class="text-sm leading-6 text-gray-300 hover:text-white">Community Guidelines</a></li>
                         <li><a href="/terms-of-service" class="text-sm leading-6 text-gray-300 hover:text-white">Terms of Service</a></li>
                         <li><a href="/privacy-policy" class="text-sm leading-6 text-gray-300 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="/disclaimer" class="text-sm leading-6 text-gray-300 hover:text-white">Disclaimer</a></li>
+                        <li><a href="/mods-disclaimer" class="text-sm leading-6 text-gray-300 hover:text-white">Mods Disclaimer</a></li>
                         <li><a href="/dmca" class="text-sm leading-6 text-gray-300 hover:text-white">DMCA</a></li>
                     </ul>
                 </div>

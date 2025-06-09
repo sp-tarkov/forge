@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.base>
     <x-slot name="title">
         {{ __('Installer') }}
     </x-slot>
@@ -85,4 +85,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layouts.base>

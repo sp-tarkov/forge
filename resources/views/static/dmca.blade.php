@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-layouts.base>
     <x-slot name="title">
         {{ __('DMCA Notice') }}
     </x-slot>
@@ -19,4 +19,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-layouts.base>
