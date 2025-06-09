@@ -60,14 +60,34 @@ class SocialiteController extends Controller
         }
 
         $user = $this->findOrCreateUser($provider, $providerUser);
+        if ($user === null) {
+            return redirect()
+                ->route('login')
+                ->withErrors('Unable to retrieve email from Discord. Please ensure your Discord account has a verified email address and you have granted email access permission.');
+        }
 
         Auth::login($user, remember: true);
 
         return redirect()->route('dashboard');
     }
 
-    protected function findOrCreateUser(string $provider, ProviderUser $providerUser): User
+    protected function findOrCreateUser(string $provider, ProviderUser $providerUser): ?User
     {
+        // Socialite returns the user as an interface, so we let PHPStan know the actual concrete class.
+        /** @var \Laravel\Socialite\Two\User $providerUser */
+
+        // Validate that we have an email from the provider
+        if (empty($providerUser->getEmail())) {
+            Log::error('Discord OAuth: Unable to retrieve email from provider', [
+                'provider' => $provider,
+                'provider_id' => $providerUser->getId(),
+                'name' => $providerUser->getName(),
+                'nickname' => $providerUser->getNickname(),
+            ]);
+
+            return null;
+        }
+
         $oauthConnection = OAuthConnection::whereProvider($provider)
             ->whereProviderId($providerUser->getId())
             ->first();
@@ -78,11 +98,11 @@ class SocialiteController extends Controller
         // the new information and return early.
         if ($oauthConnection !== null) {
             $oauthConnection->update([
-                'token' => $providerUser->token ?? '',
-                'refresh_token' => $providerUser->refreshToken ?? '',
+                'token' => $providerUser->token,
+                'refresh_token' => $providerUser->refreshToken,
                 'nickname' => $providerUser->getNickname() ?? '',
                 'name' => $providerUser->getName() ?? '',
-                'email' => $providerUser->getEmail() ?? '',
+                'email' => $providerUser->getEmail(),
                 'avatar' => $providerUser->getAvatar() ?? '',
                 'mfa_enabled' => $mfaStatus,
             ]);
@@ -91,7 +111,7 @@ class SocialiteController extends Controller
         }
 
         // If the username already exists in the database, append a random string to it to ensure uniqueness.
-        $username = $providerUser->getName() ?? $providerUser->getNickname();
+        $username = $providerUser->getName() ?: $providerUser->getNickname();
         $random = '';
         while (User::whereName($username.$random)->exists()) {
             $random = '-'.Str::random(5);
@@ -104,7 +124,6 @@ class SocialiteController extends Controller
         // If one exists, connect that account. Otherwise, create a new one.
 
         return DB::transaction(function () use ($providerUser, $provider, $username, $mfaStatus) {
-
             $user = User::query()->firstOrCreate(['email' => $providerUser->getEmail()], [
                 'name' => $username,
                 'password' => null,
@@ -113,11 +132,11 @@ class SocialiteController extends Controller
             $oAuthConnection = $user->oAuthConnections()->create([
                 'provider' => $provider,
                 'provider_id' => $providerUser->getId(),
-                'token' => $providerUser->token ?? '',
-                'refresh_token' => $providerUser->refreshToken ?? '',
+                'token' => $providerUser->token,
+                'refresh_token' => $providerUser->refreshToken,
                 'nickname' => $providerUser->getNickname() ?? '',
                 'name' => $providerUser->getName() ?? '',
-                'email' => $providerUser->getEmail() ?? '',
+                'email' => $providerUser->getEmail(),
                 'avatar' => $providerUser->getAvatar() ?? '',
                 'mfa_enabled' => $mfaStatus,
             ]);

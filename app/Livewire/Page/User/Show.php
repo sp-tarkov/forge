@@ -10,6 +10,7 @@ use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -24,6 +25,11 @@ class Show extends Component
     public User $user;
 
     /**
+     * The OpenGraph image for the mod.
+     */
+    public string $openGraphImage;
+
+    /**
      * Mount the component.
      */
     public function mount(int $userId, string $slug): void
@@ -31,6 +37,8 @@ class Show extends Component
         $this->user = $this->getUser($userId);
 
         $this->enforceCanonicalSlug($this->user, $slug);
+
+        $this->openGraphImage = $this->user->profile_photo_path ?? '';
 
         Gate::authorize('view', $this->user);
     }
@@ -86,6 +94,7 @@ class Show extends Component
     /**
      * Render the user profile view.
      */
+    #[Layout('components.layouts.base')]
     public function render(): View
     {
         return view('livewire.page.user.show', [

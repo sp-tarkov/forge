@@ -1,7 +1,8 @@
-<x-slot name="title">
-    {{ __('Manage API Tokens') }}
+<x-slot:title>
+    {{ __('Manage API Tokens - The Forge') }}
 </x-slot>
-<x-slot name="description">
+
+<x-slot:description>
     {{ __('Manage your API tokens to access our API endpoints.') }}
 </x-slot>
 

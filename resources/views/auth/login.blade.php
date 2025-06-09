@@ -1,8 +1,9 @@
-<x-guest-layout>
-    <x-slot name="title">
+<x-layouts.base variant="simple">
+    <x-slot:title>
         {{ __('Sign into your account') }}
     </x-slot>
-    <x-slot name="description">
+
+    <x-slot:description>
         {{ __('Sign into your Forge account to access your mods, comments, and more.') }}
     </x-slot>
 

@@ -1,13 +1,14 @@
-<x-guest-layout>
-    <x-slot name="title">
+<x-layouts.base variant="simple">
+    <x-slot:title>
         {{ __('Verify your email address') }}
     </x-slot>
-    <x-slot name="description">
+
+    <x-slot:description>
         {{ __('Verify your email address to continue.') }}
     </x-slot>
 
     <x-authentication-card>
-        <x-slot name="logo">
+        <x-slot:logo>
             <x-authentication-card-logo />
         </x-slot>
 

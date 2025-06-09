@@ -13,6 +13,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
@@ -189,6 +190,7 @@ class Index extends Component
     /**
      * Render the component.
      */
+    #[Layout('components.layouts.base')]
     public function render(): View
     {
         // Fetch the mods using the filters saved to the component properties.

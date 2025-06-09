@@ -1,12 +1,12 @@
-<x-slot name="title">
-    {!! __(':mod - Mod Details', ['mod' => $mod->name]) !!}
+<x-slot:title>
+    {!! __(':mod - Mod Details - The Forge', ['mod' => $mod->name]) !!}
 </x-slot>
 
-<x-slot name="description">
+<x-slot:description>
     {!! __('The details for :mod on The Forge. :teaser', ['mod' => $mod->name, 'teaser' => $mod->teaser]) !!}
 </x-slot>
 
-<x-slot name="header">
+<x-slot:header>
     <div class="flex items-center justify-between w-full">
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Mod Details') }}
@@ -27,7 +27,10 @@
     </div>
 </x-slot>
 
+<x-slot:openGraphImage>{{ $openGraphImage }}</x-slot>
+
 <div>
+
     @can('create', [App\Models\ModVersion::class, $mod])
         @if (! $mod->latestVersion)
             <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
