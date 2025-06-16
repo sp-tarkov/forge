@@ -26,7 +26,7 @@ jobs:
       - name: Run Pint
         run: pint
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: Pint PHP Style Fixes
           commit_user_name: Pint Bot
