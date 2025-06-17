@@ -31,6 +31,7 @@
         "meilisearch/meilisearch-php": "^1.14",
         "php-flasher/flasher-laravel": "^2.1.6",
         "socialiteproviders/discord": "^4.2",
+        "spatie/laravel-flare": "^2.0",
         "spatie/laravel-honeypot": "^4.6",
         "spatie/laravel-query-builder": "^6.3.2",
         "stevebauman/purify": "^6.3.0"

@@ -17,6 +17,11 @@ use Livewire\Livewire;
 use Override;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
+use Spatie\LaravelFlare\Facades\Flare;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Auth\AuthenticationException;
+use App\Exceptions\Api\V0\InvalidQuery;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -64,6 +69,20 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(function (SocialiteWasCalled $socialiteWasCalled): void {
             $socialiteWasCalled->extendSocialite('discord', Provider::class);
         });
+
+        // Filter out specific exceptions from being reported to Flare.
+        Flare::filterExceptionsUsing(
+            fn(\Throwable $throwable) => !in_array(
+                $throwable::class,
+                [
+                    ValidationException::class, // Used for typical API responses.
+                    NotFoundHttpException::class, // Used for typical API responses.
+                    AuthenticationException::class, // Used for typical API responses.
+                    InvalidQuery::class, // Used for typical API responses.
+                ],
+                true
+            )
+        );
     }
 
     /**
