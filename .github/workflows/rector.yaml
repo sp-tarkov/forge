@@ -29,7 +29,7 @@ jobs:
       - name: Execute Rector Analysis
         run: php vendor/bin/rector process --config=rector.php
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: Rector Fixes
           commit_user_name: Rector Bot
