@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.344.5",
+            "version": "3.344.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "70ffa372fb7813f904063ddbf25be2fc540230d0"
+                "reference": "eb0bc621472592545539329499961a15a3f9f6dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/70ffa372fb7813f904063ddbf25be2fc540230d0",
-                "reference": "70ffa372fb7813f904063ddbf25be2fc540230d0",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/eb0bc621472592545539329499961a15a3f9f6dc",
+                "reference": "eb0bc621472592545539329499961a15a3f9f6dc",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.344.5"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.344.6"
             },
-            "time": "2025-06-11T18:06:01+00:00"
+            "time": "2025-06-12T18:03:59+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -6245,16 +6245,16 @@
         },
         {
             "name": "spatie/laravel-flare",
-            "version": "2.0.4",
+            "version": "2.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-flare.git",
-                "reference": "ad9d9918598b2078953e7c7458401706340667ef"
+                "reference": "c5fe4d0430d4fb58da2ef6ba753c148abf61e5ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/ad9d9918598b2078953e7c7458401706340667ef",
-                "reference": "ad9d9918598b2078953e7c7458401706340667ef",
+                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/c5fe4d0430d4fb58da2ef6ba753c148abf61e5ef",
+                "reference": "c5fe4d0430d4fb58da2ef6ba753c148abf61e5ef",
                 "shasum": ""
             },
             "require": {
@@ -6331,7 +6331,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-06-10T13:26:51+00:00"
+            "time": "2025-06-16T08:05:11+00:00"
         },
         {
             "name": "spatie/laravel-honeypot",
