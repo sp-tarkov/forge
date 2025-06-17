@@ -17,6 +17,7 @@
         "laravel/framework": "^12.15",
         "laravel/horizon": "^5.31.2",
         "laravel/jetstream": "^5.3.6",
+        "laravel/nightwatch": "^1.7",
         "laravel/octane": "^2.9.1",
         "laravel/pulse": "^1.4.1",
         "laravel/sanctum": "^4.1.0",
@@ -31,7 +32,6 @@
         "meilisearch/meilisearch-php": "^1.14",
         "php-flasher/flasher-laravel": "^2.1.6",
         "socialiteproviders/discord": "^4.2",
-        "spatie/laravel-flare": "^2.0",
         "spatie/laravel-honeypot": "^4.6",
         "spatie/laravel-query-builder": "^6.3.2",
         "stevebauman/purify": "^6.3.0"
