@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
@@ -367,5 +368,35 @@ class User extends Authenticatable implements MustVerifyEmail
                 $this->oAuthConnections->isNotEmpty()
                 && $this->oAuthConnections->every(fn ($connection) => $connection->mfa_enabled)
             );
+    }
+
+    /**
+     * The relationship between a user and their comments.
+     *
+     * @return HasMany<Comment, $this>
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * The relationship between a user and their comment reactions.
+     *
+     * @return HasMany<CommentReaction, $this>
+     */
+    public function commentReactions(): HasMany
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    /**
+     * The relationship between a user and comments on their profile.
+     *
+     * @return MorphMany<Comment, $this>
+     */
+    public function profileComments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }

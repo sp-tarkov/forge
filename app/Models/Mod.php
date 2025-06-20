@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -304,5 +305,28 @@ class Mod extends Model
                 Markdown::convert($this->description)->getContent()
             )
         )->shouldCache();
+    }
+
+    /**
+     * The relationship between a mod and its comments.
+     *
+     * @return MorphMany<Comment, $this>
+     */
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * The relationship between a mod and its root comments.
+     *
+     * @return MorphMany<Comment, $this>
+     */
+    public function rootComments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable')
+            ->whereNull('parent_id')
+            ->whereNull('root_id')
+            ->orderBy('created_at', 'desc');
     }
 }

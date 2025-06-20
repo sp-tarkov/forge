@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Comment;
+use App\Models\CommentReaction;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModDependency;
@@ -121,6 +123,60 @@ class DatabaseSeeder extends Seeder
                 $dependencyMods = $mods->random(rand(1, 3));
                 foreach ($dependencyMods as $dependencyMod) {
                     ModDependency::factory()->recycle([$modVersion, $dependencyMod])->create();
+                }
+            }
+        );
+
+        // Add comments to mods
+        progress(
+            label: 'Adding Comments...',
+            steps: $mods,
+            callback: function (Mod $mod, Progress $progress) use ($allUsers) {
+                // Create 1-20 parent comments
+                $comments = Comment::factory(rand(1, 20))
+                    ->recycle([$mod])
+                    ->recycle($allUsers)
+                    ->create();
+
+                // For each comment, 30% chance to have replies
+                foreach ($comments as $comment) {
+                    if (rand(0, 9) < 3) { // 30% chance
+                        // Create 1-4 replies to the parent comment
+                        $firstLevelReplies = Comment::factory(rand(1, 4))
+                            ->reply($comment)
+                            ->recycle($allUsers)
+                            ->create();
+
+                        // For each first-level reply, 40% chance to have nested replies
+                        foreach ($firstLevelReplies as $reply) {
+                            if (rand(0, 9) < 4) { // 40% chance
+                                // Create 1-2 nested replies
+                                Comment::factory(rand(1, 2))
+                                    ->reply($reply)
+                                    ->recycle($allUsers)
+                                    ->create();
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+        // Add reactions to comments
+        progress(
+            label: 'Adding Comment Reactions...',
+            steps: Comment::all(),
+            callback: function (Comment $comment, Progress $progress) use ($allUsers) {
+                // 40% chance to have reactions
+                if (rand(0, 9) < 4) {
+                    // Add 1-5 reactions from different users
+                    $reactingUsers = $allUsers->random(rand(1, 5));
+                    foreach ($reactingUsers as $user) {
+                        CommentReaction::factory()
+                            ->recycle([$comment])
+                            ->recycle([$user])
+                            ->create();
+                    }
                 }
             }
         );
