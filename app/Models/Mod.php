@@ -234,7 +234,7 @@ class Mod extends Model
                 'version_major' => 'max',
                 'version_minor' => 'max',
                 'version_patch' => 'max',
-                'version_labels' => 'max',
+                'version_labels' => 'min',
             ]);
     }
 
