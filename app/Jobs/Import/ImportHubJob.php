@@ -673,17 +673,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $latestMinor = $latestVersion->getMinor();
 
         if ($currentMajor !== $latestMajor) {
-            return 'gray';
+            return 'red';
         }
 
         $minorDifference = $latestMinor - $currentMinor;
 
         return match ($minorDifference) {
             0 => 'green',
-            1 => 'lime',
-            2 => 'yellow',
-            3 => 'red',
-            default => 'gray',
+            default => 'red',
         };
     }
 
