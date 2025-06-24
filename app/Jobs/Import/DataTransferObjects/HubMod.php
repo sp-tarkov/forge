@@ -211,7 +211,7 @@ class HubMod
                 $convertedUnicode = json_decode($decodedContent);
                 $convertedUnicode = reset($convertedUnicode);
 
-                return '<h2>' . $convertedUnicode . '</h2>';
+                return '<h2>'.$convertedUnicode.'</h2>';
             },
             (string) $dirty
         );
