@@ -65,7 +65,6 @@ class Form extends Component
 
         $this->reset('body');
 
-        // Force re-computation of the comment count
         unset($this->commentCount);
 
         $this->dispatch('comment-saved')
