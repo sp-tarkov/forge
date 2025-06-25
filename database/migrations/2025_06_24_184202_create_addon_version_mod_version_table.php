@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignId('addon_version_id')->constrained('addon_versions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('mod_version_id')->constrained('mod_versions')->cascadeOnDelete()->cascadeOnUpdate();
 
-            $table->index(['addon_version_id', 'mod_version_id'], 'addon_version_mod_version_index');
-            $table->index(['mod_version_id', 'addon_version_id'], 'mod_version_addon_version_index');
+            $table->index(['mod_addon_version_id', 'mod_version_id'], 'mod_addon_version_mod_version_index');
+            $table->index(['mod_version_id', 'mod_addon_version_id'], 'mod_version_mod_addon_version_index');
         });
     }
 

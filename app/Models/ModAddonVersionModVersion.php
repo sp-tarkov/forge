@@ -12,10 +12,10 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property int $id
  * @property int $addon_version_id
  * @property int $mod_version_id
- * @property-read AddonVersion $addonVersion
+ * @property-read ModAddonVersion $addonVersion
  * @property-read ModVersion $modVersion
  */
-class AddonVersionModVersion extends Pivot
+class ModAddonVersionModVersion extends Pivot
 {
     public $incrementing = true;
 }
