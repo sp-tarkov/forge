@@ -169,7 +169,7 @@ This should not be in a tab.
 - 19^th^
 - H~2~O
 
-### Footnotes
+### Footnotes 
 
 Footnote 1 link[^first].
 
@@ -184,6 +184,10 @@ Duplicated footnote reference[^second].
     and multiple paragraphs.
 
 [^second]: Footnote text.
+
+### Emoji Tab! 🩵
+
+🩵🩵🩵🩵🩵🩵🩵🩵🩵
 
 ### Definition lists
 

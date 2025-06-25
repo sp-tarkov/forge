@@ -71,6 +71,10 @@ trait HasCoverPhoto
      */
     protected function defaultCoverPhotoUrl(): string
     {
+        if (empty($this->name)) {
+            return 'https://picsum.photos/720/100?blur=2';
+        }
+
         return 'https://picsum.photos/seed/'.urlencode($this->name).'/720/100?blur=2';
     }
 }
