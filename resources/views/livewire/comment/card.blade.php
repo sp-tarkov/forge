@@ -1,4 +1,4 @@
-<div>
+<div x-data="{ showReplyForm{{ $comment->id }}: false }">
     <div id="comment-{{ $comment->id }}" class="flex items-center justify-between">
         <div class="flex items-center">
             <flux:avatar circle="circle" src="{{ $comment->user->profile_photo_url }}" color="auto" color:seed="{{ $comment->user->id }}" />
@@ -36,20 +36,19 @@
                 class="relative flex items-center gap-1 transition {{ $this->hasReacted ? 'text-red-400' : '' }} {{ auth()->check() && $comment->user_id === auth()->id() ? 'cursor-not-allowed!' : 'hover:text-red-400' }}"
                 wire:click="react({{ $comment->id }})"
                 x-on:click="animate"
-                @if(auth()->check() && $comment->user_id === auth()->id()) disabled @endif
-            x-data="{
-                        isAnimating: false,
-                        animate() {
-                            if (this.isAnimating || {{ auth()->check() && $comment->user_id === auth()->id() ? 'true' : 'false' }}) return;
-                            this.isAnimating = true;
-                            requestAnimationFrame(() => {
-                                setTimeout(() => {
-                                    this.isAnimating = false;
-                                }, 800);
-                            });
-                        }
-                    }"
-            >
+                @if (auth()->check() && $comment->user_id === auth()->id()) disabled @endif
+                x-data="{
+                    isAnimating: false,
+                    animate() {
+                        if (this.isAnimating || {{ auth()->check() && $comment->user_id === auth()->id() ? 'true' : 'false' }}) return;
+                        this.isAnimating = true;
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                this.isAnimating = false;
+                            }, 800);
+                        });
+                    }
+                }">
                 <div class="relative">
                     <svg x-transition:enter="animate-heart-bounce" x-show="isAnimating" style="display: none;" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="none" viewBox="0 0 20 20" class="w-5 h-5 relative z-10">
                         <path d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"/>
@@ -62,14 +61,32 @@
             </button>
         @endif
 
-        <span class="hover:underline cursor-pointer text-xs">
+        <button type="button" x-on:click="showReplyForm{{ $comment->id }} = !showReplyForm{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
             {{ __('Reply') }}
-        </span>
+        </button>
 
         @if ($comment->isRoot() && $comment->descendants->count())
             <span x-on:click="showReplies{{ $comment->id }} = !showReplies{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
                 <span x-text="showReplies{{ $comment->id }} ? 'Hide Replies ({{ $comment->descendants->count() }})' : 'Show Replies ({{ $comment->descendants->count() }})'"></span>
             </span>
         @endif
+    </div>
+    <div x-show="showReplyForm{{ $comment->id }}" x-collapse class="mt-4">
+        <form wire:submit.prevent="$parent.create({{ $comment->id }}); showReplyForm{{ $comment->id }} = false">
+            <flux:textarea
+                name="body"
+                wire:model="$parent.form.body"
+                resize="vertical"
+                placeholder="{{ __('Please ensure your comment does not break the community guidelines.') }}"
+            />
+            <div class="flex items-center justify-between mt-2">
+                <flux:button variant="primary" size="sm" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">
+                    {{ __('Post Reply') }}
+                </flux:button>
+                <flux:button type="button" x-on:click="showReplyForm{{ $comment->id }} = false" variant="danger" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+            </div>
+        </form>
     </div>
 </div>

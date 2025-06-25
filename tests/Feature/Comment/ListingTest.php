@@ -18,6 +18,19 @@ it('should not allow a guest to create a comment', function (): void {
         ->assertForbidden();
 });
 
+it('should not allow a guest to reply to a comment', function (): void {
+    $mod = Mod::factory()->create();
+    $parentComment = Comment::factory()->create([
+        'commentable_id' => $mod->id,
+        'commentable_type' => get_class($mod),
+    ]);
+
+    Livewire::test(Listing::class, ['commentable' => $mod])
+        ->set('form.body', 'This is a reply.')
+        ->call('create', $parentComment->id)
+        ->assertForbidden();
+});
+
 it('should allow a user to create a comment', function (): void {
     $user = User::factory()->create();
     $mod = Mod::factory()->create();
@@ -33,6 +46,29 @@ it('should allow a user to create a comment', function (): void {
         'user_id' => $user->id,
         'commentable_id' => $mod->id,
         'commentable_type' => get_class($mod),
+    ]);
+});
+
+it('should allow a user to reply to a comment', function (): void {
+    $user = User::factory()->create();
+    $mod = Mod::factory()->create();
+    $parentComment = Comment::factory()->create([
+        'commentable_id' => $mod->id,
+        'commentable_type' => get_class($mod),
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Listing::class, ['commentable' => $mod])
+        ->set('form.body', 'This is a reply.')
+        ->call('create', $parentComment->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('comments', [
+        'body' => 'This is a reply.',
+        'user_id' => $user->id,
+        'commentable_id' => $mod->id,
+        'commentable_type' => get_class($mod),
+        'parent_id' => $parentComment->id,
     ]);
 });
 

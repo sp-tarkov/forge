@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Forms;
 
 use App\Models\Comment;
@@ -12,39 +14,32 @@ class CommentForm extends Form
 {
     /**
      * The body of the comment.
-     *
-     * @var string
      */
     #[Validate('required')]
     public string $body = '';
 
     /**
      * The comment model being edited, or null if creating a new comment.
-     *
-     * @var Comment|null
      */
     public ?Comment $comment = null;
 
     /**
-     * Set the comment for editing.
-     */
-    public function setComment(Comment $comment): void
-    {
-        $this->comment = $comment;
-        $this->body = $comment->body;
-    }
-
-    /**
      * Store a new comment.
      */
-    public function store(Mod $commentable): void
+    public function store(Mod $commentable, ?Comment $parentComment = null): void
     {
         $this->validate();
 
-        $commentable->comments()->create([
+        $newComment = [
             'body' => $this->body,
             'user_id' => Auth::id(),
-        ]);
+        ];
+
+        if ($parentComment) {
+            $newComment['parent_id'] = $parentComment->id;
+        }
+
+        $commentable->comments()->create($newComment);
 
         $this->reset();
     }

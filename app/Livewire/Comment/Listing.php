@@ -46,11 +46,11 @@ class Listing extends Component
     /**
      * Executed when the component is first loaded.
      */
-    public function create(): void
+    public function create(?Comment $parentComment): void
     {
         $this->authorize('create', Comment::class);
 
-        $this->form->store($this->commentable);
+        $this->form->store($this->commentable, $parentComment);
 
         unset($this->commentCount);
 

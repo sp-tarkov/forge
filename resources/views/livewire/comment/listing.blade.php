@@ -15,7 +15,7 @@
                 <div class="mr-3">
                     <flux:avatar src="{{ auth()->user()->profile_photo_url }}" color="auto" color:seed="{{ auth()->user()->id }}" circle="circle"/>
                 </div>
-                <form class="flex-1" wire:submit="create">
+                <form wire:submit="create" class="flex-1">
                     <flux:textarea
                         name="body"
                         wire:model="form.body"
