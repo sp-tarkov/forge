@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Comment;
 
+use App\Livewire\Forms\CommentForm;
 use App\Models\Comment;
 use App\Models\Mod;
 use Illuminate\Contracts\View\View;
@@ -11,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -28,12 +28,11 @@ class Listing extends Component
     public Mod $commentable; // Type-hinting to Mod for stronger type safety
 
     /**
-     * The body of the comment.
+     * The comment form object.
      *
-     * @var string
+     * @var CommentForm
      */
-    #[Validate('required')]
-    public $body = '';
+    public CommentForm $form;
 
     /**
      * A count of all comments on the commentable.
@@ -47,28 +46,13 @@ class Listing extends Component
     /**
      * Executed when the component is first loaded.
      */
-    public function mount(Mod $commentable): void // Type-hinting to Mod for consistency
-    {
-        $this->commentable = $commentable;
-    }
-
-    /**
-     * Create a new comment.
-     */
     public function create(): void
     {
         $this->authorize('create', Comment::class);
 
-        $this->validate();
+        $this->form->store($this->commentable);
 
-        $this->commentable->comments()->create([
-            'body' => $this->body,
-            'user_id' => Auth::id(),
-        ]);
-
-        $this->reset('body');
-
-        unset($this->commentCount); // Invalidate the computed property cache to reflect new comment
+        unset($this->commentCount);
 
         $this->dispatch('comment-saved')
             ->self();
@@ -81,11 +65,8 @@ class Listing extends Component
     {
         $this->authorize('update', $comment);
 
-        $this->validate();
-        // Using $this->body directly is also an option: ['body' => $this->body]
-        $comment->update(
-            $this->pull(['body'])
-        );
+        $this->form->comment = $comment;
+        $this->form->update();
 
         $this->dispatch('comment-saved')
             ->self();

@@ -18,11 +18,11 @@
                 <form class="flex-1" wire:submit="create">
                     <flux:textarea
                         name="body"
-                        wire:model="body"
+                        wire:model="form.body"
                         resize="vertical"
                         placeholder="{{ __('Please ensure your comment does not break the community guidelines.') }}"
                     />
-                    @error('body')
+                    @error('form.body')
                         <div class="text-red-500 text-xs my-1.5">{{ $message }}</div>
                     @enderror
                     <div class="flex items-center justify-between mt-2">
@@ -37,6 +37,12 @@
             </div>
         </div>
     @endauth
+
+    @if ($rootComments->hasPages())
+        <div class="mb-4">
+            {{ $rootComments->links() }}
+        </div>
+    @endif
 
     @foreach ($rootComments as $comment)
         <div
@@ -60,4 +66,8 @@
             @endif
         </div>
     @endforeach
+
+    <div class="mt-4">
+        {{ $rootComments->links() }}
+    </div>
 </div>
