@@ -24,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string $body
  * @property int|null $parent_id
  * @property int|null $root_id
+ * @property Carbon|null $edited_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User $user
@@ -39,6 +40,12 @@ class Comment extends Model
 {
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
+
+    protected $casts = [
+        'edited_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     /**
      * The relationship between a comment and it's user.

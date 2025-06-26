@@ -43,8 +43,17 @@ class CommentPolicy
      */
     public function update(User $user, Comment $comment): bool
     {
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
         // The user can update the comment if they are the author of the comment.
         if ($user->id !== $comment->user_id) {
+            return false;
+        }
+
+        // The user can update the comment if it is not older than 5 minutes.
+        if ($comment->created_at->diffInMinutes(now()) > 5) {
             return false;
         }
 

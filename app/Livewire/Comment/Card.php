@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Card extends Component
@@ -65,6 +66,17 @@ class Card extends Component
             'comment-reaction.'.$comment->id,
             status: $reaction ? 'deleted' : 'created',
         );
+    }
+
+    /**
+     * Listen for comment updates and refresh this comment if it matches.
+     */
+    #[On('comment-updated')]
+    public function commentUpdated(int $commentId): void
+    {
+        if ($this->comment->id === $commentId) {
+            $this->comment->refresh();
+        }
     }
 
     /**

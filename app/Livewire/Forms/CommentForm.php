@@ -19,7 +19,7 @@ class CommentForm extends Form
     public string $body = '';
 
     /**
-     * The comment model being edited, or null if creating a new comment.
+     * The comment model being edited or null if creating a new comment.
      */
     public ?Comment $comment = null;
 
@@ -40,23 +40,18 @@ class CommentForm extends Form
         }
 
         $commentable->comments()->create($newComment);
-
-        $this->reset();
     }
 
     /**
      * Update an existing comment.
      */
-    public function update(): void
+    public function update(Comment $comment): void
     {
         $this->validate();
 
-        if ($this->comment) {
-            $this->comment->update([
-                'body' => $this->body,
-            ]);
-        }
-
-        $this->reset();
+        $comment->update([
+            'body' => $this->body,
+            'edited_at' => now(),
+        ]);
     }
 }

@@ -1,4 +1,26 @@
-<div x-data="{ showReplyForm{{ $comment->id }}: false }">
+<div x-data="{ 
+    showReplyForm{{ $comment->id }}: false, 
+    showEditForm{{ $comment->id }}: false,
+    canEdit: true,
+    createdAt: new Date('{{ $comment->created_at->toISOString() }}'),
+    init() {
+        this.updateCanEdit();
+        // Check every 30 seconds if comment is still editable
+        setInterval(() => {
+            this.updateCanEdit();
+        }, 30000);
+    },
+    updateCanEdit() {
+        const now = new Date();
+        const diffInMinutes = (now - this.createdAt) / (1000 * 60);
+        this.canEdit = diffInMinutes <= 5;
+        
+        // If edit form is open and time expired, close it
+        if (!this.canEdit && this.showEditForm{{ $comment->id }}) {
+            this.showEditForm{{ $comment->id }} = false;
+        }
+    }
+}">
     <div id="comment-{{ $comment->id }}" class="flex items-center justify-between">
         <div class="flex items-center">
             <flux:avatar circle="circle" src="{{ $comment->user->profile_photo_url }}" color="auto" color:seed="{{ $comment->user->id }}" />
@@ -7,6 +29,9 @@
             </a>
             <span class="ml-2 text-xs text-slate-400 relative top-0.5">
                 <x-time :datetime="$comment->created_at" />
+                @if ($comment->edited_at)
+                    <span class="text-gray-500 dark:text-gray-400" title="{{ $comment->edited_at->format('Y-m-d H:i:s') }}">*</span>
+                @endif
             </span>
         </div>
         @if ($comment->parent_id && $comment->parent)
@@ -61,7 +86,17 @@
             </button>
         @endif
 
-        <button type="button" x-on:click="showReplyForm{{ $comment->id }} = !showReplyForm{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
+        @can('update', $comment)
+            <button type="button" 
+                    wire:click="$parent.edit({{ $comment->id }})" 
+                    x-on:click="showEditForm{{ $comment->id }} = !showEditForm{{ $comment->id }}; showReplyForm{{ $comment->id }} = false" 
+                    x-show="canEdit"
+                    class="hover:underline cursor-pointer text-xs">
+                {{ __('Edit') }}
+            </button>
+        @endcan
+
+        <button type="button" x-on:click="showReplyForm{{ $comment->id }} = !showReplyForm{{ $comment->id }}; showEditForm{{ $comment->id }} = false" class="hover:underline cursor-pointer text-xs">
             {{ __('Reply') }}
         </button>
 
@@ -72,7 +107,8 @@
         @endif
     </div>
     <div x-show="showReplyForm{{ $comment->id }}" x-collapse class="mt-4">
-        <form wire:submit.prevent="$parent.create({{ $comment->id }}); showReplyForm{{ $comment->id }} = false">
+        <flux:separator text="Reply To Comment" />
+        <form wire:submit.prevent="$parent.create({{ $comment->id }}); showReplyForm{{ $comment->id }} = false" class="mt-2.5">
             <flux:textarea
                 name="body"
                 wire:model="$parent.form.body"
@@ -84,6 +120,25 @@
                     {{ __('Post Reply') }}
                 </flux:button>
                 <flux:button type="button" x-on:click="showReplyForm{{ $comment->id }} = false" variant="danger" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+            </div>
+        </form>
+    </div>
+    <div x-show="showEditForm{{ $comment->id }}" x-collapse class="mt-4">
+        <flux:separator text="Edit Comment" />
+        <form wire:submit.prevent="$parent.update(); showEditForm{{ $comment->id }} = false" class="mt-2.5">
+            <flux:textarea
+                name="body"
+                wire:model="$parent.form.body"
+                resize="vertical"
+                placeholder="{{ __('Please ensure your comment does not break the community guidelines.') }}"
+            />
+            <div class="flex items-center justify-between mt-2">
+                <flux:button variant="primary" size="sm" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">
+                    {{ __('Update Comment') }}
+                </flux:button>
+                <flux:button type="button" x-on:click="showEditForm{{ $comment->id }} = false" variant="danger" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
             </div>

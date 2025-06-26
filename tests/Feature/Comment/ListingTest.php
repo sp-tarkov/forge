@@ -75,13 +75,58 @@ it('should allow a user to reply to a comment', function (): void {
 it('should allow a user to update their own comment', function (): void {
     $user = User::factory()->create();
     $mod = Mod::factory()->create();
-    $comment = Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $mod->id, 'commentable_type' => get_class($mod)]);
+    $comment = Comment::factory()->create([
+        'user_id' => $user->id, 
+        'commentable_id' => $mod->id, 
+        'commentable_type' => get_class($mod),
+        'created_at' => now(),  // Override factory to ensure comment is fresh
+        'updated_at' => now(),
+    ]);
 
     Livewire::actingAs($user)
         ->test(Listing::class, ['commentable' => $mod])
+        ->set('form.comment', $comment)
         ->set('form.body', 'This is an updated comment.')
-        ->call('update', $comment->id)
+        ->call('update')
         ->assertHasNoErrors();
+
+    $comment->refresh();
+
+    $this->assertEquals('This is an updated comment.', $comment->body);
+    $this->assertNotNull($comment->edited_at);
+});
+
+it('should not allow a user to update a comment that is older than 5 minutes', function (): void {
+    $user = User::factory()->create();
+    $mod = Mod::factory()->create();
+    $comment = Comment::factory()->create([
+        'user_id' => $user->id,
+        'commentable_id' => $mod->id,
+        'commentable_type' => get_class($mod),
+        'created_at' => now()->subMinutes(6),
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Listing::class, ['commentable' => $mod])
+        ->set('form.comment', $comment)
+        ->set('form.body', 'This is an updated comment.')
+        ->call('update')
+        ->assertForbidden();
+});
+
+it('should show an edited indicator when a comment has been edited', function (): void {
+    $user = User::factory()->create();
+    $mod = Mod::factory()->create();
+    $comment = Comment::factory()->create([
+        'user_id' => $user->id,
+        'commentable_id' => $mod->id,
+        'commentable_type' => get_class($mod),
+        'edited_at' => now(),
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Listing::class, ['commentable' => $mod])
+        ->assertSeeHtml('<span class="text-gray-500 dark:text-gray-400" title="'.$comment->edited_at->format('Y-m-d H:i:s').'">*</span>');
 });
 
 it("should not allow a user to update another user's comment", function (): void {
@@ -92,22 +137,26 @@ it("should not allow a user to update another user's comment", function (): void
 
     Livewire::actingAs($user)
         ->test(Listing::class, ['commentable' => $mod])
+        ->set('form.comment', $comment)
         ->set('form.body', 'This is an updated comment.')
-        ->call('update', $comment->id)
+        ->call('update')
         ->assertForbidden();
 });
 
 it('should allow a moderator to update any comment', function (): void {
     $moderatorRole = UserRole::factory()->moderator()->create();
-    $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+    $moderator = User::factory()->create();
+    $moderator->assignRole($moderatorRole);
+
     $user = User::factory()->create();
     $mod = Mod::factory()->create();
     $comment = Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $mod->id, 'commentable_type' => get_class($mod)]);
 
     Livewire::actingAs($moderator)
         ->test(Listing::class, ['commentable' => $mod])
+        ->set('form.comment', $comment)
         ->set('form.body', 'This is an updated comment.')
-        ->call('update', $comment->id)
+        ->call('update')
         ->assertHasNoErrors();
 });
 

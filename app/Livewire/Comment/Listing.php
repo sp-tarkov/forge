@@ -8,7 +8,6 @@ use App\Livewire\Forms\CommentForm;
 use App\Models\Comment;
 use App\Models\Mod;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -21,16 +20,12 @@ class Listing extends Component
 
     /**
      * The commentable model.
-     *
-     * @var Mod
      */
     #[Locked]
-    public Mod $commentable; // Type-hinting to Mod for stronger type safety
+    public Mod $commentable;
 
     /**
      * The comment form object.
-     *
-     * @var CommentForm
      */
     public CommentForm $form;
 
@@ -54,22 +49,38 @@ class Listing extends Component
 
         unset($this->commentCount);
 
-        $this->dispatch('comment-saved')
-            ->self();
+        $this->reset('form.body');
+
+        $this->dispatch('comment-saved')->self();
+    }
+
+    /**
+     * Prepare the form for editing a specific comment.
+     */
+    public function edit(Comment $comment): void
+    {
+        $this->authorize('update', $comment);
+
+        $this->form->comment = $comment;
+        $this->form->body = $comment->body;
     }
 
     /**
      * Update an existing comment.
      */
-    public function update(Comment $comment): void
+    public function update(): void
     {
-        $this->authorize('update', $comment);
+        $this->authorize('update', $this->form->comment);
 
-        $this->form->comment = $comment;
-        $this->form->update();
+        $this->form->update($this->form->comment);
 
-        $this->dispatch('comment-saved')
-            ->self();
+        unset($this->commentCount);
+
+        $this->reset('form.body');
+
+        // Dispatch event to refresh the specific comment card
+        $this->dispatch('comment-updated', commentId: $this->form->comment->id);
+        $this->dispatch('comment-saved')->self();
     }
 
     /**
@@ -79,6 +90,8 @@ class Listing extends Component
     public function commentSaved(): void
     {
         $this->commentable->refresh();
+
+        unset($this->commentCount);
     }
 
     /**
