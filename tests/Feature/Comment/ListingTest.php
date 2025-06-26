@@ -76,8 +76,8 @@ it('should allow a user to update their own comment', function (): void {
     $user = User::factory()->create();
     $mod = Mod::factory()->create();
     $comment = Comment::factory()->create([
-        'user_id' => $user->id, 
-        'commentable_id' => $mod->id, 
+        'user_id' => $user->id,
+        'commentable_id' => $mod->id,
         'commentable_type' => get_class($mod),
         'created_at' => now(),  // Override factory to ensure comment is fresh
         'updated_at' => now(),
