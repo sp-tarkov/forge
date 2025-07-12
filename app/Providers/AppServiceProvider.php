@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use Throwable;
 use App\Exceptions\Api\V0\InvalidQuery;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
@@ -23,6 +22,7 @@ use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\LaravelFlare\Facades\Flare;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
