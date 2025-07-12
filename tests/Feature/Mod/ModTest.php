@@ -220,7 +220,7 @@ it('orders mod versions correctly with release versions prioritized over pre-rel
         'version_minor' => 0,
         'version_patch' => 0,
         'version_labels' => '-alpha',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     $version2 = ModVersion::factory()->recycle($mod)->create([
@@ -229,7 +229,7 @@ it('orders mod versions correctly with release versions prioritized over pre-rel
         'version_minor' => 0,
         'version_patch' => 0,
         'version_labels' => '',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     $version3 = ModVersion::factory()->recycle($mod)->create([
@@ -238,7 +238,7 @@ it('orders mod versions correctly with release versions prioritized over pre-rel
         'version_minor' => 0,
         'version_patch' => 0,
         'version_labels' => '-beta',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     $version4 = ModVersion::factory()->recycle($mod)->create([
@@ -247,7 +247,7 @@ it('orders mod versions correctly with release versions prioritized over pre-rel
         'version_minor' => 0,
         'version_patch' => 0,
         'version_labels' => '',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     $version5 = ModVersion::factory()->recycle($mod)->create([
@@ -256,7 +256,7 @@ it('orders mod versions correctly with release versions prioritized over pre-rel
         'version_minor' => 1,
         'version_patch' => 0,
         'version_labels' => '',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     // Refresh the mod to clear any cached relationships
@@ -264,20 +264,20 @@ it('orders mod versions correctly with release versions prioritized over pre-rel
 
     // Test that versions() relationship returns correctly ordered versions
     $orderedVersions = $mod->versions()->get();
-    
+
     // Expected order:
     // 1. 2.0.0 (highest major.minor.patch, release version)
     // 2. 2.0.0-beta (same major.minor.patch as above, but pre-release)
     // 3. 1.1.0 (lower major.minor.patch, but release version)
     // 4. 1.0.0 (lower major.minor.patch, release version)
     // 5. 1.0.0-alpha (same major.minor.patch as above, but pre-release)
-    
+
     expect($orderedVersions->pluck('version')->toArray())->toBe([
         '2.0.0',      // First: highest version, release
         '2.0.0-beta', // Second: same version, pre-release
         '1.1.0',      // Third: lower version, release
         '1.0.0',      // Fourth: lower version, release
-        '1.0.0-alpha' // Last: same as above, pre-release
+        '1.0.0-alpha', // Last: same as above, pre-release
     ]);
 
     // Test that latestVersion() returns the semantically latest release version
@@ -300,7 +300,7 @@ it('correctly handles pre-release labels in alphabetical order', function (): vo
         'version_minor' => 0,
         'version_patch' => 0,
         'version_labels' => '-rc.1',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     ModVersion::factory()->recycle($mod)->create([
@@ -309,7 +309,7 @@ it('correctly handles pre-release labels in alphabetical order', function (): vo
         'version_minor' => 0,
         'version_patch' => 0,
         'version_labels' => '-beta',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     ModVersion::factory()->recycle($mod)->create([
@@ -318,18 +318,18 @@ it('correctly handles pre-release labels in alphabetical order', function (): vo
         'version_minor' => 0,
         'version_patch' => 0,
         'version_labels' => '-alpha',
-        'spt_version_constraint' => '3.8.0'
+        'spt_version_constraint' => '3.8.0',
     ]);
 
     $mod->refresh();
 
     // Test that pre-release versions are ordered alphabetically by label
     $orderedVersions = $mod->versions()->get();
-    
+
     expect($orderedVersions->pluck('version_labels')->toArray())->toBe([
         '-alpha',  // Alphabetically first
         '-beta',   // Alphabetically second
-        '-rc.1'    // Alphabetically third
+        '-rc.1',    // Alphabetically third
     ]);
 
     // Since there's no release version, latestVersion should be the first pre-release
