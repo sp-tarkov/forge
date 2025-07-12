@@ -208,3 +208,131 @@ it('allows a mod author to view an unpublished mod', function (): void {
     $response = $this->get($mod2->detail_url);
     $response->assertOk();
 });
+
+it('orders mod versions correctly with release versions prioritized over pre-releases', function (): void {
+    SptVersion::factory()->create(['version' => '3.8.0']);
+    $mod = Mod::factory()->create();
+
+    // Create versions in a mixed order to test sorting
+    $version1 = ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.0.0-alpha',
+        'version_major' => 1,
+        'version_minor' => 0,
+        'version_patch' => 0,
+        'version_labels' => '-alpha',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    $version2 = ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.0.0',
+        'version_major' => 1,
+        'version_minor' => 0,
+        'version_patch' => 0,
+        'version_labels' => '',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    $version3 = ModVersion::factory()->recycle($mod)->create([
+        'version' => '2.0.0-beta',
+        'version_major' => 2,
+        'version_minor' => 0,
+        'version_patch' => 0,
+        'version_labels' => '-beta',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    $version4 = ModVersion::factory()->recycle($mod)->create([
+        'version' => '2.0.0',
+        'version_major' => 2,
+        'version_minor' => 0,
+        'version_patch' => 0,
+        'version_labels' => '',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    $version5 = ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.1.0',
+        'version_major' => 1,
+        'version_minor' => 1,
+        'version_patch' => 0,
+        'version_labels' => '',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    // Refresh the mod to clear any cached relationships
+    $mod->refresh();
+
+    // Test that versions() relationship returns correctly ordered versions
+    $orderedVersions = $mod->versions()->get();
+    
+    // Expected order:
+    // 1. 2.0.0 (highest major.minor.patch, release version)
+    // 2. 2.0.0-beta (same major.minor.patch as above, but pre-release)
+    // 3. 1.1.0 (lower major.minor.patch, but release version)
+    // 4. 1.0.0 (lower major.minor.patch, release version)
+    // 5. 1.0.0-alpha (same major.minor.patch as above, but pre-release)
+    
+    expect($orderedVersions->pluck('version')->toArray())->toBe([
+        '2.0.0',      // First: highest version, release
+        '2.0.0-beta', // Second: same version, pre-release
+        '1.1.0',      // Third: lower version, release
+        '1.0.0',      // Fourth: lower version, release
+        '1.0.0-alpha' // Last: same as above, pre-release
+    ]);
+
+    // Test that latestVersion() returns the semantically latest release version
+    $latestVersion = $mod->latestVersion;
+    expect($latestVersion->version)->toBe('2.0.0');
+    expect($latestVersion->version_labels)->toBe('');
+
+    // Test that the first version in the ordered collection matches latestVersion
+    expect($orderedVersions->first()->id)->toBe($latestVersion->id);
+});
+
+it('correctly handles pre-release labels in alphabetical order', function (): void {
+    SptVersion::factory()->create(['version' => '3.8.0']);
+    $mod = Mod::factory()->create();
+
+    // Create multiple pre-release versions of the same semantic version
+    ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.0.0-rc.1',
+        'version_major' => 1,
+        'version_minor' => 0,
+        'version_patch' => 0,
+        'version_labels' => '-rc.1',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.0.0-beta',
+        'version_major' => 1,
+        'version_minor' => 0,
+        'version_patch' => 0,
+        'version_labels' => '-beta',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.0.0-alpha',
+        'version_major' => 1,
+        'version_minor' => 0,
+        'version_patch' => 0,
+        'version_labels' => '-alpha',
+        'spt_version_constraint' => '3.8.0'
+    ]);
+
+    $mod->refresh();
+
+    // Test that pre-release versions are ordered alphabetically by label
+    $orderedVersions = $mod->versions()->get();
+    
+    expect($orderedVersions->pluck('version_labels')->toArray())->toBe([
+        '-alpha',  // Alphabetically first
+        '-beta',   // Alphabetically second
+        '-rc.1'    // Alphabetically third
+    ]);
+
+    // Since there's no release version, latestVersion should be the first pre-release
+    $latestVersion = $mod->latestVersion;
+    expect($latestVersion->version)->toBe('1.0.0-alpha');
+});
