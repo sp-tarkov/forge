@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Throwable;
 use App\Exceptions\Api\V0\InvalidQuery;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
@@ -72,7 +73,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Filter out specific exceptions from being reported to Flare.
         Flare::filterExceptionsUsing(
-            fn (\Throwable $throwable) => ! in_array(
+            fn (Throwable $throwable): bool => ! in_array(
                 $throwable::class,
                 [
                     ValidationException::class, // Used for typical API responses.
