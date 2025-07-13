@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Page\Mod\Edit;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -354,7 +355,7 @@ it('prevents editing mod to use duplicate GUID via Livewire Edit component', fun
     $this->actingAs($user);
 
     // Attempt to edit the second mod to use the first mod's GUID
-    Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $modToEdit->id])
+    Livewire::test(Edit::class, ['modId' => $modToEdit->id])
         ->set('name', 'Updated Mod')
         ->set('guid', $existingMod->guid)
         ->set('teaser', 'Updated teaser')
@@ -381,7 +382,7 @@ it('allows editing mod to keep its own GUID via Livewire Edit component', functi
     $this->actingAs($user);
 
     // Edit the mod keeping the same GUID
-    Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+    Livewire::test(Edit::class, ['modId' => $mod->id])
         ->set('name', 'Updated Mod Name')
         ->set('guid', $mod->guid)
         ->set('teaser', 'Updated teaser')

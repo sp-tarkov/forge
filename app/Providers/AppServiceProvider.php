@@ -140,6 +140,7 @@ class AppServiceProvider extends ServiceProvider
                 \$__ogImageCacheKey = 'og_image_data:' . \$__ogImageDisk . ':' . md5(\$__ogImagePath);
                 \$__ogImageData = Cache::remember(\$__ogImageCacheKey, 3600, function () use (\$__ogImagePath, \$__ogImageDisk) {
                     try {
+                        if (empty(\$__ogImagePath)) return null;
                         \$disk = Storage::disk(\$__ogImageDisk);
                         if (!\$disk->exists(\$__ogImagePath)) return null;
                         \$contents = \$disk->get(\$__ogImagePath);
