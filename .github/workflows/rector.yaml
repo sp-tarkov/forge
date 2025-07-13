@@ -1,10 +1,16 @@
 name: Rector
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches-ignore: [ main ]
+  pull_request:
+    branches-ignore: [ main ]
 
 jobs:
   rector:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +37,8 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v6
         with:
-          commit_message: Rector Fixes
-          commit_user_name: Rector Bot
-          skip_fetch: true
+          commit_message: "refactor: automatic fixes"
+          commit_user_name: Refringe
+          commit_user_email: me@refringe.com
+          commit_author: Refringe <me@refringe.com>
           file_pattern: '*.php'
