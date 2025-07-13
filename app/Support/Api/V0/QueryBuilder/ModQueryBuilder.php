@@ -83,6 +83,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'hub_id' => 'filterByHubId',
             'name' => 'filterByName',
             'slug' => 'filterBySlug',
+            'guid' => 'filterByGuid',
             'teaser' => 'filterByTeaser',
             'source_code_url' => 'filterBySourceCodeLink',
             'featured' => 'filterByFeatured',
@@ -149,6 +150,20 @@ class ModQueryBuilder extends AbstractQueryBuilder
         }
 
         $query->whereLike('mods.slug', sprintf('%%%s%%', $term));
+    }
+
+    /**
+     * Filter by GUID.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByGuid(Builder $query, ?string $guids): void
+    {
+        if ($guids === null) {
+            return;
+        }
+
+        $query->whereIn('mods.guid', self::parseCommaSeparatedInput($guids));
     }
 
     /**
@@ -321,6 +336,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'hub_id',
+            'guid',
             'name',
             'slug',
             'teaser',

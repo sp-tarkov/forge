@@ -10,7 +10,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
@@ -29,55 +28,51 @@ class Create extends Component
     /**
      * The thumbnail of the mod.
      */
-    #[Validate('nullable|image|mimes:jpg,jpeg,png|max:2048')]
     public ?UploadedFile $thumbnail = null;
 
     /**
      * The name of the mod.
      */
-    #[Validate('required|string|max:75')]
     public string $name = '';
+
+    /**
+     * The mod GUID in reverse domain notation.
+     */
+    public string $guid = '';
 
     /**
      * The teaser of the mod.
      */
-    #[Validate('required|string|max:255')]
     public string $teaser = '';
 
     /**
      * The description of the mod.
      */
-    #[Validate('required|string')]
     public string $description = '';
 
     /**
      * The license of the mod.
      */
-    #[Validate('required|exists:licenses,id')]
     public string $license = '';
 
     /**
      * The source code URL of the mod.
      */
-    #[Validate('required|url|starts_with:https://,http://')]
     public string $sourceCodeUrl = '';
 
     /**
      * The published at date of the mod.
      */
-    #[Validate('nullable|date')]
     public ?string $publishedAt = null;
 
     /**
      * Whether the mod contains AI content.
      */
-    #[Validate('boolean')]
     public bool $containsAiContent = false;
 
     /**
      * Whether the mod contains ads.
      */
-    #[Validate('boolean')]
     public bool $containsAds = false;
 
     /**
@@ -88,6 +83,27 @@ class Create extends Component
         $this->honeypotData = new HoneypotData;
 
         $this->authorize('create', Mod::class);
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    protected function rules(): array
+    {
+        return [
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'name' => 'required|string|max:75',
+            'guid' => 'required|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid',
+            'teaser' => 'required|string|max:255',
+            'description' => 'required|string',
+            'license' => 'required|exists:licenses,id',
+            'sourceCodeUrl' => 'required|url|starts_with:https://,http://',
+            'publishedAt' => 'nullable|date',
+            'containsAiContent' => 'boolean',
+            'containsAds' => 'boolean',
+        ];
     }
 
     /**
@@ -120,6 +136,7 @@ class Create extends Component
             'owner_id' => auth()->user()->id,
             'name' => $this->name,
             'slug' => Str::slug($this->name),
+            'guid' => $this->guid,
             'teaser' => $this->teaser,
             'description' => $this->description,
             'license_id' => $this->license,

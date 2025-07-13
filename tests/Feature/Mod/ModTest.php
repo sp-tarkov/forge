@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
+use Livewire\Livewire;
 
 it('displays the latest version on the mod detail page', function (): void {
     $versions = [
@@ -335,4 +337,60 @@ it('correctly handles pre-release labels in alphabetical order', function (): vo
     // Since there's no release version, latestVersion should be the first pre-release
     $latestVersion = $mod->latestVersion;
     expect($latestVersion->version)->toBe('1.0.0-alpha');
+});
+
+it('prevents editing mod to use duplicate GUID via Livewire Edit component', function (): void {
+    $license = License::factory()->create();
+    $user = User::factory()->create();
+
+    // Disable honeypot for testing
+    config()->set('honeypot.enabled', false);
+
+    // Create two mods with different GUIDs
+    $existingMod = Mod::factory()->create(['guid' => 'com.example.existingmod']);
+    $modToEdit = Mod::factory()->recycle($user)->create(['guid' => 'com.example.modtoedit']);
+
+    // Act as the owner of the mod to edit
+    $this->actingAs($user);
+
+    // Attempt to edit the second mod to use the first mod's GUID
+    Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $modToEdit->id])
+        ->set('name', 'Updated Mod')
+        ->set('guid', $existingMod->guid)
+        ->set('teaser', 'Updated teaser')
+        ->set('description', 'Updated description')
+        ->set('license', (string) $license->id)
+        ->set('sourceCodeUrl', 'https://github.com/example/updated')
+        ->set('containsAiContent', false)
+        ->set('containsAds', false)
+        ->call('save')
+        ->assertHasErrors(['guid']);
+});
+
+it('allows editing mod to keep its own GUID via Livewire Edit component', function (): void {
+    $license = License::factory()->create();
+    $user = User::factory()->create();
+
+    // Disable honeypot for testing
+    config()->set('honeypot.enabled', false);
+
+    // Create a mod
+    $mod = Mod::factory()->recycle($user)->create(['guid' => 'com.example.mymod']);
+
+    // Act as the owner of the mod
+    $this->actingAs($user);
+
+    // Edit the mod keeping the same GUID
+    Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+        ->set('name', 'Updated Mod Name')
+        ->set('guid', $mod->guid)
+        ->set('teaser', 'Updated teaser')
+        ->set('description', 'Updated description')
+        ->set('license', (string) $license->id)
+        ->set('sourceCodeUrl', 'https://github.com/example/updated')
+        ->set('containsAiContent', false)
+        ->set('containsAds', false)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect();
 });
