@@ -192,7 +192,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             if (! empty($hubUser->rankID) && $rankTitle && ($user = $localUsers->get($hubUser->userID))) {
                 $role = $roles->get($rankTitle);
 
-                // If the role is not found in pre-fetched data then create it.
+                // If the role is not found in pre-fetched data, then create it.
                 if (! $role) {
                     $role = UserRole::query()->firstOrCreate(['name' => $rankTitle], match ($rankTitle) {
                         'Administrator' => [
@@ -418,7 +418,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      *
      * @throws ConnectionException
      */
-    private function fetchAndStoreImage(string $hubUrl, string $relativePath): string
+    private function fetchAndStoreImage(string $hubUrl, string $relativePath, bool $forceUpdate = false): string
     {
         // Determine the disk to use based on the environment.
         $disk = match (config('app.env')) {
@@ -426,8 +426,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             default => 'public',  // Local storage
         };
 
-        // If the image already exists, return its path.
-        if (Storage::disk($disk)->exists($relativePath)) {
+        // If the image already exists, and we're not forcing an update, return its path.
+        if (! $forceUpdate && Storage::disk($disk)->exists($relativePath)) {
             return $relativePath;
         }
 
@@ -791,31 +791,36 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         }
 
         // Prepare data for upsert for only active mods.
-        $modData = $activeHubMods->map(fn (HubMod $hubMod): array => [
-            'hub_id' => $hubMod->fileID,
-            'owner_id' => $localOwners->get($hubMod->userID)?->id,
-            'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
-            'name' => $hubMod->subject,
-            'slug' => Str::slug($hubMod->subject),
-            'teaser' => $hubMod->getTeaser(),
-            'description' => $hubMod->getCleanMessage(),
-            'thumbnail' => $this->fetchModThumbnail($hubMod),
-            'source_code_url' => $hubMod->getSourceCodeLink(),
-            'featured' => (bool) $hubMod->isFeatured,
-            'contains_ai_content' => (bool) $hubMod->contains_ai,
-            'contains_ads' => (bool) $hubMod->contains_ads,
-            'disabled' => (bool) $hubMod->isDisabled,
-            'published_at' => $hubMod->getTime(),
-            'created_at' => $hubMod->getTime(),
-            'updated_at' => $hubMod->getLastChangeTime(),
-        ])->toArray();
+        $modData = $activeHubMods->map(function (HubMod $hubMod) use ($localLicenses, $localOwners): array {
+            $thumbnailData = $this->fetchModThumbnail($hubMod);
+
+            return [
+                'hub_id' => $hubMod->fileID,
+                'owner_id' => $localOwners->get($hubMod->userID)?->id,
+                'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
+                'name' => $hubMod->subject,
+                'slug' => Str::slug($hubMod->subject),
+                'teaser' => $hubMod->getTeaser(),
+                'description' => $hubMod->getCleanMessage(),
+                'thumbnail' => $thumbnailData['path'],
+                'thumbnail_hash' => $thumbnailData['hash'],
+                'source_code_url' => $hubMod->getSourceCodeLink(),
+                'featured' => (bool) $hubMod->isFeatured,
+                'contains_ai_content' => (bool) $hubMod->contains_ai,
+                'contains_ads' => (bool) $hubMod->contains_ads,
+                'disabled' => (bool) $hubMod->isDisabled,
+                'published_at' => $hubMod->getTime(),
+                'created_at' => $hubMod->getTime(),
+                'updated_at' => $hubMod->getLastChangeTime(),
+            ];
+        })->toArray();
 
         // Upsert a batch of mods based on their hub_id.
         Mod::withoutEvents(function () use ($modData): void {
             Mod::query()->upsert($modData, ['hub_id'], [
-                'owner_id', 'license_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'source_code_url',
-                'featured', 'contains_ai_content', 'contains_ads', 'disabled', 'published_at', 'created_at',
-                'updated_at',
+                'owner_id', 'license_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'thumbnail_hash',
+                'source_code_url', 'featured', 'contains_ai_content', 'contains_ads', 'disabled', 'published_at',
+                'created_at', 'updated_at',
             ]);
         });
 
@@ -856,23 +861,34 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     /**
      * Fetch the mod thumbnail from the Hub.
      *
+     * @return array{path: string, hash: string}
+     *
      * @throws ConnectionException
      */
-    private function fetchModThumbnail(HubMod $hubMod): string
+    private function fetchModThumbnail(HubMod $hubMod): array
     {
         if (! empty($hubMod->getFontAwesomeIcon())) {
             try {
-                return self::generateAwesomeFontThumbnail($hubMod->fileID, $hubMod->getFontAwesomeIcon());
+                $path = self::generateAwesomeFontThumbnail($hubMod->fileID, $hubMod->getFontAwesomeIcon());
+
+                return ['path' => $path, 'hash' => ''];
             } catch (ImagickDrawException|ImagickException) {
                 Log::error('There was an error attempting to generate the Font Awesome thumbnail for mod with hub ID: '.$hubMod->fileID);
 
-                return '';
+                return ['path' => '', 'hash' => ''];
             }
         }
 
-        // If any of the required fields are empty, return an empty string.
+        // If any of the required fields are empty, return empty values.
         if (empty($hubMod->iconHash) || empty($hubMod->iconExtension)) {
-            return '';
+            return ['path' => '', 'hash' => ''];
+        }
+
+        // Check if we need to update the thumbnail by comparing hashes
+        $forceUpdate = false;
+        $existingMod = Mod::query()->where('hub_id', $hubMod->fileID)->first();
+        if ($existingMod && $existingMod->thumbnail_hash !== $hubMod->iconHash) {
+            $forceUpdate = true;
         }
 
         $hashShort = substr($hubMod->iconHash, 0, 2);
@@ -880,7 +896,9 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $hubUrl = 'https://hub.sp-tarkov.com/files/images/file/'.$hashShort.'/'.$fileName;
         $relativePath = 'mods/'.$fileName;
 
-        return $this->fetchAndStoreImage($hubUrl, $relativePath);
+        $path = $this->fetchAndStoreImage($hubUrl, $relativePath, $forceUpdate);
+
+        return ['path' => $path, 'hash' => $hubMod->iconHash];
     }
 
     /**

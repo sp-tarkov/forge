@@ -135,6 +135,9 @@ class Create extends Component
                 path: 'mods',
                 options: config('filesystems.asset_upload', 'public'),
             );
+
+            // Calculate and store the hash of the uploaded thumbnail
+            $mod->thumbnail_hash = md5($this->thumbnail->get());
         }
 
         // Save the mod.

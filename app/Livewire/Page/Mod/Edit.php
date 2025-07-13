@@ -155,6 +155,9 @@ class Edit extends Component
                 path: 'mods',
                 options: config('filesystems.asset_upload', 'public'),
             );
+
+            // Calculate and store the hash of the uploaded thumbnail
+            $this->mod->thumbnail_hash = md5($this->thumbnail->get());
         }
 
         $this->mod->save();
