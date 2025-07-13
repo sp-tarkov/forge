@@ -19,11 +19,14 @@ class ModFactory extends Factory
     public function definition(): array
     {
         $name = fake()->sentence(rand(3, 5));
+        $domain = fake()->domainName();
+        $modSlug = Str::slug($name);
 
         return [
             'owner_id' => User::factory(),
             'name' => $name,
-            'slug' => Str::slug($name),
+            'slug' => $modSlug,
+            'guid' => 'com.'.explode('.', $domain)[0].'.'.$modSlug,
             'teaser' => fake()->sentence(),
             'description' => fake()->paragraphs(rand(4, 20), true),
             'license_id' => License::factory(),

@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Exceptions\Api\V0\InvalidQuery;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Override;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\LaravelFlare\Facades\Flare;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Illuminate\Auth\AuthenticationException;
-use App\Exceptions\Api\V0\InvalidQuery;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -72,7 +73,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Filter out specific exceptions from being reported to Flare.
         Flare::filterExceptionsUsing(
-            fn(\Throwable $throwable) => !in_array(
+            fn (Throwable $throwable): bool => ! in_array(
                 $throwable::class,
                 [
                     ValidationException::class, // Used for typical API responses.

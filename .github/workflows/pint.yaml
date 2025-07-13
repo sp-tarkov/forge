@@ -3,6 +3,8 @@ name: Pint
 on:
   push:
     branches-ignore: [ main ]
+  pull_request:
+    branches-ignore: [ main ]
 
 jobs:
   pint:
@@ -28,5 +30,7 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v6
         with:
-          commit_message: Pint PHP Style Fixes
-          commit_user_name: Pint Bot
+          commit_message: "style: automatic fixes"
+          commit_user_name: Refringe
+          commit_user_email: me@refringe.com
+          commit_author: Refringe <me@refringe.com>
