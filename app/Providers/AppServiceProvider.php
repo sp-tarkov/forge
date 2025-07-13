@@ -22,6 +22,7 @@ use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\LaravelFlare\Facades\Flare;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -72,7 +73,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Filter out specific exceptions from being reported to Flare.
         Flare::filterExceptionsUsing(
-            fn (\Throwable $throwable) => ! in_array(
+            fn (Throwable $throwable): bool => ! in_array(
                 $throwable::class,
                 [
                     ValidationException::class, // Used for typical API responses.

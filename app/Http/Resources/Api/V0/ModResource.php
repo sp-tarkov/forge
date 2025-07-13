@@ -57,6 +57,10 @@ class ModResource extends JsonResource
             $data['hub_id'] = $this->resource->hub_id;
         }
 
+        if ($this->shouldInclude('guid')) {
+            $data['guid'] = $this->resource->guid;
+        }
+
         if ($this->shouldInclude('name')) {
             $data['name'] = $this->resource->name;
         }
