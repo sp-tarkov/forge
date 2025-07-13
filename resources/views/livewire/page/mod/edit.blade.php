@@ -73,8 +73,8 @@
 
                             <flux:field class="col-span-6" x-data="{ count: $wire.guid.length, text: $wire.guid }">
                                 <flux:label>{{ __('Mod GUID') }}</flux:label>
-                                <flux:description>{{ __('A unique identifier for your mod in reverse domain notation (e.g., com.yourname.modname). This GUID should match the one in your mod files and will be used to identify your mod across different systems. Use only lowercase letters, numbers, and dots.') }}</flux:description>
-                                <flux:input type="text" wire:model.blur="guid" maxlength="255" x-model="text" @input="count = text.length" placeholder="com.example.mymodname" />
+                                <flux:description>{{ __('A unique identifier for your mod in reverse domain notation. This GUID should match the one in your mod files and will be used to identify your mod across different systems. Use only lowercase letters, numbers, and dots.') }}</flux:description>
+                                <flux:input type="text" wire:model.blur="guid" maxlength="255" x-model="text" @input="count = text.length" placeholder="com.username.modname" />
                                 <div class="mt-1 text-sm text-gray-500 dark:text-gray-400" x-text="`Max Length: ${count}/255`"></div>
                                 <flux:error name="guid" />
                             </flux:field>
