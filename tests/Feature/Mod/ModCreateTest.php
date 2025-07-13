@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Page\Mod\Create;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\User;
@@ -25,7 +26,7 @@ it('renders the Livewire Create component without error', function (): void {
     $user = User::factory()->withMfa()->create();
     $this->actingAs($user);
 
-    Livewire::test(\App\Livewire\Page\Mod\Create::class)
+    Livewire::test(Create::class)
         ->assertStatus(200);
 });
 
@@ -43,7 +44,7 @@ it('prevents creating a mod with duplicate GUID via Livewire Create component', 
     $this->actingAs($user);
 
     // Attempt to create a new mod with the same GUID
-    Livewire::test(\App\Livewire\Page\Mod\Create::class)
+    Livewire::test(Create::class)
         ->set('honeypotData.nameFieldName', 'name')
         ->set('honeypotData.validFromFieldName', 'valid_from')
         ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -73,7 +74,7 @@ it('allows creating a mod with unique GUID via Livewire Create component', funct
     $this->actingAs($user);
 
     // Create a new mod with a unique GUID
-    Livewire::test(\App\Livewire\Page\Mod\Create::class)
+    Livewire::test(Create::class)
         ->set('honeypotData.nameFieldName', 'name')
         ->set('honeypotData.validFromFieldName', 'valid_from')
         ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))

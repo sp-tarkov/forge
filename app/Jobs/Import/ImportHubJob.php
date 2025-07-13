@@ -143,12 +143,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         User::withoutEvents(function () use ($userData): void {
             // Get existing hub_ids to determine which records to update vs insert
             $hubIds = collect($userData)->pluck('hub_id');
-            $existingUsers = User::whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
-            
+            $existingUsers = User::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
             // Split data into inserts (new) and updates (existing)
             $insertData = [];
             $updateData = [];
-            
+
             foreach ($userData as $user) {
                 if (in_array($user['hub_id'], $existingUsers)) {
                     $updateData[] = $user;
@@ -156,15 +156,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     $insertData[] = $user;
                 }
             }
-            
+
             // Insert new users (only allocates IDs for actual new records)
-            if (!empty($insertData)) {
-                User::insert($insertData);
+            if (! empty($insertData)) {
+                User::query()->insert($insertData);
             }
-            
+
             // Update existing users (no ID allocation)
             foreach ($updateData as $user) {
-                User::where('hub_id', $user['hub_id'])->update([
+                User::query()->where('hub_id', $user['hub_id'])->update([
                     'name' => $user['name'],
                     'email' => $user['email'],
                     'password' => $user['password'],
@@ -587,12 +587,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         License::withoutEvents(function () use ($licenseData): void {
             // Get existing hub_ids to determine which records to update vs insert
             $hubIds = collect($licenseData)->pluck('hub_id');
-            $existingLicenses = License::whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
-            
+            $existingLicenses = License::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
             // Split data into inserts (new) and updates (existing)
             $insertData = [];
             $updateData = [];
-            
+
             foreach ($licenseData as $license) {
                 if (in_array($license['hub_id'], $existingLicenses)) {
                     $updateData[] = $license;
@@ -600,15 +600,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     $insertData[] = $license;
                 }
             }
-            
+
             // Insert new licenses (only allocates IDs for actual new records)
-            if (!empty($insertData)) {
-                License::insert($insertData);
+            if (! empty($insertData)) {
+                License::query()->insert($insertData);
             }
-            
+
             // Update existing licenses (no ID allocation)
             foreach ($updateData as $license) {
-                License::where('hub_id', $license['hub_id'])->update([
+                License::query()->where('hub_id', $license['hub_id'])->update([
                     'name' => $license['name'],
                     'link' => $license['link'],
                     'created_at' => $license['created_at'],
@@ -707,12 +707,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         SptVersion::withoutEvents(function () use ($versionData): void {
             // Get existing versions to determine which records to update vs insert
             $versions = collect($versionData)->pluck('version');
-            $existingVersions = SptVersion::whereIn('version', $versions)->pluck('version')->toArray();
-            
+            $existingVersions = SptVersion::query()->whereIn('version', $versions)->pluck('version')->toArray();
+
             // Split data into inserts (new) and updates (existing)
             $insertData = [];
             $updateData = [];
-            
+
             foreach ($versionData as $version) {
                 if (in_array($version['version'], $existingVersions)) {
                     $updateData[] = $version;
@@ -720,15 +720,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     $insertData[] = $version;
                 }
             }
-            
+
             // Insert new versions (only allocates IDs for actual new records)
-            if (!empty($insertData)) {
-                SptVersion::insert($insertData);
+            if (! empty($insertData)) {
+                SptVersion::query()->insert($insertData);
             }
-            
+
             // Update existing versions (no ID allocation)
             foreach ($updateData as $version) {
-                SptVersion::where('version', $version['version'])->update([
+                SptVersion::query()->where('version', $version['version'])->update([
                     'version_major' => $version['version_major'],
                     'version_minor' => $version['version_minor'],
                     'version_patch' => $version['version_patch'],
@@ -908,12 +908,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         Mod::withoutEvents(function () use ($modData): void {
             // Get existing hub_ids to determine which records to update vs insert
             $hubIds = collect($modData)->pluck('hub_id');
-            $existingMods = Mod::whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
-            
+            $existingMods = Mod::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
             // Split data into inserts (new) and updates (existing)
             $insertData = [];
             $updateData = [];
-            
+
             foreach ($modData as $mod) {
                 if (in_array($mod['hub_id'], $existingMods)) {
                     $updateData[] = $mod;
@@ -921,15 +921,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     $insertData[] = $mod;
                 }
             }
-            
+
             // Insert new mods (only allocates IDs for actual new records)
-            if (!empty($insertData)) {
-                Mod::insert($insertData);
+            if (! empty($insertData)) {
+                Mod::query()->insert($insertData);
             }
-            
+
             // Update existing mods (no ID allocation)
             foreach ($updateData as $mod) {
-                Mod::where('hub_id', $mod['hub_id'])->update([
+                Mod::query()->where('hub_id', $mod['hub_id'])->update([
                     'owner_id' => $mod['owner_id'],
                     'license_id' => $mod['license_id'],
                     'name' => $mod['name'],
@@ -1190,12 +1190,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ModVersion::withoutEvents(function () use ($modVersionData): void {
                 // Get existing hub_ids to determine which records to update vs insert
                 $hubIds = collect($modVersionData)->pluck('hub_id');
-                $existingModVersions = ModVersion::whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
-                
+                $existingModVersions = ModVersion::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
                 // Split data into inserts (new) and updates (existing)
                 $insertData = [];
                 $updateData = [];
-                
+
                 foreach ($modVersionData as $modVersion) {
                     if (in_array($modVersion['hub_id'], $existingModVersions)) {
                         $updateData[] = $modVersion;
@@ -1203,15 +1203,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                         $insertData[] = $modVersion;
                     }
                 }
-                
+
                 // Insert new mod versions (only allocates IDs for actual new records)
-                if (!empty($insertData)) {
-                    ModVersion::insert($insertData);
+                if (! empty($insertData)) {
+                    ModVersion::query()->insert($insertData);
                 }
-                
+
                 // Update existing mod versions (no ID allocation)
                 foreach ($updateData as $modVersion) {
-                    ModVersion::where('hub_id', $modVersion['hub_id'])->update([
+                    ModVersion::query()->where('hub_id', $modVersion['hub_id'])->update([
                         'mod_id' => $modVersion['mod_id'],
                         'version' => $modVersion['version'],
                         'version_major' => $modVersion['version_major'],
