@@ -39,6 +39,7 @@ class ImportHubImageJob implements ShouldQueue
     public function __construct(
         private readonly string $imageType,
         private readonly int $recordId,
+        /** @var array<string, mixed> */
         private readonly array $imageData
     ) {}
 
