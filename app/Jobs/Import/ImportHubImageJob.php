@@ -52,7 +52,7 @@ class ImportHubImageJob implements ShouldQueue
             'user_avatar' => $this->processUserAvatar(),
             'user_cover' => $this->processUserCoverPhoto(),
             'mod_thumbnail' => $this->processModThumbnail(),
-            default => throw new Exception('Unknown image type: ' . $this->imageType),
+            default => throw new Exception('Unknown image type: '.$this->imageType),
         };
     }
 

@@ -786,7 +786,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         }
 
         // Prepare data for upsert for only active mods.
-        $modData = $activeHubMods->map(fn(HubMod $hubMod): array => [
+        $modData = $activeHubMods->map(fn (HubMod $hubMod): array => [
             'hub_id' => $hubMod->fileID,
             'owner_id' => $localOwners->get($hubMod->userID)?->id,
             'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
