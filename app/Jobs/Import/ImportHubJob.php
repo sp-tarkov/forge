@@ -43,13 +43,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Imagick;
-use ImagickDraw;
-use ImagickDrawException;
-use ImagickException;
-use ImagickPixel;
 
 class ImportHubJob implements ShouldBeUnique, ShouldQueue
 {
@@ -343,7 +337,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         });
     }
 
-
     /**
      * Get all user cover photos from the Hub database and pass them in batches to be processed.
      *
@@ -388,8 +381,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             }
         });
     }
-
-
 
     /**
      * Get all user follows from the Hub database.
@@ -906,7 +897,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             }
         });
     }
-
 
     /**
      * Get all mod versions from the Hub database and pass them in batches to be processed.
