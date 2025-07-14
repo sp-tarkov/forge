@@ -41,12 +41,6 @@ class Comment extends Model
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
 
-    protected $casts = [
-        'edited_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     /**
      * The relationship between a comment and it's user.
      *
@@ -135,6 +129,7 @@ class Comment extends Model
         } else {
             $this->root_id = $this->resolveRootId();
         }
+
         $this->saveQuietly();
     }
 
@@ -155,10 +150,18 @@ class Comment extends Model
      */
     public function updateChildRootIds(): void
     {
-        $this->replies()->each(function (Comment $reply) {
+        $this->replies()->each(function (Comment $reply): void {
             $reply->root_id = $this->root_id;
             $reply->saveQuietly();
             $reply->updateChildRootIds();
         });
+    }
+    protected function casts(): array
+    {
+        return [
+            'edited_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

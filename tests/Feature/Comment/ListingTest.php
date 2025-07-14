@@ -22,7 +22,7 @@ it('should not allow a guest to reply to a comment', function (): void {
     $mod = Mod::factory()->create();
     $parentComment = Comment::factory()->create([
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
     ]);
 
     Livewire::test(Listing::class, ['commentable' => $mod])
@@ -45,7 +45,7 @@ it('should allow a user to create a comment', function (): void {
         'body' => 'This is a test comment.',
         'user_id' => $user->id,
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
     ]);
 });
 
@@ -54,7 +54,7 @@ it('should allow a user to reply to a comment', function (): void {
     $mod = Mod::factory()->create();
     $parentComment = Comment::factory()->create([
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
     ]);
 
     Livewire::actingAs($user)
@@ -67,7 +67,7 @@ it('should allow a user to reply to a comment', function (): void {
         'body' => 'This is a reply.',
         'user_id' => $user->id,
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
         'parent_id' => $parentComment->id,
     ]);
 });
@@ -78,7 +78,7 @@ it('should allow a user to update their own comment', function (): void {
     $comment = Comment::factory()->create([
         'user_id' => $user->id,
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
         'created_at' => now(),  // Override factory to ensure comment is fresh
         'updated_at' => now(),
     ]);
@@ -102,7 +102,7 @@ it('should not allow a user to update a comment that is older than 5 minutes', f
     $comment = Comment::factory()->create([
         'user_id' => $user->id,
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
         'created_at' => now()->subMinutes(6),
     ]);
 
@@ -120,7 +120,7 @@ it('should show an edited indicator when a comment has been edited', function ()
     $comment = Comment::factory()->create([
         'user_id' => $user->id,
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
         'edited_at' => now(),
     ]);
 
@@ -133,7 +133,7 @@ it("should not allow a user to update another user's comment", function (): void
     $user = User::factory()->create();
     $otherUser = User::factory()->create();
     $mod = Mod::factory()->create();
-    $comment = Comment::factory()->create(['user_id' => $otherUser->id, 'commentable_id' => $mod->id, 'commentable_type' => get_class($mod)]);
+    $comment = Comment::factory()->create(['user_id' => $otherUser->id, 'commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
 
     Livewire::actingAs($user)
         ->test(Listing::class, ['commentable' => $mod])
@@ -150,7 +150,7 @@ it('should allow a moderator to update any comment', function (): void {
 
     $user = User::factory()->create();
     $mod = Mod::factory()->create();
-    $comment = Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $mod->id, 'commentable_type' => get_class($mod)]);
+    $comment = Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
 
     Livewire::actingAs($moderator)
         ->test(Listing::class, ['commentable' => $mod])
@@ -163,7 +163,7 @@ it('should allow a moderator to update any comment', function (): void {
 it('should correctly display the comment count', function (): void {
     $user = User::factory()->create();
     $mod = Mod::factory()->create();
-    Comment::factory()->count(5)->create(['commentable_id' => $mod->id, 'commentable_type' => get_class($mod)]);
+    Comment::factory()->count(5)->create(['commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
 
     Livewire::actingAs($user)
         ->test(Listing::class, ['commentable' => $mod])
@@ -175,15 +175,13 @@ it('should correctly paginate comments', function (): void {
     $mod = Mod::factory()->create();
     Comment::factory()->count(15)->create([
         'commentable_id' => $mod->id,
-        'commentable_type' => get_class($mod),
+        'commentable_type' => $mod::class,
     ]);
 
     $test = Livewire::actingAs($user)
         ->test(Listing::class, ['commentable' => $mod]);
 
-    $test->assertViewHas('rootComments', function ($paginator) {
-        return $paginator->total() === 15;
-    });
+    $test->assertViewHas('rootComments', fn($paginator): bool => $paginator->total() === 15);
 
-    $this->assertEquals(2, substr_count($test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
+    $this->assertEquals(2, substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
 });

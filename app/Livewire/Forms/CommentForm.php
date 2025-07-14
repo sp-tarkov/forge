@@ -35,7 +35,7 @@ class CommentForm extends Form
             'user_id' => Auth::id(),
         ];
 
-        if ($parentComment) {
+        if ($parentComment !== null) {
             $newComment['parent_id'] = $parentComment->id;
         }
 
