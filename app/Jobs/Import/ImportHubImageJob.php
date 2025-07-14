@@ -173,7 +173,7 @@ class ImportHubImageJob implements ShouldQueue
             try {
                 $path = self::generateAwesomeFontThumbnail($hubMod->fileID, $hubMod->getFontAwesomeIcon());
 
-                return ['path' => $path, 'hash' => ''];
+                return ['path' => $path, 'hash' => md5($hubMod->getFontAwesomeIcon())];
             } catch (ImagickDrawException|ImagickException) {
                 Log::error('There was an error attempting to generate the Font Awesome thumbnail for mod with hub ID: '.$hubMod->fileID);
 
