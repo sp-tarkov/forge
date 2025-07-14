@@ -14,6 +14,9 @@ class DependencyVersionService
      */
     public function resolve(ModVersion $modVersion): void
     {
+        // Refresh the dependencies relationship to get the latest state
+        $modVersion->load('dependencies');
+
         $dependencies = $this->satisfyConstraint($modVersion);
         $modVersion->resolvedDependencies()->sync($dependencies);
     }
@@ -25,15 +28,24 @@ class DependencyVersionService
      */
     private function satisfyConstraint(ModVersion $modVersion): array
     {
-        // Eager load the dependencies and their mod versions.
-        $modVersion->load('dependencies.dependentMod.versions');
+
+        // Eager-load the dependencies and their mod versions if not already loaded.
+        if (! $modVersion->relationLoaded('dependencies')) {
+            $modVersion->load('dependencies.dependentMod.versions');
+        }
 
         // Iterate over each ModVersion dependency.
         $dependencies = [];
         foreach ($modVersion->dependencies as $dependency) {
+            // Skip if the dependency is being deleted or doesn't exist
+            if (! $dependency->exists || ! $dependency->id) {
+                continue;
+            }
 
-            // Get all dependent mod versions.
-            $dependentModVersions = $dependency->dependentMod->versions()->get();
+            // Get all dependent mod versions (use loaded relation if available).
+            $dependentModVersions = $dependency->dependentMod->relationLoaded('versions')
+                ? $dependency->dependentMod->versions
+                : $dependency->dependentMod->versions()->get();
 
             // Filter the dependent mod versions to find the ones that satisfy the dependency constraint.
             $matchedVersions = $dependentModVersions->filter(fn ($version) => Semver::satisfies($version->version, $dependency->constraint));

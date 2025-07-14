@@ -41,4 +41,3 @@ jobs:
           commit_user_name: Refringe
           commit_user_email: me@refringe.com
           commit_author: Refringe <me@refringe.com>
-          file_pattern: '*.php'

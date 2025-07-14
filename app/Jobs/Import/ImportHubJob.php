@@ -43,13 +43,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Imagick;
-use ImagickDraw;
-use ImagickDrawException;
-use ImagickException;
-use ImagickPixel;
 
 class ImportHubJob implements ShouldBeUnique, ShouldQueue
 {
@@ -329,44 +323,18 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      *
      * @param  Collection<int, HubUserAvatar>  $hubUserAvatars
      * @param  EloquentCollection<int, User>  $localUsers
-     *
-     * @throws ConnectionException
      */
     private function processUserAvatarBatch(Collection $hubUserAvatars, EloquentCollection $localUsers): void
     {
-        $now = Carbon::now('UTC')->toDateTimeString();
-
-        User::withoutEvents(function () use ($hubUserAvatars, $localUsers, $now): void {
-            $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar) use ($localUsers, $now): void {
-                if ($hubUserAvatar->userID && ($localUser = $localUsers->get($hubUserAvatar->userID))) {
-                    $relativePath = $this->processUserAvatarImage($hubUserAvatar);
-                    if (! empty($relativePath)) {
-                        User::query()
-                            ->where('id', $localUser->id)
-                            ->update([
-                                'profile_photo_path' => $relativePath,
-                                'updated_at' => $now,
-                            ]);
-                    }
-                }
-            });
+        $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar) use ($localUsers): void {
+            if ($hubUserAvatar->userID && ($localUser = $localUsers->get($hubUserAvatar->userID))) {
+                ImportHubImageJob::dispatch(
+                    'user_avatar',
+                    $localUser->id,
+                    $hubUserAvatar->toArray()
+                )->onQueue('default');
+            }
         });
-    }
-
-    /**
-     * Process/download a user avatar image.
-     *
-     * @throws ConnectionException
-     */
-    private function processUserAvatarImage(HubUserAvatar $avatar): string
-    {
-        // Build the URL based on the avatar data.
-        $hashShort = substr($avatar->fileHash, 0, 2);
-        $fileName = $avatar->fileHash.'.'.$avatar->avatarExtension;
-        $hubUrl = 'https://hub.sp-tarkov.com/images/avatars/'.$hashShort.'/'.$avatar->avatarID.'-'.$fileName;
-        $relativePath = User::profilePhotoStoragePath().'/'.$fileName;
-
-        return self::fetchAndStoreImage($hubUrl, $relativePath);
     }
 
     /**
@@ -400,80 +368,18 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      *
      * @param  Collection<int, HubUser>  $hubUsers
      * @param  EloquentCollection<int, User>  $localUsers
-     *
-     * @throws ConnectionException
      */
     private function processUserCoverPhotoBatch(Collection $hubUsers, EloquentCollection $localUsers): void
     {
-        $now = Carbon::now('UTC')->toDateTimeString();
-
-        User::withoutEvents(function () use ($hubUsers, $localUsers, $now): void {
-            $hubUsers->each(function (HubUser $hubUser) use ($localUsers, $now): void {
-                if ($localUser = $localUsers->get($hubUser->userID)) {
-                    $coverPhotoPath = $this->fetchUserCoverPhoto($hubUser);
-                    if (! empty($coverPhotoPath)) {
-                        User::query()
-                            ->where('id', $localUser->id)
-                            ->update([
-                                'cover_photo_path' => $coverPhotoPath,
-                                'updated_at' => $now,
-                            ]);
-                    }
-                }
-            });
+        $hubUsers->each(function (HubUser $hubUser) use ($localUsers): void {
+            if ($localUser = $localUsers->get($hubUser->userID)) {
+                ImportHubImageJob::dispatch(
+                    'user_cover',
+                    $localUser->id,
+                    $hubUser->toArray()
+                )->onQueue('default');
+            }
         });
-    }
-
-    /**
-     * Fetch the user cover photo from the Hub and store it.
-     *
-     * @throws ConnectionException
-     */
-    private function fetchUserCoverPhoto(HubUser $hubUser): string
-    {
-        $fileName = $hubUser->getCoverPhotoFileName();
-        if (empty($fileName)) {
-            return '';
-        }
-
-        $hashShort = substr((string) $hubUser->coverPhotoHash, 0, 2);
-        $hubUrl = 'https://hub.sp-tarkov.com/images/coverPhotos/'.$hashShort.'/'.$hubUser->userID.'-'.$fileName;
-        $relativePath = 'cover-photos/'.$fileName;
-
-        return $this->fetchAndStoreImage($hubUrl, $relativePath);
-    }
-
-    /**
-     * Process/download and store an image from the given URL.
-     *
-     * @throws ConnectionException
-     */
-    private function fetchAndStoreImage(string $hubUrl, string $relativePath, bool $forceUpdate = false): string
-    {
-        // Determine the disk to use based on the environment.
-        $disk = match (config('app.env')) {
-            'production' => 'r2', // Cloudflare R2 Storage
-            default => 'public',  // Local storage
-        };
-
-        // If the image already exists, and we're not forcing an update, return its path.
-        if (! $forceUpdate && Storage::disk($disk)->exists($relativePath)) {
-            return $relativePath;
-        }
-
-        $response = Http::get($hubUrl);
-
-        if ($response->failed()) {
-            Log::error('There was an error attempting to download the image. HTTP error: '.$response->status());
-
-            return '';
-        }
-
-        // Store the image on the selected disk.
-        Storage::disk($disk)->put($relativePath, $response->body());
-        unset($response);
-
-        return $relativePath;
     }
 
     /**
@@ -880,29 +786,25 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         }
 
         // Prepare data for upsert for only active mods.
-        $modData = $activeHubMods->map(function (HubMod $hubMod) use ($localLicenses, $localOwners): array {
-            $thumbnailData = $this->fetchModThumbnail($hubMod);
-
-            return [
-                'hub_id' => $hubMod->fileID,
-                'owner_id' => $localOwners->get($hubMod->userID)?->id,
-                'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
-                'name' => $hubMod->subject,
-                'slug' => Str::slug($hubMod->subject),
-                'teaser' => $hubMod->getTeaser(),
-                'description' => $hubMod->getCleanMessage(),
-                'thumbnail' => $thumbnailData['path'],
-                'thumbnail_hash' => $thumbnailData['hash'],
-                'source_code_url' => $hubMod->getSourceCodeLink(),
-                'featured' => (bool) $hubMod->isFeatured,
-                'contains_ai_content' => (bool) $hubMod->contains_ai,
-                'contains_ads' => (bool) $hubMod->contains_ads,
-                'disabled' => (bool) $hubMod->isDisabled,
-                'published_at' => $hubMod->getTime(),
-                'created_at' => $hubMod->getTime(),
-                'updated_at' => $hubMod->getLastChangeTime(),
-            ];
-        })->toArray();
+        $modData = $activeHubMods->map(fn(HubMod $hubMod): array => [
+            'hub_id' => $hubMod->fileID,
+            'owner_id' => $localOwners->get($hubMod->userID)?->id,
+            'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
+            'name' => $hubMod->subject,
+            'slug' => Str::slug($hubMod->subject),
+            'teaser' => $hubMod->getTeaser(),
+            'description' => $hubMod->getCleanMessage(),
+            'thumbnail' => '', // Will be updated by ImportHubImageJob
+            'thumbnail_hash' => '', // Will be updated by ImportHubImageJob
+            'source_code_url' => $hubMod->getSourceCodeLink(),
+            'featured' => (bool) $hubMod->isFeatured,
+            'contains_ai_content' => (bool) $hubMod->contains_ai,
+            'contains_ads' => (bool) $hubMod->contains_ads,
+            'disabled' => (bool) $hubMod->isDisabled,
+            'published_at' => $hubMod->getTime(),
+            'created_at' => $hubMod->getTime(),
+            'updated_at' => $hubMod->getLastChangeTime(),
+        ])->toArray();
 
         // Split upsert into separate insert/update operations to avoid ID gaps
         Mod::withoutEvents(function () use ($modData): void {
@@ -936,8 +838,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     'slug' => $mod['slug'],
                     'teaser' => $mod['teaser'],
                     'description' => $mod['description'],
-                    'thumbnail' => $mod['thumbnail'],
-                    'thumbnail_hash' => $mod['thumbnail_hash'],
+                    // Don't update thumbnail fields - they'll be handled by queued jobs
                     'source_code_url' => $mod['source_code_url'],
                     'featured' => $mod['featured'],
                     'contains_ai_content' => $mod['contains_ai_content'],
@@ -982,113 +883,17 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 }
             }
         });
-    }
 
-    /**
-     * Fetch the mod thumbnail from the Hub.
-     *
-     * @return array{path: string, hash: string}
-     *
-     * @throws ConnectionException
-     */
-    private function fetchModThumbnail(HubMod $hubMod): array
-    {
-        if (! empty($hubMod->getFontAwesomeIcon())) {
-            try {
-                $path = self::generateAwesomeFontThumbnail($hubMod->fileID, $hubMod->getFontAwesomeIcon());
-
-                return ['path' => $path, 'hash' => ''];
-            } catch (ImagickDrawException|ImagickException) {
-                Log::error('There was an error attempting to generate the Font Awesome thumbnail for mod with hub ID: '.$hubMod->fileID);
-
-                return ['path' => '', 'hash' => ''];
+        // Dispatch image jobs for mod thumbnails
+        $activeHubMods->each(function (HubMod $hubMod) use ($localMods): void {
+            if ($localMod = $localMods->get($hubMod->fileID)) {
+                ImportHubImageJob::dispatch(
+                    'mod_thumbnail',
+                    $localMod->id,
+                    $hubMod->toArray()
+                )->onQueue('default');
             }
-        }
-
-        // If any of the required fields are empty, return empty values.
-        if (empty($hubMod->iconHash) || empty($hubMod->iconExtension)) {
-            return ['path' => '', 'hash' => ''];
-        }
-
-        // Check if we need to update the thumbnail by comparing hashes
-        $forceUpdate = false;
-        $existingMod = Mod::query()->where('hub_id', $hubMod->fileID)->first();
-        if ($existingMod && $existingMod->thumbnail_hash !== $hubMod->iconHash) {
-            $forceUpdate = true;
-        }
-
-        $hashShort = substr($hubMod->iconHash, 0, 2);
-        $fileName = $hubMod->fileID.'.'.$hubMod->iconExtension;
-        $hubUrl = 'https://hub.sp-tarkov.com/files/images/file/'.$hashShort.'/'.$fileName;
-        $relativePath = 'mods/'.$fileName;
-
-        $path = $this->fetchAndStoreImage($hubUrl, $relativePath, $forceUpdate);
-
-        return ['path' => $path, 'hash' => $hubMod->iconHash];
-    }
-
-    /**
-     * Generate a thumbnail from a Font Awesome icon.
-     *
-     * @throws ImagickException|ImagickDrawException
-     */
-    private function generateAwesomeFontThumbnail(int $fileId, string $fontAwesomeIcon): string
-    {
-        // Determine the storage disk based on the application environment
-        $disk = match (config('app.env')) {
-            'production' => 'r2',  // Cloudflare R2 Storage
-            default => 'public',  // Local storage
-        };
-
-        $relativePath = 'mods/'.$fileId.'.png';
-
-        // If the image already exists, return its path
-        if (Storage::disk($disk)->exists($relativePath)) {
-            return $relativePath;
-        }
-
-        $width = 512;
-        $height = 512;
-        $fontSize = 250;
-
-        // Create a new image with a black background
-        $image = new Imagick;
-        $backgroundColor = new ImagickPixel('black');
-        $image->newImage($width, $height, $backgroundColor);
-        $image->setImageFormat('png');
-
-        // Prepare the drawing object for the icon
-        $draw = new ImagickDraw;
-        $draw->setFillColor(new ImagickPixel('white'));
-
-        // Set the Font Awesome path
-        $fontPath = Storage::disk('local')->path('fonts/fontawesome-webfont.ttf');
-        if (! file_exists($fontPath)) {
-            Log::error('Font Awesome font file not found at: '.$fontPath);
-            throw new ImagickException('Font file not found.');
-        }
-
-        $draw->setFont($fontPath);
-        $draw->setFontSize($fontSize);
-
-        // Calculate metrics for centering the icon on the image
-        $metrics = $image->queryFontMetrics($draw, $fontAwesomeIcon);
-        $textWidth = $metrics['textWidth'];
-        $textHeight = $metrics['textHeight'];
-        $x = ($width - $textWidth) / 2;
-        $y = ($height - $textHeight) / 2 + $metrics['ascender'];
-
-        // Draw the icon text onto the image
-        $image->annotateImage($draw, $x, $y, 0, $fontAwesomeIcon);
-
-        // Retrieve the image data as a binary string
-        $imageData = $image->getImageBlob();
-
-        // Store the image on the selected disk and return its relative path
-        Storage::disk($disk)->put($relativePath, $imageData);
-        unset($image, $imageData);
-
-        return $relativePath;
+        });
     }
 
     /**
