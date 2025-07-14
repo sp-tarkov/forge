@@ -38,6 +38,44 @@
         </div>
     @endauth
 
+    @if ($rootComments->count() === 0 && auth()->guest())
+        <div class="p-8 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-center">
+            <div class="mb-6">
+                <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                {{ __('No comments yet') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                {{ __('Be the first to share your thoughts! Login or register to join the discussion.') }}
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <flux:button variant="primary" size="sm" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" href="{{ route('login') }}">
+                    {{ __('Login') }}
+                </flux:button>
+                <flux:button variant="ghost" size="sm" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" href="{{ route('register') }}">
+                    {{ __('Register') }}
+                </flux:button>
+            </div>
+        </div>
+    @elseif ($rootComments->count() === 0 && auth()->check())
+        <div class="p-8 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-center">
+            <div class="mb-6">
+                <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                {{ __('No comments yet') }}
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+                {{ __('Be the first to share your thoughts about this mod!') }}
+            </p>
+        </div>
+    @endif
+
     @if ($rootComments->hasPages())
         <div class="mb-4">
             {{ $rootComments->links() }}
