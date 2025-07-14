@@ -201,15 +201,17 @@ class HubMod
             '/<woltlab-metacode\s+data-name="tab"\s+data-attributes="(.*?)"\s*>/s',
             function ($matches) {
                 $base64Value = $matches[1];
-                $decoded = base64_decode($base64Value);
-                if (empty($decoded)) {
+                $decodedContent = base64_decode($base64Value);
+
+                if (empty($decodedContent)) {
                     return '<h2>Tab</h2>';
                 }
 
-                $decoded = str_replace(['[', ']', '"', "'", '\\/'], ['', '', '', '', '/'], $decoded);
-                $title = htmlspecialchars($decoded, ENT_QUOTES, 'UTF-8');
+                // Convert Unicode escape sequences to actual UTF-8 characters.
+                $convertedUnicode = json_decode($decodedContent);
+                $convertedUnicode = reset($convertedUnicode);
 
-                return '<h2>'.$title.'</h2>';
+                return '<h2>'.$convertedUnicode.'</h2>';
             },
             (string) $dirty
         );
@@ -1093,5 +1095,15 @@ class HubMod
             'youtube-square' => "\u{f166}",
             default => '',
         };
+    }
+
+    /**
+     * Convert the instance to an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return get_object_vars($this);
     }
 }

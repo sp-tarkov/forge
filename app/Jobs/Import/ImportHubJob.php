@@ -43,13 +43,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Imagick;
-use ImagickDraw;
-use ImagickDrawException;
-use ImagickException;
-use ImagickPixel;
 
 class ImportHubJob implements ShouldBeUnique, ShouldQueue
 {
@@ -139,9 +133,39 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'updated_at' => Carbon::now('UTC')->toDateTimeString(),
         ])->toArray();
 
-        // Upsert batch of users based on their hub_id.
+        // Split upsert into separate insert/update operations to avoid ID gaps
         User::withoutEvents(function () use ($userData): void {
-            User::query()->upsert($userData, ['hub_id'], ['name', 'email', 'password', 'created_at', 'updated_at']);
+            // Get existing hub_ids to determine which records to update vs insert
+            $hubIds = collect($userData)->pluck('hub_id');
+            $existingUsers = User::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($userData as $user) {
+                if (in_array($user['hub_id'], $existingUsers)) {
+                    $updateData[] = $user;
+                } else {
+                    $insertData[] = $user;
+                }
+            }
+
+            // Insert new users (only allocates IDs for actual new records)
+            if (! empty($insertData)) {
+                User::query()->insert($insertData);
+            }
+
+            // Update existing users (no ID allocation)
+            foreach ($updateData as $user) {
+                User::query()->where('hub_id', $user['hub_id'])->update([
+                    'name' => $user['name'],
+                    'email' => $user['email'],
+                    'password' => $user['password'],
+                    'created_at' => $user['created_at'],
+                    'updated_at' => $user['updated_at'],
+                ]);
+            }
         });
 
         // Fetch and return the up-to-date local users
@@ -192,7 +216,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             if (! empty($hubUser->rankID) && $rankTitle && ($user = $localUsers->get($hubUser->userID))) {
                 $role = $roles->get($rankTitle);
 
-                // If the role is not found in pre-fetched data then create it.
+                // If the role is not found in pre-fetched data, then create it.
                 if (! $role) {
                     $role = UserRole::query()->firstOrCreate(['name' => $rankTitle], match ($rankTitle) {
                         'Administrator' => [
@@ -299,44 +323,18 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      *
      * @param  Collection<int, HubUserAvatar>  $hubUserAvatars
      * @param  EloquentCollection<int, User>  $localUsers
-     *
-     * @throws ConnectionException
      */
     private function processUserAvatarBatch(Collection $hubUserAvatars, EloquentCollection $localUsers): void
     {
-        $now = Carbon::now('UTC')->toDateTimeString();
-
-        User::withoutEvents(function () use ($hubUserAvatars, $localUsers, $now): void {
-            $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar) use ($localUsers, $now): void {
-                if ($hubUserAvatar->userID && ($localUser = $localUsers->get($hubUserAvatar->userID))) {
-                    $relativePath = $this->processUserAvatarImage($hubUserAvatar);
-                    if (! empty($relativePath)) {
-                        User::query()
-                            ->where('id', $localUser->id)
-                            ->update([
-                                'profile_photo_path' => $relativePath,
-                                'updated_at' => $now,
-                            ]);
-                    }
-                }
-            });
+        $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar) use ($localUsers): void {
+            if ($hubUserAvatar->userID && ($localUser = $localUsers->get($hubUserAvatar->userID))) {
+                ImportHubImageJob::dispatch(
+                    'user_avatar',
+                    $localUser->id,
+                    $hubUserAvatar->toArray()
+                )->onQueue('default');
+            }
         });
-    }
-
-    /**
-     * Process/download a user avatar image.
-     *
-     * @throws ConnectionException
-     */
-    private function processUserAvatarImage(HubUserAvatar $avatar): string
-    {
-        // Build the URL based on the avatar data.
-        $hashShort = substr($avatar->fileHash, 0, 2);
-        $fileName = $avatar->fileHash.'.'.$avatar->avatarExtension;
-        $hubUrl = 'https://hub.sp-tarkov.com/images/avatars/'.$hashShort.'/'.$avatar->avatarID.'-'.$fileName;
-        $relativePath = User::profilePhotoStoragePath().'/'.$fileName;
-
-        return self::fetchAndStoreImage($hubUrl, $relativePath);
     }
 
     /**
@@ -370,80 +368,18 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      *
      * @param  Collection<int, HubUser>  $hubUsers
      * @param  EloquentCollection<int, User>  $localUsers
-     *
-     * @throws ConnectionException
      */
     private function processUserCoverPhotoBatch(Collection $hubUsers, EloquentCollection $localUsers): void
     {
-        $now = Carbon::now('UTC')->toDateTimeString();
-
-        User::withoutEvents(function () use ($hubUsers, $localUsers, $now): void {
-            $hubUsers->each(function (HubUser $hubUser) use ($localUsers, $now): void {
-                if ($localUser = $localUsers->get($hubUser->userID)) {
-                    $coverPhotoPath = $this->fetchUserCoverPhoto($hubUser);
-                    if (! empty($coverPhotoPath)) {
-                        User::query()
-                            ->where('id', $localUser->id)
-                            ->update([
-                                'cover_photo_path' => $coverPhotoPath,
-                                'updated_at' => $now,
-                            ]);
-                    }
-                }
-            });
+        $hubUsers->each(function (HubUser $hubUser) use ($localUsers): void {
+            if ($localUser = $localUsers->get($hubUser->userID)) {
+                ImportHubImageJob::dispatch(
+                    'user_cover',
+                    $localUser->id,
+                    $hubUser->toArray()
+                )->onQueue('default');
+            }
         });
-    }
-
-    /**
-     * Fetch the user cover photo from the Hub and store it.
-     *
-     * @throws ConnectionException
-     */
-    private function fetchUserCoverPhoto(HubUser $hubUser): string
-    {
-        $fileName = $hubUser->getCoverPhotoFileName();
-        if (empty($fileName)) {
-            return '';
-        }
-
-        $hashShort = substr((string) $hubUser->coverPhotoHash, 0, 2);
-        $hubUrl = 'https://hub.sp-tarkov.com/images/coverPhotos/'.$hashShort.'/'.$hubUser->userID.'-'.$fileName;
-        $relativePath = 'cover-photos/'.$fileName;
-
-        return $this->fetchAndStoreImage($hubUrl, $relativePath);
-    }
-
-    /**
-     * Process/download and store an image from the given URL.
-     *
-     * @throws ConnectionException
-     */
-    private function fetchAndStoreImage(string $hubUrl, string $relativePath): string
-    {
-        // Determine the disk to use based on the environment.
-        $disk = match (config('app.env')) {
-            'production' => 'r2', // Cloudflare R2 Storage
-            default => 'public',  // Local storage
-        };
-
-        // If the image already exists, return its path.
-        if (Storage::disk($disk)->exists($relativePath)) {
-            return $relativePath;
-        }
-
-        $response = Http::get($hubUrl);
-
-        if ($response->failed()) {
-            Log::error('There was an error attempting to download the image. HTTP error: '.$response->status());
-
-            return '';
-        }
-
-        // Store the image on the selected disk.
-        Storage::disk($disk)->put($relativePath, $response->body());
-        unset($response);
-
-        return $relativePath;
     }
 
     /**
@@ -555,7 +491,36 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         ])->toArray();
 
         License::withoutEvents(function () use ($licenseData): void {
-            License::query()->upsert($licenseData, ['hub_id'], ['name', 'link', 'created_at', 'updated_at']);
+            // Get existing hub_ids to determine which records to update vs insert
+            $hubIds = collect($licenseData)->pluck('hub_id');
+            $existingLicenses = License::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($licenseData as $license) {
+                if (in_array($license['hub_id'], $existingLicenses)) {
+                    $updateData[] = $license;
+                } else {
+                    $insertData[] = $license;
+                }
+            }
+
+            // Insert new licenses (only allocates IDs for actual new records)
+            if (! empty($insertData)) {
+                License::query()->insert($insertData);
+            }
+
+            // Update existing licenses (no ID allocation)
+            foreach ($updateData as $license) {
+                License::query()->where('hub_id', $license['hub_id'])->update([
+                    'name' => $license['name'],
+                    'link' => $license['link'],
+                    'created_at' => $license['created_at'],
+                    'updated_at' => $license['updated_at'],
+                ]);
+            }
         });
     }
 
@@ -644,12 +609,42 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             }
         });
 
-        // Upsert SPT Versions based on their version string.
+        // Split upsert into separate insert/update operations to avoid ID gaps
         SptVersion::withoutEvents(function () use ($versionData): void {
-            SptVersion::query()->upsert($versionData, ['version'], [
-                'version_major', 'version_minor', 'version_patch', 'version_labels', 'link', 'color_class',
-                'created_at', 'updated_at',
-            ]);
+            // Get existing versions to determine which records to update vs insert
+            $versions = collect($versionData)->pluck('version');
+            $existingVersions = SptVersion::query()->whereIn('version', $versions)->pluck('version')->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($versionData as $version) {
+                if (in_array($version['version'], $existingVersions)) {
+                    $updateData[] = $version;
+                } else {
+                    $insertData[] = $version;
+                }
+            }
+
+            // Insert new versions (only allocates IDs for actual new records)
+            if (! empty($insertData)) {
+                SptVersion::query()->insert($insertData);
+            }
+
+            // Update existing versions (no ID allocation)
+            foreach ($updateData as $version) {
+                SptVersion::query()->where('version', $version['version'])->update([
+                    'version_major' => $version['version_major'],
+                    'version_minor' => $version['version_minor'],
+                    'version_patch' => $version['version_patch'],
+                    'version_labels' => $version['version_labels'],
+                    'link' => $version['link'],
+                    'color_class' => $version['color_class'],
+                    'created_at' => $version['created_at'],
+                    'updated_at' => $version['updated_at'],
+                ]);
+            }
         });
     }
 
@@ -673,17 +668,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $latestMinor = $latestVersion->getMinor();
 
         if ($currentMajor !== $latestMajor) {
-            return 'gray';
+            return 'red';
         }
 
         $minorDifference = $latestMinor - $currentMinor;
 
         return match ($minorDifference) {
             0 => 'green',
-            1 => 'lime',
-            2 => 'yellow',
-            3 => 'red',
-            default => 'gray',
+            default => 'red',
         };
     }
 
@@ -802,7 +794,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'slug' => Str::slug($hubMod->subject),
             'teaser' => $hubMod->getTeaser(),
             'description' => $hubMod->getCleanMessage(),
-            'thumbnail' => $this->fetchModThumbnail($hubMod),
+            'thumbnail' => '', // Will be updated by ImportHubImageJob
+            'thumbnail_hash' => '', // Will be updated by ImportHubImageJob
             'source_code_url' => $hubMod->getSourceCodeLink(),
             'featured' => (bool) $hubMod->isFeatured,
             'contains_ai_content' => (bool) $hubMod->contains_ai,
@@ -813,13 +806,49 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'updated_at' => $hubMod->getLastChangeTime(),
         ])->toArray();
 
-        // Upsert a batch of mods based on their hub_id.
+        // Split upsert into separate insert/update operations to avoid ID gaps
         Mod::withoutEvents(function () use ($modData): void {
-            Mod::query()->upsert($modData, ['hub_id'], [
-                'owner_id', 'license_id', 'name', 'slug', 'teaser', 'description', 'thumbnail', 'source_code_url',
-                'featured', 'contains_ai_content', 'contains_ads', 'disabled', 'published_at', 'created_at',
-                'updated_at',
-            ]);
+            // Get existing hub_ids to determine which records to update vs insert
+            $hubIds = collect($modData)->pluck('hub_id');
+            $existingMods = Mod::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($modData as $mod) {
+                if (in_array($mod['hub_id'], $existingMods)) {
+                    $updateData[] = $mod;
+                } else {
+                    $insertData[] = $mod;
+                }
+            }
+
+            // Insert new mods (only allocates IDs for actual new records)
+            if (! empty($insertData)) {
+                Mod::query()->insert($insertData);
+            }
+
+            // Update existing mods (no ID allocation)
+            foreach ($updateData as $mod) {
+                Mod::query()->where('hub_id', $mod['hub_id'])->update([
+                    'owner_id' => $mod['owner_id'],
+                    'license_id' => $mod['license_id'],
+                    'name' => $mod['name'],
+                    'slug' => $mod['slug'],
+                    'teaser' => $mod['teaser'],
+                    'description' => $mod['description'],
+                    // Don't update thumbnail fields - they'll be handled by queued jobs
+                    'source_code_url' => $mod['source_code_url'],
+                    'featured' => $mod['featured'],
+                    'contains_ai_content' => $mod['contains_ai_content'],
+                    'contains_ads' => $mod['contains_ads'],
+                    'disabled' => $mod['disabled'],
+                    'published_at' => $mod['published_at'],
+                    'created_at' => $mod['created_at'],
+                    'updated_at' => $mod['updated_at'],
+                ]);
+            }
         });
 
         $hubModIds = $activeHubMods->pluck('fileID');
@@ -854,100 +883,17 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 }
             }
         });
-    }
 
-    /**
-     * Fetch the mod thumbnail from the Hub.
-     *
-     * @throws ConnectionException
-     */
-    private function fetchModThumbnail(HubMod $hubMod): string
-    {
-        if (! empty($hubMod->getFontAwesomeIcon())) {
-            try {
-                return self::generateAwesomeFontThumbnail($hubMod->fileID, $hubMod->getFontAwesomeIcon());
-            } catch (ImagickDrawException|ImagickException) {
-                Log::error('There was an error attempting to generate the Font Awesome thumbnail for mod with hub ID: '.$hubMod->fileID);
-
-                return '';
+        // Dispatch image jobs for mod thumbnails
+        $activeHubMods->each(function (HubMod $hubMod) use ($localMods): void {
+            if ($localMod = $localMods->get($hubMod->fileID)) {
+                ImportHubImageJob::dispatch(
+                    'mod_thumbnail',
+                    $localMod->id,
+                    $hubMod->toArray()
+                )->onQueue('default');
             }
-        }
-
-        // If any of the required fields are empty, return an empty string.
-        if (empty($hubMod->iconHash) || empty($hubMod->iconExtension)) {
-            return '';
-        }
-
-        $hashShort = substr($hubMod->iconHash, 0, 2);
-        $fileName = $hubMod->fileID.'.'.$hubMod->iconExtension;
-        $hubUrl = 'https://hub.sp-tarkov.com/files/images/file/'.$hashShort.'/'.$fileName;
-        $relativePath = 'mods/'.$fileName;
-
-        return $this->fetchAndStoreImage($hubUrl, $relativePath);
-    }
-
-    /**
-     * Generate a thumbnail from a Font Awesome icon.
-     *
-     * @throws ImagickException|ImagickDrawException
-     */
-    private function generateAwesomeFontThumbnail(int $fileId, string $fontAwesomeIcon): string
-    {
-        // Determine the storage disk based on the application environment
-        $disk = match (config('app.env')) {
-            'production' => 'r2',  // Cloudflare R2 Storage
-            default => 'public',  // Local storage
-        };
-
-        $relativePath = 'mods/'.$fileId.'.png';
-
-        // If the image already exists, return its path
-        if (Storage::disk($disk)->exists($relativePath)) {
-            return $relativePath;
-        }
-
-        $width = 512;
-        $height = 512;
-        $fontSize = 250;
-
-        // Create a new image with a black background
-        $image = new Imagick;
-        $backgroundColor = new ImagickPixel('black');
-        $image->newImage($width, $height, $backgroundColor);
-        $image->setImageFormat('png');
-
-        // Prepare the drawing object for the icon
-        $draw = new ImagickDraw;
-        $draw->setFillColor(new ImagickPixel('white'));
-
-        // Set the Font Awesome path
-        $fontPath = Storage::disk('local')->path('fonts/fontawesome-webfont.ttf');
-        if (! file_exists($fontPath)) {
-            Log::error('Font Awesome font file not found at: '.$fontPath);
-            throw new ImagickException('Font file not found.');
-        }
-
-        $draw->setFont($fontPath);
-        $draw->setFontSize($fontSize);
-
-        // Calculate metrics for centering the icon on the image
-        $metrics = $image->queryFontMetrics($draw, $fontAwesomeIcon);
-        $textWidth = $metrics['textWidth'];
-        $textHeight = $metrics['textHeight'];
-        $x = ($width - $textWidth) / 2;
-        $y = ($height - $textHeight) / 2 + $metrics['ascender'];
-
-        // Draw the icon text onto the image
-        $image->annotateImage($draw, $x, $y, 0, $fontAwesomeIcon);
-
-        // Retrieve the image data as a binary string
-        $imageData = $image->getImageBlob();
-
-        // Store the image on the selected disk and return its relative path
-        Storage::disk($disk)->put($relativePath, $imageData);
-        unset($image, $imageData);
-
-        return $relativePath;
+        });
     }
 
     /**
@@ -1044,14 +990,49 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             }
         });
 
-        // Upsert a batch of mods based on their hub_id.
+        // Split upsert into separate insert/update operations to avoid ID gaps
         if (! empty($modVersionData)) {
             ModVersion::withoutEvents(function () use ($modVersionData): void {
-                ModVersion::query()->upsert($modVersionData, ['hub_id'], [
-                    'mod_id', 'version', 'version_major', 'version_minor', 'version_patch', 'version_labels',
-                    'description', 'link', 'virus_total_link', 'downloads', 'disabled', 'published_at', 'created_at',
-                    'updated_at',
-                ]);
+                // Get existing hub_ids to determine which records to update vs insert
+                $hubIds = collect($modVersionData)->pluck('hub_id');
+                $existingModVersions = ModVersion::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
+                // Split data into inserts (new) and updates (existing)
+                $insertData = [];
+                $updateData = [];
+
+                foreach ($modVersionData as $modVersion) {
+                    if (in_array($modVersion['hub_id'], $existingModVersions)) {
+                        $updateData[] = $modVersion;
+                    } else {
+                        $insertData[] = $modVersion;
+                    }
+                }
+
+                // Insert new mod versions (only allocates IDs for actual new records)
+                if (! empty($insertData)) {
+                    ModVersion::query()->insert($insertData);
+                }
+
+                // Update existing mod versions (no ID allocation)
+                foreach ($updateData as $modVersion) {
+                    ModVersion::query()->where('hub_id', $modVersion['hub_id'])->update([
+                        'mod_id' => $modVersion['mod_id'],
+                        'version' => $modVersion['version'],
+                        'version_major' => $modVersion['version_major'],
+                        'version_minor' => $modVersion['version_minor'],
+                        'version_patch' => $modVersion['version_patch'],
+                        'version_labels' => $modVersion['version_labels'],
+                        'description' => $modVersion['description'],
+                        'link' => $modVersion['link'],
+                        'virus_total_link' => $modVersion['virus_total_link'],
+                        'downloads' => $modVersion['downloads'],
+                        'disabled' => $modVersion['disabled'],
+                        'published_at' => $modVersion['published_at'],
+                        'created_at' => $modVersion['created_at'],
+                        'updated_at' => $modVersion['updated_at'],
+                    ]);
+                }
             });
         }
     }

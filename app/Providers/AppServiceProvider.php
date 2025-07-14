@@ -22,6 +22,7 @@ use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\LaravelFlare\Facades\Flare;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -72,7 +73,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Filter out specific exceptions from being reported to Flare.
         Flare::filterExceptionsUsing(
-            fn (\Throwable $throwable) => ! in_array(
+            fn (Throwable $throwable): bool => ! in_array(
                 $throwable::class,
                 [
                     ValidationException::class, // Used for typical API responses.
@@ -139,6 +140,7 @@ class AppServiceProvider extends ServiceProvider
                 \$__ogImageCacheKey = 'og_image_data:' . \$__ogImageDisk . ':' . md5(\$__ogImagePath);
                 \$__ogImageData = Cache::remember(\$__ogImageCacheKey, 3600, function () use (\$__ogImagePath, \$__ogImageDisk) {
                     try {
+                        if (empty(\$__ogImagePath)) return null;
                         \$disk = Storage::disk(\$__ogImageDisk);
                         if (!\$disk->exists(\$__ogImagePath)) return null;
                         \$contents = \$disk->get(\$__ogImagePath);

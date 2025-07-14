@@ -148,6 +148,10 @@ button {
         @apply rounded-md text-sm;
     }
 
+    img {
+        @apply inline;
+    }
+
     iframe {
         width: 100%;
         aspect-ratio: 16 / 9;

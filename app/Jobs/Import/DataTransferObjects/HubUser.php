@@ -245,4 +245,14 @@ class HubUser
     {
         return Str::ucfirst(Str::afterLast($this->rankTitle ?? '', '.'));
     }
+
+    /**
+     * Convert the instance to an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return get_object_vars($this);
+    }
 }

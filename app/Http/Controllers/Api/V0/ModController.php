@@ -24,7 +24,7 @@ class ModController extends Controller
      *
      * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>hub_id, name, slug, teaser, thumbnail, downloads, source_code_url, detail_url,
+     * Fields available:<br /><code>hub_id, guid, name, slug, teaser, thumbnail, downloads, source_code_url, detail_url,
      * featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
@@ -37,6 +37,7 @@ class ModController extends Controller
      *          {
      *              "id": 1,
      *              "hub_id": null,
+     *              "guid": "com.oconnell.recusandae-velit-incidunt",
      *              "name": "Recusandae velit incidunt.",
      *              "slug": "recusandae-velit-incidunt",
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
@@ -54,6 +55,7 @@ class ModController extends Controller
      *          {
      *              "id": 2,
      *              "hub_id": null,
+     *              "guid": "com.baumbach.adipisci-iusto-voluptas-nihil",
      *              "name": "Adipisci iusto voluptas nihil.",
      *              "slug": "adipisci-iusto-voluptas-nihil",
      *              "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
@@ -112,6 +114,7 @@ class ModController extends Controller
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
     #[UrlParam('filter[id]', description: 'Filter by comma-separated Mod IDs.', required: false, example: '1,5,10')]
     #[UrlParam('filter[hub_id]', description: 'Filter by comma-separated Hub IDs.', required: false, example: '123,456')]
+    #[UrlParam('filter[guid]', description: 'Filter by comma-separated GUIDs.', required: false, example: 'com.example.mymod1,com.example.mymod2')]
     #[UrlParam('filter[name]', description: 'Filter by name (fuzzy filter).', required: false, example: 'Raid Time')]
     #[UrlParam('filter[slug]', description: 'Filter by slug (fuzzy filter).', required: false, example: 'some-mod')]
     #[UrlParam('filter[teaser]', description: 'Filter by teaser text (fuzzy filter).', required: false, example: 'important')]
@@ -147,7 +150,7 @@ class ModController extends Controller
      *
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
-     * Fields available:<br /><code>hub_id, name, slug, teaser, description, thumbnail, downloads, source_code_url,
+     * Fields available:<br /><code>hub_id, guid, name, slug, teaser, description, thumbnail, downloads, source_code_url,
      * detail_url, featured, contains_ai_content, contains_ads, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
@@ -159,6 +162,7 @@ class ModController extends Controller
      *      "data": {
      *          "id": 2,
      *          "hub_id": null,
+     *          "guid": "com.baumbach.adipisci-iusto-voluptas-nihil",
      *          "name": "Adipisci iusto voluptas nihil.",
      *          "slug": "adipisci-iusto-voluptas-nihil",
      *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",

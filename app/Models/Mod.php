@@ -32,6 +32,7 @@ use Stevebauman\Purify\Facades\Purify;
  *
  * @property int $id
  * @property int|null $hub_id
+ * @property string $guid
  * @property int|null $owner_id
  * @property string $name
  * @property string $slug
@@ -171,6 +172,7 @@ class Mod extends Model
 
         return [
             'id' => $this->id,
+            'guid' => $this->guid,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
@@ -235,7 +237,7 @@ class Mod extends Model
                 'version_major' => 'max',
                 'version_minor' => 'max',
                 'version_patch' => 'max',
-                'version_labels' => 'max',
+                'version_labels' => 'min',
             ]);
     }
 

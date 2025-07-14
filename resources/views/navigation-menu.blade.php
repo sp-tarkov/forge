@@ -176,9 +176,9 @@
             <div class="flex justify-center px-5">
                 {{-- Mobile Theme Toggle --}}
                 <flux:radio.group x-data="" variant="segmented" x-model="$flux.appearance">
-                    <flux:radio value="light" icon="sun" />
-                    <flux:radio value="dark" icon="moon" />
-                    <flux:radio value="system" icon="computer-desktop" />
+                    <flux:radio class="cursor-pointer" value="light" icon="sun" />
+                    <flux:radio class="cursor-pointer" value="dark" icon="moon" />
+                    <flux:radio class="cursor-pointer" value="system" icon="computer-desktop" />
                 </flux:radio.group>
             </div>
         </div>
