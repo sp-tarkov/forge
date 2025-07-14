@@ -52,7 +52,7 @@ class ImportHubImageJob implements ShouldQueue
             'user_avatar' => $this->processUserAvatar(),
             'user_cover' => $this->processUserCoverPhoto(),
             'mod_thumbnail' => $this->processModThumbnail(),
-            default => throw new Exception("Unknown image type: {$this->imageType}"),
+            default => throw new Exception('Unknown image type: ' . $this->imageType),
         };
     }
 
@@ -63,7 +63,7 @@ class ImportHubImageJob implements ShouldQueue
      */
     private function processUserAvatar(): void
     {
-        $user = User::find($this->recordId);
+        $user = User::query()->find($this->recordId);
         if (! $user) {
             return;
         }
@@ -85,7 +85,7 @@ class ImportHubImageJob implements ShouldQueue
      */
     private function processUserCoverPhoto(): void
     {
-        $user = User::find($this->recordId);
+        $user = User::query()->find($this->recordId);
         if (! $user) {
             return;
         }
@@ -107,7 +107,7 @@ class ImportHubImageJob implements ShouldQueue
      */
     private function processModThumbnail(): void
     {
-        $mod = Mod::find($this->recordId);
+        $mod = Mod::query()->find($this->recordId);
         if (! $mod) {
             return;
         }

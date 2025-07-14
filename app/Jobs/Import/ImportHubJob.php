@@ -786,27 +786,25 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         }
 
         // Prepare data for upsert for only active mods.
-        $modData = $activeHubMods->map(function (HubMod $hubMod) use ($localLicenses, $localOwners): array {
-            return [
-                'hub_id' => $hubMod->fileID,
-                'owner_id' => $localOwners->get($hubMod->userID)?->id,
-                'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
-                'name' => $hubMod->subject,
-                'slug' => Str::slug($hubMod->subject),
-                'teaser' => $hubMod->getTeaser(),
-                'description' => $hubMod->getCleanMessage(),
-                'thumbnail' => '', // Will be updated by ImportHubImageJob
-                'thumbnail_hash' => '', // Will be updated by ImportHubImageJob
-                'source_code_url' => $hubMod->getSourceCodeLink(),
-                'featured' => (bool) $hubMod->isFeatured,
-                'contains_ai_content' => (bool) $hubMod->contains_ai,
-                'contains_ads' => (bool) $hubMod->contains_ads,
-                'disabled' => (bool) $hubMod->isDisabled,
-                'published_at' => $hubMod->getTime(),
-                'created_at' => $hubMod->getTime(),
-                'updated_at' => $hubMod->getLastChangeTime(),
-            ];
-        })->toArray();
+        $modData = $activeHubMods->map(fn(HubMod $hubMod): array => [
+            'hub_id' => $hubMod->fileID,
+            'owner_id' => $localOwners->get($hubMod->userID)?->id,
+            'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
+            'name' => $hubMod->subject,
+            'slug' => Str::slug($hubMod->subject),
+            'teaser' => $hubMod->getTeaser(),
+            'description' => $hubMod->getCleanMessage(),
+            'thumbnail' => '', // Will be updated by ImportHubImageJob
+            'thumbnail_hash' => '', // Will be updated by ImportHubImageJob
+            'source_code_url' => $hubMod->getSourceCodeLink(),
+            'featured' => (bool) $hubMod->isFeatured,
+            'contains_ai_content' => (bool) $hubMod->contains_ai,
+            'contains_ads' => (bool) $hubMod->contains_ads,
+            'disabled' => (bool) $hubMod->isDisabled,
+            'published_at' => $hubMod->getTime(),
+            'created_at' => $hubMod->getTime(),
+            'updated_at' => $hubMod->getLastChangeTime(),
+        ])->toArray();
 
         // Split upsert into separate insert/update operations to avoid ID gaps
         Mod::withoutEvents(function () use ($modData): void {
