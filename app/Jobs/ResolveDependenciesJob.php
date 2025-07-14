@@ -27,8 +27,18 @@ class ResolveDependenciesJob implements ShouldBeUnique, ShouldQueue
     {
         $dependencyVersionService = new DependencyVersionService;
 
-        foreach (ModVersion::all() as $modVersion) {
-            $dependencyVersionService->resolve($modVersion);
-        }
+        ModVersion::query()
+            ->with('dependencies')
+            ->chunk(100, function ($modVersions) use ($dependencyVersionService): void {
+                // Eager-load dependent mod versions only for those that have dependencies
+                $modVersionsWithDeps = $modVersions->filter(fn ($mv) => $mv->dependencies->isNotEmpty());
+                if ($modVersionsWithDeps->isNotEmpty()) {
+                    $modVersionsWithDeps->load(['dependencies.dependentMod.versions']);
+                }
+
+                foreach ($modVersions as $modVersion) {
+                    $dependencyVersionService->resolve($modVersion);
+                }
+            });
     }
 }
