@@ -329,27 +329,17 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      *
      * @param  Collection<int, HubUserAvatar>  $hubUserAvatars
      * @param  EloquentCollection<int, User>  $localUsers
-     *
-     * @throws ConnectionException
      */
     private function processUserAvatarBatch(Collection $hubUserAvatars, EloquentCollection $localUsers): void
     {
-        $now = Carbon::now('UTC')->toDateTimeString();
-
-        User::withoutEvents(function () use ($hubUserAvatars, $localUsers, $now): void {
-            $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar) use ($localUsers, $now): void {
-                if ($hubUserAvatar->userID && ($localUser = $localUsers->get($hubUserAvatar->userID))) {
-                    $relativePath = $this->processUserAvatarImage($hubUserAvatar);
-                    if (! empty($relativePath)) {
-                        User::query()
-                            ->where('id', $localUser->id)
-                            ->update([
-                                'profile_photo_path' => $relativePath,
-                                'updated_at' => $now,
-                            ]);
-                    }
-                }
-            });
+        $hubUserAvatars->each(function (HubUserAvatar $hubUserAvatar) use ($localUsers): void {
+            if ($hubUserAvatar->userID && ($localUser = $localUsers->get($hubUserAvatar->userID))) {
+                ImportHubImageJob::dispatch(
+                    'user_avatar',
+                    $localUser->id,
+                    $hubUserAvatar->toArray()
+                )->onQueue('default');
+            }
         });
     }
 
@@ -400,27 +390,17 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      *
      * @param  Collection<int, HubUser>  $hubUsers
      * @param  EloquentCollection<int, User>  $localUsers
-     *
-     * @throws ConnectionException
      */
     private function processUserCoverPhotoBatch(Collection $hubUsers, EloquentCollection $localUsers): void
     {
-        $now = Carbon::now('UTC')->toDateTimeString();
-
-        User::withoutEvents(function () use ($hubUsers, $localUsers, $now): void {
-            $hubUsers->each(function (HubUser $hubUser) use ($localUsers, $now): void {
-                if ($localUser = $localUsers->get($hubUser->userID)) {
-                    $coverPhotoPath = $this->fetchUserCoverPhoto($hubUser);
-                    if (! empty($coverPhotoPath)) {
-                        User::query()
-                            ->where('id', $localUser->id)
-                            ->update([
-                                'cover_photo_path' => $coverPhotoPath,
-                                'updated_at' => $now,
-                            ]);
-                    }
-                }
-            });
+        $hubUsers->each(function (HubUser $hubUser) use ($localUsers): void {
+            if ($localUser = $localUsers->get($hubUser->userID)) {
+                ImportHubImageJob::dispatch(
+                    'user_cover',
+                    $localUser->id,
+                    $hubUser->toArray()
+                )->onQueue('default');
+            }
         });
     }
 
@@ -881,8 +861,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         // Prepare data for upsert for only active mods.
         $modData = $activeHubMods->map(function (HubMod $hubMod) use ($localLicenses, $localOwners): array {
-            $thumbnailData = $this->fetchModThumbnail($hubMod);
-
             return [
                 'hub_id' => $hubMod->fileID,
                 'owner_id' => $localOwners->get($hubMod->userID)?->id,
@@ -891,8 +869,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 'slug' => Str::slug($hubMod->subject),
                 'teaser' => $hubMod->getTeaser(),
                 'description' => $hubMod->getCleanMessage(),
-                'thumbnail' => $thumbnailData['path'],
-                'thumbnail_hash' => $thumbnailData['hash'],
+                'thumbnail' => '', // Will be updated by ImportHubImageJob
+                'thumbnail_hash' => '', // Will be updated by ImportHubImageJob
                 'source_code_url' => $hubMod->getSourceCodeLink(),
                 'featured' => (bool) $hubMod->isFeatured,
                 'contains_ai_content' => (bool) $hubMod->contains_ai,
@@ -936,8 +914,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     'slug' => $mod['slug'],
                     'teaser' => $mod['teaser'],
                     'description' => $mod['description'],
-                    'thumbnail' => $mod['thumbnail'],
-                    'thumbnail_hash' => $mod['thumbnail_hash'],
+                    // Don't update thumbnail fields - they'll be handled by queued jobs
                     'source_code_url' => $mod['source_code_url'],
                     'featured' => $mod['featured'],
                     'contains_ai_content' => $mod['contains_ai_content'],
@@ -980,6 +957,17 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 if ($mod = $localMods->find($modId)) {
                     $mod->authors()->sync($authorIds);
                 }
+            }
+        });
+
+        // Dispatch image jobs for mod thumbnails
+        $activeHubMods->each(function (HubMod $hubMod) use ($localMods): void {
+            if ($localMod = $localMods->get($hubMod->fileID)) {
+                ImportHubImageJob::dispatch(
+                    'mod_thumbnail',
+                    $localMod->id,
+                    $hubMod->toArray()
+                )->onQueue('default');
             }
         });
     }
