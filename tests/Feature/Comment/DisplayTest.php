@@ -39,3 +39,22 @@ it('should display correct commentable display name for user profiles', function
 
     expect($user->getCommentableDisplayName())->toBe('profile');
 });
+
+it('should display no comments message before the form when authenticated', function (): void {
+    $user = User::factory()->create();
+    $commentingUser = User::factory()->create();
+
+    $this->actingAs($commentingUser);
+
+    $response = Livewire::test('comment-component', ['commentable' => $user]);
+
+    // Get the rendered HTML
+    $html = $response->html();
+
+    // Find positions of key elements
+    $noCommentsPos = strpos($html, 'No comments yet');
+    $formPos = strpos($html, 'Post Comment');
+
+    // Assert that "No comments yet" appears before the form
+    expect($noCommentsPos)->toBeLessThan($formPos);
+});

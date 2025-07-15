@@ -1,39 +1,4 @@
 <div>
-    @auth
-        <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-white">
-                    {{ __('Discussion') }}
-                    <span class="font-normal text-slate-400">{{ '(' . $commentCount . ')' ?? '' }}</span>
-                </h2>
-            </div>
-            <div class="flex items-start">
-                <div class="mr-3">
-                    <flux:avatar src="{{ auth()->user()->profile_photo_url }}" color="auto" color:seed="{{ auth()->user()->id }}" circle="circle"/>
-                </div>
-                <form wire:submit="createComment" class="flex-1">
-                    <flux:textarea
-                        name="body"
-                        wire:model="newCommentBody"
-                        resize="vertical"
-                        placeholder="{{ __('Please ensure your comment does not break the community guidelines.') }}"
-                    />
-                    @error('newCommentBody')
-                        <div class="text-red-500 text-xs my-1.5">{{ $message }}</div>
-                    @enderror
-                    <div class="flex items-center justify-between mt-2">
-                        <flux:button variant="primary" size="sm" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">
-                            {{ __('Post Comment') }}
-                        </flux:button>
-                        <div class="text-xs text-slate-400 text-right ml-2">
-                            {{ __('Basic Markdown formatting is supported.') }}
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endauth
-
     @if ($rootComments->count() === 0 && auth()->guest())
         <div class="p-8 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-center">
             <div class="mb-6">
@@ -71,6 +36,41 @@
             </p>
         </div>
     @endif
+
+    @auth
+        <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white">
+                    {{ __('Discussion') }}
+                    <span class="font-normal text-slate-400">{{ '(' . $commentCount . ')' ?? '' }}</span>
+                </h2>
+            </div>
+            <div class="flex items-start">
+                <div class="mr-3">
+                    <flux:avatar src="{{ auth()->user()->profile_photo_url }}" color="auto" color:seed="{{ auth()->user()->id }}" circle="circle"/>
+                </div>
+                <form wire:submit="createComment" class="flex-1">
+                    <flux:textarea
+                        name="body"
+                        wire:model="newCommentBody"
+                        resize="vertical"
+                        placeholder="{{ __('Please ensure your comment does not break the community guidelines.') }}"
+                    />
+                    @error('newCommentBody')
+                        <div class="text-red-500 text-xs my-1.5">{{ $message }}</div>
+                    @enderror
+                    <div class="flex items-center justify-between mt-2">
+                        <flux:button variant="primary" size="sm" class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">
+                            {{ __('Post Comment') }}
+                        </flux:button>
+                        <div class="text-xs text-slate-400 text-right ml-2">
+                            {{ __('Basic Markdown formatting is supported.') }}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endauth
 
     @if ($rootComments->hasPages())
         <div class="mb-4">
