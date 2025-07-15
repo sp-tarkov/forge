@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Contracts\Commentable;
 use App\Models\Comment;
+use App\Models\Mod;
 use App\Models\User;
 
 class CommentPolicy
@@ -29,18 +31,21 @@ class CommentPolicy
      * Determine whether the user can create a comment.
      *
      * - Must be logged in. Handled by not null User parameter.
-     * - The commentable must be published.
+     * - The commentable must allow comments.
+     *
+     * @param  Commentable<Mod|User>|null  $commentable>
      */
-    public function create(User $user, mixed $commentable = null): bool
+    public function create(User $user, ?Commentable $commentable = null): bool
     {
         // TODO: Users who are blocked by mod authors can not comment on that author's mods.
 
-        // Commentable is required and must be published
-        if ($commentable === null || ! isset($commentable->published_at)) {
+        // Commentable is required
+        if ($commentable === null) {
             return false;
         }
 
-        return $commentable->published_at !== null && $commentable->published_at <= now();
+        // Check if the commentable can receive comments
+        return $commentable->canReceiveComments();
     }
 
     /**

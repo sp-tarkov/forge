@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms;
 
+use App\Contracts\Commentable;
 use App\Models\Mod;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -19,8 +21,10 @@ class CommentCreateForm extends Form
 
     /**
      * Create a new comment.
+     *
+     * @param  Commentable<Mod|User>  $commentable
      */
-    public function submit(Mod $commentable): void
+    public function submit(Commentable $commentable): void
     {
         $this->validate();
 

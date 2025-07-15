@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Forms;
 
+use App\Contracts\Commentable;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Validate;
 use Livewire\Form;
@@ -20,8 +22,10 @@ class CommentReplyForm extends Form
 
     /**
      * Create a new reply comment.
+     *
+     * @param  Commentable<Mod|User>  $commentable
      */
-    public function submit(Mod $commentable, int $parentCommentId): void
+    public function submit(Commentable $commentable, int $parentCommentId): void
     {
         $this->validate();
 

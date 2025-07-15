@@ -67,7 +67,7 @@
                 {{ __('No comments yet') }}
             </h3>
             <p class="text-gray-600 dark:text-gray-400">
-                {{ __('Be the first to share your thoughts about this mod!') }}
+                {{ __('Be the first to share your thoughts about this ' . $commentable->getCommentableDisplayName() . '!') }}
             </p>
         </div>
     @endif

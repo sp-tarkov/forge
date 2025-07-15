@@ -218,3 +218,84 @@ it('should handle invalid data types gracefully', function (): void {
     expect($exceptionThrown)->toBeTrue()
         ->and(Comment::query()->count())->toBe($commentCountBefore);
 });
+
+it('should verify user profiles can receive comments', function (): void {
+    $user = User::factory()->create();
+
+    expect($user->canReceiveComments())->toBeTrue();
+});
+
+it('should allow commenting on user profiles', function (): void {
+    $profileOwner = User::factory()->create();
+    $commenter = User::factory()->create();
+
+    Livewire::actingAs($commenter)
+        ->test(CommentComponent::class, ['commentable' => $profileOwner])
+        ->set('newCommentBody', 'Nice profile!')
+        ->call('createComment')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('comments', [
+        'body' => 'Nice profile!',
+        'user_id' => $commenter->id,
+        'commentable_id' => $profileOwner->id,
+        'commentable_type' => User::class,
+    ]);
+});
+
+it('should allow users to comment on their own profile', function (): void {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(CommentComponent::class, ['commentable' => $user])
+        ->set('newCommentBody', 'Welcome to my profile!')
+        ->call('createComment')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('comments', [
+        'body' => 'Welcome to my profile!',
+        'user_id' => $user->id,
+        'commentable_id' => $user->id,
+        'commentable_type' => User::class,
+    ]);
+});
+
+it('should enforce rate limiting on user wall comments', function (): void {
+    $profileOwner = User::factory()->create();
+    $commenter = User::factory()->create();
+
+    $component = Livewire::actingAs($commenter)
+        ->test(CommentComponent::class, ['commentable' => $profileOwner]);
+
+    // First comment should succeed
+    $component->set('newCommentBody', 'First comment')
+        ->call('createComment')
+        ->assertHasNoErrors();
+
+    // Second comment immediately after should be rate limited
+    $component->set('newCommentBody', 'Second comment')
+        ->call('createComment')
+        ->assertForbidden();
+
+    // Verify only one comment was created
+    $comments = Comment::query()->where('user_id', $commenter->id)
+        ->where('commentable_id', $profileOwner->id)
+        ->where('commentable_type', User::class)
+        ->count();
+
+    expect($comments)->toBe(1);
+});
+
+it('should verify mod publication logic works in canReceiveComments', function (): void {
+    // Published mod should allow comments
+    $publishedMod = Mod::factory()->create(['published_at' => now()->subHour()]);
+    expect($publishedMod->canReceiveComments())->toBeTrue();
+
+    // Unpublished mod should not allow comments
+    $unpublishedMod = Mod::factory()->create(['published_at' => null]);
+    expect($unpublishedMod->canReceiveComments())->toBeFalse();
+
+    // Future published mod should not allow comments yet
+    $futureMod = Mod::factory()->create(['published_at' => now()->addHour()]);
+    expect($futureMod->canReceiveComments())->toBeFalse();
+});

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
@@ -16,7 +18,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
@@ -54,11 +55,17 @@ use SensitiveParameter;
  * @property-read Collection<int, User> $followers
  * @property-read Collection<int, User> $following
  * @property-read Collection<int, OAuthConnection> $oAuthConnections
+ *
+ * @implements Commentable<self>
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements Commentable, MustVerifyEmail
 {
     use Bannable;
     use HasApiTokens;
+
+    /** @use HasComments<self> */
+    use HasComments;
+
     use HasCoverPhoto;
 
     /** @use HasFactory<UserFactory> */
@@ -371,11 +378,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * The relationship between a user and their comments.
+     * The relationship between a user and their authored comments.
      *
      * @return HasMany<Comment, $this>
      */
-    public function comments(): HasMany
+    public function authoredComments(): HasMany
     {
         return $this->hasMany(Comment::class);
     }
@@ -391,12 +398,28 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * The relationship between a user and comments on their profile.
-     *
-     * @return MorphMany<Comment, $this>
+     * Get the ID of this commentable model.
      */
-    public function profileComments(): MorphMany
+    public function getId(): int
     {
-        return $this->morphMany(Comment::class, 'commentable');
+        return $this->id;
+    }
+
+    /**
+     * Determine if this user's profile can receive comments.
+     * For now, all user profiles can receive comments.
+     * In the future, this could check privacy settings, banned status, etc.
+     */
+    public function canReceiveComments(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the display name for this commentable model.
+     */
+    public function getCommentableDisplayName(): string
+    {
+        return 'profile';
     }
 }

@@ -133,3 +133,32 @@ it('should enforce rate limiting for replies (same as root comments)', function 
 
     expect($replies)->toBe(1);
 });
+
+it('should allow replies on user wall comments', function (): void {
+    $profileOwner = User::factory()->create();
+    $commenter = User::factory()->create();
+    $replier = User::factory()->create();
+
+    // Create initial comment
+    $comment = Comment::factory()->create([
+        'user_id' => $commenter->id,
+        'commentable_id' => $profileOwner->id,
+        'commentable_type' => User::class,
+        'body' => 'Great profile!',
+    ]);
+
+    // Reply to the comment
+    Livewire::actingAs($replier)
+        ->test(CommentComponent::class, ['commentable' => $profileOwner])
+        ->set('replyBodies.comment-'.$comment->id, 'I agree!')
+        ->call('createReply', $comment->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('comments', [
+        'body' => 'I agree!',
+        'user_id' => $replier->id,
+        'commentable_id' => $profileOwner->id,
+        'commentable_type' => User::class,
+        'parent_id' => $comment->id,
+    ]);
+});

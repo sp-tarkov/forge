@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Contracts\Commentable;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Mod;
@@ -23,8 +24,10 @@ class CommentComponent extends Component
 
     /**
      * The commentable model.
+     *
+     * @var Commentable<Mod|User>
      */
-    public Mod $commentable;
+    public Commentable $commentable;
 
     /**
      * Body for new root comment.
@@ -157,7 +160,7 @@ class CommentComponent extends Component
 
         // Validate parent comment exists and belongs to this commentable
         $parentComment = Comment::query()->where('id', $parentId)
-            ->where('commentable_id', $this->commentable->id)
+            ->where('commentable_id', $this->commentable->getId())
             ->where('commentable_type', $this->commentable::class)
             ->first();
 
@@ -192,7 +195,7 @@ class CommentComponent extends Component
     public function updateComment(Comment $comment): void
     {
         // Validate comment belongs to this commentable
-        abort_if($comment->commentable_id !== $this->commentable->id ||
+        abort_if($comment->commentable_id !== $this->commentable->getId() ||
             $comment->commentable_type !== $this->commentable::class, 403, 'Cannot edit comment from different page');
 
         $this->authorize('update', $comment);
@@ -220,7 +223,7 @@ class CommentComponent extends Component
     public function toggleReaction(Comment $comment): void
     {
         // Validate comment belongs to this commentable
-        abort_if($comment->commentable_id !== $this->commentable->id ||
+        abort_if($comment->commentable_id !== $this->commentable->getId() ||
             $comment->commentable_type !== $this->commentable::class, 403, 'Cannot react to comment from different page');
 
         $this->authorize('react', $comment);
@@ -319,7 +322,7 @@ class CommentComponent extends Component
             ->latest()
             ->paginate(perPage: 10, pageName: 'commentPage');
 
-        return view('livewire.comment.manager', [
+        return view('livewire.comment-component', [
             'rootComments' => $rootComments,
         ]);
     }

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
+use App\Traits\HasComments;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -18,7 +20,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -57,11 +58,16 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, ModVersion> $versions
  * @property-read ModVersion|null $latestVersion
  * @property-read ModVersion|null $latestUpdatedVersion
+ *
+ * @implements Commentable<self>
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModObserver::class])]
-class Mod extends Model
+class Mod extends Model implements Commentable
 {
+    /** @use HasComments<self> */
+    use HasComments;
+
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 
@@ -310,25 +316,27 @@ class Mod extends Model
     }
 
     /**
-     * The relationship between a mod and its comments.
-     *
-     * @return MorphMany<Comment, $this>
+     * Get the ID of this commentable model.
      */
-    public function comments(): MorphMany
+    public function getId(): int
     {
-        return $this->morphMany(Comment::class, 'commentable');
+        return $this->id;
     }
 
     /**
-     * The relationship between a mod and its root comments.
-     *
-     * @return MorphMany<Comment, $this>
+     * Determine if this mod can receive comments.
+     * Only published mods can receive comments.
      */
-    public function rootComments(): MorphMany
+    public function canReceiveComments(): bool
     {
-        return $this->morphMany(Comment::class, 'commentable')
-            ->whereNull('parent_id')
-            ->whereNull('root_id')
-            ->orderBy('created_at', 'desc');
+        return $this->published_at !== null && $this->published_at <= now();
+    }
+
+    /**
+     * Get the display name for this commentable model.
+     */
+    public function getCommentableDisplayName(): string
+    {
+        return 'mod';
     }
 }

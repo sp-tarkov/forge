@@ -33,3 +33,9 @@ it('should correctly paginate comments', function (): void {
 
     $this->assertEquals(2, substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
 });
+
+it('should display correct commentable display name for user profiles', function (): void {
+    $user = User::factory()->create();
+
+    expect($user->getCommentableDisplayName())->toBe('profile');
+});
