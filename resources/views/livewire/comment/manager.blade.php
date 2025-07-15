@@ -4,25 +4,21 @@
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-white">
                     {{ __('Discussion') }}
-                    <span class="font-normal text-slate-400">{{ '('.$this->commentCount.')' ?? '' }}</span>
+                    <span class="font-normal text-slate-400">{{ '(' . $commentCount . ')' ?? '' }}</span>
                 </h2>
-                {{--
-                    TODO: Add subscribe button to get notified when a new comment is posted.
-                    <flux:button size="sm">{{ __('Subscribe') }}</flux:button>
-                --}}
             </div>
             <div class="flex items-start">
                 <div class="mr-3">
                     <flux:avatar src="{{ auth()->user()->profile_photo_url }}" color="auto" color:seed="{{ auth()->user()->id }}" circle="circle"/>
                 </div>
-                <form wire:submit="create" class="flex-1">
+                <form wire:submit="createComment" class="flex-1">
                     <flux:textarea
                         name="body"
-                        wire:model="form.body"
+                        wire:model="newCommentBody"
                         resize="vertical"
                         placeholder="{{ __('Please ensure your comment does not break the community guidelines.') }}"
                     />
-                    @error('form.body')
+                    @error('newCommentBody')
                         <div class="text-red-500 text-xs my-1.5">{{ $message }}</div>
                     @enderror
                     <div class="flex items-center justify-between mt-2">
@@ -83,18 +79,17 @@
     @endif
 
     @foreach ($rootComments as $comment)
-        <div
-            wire:key="comment-container-{{ $comment->id }}"
-            class="p-6 mb-4 last:mb-0 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
-            {!! ($comment->descendants->count()) ? 'x-data="{ showReplies'.$comment->id.' : $persist(true).as(\'CommentShowReplies'.$comment->id.'\') }"' : '' !!}
-        >
-            <livewire:comment.card wire:key="comment-card-{{ $comment->id }}" :comment="$comment" />
+        <div wire:key="comment-{{ $comment->id }}"
+             class="p-6 mb-4 last:mb-0 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
+            
+            <x-comment.display :comment="$comment" :manager="$this" />
 
-            @if ($comment->descendants->count() > 0)
-                <div x-show="showReplies{{ $comment->id }}" x-collapse class="transition-all duration-600 mt-4">
+            @if ($comment->descendants->count() > 0 && ($showReplies[$comment->id] ?? true))
+                <div class="mt-4 space-y-4">
                     @foreach ($comment->descendants as $descendant)
-                        <div wire:key="descendant-container-{{ $descendant->id }}" class="p-6 mb-4 last:mb-0 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
-                            <livewire:comment.card wire:key="descendant-card-{{ $descendant->id }}" :comment="$descendant" />
+                        <div wire:key="comment-{{ $descendant->id }}" 
+                             class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
+                            <x-comment.display :comment="$descendant" :manager="$this" :is-reply="true" />
                         </div>
                     @endforeach
                 </div>

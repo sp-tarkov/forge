@@ -61,7 +61,7 @@ class Show extends Component
     protected function versions(): LengthAwarePaginator
     {
         return $this->mod->versions()
-            ->paginate(6)
+            ->paginate(perPage: 6, pageName: 'versionPage')
             ->fragment('versions');
     }
 

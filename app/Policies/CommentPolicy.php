@@ -29,13 +29,18 @@ class CommentPolicy
      * Determine whether the user can create a comment.
      *
      * - Must be logged in. Handled by not null User parameter.
-     * - The comment must exist. Handled by not null Comment parameter.
+     * - The commentable must be published.
      */
-    public function create(User $user): bool
+    public function create(User $user, mixed $commentable = null): bool
     {
         // TODO: Users who are blocked by mod authors can not comment on that author's mods.
 
-        return true;
+        // Commentable is required and must be published
+        if ($commentable === null || ! isset($commentable->published_at)) {
+            return false;
+        }
+
+        return $commentable->published_at !== null && $commentable->published_at <= now();
     }
 
     /**

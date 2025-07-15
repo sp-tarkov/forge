@@ -29,10 +29,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read User $user
  * @property-read Model $commentable
- * @property-read Collection<Comment> $replies
+ * @property-read Collection<int, Comment> $replies
  * @property-read Comment|null $parent
- * @property-read Collection<CommentReaction> $reactions
- * @property-read Collection<Comment> $descendants
+ * @property-read Collection<int, CommentReaction> $reactions
+ * @property-read Collection<int, Comment> $descendants
  * @property-read Comment|null $root
  */
 #[ObservedBy([CommentObserver::class])]
@@ -156,6 +156,7 @@ class Comment extends Model
             $reply->updateChildRootIds();
         });
     }
+
     protected function casts(): array
     {
         return [

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->unsignedBigInteger('hub_id')->nullable()->default(null);
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->morphs('commentable');
-            $table->foreignId('parent_id')->nullable()->constrained('comments')->nullOnDelete()->default(null);
-            $table->foreignId('root_id')->nullable()->constrained('comments')->nullOnDelete()->default(null);
+            $table->foreignId('parent_id')->nullable()->constrained('comments')->nullOnDelete();
+            $table->foreignId('root_id')->nullable()->constrained('comments')->nullOnDelete();
             $table->text('body');
             $table->timestamp('edited_at')->nullable();
             $table->timestamps();
