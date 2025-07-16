@@ -312,6 +312,29 @@ class CommentComponent extends Component
     }
 
     /**
+     * Delete a comment (smart delete - hard delete if within 5 minutes and no children, otherwise soft delete).
+     */
+    public function deleteComment(Comment $comment): void
+    {
+        $this->authorize('delete', $comment);
+
+        // Check if comment is within 5 minutes old and has no child comments
+        $isWithinFiveMinutes = $comment->created_at->diffInMinutes(now()) <= 5;
+        $hasNoChildren = $comment->replies()->count() === 0 && $comment->descendants()->count() === 0;
+
+        if ($isWithinFiveMinutes && $hasNoChildren) {
+            // Hard delete
+            $comment->delete();
+        } else {
+            // Soft delete
+            $comment->deleted_at = now();
+            $comment->save();
+        }
+
+        $this->refreshData();
+    }
+
+    /**
      * Render the component.
      */
     public function render(): View

@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $parent_id
  * @property int|null $root_id
  * @property Carbon|null $edited_at
+ * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User $user
@@ -120,6 +121,14 @@ class Comment extends Model
     }
 
     /**
+     * Check if this comment has been deleted.
+     */
+    public function isDeleted(): bool
+    {
+        return $this->deleted_at !== null;
+    }
+
+    /**
      * Update the root_id of this comment
      */
     public function updateRootId(): void
@@ -161,6 +170,7 @@ class Comment extends Model
     {
         return [
             'edited_at' => 'datetime',
+            'deleted_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

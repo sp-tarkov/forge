@@ -19,7 +19,10 @@ return new class extends Migration
             $table->foreignId('root_id')->nullable()->constrained('comments')->nullOnDelete();
             $table->text('body');
             $table->timestamp('edited_at')->nullable();
+            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
+
+            $table->index('deleted_at');
         });
     }
 

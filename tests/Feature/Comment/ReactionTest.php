@@ -26,6 +26,26 @@ it('should not allow users to react to their own comments', function (): void {
     expect($user->commentReactions()->where('comment_id', $comment->id)->exists())->toBeFalse();
 });
 
+it('should show reaction count to guests without interaction', function (): void {
+    $mod = Mod::factory()->create();
+    $comment = Comment::factory()->create([
+        'commentable_id' => $mod->id,
+        'commentable_type' => $mod::class,
+        'body' => 'Test comment',
+    ]);
+
+    // Add some reactions from other users
+    $users = User::factory()->count(3)->create();
+    foreach ($users as $user) {
+        $user->commentReactions()->create(['comment_id' => $comment->id]);
+    }
+
+    Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        ->assertSee('Test comment')
+        ->assertSee('3 Likes')
+        ->assertDontSee('wire:click="toggleReaction"', false);
+});
+
 it('should not allow guests to react to comments', function (): void {
     $mod = Mod::factory()->create();
     $comment = Comment::factory()->create([

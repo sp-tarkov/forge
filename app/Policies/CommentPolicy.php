@@ -72,10 +72,17 @@ class CommentPolicy
 
     /**
      * Determine whether the user can delete the model.
+     * Users can only delete their own comments.
      */
     public function delete(User $user, Comment $comment): bool
     {
-        return false;
+        // Comment must not already be deleted
+        if ($comment->isDeleted()) {
+            return false;
+        }
+
+        // Only the author can delete their own comment
+        return $user->id === $comment->user_id;
     }
 
     /**

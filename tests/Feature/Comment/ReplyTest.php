@@ -8,6 +8,19 @@ use App\Models\Mod;
 use App\Models\User;
 use Livewire\Livewire;
 
+it('should not show reply button to guests', function (): void {
+    $mod = Mod::factory()->create();
+    $parentComment = Comment::factory()->create([
+        'commentable_id' => $mod->id,
+        'commentable_type' => $mod::class,
+        'body' => 'Test comment',
+    ]);
+
+    Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        ->assertSee('Test comment')
+        ->assertDontSee('Reply');
+});
+
 it('should not allow a guest to reply to a comment', function (): void {
     $mod = Mod::factory()->create();
     $parentComment = Comment::factory()->create([
