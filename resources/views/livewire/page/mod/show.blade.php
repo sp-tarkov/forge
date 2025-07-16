@@ -172,10 +172,12 @@
                 </div>
 
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'" class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    <p class="text-gray-900 dark:text-gray-200">{{ __('Not quite yet...') }}</p>
+                <div x-show="selectedTab === 'comments'">
+                    <livewire:comment-component
+                        wire:key="comment-component-{{ $mod->id }}"
+                        :commentable="$mod"
+                    />
                 </div>
-
             </div>
         </div>
 

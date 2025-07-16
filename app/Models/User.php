@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
@@ -53,11 +55,17 @@ use SensitiveParameter;
  * @property-read Collection<int, User> $followers
  * @property-read Collection<int, User> $following
  * @property-read Collection<int, OAuthConnection> $oAuthConnections
+ *
+ * @implements Commentable<self>
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements Commentable, MustVerifyEmail
 {
     use Bannable;
     use HasApiTokens;
+
+    /** @use HasComments<self> */
+    use HasComments;
+
     use HasCoverPhoto;
 
     /** @use HasFactory<UserFactory> */
@@ -367,5 +375,51 @@ class User extends Authenticatable implements MustVerifyEmail
                 $this->oAuthConnections->isNotEmpty()
                 && $this->oAuthConnections->every(fn ($connection) => $connection->mfa_enabled)
             );
+    }
+
+    /**
+     * The relationship between a user and their authored comments.
+     *
+     * @return HasMany<Comment, $this>
+     */
+    public function authoredComments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * The relationship between a user and their comment reactions.
+     *
+     * @return HasMany<CommentReaction, $this>
+     */
+    public function commentReactions(): HasMany
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    /**
+     * Get the ID of this commentable model.
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * Determine if this user's profile can receive comments.
+     * For now, all user profiles can receive comments.
+     * In the future, this could check privacy settings, banned status, etc.
+     */
+    public function canReceiveComments(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the display name for this commentable model.
+     */
+    public function getCommentableDisplayName(): string
+    {
+        return 'profile';
     }
 }

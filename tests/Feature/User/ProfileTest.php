@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -148,4 +150,55 @@ it('shows administrators disabled mods on a profile page', function (): void {
 
     $response->assertStatus(200);
     $response->assertSeeText($mod->name);
+});
+
+it('shows the comment component on the wall tab', function (): void {
+    $user = User::factory()->create();
+
+    $response = $this->get(route('user.show', [
+        'userId' => $user->id,
+        'slug' => $user->slug,
+    ]));
+
+    $response->assertStatus(200);
+    $response->assertSeeLivewire('comment-component');
+});
+
+it('can post comments on user profile wall', function (): void {
+    $profileUser = User::factory()->create();
+    $commenter = User::factory()->create();
+
+    $this->actingAs($commenter);
+
+    Livewire::test('comment-component', ['commentable' => $profileUser])
+        ->set('newCommentBody', 'Great profile!')
+        ->call('createComment')
+        ->assertSet('newCommentBody', '');
+
+    $this->assertDatabaseHas('comments', [
+        'commentable_type' => User::class,
+        'commentable_id' => $profileUser->id,
+        'user_id' => $commenter->id,
+        'body' => 'Great profile!',
+    ]);
+});
+
+it('shows existing comments on user profile wall', function (): void {
+    $profileUser = User::factory()->create();
+    $commenter = User::factory()->create();
+
+    $comment = Comment::factory()->create([
+        'commentable_type' => User::class,
+        'commentable_id' => $profileUser->id,
+        'user_id' => $commenter->id,
+        'body' => 'Nice work on your mods!',
+    ]);
+
+    $response = $this->get(route('user.show', [
+        'userId' => $profileUser->id,
+        'slug' => $profileUser->slug,
+    ]));
+
+    $response->assertStatus(200);
+    $response->assertSeeText('Nice work on your mods!');
 });
