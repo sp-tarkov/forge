@@ -9,6 +9,9 @@ use App\Livewire\Page\Mod\Create as ModCreate;
 use App\Livewire\Page\Mod\Edit as ModEdit;
 use App\Livewire\Page\Mod\Index as ModIndex;
 use App\Livewire\Page\Mod\Show as ModShow;
+use App\Livewire\Page\ModAddon\Create as ModAddonCreate;
+use App\Livewire\Page\ModAddon\Edit as ModAddonEdit;
+use App\Livewire\Page\ModAddon\Show as ModAddonShow;
 use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Livewire\Page\User\Show as UserShow;
@@ -46,6 +49,17 @@ Route::middleware(['auth.banned'])->group(function (): void {
     Route::get('/mod/download/{mod}/{slug}/{version}', [ModVersionController::class, 'show'])
         ->where(['mod' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
         ->name('mod.version.download');
+
+    Route::get('/mod/addon/{addonId}/{slug}', ModAddonShow::class)
+        ->where(['addonId' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
+        ->name('mod.addon.show');
+
+    Route::get('/mod/addon/create', ModAddonCreate::class)
+        ->name('mod.addon.create');
+
+    Route::get('/mod/addon/{addonId}/edit', ModAddonEdit::class)
+        ->where(['addonId' => '[0-9]+'])
+        ->name('mod.addon.edit');
 
     Route::get('/user/{userId}/{slug}', UserShow::class)
         ->where(['userId' => '[0-9]+'])
