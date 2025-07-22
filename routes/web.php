@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\CommentSubscriptionController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Livewire\Page\Homepage;
@@ -57,6 +58,10 @@ Route::middleware(['auth.banned'])->group(function (): void {
             ->name('login.socialite');
         Route::get('/login/{provider}/callback', 'callback');
     });
+
+    // Comment unsubscribe route (no auth required for email links)
+    Route::get('/comment/unsubscribe/{user}/{commentable_type}/{commentable_id}', [CommentSubscriptionController::class, 'unsubscribe'])
+        ->name('comment.unsubscribe');
 
     // Jetstream/Profile Routes
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {

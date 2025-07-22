@@ -21,7 +21,9 @@
         "vite": "^7.0"
     },
     "dependencies": {
+        "@alpinejs/collapse": "^3.14.9",
         "@alpinejs/focus": "^3.14.9",
+        "@alpinejs/persist": "^3.14.9",
         "highlight.js": "^11.11.1",
         "jstz": "^2.1.1"
     }

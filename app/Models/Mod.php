@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
+use App\Traits\HasComments;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -56,11 +58,16 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, ModVersion> $versions
  * @property-read ModVersion|null $latestVersion
  * @property-read ModVersion|null $latestUpdatedVersion
+ *
+ * @implements Commentable<self>
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModObserver::class])]
-class Mod extends Model
+class Mod extends Model implements Commentable
 {
+    /** @use HasComments<self> */
+    use HasComments;
+
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 
@@ -306,5 +313,74 @@ class Mod extends Model
                 Markdown::convert($this->description)->getContent()
             )
         )->shouldCache();
+    }
+
+    /**
+     * Get the ID of this commentable model.
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * Determine if this mod can receive comments.
+     * Only published mods can receive comments.
+     */
+    public function canReceiveComments(): bool
+    {
+        return $this->published_at !== null && $this->published_at <= now();
+    }
+
+    /**
+     * Get the display name for this commentable model.
+     */
+    public function getCommentableDisplayName(): string
+    {
+        return 'mod';
+    }
+
+    /**
+     * Get the default subscribers for this mod (owners and authors).
+     *
+     * @return Collection<int, User>
+     */
+    public function getDefaultSubscribers(): Collection
+    {
+        $subscribers = new Collection;
+
+        if ($this->owner) {
+            $subscribers->push($this->owner);
+        }
+
+        // Add authors
+        $subscribers = $subscribers->merge($this->authors);
+
+        // Remove duplicates and filter null values
+        return $subscribers->filter()->unique();
+    }
+
+    /**
+     * Get the URL to view this mod.
+     */
+    public function getCommentableUrl(): string
+    {
+        return route('mod.show', [$this->id, $this->slug]);
+    }
+
+    /**
+     * Get the title of this mod for display in notifications and UI.
+     */
+    public function getTitle(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Comments on mods are displayed on the 'comments' tab.
+     */
+    public function getCommentTabHash(): ?string
+    {
+        return 'comments';
     }
 }

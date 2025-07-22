@@ -1,0 +1,85 @@
+<div wire:poll.10s="$refresh" id="notifications" class="bg-white dark:bg-gray-900 shadow-xl rounded-lg">
+    <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                {{ __('Notifications') }}
+                @if($unreadCount > 0)
+                    <span class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        {{ $unreadCount }}
+                    </span>
+                @endif
+            </h2>
+
+            @if($unreadCount > 0)
+                <flux:button wire:click="markAllAsRead" variant="outline" size="sm">
+                    {{ __('Mark all as read') }}
+                </flux:button>
+            @endif
+        </div>
+
+        @if($notifications->isEmpty())
+            <div class="text-center py-8">
+                <flux:icon icon="bell" class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600 mb-4" />
+                <p class="text-gray-500 dark:text-gray-400">
+                    {{ __('No notifications yet') }}
+                </p>
+            </div>
+        @else
+            <div class="space-y-4">
+                @foreach($notifications as $notification)
+                    <div class="flex items-start p-4 border border-gray-200 dark:border-gray-700 rounded-lg {{ $notification->read_at ? '' : 'bg-gray-50 dark:bg-gray-800' }}">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ $notification->data['commenter_name'] ?? 'Someone' }}
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" title="{{ $notification->created_at->setTimezone(auth()->user()->timezone ?? 'UTC')->format('F j, Y \a\t g:i A T') }}">
+                                    {{ $notification->created_at->setTimezone(auth()->user()->timezone ?? 'UTC')->diffForHumans() }}
+                                </p>
+                            </div>
+
+                            <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                                {{ __('commented on') }} {{ $notification->data['commentable_title'] ?? 'your content' }}
+                            </p>
+
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                {{ Str::words($notification->data['comment_body'] ?? '', 15, '...') }}
+                            </p>
+
+                            <div class="flex items-center space-x-3 mt-3">
+                                <a href="{{ $notification->data['comment_url'] ?? '#' }}"
+                                   class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                    {{ __('View Comment') }}
+                                </a>
+
+                                @if(!$notification->read_at)
+                                    <button wire:click="markAsRead('{{ $notification->id }}')"
+                                            class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                                        {{ __('Mark as read') }}
+                                    </button>
+                                @endif
+
+                                <button wire:click="deleteNotification('{{ $notification->id }}')"
+                                        class="text-sm text-red-500 hover:text-red-700">
+                                    {{ __('Delete') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-6">
+                {{ $notifications->links(data: ['scrollTo' => '#notifications']) }}
+            </div>
+        @endif
+    </div>
+</div>

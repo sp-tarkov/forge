@@ -50,7 +50,11 @@
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {{-- Left Column --}}
-            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'wall' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-3 flex flex-col gap-6">
+            <div
+                x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'wall' }"
+                x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
+                class="lg:col-span-3 flex flex-col gap-6"
+            >
 
                 {{-- About --}}
                 @if ($user->about)
@@ -82,8 +86,8 @@
                 </div>
 
                 {{-- Wall --}}
-                <div x-show="selectedTab === 'wall'" class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
-                    <p>Not quite yet...</p>
+                <div x-show="selectedTab === 'wall'">
+                    <livewire:comment-component :commentable="$user" />
                 </div>
 
                 {{-- Mods --}}

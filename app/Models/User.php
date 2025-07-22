@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
@@ -53,11 +55,17 @@ use SensitiveParameter;
  * @property-read Collection<int, User> $followers
  * @property-read Collection<int, User> $following
  * @property-read Collection<int, OAuthConnection> $oAuthConnections
+ *
+ * @implements Commentable<self>
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements Commentable, MustVerifyEmail
 {
     use Bannable;
     use HasApiTokens;
+
+    /** @use HasComments<self> */
+    use HasComments;
+
     use HasCoverPhoto;
 
     /** @use HasFactory<UserFactory> */
@@ -351,6 +359,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'user_role_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'email_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -367,5 +376,101 @@ class User extends Authenticatable implements MustVerifyEmail
                 $this->oAuthConnections->isNotEmpty()
                 && $this->oAuthConnections->every(fn ($connection) => $connection->mfa_enabled)
             );
+    }
+
+    /**
+     * The relationship between a user and their authored comments.
+     *
+     * @return HasMany<Comment, $this>
+     */
+    public function authoredComments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * The relationship between a user and their comment reactions.
+     *
+     * @return HasMany<CommentReaction, $this>
+     */
+    public function commentReactions(): HasMany
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    /**
+     * Get all comment subscriptions for this user.
+     *
+     * @return HasMany<CommentSubscription, $this>
+     */
+    public function commentSubscriptions(): HasMany
+    {
+        return $this->hasMany(CommentSubscription::class);
+    }
+
+    /**
+     * Get the ID of this commentable model.
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * Determine if this user's profile can receive comments.
+     * For now, all user profiles can receive comments.
+     * In the future, this could check privacy settings, banned status, etc.
+     */
+    public function canReceiveComments(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the display name for this commentable model.
+     */
+    public function getCommentableDisplayName(): string
+    {
+        return 'profile';
+    }
+
+    /**
+     * Get the default subscribers for this user (themselves).
+     *
+     * @return Collection<int, User>
+     */
+    public function getDefaultSubscribers(): Collection
+    {
+        /** @var Collection<int, User> $collection */
+        $collection = new Collection([$this]);
+
+        return $collection;
+    }
+
+    /**
+     * Get the URL to view this user's profile.
+     */
+    public function getCommentableUrl(): string
+    {
+        return route('user.show', [
+            'userId' => $this->id,
+            'slug' => $this->slug,
+        ]);
+    }
+
+    /**
+     * Get the title of this user's profile for display in notifications and UI.
+     */
+    public function getTitle(): string
+    {
+        return $this->name."'s Profile";
+    }
+
+    /**
+     * Comments on user profiles are displayed on the 'wall' tab.
+     */
+    public function getCommentTabHash(): ?string
+    {
+        return 'wall';
     }
 }
