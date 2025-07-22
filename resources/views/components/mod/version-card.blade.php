@@ -73,7 +73,7 @@
         !DANGER ZONE!
 
         This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
-        fields like this when you're absolutly sure that the data is safe. Which is almost never.
+        fields like this when you're absolutely sure that the data is safe. Which is almost never.
         --}}
         {!! $version->description_html !!}
     </div>

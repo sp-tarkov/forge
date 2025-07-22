@@ -52,7 +52,7 @@ it('builds download links using the latest mod version', function (): void {
     ], absolute: false));
 });
 
-it('displays unauthorised if the mod has been disabled', function (): void {
+it('displays unauthorized if the mod has been disabled', function (): void {
     SptVersion::factory()->create(['version' => '1.0.0']);
     $mod = Mod::factory()->create();
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);

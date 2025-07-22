@@ -262,7 +262,7 @@ class HubMod
             $markdown
         );
 
-        // Remove hashs from the beginning of youtube links.
+        // Remove hashes from the beginning of YouTube links.
         $markdown = preg_replace('/#+\s*(https?:\/\/(www\.)?youtu(be\.com|\.be).+)/', '$1', (string) $markdown);
 
         // Final trim for any leading/trailing whitespace
