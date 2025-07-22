@@ -31,6 +31,7 @@ it('retrieves basic user details for authenticated user', function (): void {
                 'profile_photo_url',
                 'cover_photo_url',
                 'created_at',
+                'updated_at',
                 // 'role' should NOT be here by default
             ],
         ])
@@ -70,6 +71,7 @@ it('includes role when requested via include parameter', function (): void {
                     'color_class',
                 ],
                 'created_at',
+                'updated_at',
             ],
         ])
         ->assertJsonPath('data.role.id', $role->id)
@@ -120,6 +122,7 @@ it('should handle a null role gracefully when the role is requested', function (
                 'cover_photo_url',
                 'role',
                 'created_at',
+                'updated_at',
             ],
         ])
         ->assertJsonPath('data.role', null)
