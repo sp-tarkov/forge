@@ -50,7 +50,11 @@
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {{-- Left Column --}}
-            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'wall' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-3 flex flex-col gap-6">
+            <div
+                x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'wall' }"
+                x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
+                class="lg:col-span-3 flex flex-col gap-6"
+            >
 
                 {{-- About --}}
                 @if ($user->about)

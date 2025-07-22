@@ -82,6 +82,11 @@ class CommentComponent extends Component
     public array $userReactions = [];
 
     /**
+     * Whether the current user is subscribed to notifications.
+     */
+    public bool $isSubscribed = false;
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -103,6 +108,8 @@ class CommentComponent extends Component
                 ->whereIn('comment_id', $this->commentable->comments()->pluck('id'))
                 ->pluck('comment_id')
                 ->toArray();
+
+            $this->isSubscribed = $this->commentable->isUserSubscribed($user);
         }
 
         // Initialize show replies for root comments with descendants
@@ -332,6 +339,27 @@ class CommentComponent extends Component
         }
 
         $this->refreshData();
+    }
+
+    /**
+     * Toggle subscription to comment notifications for this commentable.
+     */
+    public function toggleSubscription(): void
+    {
+        if (! Auth::check()) {
+            return;
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($this->isSubscribed) {
+            $this->commentable->unsubscribeUser($user);
+            $this->isSubscribed = false;
+        } else {
+            $this->commentable->subscribeUser($user);
+            $this->isSubscribed = true;
+        }
     }
 
     /**

@@ -339,4 +339,48 @@ class Mod extends Model implements Commentable
     {
         return 'mod';
     }
+
+    /**
+     * Get the default subscribers for this mod (owners and authors).
+     *
+     * @return Collection<int, User>
+     */
+    public function getDefaultSubscribers(): Collection
+    {
+        $subscribers = new Collection;
+
+        if ($this->owner) {
+            $subscribers->push($this->owner);
+        }
+
+        // Add authors
+        $subscribers = $subscribers->merge($this->authors);
+
+        // Remove duplicates and filter null values
+        return $subscribers->filter()->unique();
+    }
+
+    /**
+     * Get the URL to view this mod.
+     */
+    public function getCommentableUrl(): string
+    {
+        return route('mod.show', [$this->id, $this->slug]);
+    }
+
+    /**
+     * Get the title of this mod for display in notifications and UI.
+     */
+    public function getTitle(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Comments on mods are displayed on the 'comments' tab.
+     */
+    public function getCommentTabHash(): ?string
+    {
+        return 'comments';
+    }
 }

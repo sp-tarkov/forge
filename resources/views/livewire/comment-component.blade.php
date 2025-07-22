@@ -44,6 +44,15 @@
                     {{ __('Discussion') }}
                     <span class="font-normal text-slate-400">{{ '(' . $commentCount . ')' ?? '' }}</span>
                 </h2>
+                
+                <flux:button 
+                    wire:click="toggleSubscription"
+                    variant="{{ $isSubscribed ? 'primary' : 'outline' }}"
+                    size="sm"
+                    icon="{{ $isSubscribed ? 'bell' : 'bell-alert' }}"
+                >
+                    {{ $isSubscribed ? __('Subscribed') : __('Subscribe') }}
+                </flux:button>
             </div>
             <div class="flex items-start">
                 <div class="mr-3">
@@ -83,7 +92,7 @@
              x-data="{ showReplies: $persist({{ ($showReplies[$comment->id] ?? true) ? 'true' : 'false' }}).as('comment-replies-{{ $comment->id }}') }"
              class="p-6 mb-4 last:mb-0 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
             
-            <x-comment.display :comment="$comment" :manager="$this" />
+            <x-comment.display :comment="$comment" :manager="$this" :commentable="$commentable" />
 
             @if ($comment->descendants->count() > 0)
                 <div x-show="showReplies"
@@ -92,7 +101,7 @@
                     @foreach ($comment->descendants as $descendant)
                         <div wire:key="comment-{{ $descendant->id }}" 
                              class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
-                            <x-comment.display :comment="$descendant" :manager="$this" :is-reply="true" />
+                            <x-comment.display :comment="$descendant" :manager="$this" :is-reply="true" :commentable="$commentable" />
                         </div>
                     @endforeach
                 </div>

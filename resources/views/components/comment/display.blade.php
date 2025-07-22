@@ -1,4 +1,4 @@
-@props(['comment', 'manager', 'isReply' => false])
+@props(['comment', 'manager', 'isReply' => false, 'commentable' => null])
 
 <div x-data="{
     canEdit: {{ $manager->canEditComment($comment) ? 'true' : 'false' }},
@@ -12,7 +12,7 @@
         this.canEdit = diffInMinutes <= 5;
     }
 }">
-    <div id="comment-{{ $comment->id }}" class="flex items-center justify-between">
+    <div id="{{ $comment->getHashId() }}" class="flex items-center justify-between">
         <div class="flex items-center">
             <flux:avatar circle="circle" src="{{ $comment->user->profile_photo_url }}" color="auto" color:seed="{{ $comment->user->id }}" />
             <a href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}"
@@ -27,7 +27,7 @@
             </span>
         </div>
         @if ($comment->parent_id && $comment->parent)
-            <a href="#comment-{{ $comment->parent_id }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
+            <a href="#{{ $comment->parent->getHashId() }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
                 {{ 'Replying to @' . $comment->parent->user->name }}
             </a>
         @endif

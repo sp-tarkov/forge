@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Observers\CommentObserver;
 use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -126,6 +127,29 @@ class Comment extends Model
     public function isDeleted(): bool
     {
         return $this->deleted_at !== null;
+    }
+
+    /**
+     * Generate the URL to view this specific comment.
+     */
+    public function getUrl(): string
+    {
+        /** @var Commentable<Model> $commentable */
+        $commentable = $this->commentable;
+
+        return $commentable->getCommentableUrl().'#'.$this->getHashId();
+    }
+
+    /**
+     * Generate the hash ID for this comment.
+     */
+    public function getHashId(): string
+    {
+        /** @var Commentable<Model> $commentable */
+        $commentable = $this->commentable;
+        $tabHash = $commentable->getCommentTabHash();
+
+        return $tabHash ? $tabHash.'-comment-'.$this->id : 'comment-'.$this->id;
     }
 
     /**

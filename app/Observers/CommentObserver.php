@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Contracts\Commentable;
+use App\Jobs\ProcessCommentNotification;
 use App\Models\Comment;
+use Illuminate\Database\Eloquent\Model;
 
 class CommentObserver
 {
@@ -14,6 +17,14 @@ class CommentObserver
     public function created(Comment $comment): void
     {
         $comment->updateRootId();
+
+        // Ensure default subscriptions exist for the commentable
+        /** @var Commentable<Model> $commentable */
+        $commentable = $comment->commentable;
+        $commentable->ensureDefaultSubscriptions();
+
+        // Dispatch the notification job
+        ProcessCommentNotification::dispatch($comment);
     }
 
     /**

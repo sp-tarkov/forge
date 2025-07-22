@@ -359,6 +359,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail
             'user_role_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'email_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -398,6 +399,16 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail
     }
 
     /**
+     * Get all comment subscriptions for this user.
+     *
+     * @return HasMany<CommentSubscription, $this>
+     */
+    public function commentSubscriptions(): HasMany
+    {
+        return $this->hasMany(CommentSubscription::class);
+    }
+
+    /**
      * Get the ID of this commentable model.
      */
     public function getId(): int
@@ -421,5 +432,45 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail
     public function getCommentableDisplayName(): string
     {
         return 'profile';
+    }
+
+    /**
+     * Get the default subscribers for this user (themselves).
+     *
+     * @return Collection<int, User>
+     */
+    public function getDefaultSubscribers(): Collection
+    {
+        /** @var Collection<int, User> $collection */
+        $collection = new Collection([$this]);
+
+        return $collection;
+    }
+
+    /**
+     * Get the URL to view this user's profile.
+     */
+    public function getCommentableUrl(): string
+    {
+        return route('user.show', [
+            'userId' => $this->id,
+            'slug' => $this->slug,
+        ]);
+    }
+
+    /**
+     * Get the title of this user's profile for display in notifications and UI.
+     */
+    public function getTitle(): string
+    {
+        return $this->name."'s Profile";
+    }
+
+    /**
+     * Comments on user profiles are displayed on the 'wall' tab.
+     */
+    public function getCommentTabHash(): ?string
+    {
+        return 'wall';
     }
 }
