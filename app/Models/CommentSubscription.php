@@ -8,7 +8,20 @@ use App\Contracts\Commentable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * CommentSubscription Model
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property int $commentable_id
+ * @property string $commentable_type
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Model $commentable
+ * @property User $user
+ */
 class CommentSubscription extends Model
 {
     protected $fillable = [
@@ -40,42 +53,48 @@ class CommentSubscription extends Model
     /**
      * Create a subscription for a user to a commentable.
      *
-     * @param  Commentable<Model>  $commentable
+     * @template T of Model
+     *
+     * @param  T&Commentable<T>  $commentable
      */
-    public static function subscribe(User $user, Commentable $commentable): self
+    public static function subscribe(User $user, Model&Commentable $commentable): self
     {
         return self::query()->firstOrCreate([
             'user_id' => $user->id,
             'commentable_type' => $commentable::class,
-            'commentable_id' => $commentable->getId(),
+            'commentable_id' => $commentable->getAttribute('id'),
         ]);
     }
 
     /**
      * Remove a subscription for a user from a commentable.
      *
-     * @param  Commentable<Model>  $commentable
+     * @template T of Model
+     *
+     * @param  T&Commentable<T>  $commentable
      */
-    public static function unsubscribe(User $user, Commentable $commentable): bool
+    public static function unsubscribe(User $user, Model&Commentable $commentable): bool
     {
         return self::query()->where([
             'user_id' => $user->id,
             'commentable_type' => $commentable::class,
-            'commentable_id' => $commentable->getId(),
+            'commentable_id' => $commentable->getAttribute('id'),
         ])->delete() > 0;
     }
 
     /**
      * Check if a user is subscribed to a commentable.
      *
-     * @param  Commentable<Model>  $commentable
+     * @template T of Model
+     *
+     * @param  T&Commentable<T>  $commentable
      */
-    public static function isSubscribed(User $user, Commentable $commentable): bool
+    public static function isSubscribed(User $user, Model&Commentable $commentable): bool
     {
         return self::query()->where([
             'user_id' => $user->id,
             'commentable_type' => $commentable::class,
-            'commentable_id' => $commentable->getId(),
+            'commentable_id' => $commentable->getAttribute('id'),
         ])->exists();
     }
 }

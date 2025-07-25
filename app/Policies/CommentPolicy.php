@@ -22,8 +22,29 @@ class CommentPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Comment $comment): bool
+    public function view(?User $user, Comment $comment): bool
     {
+        // Clean comments are visible to everyone
+        if ($comment->isSpamClean()) {
+            return true;
+        }
+
+        // If not logged in, can only see clean comments
+        if ($user === null) {
+            return false;
+        }
+
+        // Moderators and admins can see all comments
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        // Comment authors can see their own comments regardless of spam status
+        if ($comment->user_id === $user->id) {
+            return true;
+        }
+
+        // Everyone else cannot see spam/pending comments
         return false;
     }
 
@@ -62,8 +83,9 @@ class CommentPolicy
             return false;
         }
 
-        // The user can update the comment if it is not older than 5 minutes.
-        if ($comment->created_at->diffInMinutes(now()) > 5) {
+        // The user can update the comment if it is not older than the configured time limit.
+        $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
+        if ($comment->created_at->diffInMinutes(now()) > $editTimeLimit) {
             return false;
         }
 
@@ -116,5 +138,39 @@ class CommentPolicy
         }
 
         return true;
+    }
+
+    /**
+     * Determine whether the user can see the spam status ribbon for a comment.
+     *
+     * Ribbons are shown to moderators/admins when:
+     * - The comment is not clean (spam or pending), AND
+     * - The comment is spam (always show to mods/admins), OR
+     * - The current user is not the comment author (show pending to mods/admins who didn't write it)
+     */
+    public function seeRibbon(?User $user, Comment $comment): bool
+    {
+        // Must be logged in
+        if ($user === null) {
+            return false;
+        }
+
+        // Must be moderator or admin
+        if (! $user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Only show ribbons for non-clean comments
+        if ($comment->isSpamClean()) {
+            return false;
+        }
+
+        // Always show spam ribbons to mods/admins
+        if ($comment->isSpam()) {
+            return true;
+        }
+
+        // Show pending ribbons to mods/admins who are not the comment author
+        return $comment->user_id !== $user->id;
     }
 }

@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Contracts\Commentable;
+use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -35,32 +41,11 @@ class CommentComponent extends Component
     public string $newCommentBody = '';
 
     /**
-     * Reply bodies indexed by comment ID.
+     * Form states for reply and edit forms indexed by comment ID and type.
      *
-     * @var array<string, string>
+     * @var array<string, array{body: string, visible: bool}>
      */
-    public array $replyBodies = [];
-
-    /**
-     * Edit bodies indexed by comment ID.
-     *
-     * @var array<string, string>
-     */
-    public array $editBodies = [];
-
-    /**
-     * Show reply form flags indexed by comment ID.
-     *
-     * @var array<int, bool>
-     */
-    public array $showReplyForm = [];
-
-    /**
-     * Show edit form flags indexed by comment ID.
-     *
-     * @var array<int, bool>
-     */
-    public array $showEditForm = [];
+    public array $formStates = [];
 
     /**
      * Show replies flags indexed by comment ID.
@@ -68,18 +53,6 @@ class CommentComponent extends Component
      * @var array<int, bool>
      */
     public array $showReplies = [];
-
-    /**
-     * Total comment count.
-     */
-    public int $commentCount = 0;
-
-    /**
-     * User reactions cache.
-     *
-     * @var array<int>
-     */
-    public array $userReactions = [];
 
     /**
      * Whether the current user is subscribed to notifications.
@@ -91,38 +64,47 @@ class CommentComponent extends Component
      */
     public function mount(): void
     {
-        $this->refreshData();
+        $this->initializeSubscriptionStatus();
+        $this->initializeShowRepliesState();
     }
 
     /**
-     * Refresh all component data.
+     * Get the total comment count.
      */
-    protected function refreshData(): void
+    #[Computed(persist: true)]
+    public function commentCount(): int
     {
-        $this->commentCount = $this->commentable->comments()->count();
+        return $this->commentable->comments()
+            ->get()
+            ->filter(fn ($comment) => Gate::forUser(Auth::user())->allows('view', $comment))
+            ->count();
+    }
 
-        if (Auth::check()) {
-            /** @var User $user */
-            $user = Auth::user();
-            $this->userReactions = $user->commentReactions()
-                ->whereIn('comment_id', $this->commentable->comments()->pluck('id'))
-                ->pluck('comment_id')
-                ->toArray();
-
-            $this->isSubscribed = $this->commentable->isUserSubscribed($user);
+    /**
+     * Get user reactions for visible comments.
+     *
+     * @return array<int>
+     */
+    #[Computed(persist: true)]
+    public function userReactionIds(): array
+    {
+        if (! Auth::check()) {
+            return [];
         }
 
-        // Initialize show replies for root comments with descendants
-        $rootComments = $this->commentable->rootComments()
-            ->has('descendants')
+        /** @var User $user */
+        $user = Auth::user();
+
+        $viewableCommentIds = $this->commentable->comments()
+            ->get()
+            ->filter(fn ($comment) => Gate::forUser($user)->allows('view', $comment))
             ->pluck('id')
             ->toArray();
 
-        foreach ($rootComments as $commentId) {
-            if (! isset($this->showReplies[$commentId])) {
-                $this->showReplies[$commentId] = true;
-            }
-        }
+        return $user->commentReactions()
+            ->whereIn('comment_id', $viewableCommentIds)
+            ->pluck('comment_id')
+            ->toArray();
     }
 
     /**
@@ -132,25 +114,22 @@ class CommentComponent extends Component
     {
         $this->authorize('create', [Comment::class, $this->commentable]);
 
-        // Rate limiting: 1 comment per 30 seconds per user
-        $key = 'comment-creation:'.Auth::id();
+        if (! $this->checkRateLimit('newCommentBody')) {
+            return;
+        }
 
-        abort_if(RateLimiter::tooManyAttempts($key, 1), 403, 'Too many comment attempts. Please wait before commenting again.');
+        $this->validateComment('newCommentBody');
+        $this->storeComment($this->newCommentBody);
 
-        $this->validate([
-            'newCommentBody' => 'required|string|min:3|max:10000',
-        ]);
-
-        $this->commentable->comments()->create([
-            'user_id' => Auth::id(),
-            'body' => $this->newCommentBody,
-        ]);
-
-        // Apply rate limit after successful comment creation
-        RateLimiter::hit($key, 30); // 30 seconds
+        $this->applyRateLimit();
 
         $this->newCommentBody = '';
-        $this->refreshData();
+
+        // Clear cached computed properties.
+        unset($this->commentCount);
+        unset($this->userReactionIds);
+
+        $this->dispatch('$refresh');
     }
 
     /**
@@ -160,40 +139,29 @@ class CommentComponent extends Component
     {
         $this->authorize('create', [Comment::class, $this->commentable]);
 
-        // Rate limiting: 1 comment per 30 seconds per user (same as root comments)
-        $key = 'comment-creation:'.Auth::id();
+        $formKey = $this->getFormKey('reply', $parentId);
+        $fieldKey = sprintf('formStates.%s.body', $formKey);
 
-        abort_if(RateLimiter::tooManyAttempts($key, 1), 403, 'Too many comment attempts. Please wait before commenting again.');
+        if (! $this->checkRateLimit($fieldKey)) {
+            return;
+        }
 
-        // Validate parent comment exists and belongs to this commentable
-        $parentComment = Comment::query()->where('id', $parentId)
-            ->where('commentable_id', $this->commentable->getId())
-            ->where('commentable_type', $this->commentable::class)
-            ->first();
+        // Validate parent comment exists and belongs to this commentable.
+        $this->validateParentComment($parentId);
 
-        abort_unless($parentComment !== null, 404, 'Parent comment not found');
+        $body = $this->formStates[$formKey]['body'] ?? '';
+        $this->validateComment($fieldKey, 'reply');
+        $this->storeComment($body, $parentId);
 
-        $bodyKey = 'comment-'.$parentId;
+        $this->applyRateLimit();
 
-        $this->validate([
-            'replyBodies.'.$bodyKey => 'required|string|min:3|max:10000',
-        ], [], [
-            'replyBodies.'.$bodyKey => 'reply',
-        ]);
+        $this->hideForm('reply', $parentId);
 
-        $this->commentable->comments()->create([
-            'user_id' => Auth::id(),
-            'body' => $this->replyBodies[$bodyKey],
-            'parent_id' => $parentId,
-        ]);
+        // Clear cached computed properties.
+        unset($this->commentCount);
+        unset($this->userReactionIds);
 
-        // Apply rate limit after successful reply creation
-        RateLimiter::hit($key, 30); // 30 seconds
-
-        unset($this->replyBodies[$bodyKey]);
-        unset($this->showReplyForm[$parentId]);
-
-        $this->refreshData();
+        $this->dispatch('$refresh');
     }
 
     /**
@@ -201,27 +169,45 @@ class CommentComponent extends Component
      */
     public function updateComment(Comment $comment): void
     {
-        // Validate comment belongs to this commentable
-        abort_if($comment->commentable_id !== $this->commentable->getId() ||
-            $comment->commentable_type !== $this->commentable::class, 403, 'Cannot edit comment from different page');
-
+        $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('update', $comment);
 
-        $bodyKey = 'comment-'.$comment->id;
+        $formKey = $this->getFormKey('edit', $comment->id);
+        $fieldKey = sprintf('formStates.%s.body', $formKey);
+        $body = $this->formStates[$formKey]['body'] ?? '';
 
-        $this->validate([
-            'editBodies.'.$bodyKey => 'required|string|min:3|max:10000',
-        ], [], [
-            'editBodies.'.$bodyKey => 'comment',
-        ]);
+        $this->validateComment($fieldKey, 'comment');
 
         $comment->update([
-            'body' => $this->editBodies[$bodyKey],
+            'body' => $body,
             'edited_at' => now(),
         ]);
 
-        unset($this->editBodies[$bodyKey]);
-        unset($this->showEditForm[$comment->id]);
+        $this->hideForm('edit', $comment->id);
+    }
+
+    /**
+     * Delete a comment.
+     */
+    public function deleteComment(Comment $comment): void
+    {
+        $this->authorize('delete', $comment);
+
+        $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
+        $isWithinTimeLimit = $comment->created_at->diffInMinutes(now()) <= $editTimeLimit;
+        $hasNoChildren = $comment->replies()->count() === 0 && $comment->descendants()->count() === 0;
+
+        if ($isWithinTimeLimit && $hasNoChildren) {
+            $comment->delete();
+        } else {
+            $comment->update(['deleted_at' => now()]);
+        }
+
+        // Clear cached computed properties.
+        unset($this->commentCount);
+        unset($this->userReactionIds);
+
+        $this->dispatch('$refresh');
     }
 
     /**
@@ -229,10 +215,7 @@ class CommentComponent extends Component
      */
     public function toggleReaction(Comment $comment): void
     {
-        // Validate comment belongs to this commentable
-        abort_if($comment->commentable_id !== $this->commentable->getId() ||
-            $comment->commentable_type !== $this->commentable::class, 403, 'Cannot react to comment from different page');
-
+        $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('react', $comment);
 
         /** @var User $user */
@@ -245,100 +228,11 @@ class CommentComponent extends Component
 
         if ($reaction) {
             $reaction->delete();
-            $this->userReactions = array_diff($this->userReactions, [$comment->id]);
         } else {
             $user->commentReactions()->create(['comment_id' => $comment->id]);
-            $this->userReactions[] = $comment->id;
-        }
-    }
-
-    /**
-     * Toggle a reply form for a comment.
-     */
-    public function toggleReplyForm(int $commentId): void
-    {
-        $this->showReplyForm[$commentId] = ! ($this->showReplyForm[$commentId] ?? false);
-
-        // Close edit form if open
-        if ($this->showReplyForm[$commentId]) {
-            unset($this->showEditForm[$commentId]);
-            unset($this->editBodies['comment-'.$commentId]);
         }
 
-        // Initialize reply body if showing form
-        if ($this->showReplyForm[$commentId] && ! isset($this->replyBodies['comment-'.$commentId])) {
-            $this->replyBodies['comment-'.$commentId] = '';
-        }
-    }
-
-    /**
-     * Toggle an edit form for a comment.
-     */
-    public function toggleEditForm(Comment $comment): void
-    {
-        $this->showEditForm[$comment->id] = ! ($this->showEditForm[$comment->id] ?? false);
-
-        // Close the reply form if open
-        if ($this->showEditForm[$comment->id]) {
-            unset($this->showReplyForm[$comment->id]);
-            unset($this->replyBodies['comment-'.$comment->id]);
-
-            // Initialize edit body with current comment
-            $this->editBodies['comment-'.$comment->id] = $comment->body;
-        } else {
-            unset($this->editBodies['comment-'.$comment->id]);
-        }
-    }
-
-    /**
-     * Toggle replies to visibility for a comment.
-     */
-    public function toggleReplies(int $commentId): void
-    {
-        $this->showReplies[$commentId] = ! ($this->showReplies[$commentId] ?? true);
-    }
-
-    /**
-     * Check if a user has reacted to a comment.
-     */
-    public function hasReacted(int $commentId): bool
-    {
-        return in_array($commentId, $this->userReactions);
-    }
-
-    /**
-     * Check if a comment can be edited (within 5 minutes).
-     */
-    public function canEditComment(Comment $comment): bool
-    {
-        if (! Auth::check() || $comment->user_id !== Auth::id()) {
-            return false;
-        }
-
-        return $comment->created_at->diffInMinutes(now()) <= 5;
-    }
-
-    /**
-     * Delete a comment (smart delete - hard delete if within 5 minutes and no children, otherwise soft delete).
-     */
-    public function deleteComment(Comment $comment): void
-    {
-        $this->authorize('delete', $comment);
-
-        // Check if comment is within 5 minutes old and has no child comments
-        $isWithinFiveMinutes = $comment->created_at->diffInMinutes(now()) <= 5;
-        $hasNoChildren = $comment->replies()->count() === 0 && $comment->descendants()->count() === 0;
-
-        if ($isWithinFiveMinutes && $hasNoChildren) {
-            // Hard delete
-            $comment->delete();
-        } else {
-            // Soft delete
-            $comment->deleted_at = now();
-            $comment->save();
-        }
-
-        $this->refreshData();
+        unset($this->userReactionIds);
     }
 
     /**
@@ -363,18 +257,316 @@ class CommentComponent extends Component
     }
 
     /**
+     * Toggle a reply form for a comment.
+     */
+    public function toggleReplyForm(int $commentId): void
+    {
+        $this->toggleForm('reply', $commentId);
+    }
+
+    /**
+     * Toggle an edit form for a comment.
+     */
+    public function toggleEditForm(Comment $comment): void
+    {
+        $this->toggleForm('edit', $comment->id, $comment->body);
+    }
+
+    /**
+     * Toggle a reply's visibility for a comment.
+     */
+    public function toggleReplies(int $commentId): void
+    {
+        $this->showReplies[$commentId] = ! ($this->showReplies[$commentId] ?? true);
+    }
+
+    /**
+     * Check if a user has reacted to a comment.
+     */
+    public function hasReacted(int $commentId): bool
+    {
+        return in_array($commentId, $this->userReactionIds());
+    }
+
+    /**
+     * Check if a comment can still be edited.
+     */
+    public function canEditComment(Comment $comment): bool
+    {
+        if (! Auth::check() || $comment->user_id !== Auth::id()) {
+            return false;
+        }
+
+        $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
+
+        return $comment->created_at->diffInMinutes(now()) <= $editTimeLimit;
+    }
+
+    /**
+     * Check if a comment has visible descendants for the current user.
+     */
+    public function hasVisibleDescendants(Comment $comment): bool
+    {
+        $query = $comment->descendants();
+
+        if (Auth::check()) {
+            /** @var User $user */
+            $user = Auth::user();
+
+            if (! $user->isModOrAdmin()) {
+                $query->where(function ($q) use ($user): void {
+                    $q->where('spam_status', SpamStatus::CLEAN->value)
+                        ->orWhere('user_id', $user->id);
+                });
+            }
+        } else {
+            $query->clean();
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Check if a form is visible.
+     */
+    public function isFormVisible(string $type, int $commentId): bool
+    {
+        $key = $this->getFormKey($type, $commentId);
+
+        return $this->formStates[$key]['visible'] ?? false;
+    }
+
+    /**
+     * Get form body content.
+     */
+    public function getFormBody(string $type, int $commentId): string
+    {
+        $key = $this->getFormKey($type, $commentId);
+
+        return $this->formStates[$key]['body'] ?? '';
+    }
+
+    /**
+     * Initialize subscription status.
+     */
+    protected function initializeSubscriptionStatus(): void
+    {
+        if (Auth::check()) {
+            /** @var User $user */
+            $user = Auth::user();
+            $this->isSubscribed = $this->commentable->isUserSubscribed($user);
+        }
+    }
+
+    /**
+     * Initialize show replies state for root comments.
+     */
+    protected function initializeShowRepliesState(): void
+    {
+        $rootCommentsWithReplies = $this->commentable->rootComments()
+            ->has('descendants')
+            ->pluck('id')
+            ->toArray();
+
+        foreach ($rootCommentsWithReplies as $commentId) {
+            if (! isset($this->showReplies[$commentId])) {
+                $this->showReplies[$commentId] = true;
+            }
+        }
+    }
+
+    /**
+     * Check the rate limit for comment creation.
+     */
+    protected function checkRateLimit(string $errorKey): bool
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        $key = 'comment-creation:'.Auth::id();
+        $maxAttempts = config('comments.rate_limiting.max_attempts', 1);
+
+        if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+            $seconds = RateLimiter::availableIn($key);
+            $this->addError($errorKey, sprintf('Too many comment attempts. Please wait %d seconds before commenting again.', $seconds));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Apply the rate limit after successful comment creation.
+     */
+    protected function applyRateLimit(): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (! $user->isModOrAdmin()) {
+            $key = 'comment-creation:'.Auth::id();
+            $rateLimitDuration = config('comments.rate_limiting.duration_seconds', 30);
+            RateLimiter::hit($key, $rateLimitDuration);
+        }
+    }
+
+    /**
+     * Validate comment input.
+     */
+    protected function validateComment(string $fieldKey, string $fieldName = 'comment'): void
+    {
+        $minLength = config('comments.validation.min_length', 3);
+        $maxLength = config('comments.validation.max_length', 10000);
+
+        $this->validate([
+            $fieldKey => sprintf('required|string|min:%s|max:%s', $minLength, $maxLength),
+        ], [], [
+            $fieldKey => $fieldName,
+        ]);
+    }
+
+    /**
+     * Validate parent comment exists and belongs to this commentable.
+     */
+    protected function validateParentComment(int $parentId): Comment
+    {
+        $parentComment = Comment::query()
+            ->where('id', $parentId)
+            ->where('commentable_id', $this->getCommentableId())
+            ->where('commentable_type', $this->commentable::class)
+            ->first();
+
+        abort_unless($parentComment !== null, 404, 'Parent comment not found');
+
+        return $parentComment;
+    }
+
+    /**
+     * Validate comment belongs to this commentable.
+     */
+    protected function validateCommentBelongsToCommentable(Comment $comment): void
+    {
+        abort_if(
+            $comment->commentable_id !== $this->getCommentableId() ||
+            $comment->commentable_type !== $this->commentable::class,
+            403,
+            'Cannot perform action on comment from different page'
+        );
+    }
+
+    /**
+     * Store a new comment.
+     */
+    protected function storeComment(string $body, ?int $parentId = null): Comment
+    {
+        return $this->commentable->comments()->create([
+            'user_id' => Auth::id(),
+            'body' => $body,
+            'parent_id' => $parentId,
+            'user_ip' => request()->ip() ?? '',
+            'user_agent' => request()->userAgent() ?? '',
+            'referrer' => request()->header('referer') ?? '',
+        ]);
+    }
+
+    /**
+     * Get a form key for state management.
+     */
+    protected function getFormKey(string $type, int $commentId): string
+    {
+        return sprintf('%s-%d', $type, $commentId);
+    }
+
+    /**
+     * Toggle form visibility.
+     */
+    protected function toggleForm(string $type, int $commentId, ?string $initialBody = null): void
+    {
+        $key = $this->getFormKey($type, $commentId);
+
+        // Close another form type for the same comment
+        $otherType = $type === 'reply' ? 'edit' : 'reply';
+        $otherKey = $this->getFormKey($otherType, $commentId);
+        unset($this->formStates[$otherKey]);
+
+        if (! isset($this->formStates[$key]['visible'])) {
+            $this->formStates[$key] = [
+                'visible' => true,
+                'body' => $initialBody ?? '',
+            ];
+        } else {
+            $this->formStates[$key]['visible'] = ! $this->formStates[$key]['visible'];
+            if ($this->formStates[$key]['visible'] && $initialBody !== null) {
+                $this->formStates[$key]['body'] = $initialBody;
+            }
+        }
+    }
+
+    /**
+     * Hide a form.
+     */
+    protected function hideForm(string $type, int $commentId): void
+    {
+        $key = $this->getFormKey($type, $commentId);
+        unset($this->formStates[$key]);
+    }
+
+    /**
+     * Get the commentable model's ID.
+     */
+    protected function getCommentableId(): int|string
+    {
+        /** @var Model&Commentable<Model> $model */
+        $model = $this->commentable;
+
+        return $model->getKey();
+    }
+
+    /**
+     * Filter comments based on visibility permissions.
+     *
+     * @param  LengthAwarePaginator<int, Comment>  $comments
+     * @return Collection<int, Comment>
+     */
+    protected function filterVisibleComments(LengthAwarePaginator $comments): Collection
+    {
+        $visibleComments = $comments->getCollection()->filter(
+            fn ($comment) => Gate::forUser(Auth::user())->allows('view', $comment)
+        );
+
+        return $visibleComments->map(function ($comment) {
+            $visibleDescendants = $comment->descendants->filter(
+                fn ($descendant) => Gate::forUser(Auth::user())->allows('view', $descendant)
+            );
+
+            $comment->setRelation('descendants', $visibleDescendants);
+
+            return $comment;
+        });
+    }
+
+    /**
      * Render the component.
      */
     public function render(): View
     {
-        $rootComments = $this->commentable
-            ->rootComments()
+        $query = $this->commentable->rootComments();
+
+        $rootComments = $query
             ->with(['user', 'descendants', 'descendants.user', 'descendants.reactions', 'reactions'])
             ->latest()
             ->paginate(perPage: 10, pageName: 'commentPage');
 
+        $visibleRootComments = $this->filterVisibleComments($rootComments);
+
         return view('livewire.comment-component', [
             'rootComments' => $rootComments,
+            'visibleRootComments' => $visibleRootComments,
         ]);
     }
 }

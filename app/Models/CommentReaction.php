@@ -8,7 +8,20 @@ use Database\Factories\CommentReactionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * CommentReaction Model
+ *
+ * @property int $id
+ * @property int $comment_id
+ * @property int $user_id
+ * @property string $type
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read User $user
+ * @property-read Comment $comment
+ */
 class CommentReaction extends Model
 {
     /** @use HasFactory<CommentReactionFactory> */

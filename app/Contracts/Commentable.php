@@ -17,11 +17,6 @@ use Illuminate\Support\Collection;
 interface Commentable
 {
     /**
-     * Get the ID of this commentable model.
-     */
-    public function getId(): int;
-
-    /**
      * Get all comments for this commentable model.
      *
      * @return MorphMany<Comment, TModel>

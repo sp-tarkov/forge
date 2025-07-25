@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use App\Enums\SpamStatus;
 use App\Observers\CommentObserver;
+use App\Support\Akismet\SpamCheckResult;
 use Database\Factories\CommentFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,8 +27,15 @@ use Illuminate\Support\Carbon;
  * @property int|null $hub_id
  * @property int $user_id
  * @property string $body
+ * @property string $user_ip
+ * @property string $user_agent
+ * @property string $referrer
  * @property int|null $parent_id
  * @property int|null $root_id
+ * @property SpamStatus $spam_status
+ * @property array<string, mixed>|null $spam_metadata
+ * @property Carbon|null $spam_checked_at
+ * @property int $spam_recheck_count
  * @property Carbon|null $edited_at
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
@@ -190,9 +201,142 @@ class Comment extends Model
         });
     }
 
+    /**
+     * Check if this comment has been identified as spam.
+     */
+    public function isSpam(): bool
+    {
+        return $this->spam_status === SpamStatus::SPAM;
+    }
+
+    /**
+     * Check if this comment has been verified as clean (not spam).
+     */
+    public function isSpamClean(): bool
+    {
+        return $this->spam_status === SpamStatus::CLEAN;
+    }
+
+    /**
+     * Check if this comment is awaiting spam verification.
+     */
+    public function isPendingSpamCheck(): bool
+    {
+        return $this->spam_status === SpamStatus::PENDING;
+    }
+
+    /**
+     * Mark this comment as spam.
+     */
+    public function markAsSpam(SpamCheckResult $result, bool $quiet = false): void
+    {
+        $this->spam_status = $result->getSpamStatus();
+        $this->spam_metadata = $result->metadata;
+        $this->spam_checked_at = now();
+
+        if ($quiet) {
+            $this->saveQuietly();
+        } else {
+            $this->save();
+        }
+    }
+
+    /**
+     * Mark this comment as clean (not spam).
+     *
+     * @param  array<string, mixed>  $metadata
+     */
+    public function markAsClean(array $metadata = [], bool $quiet = false): void
+    {
+        $this->spam_status = SpamStatus::CLEAN;
+        $this->spam_metadata = $metadata;
+        $this->spam_checked_at = now();
+
+        if ($quiet) {
+            $this->saveQuietly();
+        } else {
+            $this->save();
+        }
+    }
+
+    /**
+     * Check if this comment can be rechecked for spam.
+     */
+    public function canBeRechecked(): bool
+    {
+        return $this->spam_recheck_count < config('comments.spam.max_recheck_attempts', 3);
+    }
+
+    /**
+     * Mark this comment as ham (not spam).
+     *
+     * Typically used when a moderator manually approves a comment which was incorrectly flagged as spam.
+     */
+    public function markAsHam(bool $quiet = false): void
+    {
+        $this->spam_status = SpamStatus::CLEAN;
+        $this->spam_metadata = ['manually_approved' => true, 'approved_at' => now()->toISOString()];
+        $this->spam_checked_at = now();
+
+        if ($quiet) {
+            $this->saveQuietly();
+        } else {
+            $this->save();
+        }
+    }
+
+    /**
+     * Get the spam confidence score from the last check.
+     *
+     * @return float|null The confidence score (0.0-1.0) or null if not checked
+     */
+    public function getSpamConfidence(): ?float
+    {
+        return $this->spam_metadata['confidence'] ?? null;
+    }
+
+    /**
+     * Scope a query to only include clean (non-spam) comments.
+     *
+     * @param  Builder<Comment>  $query
+     */
+    #[Scope]
+    protected function clean(Builder $query): void
+    {
+        $query->where('spam_status', SpamStatus::CLEAN->value);
+    }
+
+    /**
+     * Scope a query to only include comments marked as spam.
+     *
+     * @param  Builder<Comment>  $query
+     */
+    #[Scope]
+    protected function spam(Builder $query): void
+    {
+        $query->where('spam_status', SpamStatus::SPAM->value);
+    }
+
+    /**
+     * Scope a query to only include comments pending spam verification.
+     *
+     * @param  Builder<Comment>  $query
+     */
+    #[Scope]
+    protected function pendingSpamCheck(Builder $query): void
+    {
+        $query->where('spam_status', SpamStatus::PENDING->value);
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     */
     protected function casts(): array
     {
         return [
+            'spam_status' => SpamStatus::class,
+            'spam_metadata' => 'array',
+            'spam_checked_at' => 'datetime',
             'edited_at' => 'datetime',
             'deleted_at' => 'datetime',
             'created_at' => 'datetime',

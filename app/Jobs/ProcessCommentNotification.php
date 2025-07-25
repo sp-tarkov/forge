@@ -37,12 +37,17 @@ class ProcessCommentNotification implements ShouldQueue
      */
     public function handle(): void
     {
-        // Reload comment to check if it still exists and hasn't been soft deleted
+        // Reload the comment to check if it still exists and hasn't been soft-deleted
         $freshComment = Comment::query()
             ->whereNull('deleted_at')
             ->find($this->comment->id);
 
         if (! $freshComment) {
+            return;
+        }
+
+        // Don't send notifications for spam comments
+        if ($freshComment->isSpam()) {
             return;
         }
 

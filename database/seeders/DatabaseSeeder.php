@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\License;
@@ -132,29 +133,71 @@ class DatabaseSeeder extends Seeder
             label: 'Adding Comments...',
             steps: $mods,
             callback: function (Mod $mod, Progress $progress) use ($allUsers) {
-                // Create 1-20 parent comments
-                $comments = Comment::factory(rand(1, 20))
-                    ->recycle([$mod])
-                    ->recycle($allUsers)
-                    ->create();
+                // Create 1-20 parent comments with varied spam statuses
+                $parentCommentCount = rand(1, 20);
 
-                // For each comment, 30% chance to have replies
-                foreach ($comments as $comment) {
-                    if (rand(0, 9) < 3) { // 30% chance
+                for ($i = 0; $i < $parentCommentCount; $i++) {
+                    // Determine spam status and deletion status
+                    $spamStatus = $this->getRandomSpamStatus();
+                    $isDeleted = rand(0, 100) < 10; // 10% chance to be deleted
+
+                    $commentData = [
+                        'spam_status' => $spamStatus,
+                    ];
+                    if ($isDeleted) {
+                        $commentData['deleted_at'] = now()->subDays(rand(1, 30));
+                    }
+
+                    $comment = Comment::factory()
+                        ->recycle([$mod])
+                        ->recycle($allUsers)
+                        ->make($commentData);
+                    $comment->saveQuietly();
+
+                    // For each comment, 30% chance to have replies
+                    if (rand(0, 9) < 3) {
                         // Create 1-4 replies to the parent comment
-                        $firstLevelReplies = Comment::factory(rand(1, 4))
-                            ->reply($comment)
-                            ->recycle($allUsers)
-                            ->create();
+                        $replyCount = rand(1, 4);
 
-                        // For each first-level reply, 40% chance to have nested replies
-                        foreach ($firstLevelReplies as $reply) {
-                            if (rand(0, 9) < 4) { // 40% chance
+                        for ($j = 0; $j < $replyCount; $j++) {
+                            $replySpamStatus = $this->getRandomSpamStatus();
+                            $replyIsDeleted = rand(0, 100) < 8; // 8% chance for replies to be deleted
+
+                            $replyData = [
+                                'spam_status' => $replySpamStatus,
+                            ];
+                            if ($replyIsDeleted) {
+                                $replyData['deleted_at'] = now()->subDays(rand(1, 15));
+                            }
+
+                            $firstLevelReply = Comment::factory()
+                                ->reply($comment)
+                                ->recycle($allUsers)
+                                ->make($replyData);
+                            $firstLevelReply->saveQuietly();
+
+                            // For each first-level reply, 40% chance to have nested replies
+                            if (rand(0, 9) < 4) {
                                 // Create 1-2 nested replies
-                                Comment::factory(rand(1, 2))
-                                    ->reply($reply)
-                                    ->recycle($allUsers)
-                                    ->create();
+                                $nestedReplyCount = rand(1, 2);
+
+                                for ($k = 0; $k < $nestedReplyCount; $k++) {
+                                    $nestedSpamStatus = $this->getRandomSpamStatus();
+                                    $nestedIsDeleted = rand(0, 100) < 5; // 5% chance for nested replies to be deleted
+
+                                    $nestedData = [
+                                        'spam_status' => $nestedSpamStatus,
+                                    ];
+                                    if ($nestedIsDeleted) {
+                                        $nestedData['deleted_at'] = now()->subDays(rand(1, 7));
+                                    }
+
+                                    $nestedReply = Comment::factory()
+                                        ->reply($firstLevelReply)
+                                        ->recycle($allUsers)
+                                        ->make($nestedData);
+                                    $nestedReply->saveQuietly();
+                                }
                             }
                         }
                     }
@@ -200,5 +243,22 @@ class DatabaseSeeder extends Seeder
         $this->command->outputComponents()->info('Cache cleared');
 
         $this->command->outputComponents()->success('Database seeding complete');
+    }
+
+    /**
+     * Get a random spam status with weighted distribution.
+     */
+    private function getRandomSpamStatus(): SpamStatus
+    {
+        $random = rand(1, 100);
+
+        // 85% clean, 10% pending, 5% spam
+        if ($random <= 85) {
+            return SpamStatus::CLEAN;
+        } elseif ($random <= 95) {
+            return SpamStatus::PENDING;
+        } else {
+            return SpamStatus::SPAM;
+        }
     }
 }

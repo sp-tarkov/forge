@@ -316,14 +316,6 @@ class Mod extends Model implements Commentable
     }
 
     /**
-     * Get the ID of this commentable model.
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
      * Determine if this mod can receive comments.
      * Only published mods can receive comments.
      */

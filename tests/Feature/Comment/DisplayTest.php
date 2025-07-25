@@ -8,53 +8,55 @@ use App\Models\Mod;
 use App\Models\User;
 use Livewire\Livewire;
 
-it('should correctly display the comment count', function (): void {
-    $user = User::factory()->create();
-    $mod = Mod::factory()->create();
-    Comment::factory()->count(5)->create(['commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
+describe('comment display', function (): void {
+    it('should correctly display the comment count', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        Comment::factory()->count(5)->create(['commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
 
-    Livewire::actingAs($user)
-        ->test(CommentComponent::class, ['commentable' => $mod])
-        ->assertSeeHtml('<span class="font-normal text-slate-400">(5)</span>');
-});
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->assertSeeHtml('<span class="font-normal text-slate-400">(5)</span>');
+    });
 
-it('should correctly paginate comments', function (): void {
-    $user = User::factory()->create();
-    $mod = Mod::factory()->create();
-    Comment::factory()->count(15)->create([
-        'commentable_id' => $mod->id,
-        'commentable_type' => $mod::class,
-    ]);
+    it('should correctly paginate comments', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        Comment::factory()->count(15)->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+        ]);
 
-    $test = Livewire::actingAs($user)
-        ->test(CommentComponent::class, ['commentable' => $mod]);
+        $test = Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod]);
 
-    $test->assertViewHas('rootComments', fn ($paginator): bool => $paginator->total() === 15);
+        $test->assertViewHas('rootComments', fn ($paginator): bool => $paginator->total() === 15);
 
-    $this->assertEquals(2, substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
-});
+        $this->assertEquals(2, substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
+    });
 
-it('should display correct commentable display name for user profiles', function (): void {
-    $user = User::factory()->create();
+    it('should display correct commentable display name for user profiles', function (): void {
+        $user = User::factory()->create();
 
-    expect($user->getCommentableDisplayName())->toBe('profile');
-});
+        expect($user->getCommentableDisplayName())->toBe('profile');
+    });
 
-it('should display no comments message before the form when authenticated', function (): void {
-    $user = User::factory()->create();
-    $commentingUser = User::factory()->create();
+    it('should display no comments message before the form when authenticated', function (): void {
+        $user = User::factory()->create();
+        $commentingUser = User::factory()->create();
 
-    $this->actingAs($commentingUser);
+        $this->actingAs($commentingUser);
 
-    $response = Livewire::test('comment-component', ['commentable' => $user]);
+        $response = Livewire::test('comment-component', ['commentable' => $user]);
 
-    // Get the rendered HTML
-    $html = $response->html();
+        // Get the rendered HTML
+        $html = $response->html();
 
-    // Find positions of key elements
-    $noCommentsPos = strpos($html, 'No comments yet');
-    $formPos = strpos($html, 'Post Comment');
+        // Find positions of key elements
+        $noCommentsPos = strpos($html, 'No comments yet');
+        $formPos = strpos($html, 'Post Comment');
 
-    // Assert that "No comments yet" appears before the form
-    expect($noCommentsPos)->toBeLessThan($formPos);
+        // Assert that "No comments yet" appears before the form
+        expect($noCommentsPos)->toBeLessThan($formPos);
+    });
 });

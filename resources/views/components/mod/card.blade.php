@@ -7,12 +7,9 @@
 
 <div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
 
-    <livewire:ribbon
+    <livewire:ribbon.mod
         wire:key="mod-card-ribbon-{{ $section }}-{{ $mod->id }}"
-        :id="$mod->id"
-        :disabled="$mod->disabled"
-        :publishedAt="$mod->published_at"
-        :featured="$mod->featured"
+        :mod="$mod"
         :homepage-featured="$homepageFeatured"
     />
 

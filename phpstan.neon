@@ -13,10 +13,12 @@ parameters:
   excludePaths:
     - tests/**/*
   ignoreErrors:
-    # Can be removed when PHPStan issue is resolved: https://github.com/laravel/framework/pull/55086
+    # Can be removed when PHPStan issue is resolved:
+    # https://github.com/laravel/framework/pull/55086
     - '#Method [\w\\]+::\w+\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany<.*?>\.#'
-    # I have no idea what I'm missing with this one:
-    # https://laracasts.com/discuss/channels/general-discussion/phpstan-with-relations-in-traits-and-interfaces
+
+    # MorphMany relations with traits and interfaces don't play well:
+    # https://laracasts.com/discuss/channels/general-discussion/phpstan-morph-relationship-with-interface-and-trait
     -
         message: '#^Method .*::(comments|rootComments|commentSubscriptions)\(\) should return Illuminate\\Database\\Eloquent\\Relations\\MorphMany<.*> but returns Illuminate\\Database\\Eloquent\\Relations\\MorphMany<.*, \$this\(.*\)>.$#'
         path: app/Traits/HasComments.php

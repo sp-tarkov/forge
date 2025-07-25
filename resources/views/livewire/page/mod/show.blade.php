@@ -61,13 +61,7 @@
                     <livewire:mod.action wire:key="mod-action-show-{{ $mod->id }}" :mod="$mod" />
                 @endcan
 
-                <livewire:ribbon
-                    wire:key="mod-ribbon-show-{{ $mod->id }}"
-                    :id="$mod->id"
-                    :disabled="$mod->disabled"
-                    :publishedAt="$mod->published_at"
-                    :featured="$mod->featured"
-                />
+                <livewire:ribbon.mod wire:key="mod-ribbon-show-{{ $mod->id }}" :mod="$mod" />
 
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div class="grow-0 shrink-0 flex justify-center items-center">

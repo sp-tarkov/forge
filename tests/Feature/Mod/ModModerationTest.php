@@ -21,169 +21,179 @@ beforeEach(function (): void {
     $this->withoutDefer();
 });
 
-it('does not display on mod detail pages for normal users', function (): void {
-    $user = User::factory()->create(['user_role_id' => null]);
+describe('moderation component visibility', function (): void {
+    it('does not display on mod detail pages for normal users', function (): void {
+        $user = User::factory()->create(['user_role_id' => null]);
 
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    $this->actingAs($user)
-        ->get(route('mod.show', [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ]))
-        ->assertDontSeeLivewire(Action::class);
+        $this->actingAs($user)
+            ->get(route('mod.show', [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ]))
+            ->assertDontSeeLivewire(Action::class);
+    });
+
+    it('displays on mod detail pages for administrators', function (): void {
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        $this->actingAs($user)
+            ->get(route('mod.show', [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ]))
+            ->assertSeeLivewire(Action::class);
+    });
+
+    it('mounts the component with the provided mod', function (): void {
+        $mod = Mod::factory()->create();
+
+        Livewire::test(Action::class, ['mod' => $mod])
+            ->assertSet('mod.id', $mod->id);
+    });
 });
 
-it('displays on mod detail pages for administrators', function (): void {
-    $userRole = UserRole::factory()->administrator()->create();
-    $user = User::factory()->create(['user_role_id' => $userRole->id]);
+describe('mod deletion from homepage', function (): void {
+    it('allows administrators to delete a mod from the homepage', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
 
-    $this->actingAs($user)
-        ->get(route('mod.show', [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ]))
-        ->assertSeeLivewire(Action::class);
+        Livewire::actingAs($user)
+            ->test(Homepage::class)
+            ->call('deleteMod', $mod->id);
+
+        expect(Mod::query()->find($mod->id))->toBeNull();
+    });
+
+    it('prevents normal users from deleting a mod from the homepage', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        $user = User::factory()->create(['user_role_id' => null]);
+
+        Livewire::actingAs($user)
+            ->test(Homepage::class)
+            ->call('deleteMod', $mod->id)
+            ->assertForbidden();
+    });
 });
 
-it('mounts the component with the provided mod', function (): void {
-    $mod = Mod::factory()->create();
+describe('mod deletion from mod listing', function (): void {
+    it('allows administrators to delete a mod from the mod listing page', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    Livewire::test(Action::class, ['mod' => $mod])
-        ->assertSet('mod.id', $mod->id);
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+
+        Livewire::actingAs($user)
+            ->test(ModIndex::class)
+            ->call('deleteMod', $mod->id);
+
+        expect(Mod::query()->find($mod->id))->toBeNull();
+    });
+
+    it('prevents normal users from deleting a mod from the mod listing page', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        $user = User::factory()->create(['user_role_id' => null]);
+
+        Livewire::actingAs($user)
+            ->test(ModIndex::class)
+            ->call('deleteMod', $mod->id)
+            ->assertForbidden();
+    });
 });
 
-it('allows administrators to delete a mod from the homepage', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+describe('mod deletion from mod detail page', function (): void {
+    it('allows administrators to delete a mod from the mod detail page', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    $userRole = UserRole::factory()->administrator()->create();
-    $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
 
-    Livewire::actingAs($user)
-        ->test(Homepage::class)
-        ->call('deleteMod', $mod->id);
+        Livewire::actingAs($user)
+            ->test(ModShow::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
+            ->call('deleteMod', $mod->id);
 
-    expect(Mod::query()->find($mod->id))->toBeNull();
+        expect(Mod::query()->find($mod->id))->toBeNull();
+    });
+
+    it('prevents normal users from deleting a mod from the mod detail page', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+
+        $user = User::factory()->create(['user_role_id' => null]);
+
+        Livewire::actingAs($user)
+            ->test(ModShow::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
+            ->call('deleteMod', $mod->id)
+            ->assertForbidden();
+    });
 });
 
-it('prevents normal users from deleting a mod from the homepage', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+describe('mod deletion from user profile', function (): void {
+    it('allows administrators to delete a mod from the user profile mod listing page', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    $user = User::factory()->create(['user_role_id' => null]);
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
 
-    Livewire::actingAs($user)
-        ->test(Homepage::class)
-        ->call('deleteMod', $mod->id)
-        ->assertForbidden();
-});
+        $userProfile = User::factory()->create(['user_role_id' => null]);
 
-it('allows administrators to delete a mod from the mod listing page', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+        Livewire::actingAs($user)
+            ->test(UserShow::class, [
+                'userId' => $userProfile->id,
+                'slug' => $userProfile->slug,
+            ])
+            ->call('deleteMod', $mod->id)
+            ->assertSuccessful();
 
-    $userRole = UserRole::factory()->administrator()->create();
-    $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        expect(Mod::query()->find($mod->id))->toBeNull();
+    });
 
-    Livewire::actingAs($user)
-        ->test(ModIndex::class)
-        ->call('deleteMod', $mod->id);
+    it('prevents normal users from deleting a mod from the user profile mod listing page', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-    expect(Mod::query()->find($mod->id))->toBeNull();
-});
+        $user = User::factory()->create(['user_role_id' => null]);
 
-it('prevents normal users from deleting a mod from the mod listing page', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
+        $userProfile = User::factory()->create(['user_role_id' => null]);
 
-    $user = User::factory()->create(['user_role_id' => null]);
-
-    Livewire::actingAs($user)
-        ->test(ModIndex::class)
-        ->call('deleteMod', $mod->id)
-        ->assertForbidden();
-});
-
-it('allows administrators to delete a mod from the mod detail page', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
-
-    $userRole = UserRole::factory()->administrator()->create();
-    $user = User::factory()->create(['user_role_id' => $userRole->id]);
-
-    Livewire::actingAs($user)
-        ->test(ModShow::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
-        ->call('deleteMod', $mod->id);
-
-    expect(Mod::query()->find($mod->id))->toBeNull();
-});
-
-it('prevents normal users from deleting a mod from the mod detail page', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
-
-    $user = User::factory()->create(['user_role_id' => null]);
-
-    Livewire::actingAs($user)
-        ->test(ModShow::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
-        ->call('deleteMod', $mod->id)
-        ->assertForbidden();
-});
-
-it('allows administrators to delete a mod from the user profile mod listing page', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
-
-    $userRole = UserRole::factory()->administrator()->create();
-    $user = User::factory()->create(['user_role_id' => $userRole->id]);
-
-    $userProfile = User::factory()->create(['user_role_id' => null]);
-
-    Livewire::actingAs($user)
-        ->test(UserShow::class, [
-            'userId' => $userProfile->id,
-            'slug' => $userProfile->slug,
-        ])
-        ->call('deleteMod', $mod->id)
-        ->assertSuccessful();
-
-    expect(Mod::query()->find($mod->id))->toBeNull();
-});
-
-it('prevents normal users from deleting a mod from the user profile mod listing page', function (): void {
-    SptVersion::factory()->create(['version' => '1.0.0']);
-    $mod = Mod::factory()->create();
-    ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
-
-    $user = User::factory()->create(['user_role_id' => null]);
-
-    $userProfile = User::factory()->create(['user_role_id' => null]);
-
-    Livewire::actingAs($user)
-        ->test(UserShow::class, [
-            'userId' => $userProfile->id,
-            'slug' => $userProfile->slug,
-        ])
-        ->call('deleteMod', $mod->id)
-        ->assertForbidden();
+        Livewire::actingAs($user)
+            ->test(UserShow::class, [
+                'userId' => $userProfile->id,
+                'slug' => $userProfile->slug,
+            ])
+            ->call('deleteMod', $mod->id)
+            ->assertForbidden();
+    });
 });

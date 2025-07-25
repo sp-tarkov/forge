@@ -18,11 +18,19 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('comments')->nullOnDelete();
             $table->foreignId('root_id')->nullable()->constrained('comments')->nullOnDelete();
             $table->text('body');
+            $table->string('user_ip', 65)->default('');
+            $table->string('user_agent', 2048)->default('');
+            $table->string('referrer', 2048)->default('');
+            $table->enum('spam_status', ['pending', 'clean', 'spam'])->default('pending');
+            $table->json('spam_metadata')->nullable();
+            $table->timestamp('spam_checked_at')->nullable();
+            $table->unsignedTinyInteger('spam_recheck_count')->default(0);
             $table->timestamp('edited_at')->nullable();
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
 
             $table->index('deleted_at');
+            $table->index(['spam_status', 'created_at']);
         });
     }
 

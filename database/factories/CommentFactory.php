@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -23,6 +24,10 @@ class CommentFactory extends Factory
             'commentable_id' => Mod::factory(),
             'parent_id' => null,
             'body' => fake()->paragraphs(rand(1, 3), true),
+            'spam_status' => SpamStatus::CLEAN,
+            'spam_metadata' => null,
+            'spam_checked_at' => null,
+            'spam_recheck_count' => 0,
             'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
             'updated_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
         ];
