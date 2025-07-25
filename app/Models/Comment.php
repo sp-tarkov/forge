@@ -226,9 +226,9 @@ class Comment extends Model
     }
 
     /**
-     * Mark this comment as spam.
+     * Mark this comment as spam based on Akismet API results.
      */
-    public function markAsSpam(SpamCheckResult $result, bool $quiet = false): void
+    public function markAsSpamFromApiResult(SpamCheckResult $result, bool $quiet = false): void
     {
         $this->spam_status = $result->getSpamStatus();
         $this->spam_metadata = $result->metadata;
@@ -286,13 +286,25 @@ class Comment extends Model
     }
 
     /**
-     * Get the spam confidence score from the last check.
+     * Mark this comment as spam by moderator action.
      *
-     * @return float|null The confidence score (0.0-1.0) or null if not checked
+     * Used when a moderator manually flags a comment as spam without API involvement.
      */
-    public function getSpamConfidence(): ?float
+    public function markAsSpamByModerator(int $moderatorId, bool $quiet = false): void
     {
-        return $this->spam_metadata['confidence'] ?? null;
+        $this->spam_status = SpamStatus::SPAM;
+        $this->spam_metadata = [
+            'manually_marked' => true,
+            'marked_by' => $moderatorId,
+            'marked_at' => now()->toISOString(),
+        ];
+        $this->spam_checked_at = now();
+
+        if ($quiet) {
+            $this->saveQuietly();
+        } else {
+            $this->save();
+        }
     }
 
     /**

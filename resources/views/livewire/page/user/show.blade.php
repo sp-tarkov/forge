@@ -87,7 +87,10 @@
 
                 {{-- Wall --}}
                 <div x-show="selectedTab === 'wall'">
-                    <livewire:comment-component :commentable="$user" />
+                    <livewire:comment-component 
+                        wire:key="comment-component-{{ $user->id }}"
+                        :commentable="$user" 
+                    />
                 </div>
 
                 {{-- Mods --}}

@@ -6,6 +6,7 @@ namespace App\Livewire\Ribbon;
 
 use App\Models\Comment as CommentModel;
 use Illuminate\View\View;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Comment extends Component
@@ -14,6 +15,15 @@ class Comment extends Component
      * The comment model.
      */
     public CommentModel $comment;
+
+    /**
+     * Listen for comment updates and refresh the ribbon.
+     */
+    #[On('comment-updated.{comment.id}')]
+    public function refreshRibbon(): void
+    {
+        $this->comment->refresh();
+    }
 
     /**
      * Render the component.

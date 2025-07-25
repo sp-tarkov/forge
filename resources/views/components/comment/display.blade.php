@@ -26,11 +26,16 @@
                 @endif
             </span>
         </div>
-        @if ($comment->parent_id && $comment->parent)
-            <a href="#{{ $comment->parent->getHashId() }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
-                {{ 'Replying to @' . $comment->parent->user->name }}
-            </a>
-        @endif
+        <div class="flex items-center">
+            @if ($comment->parent_id && $comment->parent)
+                <a href="#{{ $comment->parent->getHashId() }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
+                    {{ 'Replying to @' . $comment->parent->user->name }}
+                </a>
+            @endif
+            @can('viewActions', $comment)
+                <livewire:comment.action :comment="$comment" />
+            @endcan
+        </div>
     </div>
 
     <div class="text-gray-900 dark:text-slate-200 mt-3">

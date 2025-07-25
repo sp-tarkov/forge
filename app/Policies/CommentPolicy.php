@@ -98,7 +98,7 @@ class CommentPolicy
      */
     public function delete(User $user, Comment $comment): bool
     {
-        // Comment must not already be deleted
+        // Comment must not yet be deleted
         if ($comment->isDeleted()) {
             return false;
         }
@@ -112,7 +112,13 @@ class CommentPolicy
      */
     public function restore(User $user, Comment $comment): bool
     {
-        return false;
+        // Comment must be soft-deleted to be restored
+        if (! $comment->isDeleted()) {
+            return false;
+        }
+
+        // Must be moderator or admin
+        return $user->isModOrAdmin();
     }
 
     /**
@@ -145,7 +151,7 @@ class CommentPolicy
      *
      * Ribbons are shown to moderators/admins when:
      * - The comment is not clean (spam or pending), AND
-     * - The comment is spam (always show to mods/admins), OR
+     * - The comment is spam (always shown to mods/admins), OR
      * - The current user is not the comment author (show pending to mods/admins who didn't write it)
      */
     public function seeRibbon(?User $user, Comment $comment): bool
@@ -172,5 +178,89 @@ class CommentPolicy
 
         // Show pending ribbons to mods/admins who are not the comment author
         return $comment->user_id !== $user->id;
+    }
+
+    /**
+     * Determine whether the user can view moderation actions for the comment.
+     */
+    public function viewActions(?User $user, Comment $comment): bool
+    {
+        // Must be logged in
+        if ($user === null) {
+            return false;
+        }
+
+        // Must be moderator or admin
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can soft-delete the comment.
+     */
+    public function softDelete(User $user, Comment $comment): bool
+    {
+        // Comment must not yet be deleted
+        if ($comment->isDeleted()) {
+            return false;
+        }
+
+        // Must be moderator or admin
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can hard delete the comment thread.
+     */
+    public function hardDelete(User $user, Comment $comment): bool
+    {
+        // Comment must not yet be deleted
+        if ($comment->isDeleted()) {
+            return false;
+        }
+
+        // Must be administrator
+        return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can mark the comment as spam.
+     */
+    public function markAsSpam(User $user, Comment $comment): bool
+    {
+        // Comment must not yet be marked as spam
+        if ($comment->isSpam()) {
+            return false;
+        }
+
+        // Must be moderator or admin
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can mark the comment as ham (not spam).
+     */
+    public function markAsHam(User $user, Comment $comment): bool
+    {
+        // Comment must be marked as spam to mark as ham
+        if (! $comment->isSpam()) {
+            return false;
+        }
+
+        // Must be moderator or admin
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can check the comment for spam using Akismet.
+     */
+    public function checkForSpam(User $user, Comment $comment): bool
+    {
+        // Must be moderator or admin
+        if (! $user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Can only check if we haven't exceeded max attempts
+        return $comment->canBeRechecked();
     }
 }

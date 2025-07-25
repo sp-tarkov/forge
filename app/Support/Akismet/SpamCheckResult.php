@@ -23,7 +23,7 @@ readonly class SpamCheckResult
     ) {}
 
     /**
-     * Determine if this comment should be auto-deleted (based on discard flag).
+     * Determine if this comment should be auto-deleted (based on the discard flag).
      */
     public function shouldAutoDelete(): bool
     {

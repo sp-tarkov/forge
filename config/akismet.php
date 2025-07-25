@@ -14,8 +14,6 @@ return [
 
     // Auto-moderation settings
     'auto_moderate' => env('AKISMET_AUTO_MODERATE', false),
-    'confidence_threshold' => env('AKISMET_CONFIDENCE_THRESHOLD', 0.8),
-    'auto_delete_threshold' => env('AKISMET_AUTO_DELETE_THRESHOLD', 0.95),
 
     // How long to keep spam comments in quarantine (days)
     'quarantine_days' => env('SPAM_QUARANTINE_DAYS', 30),

@@ -88,9 +88,9 @@ class CheckCommentForSpam implements ShouldQueue
         }
 
         // Comment is spam.
-        $this->comment->markAsSpam($result, quiet: true);
+        $this->comment->markAsSpamFromApiResult($result, quiet: true);
 
-        // Auto-delete high confidence spam.
+        // Auto-delete spam marked for discard.
         if ($result->shouldAutoDelete()) {
             $this->comment->delete();
 

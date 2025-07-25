@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
@@ -560,6 +561,20 @@ class CommentComponent extends Component
 
             return $comment;
         });
+    }
+
+    /**
+     * Handle comment moderation updates.
+     */
+    #[On('comment-moderation-refresh')]
+    public function refreshComments(): void
+    {
+        // Clear cached computed properties
+        unset($this->commentCount);
+        unset($this->userReactionIds);
+
+        // Force a component refresh
+        $this->dispatch('$refresh');
     }
 
     /**
