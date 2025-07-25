@@ -161,6 +161,10 @@ describe('mod visibility on profile', function (): void {
 });
 
 describe('profile wall comments', function (): void {
+    beforeEach(function (): void {
+        config()->set('honeypot.enabled', false);
+    });
+
     it('shows the comment component on the wall tab', function (): void {
         $user = User::factory()->create();
 
