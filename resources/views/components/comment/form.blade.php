@@ -1,6 +1,7 @@
 @props(['formKey', 'submitAction', 'placeholder', 'submitText', 'cancelAction' => null])
 
 <form wire:submit.prevent="{{ $submitAction }}">
+    <x-honeypot livewire-model="honeypotData" />
     <flux:textarea
         name="body"
         wire:model="{{ $formKey }}"

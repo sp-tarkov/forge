@@ -9,6 +9,10 @@ use App\Models\User;
 use App\Models\UserRole;
 use Livewire\Livewire;
 
+beforeEach(function (): void {
+    config()->set('honeypot.enabled', false);
+});
+
 describe('guest permissions', function (): void {
     it('should not allow a guest to create a comment', function (): void {
         $mod = Mod::factory()->create();

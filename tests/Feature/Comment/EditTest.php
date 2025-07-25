@@ -9,6 +9,10 @@ use App\Models\User;
 use App\Models\UserRole;
 use Livewire\Livewire;
 
+beforeEach(function (): void {
+    config()->set('honeypot.enabled', false);
+});
+
 describe('basic editing', function (): void {
     it('should allow a user to update their own comment', function (): void {
         $user = User::factory()->create();

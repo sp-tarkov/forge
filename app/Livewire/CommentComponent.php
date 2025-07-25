@@ -20,12 +20,15 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
+use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 /**
  * Single component for managing all comment functionality.
  */
 class CommentComponent extends Component
 {
+    use UsesSpamProtection;
     use WithPagination;
 
     /**
@@ -34,6 +37,11 @@ class CommentComponent extends Component
      * @var Commentable<Mod|User>
      */
     public Commentable $commentable;
+
+    /**
+     * The honeypot data to be validated.
+     */
+    public HoneypotData $honeypotData;
 
     /**
      * Body for new root comment.
@@ -64,6 +72,7 @@ class CommentComponent extends Component
      */
     public function mount(): void
     {
+        $this->honeypotData = new HoneypotData;
         $this->initializeSubscriptionStatus();
         $this->initializeShowRepliesState();
     }
@@ -113,6 +122,7 @@ class CommentComponent extends Component
     public function createComment(): void
     {
         $this->authorize('create', [Comment::class, $this->commentable]);
+        $this->protectAgainstSpam();
 
         if (! $this->checkRateLimit('newCommentBody')) {
             return;
@@ -138,6 +148,7 @@ class CommentComponent extends Component
     public function createReply(int $parentId): void
     {
         $this->authorize('create', [Comment::class, $this->commentable]);
+        $this->protectAgainstSpam();
 
         $formKey = $this->getFormKey('reply', $parentId);
         $fieldKey = sprintf('formStates.%s.body', $formKey);
@@ -171,6 +182,7 @@ class CommentComponent extends Component
     {
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('update', $comment);
+        $this->protectAgainstSpam();
 
         $formKey = $this->getFormKey('edit', $comment->id);
         $fieldKey = sprintf('formStates.%s.body', $formKey);

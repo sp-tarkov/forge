@@ -10,6 +10,10 @@ use App\Models\UserRole;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
+beforeEach(function (): void {
+    config()->set('honeypot.enabled', false);
+});
+
 describe('guest restrictions', function (): void {
     it('should not show reply button to guests', function (): void {
         $mod = Mod::factory()->create();
