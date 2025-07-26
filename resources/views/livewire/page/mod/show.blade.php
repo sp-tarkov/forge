@@ -168,7 +168,7 @@
                 </div>
 
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'">
+                <div id="comments" x-show="selectedTab === 'comments'">
                     <livewire:comment-component
                         wire:key="comment-component-{{ $mod->id }}"
                         :commentable="$mod"
