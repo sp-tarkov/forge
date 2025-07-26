@@ -213,11 +213,6 @@ class CommentPolicy
      */
     public function hardDelete(User $user, Comment $comment): bool
     {
-        // Comment must not yet be deleted
-        if ($comment->isDeleted()) {
-            return false;
-        }
-
         // Must be administrator
         return $user->isAdmin();
     }

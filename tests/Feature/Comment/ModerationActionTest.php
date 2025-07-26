@@ -199,6 +199,47 @@ describe('hard delete action', function (): void {
             ->call('hardDeleteThread')
             ->assertForbidden();
     });
+
+    it('allows administrators to hard delete soft-deleted comments', function (): void {
+        $admin = createAdministrator();
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+        $comment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $user->id,
+            'deleted_at' => now(), // Soft-deleted comment
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(Action::class, ['comment' => $comment])
+            ->call('hardDeleteThread')
+            ->assertDispatched('comment-deleted.'.$comment->id)
+            ->assertDispatched('comment-moderation-refresh');
+
+        expect(Comment::query()->find($comment->id))->toBeNull();
+    });
+
+    it('prevents moderators from hard deleting soft-deleted comments', function (): void {
+        $moderator = createModerator();
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+        $comment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $user->id,
+            'deleted_at' => now(), // Soft-deleted comment
+        ]);
+
+        $this->actingAs($moderator);
+
+        Livewire::test(Action::class, ['comment' => $comment])
+            ->call('hardDeleteThread')
+            ->assertForbidden();
+    });
 });
 
 describe('mark as spam action', function (): void {
