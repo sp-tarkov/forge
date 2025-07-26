@@ -17,7 +17,7 @@
             pollingInterval = null;
         }
     ">
-    <flux:dropdown position="bottom" align="end" class="absolute top-0 right-0">
+    <flux:dropdown position="bottom" align="end" class="absolute -top-5 -right-5">
         <flux:button icon="cog-8-tooth" :loading="$this->spamCheckInProgress" />
         <flux:menu>
             @can('viewActions', $comment)
