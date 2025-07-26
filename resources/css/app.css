@@ -72,6 +72,42 @@ button {
 }
 
 .user-markdown {
+
+    &.deleted {
+        @apply mt-1 text-red-500 dark:text-red-400;
+    }
+
+    .deleted {
+        @apply text-red-500 dark:text-red-400;
+
+        & * {
+            color: var(--color-red-500) !important;
+        }
+
+        .dark & * {
+            color: var(--color-red-400) !important;
+        }
+
+        & a {
+            color: var(--color-red-500) !important;
+            &:hover {
+                color: var(--color-red-500) !important;
+            }
+        }
+
+        .dark & a {
+            color: var(--color-red-400) !important;
+            &:hover {
+                color: var(--color-red-400) !important;
+            }
+        }
+
+        & img {
+            filter: grayscale(100%) !important;
+            opacity: 0.7;
+        }
+    }
+
     a {
         @apply underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors break-all;
     }
@@ -119,8 +155,7 @@ button {
     hr {
         border: 0;
         height: 2px;
-        background: #333;
-        background-image: linear-gradient(to right, var(--color-gray-950), var(--color-cyan-600), var(--color-gray-950));
+        background: #333 linear-gradient(to right, var(--color-gray-950), var(--color-cyan-600), var(--color-gray-950));
         margin: 1rem 0;
     }
 

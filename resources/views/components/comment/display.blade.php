@@ -38,15 +38,15 @@
         </div>
     </div>
 
-    <div class="text-gray-900 dark:text-slate-200 mt-3">
+    <div class="user-markdown text-gray-900 dark:text-slate-200 mt-3">
         @if ($comment->isDeleted())
             @if (auth()->check() && auth()->user()->isModOrAdmin())
                 <div>
                     <span class="text-gray-500 dark:text-gray-400 italic">
                         {{ __('Comment was deleted on') }} {{ $comment->deleted_at->format('Y-m-d H:i:s') }}:
                     </span>
-                    <div class="text-red-500 dark:text-red-400 mt-1">
-                        {!! Illuminate\Support\Str::markdown($comment->body) !!}
+                    <div class="deleted">
+                        {!! $comment->body_html !!}
                     </div>
                 </div>
             @else
@@ -55,14 +55,14 @@
                 </span>
             @endif
         @else
-            {!! Illuminate\Support\Str::markdown($comment->body) !!}
+            {!! $comment->body_html !!}
         @endif
     </div>
 
-    <x-comment.actions 
-        :comment="$comment" 
-        :manager="$manager" 
-        :show-replies-toggle="$comment->isRoot()" 
+    <x-comment.actions
+        :comment="$comment"
+        :manager="$manager"
+        :show-replies-toggle="$comment->isRoot()"
     />
 
     {{-- Reply Form --}}
@@ -70,7 +70,7 @@
         <div class="mt-4">
             <flux:separator text="Reply To Comment" />
             <div class="mt-2.5">
-                <x-comment.form 
+                <x-comment.form
                     form-key="formStates.reply-{{ $comment->id }}.body"
                     submit-action="createReply({{ $comment->id }})"
                     submit-text="{{ __('Post Reply') }}"
@@ -85,7 +85,7 @@
         <div class="mt-4">
             <flux:separator text="Edit Comment" />
             <div class="mt-2.5">
-                <x-comment.form 
+                <x-comment.form
                     form-key="formStates.edit-{{ $comment->id }}.body"
                     submit-action="updateComment({{ $comment->id }})"
                     submit-text="{{ __('Update Comment') }}"
