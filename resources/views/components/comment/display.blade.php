@@ -33,7 +33,7 @@
                 </a>
             @endif
             @can('viewActions', $comment)
-                <livewire:comment.action :comment="$comment" />
+                <livewire:comment.action wire:key="action-{{ $comment->id }}" :comment="$comment" />
             @endcan
         </div>
     </div>
