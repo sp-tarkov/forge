@@ -249,6 +249,32 @@ class CommentComponent extends Component
     }
 
     /**
+     * Pin a comment.
+     */
+    public function pinComment(Comment $comment): void
+    {
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('pin', $comment);
+
+        $comment->update(['pinned_at' => now()]);
+
+        $this->dispatch('$refresh');
+    }
+
+    /**
+     * Unpin a comment.
+     */
+    public function unpinComment(Comment $comment): void
+    {
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('pin', $comment);
+
+        $comment->update(['pinned_at' => null]);
+
+        $this->dispatch('$refresh');
+    }
+
+    /**
      * Toggle subscription to comment notifications for this commentable.
      */
     public function toggleSubscription(): void
@@ -582,11 +608,7 @@ class CommentComponent extends Component
      */
     public function render(): View
     {
-        $query = $this->commentable->rootComments();
-
-        $rootComments = $query
-            ->with(['user', 'descendants', 'descendants.user', 'descendants.reactions', 'reactions'])
-            ->latest()
+        $rootComments = $this->commentable->rootComments()
             ->paginate(perPage: 10, pageName: 'commentPage');
 
         $visibleRootComments = $this->filterVisibleComments($rootComments);

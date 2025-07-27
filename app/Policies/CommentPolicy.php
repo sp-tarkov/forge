@@ -258,4 +258,72 @@ class CommentPolicy
         // Can only check if we haven't exceeded max attempts
         return $comment->canBeRechecked();
     }
+
+    /**
+     * Determine whether the user can pin or unpin the comment.
+     */
+    public function pin(User $user, Comment $comment): bool
+    {
+        // Only root comments can be pinned
+        if (! $comment->isRoot()) {
+            return false;
+        }
+
+        // Moderators and admins can always pin/unpin
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        // For mod comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Mod::class) {
+            /** @var Mod $mod */
+            $mod = $comment->commentable;
+
+            // Check if the user is the mod owner
+            if ($mod->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the mod authors
+            if ($mod->authors->contains($user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the user should see the pin action in the comment actions (for mod authors/owners).
+     */
+    public function showOwnerPinAction(User $user, Comment $comment): bool
+    {
+        // Only root comments can be pinned
+        if (! $comment->isRoot()) {
+            return false;
+        }
+
+        // Don't show to moderators/admins (they use the moderation dropdown)
+        if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // For mod comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Mod::class) {
+            /** @var Mod $mod */
+            $mod = $comment->commentable;
+
+            // Check if the user is the mod owner
+            if ($mod->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the mod authors
+            if ($mod->authors->contains($user)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

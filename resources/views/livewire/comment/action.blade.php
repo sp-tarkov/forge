@@ -17,11 +17,18 @@
             pollingInterval = null;
         }
     ">
-    <flux:dropdown position="bottom" align="end" class="absolute -top-5 -right-5">
-        <flux:button icon="cog-8-tooth" :loading="$this->spamCheckInProgress" />
+    <flux:dropdown position="bottom" align="end" class="absolute -top-4.5 -right-4.5">
+        <flux:button icon="cog-8-tooth" size="sm" :loading="$this->spamCheckInProgress" />
         <flux:menu>
             @can('viewActions', $comment)
                 <flux:menu.group heading="Comment Actions">
+                    @can('pin', $comment)
+                        <flux:menu.item
+                            wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}"
+                            icon:trailing="{{ $comment->isPinned() ? 'bookmark-slash' : 'bookmark' }}">
+                            {{ $comment->isPinned() ? 'Unpin Comment' : 'Pin Comment' }}
+                        </flux:menu.item>
+                    @endcan
                     @if ($comment->isDeleted())
                         @can('restore', $comment)
                             <flux:menu.item x-on:click.prevent="$wire.confirmCommentRestore = true" icon:trailing="arrow-path">Restore Comment</flux:menu.item>

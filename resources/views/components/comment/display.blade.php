@@ -25,6 +25,12 @@
                     <span class="text-gray-500 dark:text-gray-400" title="{{ $comment->edited_at->format('Y-m-d H:i:s') }}">*</span>
                 @endif
             </span>
+            @if ($comment->isPinned())
+                <span class="ml-2 inline-flex items-center gap-1 text-xs text-blue-500 relative top-0.5">
+                    <flux:icon.bookmark variant="micro" class="size-4" />
+                    {{ __('Pinned') }}
+                </span>
+            @endif
         </div>
         <div class="flex items-center">
             @if ($comment->parent_id && $comment->parent)
@@ -33,7 +39,7 @@
                 </a>
             @endif
             @can('viewActions', $comment)
-                <livewire:comment.action wire:key="action-{{ $comment->id }}" :comment="$comment" />
+                <livewire:comment.action wire:key="action-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}" :comment="$comment" />
             @endcan
         </div>
     </div>

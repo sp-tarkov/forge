@@ -38,6 +38,8 @@ trait HasComments
         return $this->morphMany(Comment::class, 'commentable')
             ->whereNull('parent_id')
             ->whereNull('root_id')
+            ->with(['user', 'descendants', 'descendants.user', 'descendants.reactions', 'reactions'])
+            ->orderByRaw('pinned_at IS NULL, pinned_at DESC')
             ->orderBy('created_at', 'desc');
     }
 

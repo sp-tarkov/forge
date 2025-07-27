@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Services\CommentSpamChecker;
 use Illuminate\View\View;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Action extends Component
@@ -225,6 +226,49 @@ class Action extends Component
             // Stop polling
             $this->dispatch('stop-spam-check-polling');
         }
+    }
+
+    /**
+     * Pin the comment.
+     */
+    public function pinComment(): void
+    {
+        $this->authorize('pin', $this->comment);
+
+        $this->comment->update(['pinned_at' => now()]);
+        $this->comment->refresh();
+
+        // Send events to refresh related components.
+        $this->dispatch('comment-updated.'.$this->comment->id, pinned: true);
+        $this->dispatch('comment-moderation-refresh');
+
+        flash()->success('Comment successfully pinned!');
+    }
+
+    /**
+     * Unpin the comment.
+     */
+    public function unpinComment(): void
+    {
+        $this->authorize('pin', $this->comment);
+
+        $this->comment->update(['pinned_at' => null]);
+        $this->comment->refresh();
+
+        // Send events to refresh related components.
+        $this->dispatch('comment-updated.'.$this->comment->id, pinned: false);
+        $this->dispatch('comment-moderation-refresh');
+
+        flash()->success('Comment successfully unpinned!');
+    }
+
+    /**
+     * Handle comment updates from other components.
+     */
+    #[On('comment-updated.{comment.id}')]
+    public function handleCommentUpdate(): void
+    {
+        $this->comment->refresh();
     }
 
     /**

@@ -27,10 +27,12 @@ return new class extends Migration
             $table->unsignedTinyInteger('spam_recheck_count')->default(0);
             $table->timestamp('edited_at')->nullable();
             $table->timestamp('deleted_at')->nullable();
+            $table->timestamp('pinned_at')->nullable();
             $table->timestamps();
 
             $table->index('deleted_at');
             $table->index(['spam_status', 'created_at']);
+            $table->index('pinned_at');
         });
     }
 

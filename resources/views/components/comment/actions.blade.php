@@ -68,6 +68,14 @@
             </button>
         @endcan
 
+        @can('showOwnerPinAction', $comment)
+            <button type="button"
+                    wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"
+                    class="hover:underline cursor-pointer text-xs text-blue-500">
+                {{ $comment->isPinned() ? __('Unpin') : __('Pin') }}
+            </button>
+        @endcan
+
         @if (auth()->check())
             <button type="button"
                     wire:click="toggleReplyForm({{ $comment->id }})"

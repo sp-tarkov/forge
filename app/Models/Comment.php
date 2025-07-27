@@ -41,6 +41,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $spam_recheck_count
  * @property Carbon|null $edited_at
  * @property Carbon|null $deleted_at
+ * @property Carbon|null $pinned_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User $user
@@ -141,6 +142,14 @@ class Comment extends Model
     public function isDeleted(): bool
     {
         return $this->deleted_at !== null;
+    }
+
+    /**
+     * Check if this comment is pinned.
+     */
+    public function isPinned(): bool
+    {
+        return $this->pinned_at !== null;
     }
 
     /**
@@ -368,6 +377,7 @@ class Comment extends Model
             'spam_checked_at' => 'datetime',
             'edited_at' => 'datetime',
             'deleted_at' => 'datetime',
+            'pinned_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

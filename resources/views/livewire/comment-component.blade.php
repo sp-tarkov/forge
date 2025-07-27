@@ -42,9 +42,9 @@
     @endif
 
     @foreach ($visibleRootComments as $comment)
-        <div wire:key="comment-container-{{ $comment->id }}" class="relative mb-4 last:mb-0">
-            <livewire:ribbon.comment wire:key="ribbon-comment-{{ $comment->id }}" :comment="$comment" />
-            <div wire:key="comment-{{ $comment->id }}"
+        <div wire:key="comment-container-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}" class="relative mb-4 last:mb-0">
+            <livewire:ribbon.comment wire:key="ribbon-comment-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}" :comment="$comment" />
+            <div wire:key="comment-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}"
                  x-data="{ showReplies: $persist({{ ($showReplies[$comment->id] ?? true) ? 'true' : 'false' }}).as('comment-replies-{{ $comment->id }}') }"
                  class="p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
 
@@ -55,10 +55,9 @@
                          x-collapse
                          class="mt-4 space-y-4">
                         @foreach ($comment->descendants as $descendant)
-                            <div wire:key="descendant-container-{{ $descendant->id }}" class="relative">
-                                <livewire:ribbon.comment wire:key="ribbon-descendant-{{ $descendant->id }}" :comment="$descendant" />
-                                <div wire:key="comment-{{ $descendant->id }}"
-                                     class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
+                            <div wire:key="descendant-container-{{ $descendant->id }}-{{ $descendant->updated_at->timestamp }}" class="relative">
+                                <livewire:ribbon.comment wire:key="ribbon-descendant-{{ $descendant->id }}-{{ $descendant->updated_at->timestamp }}" :comment="$descendant" />
+                                <div wire:key="descendant-{{ $descendant->id }}-{{ $descendant->updated_at->timestamp }}" class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600">
                                     <x-comment.display :comment="$descendant" :manager="$this" :is-reply="true" :commentable="$commentable" />
                                 </div>
                             </div>
