@@ -305,7 +305,7 @@ describe('moderator and admin visibility', function (): void {
         Livewire::test(CommentComponent::class, ['commentable' => $mod])
             ->assertSee('Comment was deleted on')
             ->assertSee('This comment will be deleted')
-            ->assertSee('text-red-500', false); // Check for red text class
+            ->assertSee('class="deleted"', false); // Check for deleted class that applies red styling
     });
 
     it('shows deleted comment text to administrators in red', function (): void {
@@ -327,7 +327,7 @@ describe('moderator and admin visibility', function (): void {
         Livewire::test(CommentComponent::class, ['commentable' => $mod])
             ->assertSee('Comment was deleted on')
             ->assertSee('This admin-viewable deleted comment')
-            ->assertSee('text-red-500', false); // Check for red text class
+            ->assertSee('class="deleted"', false); // Check for deleted class that applies red styling
     });
 
     it('hides deleted comment text from regular users', function (): void {

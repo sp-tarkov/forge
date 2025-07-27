@@ -60,9 +60,9 @@ describe('SPT Version API', function (): void {
     });
 
     it('filters SPT versions by id', function (): void {
-        $v1 = SptVersion::factory()->create();
-        $v2 = SptVersion::factory()->create();
-        $v3 = SptVersion::factory()->create();
+        $v1 = SptVersion::factory()->create(['version' => '5.1.0']);
+        $v2 = SptVersion::factory()->create(['version' => '5.2.0']);
+        $v3 = SptVersion::factory()->create(['version' => '5.3.0']);
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/spt/versions?filter[id]=%d,%d', $v1->id, $v3->id));
 
