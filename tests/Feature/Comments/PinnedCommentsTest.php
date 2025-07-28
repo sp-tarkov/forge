@@ -13,8 +13,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-describe('Pin Authorization', function () {
-    it('allows mod owners to pin comments', function () {
+describe('Pin Authorization', function (): void {
+    it('allows mod owners to pin comments', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         ModVersion::factory()->recycle($mod)->create();
@@ -34,7 +34,7 @@ describe('Pin Authorization', function () {
         expect($comment->fresh()->isPinned())->toBeTrue();
     });
 
-    it('allows mod authors to pin comments', function () {
+    it('allows mod authors to pin comments', function (): void {
         $author = User::factory()->create();
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
@@ -50,7 +50,7 @@ describe('Pin Authorization', function () {
         expect($author->can('pin', $comment))->toBeTrue();
     });
 
-    it('allows moderators to pin comments', function () {
+    it('allows moderators to pin comments', function (): void {
         $moderatorRole = UserRole::factory()->moderator()->create();
         $moderator = User::factory()->create();
         $moderator->assignRole($moderatorRole);
@@ -68,7 +68,7 @@ describe('Pin Authorization', function () {
         expect($moderator->can('pin', $comment))->toBeTrue();
     });
 
-    it('allows administrators to pin comments', function () {
+    it('allows administrators to pin comments', function (): void {
         $adminRole = UserRole::factory()->administrator()->create();
         $admin = User::factory()->create();
         $admin->assignRole($adminRole);
@@ -86,7 +86,7 @@ describe('Pin Authorization', function () {
         expect($admin->can('pin', $comment))->toBeTrue();
     });
 
-    it('prevents regular users from pinning comments', function () {
+    it('prevents regular users from pinning comments', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
@@ -101,7 +101,7 @@ describe('Pin Authorization', function () {
         expect($user->can('pin', $comment))->toBeFalse();
     });
 
-    it('prevents pinning reply comments', function () {
+    it('prevents pinning reply comments', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         ModVersion::factory()->recycle($mod)->create();
@@ -135,8 +135,8 @@ describe('Pin Authorization', function () {
     });
 });
 
-describe('Pin Ordering', function () {
-    it('displays pinned comments first', function () {
+describe('Pin Ordering', function (): void {
+    it('displays pinned comments first', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
 
@@ -173,7 +173,7 @@ describe('Pin Ordering', function () {
         expect($comments->get(2)->id)->toBe($oldComment->id);
     });
 
-    it('orders multiple pinned comments by pin time', function () {
+    it('orders multiple pinned comments by pin time', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
 
@@ -206,8 +206,8 @@ describe('Pin Ordering', function () {
     });
 });
 
-describe('Pin Functionality', function () {
-    it('allows unpinning comments', function () {
+describe('Pin Functionality', function (): void {
+    it('allows unpinning comments', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         ModVersion::factory()->recycle($mod)->create();
@@ -231,8 +231,8 @@ describe('Pin Functionality', function () {
     });
 });
 
-describe('Pin Action Visibility', function () {
-    it('shows owner pin actions correctly based on user role', function () {
+describe('Pin Action Visibility', function (): void {
+    it('shows owner pin actions correctly based on user role', function (): void {
         $owner = User::factory()->create();
         $author = User::factory()->create();
         $regularUser = User::factory()->create();
