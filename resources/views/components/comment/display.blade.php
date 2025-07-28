@@ -26,7 +26,7 @@
                 @endif
             </span>
             @if ($comment->isPinned())
-                <span class="ml-2 inline-flex items-center gap-1 text-xs text-blue-500 relative top-0.5">
+                <span class="ml-2 inline-flex items-center gap-1 text-xs text-cyan-500 relative top-0.5">
                     <flux:icon.bookmark variant="micro" class="size-4" />
                     {{ __('Pinned') }}
                 </span>
