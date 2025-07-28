@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\License;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -25,7 +26,7 @@ return new class extends Migration
             $table->string('teaser');
             $table->longText('description');
             $table->string('thumbnail')->default('');
-            $table->foreignIdFor('licenses')
+            $table->foreignIdFor(License::class)
                 ->nullable()
                 ->default(null)
                 ->constrained('licenses')
