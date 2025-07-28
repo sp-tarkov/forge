@@ -206,10 +206,10 @@ Term 2 with *inline markup*
 
 {.endtabset}
 
-### Custom Styled Containers
+### Custom-Styled Containers
 
 ::: information
-*thar be information*
+*some information is here*
 :::
 
 ::: warning
@@ -217,7 +217,7 @@ Term 2 with *inline markup*
 :::
 
 ::: success
-*dragons be ded*
+*dragons be dead*
 :::
 
 ::: error

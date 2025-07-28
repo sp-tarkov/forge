@@ -193,7 +193,7 @@ it('handles an empty SPT versions array correctly', function (): void {
     expect($filteredMods)->toHaveCount(2); // Modify this assertion to reflect your desired behavior
 });
 
-it('does not show disabled mods to unauthorised users', function (): void {
+it('does not show disabled mods to unauthorized users', function (): void {
     // Create the SPT versions
     $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
 
