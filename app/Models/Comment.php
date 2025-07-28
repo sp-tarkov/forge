@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use App\Contracts\Reportable;
 use App\Enums\SpamStatus;
 use App\Observers\CommentObserver;
 use App\Support\Akismet\SpamCheckResult;
-use App\Traits\Reportable;
+use App\Traits\HasReports;
 use Database\Factories\CommentFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Stevebauman\Purify\Facades\Purify;
 
 /**
@@ -54,13 +56,13 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Comment|null $root
  */
 #[ObservedBy([CommentObserver::class])]
-class Comment extends Model
+class Comment extends Model implements Reportable
 {
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
 
-    /** @use Reportable<Comment> */
-    use Reportable;
+    /** @use HasReports<Comment> */
+    use HasReports;
 
     /**
      * The relationship between a comment and it's user.
@@ -368,6 +370,38 @@ class Comment extends Model
     protected function pendingSpamCheck(Builder $query): void
     {
         $query->where('spam_status', SpamStatus::PENDING->value);
+    }
+
+    /**
+     * Get a human-readable display name for the reportable model.
+     */
+    public function getReportableDisplayName(): string
+    {
+        return 'comment';
+    }
+
+    /**
+     * Get the title of the reportable model.
+     */
+    public function getReportableTitle(): string
+    {
+        return 'comment #'.$this->id;
+    }
+
+    /**
+     * Get an excerpt of the reportable content for display in notifications.
+     */
+    public function getReportableExcerpt(): ?string
+    {
+        return $this->body ? Str::words($this->body, 15, '...') : null;
+    }
+
+    /**
+     * Get the URL to view the reportable content.
+     */
+    public function getReportableUrl(): string
+    {
+        return $this->getUrl();
     }
 
     /**

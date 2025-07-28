@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  *
  * @mixin TModel
  */
-trait Reportable
+trait HasReports
 {
     /**
      * The relationship between a model and its reports.

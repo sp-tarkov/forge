@@ -7,9 +7,12 @@ namespace App\Livewire;
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
 use App\Models\Report;
+use App\Models\User;
+use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -76,7 +79,7 @@ class ReportComponent extends Component
             'context' => 'nullable|string|max:1000',
         ]);
 
-        Report::query()->create([
+        $report = Report::query()->create([
             'reporter_id' => Auth::id(),
             'reportable_type' => $this->reportable::class,
             'reportable_id' => $this->reportable->getKey(),
@@ -84,6 +87,15 @@ class ReportComponent extends Component
             'context' => $this->context,
             'status' => ReportStatus::PENDING,
         ]);
+
+        // Notify all moderators and administrators
+        $moderatorsAndAdmins = User::query()
+            ->whereHas('role', function ($query): void {
+                $query->whereIn('name', ['moderator', 'administrator']);
+            })
+            ->get();
+
+        Notification::send($moderatorsAndAdmins, new ReportSubmittedNotification($report));
 
         // Reset form fields
         $this->reset(['reason', 'context']);

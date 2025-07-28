@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use App\Contracts\Reportable;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
-use App\Traits\Reportable;
+use App\Traits\HasReports;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -64,7 +65,7 @@ use SensitiveParameter;
  *
  * @implements Commentable<self>
  */
-class User extends Authenticatable implements Commentable, MustVerifyEmail
+class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable
 {
     use Bannable;
     use HasApiTokens;
@@ -78,11 +79,11 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail
     use HasFactory;
 
     use HasProfilePhoto;
+
+    /** @use HasReports<User> */
+    use HasReports;
+
     use Notifiable;
-
-    /** @use Reportable<User> */
-    use Reportable;
-
     use Searchable;
     use TwoFactorAuthenticatable;
 
@@ -474,5 +475,37 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail
     public function getCommentTabHash(): ?string
     {
         return 'wall';
+    }
+
+    /**
+     * Get a human-readable display name for the reportable model.
+     */
+    public function getReportableDisplayName(): string
+    {
+        return 'user profile';
+    }
+
+    /**
+     * Get the title of the reportable model.
+     */
+    public function getReportableTitle(): string
+    {
+        return $this->name ?? 'user #'.$this->id;
+    }
+
+    /**
+     * Get an excerpt of the reportable content for display in notifications.
+     */
+    public function getReportableExcerpt(): ?string
+    {
+        return $this->about ? Str::words($this->about, 15, '...') : null;
+    }
+
+    /**
+     * Get the URL to view the reportable content.
+     */
+    public function getReportableUrl(): string
+    {
+        return $this->profile_url;
     }
 }

@@ -9,7 +9,10 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\Report;
 use App\Models\User;
+use App\Models\UserRole;
+use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -409,6 +412,117 @@ describe('ReportComponent', function (): void {
 
             expect($component->get('showFormModal'))->toBeFalse();
             expect($component->get('showThankYouModal'))->toBeTrue();
+        });
+    });
+
+    describe('Notifications', function (): void {
+        it('sends notifications to moderators and administrators when report is submitted', function (): void {
+            Notification::fake();
+
+            // Create user roles
+            $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
+            $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+            $userRole = UserRole::factory()->create(['name' => 'user']);
+
+            // Create users with different roles
+            $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+            $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
+            $regularUser = User::factory()->create(['user_role_id' => $userRole->id]);
+            $reporter = User::factory()->create(['user_role_id' => $userRole->id]);
+
+            $mod = Mod::factory()->create();
+
+            Livewire::actingAs($reporter)
+                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->set('reason', ReportReason::SPAM)
+                ->set('context', 'This is spam content')
+                ->call('submit')
+                ->assertHasNoErrors();
+
+            // Should notify moderators and administrators
+            Notification::assertSentTo([$moderator, $admin], ReportSubmittedNotification::class);
+
+            // Should not notify regular users
+            Notification::assertNotSentTo($regularUser, ReportSubmittedNotification::class);
+            Notification::assertNotSentTo($reporter, ReportSubmittedNotification::class);
+        });
+
+        it('sends notification with correct report data', function (): void {
+            Notification::fake();
+
+            $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
+            $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+            $reporter = User::factory()->create();
+            $mod = Mod::factory()->create();
+
+            Livewire::actingAs($reporter)
+                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->set('reason', ReportReason::INAPPROPRIATE_CONTENT)
+                ->set('context', 'This content is inappropriate')
+                ->call('submit');
+
+            Notification::assertSentTo($moderator, ReportSubmittedNotification::class, function ($notification) use ($reporter, $mod) {
+                $report = $notification->report;
+
+                return $report->reporter_id === $reporter->id &&
+                       $report->reportable_type === $mod::class &&
+                       $report->reportable_id === $mod->id &&
+                       $report->reason === ReportReason::INAPPROPRIATE_CONTENT &&
+                       $report->context === 'This content is inappropriate';
+            });
+        });
+
+        it('handles cases where no moderators or administrators exist', function (): void {
+            Notification::fake();
+
+            $userRole = UserRole::factory()->create(['name' => 'user']);
+            $reporter = User::factory()->create(['user_role_id' => $userRole->id]);
+            $mod = Mod::factory()->create();
+
+            Livewire::actingAs($reporter)
+                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->set('reason', ReportReason::SPAM)
+                ->call('submit')
+                ->assertHasNoErrors();
+
+            // Should not throw error even when no moderators exist
+            expect(Report::query()->count())->toBe(1);
+
+            // No notifications should be sent
+            Notification::assertNothingSent();
+        });
+
+        it('sends notifications for different reportable types', function (): void {
+            Notification::fake();
+
+            $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
+            $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+            $reporter = User::factory()->create();
+
+            $mod = Mod::factory()->create();
+            $comment = Comment::factory()->create();
+            $reportedUser = User::factory()->create();
+
+            // Test mod report
+            Livewire::actingAs($reporter)
+                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->set('reason', ReportReason::SPAM)
+                ->call('submit');
+
+            // Test comment report
+            Livewire::actingAs($reporter)
+                ->test(ReportComponent::class, ['reportable' => $comment])
+                ->set('reason', ReportReason::HARASSMENT)
+                ->call('submit');
+
+            // Test user report
+            Livewire::actingAs($reporter)
+                ->test(ReportComponent::class, ['reportable' => $reportedUser])
+                ->set('reason', ReportReason::INAPPROPRIATE_CONTENT)
+                ->call('submit');
+
+            // Should send 3 notifications total
+            Notification::assertSentToTimes($moderator, ReportSubmittedNotification::class, 3);
         });
     });
 });

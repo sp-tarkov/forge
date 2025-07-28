@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use App\Contracts\Reportable;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
-use App\Traits\Reportable;
+use App\Traits\HasReports;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -64,7 +65,7 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModObserver::class])]
-class Mod extends Model implements Commentable
+class Mod extends Model implements Commentable, Reportable
 {
     /** @use HasComments<self> */
     use HasComments;
@@ -72,8 +73,8 @@ class Mod extends Model implements Commentable
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 
-    /** @use Reportable<Mod> */
-    use Reportable;
+    /** @use HasReports<Mod> */
+    use HasReports;
 
     use Searchable;
 
@@ -378,5 +379,37 @@ class Mod extends Model implements Commentable
     public function getCommentTabHash(): ?string
     {
         return 'comments';
+    }
+
+    /**
+     * Get a human-readable display name for the reportable model.
+     */
+    public function getReportableDisplayName(): string
+    {
+        return 'mod';
+    }
+
+    /**
+     * Get the title of the reportable model.
+     */
+    public function getReportableTitle(): string
+    {
+        return $this->name ?? 'mod #'.$this->id;
+    }
+
+    /**
+     * Get an excerpt of the reportable content for display in notifications.
+     */
+    public function getReportableExcerpt(): ?string
+    {
+        return $this->description ? Str::words($this->description, 15, '...') : null;
+    }
+
+    /**
+     * Get the URL to view the reportable content.
+     */
+    public function getReportableUrl(): string
+    {
+        return $this->detail_url;
     }
 }
