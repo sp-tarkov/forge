@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-class ReportButton extends Component
+class ReportComponent extends Component
 {
     /**
      * The model instance that is subject to reporting.
@@ -52,7 +52,7 @@ class ReportButton extends Component
     #[Computed(persist: true)]
     public function canReport(): bool
     {
-        return auth()->user()->can('report', $this->reportable);
+        return (bool) auth()->user()?->can('report', $this->reportable);
     }
 
     /**
@@ -109,6 +109,6 @@ class ReportButton extends Component
      */
     public function render(): View
     {
-        return view('livewire.report-button');
+        return view('livewire.report-component');
     }
 }

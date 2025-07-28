@@ -33,7 +33,7 @@
                         <livewire:user.follow-buttons :profile-user-id="$user->id" :is-following="auth()->user()->isFollowing($user->id)" />
 
                         {{-- Report button --}}
-                        <livewire:report-button :reportable="$user" />
+                        <livewire:report-component :reportable="$user" />
                     @endif
                 </div>
             </div>
