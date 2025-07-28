@@ -8,6 +8,7 @@ use App\Contracts\Commentable;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
+use App\Traits\Reportable;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -70,6 +71,9 @@ class Mod extends Model implements Commentable
 
     /** @use HasFactory<ModFactory> */
     use HasFactory;
+
+    /** @use Reportable<Mod> */
+    use Reportable;
 
     use Searchable;
 

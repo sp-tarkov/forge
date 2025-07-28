@@ -9,6 +9,7 @@ use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
+use App\Traits\Reportable;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -78,6 +79,10 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail
 
     use HasProfilePhoto;
     use Notifiable;
+
+    /** @use Reportable<User> */
+    use Reportable;
+
     use Searchable;
     use TwoFactorAuthenticatable;
 

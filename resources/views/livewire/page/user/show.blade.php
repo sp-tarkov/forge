@@ -32,16 +32,8 @@
                         {{-- Follow Buttons --}}
                         <livewire:user.follow-buttons :profile-user-id="$user->id" :is-following="auth()->user()->isFollowing($user->id)" />
 
-                        {{-- Message button --}}
-                        <x-profile-button>
-                            <x-slot:icon>
-                                <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-                                    <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-                                </svg>
-                            </x-slot:icon>
-                            {{ __('Message') }}
-                        </x-profile-button>
+                        {{-- Report button --}}
+                        <livewire:report-button :reportable="$user" />
                     @endif
                 </div>
             </div>
@@ -87,9 +79,9 @@
 
                 {{-- Wall --}}
                 <div x-show="selectedTab === 'wall'">
-                    <livewire:comment-component 
+                    <livewire:comment-component
                         wire:key="comment-component-{{ $user->id }}"
-                        :commentable="$user" 
+                        :commentable="$user"
                     />
                 </div>
 

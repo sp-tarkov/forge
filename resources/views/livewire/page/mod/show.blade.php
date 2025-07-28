@@ -263,6 +263,9 @@
                             </h3>
                         </li>
                     @endif
+                    <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
+                        <livewire:report-button :reportable="$mod" />
+                    </li>
                 </ul>
             </div>
         </div>

@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Database\Eloquent\Model;
 
 class UserPolicy
 {
@@ -62,5 +63,26 @@ class UserPolicy
     public function forceDelete(User $user, User $model): bool
     {
         return false;
+    }
+
+    /**
+     * Determine whether the user can report a mod.
+     *
+     * Authentication is required.
+     */
+    public function report(User $user, Model $reportable): bool
+    {
+        // Moderators and administrators cannot create reports.
+        if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Check if the reportable model has the required method.
+        if (! method_exists($reportable, 'hasBeenReportedBy')) {
+            return false;
+        }
+
+        // User cannot report the same item more than once.
+        return ! $reportable->hasBeenReportedBy($user->id);
     }
 }

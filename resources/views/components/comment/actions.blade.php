@@ -2,7 +2,7 @@
 
 <div class="flex items-center gap-6 mt-4 text-slate-400">
     @if (!$comment->isDeleted())
-        @if (auth()->check())
+        @auth
             @if ($comment->user_id === auth()->id())
                 <flux:tooltip content="You cannot like your own comment" position="right" gap="10">
                     <button type="button" class="relative flex items-center gap-1 transition cursor-not-allowed!" disabled>
@@ -48,7 +48,7 @@
                 </svg>
                 <span class="text-xs">{{ $comment->reactions->count() }} {{ $comment->reactions->count() === 1 ? 'Like' : 'Likes' }}</span>
             </div>
-        @endif
+        @endauth
 
         @can('update', $comment)
             <button type="button"
@@ -76,13 +76,13 @@
             </button>
         @endcan
 
-        @if (auth()->check())
-            <button type="button"
-                    wire:click="toggleReplyForm({{ $comment->id }})"
-                    class="hover:underline cursor-pointer text-xs">
+        <livewire:report-button :reportable="$comment" :key="'report-'.$comment->id" />
+
+        @auth
+            <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" class="hover:underline cursor-pointer text-xs">
                 {{ __('Reply') }}
             </button>
-        @endif
+        @endauth
     @endif
 
     @if ($showRepliesToggle && $comment->descendants->count())

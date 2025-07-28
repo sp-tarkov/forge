@@ -8,6 +8,7 @@ use App\Contracts\Commentable;
 use App\Enums\SpamStatus;
 use App\Observers\CommentObserver;
 use App\Support\Akismet\SpamCheckResult;
+use App\Traits\Reportable;
 use Database\Factories\CommentFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -57,6 +58,9 @@ class Comment extends Model
 {
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
+
+    /** @use Reportable<Comment> */
+    use Reportable;
 
     /**
      * The relationship between a comment and it's user.
