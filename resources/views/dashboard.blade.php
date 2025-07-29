@@ -31,6 +31,12 @@
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
                     <x-welcome />
                 </div>
+                
+                @can('viewAny', App\Models\Report::class)
+                    <div class="mt-6">
+                        @livewire('report-centre')
+                    </div>
+                @endcan
             </div>
             
             <div class="lg:col-span-1">
