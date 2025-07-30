@@ -37,7 +37,7 @@
 
     @if ($rootComments->hasPages() && $visibleRootComments->count() > 0)
         <div class="mb-4">
-            {{ $rootComments->links(data: ['scrollTo' => '#comments']) }}
+            {{ $rootComments->onEachSide(1)->links(data: ['scrollTo' => '#comments']) }}
         </div>
     @endif
 
@@ -70,7 +70,7 @@
 
     @if ($rootComments->hasPages() && $visibleRootComments->count() > 0)
         <div class="mt-4">
-            {{ $rootComments->links(data: ['scrollTo' => '#comments']) }}
+            {{ $rootComments->onEachSide(1)->links(data: ['scrollTo' => '#comments']) }}
         </div>
     @endif
 </div>
