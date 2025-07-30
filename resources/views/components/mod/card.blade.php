@@ -9,7 +9,10 @@
 
     <livewire:ribbon.mod
         wire:key="mod-card-ribbon-{{ $section }}-{{ $mod->id }}"
-        :mod="$mod"
+        :mod-id="$mod->id"
+        :disabled="$mod->disabled"
+        :published-at="$mod->published_at?->toISOString()"
+        :featured="$mod->featured"
         :homepage-featured="$homepageFeatured"
     />
 

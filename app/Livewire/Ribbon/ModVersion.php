@@ -5,24 +5,81 @@ declare(strict_types=1);
 namespace App\Livewire\Ribbon;
 
 use App\Models\ModVersion as ModVersionModel;
+use Carbon\Carbon;
 use Illuminate\View\View;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ModVersion extends Component
 {
     /**
-     * The mod version model.
+     * The mod version ID.
      */
-    public ModVersionModel $version;
+    #[Locked]
+    public int $versionId;
 
     /**
-     * Refresh the mod version model when it's updated.
+     * Whether the mod version is disabled.
      */
-    #[On('mod-version-updated.{version.id}')]
+    #[Locked]
+    public bool $disabled;
+
+    /**
+     * The mod version's published_at timestamp.
+     */
+    #[Locked]
+    public ?string $publishedAt;
+
+    /**
+     * Refresh the mod version data when it's updated.
+     */
+    #[On('mod-version-updated.{versionId}')]
     public function refreshVersion(): void
     {
-        $this->version->refresh();
+        $version = ModVersionModel::select('disabled', 'published_at')->find($this->versionId);
+        if ($version) {
+            $hasChanges = false;
+            $newPublishedAt = $version->published_at?->toISOString();
+
+            if ($this->disabled !== $version->disabled) {
+                $this->disabled = $version->disabled;
+                $hasChanges = true;
+            }
+            if ($this->publishedAt !== $newPublishedAt) {
+                $this->publishedAt = $newPublishedAt;
+                $hasChanges = true;
+            }
+
+            if (! $hasChanges) {
+                $this->skipRender();
+            }
+        } else {
+            $this->skipRender();
+        }
+    }
+
+    /**
+     * Get the ribbon data with caching.
+     */
+    #[Computed]
+    public function ribbonData(): ?array
+    {
+        if ($this->disabled) {
+            return ['color' => 'red', 'label' => __('Disabled')];
+        }
+
+        if ($this->publishedAt === null) {
+            return ['color' => 'amber', 'label' => __('Unpublished')];
+        }
+
+        $publishedAt = Carbon::parse($this->publishedAt);
+        if ($publishedAt->isFuture()) {
+            return ['color' => 'emerald', 'label' => __('Scheduled')];
+        }
+
+        return null;
     }
 
     /**
@@ -30,15 +87,8 @@ class ModVersion extends Component
      */
     public function render(): View
     {
-        $ribbonData = null;
-        if ($this->version->disabled) {
-            $ribbonData = ['color' => 'red', 'label' => __('Disabled')];
-        } elseif ($this->version->published_at === null) {
-            $ribbonData = ['color' => 'amber', 'label' => __('Unpublished')];
-        } elseif ($this->version->published_at > now()) {
-            $ribbonData = ['color' => 'emerald', 'label' => __('Scheduled')];
-        }
-
-        return view('livewire.ribbon.mod-version', compact('ribbonData'));
+        return view('livewire.ribbon.mod-version', [
+            'ribbonData' => $this->ribbonData,
+        ]);
     }
 }

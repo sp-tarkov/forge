@@ -4,7 +4,12 @@
 
 <div {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none']) }}>
 
-    <livewire:ribbon.mod-version wire:key="mod-version-show-ribbon-{{ $version->id }}" :version="$version" />
+    <livewire:ribbon.mod-version
+        wire:key="mod-version-show-ribbon-{{ $version->id }}"
+        :version-id="$version->id"
+        :disabled="$version->disabled"
+        :published-at="$version->published_at?->toISOString()"
+    />
 
     <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
         @can('update', $version)
