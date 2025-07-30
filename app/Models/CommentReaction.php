@@ -14,9 +14,9 @@ use Illuminate\Support\Carbon;
  * CommentReaction Model
  *
  * @property int $id
+ * @property int|null $hub_id
  * @property int $comment_id
  * @property int $user_id
- * @property string $type
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $user

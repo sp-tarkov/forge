@@ -131,22 +131,9 @@ class CommentSpamChecker
                 recheckAfter: $recheckAfter
             );
 
-            Log::info('Akismet spam check completed', [
-                'comment_id' => $comment->id,
-                'user_id' => $comment->user_id,
-                'is_spam' => $result->isSpam,
-                'discard' => $result->discard,
-                'pro_tip' => $result->proTip,
-            ]);
-
             return $result;
 
         } catch (Throwable $throwable) {
-            Log::error('Akismet API error', [
-                'comment_id' => $comment->id,
-                'error' => $throwable->getMessage(),
-            ]);
-
             // Return safe fallback - assume not spam if API fails
             return new SpamCheckResult(
                 isSpam: false,
@@ -168,8 +155,6 @@ class CommentSpamChecker
         }
 
         if (! $this->verifyKey()) {
-            Log::warning('Akismet key verification failed, skipping ham submission');
-
             return;
         }
 
@@ -177,17 +162,6 @@ class CommentSpamChecker
             $akismetData = $this->prepareAkismetData($comment);
 
             $response = $this->makeRequest('POST', '/1.1/submit-ham', $akismetData);
-
-            if ($response->body() === 'Thanks for making the web a better place.') {
-                Log::info('Comment marked as ham in Akismet', [
-                    'comment_id' => $comment->id,
-                ]);
-            } else {
-                Log::warning('Unexpected Akismet ham submission response', [
-                    'comment_id' => $comment->id,
-                    'response' => $response->body(),
-                ]);
-            }
         } catch (Throwable $throwable) {
             Log::error('Failed to mark comment as ham in Akismet', [
                 'comment_id' => $comment->id,
@@ -206,8 +180,6 @@ class CommentSpamChecker
         }
 
         if (! $this->verifyKey()) {
-            Log::warning('Akismet key verification failed, skipping spam submission');
-
             return;
         }
 
@@ -215,17 +187,6 @@ class CommentSpamChecker
             $akismetData = $this->prepareAkismetData($comment);
 
             $response = $this->makeRequest('POST', '/1.1/submit-spam', $akismetData);
-
-            if ($response->body() === 'Thanks for making the web a better place.') {
-                Log::info('Comment marked as spam in Akismet', [
-                    'comment_id' => $comment->id,
-                ]);
-            } else {
-                Log::warning('Unexpected Akismet spam submission response', [
-                    'comment_id' => $comment->id,
-                    'response' => $response->body(),
-                ]);
-            }
         } catch (Throwable $throwable) {
             Log::error('Failed to mark comment as spam in Akismet', [
                 'comment_id' => $comment->id,
@@ -251,13 +212,6 @@ class CommentSpamChecker
             ]);
 
             $data = $response->json();
-
-            Log::info('Akismet usage limit retrieved', [
-                'limit' => $data['limit'] ?? 'unknown',
-                'usage' => $data['usage'] ?? 'unknown',
-                'percentage' => $data['percentage'] ?? 'unknown',
-                'throttled' => $data['throttled'] ?? 'unknown',
-            ]);
 
             return $data;
         } catch (Throwable $throwable) {
@@ -328,13 +282,7 @@ class CommentSpamChecker
             }
 
             // Check for rate limiting
-            if ($response->status() === 429) {
-                Log::warning('Akismet API rate limit exceeded', [
-                    'endpoint' => $endpoint,
-                    'retry_after' => $response->header('Retry-After'),
-                ]);
-                throw new Exception('Akismet API rate limit exceeded');
-            }
+            throw_if($response->status() === 429, new Exception('Akismet API rate limit exceeded'));
 
             // Check for other HTTP errors
             throw_unless($response->successful(), new Exception('Akismet API error: HTTP '.$response->status()));

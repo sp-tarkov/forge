@@ -12,12 +12,12 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('hub_id')->nullable()->default(null);
+            $table->bigInteger('hub_id')->nullable()->default(null);
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->morphs('commentable');
             $table->foreignId('parent_id')->nullable()->constrained('comments')->nullOnDelete();
             $table->foreignId('root_id')->nullable()->constrained('comments')->nullOnDelete();
-            $table->text('body');
+            $table->mediumText('body');
             $table->string('user_ip', 65)->default('');
             $table->string('user_agent', 2048)->default('');
             $table->string('referrer', 2048)->default('');
@@ -30,6 +30,7 @@ return new class extends Migration
             $table->timestamp('pinned_at')->nullable();
             $table->timestamps();
 
+            $table->index('hub_id');
             $table->index('deleted_at');
             $table->index(['spam_status', 'created_at']);
             $table->index('pinned_at');

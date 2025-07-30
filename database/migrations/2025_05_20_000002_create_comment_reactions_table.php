@@ -12,11 +12,13 @@ return new class extends Migration
     {
         Schema::create('comment_reactions', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('hub_id')->nullable();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('comment_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['user_id', 'comment_id']);
+            $table->unique(['hub_id'], 'comment_reactions_hub_id_unique');
         });
     }
 
