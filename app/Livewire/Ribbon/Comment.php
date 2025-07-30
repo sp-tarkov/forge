@@ -38,7 +38,7 @@ class Comment extends Component
     #[On('comment-updated.{commentId}')]
     public function refreshRibbon(): void
     {
-        $comment = CommentModel::select('spam_status')->find($this->commentId);
+        $comment = CommentModel::query()->select('spam_status')->find($this->commentId);
         if ($comment && $comment->spam_status->value !== $this->spamStatus) {
             $this->spamStatus = $comment->spam_status->value;
         } else {

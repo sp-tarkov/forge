@@ -30,7 +30,7 @@ class ModVersion extends Component
      * The mod version's published_at timestamp.
      */
     #[Locked]
-    public ?string $publishedAt;
+    public ?string $publishedAt = null;
 
     /**
      * Refresh the mod version data when it's updated.
@@ -38,7 +38,7 @@ class ModVersion extends Component
     #[On('mod-version-updated.{versionId}')]
     public function refreshVersion(): void
     {
-        $version = ModVersionModel::select('disabled', 'published_at')->find($this->versionId);
+        $version = ModVersionModel::query()->select('disabled', 'published_at')->find($this->versionId);
         if ($version) {
             $hasChanges = false;
             $newPublishedAt = $version->published_at?->toISOString();
@@ -47,6 +47,7 @@ class ModVersion extends Component
                 $this->disabled = $version->disabled;
                 $hasChanges = true;
             }
+
             if ($this->publishedAt !== $newPublishedAt) {
                 $this->publishedAt = $newPublishedAt;
                 $hasChanges = true;

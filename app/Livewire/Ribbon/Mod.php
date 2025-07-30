@@ -30,7 +30,7 @@ class Mod extends Component
      * The mod's published_at timestamp.
      */
     #[Locked]
-    public ?string $publishedAt;
+    public ?string $publishedAt = null;
 
     /**
      * Whether the mod is featured.
@@ -50,7 +50,7 @@ class Mod extends Component
     #[On('mod-updated.{modId}')]
     public function refreshMod(): void
     {
-        $mod = ModModel::select('disabled', 'published_at', 'featured')->find($this->modId);
+        $mod = ModModel::query()->select('disabled', 'published_at', 'featured')->find($this->modId);
         if ($mod) {
             $hasChanges = false;
             $newPublishedAt = $mod->published_at?->toISOString();
@@ -59,10 +59,12 @@ class Mod extends Component
                 $this->disabled = $mod->disabled;
                 $hasChanges = true;
             }
+
             if ($this->publishedAt !== $newPublishedAt) {
                 $this->publishedAt = $newPublishedAt;
                 $hasChanges = true;
             }
+
             if ($this->featured !== $mod->featured) {
                 $this->featured = $mod->featured;
                 $hasChanges = true;
