@@ -7,48 +7,24 @@ namespace App\Livewire\Comment;
 use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Services\CommentSpamChecker;
+use App\Traits\Livewire\ModerationActionMenu;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Action extends Component
 {
+    use ModerationActionMenu;
+
     /**
      * The comment instance.
      */
     #[Locked]
     public Comment $comment;
-
-    /**
-     * The state of the confirmation dialog for soft deleting the comment.
-     */
-    public bool $confirmCommentSoftDelete = false;
-
-    /**
-     * The state of the confirmation dialog for hard deleting the comment thread.
-     */
-    public bool $confirmCommentHardDelete = false;
-
-    /**
-     * The state of the confirmation dialog for marking the comment as spam.
-     */
-    public bool $confirmCommentMarkSpam = false;
-
-    /**
-     * The state of the confirmation dialog for marking the comment as ham.
-     */
-    public bool $confirmCommentMarkHam = false;
-
-    /**
-     * The state of the confirmation dialog for restoring the comment.
-     */
-    public bool $confirmCommentRestore = false;
-
-    /**
-     * The state of the confirmation dialog for checking the comment for spam using Akismet.
-     */
-    public bool $confirmCommentCheckSpam = false;
 
     /**
      * Whether a spam check is currently in progress.
@@ -61,16 +37,48 @@ class Action extends Component
     public ?string $spamCheckStartedAt = null;
 
     /**
+     * Get cached permissions for the current user.
+     *
+     * @return array<string, bool>
+     */
+    #[Computed(persist: true)]
+    public function permissions(): array
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return [];
+        }
+
+        return Cache::remember(
+            sprintf('comment.%d.permissions.%s', $this->comment->id, $user->id),
+            60, // Seconds
+            fn (): array => [
+                'viewActions' => Gate::allows('viewActions', $this->comment),
+                'pin' => Gate::allows('pin', $this->comment),
+                'softDelete' => Gate::allows('softDelete', $this->comment),
+                'hardDelete' => Gate::allows('hardDelete', $this->comment),
+                'restore' => Gate::allows('restore', $this->comment),
+                'markAsSpam' => Gate::allows('markAsSpam', $this->comment),
+                'markAsHam' => Gate::allows('markAsHam', $this->comment),
+                'checkForSpam' => Gate::allows('checkForSpam', $this->comment),
+            ]
+        );
+    }
+
+    /**
      * Soft delete the comment by setting the deleted_at timestamp.
      */
     public function softDelete(): void
     {
-        $this->confirmCommentSoftDelete = false;
+        $this->closeModal();
+        $this->menuOpen = false;
 
         $this->authorize('softDelete', $this->comment);
 
         $this->comment->deleted_at = now();
         $this->comment->save();
+
+        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->comment->id).auth()->id());
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated.'.$this->comment->id, deleted: true);
@@ -84,7 +92,8 @@ class Action extends Component
      */
     public function hardDeleteThread(): void
     {
-        $this->confirmCommentHardDelete = false;
+        $this->closeModal();
+        $this->menuOpen = false;
 
         $this->authorize('hardDelete', $this->comment);
 
@@ -95,6 +104,8 @@ class Action extends Component
 
         // Force delete the comment itself
         $this->comment->forceDelete();
+
+        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->comment->id).auth()->id());
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-deleted.'.$this->comment->id);
@@ -108,12 +119,15 @@ class Action extends Component
      */
     public function markAsSpam(): void
     {
-        $this->confirmCommentMarkSpam = false;
+        $this->closeModal();
+        $this->menuOpen = false;
 
         $this->authorize('markAsSpam', $this->comment);
 
         // Immediately mark as spam for UI updates
         $this->comment->markAsSpamByModerator(auth()->id());
+
+        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->comment->id).auth()->id());
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated.'.$this->comment->id, spam: true);
@@ -131,12 +145,15 @@ class Action extends Component
      */
     public function markAsHam(): void
     {
-        $this->confirmCommentMarkHam = false;
+        $this->closeModal();
+        $this->menuOpen = false;
 
         $this->authorize('markAsHam', $this->comment);
 
         // Immediately mark as clean for UI updates
         $this->comment->markAsHam();
+
+        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->comment->id).auth()->id());
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated.'.$this->comment->id, spam: false);
@@ -154,12 +171,15 @@ class Action extends Component
      */
     public function restore(): void
     {
-        $this->confirmCommentRestore = false;
+        $this->closeModal();
+        $this->menuOpen = false;
 
         $this->authorize('restore', $this->comment);
 
         $this->comment->deleted_at = null;
         $this->comment->save();
+
+        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->comment->id).auth()->id());
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated.'.$this->comment->id, deleted: false);
@@ -173,7 +193,8 @@ class Action extends Component
      */
     public function checkForSpam(): void
     {
-        $this->confirmCommentCheckSpam = false;
+        $this->closeModal();
+        $this->menuOpen = false;
 
         $this->authorize('checkForSpam', $this->comment);
 
@@ -233,10 +254,15 @@ class Action extends Component
      */
     public function pinComment(): void
     {
+        $this->closeModal();
+        $this->menuOpen = false;
+
         $this->authorize('pin', $this->comment);
 
         $this->comment->update(['pinned_at' => now()]);
         $this->comment->refresh();
+
+        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->comment->id).auth()->id());
 
         // Send events to refresh related components.
         $this->dispatch('comment-updated.'.$this->comment->id, pinned: true);
@@ -250,10 +276,15 @@ class Action extends Component
      */
     public function unpinComment(): void
     {
+        $this->closeModal();
+        $this->menuOpen = false;
+
         $this->authorize('pin', $this->comment);
 
         $this->comment->update(['pinned_at' => null]);
         $this->comment->refresh();
+
+        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->comment->id).auth()->id());
 
         // Send events to refresh related components.
         $this->dispatch('comment-updated.'.$this->comment->id, pinned: false);

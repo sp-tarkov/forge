@@ -552,7 +552,8 @@ describe('action visibility rules', function (): void {
 
         $this->actingAs($admin);
 
-        $component = Livewire::test(Action::class, ['comment' => $spamComment]);
+        $component = Livewire::test(Action::class, ['comment' => $spamComment])
+            ->call('loadMenu'); // Trigger lazy loading
 
         // Check that the soft delete menu item is not present in the menu
         $html = $component->html();
@@ -574,7 +575,8 @@ describe('action visibility rules', function (): void {
 
         $this->actingAs($admin);
 
-        $component = Livewire::test(Action::class, ['comment' => $cleanComment]);
+        $component = Livewire::test(Action::class, ['comment' => $cleanComment])
+            ->call('loadMenu'); // Trigger lazy loading
 
         // Check that the rendered component contains both actions for clean comments
         $component->assertSee('Soft Delete')
