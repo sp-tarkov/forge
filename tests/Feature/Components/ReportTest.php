@@ -34,8 +34,8 @@ describe('ReportComponent', function (): void {
             expect($component->get('variant'))->toBe('link');
             expect($component->get('reason'))->toBe(ReportReason::OTHER);
             expect($component->get('context'))->toBe('');
-            expect($component->get('showFormModal'))->toBeFalse();
-            expect($component->get('showThankYouModal'))->toBeFalse();
+            expect($component->get('showReportModal'))->toBeFalse();
+            expect($component->get('submitted'))->toBeFalse();
         });
 
         it('can be mounted with a custom variant', function (): void {
@@ -251,7 +251,7 @@ describe('ReportComponent', function (): void {
             expect($component->get('context'))->toBe('');
         });
 
-        it('closes form modal and shows thank you modal after submission', function (): void {
+        it('switches to thank you content after submission', function (): void {
             $user = User::factory()->create();
             $mod = Mod::factory()->create();
 
@@ -260,12 +260,12 @@ describe('ReportComponent', function (): void {
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
-                ->set('showFormModal', true)
+                ->set('showReportModal', true)
                 ->set('reason', ReportReason::SPAM)
                 ->call('submit');
 
-            expect($component->get('showFormModal'))->toBeFalse();
-            expect($component->get('showThankYouModal'))->toBeTrue();
+            expect($component->get('showReportModal'))->toBeTrue();
+            expect($component->get('submitted'))->toBeTrue();
         });
 
         it('prevents unauthorized users from submitting reports', function (): void {
@@ -340,7 +340,7 @@ describe('ReportComponent', function (): void {
     });
 
     describe('Modal Management', function (): void {
-        it('can close thank you modal', function (): void {
+        it('can open and close modal', function (): void {
             $user = User::factory()->create();
             $mod = Mod::factory()->create();
 
@@ -348,14 +348,21 @@ describe('ReportComponent', function (): void {
                 ->test(ReportComponent::class, [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
-                ])
-                ->set('showThankYouModal', true)
-                ->call('closeThankYouModal');
+                ]);
 
-            expect($component->get('showThankYouModal'))->toBeFalse();
+            // Initially modal should be closed
+            expect($component->get('showReportModal'))->toBeFalse();
+
+            // Open modal
+            $component->set('showReportModal', true);
+            expect($component->get('showReportModal'))->toBeTrue();
+
+            // Close modal
+            $component->set('showReportModal', false);
+            expect($component->get('showReportModal'))->toBeFalse();
         });
 
-        it('closes thank you modal correctly', function (): void {
+        it('maintains modal state during form submission', function (): void {
             $user = User::factory()->create();
             $mod = Mod::factory()->create();
 
@@ -364,13 +371,15 @@ describe('ReportComponent', function (): void {
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
-                ->set('showThankYouModal', true);
+                ->set('showReportModal', true)
+                ->set('reason', ReportReason::SPAM);
 
-            // Close the modal
-            $component->call('closeThankYouModal');
+            // Submit form
+            $component->call('submit');
 
-            // Modal should be closed
-            expect($component->get('showThankYouModal'))->toBeFalse();
+            // Modal should stay open, content should switch to thank you
+            expect($component->get('showReportModal'))->toBeTrue();
+            expect($component->get('submitted'))->toBeTrue();
         });
     });
 
@@ -444,7 +453,7 @@ describe('ReportComponent', function (): void {
                 ])
                 ->set('reason', ReportReason::SPAM)
                 ->set('context', 'Mod 1 spam')
-                ->set('showFormModal', true);
+                ->set('showReportModal', true);
 
             $component2 = Livewire::actingAs($user)
                 ->test(ReportComponent::class, [
@@ -453,18 +462,18 @@ describe('ReportComponent', function (): void {
                 ])
                 ->set('reason', ReportReason::HARASSMENT)
                 ->set('context', 'Mod 2 harassment')
-                ->set('showFormModal', false);
+                ->set('showReportModal', false);
 
             expect($component1->get('reason'))->toBe(ReportReason::SPAM);
             expect($component1->get('context'))->toBe('Mod 1 spam');
-            expect($component1->get('showFormModal'))->toBeTrue();
+            expect($component1->get('showReportModal'))->toBeTrue();
 
             expect($component2->get('reason'))->toBe(ReportReason::HARASSMENT);
             expect($component2->get('context'))->toBe('Mod 2 harassment');
-            expect($component2->get('showFormModal'))->toBeFalse();
+            expect($component2->get('showReportModal'))->toBeFalse();
         });
 
-        it('handles form modal state correctly', function (): void {
+        it('handles modal state correctly after submission', function (): void {
             $user = User::factory()->create();
             $mod = Mod::factory()->create();
 
@@ -473,16 +482,16 @@ describe('ReportComponent', function (): void {
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
-                ->set('showFormModal', true);
+                ->set('showReportModal', true);
 
-            expect($component->get('showFormModal'))->toBeTrue();
-            expect($component->get('showThankYouModal'))->toBeFalse();
+            expect($component->get('showReportModal'))->toBeTrue();
+            expect($component->get('submitted'))->toBeFalse();
 
             $component->set('reason', ReportReason::SPAM)
                 ->call('submit');
 
-            expect($component->get('showFormModal'))->toBeFalse();
-            expect($component->get('showThankYouModal'))->toBeTrue();
+            expect($component->get('showReportModal'))->toBeTrue();
+            expect($component->get('submitted'))->toBeTrue();
         });
     });
 

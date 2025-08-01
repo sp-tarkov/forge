@@ -76,7 +76,7 @@
             </button>
         @endcan
 
-        <livewire:report-component :reportable-id="$comment->id" :reportable-type="get_class($comment)" :key="'report-'.$comment->id" />
+        <livewire:report-component variant="comment" :reportable-id="$comment->id" :reportable-type="get_class($comment)" :key="'report-'.$comment->id" />
 
         @auth
             <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" class="hover:underline cursor-pointer text-xs">

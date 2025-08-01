@@ -6,7 +6,6 @@ namespace App\Livewire;
 
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
-use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\Report;
 use App\Models\User;
@@ -57,14 +56,14 @@ class ReportComponent extends Component
     public string $context = '';
 
     /**
-     * Controls whether the form modal is open.
+     * Controls whether the report form modal is open.
      */
-    public bool $showFormModal = false;
+    public bool $showReportModal = false;
 
     /**
-     * Controls whether the thank-you modal is open.
+     * Whether the report has been submitted.
      */
-    public bool $showThankYouModal = false;
+    public bool $submitted = false;
 
     /**
      * Get the button label based on a reportable type.
@@ -75,20 +74,6 @@ class ReportComponent extends Component
         return match ($this->reportableType) {
             Mod::class => __('Report Mod'),
             default => __('Report'),
-        };
-    }
-
-    /**
-     * Get the button style based on a reportable type.
-     */
-    #[Computed]
-    public function buttonStyle(): string
-    {
-        return match ($this->reportableType) {
-            User::class => 'button',
-            Mod::class => 'link',
-            Comment::class => 'comment',
-            default => $this->variant,
         };
     }
 
@@ -144,12 +129,8 @@ class ReportComponent extends Component
         // Reset form fields
         $this->reset(['reason', 'context']);
 
-        // Close the form modal and show the thank-you modal
-        $this->showFormModal = false;
-        $this->showThankYouModal = true;
-
-        // Update permission state since the user has now reported this item
-        $this->canReportItem = false;
+        // Switch to thank-you content.
+        $this->submitted = true;
     }
 
     /**
@@ -169,14 +150,6 @@ class ReportComponent extends Component
                 ->pluck('id')
                 ->toArray()
         );
-    }
-
-    /**
-     * Closes the thank-you modal and resets the component state.
-     */
-    public function closeThankYouModal(): void
-    {
-        $this->showThankYouModal = false;
     }
 
     /**
