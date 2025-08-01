@@ -58,8 +58,8 @@
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
                 @can('update', $mod)
-                    <livewire:mod.action 
-                        wire:key="mod-action-show-{{ $mod->id }}" 
+                    <livewire:mod.action
+                        wire:key="mod-action-show-{{ $mod->id }}"
                         :mod-id="$mod->id"
                         :mod-name="$mod->name"
                         :mod-featured="(bool) $mod->featured"
@@ -122,7 +122,17 @@
 
             {{-- Mobile Download Button --}}
             @if ($mod->latestVersion)
-                <livewire:mod.download-button key="mod-download-button-mobile" :mod="$mod" classes="block lg:hidden" />
+                <x-mod.download-button
+                    name="download-show-mobile"
+                    :mod-id="$mod->id"
+                    :latest-version-id="$mod->latestVersion->id"
+                    :download-url="$mod->downloadUrl()"
+                    :version-string="$mod->latestVersion->version"
+                    :spt-version-formatted="$mod->latestVersion->latestSptVersion?->version_formatted"
+                    :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
+                    :version-description-html="$mod->latestVersion->description_html"
+                    :version-updated-at="$mod->latestVersion->updated_at"
+                />
             @endif
 
             {{-- Tabs --}}
@@ -194,7 +204,17 @@
 
             {{-- Desktop Download Button --}}
             @if ($mod->latestVersion)
-                <livewire:mod.download-button key="mod-download-button-desktop" :mod="$mod" classes="hidden lg:block" />
+                <x-mod.download-button
+                    name="download-show-desktop"
+                    :mod-id="$mod->id"
+                    :latest-version-id="$mod->latestVersion->id"
+                    :download-url="$mod->downloadUrl()"
+                    :version-string="$mod->latestVersion->version"
+                    :spt-version-formatted="$mod->latestVersion->latestSptVersion?->version_formatted"
+                    :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
+                    :version-description-html="$mod->latestVersion->description_html"
+                    :version-updated-at="$mod->latestVersion->updated_at"
+                />
             @endif
 
             {{-- Additional Mod Details --}}
