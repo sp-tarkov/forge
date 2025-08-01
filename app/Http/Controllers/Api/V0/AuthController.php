@@ -12,13 +12,12 @@ use App\Http\Requests\Api\V0\Auth\ResendVerificationRequest;
 use App\Http\Resources\Api\V0\UserResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\User;
+use App\Support\Api\V0\QueryBuilder\UserQueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
-use Spatie\QueryBuilder\AllowedInclude;
-use Spatie\QueryBuilder\QueryBuilder;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -75,7 +74,7 @@ class AuthController extends Controller
 
         if (! $user || is_null($user->password)) {
 
-            // If password is null, it's likely an OAuth user.
+            // If the password is null, it's likely an OAuth user.
             if ($user && is_null($user->password)) {
                 return ApiResponse::error(
                     'Password login is not available for accounts created via OAuth. Please use the original login method or set a password for your account.',
@@ -226,16 +225,11 @@ class AuthController extends Controller
      */
     public function user(Request $request): JsonResponse
     {
-        $user = QueryBuilder::for(User::query()->where('id', $request->user()->id))
-            ->allowedIncludes([
-                AllowedInclude::relationship('role'),
-                // TODO:
-                // AllowedInclude::relationship('ownedMods'),
-                // AllowedInclude::relationship('authoredMods'),
-                // AllowedInclude::relationship('followers'),
-                // AllowedInclude::relationship('following'),
-            ])
-            ->firstOrFail();
+        $queryBuilder = (new UserQueryBuilder)
+            ->withFilters(['id' => $request->user()->id])
+            ->withIncludes($request->string('include')->explode(',')->toArray());
+
+        $user = $queryBuilder->findOrFail($request->user()->id);
 
         return ApiResponse::success(new UserResource($user));
     }

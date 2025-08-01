@@ -1,0 +1,140 @@
+name: Quality Checks
+
+on: [ push, pull_request ]
+
+jobs:
+  composer-psr:
+    name: Check Namespaces
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.4
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist
+
+      - name: Check PSR-4 Mapping
+        run: composer dump-autoload --dev --optimize --strict-psr
+
+  composer-validate:
+    name: Validate composer.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.4
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+  larastan:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.4
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Execute Code Static Analysis with Larastan
+        run: ./vendor/bin/phpstan analyse -c ./phpstan.neon --no-progress --error-format=github
+
+  pint:
+    name: Code Style
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.4
+
+      - name: Install Pint
+        run: composer global require laravel/pint
+
+      - name: Run Pint
+        run: pint
+
+      - uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "style: automatic fixes"
+          commit_user_name: Refringe
+          commit_user_email: me@refringe.com
+          commit_author: Refringe <me@refringe.com>
+
+  rector:
+    name: Code Modernization
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.4
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Rector Cache
+        uses: actions/cache@v4
+        with:
+          path: .rector/cache
+          key: ${{ runner.os }}-rector-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-rector-
+
+      - run: mkdir -p .rector/cache
+
+      - name: Execute Rector Analysis
+        run: php vendor/bin/rector process --config=rector.php
+
+      - uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "refactor: automatic fixes"
+          commit_user_name: Refringe
+          commit_user_email: me@refringe.com
+          commit_author: Refringe <me@refringe.com>
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: The PHP Security Checker
+        uses: symfonycorp/security-checker-action@v5
+
+  typos:
+    name: Spell Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Search For Misspellings
+        uses: crate-ci/typos@v1
+        with:
+          config: ./typos.toml

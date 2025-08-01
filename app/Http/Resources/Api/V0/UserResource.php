@@ -28,12 +28,12 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'profile_photo_url' => $this->profile_photo_url,
-            'cover_photo_url' => $this->cover_photo_url,
             $this->mergeWhen($isCurrentUserRequest, [ // Include these fields if the request is for the current user
                 'email' => $this->email,
                 'email_verified_at' => $this->email_verified_at?->toISOString(),
             ]),
+            'profile_photo_url' => $this->profile_photo_url,
+            'cover_photo_url' => $this->cover_photo_url,
             'role' => $this->whenLoaded('role', fn (): ?RoleResource => $this->role ? new RoleResource($this->role) : null),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),

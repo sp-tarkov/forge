@@ -9,7 +9,7 @@ test('confirm a user cannot follow themself', function (): void {
 
     $user->follow($user);
 
-    $this->assertEmpty($user->follwers);
+    $this->assertEmpty($user->followers);
     $this->assertEmpty($user->following);
 });
 
