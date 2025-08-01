@@ -58,7 +58,13 @@
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
                 @can('update', $mod)
-                    <livewire:mod.action wire:key="mod-action-show-{{ $mod->id }}" :mod="$mod" />
+                    <livewire:mod.action 
+                        wire:key="mod-action-show-{{ $mod->id }}" 
+                        :mod-id="$mod->id"
+                        :mod-name="$mod->name"
+                        :mod-featured="(bool) $mod->featured"
+                        :mod-disabled="(bool) $mod->disabled"
+                    />
                 @endcan
 
                 <livewire:ribbon.mod

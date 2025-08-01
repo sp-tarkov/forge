@@ -56,7 +56,12 @@ describe('moderation component visibility', function (): void {
     it('mounts the component with the provided mod', function (): void {
         $mod = Mod::factory()->create();
 
-        Livewire::test(Action::class, ['mod' => $mod])
+        Livewire::test(Action::class, [
+            'modId' => $mod->id,
+            'modName' => $mod->name,
+            'modFeatured' => (bool) $mod->featured,
+            'modDisabled' => (bool) $mod->disabled,
+        ])
             ->assertSet('mod.id', $mod->id);
     });
 });

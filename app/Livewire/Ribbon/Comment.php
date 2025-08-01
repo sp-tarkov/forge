@@ -12,6 +12,9 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
+/**
+ * @property-read array<string, string>|null $ribbonData
+ */
 class Comment extends Component
 {
     /**
@@ -48,6 +51,8 @@ class Comment extends Component
 
     /**
      * Get the ribbon data with caching.
+     *
+     * @return array<string, string>|null
      */
     #[Computed]
     public function ribbonData(): ?array

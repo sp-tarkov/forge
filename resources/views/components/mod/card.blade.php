@@ -71,7 +71,10 @@
     @can('update', $mod)
         <livewire:mod.action
             wire:key="mod-action-{{ $section }}-{{ $mod->id }}"
-            :mod="$mod"
+            :mod-id="$mod->id"
+            :mod-name="$mod->name"
+            :mod-featured="(bool) $mod->featured"
+            :mod-disabled="(bool) $mod->disabled"
             :homepage-featured="$homepageFeatured"
         />
     @endcan

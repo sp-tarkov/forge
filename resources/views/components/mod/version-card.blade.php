@@ -13,7 +13,13 @@
 
     <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
         @can('update', $version)
-            <livewire:mod.version-action wire:key="mod-version-show-action-{{ $version->id }}" :version="$version" />
+            <livewire:mod.version-action 
+                wire:key="mod-version-show-action-{{ $version->id }}" 
+                :version-id="$version->id"
+                :mod-id="$version->mod_id"
+                :version-number="$version->version"
+                :version-disabled="(bool) $version->disabled"
+            />
         @endcan
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
