@@ -276,7 +276,7 @@
                         </li>
                     @endif
                     <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
-                        <livewire:report-component :reportable="$mod" />
+                        <livewire:report-component :reportable-id="$mod->id" :reportable-type="get_class($mod)" />
                     </li>
                 </ul>
             </div>

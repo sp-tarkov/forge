@@ -1,16 +1,16 @@
-<div class="flex align-top {{ !$this->canReport ? ' hidden' : '' }}">
-    @if ($this->canReport)
-        @if (get_class($reportable) === 'App\Models\User')
+<div class="flex align-top {{ !$canReportItem ? ' hidden' : '' }}">
+    @if ($canReportItem)
+        @if ($this->buttonStyle === 'button')
             <flux:button wire:click="$set('showFormModal', true)" variant="outline" size="sm" icon="flag">
-                {{ __('Report') }}
+                {{ $this->buttonLabel }}
             </flux:button>
-        @elseif (get_class($reportable) === 'App\Models\Mod')
+        @elseif ($this->buttonStyle === 'link')
             <button type="button" wire:click="$set('showFormModal', true)" class="underline cursor-pointer text-sm text-slate-400">
-                {{ __('Report Mod') }}
+                {{ $this->buttonLabel }}
             </button>
-        @elseif (get_class($reportable) === 'App\Models\Comment')
+        @elseif ($this->buttonStyle === 'comment')
             <button type="button" wire:click="$set('showFormModal', true)" class="hover:underline cursor-pointer text-xs text-slate-400">
-                {{ __('Report') }}
+                {{ $this->buttonLabel }}
             </button>
         @endif
 

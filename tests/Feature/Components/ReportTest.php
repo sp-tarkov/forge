@@ -24,9 +24,13 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod]);
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ]);
 
-            expect($component->get('reportable'))->toBe($mod);
+            expect($component->get('reportableId'))->toBe($mod->id);
+            expect($component->get('reportableType'))->toBe($mod::class);
             expect($component->get('variant'))->toBe('link');
             expect($component->get('reason'))->toBe(ReportReason::OTHER);
             expect($component->get('context'))->toBe('');
@@ -40,7 +44,8 @@ describe('ReportComponent', function (): void {
 
             $component = Livewire::actingAs($user)
                 ->test(ReportComponent::class, [
-                    'reportable' => $mod,
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
                     'variant' => 'button',
                 ]);
 
@@ -52,9 +57,13 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $comment]);
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ]);
 
-            expect($component->get('reportable'))->toBe($comment);
+            expect($component->get('reportableId'))->toBe($comment->id);
+            expect($component->get('reportableType'))->toBe($comment::class);
         });
     });
 
@@ -64,9 +73,12 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod]);
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ]);
 
-            expect($component->get('canReport'))->toBeTrue();
+            expect($component->get('canReportItem'))->toBeTrue();
         });
 
         it('prevents reporting when user cannot report', function (): void {
@@ -81,9 +93,12 @@ describe('ReportComponent', function (): void {
             ]);
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod]);
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ]);
 
-            expect($component->get('canReport'))->toBeFalse();
+            expect($component->get('canReportItem'))->toBeFalse();
         });
 
         it('prevents reporting when user has already reported the item', function (): void {
@@ -97,17 +112,23 @@ describe('ReportComponent', function (): void {
             ]);
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod]);
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ]);
 
-            expect($component->get('canReport'))->toBeFalse();
+            expect($component->get('canReportItem'))->toBeFalse();
         });
 
         it('prevents guests from reporting', function (): void {
             $mod = Mod::factory()->create();
 
-            $component = Livewire::test(ReportComponent::class, ['reportable' => $mod]);
+            $component = Livewire::test(ReportComponent::class, [
+                'reportableId' => $mod->id,
+                'reportableType' => $mod::class,
+            ]);
 
-            expect($component->get('canReport'))->toBeFalse();
+            expect($component->get('canReportItem'))->toBeFalse();
         });
     });
 
@@ -119,7 +140,10 @@ describe('ReportComponent', function (): void {
             expect(Report::query()->count())->toBe(0);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->set('context', 'This is spam content')
                 ->call('submit')
@@ -141,7 +165,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::OTHER)
                 ->call('submit')
                 ->assertHasNoErrors();
@@ -159,7 +186,10 @@ describe('ReportComponent', function (): void {
 
             expect(function (): void {
                 Livewire::actingAs($user)
-                    ->test(ReportComponent::class, ['reportable' => $mod])
+                    ->test(ReportComponent::class, [
+                        'reportableId' => $mod->id,
+                        'reportableType' => $mod::class,
+                    ])
                     ->set('reason', 'invalid_reason')
                     ->call('submit');
             })->toThrow(Exception::class);
@@ -173,7 +203,10 @@ describe('ReportComponent', function (): void {
             $longContext = str_repeat('a', 1001);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::OTHER)
                 ->set('context', $longContext)
                 ->call('submit')
@@ -188,7 +221,10 @@ describe('ReportComponent', function (): void {
             $maxContext = str_repeat('a', 1000);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::OTHER)
                 ->set('context', $maxContext)
                 ->call('submit')
@@ -203,7 +239,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->set('context', 'This is spam')
                 ->call('submit');
@@ -217,7 +256,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('showFormModal', true)
                 ->set('reason', ReportReason::SPAM)
                 ->call('submit');
@@ -238,7 +280,10 @@ describe('ReportComponent', function (): void {
             ]);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->call('submit')
                 ->assertForbidden();
@@ -249,11 +294,13 @@ describe('ReportComponent', function (): void {
         it('prevents guests from submitting reports', function (): void {
             $mod = Mod::factory()->create();
 
-            expect(function (): void {
-                Livewire::test(ReportComponent::class, ['reportable' => $mod])
-                    ->set('reason', ReportReason::SPAM)
-                    ->call('submit');
-            })->toThrow(Exception::class);
+            Livewire::test(ReportComponent::class, [
+                'reportableId' => $mod->id,
+                'reportableType' => $mod::class,
+            ])
+                ->set('reason', ReportReason::SPAM)
+                ->call('submit')
+                ->assertForbidden();
 
             expect(Report::query()->count())->toBe(0);
         });
@@ -275,7 +322,10 @@ describe('ReportComponent', function (): void {
                 $mod = Mod::factory()->create(); // Create new mod for each test to avoid duplicate reporting
 
                 $component = Livewire::actingAs($user)
-                    ->test(ReportComponent::class, ['reportable' => $mod])
+                    ->test(ReportComponent::class, [
+                        'reportableId' => $mod->id,
+                        'reportableType' => $mod::class,
+                    ])
                     ->set('reason', $reason)
                     ->call('submit')
                     ->assertHasNoErrors();
@@ -295,29 +345,32 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('showThankYouModal', true)
                 ->call('closeThankYouModal');
 
             expect($component->get('showThankYouModal'))->toBeFalse();
         });
 
-        it('clears computed property cache when closing thank you modal', function (): void {
+        it('closes thank you modal correctly', function (): void {
             $user = User::factory()->create();
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('showThankYouModal', true);
 
-            // Access the computed property to cache it
-            $component->get('canReport');
-
-            // Close the modal which should clear the cache
+            // Close the modal
             $component->call('closeThankYouModal');
 
-            // The computed property should still work correctly
-            expect($component->get('canReport'))->toBeTrue();
+            // Modal should be closed
+            expect($component->get('showThankYouModal'))->toBeFalse();
         });
     });
 
@@ -327,7 +380,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->call('submit')
                 ->assertHasNoErrors();
@@ -342,7 +398,10 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create();
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $comment])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ])
                 ->set('reason', ReportReason::HARASSMENT)
                 ->call('submit')
                 ->assertHasNoErrors();
@@ -357,7 +416,10 @@ describe('ReportComponent', function (): void {
             $reportedUser = User::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, ['reportable' => $reportedUser])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $reportedUser->id,
+                    'reportableType' => $reportedUser::class,
+                ])
                 ->set('reason', ReportReason::INAPPROPRIATE_CONTENT)
                 ->call('submit')
                 ->assertHasNoErrors();
@@ -376,13 +438,19 @@ describe('ReportComponent', function (): void {
             $mod2 = Mod::factory()->create();
 
             $component1 = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod1])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod1->id,
+                    'reportableType' => $mod1::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->set('context', 'Mod 1 spam')
                 ->set('showFormModal', true);
 
             $component2 = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod2])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod2->id,
+                    'reportableType' => $mod2::class,
+                ])
                 ->set('reason', ReportReason::HARASSMENT)
                 ->set('context', 'Mod 2 harassment')
                 ->set('showFormModal', false);
@@ -401,7 +469,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('showFormModal', true);
 
             expect($component->get('showFormModal'))->toBeTrue();
@@ -433,7 +504,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->set('context', 'This is spam content')
                 ->call('submit')
@@ -456,7 +530,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::INAPPROPRIATE_CONTENT)
                 ->set('context', 'This content is inappropriate')
                 ->call('submit');
@@ -480,7 +557,10 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->call('submit')
                 ->assertHasNoErrors();
@@ -505,19 +585,28 @@ describe('ReportComponent', function (): void {
 
             // Test mod report
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, ['reportable' => $mod])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ])
                 ->set('reason', ReportReason::SPAM)
                 ->call('submit');
 
             // Test comment report
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, ['reportable' => $comment])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ])
                 ->set('reason', ReportReason::HARASSMENT)
                 ->call('submit');
 
             // Test user report
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, ['reportable' => $reportedUser])
+                ->test(ReportComponent::class, [
+                    'reportableId' => $reportedUser->id,
+                    'reportableType' => $reportedUser::class,
+                ])
                 ->set('reason', ReportReason::INAPPROPRIATE_CONTENT)
                 ->call('submit');
 
