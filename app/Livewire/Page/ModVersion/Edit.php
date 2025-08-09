@@ -99,7 +99,7 @@ class Edit extends Component
         $this->link = $modVersion->link;
         $this->sptVersionConstraint = $modVersion->spt_version_constraint;
         $this->virusTotalLink = $modVersion->virus_total_link;
-        $this->publishedAt = $modVersion->published_at ? Carbon::parse($modVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->toDateTimeString() : null;
+        $this->publishedAt = $modVersion->published_at ? Carbon::parse($modVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
 
         $this->updatedSptVersionConstraint();
     }
@@ -153,10 +153,11 @@ class Edit extends Component
         }
 
         // Parse the published at date in the user's timezone, convert to UTC for DB storage.
+        // Zero out seconds for consistency with datetime-local input format.
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
         if ($this->publishedAt !== null) {
-            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC');
+            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         $this->modVersion->version = $validated['version'];

@@ -99,7 +99,7 @@ class Edit extends Component
         $this->description = $this->mod->description;
         $this->license = (string) $this->mod->license_id;
         $this->sourceCodeUrl = $this->mod->source_code_url;
-        $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->toDateTimeString() : null;
+        $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
     }
@@ -142,10 +142,11 @@ class Edit extends Component
         }
 
         // Parse the published at date in the user's timezone, convert to UTC for DB storage.
+        // Zero out seconds for consistency with datetime-local input format.
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
         if ($this->publishedAt !== null) {
-            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC');
+            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         // Update mod fields

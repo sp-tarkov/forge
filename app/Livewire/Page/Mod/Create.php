@@ -123,11 +123,12 @@ class Create extends Component
         }
 
         // Parse the published at date in the user's timezone, falling back to UTC if the user has no timezone, and
-        // convert it to UTC for DB storage.
+        // convert it to UTC for DB storage. Zero out seconds for consistency with datetime-local input format.
         if ($this->publishedAt !== null) {
             $userTimezone = auth()->user()->timezone ?? 'UTC';
             $this->publishedAt = Carbon::parse($this->publishedAt, $userTimezone)
                 ->setTimezone('UTC')
+                ->second(0)
                 ->toDateTimeString();
         }
 
