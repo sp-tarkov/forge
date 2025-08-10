@@ -80,6 +80,70 @@
                                 <flux:error name="virusTotalLink" />
                             </flux:field>
 
+                            <flux:field class="col-span-6">
+                                <flux:label>{{ __('Mod Dependencies') }}</flux:label>
+                                <flux:description>{{ __('Specify other mods that this version depends on. Use semantic version constraints to define compatible versions.') }}</flux:description>
+
+                                <div class="space-y-4">
+                                    @foreach($dependencies as $index => $dependency)
+                                        <div wire:key="dependency-{{ $dependency['id'] ?? $index }}" class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
+                                                <flux:button size="xs" variant="outline" wire:click="removeDependency({{ $index }})" type="button">
+                                                    {{ __('Remove') }}
+                                                </flux:button>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <flux:field>
+                                                    <flux:label>{{ __('Mod') }}</flux:label>
+                                                    <livewire:components.mod-autocomplete
+                                                        :key="'autocomplete-' . ($dependency['id'] ?? $index)"
+                                                        :exclude-mod-id="$mod->id"
+                                                        :selected-mod-id="$dependencies[$index]['modId'] ?? ''"
+                                                        placeholder="Type to search for a mod..."
+                                                        label="Select dependency mod"
+                                                        @mod-selected="updateDependencyModId({{ $index }}, $event.detail.modId)"
+                                                    />
+                                                    <flux:error name="dependencies.{{ $index }}.modId" />
+                                                </flux:field>
+
+                                                <flux:field>
+                                                    <flux:label>{{ __('Version Constraint') }}</flux:label>
+                                                    <flux:input
+                                                        type="text"
+                                                        wire:model.live.debounce="dependencies.{{ $index }}.constraint"
+                                                        placeholder="~1.0.0"
+                                                    />
+                                                    <flux:error name="dependencies.{{ $index }}.constraint" />
+                                                </flux:field>
+                                            </div>
+
+                                            @if(isset($matchingDependencyVersions[$index]) && count($matchingDependencyVersions[$index]) > 0)
+                                                <div class="mt-3">
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ __('Matching Versions:') }}</p>
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach($matchingDependencyVersions[$index] as $version)
+                                                            <span class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-800 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                                                v{{ $version['version'] }}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @elseif(!empty($dependencies[$index]['modId']) && !empty($dependencies[$index]['constraint']))
+                                                <div class="mt-3">
+                                                    <p class="text-sm text-yellow-600 dark:text-yellow-400">{{ __('No matching versions found for this constraint.') }}</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+
+                                    <flux:button size="sm" variant="outline" wire:click="addDependency" type="button">
+                                        {{ __('+ Add Dependency') }}
+                                    </flux:button>
+                                </div>
+                            </flux:field>
+
                             <flux:field class="col-span-6" x-data="{
                                 now() {
                                     // Format: YYYY-MM-DDTHH:MM
