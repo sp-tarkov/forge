@@ -10,7 +10,7 @@ describe('follow operations', function (): void {
 
         $user->follow($user);
 
-        $this->assertEmpty($user->follwers);
+        $this->assertEmpty($user->followers);
         $this->assertEmpty($user->following);
     });
 

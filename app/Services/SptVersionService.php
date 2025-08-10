@@ -41,6 +41,6 @@ class SptVersionService
         }
 
         // Return the IDs of all satisfying versions
-        return array_map(fn ($version) => $availableVersions[$version], $satisfyingVersions);
+        return array_map(fn (string $version): int => $availableVersions[$version], $satisfyingVersions);
     }
 }

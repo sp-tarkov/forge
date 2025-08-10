@@ -133,7 +133,7 @@ class ModFilter
             return $this->builder;
         }
 
-        return $this->builder->whereExists(function ($query) use ($versions): void {
+        return $this->builder->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($versions): void {
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')

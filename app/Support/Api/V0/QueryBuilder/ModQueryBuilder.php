@@ -43,7 +43,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function applySptVersionCondition(Builder $query, ?array $compatibleVersions = null): void
     {
-        $query->whereExists(function ($query) use ($compatibleVersions): void {
+        $query->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($compatibleVersions): void {
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')

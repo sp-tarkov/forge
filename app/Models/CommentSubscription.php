@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use Database\Factories\CommentSubscriptionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -24,6 +26,9 @@ use Illuminate\Support\Carbon;
  */
 class CommentSubscription extends Model
 {
+    /** @use HasFactory<CommentSubscriptionFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'commentable_type',

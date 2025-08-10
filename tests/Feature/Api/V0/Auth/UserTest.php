@@ -31,6 +31,7 @@ describe('Auth User API', function (): void {
                     'profile_photo_url',
                     'cover_photo_url',
                     'created_at',
+                    'updated_at',
                     // 'role' should NOT be here by default
                 ],
             ])
@@ -46,6 +47,7 @@ describe('Auth User API', function (): void {
         $user = User::factory()->create([
             'password' => Hash::make('password123'),
             'user_role_id' => $role->id, // Assign role
+            'email_verified_at' => now(),
         ]);
         $token = $user->createToken('test-token')->plainTextToken;
 
@@ -70,6 +72,7 @@ describe('Auth User API', function (): void {
                         'color_class',
                     ],
                     'created_at',
+                    'updated_at',
                 ],
             ])
             ->assertJsonPath('data.role.id', $role->id)
@@ -120,6 +123,7 @@ describe('Auth User API', function (): void {
                     'cover_photo_url',
                     'role',
                     'created_at',
+                    'updated_at',
                 ],
             ])
             ->assertJsonPath('data.role', null)

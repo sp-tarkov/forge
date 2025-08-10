@@ -6,6 +6,7 @@ namespace App\Livewire\Page\ModVersion;
 
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\Scopes\PublishedScope;
 use App\Models\SptVersion;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
@@ -78,6 +79,20 @@ class Create extends Component
     public array $matchingSptVersions = [];
 
     /**
+     * The mod dependencies to be created.
+     *
+     * @var array<int, array{modId: string, constraint: string}>
+     */
+    public array $dependencies = [];
+
+    /**
+     * The matching mod versions for each dependency constraint.
+     *
+     * @var array<int, array<int, array{id: int, mod_name: string, version: string}>>
+     */
+    public array $matchingDependencyVersions = [];
+
+    /**
      * Update the matching SPT versions when the constraint changes.
      */
     public function updatedSptVersionConstraint(): void
@@ -111,6 +126,154 @@ class Create extends Component
     }
 
     /**
+     * Get custom validation rules for dependencies.
+     *
+     * @return array<string, mixed>
+     */
+    protected function rules(): array
+    {
+        $rules = [];
+        foreach ($this->dependencies as $index => $dependency) {
+            // If either field is filled, both are required
+            if (! empty($dependency['modId']) || ! empty($dependency['constraint'])) {
+                $rules[sprintf('dependencies.%d.modId', $index)] = 'required|exists:mods,id';
+                $rules[sprintf('dependencies.%d.constraint', $index)] = ['required', 'string', new SemverConstraintRule];
+            } else {
+                $rules[sprintf('dependencies.%d.modId', $index)] = 'nullable|exists:mods,id';
+                $rules[sprintf('dependencies.%d.constraint', $index)] = ['nullable', 'string', new SemverConstraintRule];
+            }
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        $messages = [];
+        foreach ($this->dependencies as $index => $dependency) {
+            $messages[sprintf('dependencies.%d.modId.required', $index)] = 'Please select a mod.';
+            $messages[sprintf('dependencies.%d.modId.exists', $index)] = 'The selected mod does not exist.';
+            $messages[sprintf('dependencies.%d.constraint.required', $index)] = 'Please specify a version constraint.';
+            $messages[sprintf('dependencies.%d.constraint.string', $index)] = 'This version constraint is invalid.';
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Add a new dependency.
+     */
+    public function addDependency(): void
+    {
+        $uniqueId = uniqid();
+        $this->dependencies[] = [
+            'id' => $uniqueId,
+            'modId' => '',
+            'constraint' => '',
+        ];
+        $this->matchingDependencyVersions[count($this->dependencies) - 1] = [];
+    }
+
+    /**
+     * Remove a dependency.
+     */
+    public function removeDependency(int $index): void
+    {
+        unset($this->dependencies[$index]);
+        unset($this->matchingDependencyVersions[$index]);
+        $this->dependencies = array_values($this->dependencies);
+        $this->matchingDependencyVersions = array_values($this->matchingDependencyVersions);
+    }
+
+    /**
+     * Update a dependency's mod ID.
+     */
+    public function updateDependencyModId(int $index, string $modId): void
+    {
+        if (isset($this->dependencies[$index])) {
+            $this->dependencies[$index]['modId'] = $modId;
+            $this->updateMatchingDependencyVersions($index);
+        }
+    }
+
+    /**
+     * Update a dependency's constraint.
+     */
+    public function updateDependencyConstraint(int $index, string $constraint): void
+    {
+        if (isset($this->dependencies[$index])) {
+            $this->dependencies[$index]['constraint'] = $constraint;
+            $this->updateMatchingDependencyVersions($index);
+        }
+    }
+
+    /**
+     * Update the matching versions for a dependency constraint.
+     */
+    public function updatedDependencies(mixed $value, ?string $property = null): void
+    {
+        if ($property === null) {
+            return;
+        }
+
+        // Extract the index from the property path
+        if (preg_match('/^(\d+)\.(constraint|modId)$/', $property, $matches)) {
+            $index = (int) $matches[1];
+
+            // Update matching versions when either modId or constraint changes
+            $this->updateMatchingDependencyVersions($index);
+        }
+    }
+
+    /**
+     * Update the matching mod versions for a specific dependency.
+     */
+    private function updateMatchingDependencyVersions(int $index): void
+    {
+        if (! isset($this->dependencies[$index])) {
+            return;
+        }
+
+        $dependency = $this->dependencies[$index];
+
+        if (empty($dependency['modId']) || empty($dependency['constraint'])) {
+            $this->matchingDependencyVersions[$index] = [];
+
+            return;
+        }
+
+        try {
+            $mod = Mod::query()->find($dependency['modId']);
+            if (! $mod) {
+                $this->matchingDependencyVersions[$index] = [];
+
+                return;
+            }
+
+            $versions = $mod->versions()
+                ->withoutGlobalScope(PublishedScope::class)
+                ->get()
+                ->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
+                ->map(fn (ModVersion $version): array => [
+                    'id' => $version->id,
+                    'mod_name' => $mod->name,
+                    'version' => $version->version,
+                ])
+                ->values()
+                ->toArray();
+
+            $this->matchingDependencyVersions[$index] = $versions;
+        } catch (Exception) {
+            $this->matchingDependencyVersions[$index] = [];
+        }
+    }
+
+    /**
      * Mount the component.
      */
     public function mount(Mod $mod): void
@@ -119,6 +282,31 @@ class Create extends Component
         $this->honeypotData = new HoneypotData;
 
         $this->authorize('create', [ModVersion::class, $this->mod]);
+    }
+
+    /**
+     * Validate dependencies have matching versions.
+     */
+    protected function validateDependenciesHaveMatchingVersions(): bool
+    {
+        $hasErrors = false;
+
+        foreach ($this->dependencies as $index => $dependency) {
+            // Skip if both fields are empty (optional dependency)
+            if (empty($dependency['modId']) && empty($dependency['constraint'])) {
+                continue;
+            }
+
+            // Check if there are matching versions
+            if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
+                if (! isset($this->matchingDependencyVersions[$index]) || count($this->matchingDependencyVersions[$index]) === 0) {
+                    $this->addError(sprintf('dependencies.%d.constraint', $index), 'No matching versions found. Please adjust the version constraint.');
+                    $hasErrors = true;
+                }
+            }
+        }
+
+        return ! $hasErrors;
     }
 
     /**
@@ -137,17 +325,23 @@ class Create extends Component
             return;
         }
 
+        // Additional validation for matching versions
+        if (! $this->validateDependenciesHaveMatchingVersions()) {
+            return;
+        }
+
         // Parse the published at date in the user's timezone, falling back to UTC if the user has no timezone, and
-        // convert it to UTC for DB storage.
+        // convert it to UTC for DB storage. Zero out seconds for consistency with datetime-local input format.
         if ($this->publishedAt !== null) {
             $userTimezone = auth()->user()->timezone ?? 'UTC';
             $this->publishedAt = Carbon::parse($this->publishedAt, $userTimezone)
                 ->setTimezone('UTC')
+                ->second(0)
                 ->toDateTimeString();
         }
 
         // Create the mod version.
-        $this->mod->versions()->create([
+        $modVersion = $this->mod->versions()->create([
             'version' => $validated['version'],
             'description' => $validated['description'],
             'link' => $validated['link'],
@@ -155,6 +349,21 @@ class Create extends Component
             'virus_total_link' => $validated['virusTotalLink'],
             'published_at' => $this->publishedAt,
         ]);
+
+        // Create dependencies if any were specified
+        foreach ($this->dependencies as $dependency) {
+            if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
+                // Skip self-dependencies
+                if ($dependency['modId'] == $this->mod->id) {
+                    continue;
+                }
+
+                $modVersion->dependencies()->create([
+                    'dependent_mod_id' => $dependency['modId'],
+                    'constraint' => $dependency['constraint'],
+                ]);
+            }
+        }
 
         flash()->success('Mod version has been successfully created.');
 

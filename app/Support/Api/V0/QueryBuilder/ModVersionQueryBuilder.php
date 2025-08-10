@@ -57,7 +57,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function applySptVersionCondition(Builder $query, ?array $compatibleVersions = null): void
     {
-        $query->whereExists(function ($query) use ($compatibleVersions): void {
+        $query->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($compatibleVersions): void {
             $query->select(DB::raw(1))
                 ->from('mod_version_spt_version')
                 ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
@@ -331,7 +331,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     protected function applySorts(): void
     {
         if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn ($sort): bool => ! empty($sort));
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
             if (empty($this->sorts)) {
                 return; // All sorts were empty and filtered out, return early.
             }

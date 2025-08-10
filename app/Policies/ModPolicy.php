@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Mod;
+use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
@@ -128,7 +129,7 @@ class ModPolicy
     {
         $mod->loadMissing(['versions.latestSptVersion']);
 
-        return $mod->versions->contains(fn ($version): bool => ! is_null($version->latestSptVersion));
+        return $mod->versions->contains(fn (ModVersion $version): bool => ! is_null($version->latestSptVersion));
     }
 
     /**

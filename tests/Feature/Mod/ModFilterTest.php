@@ -200,7 +200,7 @@ describe('combined filtering', function (): void {
 });
 
 describe('disabled mods filtering', function (): void {
-    it('does not show disabled mods to unauthorised users', function (): void {
+    it('does not show disabled mods to unauthorized users', function (): void {
         // Create the SPT versions
         $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
 

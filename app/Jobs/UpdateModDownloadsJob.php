@@ -7,6 +7,7 @@ namespace App\Jobs;
 use App\Models\Mod;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -25,7 +26,7 @@ class UpdateModDownloadsJob implements ShouldQueue
     {
         Mod::query()
             ->with('versions')
-            ->chunk(100, function ($mods): void {
+            ->chunk(100, function (Collection $mods): void {
                 foreach ($mods as $mod) {
                     $mod->calculateDownloads();
                 }

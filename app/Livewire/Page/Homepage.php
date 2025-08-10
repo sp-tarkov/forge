@@ -6,6 +6,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -48,7 +49,7 @@ class Homepage extends Component
             ->inRandomOrder()
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->whereDisabled(false));
 
         return $query->get();
     }
@@ -72,7 +73,7 @@ class Homepage extends Component
             ->orderByDesc('created_at')
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->whereDisabled(false));
 
         return $query->get();
     }
@@ -96,7 +97,7 @@ class Homepage extends Component
             ->orderByDesc('updated_at')
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->whereDisabled(false));
 
         return $query->get();
     }

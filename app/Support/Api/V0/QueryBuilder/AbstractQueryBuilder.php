@@ -250,7 +250,7 @@ abstract class AbstractQueryBuilder
     protected function applyIncludes(): void
     {
         if (! empty($this->includes)) {
-            $this->includes = array_filter($this->includes, fn ($include): bool => ! empty($include));
+            $this->includes = array_filter($this->includes, fn (?string $include): bool => ! empty($include));
             if (empty($this->includes)) {
                 return; // All includes were empty and filtered out, return early.
             }
@@ -301,8 +301,8 @@ abstract class AbstractQueryBuilder
      */
     protected function applyFields(): void
     {
-        $fields = array_filter($this->fields, fn ($field): bool => ! empty($field));
-        $requiredFields = array_filter(static::getRequiredFields(), fn ($field): bool => ! empty($field));
+        $fields = array_filter($this->fields, fn (?string $field): bool => ! empty($field));
+        $requiredFields = array_filter(static::getRequiredFields(), fn (string $field): bool => ! empty($field));
 
         if (! empty($fields)) {
             // Get fields that need validation (excluding required fields)
@@ -332,7 +332,7 @@ abstract class AbstractQueryBuilder
             }
 
             // Filter out dynamic attributes from the select statement
-            $dbFields = array_filter($fields, fn ($field): bool => ! array_key_exists($field, $dynamicAttributes));
+            $dbFields = array_filter($fields, fn (string $field): bool => ! array_key_exists($field, $dynamicAttributes));
 
             // Merge required fields, database fields, and dynamic attribute dependencies
             $this->builder->select(array_merge($dbFields, $requiredFields, $requiredDependencies));
@@ -351,7 +351,7 @@ abstract class AbstractQueryBuilder
     protected function applySorts(): void
     {
         if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn ($sort): bool => ! empty($sort));
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
             if (empty($this->sorts)) {
                 return; // All sorts were empty and filtered out, return early.
             }
@@ -505,13 +505,13 @@ abstract class AbstractQueryBuilder
      */
     protected static function parseCommaSeparatedInput(string $value, ?string $castReturn = null): array
     {
-        $values = array_filter(explode(',', $value), fn ($value): bool => ! empty($value));
+        $values = array_filter(explode(',', $value), fn (string $value): bool => ! empty($value));
 
         if ($castReturn === null) {
             return $values;
         }
 
-        return array_map(fn ($value): mixed => match ($castReturn) {
+        return array_map(fn (string $value): mixed => match ($castReturn) {
             'integer' => (int) $value,
             'float' => (float) $value,
             'boolean' => self::parseBooleanInput($value),

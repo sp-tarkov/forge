@@ -24,7 +24,7 @@
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">
-                <a href="{{ $version->downloadUrl() }}" class="self-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white" rel="nofollow">
+                <a href="{{ $version->downloadUrl() }}" class="text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white" rel="nofollow">
                     {{ __('Version') }} {{ $version->version }}
                     <flux:tooltip content="Download Mod Version" position="right">
                         <flux:icon icon="arrow-down-on-square-stack" class="inline-block size-6 ml-2 relative -top-1" />
@@ -44,7 +44,7 @@
                             @endif
                         </p>
                     </flux:tooltip>
-                    <p class="ml-2.5 self-center text-sm text-gray-800 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">
+                    <p class="ml-2.5 text-sm text-gray-800 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">
                         {{ Number::downloads($version->downloads) }} {{ __('Downloads') }}
                     </p>
                 </div>
@@ -79,7 +79,7 @@
         !DANGER ZONE!
 
         This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
-        fields like this when you're absolutly sure that the data is safe. Which is almost never.
+        fields like this when you're absolutely sure that the data is safe. Which is almost never.
         --}}
         {!! $version->description_html !!}
     </div>
