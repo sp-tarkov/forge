@@ -9,6 +9,7 @@ use App\Services\SptVersionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -28,7 +29,7 @@ class ResolveSptVersionsJob implements ShouldBeUnique, ShouldQueue
         $sptVersionService = new SptVersionService;
 
         ModVersion::query()
-            ->chunk(100, function ($modVersions) use ($sptVersionService): void {
+            ->chunk(100, function (Collection $modVersions) use ($sptVersionService): void {
                 foreach ($modVersions as $modVersion) {
                     $sptVersionService->resolve($modVersion);
                 }

@@ -365,7 +365,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasEnabledTwoFactorAuthentication()
             || (
                 $this->oAuthConnections->isNotEmpty()
-                && $this->oAuthConnections->every(fn ($connection) => $connection->mfa_enabled)
+                && $this->oAuthConnections->every(fn (OAuthConnection $connection): bool => $connection->mfa_enabled)
             );
     }
 }

@@ -31,6 +31,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -702,27 +703,27 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 DB::raw("IFNULL(ANY_VALUE(spt_version.label), '') AS spt_version_label"),
             )
             ->leftJoin('filebase1_file_author as additionalAuthors', 'file.fileID', '=', 'additionalAuthors.fileID')
-            ->leftJoin('filebase1_file_content as content', function ($join): void {
+            ->leftJoin('filebase1_file_content as content', function (JoinClause $join): void {
                 $join->on('file.fileID', '=', 'content.fileID')
                     ->whereNull('content.languageID'); // We don't do that here
             })
-            ->leftJoin('filebase1_file_option_value as optionSourceCode', function ($join): void {
+            ->leftJoin('filebase1_file_option_value as optionSourceCode', function (JoinClause $join): void {
                 $join->on('file.fileID', '=', 'optionSourceCode.fileID')
                     ->whereIn('optionSourceCode.optionID', [1, 5]); // Two different options for source code? Sure.
             })
-            ->leftJoin('filebase1_file_option_value as optionContainsAI', function ($join): void {
+            ->leftJoin('filebase1_file_option_value as optionContainsAI', function (JoinClause $join): void {
                 $join->on('file.fileID', '=', 'optionContainsAI.fileID')
                     ->where('optionContainsAI.optionID', 7); // AI option
             })
-            ->leftJoin('filebase1_file_option_value as optionContainsAds', function ($join): void {
+            ->leftJoin('filebase1_file_option_value as optionContainsAds', function (JoinClause $join): void {
                 $join->on('file.fileID', '=', 'optionContainsAds.fileID')
                     ->where('optionContainsAds.optionID', 3); // Ad option
             })
-            ->leftJoin('wcf1_label_object as label', function ($join): void {
+            ->leftJoin('wcf1_label_object as label', function (JoinClause $join): void {
                 $join->on('file.fileID', '=', 'label.objectID')
                     ->where('label.objectTypeID', 387); // File object type
             })
-            ->leftJoin('wcf1_label as spt_version', function ($join): void {
+            ->leftJoin('wcf1_label as spt_version', function (JoinClause $join): void {
                 $join->on('label.labelID', '=', 'spt_version.labelID')
                     ->where('spt_version.groupID', 1); // SPT Version group
             })
@@ -742,8 +743,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 // Fetch additional author users for this batch
                 $allAdditionalAuthorHubIds = $hubMods
                     ->pluck('additional_authors')
-                    ->flatMap(fn ($ids) => empty($ids) ? [] : explode(',', $ids))
-                    ->map(fn ($id): string => trim($id))
+                    ->flatMap(fn (?string $ids): array => empty($ids) ? [] : explode(',', $ids))
+                    ->map(fn (string $id): string => trim($id))
                     ->filter()
                     ->unique()
                     ->all();
@@ -862,13 +863,13 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             if ($localMod = $localMods->get($hubMod->fileID)) {
                 $additionalAuthorHubIds = $hubMod->additional_authors
                     ? collect(explode(',', $hubMod->additional_authors))
-                        ->map(fn ($id): string => trim($id))
+                        ->map(fn (string $id): string => trim($id))
                         ->filter()
                         ->all()
                     : [];
 
                 $authorIdsToSync = collect($additionalAuthorHubIds)
-                    ->map(fn ($hubId) => $localAuthors->get((int) $hubId)?->id)
+                    ->map(fn (string $hubId): ?int => $localAuthors->get((int) $hubId)?->id)
                     ->filter()
                     ->all();
 
@@ -912,7 +913,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 DB::raw("IFNULL(GROUP_CONCAT(TRIM(option_values.optionValue) ORDER BY option_values.optionValue SEPARATOR ','), '') AS virus_total_links")
             )
             ->leftJoin('filebase1_file_version_content as version_content', 'version.versionID', '=', 'version_content.versionID')
-            ->leftJoin('filebase1_file_option_value as option_values', function ($join): void {
+            ->leftJoin('filebase1_file_option_value as option_values', function (JoinClause $join): void {
                 $join->on('version.fileID', '=', 'option_values.fileID')
                     ->whereIn('option_values.optionID', [6, 2]); // VirusTotal links
             })

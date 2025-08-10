@@ -10,6 +10,9 @@ use Illuminate\View\View;
 use Livewire\Attributes\Modelable;
 use Livewire\Component;
 
+/**
+ * @property Collection<int, Mod> $filteredMods
+ */
 class ModAutocomplete extends Component
 {
     /**

@@ -154,7 +154,7 @@ class HubMod
     {
         $additionalAuthorHubIds = $this->additional_authors
             ? collect(explode(',', $this->additional_authors))
-                ->map(fn ($id): string => trim($id))
+                ->map(fn (string $id): string => trim($id))
                 ->filter()
                 ->all()
             : []; // Default to an empty array.
@@ -199,7 +199,7 @@ class HubMod
         // Decode the Woltlab tab names and replace them with H2 tags.
         $dirty = preg_replace_callback(
             '/<woltlab-metacode\s+data-name="tab"\s+data-attributes="(.*?)"\s*>/s',
-            function ($matches) {
+            function (array $matches): string {
                 $base64Value = $matches[1];
                 $decodedContent = base64_decode($base64Value);
 
@@ -298,7 +298,7 @@ class HubMod
      */
     public function getSourceCodeLink(): string
     {
-        return collect(explode(',', $this->source_code_url))->map(fn ($link): string => trim($link))->reject(fn ($link): bool => empty($link))->first() ?? '';
+        return collect(explode(',', $this->source_code_url))->map(fn (string $link): string => trim($link))->reject(fn (string $link): bool => empty($link))->first() ?? '';
     }
 
     /**

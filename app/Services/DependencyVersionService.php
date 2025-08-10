@@ -48,7 +48,7 @@ class DependencyVersionService
                 : $dependency->dependentMod->versions()->get();
 
             // Filter the dependent mod versions to find the ones that satisfy the dependency constraint.
-            $matchedVersions = $dependentModVersions->filter(fn ($version) => Semver::satisfies($version->version, $dependency->constraint));
+            $matchedVersions = $dependentModVersions->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency->constraint));
 
             // Map the matched versions to the sync data.
             foreach ($matchedVersions as $matchedVersion) {

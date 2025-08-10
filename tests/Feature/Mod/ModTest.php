@@ -1,14 +1,11 @@
 <?php
 
 declare(strict_types=1);
-
-use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Livewire\Livewire;
 
 it('displays the latest version on the mod detail page', function (): void {
     $versions = [
@@ -338,4 +335,3 @@ it('correctly handles pre-release labels in alphabetical order', function (): vo
     $latestVersion = $mod->latestVersion;
     expect($latestVersion->version)->toBe('1.0.0-alpha');
 });
-

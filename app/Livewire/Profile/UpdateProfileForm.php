@@ -15,10 +15,8 @@ class UpdateProfileForm extends UpdateProfileInformationForm
 {
     /**
      * The new cover photo for the user.
-     *
-     * @var string|null
      */
-    public $cover;
+    public ?string $cover = null;
 
     /**
      * When the photo is temporarily uploaded.

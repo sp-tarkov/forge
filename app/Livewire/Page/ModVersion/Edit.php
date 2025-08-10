@@ -230,7 +230,7 @@ class Edit extends Component
     /**
      * Update the matching versions for a dependency constraint.
      */
-    public function updatedDependencies($value, $property = null): void
+    public function updatedDependencies(mixed $value, ?string $property = null): void
     {
         if ($property === null) {
             return;
@@ -239,12 +239,9 @@ class Edit extends Component
         // Extract the index from the property path
         if (preg_match('/^(\d+)\.(constraint|modId)$/', $property, $matches)) {
             $index = (int) $matches[1];
-            $field = $matches[2];
 
             // Update matching versions when either modId or constraint changes
-            if ($field === 'constraint' || $field === 'modId') {
-                $this->updateMatchingDependencyVersions($index);
-            }
+            $this->updateMatchingDependencyVersions($index);
         }
     }
 
@@ -276,8 +273,8 @@ class Edit extends Component
             $versions = $mod->versions()
                 ->withoutGlobalScope(PublishedScope::class)
                 ->get()
-                ->filter(fn ($version) => Semver::satisfies($version->version, $dependency['constraint']))
-                ->map(fn ($version): array => [
+                ->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
+                ->map(fn (ModVersion $version): array => [
                     'id' => $version->id,
                     'mod_name' => $mod->name,
                     'version' => $version->version,
