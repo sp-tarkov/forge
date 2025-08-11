@@ -16,9 +16,14 @@ use Tests\TestCase;
 |
 */
 
-pest()->extend(TestCase::class)
+pest()
+    ->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
+
+pest()
+    ->extend(Tests\DuskTestCase::class)
+    ->in('Browser');
 
 /*
 |--------------------------------------------------------------------------

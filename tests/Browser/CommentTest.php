@@ -1,0 +1,1042 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\Comment;
+use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\User;
+use App\Models\UserRole;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Laravel\Dusk\Browser;
+
+uses(DatabaseTruncation::class);
+
+describe('Guest User Tests', function (): void {
+    it('should not show comment form to guest users', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $this->browse(function (Browser $browser) use ($mod) {
+            $browser->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertDontSee('Post Comment')
+                ->assertMissing('textarea[wire\\:model="newCommentBody"]');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should not show reply buttons to guest users', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $user = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment that guests should not be able to reply to.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($mod) {
+            $browser->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertDontSee('Reply');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should not show edit buttons to guest users', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $user = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment that guests should not be able to edit.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($mod) {
+            $browser->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertDontSee('Edit');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should not show delete buttons to guest users', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $user = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment that guests should not be able to delete.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($mod) {
+            $browser->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertDontSee('Delete');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should not show reaction buttons to guest users', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $user = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment that guests should not be able to react to.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($mod) {
+            $browser->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertMissing('[wire\\:click*="toggleReaction"]');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
+describe('Comment Creation Tests', function (): void {
+    it('should allow logged in user to create a root comment without browser errors', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+        $commentText = 'This is a test comment with more than minimum length.';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Post Comment')
+                ->assertPresent('textarea[wire\\:model="newCommentBody"]')
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText)
+                ->press('Post Comment')
+                ->waitForText($commentText, 10)
+                ->assertSeeIn('#comments', $commentText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should validate minimum comment length', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+        $shortText = 'Hi';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $shortText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $shortText)
+                ->press('Post Comment')
+                ->waitFor('.text-red-500', 5)
+                ->assertSee('at least');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should clear form after successful comment creation', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+        $commentText = 'This is a test comment that should clear after submission.';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText)
+                ->press('Post Comment')
+                ->waitForText($commentText, 10)
+                ->assertInputValue('textarea[wire\\:model="newCommentBody"]', '');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should enforce rate limiting for regular users', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+        $commentText1 = 'This is the first test comment for rate limiting.';
+        $commentText2 = 'This is the second test comment for rate limiting.';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText1, $commentText2) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText1)
+                ->press('Post Comment')
+                ->waitForText($commentText1, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText2)
+                ->press('Post Comment')
+                ->pause(2000) // Wait to see if second comment gets created
+                ->assertDontSee($commentText2); // If rate limiting works, second comment should not appear
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should allow administrators to bypass rate limiting', function (): void {
+        $admin = User::factory()->create();
+        $adminRole = UserRole::factory()->administrator()->create();
+        $admin->assignRole($adminRole);
+
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+        $commentText1 = 'This is the first admin comment.';
+        $commentText2 = 'This is the second admin comment.';
+
+        $this->browse(function (Browser $browser) use ($admin, $mod, $commentText1, $commentText2) {
+            $browser->loginAs($admin)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText1)
+                ->press('Post Comment')
+                ->waitForText($commentText1, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText2)
+                ->press('Post Comment')
+                ->waitForText($commentText2, 10)
+                ->assertSee($commentText2);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should allow moderators to bypass rate limiting', function (): void {
+        $moderator = User::factory()->create();
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderator->assignRole($moderatorRole);
+
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+        $commentText1 = 'This is the first moderator comment.';
+        $commentText2 = 'This is the second moderator comment.';
+
+        $this->browse(function (Browser $browser) use ($moderator, $mod, $commentText1, $commentText2) {
+            $browser->loginAs($moderator)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText1)
+                ->press('Post Comment')
+                ->waitForText($commentText1, 10)
+                ->type('textarea[wire\\:model="newCommentBody"]', $commentText2)
+                ->press('Post Comment')
+                ->waitForText($commentText2, 10)
+                ->assertSee($commentText2);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
+describe('Comment Reply Tests', function (): void {
+    it('should show reply button for authenticated users', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment that should show a reply button.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Reply');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should open reply form when reply button is clicked', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment to reply to.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleReplyForm"]')
+                ->waitForText('Reply To Comment', 5)
+                ->assertSee('Reply To Comment')
+                ->assertSee('Post Reply');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should close reply form when cancel is clicked', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment to reply to.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleReplyForm"]')
+                ->waitForText('Reply To Comment', 5)
+                ->click('button[wire\\:click*="toggleReplyForm"]')
+                ->waitUntilMissing('[text="Reply To Comment"]', 5)
+                ->assertDontSee('Reply To Comment');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should create reply to root comment', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment to reply to.',
+        ]);
+        $replyText = 'This is my reply to the test comment.';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $replyText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleReplyForm"]')
+                ->waitForText('Reply To Comment', 5)
+                ->type('textarea[wire\\:model*="reply"]', $replyText)
+                ->press('Post Reply')
+                ->waitForText($replyText, 10)
+                ->assertSee($replyText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should maintain comment hierarchy', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $rootComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is the root comment.',
+        ]);
+        $replyText = 'This is a reply to the root comment.';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $rootComment, $replyText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleReplyForm"]')
+                ->waitForText('Reply To Comment', 5)
+                ->type('textarea[wire\\:model*="reply"]', $replyText)
+                ->press('Post Reply')
+                ->waitForText($replyText, 10)
+                ->assertSee('Replying to @'.$rootComment->user->name);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should validate reply content length', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment to reply to.',
+        ]);
+        $shortReply = 'Hi';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $shortReply) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleReplyForm"]')
+                ->waitForText('Reply To Comment', 5)
+                ->type('textarea[wire\\:model*="reply"]', $shortReply)
+                ->press('Post Reply')
+                ->waitFor('.text-red-500', 5)
+                ->assertSee('at least');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should clear reply form after successful submission', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment to reply to.',
+        ]);
+        $replyText = 'This reply should clear the form after submission.';
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $replyText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleReplyForm"]')
+                ->waitForText('Reply To Comment', 5)
+                ->type('textarea[wire\\:model*="reply"]', $replyText)
+                ->press('Post Reply')
+                ->waitForText($replyText, 10)
+                ->assertDontSee('Reply To Comment'); // Form should be hidden after successful reply
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
+describe('Comment Editing Tests', function (): void {
+    it('should show edit button for comment owner within time limit', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a freshly created comment that should be editable.',
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Edit');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should not show edit button for other users comments', function (): void {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user1->id,
+            'body' => 'This comment belongs to user1.',
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user2, $mod) {
+            $browser->loginAs($user2)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertDontSee('Edit');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should open edit form with existing comment content', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $originalText = 'This is the original comment text that should appear in the edit form.';
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => $originalText,
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $originalText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleEditForm"]')
+                ->waitForText('Edit Comment', 5)
+                ->assertSee('Edit Comment')
+                ->assertInputValue('textarea[wire\\:model*="edit"]', $originalText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should save edited comment successfully', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $originalText = 'This is the original comment text.';
+        $editedText = 'This is the edited comment text with more content.';
+        Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => $originalText,
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee($originalText)
+                ->click('button[wire\\:click*="toggleEditForm"]')
+                ->waitForText('Edit Comment', 5)
+                ->clear('textarea[wire\\:model*="edit"]')
+                ->type('textarea[wire\\:model*="edit"]', $editedText)
+                ->press('Update Comment')
+                ->waitForText($editedText, 10)
+                ->assertSee($editedText)
+                ->assertDontSee($originalText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should validate edited comment content', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $originalText = 'This is the original comment text.';
+        $shortText = 'Hi';
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => $originalText,
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $shortText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click*="toggleEditForm"]')
+                ->waitForText('Edit Comment', 5)
+                ->clear('textarea[wire\\:model*="edit"]')
+                ->type('textarea[wire\\:model*="edit"]', $shortText)
+                ->press('Update Comment')
+                ->waitFor('.text-red-500', 5)
+                ->assertSee('at least');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should cancel edit without saving changes', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $originalText = 'This is the original comment text that should remain unchanged.';
+        $editedText = 'This edited text should not be saved when cancelled.';
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => $originalText,
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee($originalText)
+                ->click('button[wire\\:click*="toggleEditForm"]')
+                ->waitForText('Edit Comment', 5)
+                ->clear('textarea[wire\\:model*="edit"]')
+                ->type('textarea[wire\\:model*="edit"]', $editedText)
+                ->press('Cancel')
+                ->waitUntilMissing('[text="Edit Comment"]', 5)
+                ->assertSee($originalText)
+                ->assertDontSee($editedText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
+describe('Comment Deletion Tests', function (): void {
+    it('should show delete button for comment owner', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a comment that the owner should be able to delete.',
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Delete');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should not show delete button for other users comments', function (): void {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user1->id,
+            'body' => 'This comment belongs to user1.',
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user2, $mod) {
+            $browser->loginAs($user2)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertDontSee('Delete');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should require confirmation before deletion', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $commentText = 'This comment should require confirmation before deletion.';
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => $commentText,
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee($commentText)
+                ->click('button[wire\\:click*="deleteComment"]')
+                ->waitForDialog()
+                ->dismissDialog()
+                ->assertSee($commentText); // Comment should still be there after dismissing dialog
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should delete comment after confirming', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $commentText = 'This comment should be deleted after confirmation.';
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => $commentText,
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee($commentText)
+                ->click('button[wire\\:click*="deleteComment"]')
+                ->waitForDialog()
+                ->acceptDialog()
+                ->waitUntilMissing('[text="'.$commentText.'"]', 5)
+                ->assertDontSee($commentText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
+describe('Comment Reactions Tests', function (): void {
+    it('should show reaction button for authenticated users', function (): void {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user1->id,
+            'body' => 'This is a comment that should show reaction buttons.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user2, $mod) {
+            $browser->loginAs($user2)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertPresent('button[wire\\:click*="toggleReaction"]');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should not show reaction button for comment owner', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is my own comment that should not have a reaction button.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertMissing('button[wire\\:click*="toggleReaction"]');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should toggle reaction on comment', function (): void {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user1->id,
+            'body' => 'This comment should be likeable.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user2, $mod) {
+            $browser->loginAs($user2)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('0 Likes')
+                ->click('button[wire\\:click*="toggleReaction"]')
+                ->waitForText('1 Like', 5)
+                ->assertSee('1 Like');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should remove reaction when clicked again', function (): void {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user1->id,
+            'body' => 'This comment should allow toggling likes.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user2, $mod) {
+            $browser->loginAs($user2)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('0 Likes')
+                ->click('button[wire\\:click*="toggleReaction"]')
+                ->waitForText('1 Like', 5)
+                ->click('button[wire\\:click*="toggleReaction"]')
+                ->waitForText('0 Likes', 5)
+                ->assertSee('0 Likes');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should display existing reaction count correctly', function (): void {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $user3 = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user1->id,
+            'body' => 'This comment already has some reactions.',
+        ]);
+
+        // Create existing reactions
+        $comment->reactions()->create(['user_id' => $user2->id]);
+        $comment->reactions()->create(['user_id' => $user3->id]);
+
+        $this->browse(function (Browser $browser) use ($user1, $mod) {
+            $browser->loginAs($user1)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('2 Likes');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
+describe('Comment Subscription Tests', function (): void {
+    it('should show subscription button for authenticated users', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Subscribe');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should toggle subscription status', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Subscribe')
+                ->click('button[wire\\:click="toggleSubscription"]')
+                ->waitForText('Subscribed', 5)
+                ->assertSee('Subscribed');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should unsubscribe when clicked again', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Subscribe')
+                ->click('button[wire\\:click="toggleSubscription"]')
+                ->waitForText('Subscribed', 5)
+                ->click('button[wire\\:click="toggleSubscription"]')
+                ->waitForText('Subscribe', 5)
+                ->assertSee('Subscribe');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should maintain subscription state across page loads', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->click('button[wire\\:click="toggleSubscription"]')
+                ->waitForText('Subscribed', 5)
+                ->refresh()
+                ->waitForText($mod->name, 10)
+                ->assertSee('Subscribed');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
+describe('Comment Display and Pagination Tests', function (): void {
+    it('should display empty state when no comments exist', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Discussion')
+                ->assertSee('(0)');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should show comment count accurately', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        Comment::factory()->count(3)->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('(3)');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should show hide replies toggle for comments with descendants', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $rootComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a root comment with replies.',
+        ]);
+
+        Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'parent_id' => $rootComment->id,
+            'body' => 'This is a reply to the root comment.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Hide Replies (1)');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should expand and collapse reply threads', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $rootComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a root comment with replies.',
+        ]);
+
+        $replyText = 'This is a reply that should be toggleable.';
+        Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'parent_id' => $rootComment->id,
+            'body' => $replyText,
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $replyText) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee($replyText)
+                ->click('button[\\@click*="showReplies"]')
+                ->waitUntilMissing('[text="'.$replyText.'"]', 5)
+                ->assertDontSee($replyText)
+                ->click('button[\\@click*="showReplies"]')
+                ->waitForText($replyText, 5)
+                ->assertSee($replyText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should display comments in correct hierarchical order', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $rootComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'Root comment',
+            'created_at' => now()->subMinutes(10),
+        ]);
+
+        $reply1 = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'parent_id' => $rootComment->id,
+            'body' => 'First reply',
+            'created_at' => now()->subMinutes(5),
+        ]);
+
+        $nestedReply = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'parent_id' => $reply1->id,
+            'body' => 'Nested reply to first reply',
+            'created_at' => now()->subMinutes(2),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod) {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee('Root comment')
+                ->assertSee('First reply')
+                ->assertSee('Nested reply to first reply')
+                ->assertSee('Replying to @'.$user->name);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
