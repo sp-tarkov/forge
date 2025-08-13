@@ -39,7 +39,18 @@
                 </a>
             @endif
             @can('viewActions', $comment)
-                <livewire:comment.action wire:key="action-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}" :comment="$comment" />
+                <livewire:comment.action
+                    wire:key="action-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}"
+                    :comment-id="$comment->id"
+                    :updated-at-timestamp="$comment->updated_at->timestamp"
+                    :is-pinned="$comment->isPinned()"
+                    :is-deleted="$comment->isDeleted()"
+                    :is-spam="$comment->isSpam()"
+                    :is-root="$comment->isRoot()"
+                    :can-be-rechecked="$comment->canBeRechecked()"
+                    :descendants-count="$comment->isRoot() ? $comment->descendants()->count() : null"
+                    :spam-checked-at="$comment->spam_checked_at?->toISOString()"
+                />
             @endcan
         </div>
     </div>

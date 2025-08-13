@@ -33,12 +33,12 @@
                     <flux:menu.group heading="Comment Actions">
                         @if($this->permissions['pin'] ?? false)
                             <flux:menu.item
-                                wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}"
-                                icon:trailing="{{ $comment->isPinned() ? 'bookmark-slash' : 'bookmark' }}">
-                                {{ $comment->isPinned() ? 'Unpin Comment' : 'Pin Comment' }}
+                                wire:click="{{ $isPinned ? 'unpinComment' : 'pinComment' }}"
+                                icon:trailing="{{ $isPinned ? 'bookmark-slash' : 'bookmark' }}">
+                                {{ $isPinned ? 'Unpin Comment' : 'Pin Comment' }}
                             </flux:menu.item>
                         @endif
-                        @if ($comment->isDeleted())
+                        @if ($isDeleted)
                             @if($this->permissions['restore'] ?? false)
                                 <flux:menu.item x-on:click.prevent="$wire.openModal('restore')" icon:trailing="arrow-path">Restore Comment</flux:menu.item>
                             @endif
@@ -47,7 +47,7 @@
                             @endif
                         @else
                             @if($this->permissions['softDelete'] ?? false)
-                                @unless($comment->isSpam())
+                                @unless($isSpam)
                                     <flux:menu.item x-on:click.prevent="$wire.openModal('softDelete')" icon:trailing="eye-slash">Soft Delete</flux:menu.item>
                                 @endunless
                             @endif
@@ -113,13 +113,13 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                <p class="my-2.5">Are you sure you want to permanently delete this comment{{ $comment->isRoot() ? ' and all its replies' : '' }}?</p>
-                                @if ($comment->isRoot() && $comment->descendants->count() > 0)
+                                <p class="my-2.5">Are you sure you want to permanently delete this comment{{ $isRoot ? ' and all its replies' : '' }}?</p>
+                                @if ($isRoot && $descendantsCount > 0)
                                     <p class="my-2.5 font-bold text-red-600">
-                                        Warning: This is a root comment with {{ $comment->descendants->count() }} {{ $comment->descendants->count() === 1 ? 'reply' : 'replies' }}. All replies will also be permanently deleted.
+                                        Warning: This is a root comment with {{ $descendantsCount }} {{ $descendantsCount === 1 ? 'reply' : 'replies' }}. All replies will also be permanently deleted.
                                     </p>
                                 @endif
-                                <p class="my-2.5">This action cannot be undone.{{ !$comment->isDeleted() ? ' If you\'re unsure, consider using soft delete instead.' : '' }}</p>
+                                <p class="my-2.5">This action cannot be undone.{{ !$isDeleted ? ' If you\'re unsure, consider using soft delete instead.' : '' }}</p>
                             </x-slot>
 
                             <x-slot name="footer">
@@ -212,7 +212,7 @@
                             <x-slot name="content">
                                 <p class="my-2.5">Are you sure you want to check this comment for spam using Akismet?</p>
                                 <p class="my-2.5">This will queue a background job to analyze the comment using the Akismet API. The results will update the comment's spam status automatically based on the API response.</p>
-                                @if (!$comment->canBeRechecked())
+                                @if (!$canBeRechecked)
                                     <p class="my-2.5 font-bold text-amber-600">
                                         Note: This comment has already reached the maximum number of spam check attempts.
                                     </p>
