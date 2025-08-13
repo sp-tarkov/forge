@@ -48,17 +48,17 @@
 
     @foreach ($visibleRootComments as $comment)
         <div
-            wire:key="comment-container-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}"
+            wire:key="comment-container-{{ $comment->id }}"
             class="relative mb-4 last:mb-0"
         >
             <livewire:ribbon.comment
-                wire:key="ribbon-comment-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}"
+                wire:key="ribbon-comment-{{ $comment->id }}"
                 :comment-id="$comment->id"
                 :spam-status="$comment->spam_status->value"
                 :can-see-ribbon="auth()->user()?->can('seeRibbon', $comment) ?? false"
             />
             <div
-                wire:key="comment-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}"
+                wire:key="comment-{{ $comment->id }}"
                 x-data="{ showReplies: $persist({{ ($showReplies[$comment->id] ?? true) ? 'true' : 'false' }}).as('comment-replies-{{ $comment->id }}') }"
                 class="p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
             >
@@ -76,17 +76,17 @@
                     >
                         @foreach ($comment->descendants as $descendant)
                             <div
-                                wire:key="descendant-container-{{ $descendant->id }}-{{ $descendant->updated_at->timestamp }}"
+                                wire:key="reply-container-{{ $descendant->id }}"
                                 class="relative"
                             >
                                 <livewire:ribbon.comment
-                                    wire:key="ribbon-descendant-{{ $descendant->id }}-{{ $descendant->updated_at->timestamp }}"
+                                    wire:key="ribbon-reply-{{ $descendant->id }}"
                                     :comment-id="$descendant->id"
                                     :spam-status="$descendant->spam_status->value"
                                     :can-see-ribbon="auth()->user()?->can('seeRibbon', $descendant) ?? false"
                                 />
                                 <div
-                                    wire:key="descendant-{{ $descendant->id }}-{{ $descendant->updated_at->timestamp }}"
+                                    wire:key="reply-{{ $descendant->id }}"
                                     class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
                                 >
                                     <x-comment.display

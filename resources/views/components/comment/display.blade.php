@@ -40,7 +40,7 @@
             @endif
             @can('viewActions', $comment)
                 <livewire:comment.action
-                    wire:key="action-{{ $comment->id }}-{{ $comment->updated_at->timestamp }}"
+                    wire:key="comment-action-{{ $comment->id }}"
                     :comment-id="$comment->id"
                     :updated-at-timestamp="$comment->updated_at->timestamp"
                     :is-pinned="$comment->isPinned()"
