@@ -85,11 +85,11 @@
         @endauth
     @endif
 
-    @if ($showRepliesToggle && $comment->descendants->count())
+    @if ($showRepliesToggle && $manager->getReplyCount($comment->id) > 0)
         <button type="button"
-                @click="showReplies = !showReplies"
+                wire:click="toggleReplies({{ $comment->id }})"
                 class="hover:underline cursor-pointer text-xs">
-            <span x-text="showReplies ? 'Hide' : 'Show'">{{ ($manager->showReplies[$comment->id] ?? true) ? 'Hide' : 'Show' }}</span> Replies ({{ $comment->descendants->count() }})
+            {{ ($manager->showReplies[$comment->id] ?? false) ? 'Hide' : 'Show' }} Replies ({{ $manager->getReplyCount($comment->id) }})
         </button>
     @endif
 </div>

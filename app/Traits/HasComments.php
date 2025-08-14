@@ -7,9 +7,10 @@ namespace App\Traits;
 use App\Models\Comment;
 use App\Models\CommentSubscription;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 
 /**
  * @template TModel of Model
@@ -38,7 +39,7 @@ trait HasComments
         return $this->morphMany(Comment::class, 'commentable')
             ->whereNull('parent_id')
             ->whereNull('root_id')
-            ->with(['user', 'descendants', 'descendants.user', 'descendants.reactions', 'reactions'])
+            ->with(['user', 'reactions'])
             ->orderByRaw('pinned_at IS NULL, pinned_at DESC')
             ->orderBy('created_at', 'desc');
     }
@@ -56,11 +57,11 @@ trait HasComments
     /**
      * Get subscribers for this commentable.
      *
-     * @return Collection<int, User>
+     * @return SupportCollection<int, User>
      */
-    public function getSubscribers(): Collection
+    public function getSubscribers(): SupportCollection
     {
-        /** @var Collection<int, User> $users */
+        /** @var SupportCollection<int, User> $users */
         $users = $this->commentSubscriptions()
             ->with('user')
             ->get()
@@ -104,5 +105,38 @@ trait HasComments
         foreach ($defaultSubscribers as $user) {
             $this->subscribeUser($user);
         }
+    }
+
+    /**
+     * Load replies for a specific comment with proper filtering.
+     *
+     * @return Collection<int, Comment>
+     */
+    public function loadRepliesForComment(Comment $comment): Collection
+    {
+        return $comment->descendants()
+            ->with(['user', 'reactions'])
+            ->orderBy('created_at', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get reply count for root comments.
+     *
+     * @return array<int, int>
+     */
+    public function getReplyCounts(): array
+    {
+        $rootCommentIds = $this->rootComments()->pluck('id')->toArray();
+
+        if (empty($rootCommentIds)) {
+            return [];
+        }
+
+        return Comment::query()->whereIn('root_id', $rootCommentIds)
+            ->groupBy('root_id')
+            ->selectRaw('root_id, count(*) as reply_count')
+            ->pluck('reply_count', 'root_id')
+            ->toArray();
     }
 }

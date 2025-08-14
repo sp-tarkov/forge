@@ -41,6 +41,7 @@
         "fakerphp/faker": "^1.24.1",
         "knuckleswtf/scribe": "^5.2",
         "larastan/larastan": "^3.4.0",
+        "laravel/boost": "^1.0",
         "laravel/dusk": "^8.3",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.22",

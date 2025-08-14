@@ -90,4 +90,18 @@ interface Commentable
      * Ensure default subscribers are subscribed to this commentable.
      */
     public function ensureDefaultSubscriptions(): void;
+
+    /**
+     * Load replies for a specific comment.
+     *
+     * @return Collection<int, Comment>
+     */
+    public function loadRepliesForComment(Comment $comment): Collection;
+
+    /**
+     * Get reply counts for all root comments.
+     *
+     * @return array<int, int>
+     */
+    public function getReplyCounts(): array;
 }

@@ -59,7 +59,6 @@
             />
             <div
                 wire:key="comment-{{ $comment->id }}"
-                x-data="{ showReplies: $persist({{ ($showReplies[$comment->id] ?? true) ? 'true' : 'false' }}).as('comment-replies-{{ $comment->id }}') }"
                 class="p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
             >
                 <x-comment.display
@@ -68,29 +67,25 @@
                     :commentable="$commentable"
                 />
 
-                @if ($comment->descendants->count() > 0)
-                    <div
-                        x-show="showReplies"
-                        x-collapse
-                        class="mt-4 space-y-4"
-                    >
-                        @foreach ($comment->descendants as $descendant)
+                @if (($showReplies[$comment->id] ?? false) && isset($loadedReplies[$comment->id]))
+                    <div class="mt-4 space-y-4">
+                        @foreach ($loadedReplies[$comment->id] as $reply)
                             <div
-                                wire:key="reply-container-{{ $descendant->id }}"
+                                wire:key="reply-container-{{ $reply->id }}"
                                 class="relative"
                             >
                                 <livewire:ribbon.comment
-                                    wire:key="ribbon-reply-{{ $descendant->id }}"
-                                    :comment-id="$descendant->id"
-                                    :spam-status="$descendant->spam_status->value"
-                                    :can-see-ribbon="auth()->user()?->can('seeRibbon', $descendant) ?? false"
+                                    wire:key="ribbon-reply-{{ $reply->id }}"
+                                    :comment-id="$reply->id"
+                                    :spam-status="$reply->spam_status->value"
+                                    :can-see-ribbon="auth()->user()?->can('seeRibbon', $reply) ?? false"
                                 />
                                 <div
-                                    wire:key="reply-{{ $descendant->id }}"
+                                    wire:key="reply-{{ $reply->id }}"
                                     class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
                                 >
                                     <x-comment.display
-                                        :comment="$descendant"
+                                        :comment="$reply"
                                         :manager="$this"
                                         :is-reply="true"
                                         :commentable="$commentable"

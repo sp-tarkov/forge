@@ -11,9 +11,9 @@ use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -64,6 +64,20 @@ class CommentComponent extends Component
     public array $showReplies = [];
 
     /**
+     * Loaded replies indexed by comment ID.
+     *
+     * @var array<int, Collection<int, Comment>>
+     */
+    public array $loadedReplies = [];
+
+    /**
+     * Reply counts indexed by comment ID.
+     *
+     * @var array<int, int>
+     */
+    public array $replyCounts = [];
+
+    /**
      * Whether the current user is subscribed to notifications.
      */
     public bool $isSubscribed = false;
@@ -75,7 +89,7 @@ class CommentComponent extends Component
     {
         $this->honeypotData = new HoneypotData;
         $this->initializeSubscriptionStatus();
-        $this->initializeShowRepliesState();
+        $this->initializeReplyCounts();
     }
 
     /**
@@ -169,6 +183,23 @@ class CommentComponent extends Component
 
         $this->hideForm('reply', $parentId);
 
+        // Update reply counts and clear loaded replies for the parent
+        $parentComment = Comment::query()->find($parentId);
+        if ($parentComment && $parentComment->isRoot()) {
+            $rootId = $parentComment->id;
+        } else {
+            $rootId = $parentComment->root_id;
+        }
+
+        if ($rootId) {
+            $this->replyCounts[$rootId] = ($this->replyCounts[$rootId] ?? 0) + 1;
+            // Clear loaded replies to force reload when toggled
+            unset($this->loadedReplies[$rootId]);
+            // Automatically show replies after creating a new reply
+            $this->showReplies[$rootId] = true;
+            $this->loadReplies($rootId);
+        }
+
         // Clear cached computed properties.
         unset($this->commentCount);
         unset($this->userReactionIds);
@@ -211,6 +242,16 @@ class CommentComponent extends Component
         $hasNoChildren = $comment->replies()->count() === 0 && $comment->descendants()->count() === 0;
 
         if ($isWithinTimeLimit && $hasNoChildren) {
+            // Update reply counts if this is a reply being permanently deleted
+            if (! $comment->isRoot()) {
+                $rootId = $comment->root_id;
+                if ($rootId && isset($this->replyCounts[$rootId])) {
+                    $this->replyCounts[$rootId] = max(0, $this->replyCounts[$rootId] - 1);
+                    // Clear loaded replies to force reload
+                    unset($this->loadedReplies[$rootId]);
+                }
+            }
+
             $comment->delete();
         } else {
             $comment->update(['deleted_at' => now()]);
@@ -316,7 +357,33 @@ class CommentComponent extends Component
      */
     public function toggleReplies(int $commentId): void
     {
-        $this->showReplies[$commentId] = ! ($this->showReplies[$commentId] ?? true);
+        $this->showReplies[$commentId] = ! ($this->showReplies[$commentId] ?? false);
+
+        // Load replies if showing and not already loaded
+        if ($this->showReplies[$commentId] && ! isset($this->loadedReplies[$commentId])) {
+            $this->loadReplies($commentId);
+        }
+    }
+
+    /**
+     * Load replies for a specific comment.
+     */
+    public function loadReplies(int $commentId): void
+    {
+        $comment = Comment::query()->find($commentId);
+
+        if (! $comment || $comment->commentable_id !== $this->getCommentableId() || $comment->commentable_type !== $this->commentable::class) {
+            return;
+        }
+
+        $replies = $this->commentable->loadRepliesForComment($comment);
+
+        // Filter visible replies based on permissions
+        $visibleReplies = $replies->filter(
+            fn ($reply) => Gate::forUser(Auth::user())->allows('view', $reply)
+        );
+
+        $this->loadedReplies[$commentId] = $visibleReplies;
     }
 
     /**
@@ -346,6 +413,11 @@ class CommentComponent extends Component
      */
     public function hasVisibleDescendants(Comment $comment): bool
     {
+        // Use reply count from cache first
+        if (isset($this->replyCounts[$comment->id])) {
+            return $this->replyCounts[$comment->id] > 0;
+        }
+
         $query = $comment->descendants();
 
         if (Auth::check()) {
@@ -363,6 +435,14 @@ class CommentComponent extends Component
         }
 
         return $query->exists();
+    }
+
+    /**
+     * Get reply count for a comment.
+     */
+    public function getReplyCount(int $commentId): int
+    {
+        return $this->replyCounts[$commentId] ?? 0;
     }
 
     /**
@@ -398,20 +478,11 @@ class CommentComponent extends Component
     }
 
     /**
-     * Initialize show replies state for root comments.
+     * Initialize reply counts for root comments.
      */
-    protected function initializeShowRepliesState(): void
+    protected function initializeReplyCounts(): void
     {
-        $rootCommentsWithReplies = $this->commentable->rootComments()
-            ->has('descendants')
-            ->pluck('id')
-            ->toArray();
-
-        foreach ($rootCommentsWithReplies as $commentId) {
-            if (! isset($this->showReplies[$commentId])) {
-                $this->showReplies[$commentId] = true;
-            }
-        }
+        $this->replyCounts = $this->commentable->getReplyCounts();
     }
 
     /**

@@ -8,16 +8,21 @@ use App\Models\ModVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Dusk\Browser;
 
 uses(DatabaseTruncation::class);
+
+beforeEach(function (): void {
+    Cache::flush(); // Prevent rate limiting interference.
+});
 
 describe('Guest User Tests', function (): void {
     it('should not show comment form to guest users', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($mod) {
+        $this->browse(function (Browser $browser) use ($mod): void {
             $browser->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertDontSee('Post Comment')
@@ -38,7 +43,7 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to reply to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod) {
+        $this->browse(function (Browser $browser) use ($mod): void {
             $browser->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertDontSee('Reply');
@@ -58,7 +63,7 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to edit.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod) {
+        $this->browse(function (Browser $browser) use ($mod): void {
             $browser->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertDontSee('Edit');
@@ -78,7 +83,7 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to delete.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod) {
+        $this->browse(function (Browser $browser) use ($mod): void {
             $browser->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertDontSee('Delete');
@@ -98,7 +103,7 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to react to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod) {
+        $this->browse(function (Browser $browser) use ($mod): void {
             $browser->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertMissing('[wire\\:click*="toggleReaction"]');
@@ -115,7 +120,7 @@ describe('Comment Creation Tests', function (): void {
         ModVersion::factory()->recycle($mod)->create();
         $commentText = 'This is a test comment with more than minimum length.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -136,14 +141,14 @@ describe('Comment Creation Tests', function (): void {
         ModVersion::factory()->recycle($mod)->create();
         $shortText = 'Hi';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $shortText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $shortText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->type('textarea[wire\\:model="newCommentBody"]', $shortText)
                 ->press('Post Comment')
                 ->waitFor('.text-red-500', 5)
-                ->assertSee('at least');
+                ->assertSee('must be at least'); // Laravel validation message format
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -155,7 +160,7 @@ describe('Comment Creation Tests', function (): void {
         ModVersion::factory()->recycle($mod)->create();
         $commentText = 'This is a test comment that should clear after submission.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -175,17 +180,17 @@ describe('Comment Creation Tests', function (): void {
         $commentText1 = 'This is the first test comment for rate limiting.';
         $commentText2 = 'This is the second test comment for rate limiting.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText1, $commentText2) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText1, $commentText2): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
+                ->waitForText($mod->name, 5)
                 ->type('textarea[wire\\:model="newCommentBody"]', $commentText1)
                 ->press('Post Comment')
-                ->waitForText($commentText1, 10)
+                ->waitForText($commentText1, 5)
                 ->type('textarea[wire\\:model="newCommentBody"]', $commentText2)
                 ->press('Post Comment')
-                ->pause(2000) // Wait to see if second comment gets created
-                ->assertDontSee($commentText2); // If rate limiting works, second comment should not appear
+                ->assertDontSee($commentText2)
+                ->waitForText('Too many comment attempts', 5);
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -201,7 +206,7 @@ describe('Comment Creation Tests', function (): void {
         $commentText1 = 'This is the first admin comment.';
         $commentText2 = 'This is the second admin comment.';
 
-        $this->browse(function (Browser $browser) use ($admin, $mod, $commentText1, $commentText2) {
+        $this->browse(function (Browser $browser) use ($admin, $mod, $commentText1, $commentText2): void {
             $browser->loginAs($admin)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -227,7 +232,7 @@ describe('Comment Creation Tests', function (): void {
         $commentText1 = 'This is the first moderator comment.';
         $commentText2 = 'This is the second moderator comment.';
 
-        $this->browse(function (Browser $browser) use ($moderator, $mod, $commentText1, $commentText2) {
+        $this->browse(function (Browser $browser) use ($moderator, $mod, $commentText1, $commentText2): void {
             $browser->loginAs($moderator)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -256,7 +261,7 @@ describe('Comment Reply Tests', function (): void {
             'body' => 'This is a test comment that should show a reply button.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -277,7 +282,7 @@ describe('Comment Reply Tests', function (): void {
             'body' => 'This is a test comment to reply to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -301,14 +306,14 @@ describe('Comment Reply Tests', function (): void {
             'body' => 'This is a test comment to reply to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->click('button[wire\\:click*="toggleReplyForm"]')
                 ->waitForText('Reply To Comment', 5)
-                ->click('button[wire\\:click*="toggleReplyForm"]')
-                ->waitUntilMissing('[text="Reply To Comment"]', 5)
+                ->press('Cancel')
+                ->waitUntilMissingText('Reply To Comment', 5)
                 ->assertDontSee('Reply To Comment');
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
@@ -327,7 +332,7 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $replyText = 'This is my reply to the test comment.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $replyText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $replyText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -335,7 +340,7 @@ describe('Comment Reply Tests', function (): void {
                 ->waitForText('Reply To Comment', 5)
                 ->type('textarea[wire\\:model*="reply"]', $replyText)
                 ->press('Post Reply')
-                ->waitForText($replyText, 10)
+                ->waitForText($replyText, 10) // Reply should show automatically after creation
                 ->assertSee($replyText);
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
@@ -354,7 +359,7 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $replyText = 'This is a reply to the root comment.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $rootComment, $replyText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $rootComment, $replyText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -362,7 +367,7 @@ describe('Comment Reply Tests', function (): void {
                 ->waitForText('Reply To Comment', 5)
                 ->type('textarea[wire\\:model*="reply"]', $replyText)
                 ->press('Post Reply')
-                ->waitForText($replyText, 10)
+                ->waitForText($replyText, 10) // Reply should show automatically after creation
                 ->assertSee('Replying to @'.$rootComment->user->name);
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
@@ -381,7 +386,7 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $shortReply = 'Hi';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $shortReply) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $shortReply): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -390,7 +395,7 @@ describe('Comment Reply Tests', function (): void {
                 ->type('textarea[wire\\:model*="reply"]', $shortReply)
                 ->press('Post Reply')
                 ->waitFor('.text-red-500', 5)
-                ->assertSee('at least');
+                ->assertSee('must be at least');
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -408,7 +413,7 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $replyText = 'This reply should clear the form after submission.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $replyText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $replyText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -416,7 +421,7 @@ describe('Comment Reply Tests', function (): void {
                 ->waitForText('Reply To Comment', 5)
                 ->type('textarea[wire\\:model*="reply"]', $replyText)
                 ->press('Post Reply')
-                ->waitForText($replyText, 10)
+                ->waitForText($replyText, 10) // Reply should show automatically after creation
                 ->assertDontSee('Reply To Comment'); // Form should be hidden after successful reply
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
@@ -437,7 +442,7 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -460,7 +465,7 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod) {
+        $this->browse(function (Browser $browser) use ($user2, $mod): void {
             $browser->loginAs($user2)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -483,7 +488,7 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $originalText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $originalText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -510,7 +515,7 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -542,7 +547,7 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $shortText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $shortText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -552,7 +557,7 @@ describe('Comment Editing Tests', function (): void {
                 ->type('textarea[wire\\:model*="edit"]', $shortText)
                 ->press('Update Comment')
                 ->waitFor('.text-red-500', 5)
-                ->assertSee('at least');
+                ->assertSee('must be at least');
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -572,7 +577,7 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -604,7 +609,7 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -627,7 +632,7 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod) {
+        $this->browse(function (Browser $browser) use ($user2, $mod): void {
             $browser->loginAs($user2)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -650,7 +655,7 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -677,7 +682,7 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -685,7 +690,7 @@ describe('Comment Deletion Tests', function (): void {
                 ->click('button[wire\\:click*="deleteComment"]')
                 ->waitForDialog()
                 ->acceptDialog()
-                ->waitUntilMissing('[text="'.$commentText.'"]', 5)
+                ->waitUntilMissingText($commentText, 5)
                 ->assertDontSee($commentText);
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
@@ -706,7 +711,7 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This is a comment that should show reaction buttons.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod) {
+        $this->browse(function (Browser $browser) use ($user2, $mod): void {
             $browser->loginAs($user2)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -727,7 +732,7 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This is my own comment that should not have a reaction button.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -749,7 +754,7 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This comment should be likeable.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod) {
+        $this->browse(function (Browser $browser) use ($user2, $mod): void {
             $browser->loginAs($user2)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -774,7 +779,7 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This comment should allow toggling likes.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod) {
+        $this->browse(function (Browser $browser) use ($user2, $mod): void {
             $browser->loginAs($user2)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -806,7 +811,7 @@ describe('Comment Reactions Tests', function (): void {
         $comment->reactions()->create(['user_id' => $user2->id]);
         $comment->reactions()->create(['user_id' => $user3->id]);
 
-        $this->browse(function (Browser $browser) use ($user1, $mod) {
+        $this->browse(function (Browser $browser) use ($user1, $mod): void {
             $browser->loginAs($user1)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -823,7 +828,7 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -838,7 +843,7 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -856,7 +861,7 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -876,7 +881,7 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -897,7 +902,7 @@ describe('Comment Display and Pagination Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -919,7 +924,7 @@ describe('Comment Display and Pagination Tests', function (): void {
             'user_id' => $user->id,
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
@@ -929,7 +934,7 @@ describe('Comment Display and Pagination Tests', function (): void {
         });
     });
 
-    it('should show hide replies toggle for comments with descendants', function (): void {
+    it('should show show replies toggle for comments with descendants', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
@@ -949,11 +954,11 @@ describe('Comment Display and Pagination Tests', function (): void {
             'body' => 'This is a reply to the root comment.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
-                ->assertSee('Hide Replies (1)');
+                ->assertSee('Show Replies (1)');
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -977,20 +982,21 @@ describe('Comment Display and Pagination Tests', function (): void {
             'commentable_type' => Mod::class,
             'user_id' => $user->id,
             'parent_id' => $rootComment->id,
+            'root_id' => $rootComment->id,
             'body' => $replyText,
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $replyText) {
+        $this->browse(function (Browser $browser) use ($user, $mod, $replyText): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
-                ->assertSee($replyText)
-                ->click('button[\\@click*="showReplies"]')
-                ->waitUntilMissing('[text="'.$replyText.'"]', 5)
-                ->assertDontSee($replyText)
-                ->click('button[\\@click*="showReplies"]')
+                ->assertDontSee($replyText) // Replies hidden by default now
+                ->click('button[wire\\:click*="toggleReplies"]')
                 ->waitForText($replyText, 5)
-                ->assertSee($replyText);
+                ->assertSee($replyText)
+                ->click('button[wire\\:click*="toggleReplies"]')
+                ->waitUntilMissingText($replyText, 5)
+                ->assertDontSee($replyText);
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -1027,11 +1033,13 @@ describe('Comment Display and Pagination Tests', function (): void {
             'created_at' => now()->subMinutes(2),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod) {
+        $this->browse(function (Browser $browser) use ($user, $mod): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertSee('Root comment')
+                ->click('button[wire\\:click*="toggleReplies"]') // Load replies first
+                ->waitForText('First reply', 5)
                 ->assertSee('First reply')
                 ->assertSee('Nested reply to first reply')
                 ->assertSee('Replying to @'.$user->name);

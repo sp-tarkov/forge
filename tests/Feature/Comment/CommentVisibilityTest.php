@@ -268,9 +268,12 @@ describe('nested comments', function (): void {
         ]);
 
         // Test as author - should see parent, own pending reply, and clean reply
-        Livewire::actingAs($this->author)
+        $component = Livewire::actingAs($this->author)
             ->test(CommentComponent::class, ['commentable' => $this->mod])
-            ->assertSee('Parent comment')
+            ->assertSee('Parent comment');
+
+        // Load replies by calling toggleReplies
+        $component->call('toggleReplies', $parentComment->id)
             ->assertSee('My pending reply')
             ->assertDontSee('Other pending reply')
             ->assertSee('Clean reply');

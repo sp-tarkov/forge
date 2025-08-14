@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\DuskTestCase;
 use Tests\TestCase;
 
 /*
@@ -22,7 +23,7 @@ pest()
     ->in('Feature');
 
 pest()
-    ->extend(Tests\DuskTestCase::class)
+    ->extend(DuskTestCase::class)
     ->in('Browser');
 
 /*

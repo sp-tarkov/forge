@@ -8,6 +8,7 @@ use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Services\CommentSpamChecker;
 use App\Traits\Livewire\ModerationActionMenu;
+use Error;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -66,13 +67,13 @@ class Action extends Component
      * Number of descendants (only for root comments).
      */
     #[Locked]
-    public ?int $descendantsCount;
+    public ?int $descendantsCount = null;
 
     /**
      * The spam check timestamp for comparison.
      */
     #[Locked]
-    public ?string $spamCheckedAt;
+    public ?string $spamCheckedAt = null;
 
     /**
      * Whether a spam check is currently in progress.
@@ -97,6 +98,13 @@ class Action extends Component
             return [];
         }
 
+        // Skip permission cache if commentId is not yet initialized
+        try {
+            $commentId = $this->commentId;
+        } catch (Error) {
+            return [];
+        }
+
         return Cache::remember(
             sprintf('comment.%d.permissions.%s', $this->commentId, $user->id),
             60, // Seconds
@@ -118,7 +126,7 @@ class Action extends Component
      */
     private function getComment(): Comment
     {
-        return Comment::findOrFail($this->commentId);
+        return Comment::query()->findOrFail($this->commentId);
     }
 
     /**
@@ -141,7 +149,7 @@ class Action extends Component
         $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
 
         // Dispatch events to refresh related components
-        $this->dispatch('comment-updated.'.$this->commentId, deleted: true);
+        $this->dispatch('comment-updated', $this->commentId, deleted: true);
         $this->dispatch('comment-moderation-refresh');
 
         flash()->success('Comment successfully deleted!');
@@ -195,7 +203,7 @@ class Action extends Component
         $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
 
         // Dispatch events to refresh related components
-        $this->dispatch('comment-updated.'.$this->commentId, spam: true);
+        $this->dispatch('comment-updated', $this->commentId, spam: true);
         $this->dispatch('comment-moderation-refresh');
         $this->dispatch('$refresh');
 
@@ -225,7 +233,7 @@ class Action extends Component
         $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
 
         // Dispatch events to refresh related components
-        $this->dispatch('comment-updated.'.$this->commentId, spam: false);
+        $this->dispatch('comment-updated', $this->commentId, spam: false);
         $this->dispatch('comment-moderation-refresh');
         $this->dispatch('$refresh');
 
@@ -255,7 +263,7 @@ class Action extends Component
         $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
 
         // Dispatch events to refresh related components
-        $this->dispatch('comment-updated.'.$this->commentId, deleted: false);
+        $this->dispatch('comment-updated', $this->commentId, deleted: false);
         $this->dispatch('comment-moderation-refresh');
 
         flash()->success('Comment successfully restored!');
@@ -310,7 +318,7 @@ class Action extends Component
             $this->spamCheckedAt = $newSpamCheckedAt;
 
             // Dispatch events to refresh the UI
-            $this->dispatch('comment-updated.'.$this->commentId, spam: $this->isSpam);
+            $this->dispatch('comment-updated', $this->commentId, spam: $this->isSpam);
             $this->dispatch('comment-moderation-refresh');
             $this->dispatch('$refresh');
 
@@ -348,7 +356,7 @@ class Action extends Component
         $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
 
         // Send events to refresh related components.
-        $this->dispatch('comment-updated.'.$this->commentId, pinned: true);
+        $this->dispatch('comment-updated', $this->commentId, pinned: true);
         $this->dispatch('comment-moderation-refresh');
 
         flash()->success('Comment successfully pinned!');
@@ -373,7 +381,7 @@ class Action extends Component
         $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
 
         // Send events to refresh related components.
-        $this->dispatch('comment-updated.'.$this->commentId, pinned: false);
+        $this->dispatch('comment-updated', $this->commentId, pinned: false);
         $this->dispatch('comment-moderation-refresh');
 
         flash()->success('Comment successfully unpinned!');
@@ -382,9 +390,14 @@ class Action extends Component
     /**
      * Handle comment updates from other components.
      */
-    #[On('comment-updated.{commentId}')]
-    public function handleCommentUpdate(): void
+    #[On('comment-updated')]
+    public function handleCommentUpdate(int $commentId): void
     {
+        // Only update if this is for our comment
+        if ($commentId !== $this->commentId) {
+            return;
+        }
+
         $comment = $this->getComment();
 
         // Update local state with fresh data
@@ -394,6 +407,8 @@ class Action extends Component
         $this->canBeRechecked = $comment->canBeRechecked();
         $this->spamCheckedAt = $comment->spam_checked_at?->toISOString();
         if ($this->isRoot) {
+            // Note: We can't easily access the manager here, so we'll do a direct count query
+            // This is only called when refreshing, not on initial load
             $this->descendantsCount = $comment->descendants()->count();
         }
     }

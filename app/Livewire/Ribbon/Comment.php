@@ -38,9 +38,14 @@ class Comment extends Component
     /**
      * Listen for comment updates and refresh the ribbon data.
      */
-    #[On('comment-updated.{commentId}')]
-    public function refreshRibbon(): void
+    #[On('comment-updated')]
+    public function refreshRibbon(int $commentId): void
     {
+        // Only update if this is for our comment
+        if ($commentId !== $this->commentId) {
+            return;
+        }
+
         $comment = CommentModel::query()->select('spam_status')->find($this->commentId);
         if ($comment && $comment->spam_status->value !== $this->spamStatus) {
             $this->spamStatus = $comment->spam_status->value;

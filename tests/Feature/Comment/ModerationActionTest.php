@@ -16,6 +16,24 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
+/**
+ * Helper function to get Action component attributes from a comment.
+ */
+function getActionComponentAttributes(Comment $comment): array
+{
+    return [
+        'commentId' => $comment->id,
+        'updatedAtTimestamp' => $comment->updated_at->timestamp,
+        'isPinned' => $comment->isPinned(),
+        'isDeleted' => $comment->isDeleted(),
+        'isSpam' => $comment->isSpam(),
+        'isRoot' => $comment->isRoot(),
+        'canBeRechecked' => $comment->canBeRechecked(),
+        'descendantsCount' => $comment->isRoot() ? $comment->descendants()->count() : null,
+        'spamCheckedAt' => $comment->spam_checked_at?->toISOString(),
+    ];
+}
+
 beforeEach(function (): void {
     Config::set('akismet.enabled', false);
 });
@@ -55,9 +73,9 @@ describe('soft delete action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('softDelete')
-            ->assertDispatched('comment-updated.'.$comment->id)
+            ->assertDispatched('comment-updated', $comment->id)
             ->assertDispatched('comment-moderation-refresh');
 
         $comment->refresh();
@@ -77,7 +95,7 @@ describe('soft delete action', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('softDelete')
             ->assertForbidden();
     });
@@ -96,7 +114,7 @@ describe('soft delete action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('softDelete')
             ->assertForbidden();
     });
@@ -126,7 +144,7 @@ describe('hard delete action', function (): void {
 
         $this->actingAs($admin);
 
-        Livewire::test(Action::class, ['comment' => $rootComment])
+        Livewire::test(Action::class, getActionComponentAttributes($rootComment))
             ->call('hardDeleteThread')
             ->assertDispatched('comment-deleted.'.$rootComment->id)
             ->assertDispatched('comment-moderation-refresh');
@@ -158,7 +176,7 @@ describe('hard delete action', function (): void {
 
         $this->actingAs($admin);
 
-        Livewire::test(Action::class, ['comment' => $replyComment])
+        Livewire::test(Action::class, getActionComponentAttributes($replyComment))
             ->call('hardDeleteThread');
 
         expect(Comment::query()->find($rootComment->id))->not->toBeNull();
@@ -178,7 +196,7 @@ describe('hard delete action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('hardDeleteThread')
             ->assertForbidden();
     });
@@ -195,7 +213,7 @@ describe('hard delete action', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('hardDeleteThread')
             ->assertForbidden();
     });
@@ -214,7 +232,7 @@ describe('hard delete action', function (): void {
 
         $this->actingAs($admin);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('hardDeleteThread')
             ->assertDispatched('comment-deleted.'.$comment->id)
             ->assertDispatched('comment-moderation-refresh');
@@ -236,7 +254,7 @@ describe('hard delete action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('hardDeleteThread')
             ->assertForbidden();
     });
@@ -259,9 +277,9 @@ describe('mark as spam action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('markAsSpam')
-            ->assertDispatched('comment-updated.'.$comment->id)
+            ->assertDispatched('comment-updated', $comment->id)
             ->assertDispatched('comment-moderation-refresh');
 
         $comment->refresh();
@@ -285,7 +303,7 @@ describe('mark as spam action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('markAsSpam')
             ->assertForbidden();
     });
@@ -303,7 +321,7 @@ describe('mark as spam action', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('markAsSpam')
             ->assertForbidden();
     });
@@ -327,9 +345,9 @@ describe('mark as clean action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('markAsHam')
-            ->assertDispatched('comment-updated.'.$comment->id)
+            ->assertDispatched('comment-updated', $comment->id)
             ->assertDispatched('comment-moderation-refresh');
 
         $comment->refresh();
@@ -351,7 +369,7 @@ describe('mark as clean action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('markAsHam')
             ->assertForbidden();
     });
@@ -370,7 +388,7 @@ describe('mark as clean action', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('markAsHam')
             ->assertForbidden();
     });
@@ -391,9 +409,9 @@ describe('restore action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('restore')
-            ->assertDispatched('comment-updated.'.$comment->id)
+            ->assertDispatched('comment-updated', $comment->id)
             ->assertDispatched('comment-moderation-refresh');
 
         $comment->refresh();
@@ -413,7 +431,7 @@ describe('restore action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('restore')
             ->assertForbidden();
     });
@@ -431,7 +449,7 @@ describe('restore action', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('restore')
             ->assertForbidden();
     });
@@ -455,7 +473,7 @@ describe('check for spam action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('checkForSpam')
             ->assertSet('spamCheckInProgress', true)
             ->assertDispatched('start-spam-check-polling');
@@ -480,7 +498,7 @@ describe('check for spam action', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('checkForSpam')
             ->assertForbidden();
     });
@@ -498,7 +516,7 @@ describe('check for spam action', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Action::class, ['comment' => $comment])
+        Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->call('checkForSpam')
             ->assertForbidden();
     });
@@ -518,7 +536,7 @@ describe('check for spam action', function (): void {
 
         $this->actingAs($moderator);
 
-        $component = Livewire::test(Action::class, ['comment' => $comment])
+        $component = Livewire::test(Action::class, getActionComponentAttributes($comment))
             ->set('spamCheckInProgress', true)
             ->set('spamCheckStartedAt', $comment->spam_checked_at->toISOString());
 
@@ -530,7 +548,7 @@ describe('check for spam action', function (): void {
 
         $component->call('pollSpamCheckStatus')
             ->assertSet('spamCheckInProgress', false)
-            ->assertDispatched('comment-updated.'.$comment->id)
+            ->assertDispatched('comment-updated', $comment->id)
             ->assertDispatched('comment-moderation-refresh')
             ->assertDispatched('stop-spam-check-polling');
     });
@@ -552,7 +570,7 @@ describe('action visibility rules', function (): void {
 
         $this->actingAs($admin);
 
-        $component = Livewire::test(Action::class, ['comment' => $spamComment])
+        $component = Livewire::test(Action::class, getActionComponentAttributes($spamComment))
             ->call('loadMenu'); // Trigger lazy loading
 
         // Check that the soft delete menu item is not present in the menu
@@ -575,7 +593,7 @@ describe('action visibility rules', function (): void {
 
         $this->actingAs($admin);
 
-        $component = Livewire::test(Action::class, ['comment' => $cleanComment])
+        $component = Livewire::test(Action::class, getActionComponentAttributes($cleanComment))
             ->call('loadMenu'); // Trigger lazy loading
 
         // Check that the rendered component contains both actions for clean comments
