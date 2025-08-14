@@ -8,6 +8,7 @@ use App\Contracts\Commentable;
 use App\Jobs\CheckCommentForSpam;
 use App\Jobs\ProcessCommentNotification;
 use App\Models\Comment;
+use App\Support\CachedGate;
 use Illuminate\Database\Eloquent\Model;
 
 class CommentObserver
@@ -40,5 +41,26 @@ class CommentObserver
             $comment->updateRootId();
             $comment->updateChildRootIds();
         }
+
+        // Clear cached gate permissions for this comment when it's updated
+        CachedGate::clearForModel($comment);
+    }
+
+    /**
+     * Handle the Comment "deleted" event.
+     */
+    public function deleted(Comment $comment): void
+    {
+        // Clear cached gate permissions for this comment when it's deleted
+        CachedGate::clearForModel($comment);
+    }
+
+    /**
+     * Handle the Comment "restored" event.
+     */
+    public function restored(Comment $comment): void
+    {
+        // Clear cached gate permissions for this comment when it's restored
+        CachedGate::clearForModel($comment);
     }
 }

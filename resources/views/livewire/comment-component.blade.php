@@ -55,7 +55,7 @@
                 wire:key="ribbon-comment-{{ $comment->id }}"
                 :comment-id="$comment->id"
                 :spam-status="$comment->spam_status->value"
-                :can-see-ribbon="auth()->user()?->can('seeRibbon', $comment) ?? false"
+                :can-see-ribbon="\App\Support\CachedGate::allows('seeRibbon', $comment)"
             />
             <div
                 wire:key="comment-{{ $comment->id }}"
@@ -67,9 +67,9 @@
                     :commentable="$commentable"
                 />
 
-                @if (($showReplies[$comment->id] ?? false) && isset($loadedReplies[$comment->id]))
+                @if (($showDescendants[$comment->id] ?? false) && isset($loadedDescendants[$comment->id]))
                     <div class="mt-4 space-y-4">
-                        @foreach ($loadedReplies[$comment->id] as $reply)
+                        @foreach ($loadedDescendants[$comment->id] as $reply)
                             <div
                                 wire:key="reply-container-{{ $reply->id }}"
                                 class="relative"
@@ -78,7 +78,7 @@
                                     wire:key="ribbon-reply-{{ $reply->id }}"
                                     :comment-id="$reply->id"
                                     :spam-status="$reply->spam_status->value"
-                                    :can-see-ribbon="auth()->user()?->can('seeRibbon', $reply) ?? false"
+                                    :can-see-ribbon="\App\Support\CachedGate::allows('seeRibbon', $reply)"
                                 />
                                 <div
                                     wire:key="reply-{{ $reply->id }}"

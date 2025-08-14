@@ -272,8 +272,8 @@ describe('nested comments', function (): void {
             ->test(CommentComponent::class, ['commentable' => $this->mod])
             ->assertSee('Parent comment');
 
-        // Load replies by calling toggleReplies
-        $component->call('toggleReplies', $parentComment->id)
+        // Load replies by calling toggleDescendants
+        $component->call('toggleDescendants', $parentComment->id)
             ->assertSee('My pending reply')
             ->assertDontSee('Other pending reply')
             ->assertSee('Clean reply');

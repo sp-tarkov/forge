@@ -7,10 +7,8 @@ namespace App\Livewire\Comment;
 use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Services\CommentSpamChecker;
+use App\Support\CachedGate;
 use App\Traits\Livewire\ModerationActionMenu;
-use Error;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -86,39 +84,12 @@ class Action extends Component
     public ?string $spamCheckStartedAt = null;
 
     /**
-     * Get cached permissions for the current user.
-     *
-     * @return array<string, bool>
+     * Get the comment instance for use in the view.
      */
-    #[Computed(persist: true)]
-    public function permissions(): array
+    #[Computed]
+    public function comment(): Comment
     {
-        $user = auth()->user();
-        if (! $user) {
-            return [];
-        }
-
-        // Skip permission cache if commentId is not yet initialized
-        try {
-            $commentId = $this->commentId;
-        } catch (Error) {
-            return [];
-        }
-
-        return Cache::remember(
-            sprintf('comment.%d.permissions.%s', $this->commentId, $user->id),
-            60, // Seconds
-            fn (): array => [
-                'viewActions' => Gate::allows('viewActions', $this->getComment()),
-                'pin' => Gate::allows('pin', $this->getComment()),
-                'softDelete' => Gate::allows('softDelete', $this->getComment()),
-                'hardDelete' => Gate::allows('hardDelete', $this->getComment()),
-                'restore' => Gate::allows('restore', $this->getComment()),
-                'markAsSpam' => Gate::allows('markAsSpam', $this->getComment()),
-                'markAsHam' => Gate::allows('markAsHam', $this->getComment()),
-                'checkForSpam' => Gate::allows('checkForSpam', $this->getComment()),
-            ]
-        );
+        return $this->getComment();
     }
 
     /**
@@ -146,7 +117,8 @@ class Action extends Component
         // Update local state
         $this->isDeleted = true;
 
-        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
+        // Clear CachedGate cache for this comment
+        CachedGate::clearForModel($comment);
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated', $this->commentId, deleted: true);
@@ -174,7 +146,8 @@ class Action extends Component
         // Force delete the comment itself
         $comment->forceDelete();
 
-        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
+        // Clear CachedGate cache for this comment
+        CachedGate::clearForModel($comment);
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-deleted.'.$this->commentId);
@@ -200,7 +173,8 @@ class Action extends Component
         // Update local state
         $this->isSpam = true;
 
-        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
+        // Clear CachedGate cache for this comment
+        CachedGate::clearForModel($comment);
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated', $this->commentId, spam: true);
@@ -230,7 +204,8 @@ class Action extends Component
         // Update local state
         $this->isSpam = false;
 
-        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
+        // Clear CachedGate cache for this comment
+        CachedGate::clearForModel($comment);
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated', $this->commentId, spam: false);
@@ -260,7 +235,8 @@ class Action extends Component
         // Update local state
         $this->isDeleted = false;
 
-        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
+        // Clear CachedGate cache for this comment
+        CachedGate::clearForModel($comment);
 
         // Dispatch events to refresh related components
         $this->dispatch('comment-updated', $this->commentId, deleted: false);
@@ -353,7 +329,8 @@ class Action extends Component
         // Update local state
         $this->isPinned = true;
 
-        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
+        // Clear CachedGate cache for this comment
+        CachedGate::clearForModel($comment);
 
         // Send events to refresh related components.
         $this->dispatch('comment-updated', $this->commentId, pinned: true);
@@ -378,7 +355,8 @@ class Action extends Component
         // Update local state
         $this->isPinned = false;
 
-        $this->clearPermissionCache(sprintf('comment.%d.permissions.', $this->commentId).auth()->id());
+        // Clear CachedGate cache for this comment
+        CachedGate::clearForModel($comment);
 
         // Send events to refresh related components.
         $this->dispatch('comment-updated', $this->commentId, pinned: false);

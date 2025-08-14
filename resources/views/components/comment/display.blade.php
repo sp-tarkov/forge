@@ -1,7 +1,7 @@
 @props(['comment', 'manager', 'isReply' => false, 'commentable' => null])
 
 <div class="relative" x-data="{
-    canEdit: {{ $manager->canEditComment($comment) ? 'true' : 'false' }},
+    canEdit: {{ \App\Support\CachedGate::allows('update', $comment) ? 'true' : 'false' }},
     createdAt: new Date('{{ $comment->created_at->toISOString() }}'),
     init() {
         this.updateCanEdit();
@@ -12,7 +12,7 @@
         this.canEdit = diffInMinutes <= 5;
     }
 }">
-    <div id="{{ $comment->getHashId() }}" class="flex items-center justify-between">
+    <div id="{{ $manager->getCommentHashId($comment->id) }}" class="flex items-center justify-between">
         <div class="flex items-center">
             <flux:avatar circle="circle" src="{{ $comment->user->profile_photo_url }}" color="auto" color:seed="{{ $comment->user->id }}" />
             <a href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}"
@@ -34,11 +34,11 @@
         </div>
         <div class="flex items-center">
             @if ($comment->parent_id && $comment->parent)
-                <a href="#{{ $comment->parent->getHashId() }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
+                <a href="#{{ $manager->getCommentHashId($comment->parent_id) }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
                     {{ 'Replying to @' . $comment->parent->user->name }}
                 </a>
             @endif
-            @can('viewActions', $comment)
+            @if (\App\Support\CachedGate::allows('viewActions', $comment))
                 <livewire:comment.action
                     wire:key="comment-action-{{ $comment->id }}"
                     :comment-id="$comment->id"
@@ -48,10 +48,10 @@
                     :is-spam="$comment->isSpam()"
                     :is-root="$comment->isRoot()"
                     :can-be-rechecked="$comment->canBeRechecked()"
-                    :descendants-count="$comment->isRoot() ? $manager->getReplyCount($comment->id) : null"
+                    :descendants-count="$comment->isRoot() ? $manager->getDescendantCount($comment->id) : null"
                     :spam-checked-at="$comment->spam_checked_at?->toISOString()"
                 />
-            @endcan
+            @endif
         </div>
     </div>
 

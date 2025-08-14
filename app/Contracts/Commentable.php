@@ -92,16 +92,16 @@ interface Commentable
     public function ensureDefaultSubscriptions(): void;
 
     /**
-     * Load replies for a specific comment.
+     * Load descendants for a specific comment.
      *
      * @return Collection<int, Comment>
      */
-    public function loadRepliesForComment(Comment $comment): Collection;
+    public function loadDescendants(Comment $comment, ?User $user = null): Collection;
 
     /**
-     * Get reply counts for all root comments.
+     * Get descendant counts for all root comments.
      *
      * @return array<int, int>
      */
-    public function getReplyCounts(): array;
+    public function getDescendantCounts(): array;
 }

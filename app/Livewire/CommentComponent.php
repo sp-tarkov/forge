@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -57,25 +56,25 @@ class CommentComponent extends Component
     public array $formStates = [];
 
     /**
-     * Show replies flags indexed by comment ID.
+     * Descendant flags indexed by comment ID.
      *
      * @var array<int, bool>
      */
-    public array $showReplies = [];
+    public array $showDescendants = [];
 
     /**
-     * Loaded replies indexed by comment ID.
+     * Loaded descendants indexed by comment ID.
      *
      * @var array<int, Collection<int, Comment>>
      */
-    public array $loadedReplies = [];
+    public array $loadedDescendants = [];
 
     /**
-     * Reply counts indexed by comment ID.
+     * Descendant counts indexed by comment ID.
      *
      * @var array<int, int>
      */
-    public array $replyCounts = [];
+    public array $descendantCounts = [];
 
     /**
      * Whether the current user is subscribed to notifications.
@@ -89,19 +88,30 @@ class CommentComponent extends Component
     {
         $this->honeypotData = new HoneypotData;
         $this->initializeSubscriptionStatus();
-        $this->initializeReplyCounts();
+        $this->initializeDescendantCounts();
     }
 
     /**
      * Get the total comment count.
      */
-    #[Computed(persist: true)]
+    #[Computed]
     public function commentCount(): int
     {
-        return $this->commentable->comments()
-            ->get()
-            ->filter(fn ($comment) => Gate::forUser(Auth::user())->allows('view', $comment))
-            ->count();
+        $user = Auth::user();
+        $query = $this->commentable->comments();
+
+        if ($user === null) {
+            return $query->clean()->count();
+        }
+
+        if ($user->isModOrAdmin()) {
+            return $query->count();
+        }
+
+        // Normal authenticated users see clean comments and their own comments.
+        return $query->where(function ($q) use ($user): void {
+            $q->clean()->orWhere('user_id', $user->id);
+        })->count();
     }
 
     /**
@@ -109,26 +119,30 @@ class CommentComponent extends Component
      *
      * @return array<int>
      */
-    #[Computed(persist: true)]
+    #[Computed]
     public function userReactionIds(): array
     {
         if (! Auth::check()) {
             return [];
         }
 
-        /** @var User $user */
         $user = Auth::user();
 
-        $viewableCommentIds = $this->commentable->comments()
-            ->get()
-            ->filter(fn ($comment) => Gate::forUser($user)->allows('view', $comment))
-            ->pluck('id')
-            ->toArray();
+        // Get reactions for comments that will actually be displayed.
+        $reactionQuery = $user->commentReactions()
+            ->join('comments', 'comment_reactions.comment_id', '=', 'comments.id')
+            ->where('comments.commentable_type', $this->commentable::class)
+            ->where('comments.commentable_id', $this->getCommentableId());
 
-        return $user->commentReactions()
-            ->whereIn('comment_id', $viewableCommentIds)
-            ->pluck('comment_id')
-            ->toArray();
+        // Normal authenticated users see reactions for clean comments and their own comments.
+        if (! $user->isModOrAdmin()) {
+            $reactionQuery->where(function ($q) use ($user): void {
+                $q->where('comments.spam_status', SpamStatus::CLEAN->value)
+                    ->orWhere('comments.user_id', $user->id);
+            });
+        }
+
+        return $reactionQuery->pluck('comment_reactions.comment_id')->toArray();
     }
 
     /**
@@ -152,7 +166,6 @@ class CommentComponent extends Component
 
         // Clear cached computed properties.
         unset($this->commentCount);
-        unset($this->userReactionIds);
 
         $this->dispatch('$refresh');
     }
@@ -183,7 +196,7 @@ class CommentComponent extends Component
 
         $this->hideForm('reply', $parentId);
 
-        // Update reply counts and clear loaded replies for the parent
+        // Update reply counts and clear loaded replies for the parent.
         $parentComment = Comment::query()->find($parentId);
         if ($parentComment && $parentComment->isRoot()) {
             $rootId = $parentComment->id;
@@ -192,17 +205,18 @@ class CommentComponent extends Component
         }
 
         if ($rootId) {
-            $this->replyCounts[$rootId] = ($this->replyCounts[$rootId] ?? 0) + 1;
-            // Clear loaded replies to force reload when toggled
-            unset($this->loadedReplies[$rootId]);
-            // Automatically show replies after creating a new reply
-            $this->showReplies[$rootId] = true;
-            $this->loadReplies($rootId);
+            $this->descendantCounts[$rootId] = ($this->descendantCounts[$rootId] ?? 0) + 1;
+
+            // Clear the loaded descendants to force reload when toggled.
+            unset($this->loadedDescendants[$rootId]);
+
+            // Automatically show descendants after creating a new reply.
+            $this->showDescendants[$rootId] = true;
+            $this->loadDescendants($rootId);
         }
 
         // Clear cached computed properties.
         unset($this->commentCount);
-        unset($this->userReactionIds);
 
         $this->dispatch('$refresh');
     }
@@ -217,10 +231,10 @@ class CommentComponent extends Component
         $this->protectAgainstSpam();
 
         $formKey = $this->getFormKey('edit', $comment->id);
-        $fieldKey = sprintf('formStates.%s.body', $formKey);
+        $fieldKey = 'formStates.'.$formKey.'.body';
         $body = $this->formStates[$formKey]['body'] ?? '';
 
-        $this->validateComment($fieldKey, 'comment');
+        $this->validateComment($fieldKey);
 
         $comment->update([
             'body' => $body,
@@ -239,16 +253,16 @@ class CommentComponent extends Component
 
         $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
         $isWithinTimeLimit = $comment->created_at->diffInMinutes(now()) <= $editTimeLimit;
-        $hasNoChildren = $comment->replies()->count() === 0 && $comment->descendants()->count() === 0;
+        $hasNoChildren = ! $comment->descendants()->exists();
 
         if ($isWithinTimeLimit && $hasNoChildren) {
             // Update reply counts if this is a reply being permanently deleted
             if (! $comment->isRoot()) {
                 $rootId = $comment->root_id;
-                if ($rootId && isset($this->replyCounts[$rootId])) {
-                    $this->replyCounts[$rootId] = max(0, $this->replyCounts[$rootId] - 1);
-                    // Clear loaded replies to force reload
-                    unset($this->loadedReplies[$rootId]);
+                if ($rootId && isset($this->descendantCounts[$rootId])) {
+                    $this->descendantCounts[$rootId] = max(0, $this->descendantCounts[$rootId] - 1);
+                    // Clear loaded descendants to force reload
+                    unset($this->loadedDescendants[$rootId]);
                 }
             }
 
@@ -259,7 +273,6 @@ class CommentComponent extends Component
 
         // Clear cached computed properties.
         unset($this->commentCount);
-        unset($this->userReactionIds);
 
         $this->dispatch('$refresh');
     }
@@ -285,8 +298,6 @@ class CommentComponent extends Component
         } else {
             $user->commentReactions()->create(['comment_id' => $comment->id]);
         }
-
-        unset($this->userReactionIds);
     }
 
     /**
@@ -353,37 +364,35 @@ class CommentComponent extends Component
     }
 
     /**
-     * Toggle a reply's visibility for a comment.
+     * Toggle descendants visibility for a comment.
      */
-    public function toggleReplies(int $commentId): void
+    public function toggleDescendants(int $commentId): void
     {
-        $this->showReplies[$commentId] = ! ($this->showReplies[$commentId] ?? false);
+        $this->showDescendants[$commentId] = ! ($this->showDescendants[$commentId] ?? false);
 
-        // Load replies if showing and not already loaded
-        if ($this->showReplies[$commentId] && ! isset($this->loadedReplies[$commentId])) {
-            $this->loadReplies($commentId);
+        // Load descendants if showing and not already loaded
+        if ($this->showDescendants[$commentId] && ! isset($this->loadedDescendants[$commentId])) {
+            $this->loadDescendants($commentId);
         }
     }
 
     /**
-     * Load replies for a specific comment.
+     * Load descendants for a specific root comment.
      */
-    public function loadReplies(int $commentId): void
+    public function loadDescendants(int $commentId): void
     {
         $comment = Comment::query()->find($commentId);
-
-        if (! $comment || $comment->commentable_id !== $this->getCommentableId() || $comment->commentable_type !== $this->commentable::class) {
+        if (
+            ! $comment ||
+            $comment->commentable_id !== $this->getCommentableId() ||
+            $comment->commentable_type !== $this->commentable::class
+        ) {
             return;
         }
 
-        $replies = $this->commentable->loadRepliesForComment($comment);
+        $descendants = $this->commentable->loadDescendants($comment);
 
-        // Filter visible replies based on permissions
-        $visibleReplies = $replies->filter(
-            fn ($reply) => Gate::forUser(Auth::user())->allows('view', $reply)
-        );
-
-        $this->loadedReplies[$commentId] = $visibleReplies;
+        $this->loadedDescendants[$commentId] = $descendants;
     }
 
     /**
@@ -391,21 +400,22 @@ class CommentComponent extends Component
      */
     public function hasReacted(int $commentId): bool
     {
+        if (! Auth::check()) {
+            return false;
+        }
+
+        // For performance, check the eager-loaded reactions.
         return in_array($commentId, $this->userReactionIds());
     }
 
     /**
-     * Check if a comment can still be edited.
+     * Get the hash ID for a comment without loading the commentable.
      */
-    public function canEditComment(Comment $comment): bool
+    public function getCommentHashId(int $commentId): string
     {
-        if (! Auth::check() || $comment->user_id !== Auth::id()) {
-            return false;
-        }
+        $tabHash = $this->commentable->getCommentTabHash();
 
-        $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
-
-        return $comment->created_at->diffInMinutes(now()) <= $editTimeLimit;
+        return $tabHash ? $tabHash.'-comment-'.$commentId : 'comment-'.$commentId;
     }
 
     /**
@@ -413,36 +423,34 @@ class CommentComponent extends Component
      */
     public function hasVisibleDescendants(Comment $comment): bool
     {
-        // Use reply count from cache first
-        if (isset($this->replyCounts[$comment->id])) {
-            return $this->replyCounts[$comment->id] > 0;
+        // Use reply count from the cache first
+        if (isset($this->descendantCounts[$comment->id])) {
+            return $this->descendantCounts[$comment->id] > 0;
         }
 
         $query = $comment->descendants();
+        $user = Auth::user();
 
-        if (Auth::check()) {
-            /** @var User $user */
-            $user = Auth::user();
-
-            if (! $user->isModOrAdmin()) {
-                $query->where(function ($q) use ($user): void {
-                    $q->where('spam_status', SpamStatus::CLEAN->value)
-                        ->orWhere('user_id', $user->id);
-                });
-            }
-        } else {
-            $query->clean();
+        if ($user === null) {
+            return $query->clean()->exists();
         }
 
-        return $query->exists();
+        if ($user->isModOrAdmin()) {
+            return $query->exists();
+        }
+
+        return $query->where(function ($q) use ($user): void {
+            $q->where('spam_status', SpamStatus::CLEAN->value)
+                ->orWhere('user_id', $user->id);
+        })->exists();
     }
 
     /**
-     * Get reply count for a comment.
+     * Get descendant count for a comment.
      */
-    public function getReplyCount(int $commentId): int
+    public function getDescendantCount(int $commentId): int
     {
-        return $this->replyCounts[$commentId] ?? 0;
+        return $this->descendantCounts[$commentId] ?? 0;
     }
 
     /**
@@ -478,11 +486,11 @@ class CommentComponent extends Component
     }
 
     /**
-     * Initialize reply counts for root comments.
+     * Initialize descendant counts for root comments.
      */
-    protected function initializeReplyCounts(): void
+    protected function initializeDescendantCounts(): void
     {
-        $this->replyCounts = $this->commentable->getReplyCounts();
+        $this->descendantCounts = $this->commentable->getDescendantCounts();
     }
 
     /**
@@ -645,19 +653,19 @@ class CommentComponent extends Component
      */
     protected function filterVisibleComments(LengthAwarePaginator $comments): Collection
     {
-        $visibleComments = $comments->getCollection()->filter(
-            fn ($comment) => Gate::forUser(Auth::user())->allows('view', $comment)
-        );
+        $user = Auth::user();
+        $collection = $comments->getCollection();
 
-        return $visibleComments->map(function ($comment) {
-            $visibleDescendants = $comment->descendants->filter(
-                fn ($descendant) => Gate::forUser(Auth::user())->allows('view', $descendant)
-            );
+        if ($user === null) {
+            return $collection->filter(fn ($comment): bool => $comment->isSpamClean());
+        }
 
-            $comment->setRelation('descendants', $visibleDescendants);
+        if ($user->isModOrAdmin()) {
+            return $collection;
+        }
 
-            return $comment;
-        });
+        // For regular users: clean comments + their own comments
+        return $collection->filter(fn ($comment): bool => $comment->isSpamClean() || $comment->user_id === $user->id);
     }
 
     /**
@@ -668,7 +676,6 @@ class CommentComponent extends Component
     {
         // Clear cached computed properties
         unset($this->commentCount);
-        unset($this->userReactionIds);
 
         // Force a component refresh
         $this->dispatch('$refresh');
@@ -679,10 +686,20 @@ class CommentComponent extends Component
      */
     public function render(): View
     {
-        $rootComments = $this->commentable->rootComments()
-            ->paginate(perPage: 10, pageName: 'commentPage');
+        $user = Auth::user();
 
-        $visibleRootComments = $this->filterVisibleComments($rootComments);
+        // Select the root comments based on the user.
+        $rootCommentsQuery = $this->commentable->rootComments();
+        if ($user === null) {
+            $rootCommentsQuery->clean();
+        } elseif (! $user->isModOrAdmin()) {
+            $rootCommentsQuery->where(function ($q) use ($user): void {
+                $q->clean()->orWhere('user_id', $user->id);
+            });
+        }
+
+        $rootComments = $rootCommentsQuery->paginate(perPage: 10, pageName: 'commentPage');
+        $visibleRootComments = $rootComments->getCollection();
 
         return view('livewire.comment-component', [
             'rootComments' => $rootComments,

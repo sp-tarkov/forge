@@ -29,9 +29,9 @@
         />
         <flux:menu>
             @if($this->menuOpen)
-                @if($this->permissions['viewActions'] ?? false)
+                @if(\App\Support\CachedGate::allows('viewActions', $this->comment))
                     <flux:menu.group heading="Comment Actions">
-                        @if($this->permissions['pin'] ?? false)
+                        @if(\App\Support\CachedGate::allows('pin', $this->comment))
                             <flux:menu.item
                                 wire:click="{{ $isPinned ? 'unpinComment' : 'pinComment' }}"
                                 icon:trailing="{{ $isPinned ? 'bookmark-slash' : 'bookmark' }}">
@@ -39,29 +39,29 @@
                             </flux:menu.item>
                         @endif
                         @if ($isDeleted)
-                            @if($this->permissions['restore'] ?? false)
+                            @if(\App\Support\CachedGate::allows('restore', $this->comment))
                                 <flux:menu.item x-on:click.prevent="$wire.openModal('restore')" icon:trailing="arrow-path">Restore Comment</flux:menu.item>
                             @endif
-                            @if($this->permissions['hardDelete'] ?? false)
+                            @if(\App\Support\CachedGate::allows('hardDelete', $this->comment))
                                 <flux:menu.item x-on:click.prevent="$wire.openModal('hardDelete')" icon:trailing="trash" variant="danger">Hard Delete Thread</flux:menu.item>
                             @endif
                         @else
-                            @if($this->permissions['softDelete'] ?? false)
+                            @if(\App\Support\CachedGate::allows('softDelete', $this->comment))
                                 @unless($isSpam)
                                     <flux:menu.item x-on:click.prevent="$wire.openModal('softDelete')" icon:trailing="eye-slash">Soft Delete</flux:menu.item>
                                 @endunless
                             @endif
-                            @if($this->permissions['hardDelete'] ?? false)
+                            @if(\App\Support\CachedGate::allows('hardDelete', $this->comment))
                                 <flux:menu.item x-on:click.prevent="$wire.openModal('hardDelete')" icon:trailing="trash" variant="danger">Hard Delete Thread</flux:menu.item>
                             @endif
                         @endif
-                        @if($this->permissions['markAsSpam'] ?? false)
+                        @if(\App\Support\CachedGate::allows('markAsSpam', $this->comment))
                             <flux:menu.item x-on:click.prevent="$wire.openModal('markAsSpam')" icon:trailing="shield-exclamation" variant="danger">Mark as Spam</flux:menu.item>
                         @endif
-                        @if($this->permissions['markAsHam'] ?? false)
+                        @if(\App\Support\CachedGate::allows('markAsHam', $this->comment))
                             <flux:menu.item x-on:click.prevent="$wire.openModal('markAsHam')" icon:trailing="shield-check">Mark as Clean</flux:menu.item>
                         @endif
-                        @if($this->permissions['checkForSpam'] ?? false)
+                        @if(\App\Support\CachedGate::allows('checkForSpam', $this->comment))
                             <flux:menu.item
                                 x-on:click.prevent="$wire.openModal('checkForSpam')"
                                 icon:trailing="magnifying-glass"

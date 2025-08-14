@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @template TModel of Model
@@ -37,9 +38,15 @@ trait HasComments
     public function rootComments(): MorphMany
     {
         return $this->morphMany(Comment::class, 'commentable')
-            ->whereNull('parent_id')
-            ->whereNull('root_id')
-            ->with(['user', 'reactions'])
+            ->whereNull(['parent_id', 'root_id'])
+            ->with([
+                'user:id,name,email,user_role_id,profile_photo_path,created_at',
+                'user.role:id,name',
+                'reactions:id,comment_id,user_id',
+                'parent:id,user_id',
+                'parent.user:id,name',
+            ])
+            ->withCount('reactions')
             ->orderByRaw('pinned_at IS NULL, pinned_at DESC')
             ->orderBy('created_at', 'desc');
     }
@@ -108,34 +115,54 @@ trait HasComments
     }
 
     /**
-     * Load replies for a specific comment with proper filtering.
+     * Load descendants for a specific comment.
      *
      * @return Collection<int, Comment>
      */
-    public function loadRepliesForComment(Comment $comment): Collection
+    public function loadDescendants(Comment $comment, ?User $user = null): Collection
     {
-        return $comment->descendants()
-            ->with(['user', 'reactions'])
-            ->orderBy('created_at', 'asc')
-            ->get();
+        if ($user === null) {
+            $user = Auth::user();
+        }
+
+        $query = $comment->descendants()
+            ->with([
+                'user:id,name,email,user_role_id,profile_photo_path,created_at',
+                'user.role:id,name',
+                'reactions:id,comment_id,user_id',
+                'parent:id,user_id',
+                'parent.user:id,name',
+            ])
+            ->withCount('reactions')
+            ->orderBy('created_at');
+
+        if ($user === null) {
+            // Unauthenticated only sees clean.
+            $query->clean();
+        } elseif (! $user->isModOrAdmin()) {
+            // Authenticated only sees clean and their own.
+            $query->where(function ($q) use ($user): void {
+                $q->clean()->orWhere('user_id', $user->id);
+            });
+        }
+
+        // Moderators and Administrators have no filtering.
+        return $query->get();
     }
 
     /**
-     * Get reply count for root comments.
+     * Get descendant counts for root comments.
      *
      * @return array<int, int>
      */
-    public function getReplyCounts(): array
+    public function getDescendantCounts(): array
     {
-        $rootCommentIds = $this->rootComments()->pluck('id')->toArray();
-
-        if (empty($rootCommentIds)) {
-            return [];
-        }
-
-        return Comment::query()->whereIn('root_id', $rootCommentIds)
-            ->groupBy('root_id')
+        return Comment::query()
             ->selectRaw('root_id, count(*) as reply_count')
+            ->where('commentable_type', static::class)
+            ->where('commentable_id', $this->getKey())
+            ->whereNotNull('root_id')
+            ->groupBy(['root_id'])
             ->pluck('reply_count', 'root_id')
             ->toArray();
     }
