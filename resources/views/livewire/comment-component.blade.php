@@ -49,7 +49,7 @@
     @foreach ($visibleRootComments as $comment)
         <div
             wire:key="comment-container-{{ $comment->id }}"
-            class="relative mb-4 last:mb-0"
+            class="comment-container-{{ $comment->id }} relative mb-4 last:mb-0"
         >
             <livewire:ribbon.comment
                 wire:key="ribbon-comment-{{ $comment->id }}"

@@ -32,7 +32,6 @@ class Comment extends Component
     /**
      * Whether the current user can see the ribbon.
      */
-    #[Locked]
     public bool $canSeeRibbon;
 
     /**
@@ -46,11 +45,10 @@ class Comment extends Component
             return;
         }
 
-        $comment = CommentModel::query()->select('spam_status')->find($this->commentId);
-        if ($comment && $comment->spam_status->value !== $this->spamStatus) {
+        $comment = CommentModel::query()->find($this->commentId);
+        if ($comment) {
             $this->spamStatus = $comment->spam_status->value;
-        } else {
-            $this->skipRender();
+            $this->canSeeRibbon = \App\Support\CachedGate::allows('seeRibbon', $comment);
         }
     }
 

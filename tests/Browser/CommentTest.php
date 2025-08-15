@@ -854,6 +854,138 @@ describe('Comment Reactions Tests', function (): void {
     });
 });
 
+describe('Spam Marking Tests', function (): void {
+    it('should show spam ribbon to moderators when comment is marked as spam', function (): void {
+        $moderator = User::factory()->create();
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderator->assignRole($moderatorRole);
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a test comment that will be marked as spam.',
+        ]);
+
+        // Mark the comment as spam using the model method
+        $comment->markAsSpamByModerator($moderator->id);
+
+        // Verify our comment was created correctly
+        expect($comment->fresh()->isSpam())->toBeTrue()
+            ->and($comment->fresh()->spam_status)->toBe(\App\Enums\SpamStatus::SPAM)
+            ->and($moderator->isModOrAdmin())->toBeTrue();
+
+        $this->browse(function (Browser $browser) use ($moderator, $mod, $comment): void {
+            $browser->loginAs($moderator)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->waitForText($comment->body)
+                ->assertSeeIn('.comment-container-'.$comment->id.' .ribbon', 'Spam');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should display admin action menu for moderators on clean comments', function (): void {
+        $moderator = User::factory()->create();
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderator->assignRole($moderatorRole);
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This is a clean comment that moderators should be able to moderate.',
+        ]);
+
+        $this->browse(function (Browser $browser) use ($moderator, $mod, $comment): void {
+            $browser->loginAs($moderator)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->waitForText($comment->body)
+                // Verify no spam ribbon initially for clean comment
+                ->assertMissing('.comment-container-'.$comment->id.' .ribbon')
+                // Verify the action button (cog icon) is present for moderators
+                ->assertPresent('.comment-container-'.$comment->id.' button[data-flux-button]');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should show spam ribbon immediately after marking comment as spam via UI', function (): void {
+        $moderator = User::factory()->create();
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderator->assignRole($moderatorRole);
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => 'This comment will be marked as spam through the UI.',
+        ]);
+
+        // Verify comment starts clean
+        expect($comment->fresh()->isSpam())->toBeFalse();
+
+        $this->browse(function (Browser $browser) use ($moderator, $mod, $comment): void {
+            $browser->loginAs($moderator)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->waitForText($comment->body)
+                // Verify no spam ribbon initially
+                ->assertMissing('.comment-container-'.$comment->id.' .ribbon')
+                // Take screenshot for debugging
+                ->screenshot('before-spam-marking')
+                // Try to interact with the comment action menu
+                ->pause(1000)
+                ->dump() // This will show the HTML in the test output
+                ->assertPresent('.comment-container-'.$comment->id.' button[data-flux-button]');
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+
+    it('should hide spam comments completely from regular users', function (): void {
+        $commentAuthor = User::factory()->create();
+        $otherUser = User::factory()->create(); // Different user who shouldn't see spam
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $commentAuthor->id,
+            'body' => 'This is a spam comment that should be hidden from regular users.',
+        ]);
+
+        // Mark the comment as spam
+        $comment->markAsSpamByModerator($commentAuthor->id);
+
+        $this->browse(function (Browser $browser) use ($otherUser, $mod, $comment): void {
+            $browser->loginAs($otherUser) // Login as different user, not the comment author
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                // Spam comments should be completely hidden from users who aren't the author
+                ->assertDontSee($comment->body)
+                ->assertMissing('.comment-container-'.$comment->id);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+
 describe('Comment Subscription Tests', function (): void {
     it('should show subscription button for authenticated users', function (): void {
         $user = User::factory()->create();
