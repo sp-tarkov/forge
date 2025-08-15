@@ -373,6 +373,32 @@ class Comment extends Model implements Reportable
     }
 
     /**
+     * Scope a query to only include comments visible to a user.
+     *
+     * @param  Builder<Comment>  $query
+     */
+    #[Scope]
+    protected function visibleToUser(Builder $query, ?User $user = null): void
+    {
+        // Moderators and admins see everything.
+        if ($user !== null && $user->isModOrAdmin()) {
+            return;
+        }
+
+        // Guests only see clean comments.
+        if ($user === null) {
+            $query->clean();
+
+            return;
+        }
+
+        // Regular users can see clean comments and their own comments.
+        $query->where(function ($q) use ($user): void {
+            $q->clean()->orWhere('user_id', $user->id);
+        });
+    }
+
+    /**
      * Get a human-readable display name for the reportable model.
      */
     public function getReportableDisplayName(): string

@@ -134,19 +134,9 @@ trait HasComments
                 'parent.user:id,name',
             ])
             ->withCount('reactions')
+            ->visibleToUser($user)
             ->orderBy('created_at');
 
-        if ($user === null) {
-            // Unauthenticated only sees clean.
-            $query->clean();
-        } elseif (! $user->isModOrAdmin()) {
-            // Authenticated only sees clean and their own.
-            $query->where(function ($q) use ($user): void {
-                $q->clean()->orWhere('user_id', $user->id);
-            });
-        }
-
-        // Moderators and Administrators have no filtering.
         return $query->get();
     }
 
@@ -157,11 +147,14 @@ trait HasComments
      */
     public function getDescendantCounts(): array
     {
+        $user = Auth::user();
+        
         return Comment::query()
             ->selectRaw('root_id, count(*) as reply_count')
             ->where('commentable_type', static::class)
             ->where('commentable_id', $this->getKey())
             ->whereNotNull('root_id')
+            ->visibleToUser($user)
             ->groupBy(['root_id'])
             ->pluck('reply_count', 'root_id')
             ->toArray();

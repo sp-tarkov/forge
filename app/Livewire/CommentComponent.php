@@ -98,20 +98,10 @@ class CommentComponent extends Component
     public function commentCount(): int
     {
         $user = Auth::user();
-        $query = $this->commentable->comments();
-
-        if ($user === null) {
-            return $query->clean()->count();
-        }
-
-        if ($user->isModOrAdmin()) {
-            return $query->count();
-        }
-
-        // Normal authenticated users see clean comments and their own comments.
-        return $query->where(function ($q) use ($user): void {
-            $q->clean()->orWhere('user_id', $user->id);
-        })->count();
+        
+        return $this->commentable->comments()
+            ->visibleToUser($user)
+            ->count();
     }
 
     /**
@@ -428,21 +418,11 @@ class CommentComponent extends Component
             return $this->descendantCounts[$comment->id] > 0;
         }
 
-        $query = $comment->descendants();
         $user = Auth::user();
-
-        if ($user === null) {
-            return $query->clean()->exists();
-        }
-
-        if ($user->isModOrAdmin()) {
-            return $query->exists();
-        }
-
-        return $query->where(function ($q) use ($user): void {
-            $q->where('spam_status', SpamStatus::CLEAN->value)
-                ->orWhere('user_id', $user->id);
-        })->exists();
+        
+        return $comment->descendants()
+            ->visibleToUser($user)
+            ->exists();
     }
 
     /**
@@ -645,28 +625,6 @@ class CommentComponent extends Component
         return $model->getKey();
     }
 
-    /**
-     * Filter comments based on visibility permissions.
-     *
-     * @param  LengthAwarePaginator<int, Comment>  $comments
-     * @return Collection<int, Comment>
-     */
-    protected function filterVisibleComments(LengthAwarePaginator $comments): Collection
-    {
-        $user = Auth::user();
-        $collection = $comments->getCollection();
-
-        if ($user === null) {
-            return $collection->filter(fn ($comment): bool => $comment->isSpamClean());
-        }
-
-        if ($user->isModOrAdmin()) {
-            return $collection;
-        }
-
-        // For regular users: clean comments + their own comments
-        return $collection->filter(fn ($comment): bool => $comment->isSpamClean() || $comment->user_id === $user->id);
-    }
 
     /**
      * Handle comment moderation updates.
@@ -688,17 +646,11 @@ class CommentComponent extends Component
     {
         $user = Auth::user();
 
-        // Select the root comments based on the user.
-        $rootCommentsQuery = $this->commentable->rootComments();
-        if ($user === null) {
-            $rootCommentsQuery->clean();
-        } elseif (! $user->isModOrAdmin()) {
-            $rootCommentsQuery->where(function ($q) use ($user): void {
-                $q->clean()->orWhere('user_id', $user->id);
-            });
-        }
-
-        $rootComments = $rootCommentsQuery->paginate(perPage: 10, pageName: 'commentPage');
+        // Select the root comments based on the user using the visibility scope.
+        $rootComments = $this->commentable->rootComments()
+            ->visibleToUser($user)
+            ->paginate(perPage: 10, pageName: 'commentPage');
+            
         $visibleRootComments = $rootComments->getCollection();
 
         return view('livewire.comment-component', [

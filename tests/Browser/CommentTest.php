@@ -594,6 +594,38 @@ describe('Comment Editing Tests', function (): void {
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
     });
+
+    it('should refresh listing with edited comment content after successful edit', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        $originalText = 'Original comment text for editing test';
+        $editedText = 'Edited comment text that should appear after update';
+
+        Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'user_id' => $user->id,
+            'body' => $originalText,
+            'created_at' => now(),
+        ]);
+
+        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText): void {
+            $browser->loginAs($user)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->assertSee($originalText)
+                ->click('button[wire\\:click*="toggleEditForm"]')
+                ->waitForText('Edit Comment', 5)
+                ->clear('textarea[wire\\:model*="edit"]')
+                ->type('textarea[wire\\:model*="edit"]', $editedText)
+                ->press('Update Comment')
+                ->waitForText($editedText, 5)
+                ->assertDontSee($originalText);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
 });
 
 describe('Comment Deletion Tests', function (): void {
@@ -991,10 +1023,10 @@ describe('Comment Display and Pagination Tests', function (): void {
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertDontSee($replyText) // Replies hidden by default now
-                ->click('button[wire\\:click*="toggleReplies"]')
+                ->click('button[wire\\:click*="toggleDescendants"]')
                 ->waitForText($replyText, 5)
                 ->assertSee($replyText)
-                ->click('button[wire\\:click*="toggleReplies"]')
+                ->click('button[wire\\:click*="toggleDescendants"]')
                 ->waitUntilMissingText($replyText, 5)
                 ->assertDontSee($replyText);
 
@@ -1038,7 +1070,7 @@ describe('Comment Display and Pagination Tests', function (): void {
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertSee('Root comment')
-                ->click('button[wire\\:click*="toggleReplies"]') // Load replies first
+                ->click('button[wire\\:click*="toggleDescendants"]') // Load replies first
                 ->waitForText('First reply', 5)
                 ->assertSee('First reply')
                 ->assertSee('Nested reply to first reply')

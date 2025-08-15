@@ -132,10 +132,42 @@ describe('edit tracking', function (): void {
             ->test(CommentComponent::class, ['commentable' => $mod])
             ->assertSeeHtml('<span class="text-gray-500 dark:text-gray-400" title="'.$comment->edited_at->format('Y-m-d H:i:s').'">*</span>');
     });
+
+    it('should refresh the comment listing with edited text after successful edit', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $originalText = 'This is the original comment text.';
+        $editedText = 'This is the edited comment text that should appear in the listing.';
+
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'body' => $originalText,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $component = Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->assertSee($originalText)
+            ->assertDontSee($editedText);
+
+        $component->set('formStates.edit-'.$comment->id.'.body', $editedText)
+            ->call('updateComment', $comment)
+            ->assertHasNoErrors();
+
+        $comment->refresh();
+        expect($comment->body)->toBe($editedText)
+            ->and($comment->edited_at)->not->toBeNull();
+
+        $component->assertSee($editedText)
+            ->assertDontSee($originalText);
+    });
 });
 
 describe('moderator permissions', function (): void {
-    it('should allow moderators to edit any comment regardless of ownership', function (): void {
+    it('should not allow moderators to edit other users comments', function (): void {
         $moderatorRole = UserRole::factory()->moderator()->create();
         $moderator = User::factory()->create();
         $moderator->assignRole($moderatorRole);
@@ -150,31 +182,38 @@ describe('moderator permissions', function (): void {
 
         Livewire::actingAs($moderator)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set('formStates.edit-'.$comment->id.'.body', 'Moderator edit')
+            ->set('formStates.edit-'.$comment->id.'.body', 'Moderator trying to edit')
+            ->call('updateComment', $comment)
+            ->assertForbidden();
+
+        $comment->refresh();
+        expect($comment->body)->not->toBe('Moderator trying to edit');
+    });
+
+    it('should allow moderators to edit their own comments', function (): void {
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderator = User::factory()->create();
+        $moderator->assignRole($moderatorRole);
+
+        $mod = Mod::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $moderator->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($moderator)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', 'Moderator editing own comment')
             ->call('updateComment', $comment)
             ->assertHasNoErrors();
 
         $comment->refresh();
-        expect($comment->body)->toBe('Moderator edit');
+        expect($comment->body)->toBe('Moderator editing own comment');
     });
 
-    it('should allow a moderator to update any comment', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
-
-        $user = User::factory()->create();
-        $mod = Mod::factory()->create();
-        $comment = Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
-
-        Livewire::actingAs($moderator)
-            ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set('formStates.edit-'.$comment->id.'.body', 'This is an updated comment.')
-            ->call('updateComment', $comment)
-            ->assertHasNoErrors();
-    });
-
-    it('should properly check moderator permissions for special actions', function (): void {
+    it('should not allow moderators to bypass time limits on other users comments', function (): void {
         $moderatorRole = UserRole::factory()->moderator()->create();
         $moderator = User::factory()->create();
         $moderator->assignRole($moderatorRole);
@@ -182,7 +221,7 @@ describe('moderator permissions', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
-        // Create an old comment
+        // Create an old comment by another user
         $oldComment = Comment::factory()->create([
             'user_id' => $user->id,
             'commentable_id' => $mod->id,
@@ -190,20 +229,20 @@ describe('moderator permissions', function (): void {
             'created_at' => now()->subDays(7), // Week old
         ]);
 
-        // Moderator should be able to edit old comments
+        // Moderator should not be able to edit old comments from other users
         Livewire::actingAs($moderator)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set('formStates.edit-'.$oldComment->id.'.body', 'Moderator edit on old comment')
+            ->set('formStates.edit-'.$oldComment->id.'.body', 'Moderator trying to edit old comment')
             ->call('updateComment', $oldComment)
-            ->assertHasNoErrors();
+            ->assertForbidden();
 
         $oldComment->refresh();
-        expect($oldComment->body)->toBe('Moderator edit on old comment');
+        expect($oldComment->body)->not->toBe('Moderator trying to edit old comment');
     });
 });
 
 describe('administrator permissions', function (): void {
-    it('should allow administrators to edit any comment regardless of ownership', function (): void {
+    it('should not allow administrators to edit other users comments', function (): void {
         $adminRole = UserRole::factory()->administrator()->create();
         $admin = User::factory()->create();
         $admin->assignRole($adminRole);
@@ -219,12 +258,35 @@ describe('administrator permissions', function (): void {
 
         Livewire::actingAs($admin)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set('formStates.edit-'.$comment->id.'.body', 'Admin edit')
+            ->set('formStates.edit-'.$comment->id.'.body', 'Admin trying to edit')
+            ->call('updateComment', $comment)
+            ->assertForbidden();
+
+        $comment->refresh();
+        expect($comment->body)->not->toBe('Admin trying to edit');
+    });
+
+    it('should allow administrators to edit their own comments', function (): void {
+        $adminRole = UserRole::factory()->administrator()->create();
+        $admin = User::factory()->create();
+        $admin->assignRole($adminRole);
+
+        $mod = Mod::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $admin->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($admin)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', 'Admin editing own comment')
             ->call('updateComment', $comment)
             ->assertHasNoErrors();
 
         $comment->refresh();
-        expect($comment->body)->toBe('Admin edit');
+        expect($comment->body)->toBe('Admin editing own comment');
     });
 });
 
@@ -316,37 +378,39 @@ describe('concurrent editing', function (): void {
     });
 
     it('should handle concurrent edit attempts on same comment', function (): void {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $user2->assignRole($moderatorRole); // Make user2 a moderator
-
+        $user = User::factory()->create();
         $mod = Mod::factory()->create();
         $comment = Comment::factory()->create([
-            'user_id' => $user1->id,
+            'user_id' => $user->id,
             'commentable_id' => $mod->id,
             'commentable_type' => $mod::class,
             'body' => 'Original content',
             'created_at' => now(),
         ]);
 
-        // User1 starts editing
-        $component1 = Livewire::actingAs($user1)
+        // User starts editing their own comment
+        $component1 = Livewire::actingAs($user)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set('formStates.edit-'.$comment->id.'.body', 'User1 edit');
+            ->set('formStates.edit-'.$comment->id.'.body', 'First edit');
 
-        // Moderator also starts editing
-        $component2 = Livewire::actingAs($user2)
-            ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set('formStates.edit-'.$comment->id.'.body', 'Moderator edit');
-
-        // Both submit their edits
+        // User submits first edit successfully
         $component1->call('updateComment', $comment)->assertHasNoErrors();
+
+        // Verify first edit succeeded
+        $comment->refresh();
+        expect($comment->body)->toBe('First edit');
+
+        // User makes another edit on the same comment
+        $component2 = Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', 'Second edit');
+
+        // Second edit should also succeed (within time limit)
         $component2->call('updateComment', $comment)->assertHasNoErrors();
 
-        // The last edit (moderator's) should win
+        // The second edit should win
         $comment->refresh();
-        expect($comment->body)->toBe('Moderator edit');
+        expect($comment->body)->toBe('Second edit');
     });
 });
 

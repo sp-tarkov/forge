@@ -75,11 +75,7 @@ class CommentPolicy
      */
     public function update(User $user, Comment $comment): bool
     {
-        if ($user->isModOrAdmin()) {
-            return true;
-        }
-
-        // The user can update the comment if they are the author of the comment.
+        // Only the comment author can edit their own comment
         if ($user->id !== $comment->user_id) {
             return false;
         }
@@ -329,7 +325,7 @@ class CommentPolicy
     }
 
     /**
-     * Determine whether the user can report a mod.
+     * Determine whether the user can report a comment.
      *
      * Authentication is required.
      */
@@ -337,6 +333,11 @@ class CommentPolicy
     {
         // Moderators and administrators cannot create reports.
         if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Users cannot report their own comments
+        if ($reportable instanceof Comment && $reportable->user_id === $user->id) {
             return false;
         }
 

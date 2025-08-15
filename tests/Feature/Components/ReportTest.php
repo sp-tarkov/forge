@@ -130,6 +130,67 @@ describe('ReportComponent', function (): void {
 
             expect($component->get('canReportItem'))->toBeFalse();
         });
+
+        it('prevents users from reporting their own comments', function (): void {
+            $user = User::factory()->create();
+            $comment = Comment::factory()->create(['user_id' => $user->id]);
+
+            $component = Livewire::actingAs($user)
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeFalse();
+        });
+
+        it('allows users to report comments from other users', function (): void {
+            $user = User::factory()->create();
+            $otherUser = User::factory()->create();
+            $comment = Comment::factory()->create(['user_id' => $otherUser->id]);
+
+            $component = Livewire::actingAs($user)
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeTrue();
+        });
+
+        it('prevents moderators from reporting any content', function (): void {
+            $moderatorRole = UserRole::factory()->moderator()->create();
+            $moderator = User::factory()->create();
+            $moderator->assignRole($moderatorRole);
+            
+            $user = User::factory()->create();
+            $comment = Comment::factory()->create(['user_id' => $user->id]);
+
+            $component = Livewire::actingAs($moderator)
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeFalse();
+        });
+
+        it('prevents administrators from reporting any content', function (): void {
+            $adminRole = UserRole::factory()->administrator()->create();
+            $admin = User::factory()->create();
+            $admin->assignRole($adminRole);
+            
+            $user = User::factory()->create();
+            $comment = Comment::factory()->create(['user_id' => $user->id]);
+
+            $component = Livewire::actingAs($admin)
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeFalse();
+        });
     });
 
     describe('Form Submission', function (): void {
@@ -303,6 +364,44 @@ describe('ReportComponent', function (): void {
                 ->assertForbidden();
 
             expect(Report::query()->count())->toBe(0);
+        });
+
+        it('prevents users from submitting reports for their own comments', function (): void {
+            $user = User::factory()->create();
+            $comment = Comment::factory()->create(['user_id' => $user->id]);
+
+            Livewire::actingAs($user)
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ])
+                ->set('reason', ReportReason::SPAM)
+                ->call('submit')
+                ->assertForbidden();
+
+            expect(Report::query()->count())->toBe(0);
+        });
+
+        it('allows users to submit reports for other users comments', function (): void {
+            $user = User::factory()->create();
+            $otherUser = User::factory()->create();
+            $comment = Comment::factory()->create(['user_id' => $otherUser->id]);
+
+            Livewire::actingAs($user)
+                ->test(ReportComponent::class, [
+                    'reportableId' => $comment->id,
+                    'reportableType' => $comment::class,
+                ])
+                ->set('reason', ReportReason::HARASSMENT)
+                ->call('submit')
+                ->assertHasNoErrors();
+
+            expect(Report::query()->count())->toBe(1);
+            
+            $report = Report::query()->first();
+            expect($report->reporter_id)->toBe($user->id);
+            expect($report->reportable_type)->toBe($comment::class);
+            expect($report->reportable_id)->toBe($comment->id);
         });
     });
 
