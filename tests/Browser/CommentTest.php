@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -876,7 +877,7 @@ describe('Spam Marking Tests', function (): void {
 
         // Verify our comment was created correctly
         expect($comment->fresh()->isSpam())->toBeTrue()
-            ->and($comment->fresh()->spam_status)->toBe(\App\Enums\SpamStatus::SPAM)
+            ->and($comment->fresh()->spam_status)->toBe(SpamStatus::SPAM)
             ->and($moderator->isModOrAdmin())->toBeTrue();
 
         $this->browse(function (Browser $browser) use ($moderator, $mod, $comment): void {
@@ -1207,6 +1208,49 @@ describe('Comment Display and Pagination Tests', function (): void {
                 ->assertSee('First reply')
                 ->assertSee('Nested reply to first reply')
                 ->assertSee('Replying to @'.$user->name);
+
+            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
+        });
+    });
+});
+describe('Comment Pinning Tests', function (): void {
+    it('should allow moderators to pin comments without browser errors', function (): void {
+        $moderator = User::factory()->create();
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderator->assignRole($moderatorRole);
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create(['mod_id' => $mod->id]);
+
+        // Create 5 comments
+        $comments = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $comments[] = Comment::factory()->create([
+                'commentable_id' => $mod->id,
+                'commentable_type' => Mod::class,
+                'user_id' => $user->id,
+                'body' => sprintf('This is test comment number %d.', $i),
+            ]);
+        }
+
+        $commentToPin = $comments[2];
+
+        $this->browse(function (Browser $browser) use ($moderator, $mod, $commentToPin): void {
+            $browser->loginAs($moderator)
+                ->visit($mod->detail_url.'#comments')
+                ->waitForText($mod->name, 10)
+                ->waitFor('[x-show="selectedTab === \'comments\'"]', 5)
+                ->waitForText($commentToPin->body, 10)
+                ->assertDontSee('Pinned')
+                ->waitFor('.comment-container-'.$commentToPin->id.' [data-flux-dropdown] button[data-flux-button]', 5)
+                ->with('.comment-container-'.$commentToPin->id.' [data-flux-dropdown]', function ($dropdown): void {
+                    $dropdown->click('button[data-flux-button]')
+                        ->waitFor('[data-flux-menu]', 5)
+                        ->waitFor('.action-pin', 5)
+                        ->click('.action-pin');
+                })
+                ->waitForText('Pinned', 5);
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });

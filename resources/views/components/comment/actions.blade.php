@@ -11,7 +11,7 @@
                                 <path d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"/>
                             </svg>
                         </div>
-                        <span class="text-xs">{{ $comment->reactions_count }} {{ $comment->reactions_count === 1 ? 'Like' : 'Likes' }}</span>
+                        <span class="text-xs">{{ $comment->reactions_count ?? 0 }} {{ ($comment->reactions_count ?? 0) === 1 ? 'Like' : 'Likes' }}</span>
                     </button>
                 </flux:tooltip>
             @else
@@ -37,7 +37,7 @@
                             <path d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"/>
                         </svg>
                     </div>
-                    <span class="text-xs">{{ $comment->reactions_count }} {{ $comment->reactions_count === 1 ? 'Like' : 'Likes' }}</span>
+                    <span class="text-xs">{{ $comment->reactions_count ?? 0 }} {{ ($comment->reactions_count ?? 0) === 1 ? 'Like' : 'Likes' }}</span>
                 </button>
             @endif
         @else
@@ -46,7 +46,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="none" viewBox="0 0 20 20" class="w-5 h-5">
                     <path d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"/>
                 </svg>
-                <span class="text-xs">{{ $comment->reactions_count }} {{ $comment->reactions_count === 1 ? 'Like' : 'Likes' }}</span>
+                <span class="text-xs">{{ $comment->reactions_count ?? 0 }} {{ ($comment->reactions_count ?? 0) === 1 ? 'Like' : 'Likes' }}</span>
             </div>
         @endauth
 
@@ -76,7 +76,12 @@
             </button>
         @endif
 
-        <livewire:report-component variant="comment" :reportable-id="$comment->id" :reportable-type="get_class($comment)" :key="'report-'.$comment->id" />
+        <livewire:report-component
+            wire:key="report-{{ $comment->id }}"
+            variant="comment"
+            :reportable-id="$comment->id"
+            :reportable-type="get_class($comment)"
+        />
 
         @auth
             <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" class="hover:underline cursor-pointer text-xs">

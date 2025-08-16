@@ -6,6 +6,7 @@ namespace App\Livewire;
 
 use App\Contracts\Commentable;
 use App\Enums\SpamStatus;
+use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Mod;
@@ -13,7 +14,6 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
@@ -98,7 +98,7 @@ class CommentComponent extends Component
     public function commentCount(): int
     {
         $user = Auth::user();
-        
+
         return $this->commentable->comments()
             ->visibleToUser($user)
             ->count();
@@ -288,6 +288,15 @@ class CommentComponent extends Component
         } else {
             $user->commentReactions()->create(['comment_id' => $comment->id]);
         }
+
+        // Get the updated reactions_count.
+        $comment->loadCount('reactions');
+
+        // Update the cached descendant.
+        $this->updateCachedDescendant($comment);
+
+        // Clear computed property.
+        unset($this->userReactionIds);
     }
 
     /**
@@ -300,7 +309,7 @@ class CommentComponent extends Component
 
         $comment->update(['pinned_at' => now()]);
 
-        $this->dispatch('$refresh');
+        flash()->success('Comment successfully pinned!');
     }
 
     /**
@@ -313,7 +322,164 @@ class CommentComponent extends Component
 
         $comment->update(['pinned_at' => null]);
 
-        $this->dispatch('$refresh');
+        flash()->success('Comment successfully unpinned!');
+    }
+
+    /**
+     * Soft delete a comment.
+     */
+    public function softDeleteComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('softDelete', $comment);
+
+        $comment->update(['deleted_at' => now()]);
+
+        // Dispatch event to update the ribbon component.
+        $this->dispatch('comment-updated', $commentId, deleted: true);
+
+        flash()->success('Comment successfully deleted!');
+    }
+
+    /**
+     * Restore a deleted comment.
+     */
+    public function restoreComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('restore', $comment);
+
+        $comment->update(['deleted_at' => null]);
+
+        // Dispatch event to update the ribbon component.
+        $this->dispatch('comment-updated', $commentId, deleted: false);
+
+        flash()->success('Comment successfully restored!');
+    }
+
+    /**
+     * Mark a comment as spam.
+     */
+    public function markCommentAsSpam(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('markAsSpam', $comment);
+
+        $comment->markAsSpamByModerator(auth()->id());
+
+        // Dispatch event to update the ribbon component.
+        $this->dispatch('comment-updated', $commentId, spam: true);
+
+        flash()->success('Comment marked as spam!');
+    }
+
+    /**
+     * Mark a comment as clean (not spam).
+     */
+    public function markCommentAsHam(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('markAsHam', $comment);
+
+        $comment->markAsHam();
+
+        // Dispatch event to update the ribbon component.
+        $this->dispatch('comment-updated', $commentId, spam: false);
+
+        flash()->success('Comment marked as clean!');
+    }
+
+    /**
+     * Spam check tracking state.
+     *
+     * @var array<int, array{inProgress: bool, startedAt: string|null}>
+     */
+    public array $spamCheckStates = [];
+
+    /**
+     * Check a comment for spam.
+     */
+    public function checkCommentForSpam(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('checkForSpam', $comment);
+
+        // Store the current spam check timestamp for polling.
+        $this->spamCheckStates[$commentId] = [
+            'inProgress' => true,
+            'startedAt' => $comment->spam_checked_at?->toISOString(),
+        ];
+
+        CheckCommentForSpam::dispatch($comment, isRecheck: true);
+
+        // Start polling for results
+        $this->dispatch('start-spam-check-polling', $commentId);
+
+        flash()->info('Checking comment for spam...');
+    }
+
+    /**
+     * Poll for spam check completion.
+     */
+    public function pollSpamCheckStatus(int $commentId): void
+    {
+        if (! isset($this->spamCheckStates[$commentId]) || ! $this->spamCheckStates[$commentId]['inProgress']) {
+            return;
+        }
+
+        $comment = Comment::query()->find($commentId);
+        if (! $comment) {
+            return;
+        }
+
+        // Check if the spam check has completed (timestamp changed)
+        $newSpamCheckedAt = $comment->spam_checked_at?->toISOString();
+        $startedAt = $this->spamCheckStates[$commentId]['startedAt'];
+        $timestampChanged = $newSpamCheckedAt !== $startedAt;
+
+        if ($timestampChanged) {
+            $this->spamCheckStates[$commentId]['inProgress'] = false;
+
+            // Dispatch events to refresh the ribbon.
+            $this->dispatch('comment-updated', $commentId, spam: $comment->isSpam());
+
+            // Stop polling.
+            $this->dispatch('stop-spam-check-polling', $commentId);
+
+            // Show the result message based on spam status and metadata.
+            if ($comment->isSpam()) {
+                flash()->warning('Comment has been identified as spam.');
+            } elseif ($comment->spam_metadata && isset($comment->spam_metadata['error'])) {
+                flash()->error('Spam check failed: '.($comment->spam_metadata['error_message'] ?? 'API error'));
+            } else {
+                flash()->success('Comment has been verified as clean.');
+            }
+        }
+    }
+
+    /**
+     * Hard-delete a comment and its descendants.
+     */
+    public function hardDeleteComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('hardDelete', $comment);
+
+        // If this is a root comment, delete all descendants.
+        if ($comment->isRoot()) {
+            $comment->descendants()->delete();
+        }
+
+        // Delete the comment itself.
+        $comment->delete();
+
+        flash()->success('Comment thread permanently deleted!');
     }
 
     /**
@@ -360,7 +526,7 @@ class CommentComponent extends Component
     {
         $this->showDescendants[$commentId] = ! ($this->showDescendants[$commentId] ?? false);
 
-        // Load descendants if showing and not already loaded
+        // Load descendants if showing and not already loaded.
         if ($this->showDescendants[$commentId] && ! isset($this->loadedDescendants[$commentId])) {
             $this->loadDescendants($commentId);
         }
@@ -413,13 +579,13 @@ class CommentComponent extends Component
      */
     public function hasVisibleDescendants(Comment $comment): bool
     {
-        // Use reply count from the cache first
+        // Use reply count from the cache first.
         if (isset($this->descendantCounts[$comment->id])) {
             return $this->descendantCounts[$comment->id] > 0;
         }
 
         $user = Auth::user();
-        
+
         return $comment->descendants()
             ->visibleToUser($user)
             ->exists();
@@ -471,6 +637,30 @@ class CommentComponent extends Component
     protected function initializeDescendantCounts(): void
     {
         $this->descendantCounts = $this->commentable->getDescendantCounts();
+    }
+
+    /**
+     * Handle a deep link to a specific comment.
+     */
+    public function handleDeepLink(int $commentId): void
+    {
+        $comment = Comment::query()->find($commentId);
+        if (
+            ! $comment ||
+            $comment->commentable_id !== $this->getCommentableId() ||
+            $comment->commentable_type !== $this->commentable::class
+        ) {
+            return;
+        }
+
+        // If it's a descendant comment, we need to load its root's descendants.
+        if ($comment->root_id) {
+            $this->showDescendants[$comment->root_id] = true;
+            $this->loadDescendants($comment->root_id);
+        }
+
+        // Dispatch event to scroll to the comment after render. This is caught with AlpineJS.
+        $this->dispatch('scroll-to-comment', commentId: $commentId);
     }
 
     /**
@@ -615,6 +805,34 @@ class CommentComponent extends Component
     }
 
     /**
+     * Update a descendant comment in the loaded descendants cache.
+     */
+    protected function updateCachedDescendant(Comment $comment): void
+    {
+        // Only process descendant comments.
+        if ($comment->isRoot()) {
+            return;
+        }
+
+        $rootId = $comment->root_id;
+        if (! $rootId || ! isset($this->loadedDescendants[$rootId])) {
+            return;
+        }
+
+        // Find and update the comment in the loaded descendants' collection.
+        $this->loadedDescendants[$rootId] = $this->loadedDescendants[$rootId]->map(function ($descendant) use ($comment) {
+            if ($descendant->id === $comment->id) {
+                // Update the reactions_count on the cached descendant.
+                $descendant->loadCount('reactions');
+
+                return $descendant;
+            }
+
+            return $descendant;
+        });
+    }
+
+    /**
      * Get the commentable model's ID.
      */
     protected function getCommentableId(): int|string
@@ -623,20 +841,6 @@ class CommentComponent extends Component
         $model = $this->commentable;
 
         return $model->getKey();
-    }
-
-
-    /**
-     * Handle comment moderation updates.
-     */
-    #[On('comment-moderation-refresh')]
-    public function refreshComments(): void
-    {
-        // Clear cached computed properties
-        unset($this->commentCount);
-
-        // Force a component refresh
-        $this->dispatch('$refresh');
     }
 
     /**
@@ -650,7 +854,7 @@ class CommentComponent extends Component
         $rootComments = $this->commentable->rootComments()
             ->visibleToUser($user)
             ->paginate(perPage: 10, pageName: 'commentPage');
-            
+
         $visibleRootComments = $rootComments->getCollection();
 
         return view('livewire.comment-component', [

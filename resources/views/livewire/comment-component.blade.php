@@ -1,4 +1,33 @@
-<div>
+<div
+    x-data="{
+        init() {
+            // Check for deep linked comment on page load
+            const hash = window.location.hash;
+            if (!hash || !hash.includes('comment-')) {
+                return;
+            }
+            const commentId = hash.match(/comment-(\d+)/)?.[1];
+            if (commentId && $wire?.handleDeepLink) {
+                $wire.handleDeepLink(parseInt(commentId, 10));
+                console.log('init');
+            }
+        }
+    }"
+    @scroll-to-comment.window="
+        const { commentId } = $event.detail;
+        const elementId = `reply-container-${commentId}`;
+        requestAnimationFrame(() => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            const highlightClasses = ['bg-yellow-100', 'dark:bg-sky-700', 'transition-colors', 'duration-1000'];
+            element.classList.add(...highlightClasses);
+            setTimeout(() => element.classList.remove(...highlightClasses), 2000);
+        });
+    "
+>
     @if ($visibleRootComments->count() === 0)
         <x-comment.empty-state :is-guest="auth()->guest()" :commentable="$commentable" />
     @endif
@@ -81,6 +110,7 @@
                                     :can-see-ribbon="\App\Support\CachedGate::allows('seeRibbon', $reply)"
                                 />
                                 <div
+                                    id="reply-container-{{ $reply->id }}"
                                     wire:key="reply-{{ $reply->id }}"
                                     class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
                                 >

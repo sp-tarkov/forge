@@ -6,6 +6,7 @@ namespace App\Livewire\Ribbon;
 
 use App\Enums\SpamStatus;
 use App\Models\Comment as CommentModel;
+use App\Support\CachedGate;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -48,7 +49,7 @@ class Comment extends Component
         $comment = CommentModel::query()->find($this->commentId);
         if ($comment) {
             $this->spamStatus = $comment->spam_status->value;
-            $this->canSeeRibbon = \App\Support\CachedGate::allows('seeRibbon', $comment);
+            $this->canSeeRibbon = CachedGate::allows('seeRibbon', $comment);
         }
     }
 

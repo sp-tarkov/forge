@@ -39,17 +39,9 @@
                 </a>
             @endif
             @if (\App\Support\CachedGate::allows('viewActions', $comment))
-                <livewire:comment.action
-                    wire:key="comment-action-{{ $comment->id }}"
-                    :comment-id="$comment->id"
-                    :updated-at-timestamp="$comment->updated_at->timestamp"
-                    :is-pinned="$comment->isPinned()"
-                    :is-deleted="$comment->isDeleted()"
-                    :is-spam="$comment->isSpam()"
-                    :is-root="$comment->isRoot()"
-                    :can-be-rechecked="$comment->canBeRechecked()"
+                <x-comment.action-menu 
+                    :comment="$comment"
                     :descendants-count="$comment->isRoot() ? $manager->getDescendantCount($comment->id) : null"
-                    :spam-checked-at="$comment->spam_checked_at?->toISOString()"
                 />
             @endif
         </div>

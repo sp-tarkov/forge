@@ -148,7 +148,7 @@ trait HasComments
     public function getDescendantCounts(): array
     {
         $user = Auth::user();
-        
+
         return Comment::query()
             ->selectRaw('root_id, count(*) as reply_count')
             ->where('commentable_type', static::class)

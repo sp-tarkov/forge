@@ -162,7 +162,7 @@ describe('ReportComponent', function (): void {
             $moderatorRole = UserRole::factory()->moderator()->create();
             $moderator = User::factory()->create();
             $moderator->assignRole($moderatorRole);
-            
+
             $user = User::factory()->create();
             $comment = Comment::factory()->create(['user_id' => $user->id]);
 
@@ -179,7 +179,7 @@ describe('ReportComponent', function (): void {
             $adminRole = UserRole::factory()->administrator()->create();
             $admin = User::factory()->create();
             $admin->assignRole($adminRole);
-            
+
             $user = User::factory()->create();
             $comment = Comment::factory()->create(['user_id' => $user->id]);
 
@@ -397,7 +397,7 @@ describe('ReportComponent', function (): void {
                 ->assertHasNoErrors();
 
             expect(Report::query()->count())->toBe(1);
-            
+
             $report = Report::query()->first();
             expect($report->reporter_id)->toBe($user->id);
             expect($report->reportable_type)->toBe($comment::class);
