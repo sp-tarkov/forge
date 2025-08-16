@@ -89,7 +89,7 @@ jobs:
 
       - name: Prepare Laravel Environment
         run: |
-          php -r "file_exists('.env') || copy('.env.ci', '.env');"
+          php -r "file_exists('.env') || copy('.env.dusk.ci', '.env');"
           php artisan key:generate
           php artisan optimize
 
