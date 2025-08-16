@@ -11,6 +11,7 @@ use App\Models\Report;
 use App\Models\User;
 use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
@@ -144,7 +145,7 @@ class ReportComponent extends Component
             'moderator_admin_ids',
             60, // Seconds
             fn () => User::query()
-                ->whereHas('role', function ($query): void {
+                ->whereHas('role', function (Builder $query): void {
                     $query->whereIn('name', ['moderator', 'administrator']);
                 })
                 ->pluck('id')

@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Contracts\Commentable;
 use App\Models\Comment;
+use App\Models\User;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
@@ -57,14 +58,14 @@ class ProcessCommentNotification implements ShouldQueue
         $subscribers = $commentable->getSubscribers();
 
         // Filter out the comment author (they shouldn't be notified of their own comment)
-        $subscribers = $subscribers->filter(fn ($user): bool => $user->id !== $freshComment->user_id);
+        $subscribers = $subscribers->filter(fn (User $user): bool => $user->id !== $freshComment->user_id);
 
         if ($subscribers->isEmpty()) {
             return;
         }
 
         // Filter out users who have disabled email notifications
-        $emailSubscribers = $subscribers->filter(fn ($user) => $user->email_notifications_enabled);
+        $emailSubscribers = $subscribers->filter(fn (User $user): bool => $user->email_notifications_enabled);
 
         // Send email notifications
         if ($emailSubscribers->isNotEmpty()) {

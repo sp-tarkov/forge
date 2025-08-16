@@ -1,5 +1,5 @@
 [default]
-locale = "en-gb"
+locale = "en-ca"
 
 [default.extend-words]
 monolog = "monolog"

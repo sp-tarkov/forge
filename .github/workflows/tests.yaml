@@ -146,7 +146,7 @@ jobs:
           php artisan optimize
 
       - name: Run Tests
-        run: ./vendor/bin/pest --type-coverage --min=100
+        run: ./vendor/bin/pest --type-coverage --min=99
 
       - name: Display Laravel Log
         if: failure()

@@ -951,7 +951,6 @@ describe('Spam Marking Tests', function (): void {
                 ->screenshot('before-spam-marking')
                 // Try to interact with the comment action menu
                 ->pause(1000)
-                ->dump() // This will show the HTML in the test output
                 ->assertPresent('.comment-container-'.$comment->id.' button[data-flux-button]');
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));

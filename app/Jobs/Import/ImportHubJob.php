@@ -1496,7 +1496,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
 
         // Get response IDs and convert to negative hub_ids to find local comments
-        $hubResponseIds = $hubCommentLikes->pluck('objectID')->unique()->map(fn ($id): int|float => -$id);
+        $hubResponseIds = $hubCommentLikes->pluck('objectID')->unique()->map(fn (int $id): int => -$id);
 
         /** @var EloquentCollection<int, Comment> $localComments */
         $localComments = Comment::query()->whereIn('hub_id', $hubResponseIds)->get()->keyBy('hub_id');
@@ -1603,14 +1603,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
             // Get existing user+comment combinations to avoid unique constraint violations
             $userCommentPairs = collect($reactionData)
-                ->map(fn ($reaction): array => ['user_id' => $reaction['user_id'], 'comment_id' => $reaction['comment_id']])
-                ->unique(fn ($pair): string => $pair['user_id'].'-'.$pair['comment_id']);
+                ->map(fn (array $reaction): array => ['user_id' => $reaction['user_id'], 'comment_id' => $reaction['comment_id']])
+                ->unique(fn (array $pair): string => $pair['user_id'].'-'.$pair['comment_id']);
 
             $existingReactionsByUserComment = CommentReaction::query()
                 ->whereIn('user_id', $userCommentPairs->pluck('user_id'))
                 ->whereIn('comment_id', $userCommentPairs->pluck('comment_id'))
                 ->get()
-                ->mapWithKeys(fn ($reaction) => [$reaction->user_id.'-'.$reaction->comment_id => $reaction])
+                ->mapWithKeys(fn (CommentReaction $reaction): array => [$reaction->user_id.'-'.$reaction->comment_id => $reaction])
                 ->toArray();
 
             // Split data into inserts (new) and updates (existing)
@@ -1635,7 +1635,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             if (! empty($insertData)) {
                 // Remove any potential duplicates within the insert batch itself
                 $uniqueInsertData = collect($insertData)
-                    ->unique(fn ($reaction): string => $reaction['user_id'].'-'.$reaction['comment_id'])
+                    ->unique(fn (array $reaction): string => $reaction['user_id'].'-'.$reaction['comment_id'])
                     ->values()
                     ->toArray();
 
@@ -1698,7 +1698,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->toArray();
 
         // Convert response IDs to negative values to match how they're stored locally
-        $existingNegativeResponseIds = array_map(fn ($id): int|float => -$id, $existingHubResponseIds);
+        $existingNegativeResponseIds = array_map(fn (int $id): int => -$id, $existingHubResponseIds);
 
         // Combine comment IDs (positive) and response IDs (negative)
         $allExistingHubIds = array_merge($existingHubCommentIds, $existingNegativeResponseIds);

@@ -23,7 +23,7 @@
                     end, this document establishes various acknowledgements, entitlements, and restrictions in regards
                     to the usage of SPT websites, content, systems, and software. SPT reserves the right to discontinue
                     providing any or all of these services, as well as cease any form of communications, to any user or
-                    organisation and for any reason and at any time.
+                    organization and for any reason and at any time.
                 </p>
 
                 <p class="font-semibold text-xl">General Usage of Websites and Services:</p>
@@ -112,14 +112,14 @@
                     these websites is not under our control, we cannot assume any liability for such external content.
                     In all cases, the provider of information of the linked websites is liable for the content and
                     accuracy of the information provided. At the point in time when the links were placed, no
-                    infringements of the law were recognisable to us. As soon as an infringement of the law becomes
+                    infringements of the law were recognizable to us. As soon as an infringement of the law becomes
                     known to us, we will immediately remove the link in question.
                 </p>
 
                 <p class="font-semibold text-xl">Copyright:</p>
                 <p class="pb-4">
                     The content and works published on this website are governed by the copyright laws of of the country
-                    this site is hosted from. Any duplication, processing, distribution or any form of utilisation
+                    this site is hosted from. Any duplication, processing, distribution or any form of utilization
                     beyond the scope of copyright law shall require the prior written consent of the author or authors
                     in question.
                 </p>

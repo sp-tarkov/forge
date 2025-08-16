@@ -12,6 +12,7 @@ use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -125,7 +126,7 @@ class CommentComponent extends Component
 
         // Normal authenticated users see reactions for clean comments and their own comments.
         if (! $user->isModOrAdmin()) {
-            $reactionQuery->where(function ($q) use ($user): void {
+            $reactionQuery->where(function (Builder $q) use ($user): void {
                 $q->where('comments.spam_status', SpamStatus::CLEAN->value)
                     ->orWhere('comments.user_id', $user->id);
             });
@@ -819,7 +820,7 @@ class CommentComponent extends Component
         }
 
         // Find and update the comment in the loaded descendants' collection.
-        $this->loadedDescendants[$rootId] = $this->loadedDescendants[$rootId]->map(function ($descendant) use ($comment) {
+        $this->loadedDescendants[$rootId] = $this->loadedDescendants[$rootId]->map(function (Comment $descendant) use ($comment): Comment {
             if ($descendant->id === $comment->id) {
                 // Update the reactions_count on the cached descendant.
                 $descendant->loadCount('reactions');

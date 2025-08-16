@@ -393,7 +393,7 @@ class Comment extends Model implements Reportable
         }
 
         // Regular users can see clean comments and their own comments.
-        $query->where(function ($q) use ($user): void {
+        $query->where(function (Builder $q) use ($user): void {
             $q->clean()->orWhere('user_id', $user->id);
         });
     }

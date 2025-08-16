@@ -139,7 +139,7 @@
                     secure. Cookies are small text files that are placed on your computer and stored by your browser.</p>
                 <p><br></p>
                 <p>Most of the cookies we use are so-called “session cookies.” They are automatically deleted after your leave our site.
-                    Other cookies will remain archived on your device until you delete them. These cookies enable us to recognise your
+                    Other cookies will remain archived on your device until you delete them. These cookies enable us to recognize your
                     browser the next time you visit our website.</p>
                 <p><br></p>
                 <p>You can adjust the settings of your browser to make sure that you are notified every time cookies are placed and to
@@ -149,7 +149,7 @@
                 <p><br></p>
                 <p>Cookies that are required for the performance of the electronic communications transaction or to provide certain
                     functions you want to use (e.g. the shopping cart function), are stored on the basis of Art. 6 Sect. 1 lit. f GDPR.
-                    The website operator has a legitimate interest in storing cookies to ensure the technically error free and optimised
+                    The website operator has a legitimate interest in storing cookies to ensure the technically error free and optimized
                     provision of the operator’s services. If other cookies (e.g. cookies for the analysis of your browsing patterns)
                     should be stored, they are addressed separately in this Data Protection Declaration.</p>
                 <p class="text-xl mb-1">Server log files</p>
@@ -214,7 +214,7 @@
                     <li>Gender</li>
                     <li>Country</li>
                 </ul>
-                <p>This information will be used to set up, provide and customise your account.</p>
+                <p>This information will be used to set up, provide and customize your account.</p>
                 <p><br></p>
                 <p>The registration via Facebook Connect and the affiliated data processing transactions are implemented on the basis of
                     your consent (Art. 6 Sect. 1 lit. a GDPR). You may revoke this consent at any time, which shall affect all future
@@ -243,7 +243,7 @@
                     <li>Gender</li>
                     <li>Country</li>
                 </ul>
-                <p>This information will be used to set up, provide and customise your account.</p>
+                <p>This information will be used to set up, provide and customize your account.</p>
                 <p><br></p>
                 <p>The registration via Google Connect and the affiliated data processing transactions are implemented on the basis of
                     your consent (Art. 6 Sect. 1 lit. a GDPR). You may revoke this consent at any time, which shall affect all future
@@ -274,7 +274,7 @@
                     <li>Gender</li>
                     <li>Country</li>
                 </ul>
-                <p>This information will be used to set up, provide and customise your account.</p>
+                <p>This information will be used to set up, provide and customize your account.</p>
                 <p><br></p>
                 <p>The registration via Twitter Connect and the affiliated data processing transactions are implemented on the basis of
                     your consent (Art. 6 Sect. 1 lit. a GDPR). You may revoke this consent at any time, which shall affect all future
@@ -302,7 +302,7 @@
                     <li>Gender</li>
                     <li>Country</li>
                 </ul>
-                <p>This information will be used to set up, provide and customise your account.</p>
+                <p>This information will be used to set up, provide and customize your account.</p>
                 <p><br></p>
                 <p>The registration via GitHub Connect and the affiliated data processing transactions are implemented on the basis of
                     your consent (Art. 6 Sect. 1 lit. a GDPR). You may revoke this consent at any time, which shall affect all future
@@ -431,7 +431,7 @@
                         class="externalURL">https://www.google.com/recaptcha/intro/android.html</a>.</p>
                 <p class="text-xl mb-1">SoundCloud</p>
                 <p>We may have integrated plug-ins of the social network SoundCloud (SoundCloud Limited, Berners House, 47-48 Berners
-                    Street, London W1T 3NF, Great Britain) into our websites. You will be able to recognise such SoundCloud plug-ins by
+                    Street, London W1T 3NF, Great Britain) into our websites. You will be able to recognize such SoundCloud plug-ins by
                     checking for the SoundCloud logo on the respective pages.</p>
                 <p><br></p>
                 <p>Whenever you visit one of our websites, a direct connection between your browser and the SoundCloud server will be
