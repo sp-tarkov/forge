@@ -336,6 +336,8 @@ class CommentComponent extends Component
 
         $comment->update(['deleted_at' => now()]);
 
+        $this->updateCachedDescendant($comment);
+
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, deleted: true);
 
@@ -352,6 +354,8 @@ class CommentComponent extends Component
         $this->authorize('restore', $comment);
 
         $comment->update(['deleted_at' => null]);
+
+        $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, deleted: false);
@@ -370,6 +374,8 @@ class CommentComponent extends Component
 
         $comment->markAsSpamByModerator(auth()->id());
 
+        $this->updateCachedDescendant($comment);
+
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, spam: true);
 
@@ -386,6 +392,8 @@ class CommentComponent extends Component
         $this->authorize('markAsHam', $comment);
 
         $comment->markAsHam();
+
+        $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, spam: false);
@@ -579,7 +587,7 @@ class CommentComponent extends Component
      */
     public function hasVisibleDescendants(Comment $comment): bool
     {
-        // Use reply count from the cache first.
+        // Use the reply count from the cache first.
         if (isset($this->descendantCounts[$comment->id])) {
             return $this->descendantCounts[$comment->id] > 0;
         }
@@ -822,10 +830,13 @@ class CommentComponent extends Component
         // Find and update the comment in the loaded descendants' collection.
         $this->loadedDescendants[$rootId] = $this->loadedDescendants[$rootId]->map(function (Comment $descendant) use ($comment): Comment {
             if ($descendant->id === $comment->id) {
-                // Update the reactions_count on the cached descendant.
-                $descendant->loadCount('reactions');
+                $freshComment = $comment->fresh();
+                if ($freshComment) {
+                    $freshComment->loadCount('reactions');
+                    $freshComment->load('user');
 
-                return $descendant;
+                    return $freshComment;
+                }
             }
 
             return $descendant;
