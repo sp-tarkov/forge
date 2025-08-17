@@ -7,17 +7,13 @@ namespace App\Notifications;
 use App\Contracts\Commentable;
 use App\Models\Comment;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\URL;
 
-class NewCommentNotification extends Notification implements ShouldQueue
+class NewCommentNotification extends Notification
 {
-    use Queueable;
-
     /**
      * Create a new notification instance.
      */

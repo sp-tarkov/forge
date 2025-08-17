@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Contracts\Commentable;
+use App\Enums\NotificationType;
 use App\Models\Comment;
+use App\Models\NotificationLog;
 use App\Models\User;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,7 +16,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 class ProcessCommentNotification implements ShouldQueue
 {
@@ -35,6 +39,8 @@ class ProcessCommentNotification implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @throws Throwable
      */
     public function handle(): void
     {
@@ -64,17 +70,34 @@ class ProcessCommentNotification implements ShouldQueue
             return;
         }
 
-        // Filter out users who have disabled email notifications
-        $emailSubscribers = $subscribers->filter(fn (User $user): bool => $user->email_notifications_enabled);
+        // Filter out users who have already been notified for this comment
+        $subscribersToNotify = $subscribers->reject(fn (User $user): bool => NotificationLog::hasBeenSent(
+            $freshComment,
+            $user->id,
+            NewCommentNotification::class
+        ));
 
-        // Send email notifications
-        if ($emailSubscribers->isNotEmpty()) {
-            Notification::send($emailSubscribers, new NewCommentNotification($freshComment));
+        if ($subscribersToNotify->isEmpty()) {
+            return;
         }
 
-        // Send in-app notifications to all subscribers (regardless of email preference)
-        foreach ($subscribers as $user) {
-            $user->notify(new NewCommentNotification($freshComment));
-        }
+        DB::transaction(function () use ($subscribersToNotify, $freshComment): void {
+            // Send notifications to subscribers who haven't been notified yet
+            Notification::send($subscribersToNotify, new NewCommentNotification($freshComment));
+
+            // Record that notifications have been sent
+            foreach ($subscribersToNotify as $user) {
+                $notificationType = $user->email_notifications_enabled
+                    ? NotificationType::ALL
+                    : NotificationType::DATABASE;
+
+                NotificationLog::recordSent(
+                    $freshComment,
+                    $user->id,
+                    NewCommentNotification::class,
+                    $notificationType
+                );
+            }
+        });
     }
 }
