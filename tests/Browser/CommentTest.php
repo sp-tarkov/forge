@@ -820,6 +820,7 @@ describe('Comment Reactions Tests', function (): void {
                 ->assertSee('0 Likes')
                 ->click('button[wire\\:click*="toggleReaction"]')
                 ->waitForText('1 Like', 5)
+                ->pause(1000) // Wait for animation to complete (800ms + buffer)
                 ->click('button[wire\\:click*="toggleReaction"]')
                 ->waitForText('0 Likes', 5)
                 ->assertSee('0 Likes');
