@@ -82,6 +82,56 @@ class CommentComponent extends Component
     public bool $isSubscribed = false;
 
     /**
+     * Delete modal state properties.
+     */
+    public bool $showDeleteModal = false;
+
+    public ?int $deletingCommentId = null;
+
+    public string $deleteModalTitle = '';
+
+    public string $deleteModalMessage = '';
+
+    public string $deleteModalAction = '';
+
+    /**
+     * Soft delete modal state properties.
+     */
+    public bool $showSoftDeleteModal = false;
+
+    public ?int $softDeletingCommentId = null;
+
+    /**
+     * Hard delete modal state properties.
+     */
+    public bool $showHardDeleteModal = false;
+
+    public ?int $hardDeletingCommentId = null;
+
+    public int $hardDeleteDescendantCount = 0;
+
+    // Pin/Unpin modal properties
+    public bool $showPinModal = false;
+
+    public bool $showUnpinModal = false;
+
+    public ?int $pinningCommentId = null;
+
+    // Spam action modal properties
+    public bool $showMarkAsSpamModal = false;
+
+    public bool $showMarkAsCleanModal = false;
+
+    public bool $showCheckForSpamModal = false;
+
+    public ?int $spamActionCommentId = null;
+
+    // Restore modal properties
+    public bool $showRestoreModal = false;
+
+    public ?int $restoringCommentId = null;
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -235,10 +285,38 @@ class CommentComponent extends Component
     }
 
     /**
+     * Show delete confirmation modal.
+     */
+    public function confirmDeleteComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('delete', $comment);
+
+        $this->deletingCommentId = $commentId;
+        $this->deleteModalTitle = 'Delete Comment';
+        $this->deleteModalMessage = 'Are you sure you want to delete this comment?';
+        $this->deleteModalAction = 'delete';
+        $this->showDeleteModal = true;
+    }
+
+    /**
      * Delete a comment.
      */
-    public function deleteComment(Comment $comment): void
+    public function deleteComment(Comment|int|null $commentId = null): void
     {
+        // Support both direct calls and modal confirmations
+        if ($commentId instanceof Comment) {
+            $comment = $commentId;
+        } else {
+            $commentId = $commentId ?? $this->deletingCommentId;
+            if (! $commentId) {
+                return;
+            }
+            $comment = Comment::query()->findOrFail($commentId);
+        }
+
+        $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('delete', $comment);
 
         $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
@@ -263,6 +341,9 @@ class CommentComponent extends Component
 
         // Clear cached computed properties.
         unset($this->commentCount);
+
+        $this->showDeleteModal = false;
+        $this->deletingCommentId = null;
 
         $this->dispatch('$refresh');
     }
@@ -300,36 +381,96 @@ class CommentComponent extends Component
     }
 
     /**
+     * Show pin confirmation modal.
+     */
+    public function confirmPinComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('pin', $comment);
+
+        $this->pinningCommentId = $commentId;
+        $this->showPinModal = true;
+    }
+
+    /**
+     * Show unpin confirmation modal.
+     */
+    public function confirmUnpinComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('pin', $comment);
+
+        $this->pinningCommentId = $commentId;
+        $this->showUnpinModal = true;
+    }
+
+    /**
      * Pin a comment.
      */
-    public function pinComment(Comment $comment): void
+    public function pinComment(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->pinningCommentId;
+        if (! $commentId) {
+            return;
+        }
+
+        $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('pin', $comment);
 
         $comment->update(['pinned_at' => now()]);
 
         flash()->success('Comment successfully pinned!');
+        $this->showPinModal = false;
+        $this->pinningCommentId = null;
     }
 
     /**
      * Unpin a comment.
      */
-    public function unpinComment(Comment $comment): void
+    public function unpinComment(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->pinningCommentId;
+        if (! $commentId) {
+            return;
+        }
+
+        $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('pin', $comment);
 
         $comment->update(['pinned_at' => null]);
 
         flash()->success('Comment successfully unpinned!');
+        $this->showUnpinModal = false;
+        $this->pinningCommentId = null;
+    }
+
+    /**
+     * Show soft delete confirmation modal.
+     */
+    public function confirmSoftDeleteComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('softDelete', $comment);
+
+        $this->softDeletingCommentId = $commentId;
+        $this->showSoftDeleteModal = true;
     }
 
     /**
      * Soft delete a comment.
      */
-    public function softDeleteComment(int $commentId): void
+    public function softDeleteComment(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->softDeletingCommentId;
+        if (! $commentId) {
+            return;
+        }
+
         $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('softDelete', $comment);
@@ -341,14 +482,35 @@ class CommentComponent extends Component
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, deleted: true);
 
+        $this->showSoftDeleteModal = false;
+        $this->softDeletingCommentId = null;
+
         flash()->success('Comment successfully deleted!');
+    }
+
+    /**
+     * Show restore confirmation modal.
+     */
+    public function confirmRestoreComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('restore', $comment);
+
+        $this->restoringCommentId = $commentId;
+        $this->showRestoreModal = true;
     }
 
     /**
      * Restore a deleted comment.
      */
-    public function restoreComment(int $commentId): void
+    public function restoreComment(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->restoringCommentId;
+        if (! $commentId) {
+            return;
+        }
+
         $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('restore', $comment);
@@ -360,14 +522,48 @@ class CommentComponent extends Component
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, deleted: false);
 
+        $this->showRestoreModal = false;
+        $this->restoringCommentId = null;
+
         flash()->success('Comment successfully restored!');
+    }
+
+    /**
+     * Show mark as spam confirmation modal.
+     */
+    public function confirmMarkAsSpam(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('markAsSpam', $comment);
+
+        $this->spamActionCommentId = $commentId;
+        $this->showMarkAsSpamModal = true;
+    }
+
+    /**
+     * Show mark as clean confirmation modal.
+     */
+    public function confirmMarkAsClean(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('markAsHam', $comment);
+
+        $this->spamActionCommentId = $commentId;
+        $this->showMarkAsCleanModal = true;
     }
 
     /**
      * Mark a comment as spam.
      */
-    public function markCommentAsSpam(int $commentId): void
+    public function markCommentAsSpam(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->spamActionCommentId;
+        if (! $commentId) {
+            return;
+        }
+
         $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('markAsSpam', $comment);
@@ -380,13 +576,20 @@ class CommentComponent extends Component
         $this->dispatch('comment-updated', $commentId, spam: true);
 
         flash()->success('Comment marked as spam!');
+        $this->showMarkAsSpamModal = false;
+        $this->spamActionCommentId = null;
     }
 
     /**
      * Mark a comment as clean (not spam).
      */
-    public function markCommentAsHam(int $commentId): void
+    public function markCommentAsHam(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->spamActionCommentId;
+        if (! $commentId) {
+            return;
+        }
+
         $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('markAsHam', $comment);
@@ -399,6 +602,8 @@ class CommentComponent extends Component
         $this->dispatch('comment-updated', $commentId, spam: false);
 
         flash()->success('Comment marked as clean!');
+        $this->showMarkAsCleanModal = false;
+        $this->spamActionCommentId = null;
     }
 
     /**
@@ -409,10 +614,28 @@ class CommentComponent extends Component
     public array $spamCheckStates = [];
 
     /**
+     * Show check for spam confirmation modal.
+     */
+    public function confirmCheckForSpam(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('checkForSpam', $comment);
+
+        $this->spamActionCommentId = $commentId;
+        $this->showCheckForSpamModal = true;
+    }
+
+    /**
      * Check a comment for spam.
      */
-    public function checkCommentForSpam(int $commentId): void
+    public function checkCommentForSpam(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->spamActionCommentId;
+        if (! $commentId) {
+            return;
+        }
+
         $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('checkForSpam', $comment);
@@ -427,6 +650,9 @@ class CommentComponent extends Component
 
         // Start polling for results
         $this->dispatch('start-spam-check-polling', $commentId);
+
+        $this->showCheckForSpamModal = false;
+        $this->spamActionCommentId = null;
 
         flash()->info('Checking comment for spam...');
     }
@@ -471,10 +697,29 @@ class CommentComponent extends Component
     }
 
     /**
+     * Show hard-delete confirmation modal.
+     */
+    public function confirmHardDeleteComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('hardDelete', $comment);
+
+        $this->hardDeletingCommentId = $commentId;
+        $this->hardDeleteDescendantCount = $comment->isRoot() ? $this->getDescendantCount($commentId) : 0;
+        $this->showHardDeleteModal = true;
+    }
+
+    /**
      * Hard-delete a comment and its descendants.
      */
-    public function hardDeleteComment(int $commentId): void
+    public function hardDeleteComment(?int $commentId = null): void
     {
+        $commentId = $commentId ?? $this->hardDeletingCommentId;
+        if (! $commentId) {
+            return;
+        }
+
         $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('hardDelete', $comment);
@@ -486,6 +731,10 @@ class CommentComponent extends Component
 
         // Delete the comment itself.
         $comment->delete();
+
+        $this->showHardDeleteModal = false;
+        $this->hardDeletingCommentId = null;
+        $this->hardDeleteDescendantCount = 0;
 
         flash()->success('Comment thread permanently deleted!');
     }

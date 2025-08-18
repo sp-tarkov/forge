@@ -61,10 +61,9 @@
 
         @if (\App\Support\CachedGate::allows('delete', $comment))
             <button type="button"
-                    wire:click="deleteComment({{ $comment->id }})"
-                    wire:confirm="{{ __('Are you sure you want to delete this comment?') }}"
+                    wire:click="confirmDeleteComment({{ $comment->id }})"
                     class="hover:underline cursor-pointer text-xs text-red-500 hover:text-red-700">
-                {{ __('Delete') }}
+                {{ __('Remove') }}
             </button>
         @endif
 

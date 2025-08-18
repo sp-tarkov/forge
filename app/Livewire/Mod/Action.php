@@ -115,9 +115,6 @@ class Action extends Component
      */
     public function feature(): void
     {
-        $this->closeModal();
-        $this->menuOpen = false;
-
         $this->authorize('feature', $this->mod);
 
         Mod::query()->where('id', $this->modId)->update(['featured' => true]);
@@ -128,6 +125,8 @@ class Action extends Component
         $this->dispatch('mod-updated.'.$this->modId, featured: true);
 
         flash()->success('Mod successfully featured!');
+
+        $this->menuOpen = false;
     }
 
     /**
@@ -135,9 +134,6 @@ class Action extends Component
      */
     public function unfeature(): void
     {
-        $this->closeModal();
-        $this->menuOpen = false;
-
         $this->authorize('unfeature', $this->mod);
 
         // Update the database directly
@@ -150,6 +146,8 @@ class Action extends Component
         $this->dispatch('mod-updated.'.$this->modId, featured: false);
 
         flash()->success('Mod successfully unfeatured!');
+
+        $this->menuOpen = false;
     }
 
     /**
@@ -157,9 +155,6 @@ class Action extends Component
      */
     public function disable(): void
     {
-        $this->closeModal();
-        $this->menuOpen = false;
-
         $this->authorize('disable', $this->mod);
 
         // Update the database directly
@@ -172,6 +167,8 @@ class Action extends Component
         $this->dispatch('mod-updated.'.$this->modId, disabled: true);
 
         flash()->success('Mod successfully disabled!');
+
+        $this->menuOpen = false;
     }
 
     /**
@@ -179,9 +176,6 @@ class Action extends Component
      */
     public function enable(): void
     {
-        $this->closeModal();
-        $this->menuOpen = false;
-
         $this->authorize('enable', $this->mod);
 
         Mod::query()->where('id', $this->modId)->update(['disabled' => false]);
@@ -193,6 +187,8 @@ class Action extends Component
         $this->dispatch('mod-updated.'.$this->modId, disabled: false);
 
         flash()->success('Mod successfully enabled!');
+
+        $this->menuOpen = false;
     }
 
     /**

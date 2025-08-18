@@ -134,4 +134,384 @@
             {{ $rootComments->onEachSide(1)->links(data: ['scrollTo' => '#comments']) }}
         </div>
     @endif
+
+    {{-- Remove Comment Modal --}}
+    @if($showDeleteModal)
+        <flux:modal wire:model="showDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="trash" class="w-8 h-8 text-red-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Remove Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('This action cannot be undone') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ $deleteModalMessage }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showDeleteModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="deleteComment" variant="primary" size="sm" icon="trash" class="bg-red-600 hover:bg-red-700">
+                    {{ __('Remove Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Hide Comment Modal --}}
+    @if($showSoftDeleteModal)
+        <flux:modal wire:model="showSoftDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="eye-slash" class="w-8 h-8 text-amber-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Soft-delete Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Comment will be hidden but can be restored') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('This comment will be hidden from regular users but can be restored later by moderators.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showSoftDeleteModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="softDeleteComment" variant="primary" size="sm" icon="eye-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
+                    {{ __('Soft-delete Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Permanently Remove Comment Modal --}}
+    @if($showHardDeleteModal)
+        <flux:modal wire:model="showHardDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="trash" class="w-8 h-8 text-red-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Permanently Remove Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('This action is irreversible') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    @if ($hardDeleteDescendantCount > 0)
+                        {{ __('You are about to permanently remove this comment. This action cannot be undone.') }}
+                    @else
+                        {{ __('You are about to permanently remove this comment. This action cannot be undone.') }}
+                    @endif
+                </flux:text>
+                
+                @if ($hardDeleteDescendantCount > 0)
+                    <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <flux:icon name="exclamation-triangle" class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <flux:text class="text-amber-900 dark:text-amber-200 text-sm font-medium">
+                                    {{ __('Attention!') }}
+                                </flux:text>
+                                <flux:text class="text-amber-800 dark:text-amber-300 text-sm mt-1">
+                                    {{ __('This will also permanently delete :count replies in this comment thread. Consider using soft-delete instead if you want to preserve the replies.', ['count' => $hardDeleteDescendantCount]) }}
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center text-xs text-red-600 dark:text-red-400">
+                    <flux:icon name="shield-exclamation" class="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span class="leading-tight">
+                        {{ __('Permanent deletion') }}
+                    </span>
+                </div>
+
+                <div class="flex gap-3">
+                    <flux:button wire:click="$set('showHardDeleteModal', false)" variant="outline" size="sm">
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button wire:click="hardDeleteComment" variant="primary" size="sm" icon="trash" class="bg-red-600 hover:bg-red-700 text-white">
+                        {{ __('Remove Permanently') }}
+                    </flux:button>
+                </div>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Pin Comment Modal --}}
+    @if($showPinModal)
+        <flux:modal wire:model="showPinModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="bookmark" class="w-8 h-8 text-blue-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Pin Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Highlight important comment') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to pin this comment? Pinned comments appear at the top of the comment section.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showPinModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="pinComment" variant="primary" size="sm" icon="bookmark" class="bg-blue-600 hover:bg-blue-700 text-white">
+                    {{ __('Pin Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Unpin Comment Modal --}}
+    @if($showUnpinModal)
+        <flux:modal wire:model="showUnpinModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="bookmark-slash" class="w-8 h-8 text-amber-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Unpin Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Remove from pinned section') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to unpin this comment? It will no longer appear at the top of the comment section.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showUnpinModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="unpinComment" variant="primary" size="sm" icon="bookmark-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
+                    {{ __('Unpin Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Mark as Spam Modal --}}
+    @if($showMarkAsSpamModal)
+        <flux:modal wire:model="showMarkAsSpamModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="shield-exclamation" class="w-8 h-8 text-red-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Mark as Spam') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Flag content as spam') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('This comment will be marked as spam and hidden from regular users.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showMarkAsSpamModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="markCommentAsSpam" variant="primary" size="sm" icon="shield-exclamation" class="bg-red-600 hover:bg-red-700 text-white">
+                    {{ __('Mark as Spam') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Mark as Clean Modal --}}
+    @if($showMarkAsCleanModal)
+        <flux:modal wire:model="showMarkAsCleanModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="shield-check" class="w-8 h-8 text-green-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Mark as Clean') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Confirm content is not spam') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to mark this comment as clean? This will remove any spam flags and make it visible to all users.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showMarkAsCleanModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="markCommentAsHam" variant="primary" size="sm" icon="shield-check" class="bg-green-600 hover:bg-green-700 text-white">
+                    {{ __('Mark as Clean') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Check for Spam Modal --}}
+    @if($showCheckForSpamModal)
+        <flux:modal wire:model="showCheckForSpamModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="magnifying-glass" class="w-8 h-8 text-blue-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Check for Spam') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Analyze comment for spam content') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('This will send the comment to the spam detection service for analysis. The system will automatically flag it if spam is detected.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showCheckForSpamModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="checkCommentForSpam" variant="primary" size="sm" icon="magnifying-glass" class="bg-blue-600 hover:bg-blue-700 text-white">
+                    {{ __('Check for Spam') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Restore Comment Modal --}}
+    @if($showRestoreModal)
+        <flux:modal wire:model="showRestoreModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="arrow-path" class="w-8 h-8 text-green-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Restore Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Make comment visible again') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to restore this comment? It will become visible to users again.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button wire:click="$set('showRestoreModal', false)" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="restoreComment" variant="primary" size="sm" icon="arrow-path" class="bg-green-600 hover:bg-green-700 text-white">
+                    {{ __('Restore Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
 </div>

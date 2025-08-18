@@ -98,9 +98,6 @@ class VersionAction extends Component
      */
     public function disable(): void
     {
-        $this->closeModal();
-        $this->menuOpen = false;
-
         $this->authorize('disable', $this->version);
 
         ModVersion::query()->where('id', $this->versionId)->update(['disabled' => true]);
@@ -111,6 +108,8 @@ class VersionAction extends Component
         $this->dispatch('mod-version-updated.'.$this->versionId, disabled: true);
 
         flash()->success('Mod version successfully disabled!');
+
+        $this->menuOpen = false;
     }
 
     /**
@@ -118,9 +117,6 @@ class VersionAction extends Component
      */
     public function enable(): void
     {
-        $this->closeModal();
-        $this->menuOpen = false;
-
         $this->authorize('enable', $this->version);
 
         ModVersion::query()->where('id', $this->versionId)->update(['disabled' => false]);
@@ -131,6 +127,8 @@ class VersionAction extends Component
         $this->dispatch('mod-version-updated.'.$this->versionId, disabled: false);
 
         flash()->success('Mod version successfully enabled!');
+
+        $this->menuOpen = false;
     }
 
     /**

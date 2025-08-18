@@ -240,12 +240,12 @@ describe('deleted comment display', function (): void {
         // Author should see delete button
         $this->actingAs($author);
         Livewire::test(CommentComponent::class, ['commentable' => $mod])
-            ->assertSee('Delete');
+            ->assertSee('Remove');
 
         // Other user should not see delete button
         $this->actingAs($otherUser);
         Livewire::test(CommentComponent::class, ['commentable' => $mod])
-            ->assertDontSee('Delete');
+            ->assertDontSee('Remove');
     });
 });
 

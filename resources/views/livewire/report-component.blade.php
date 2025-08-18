@@ -26,7 +26,7 @@
                 {{-- Header Section --}}
                 <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
-                        <flux:icon name="flag" class="w-6 h-6 text-red-500" />
+                        <flux:icon name="flag" class="w-8 h-8 text-red-600" />
                         <div>
                             <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
                                 {{ __('Report Content') }}

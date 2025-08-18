@@ -33,14 +33,14 @@ x-on:beforeunload.window="stopPolling()">
                     @if(\App\Support\CachedGate::allows('pin', $comment))
                         @if($comment->isPinned())
                             <flux:menu.item
-                                wire:click="unpinComment({{ $comment->id }})"
+                                wire:click="confirmUnpinComment({{ $comment->id }})"
                                 icon:trailing="bookmark-slash"
                                 class="action-unpin">
                                 Unpin Comment
                             </flux:menu.item>
                         @else
                             <flux:menu.item
-                                wire:click="pinComment({{ $comment->id }})"
+                                wire:click="confirmPinComment({{ $comment->id }})"
                                 icon:trailing="bookmark"
                                 class="action-pin">
                                 Pin Comment
@@ -51,15 +51,14 @@ x-on:beforeunload.window="stopPolling()">
                     @if ($comment->isDeleted())
                         @if(\App\Support\CachedGate::allows('restore', $comment))
                             <flux:menu.item 
-                                wire:click="restoreComment({{ $comment->id }})" 
+                                wire:click="confirmRestoreComment({{ $comment->id }})" 
                                 icon:trailing="arrow-path">
                                 Restore Comment
                             </flux:menu.item>
                         @endif
                         @if(\App\Support\CachedGate::allows('hardDelete', $comment))
                             <flux:menu.item 
-                                wire:click="hardDeleteComment({{ $comment->id }})" 
-                                wire:confirm="Are you sure you want to permanently delete this comment{{ $comment->isRoot() && $descendantsCount > 0 ? ' and all ' . $descendantsCount . ' replies' : '' }}? This action cannot be undone."
+                                wire:click="confirmHardDeleteComment({{ $comment->id }})" 
                                 icon:trailing="trash" 
                                 variant="danger">
                                 Hard Delete Thread
@@ -69,8 +68,7 @@ x-on:beforeunload.window="stopPolling()">
                         @if(\App\Support\CachedGate::allows('softDelete', $comment))
                             @unless($comment->isSpam())
                                 <flux:menu.item 
-                                    wire:click="softDeleteComment({{ $comment->id }})" 
-                                    wire:confirm="Are you sure you want to soft delete this comment? It will be hidden from regular users but can be restored later."
+                                    wire:click="confirmSoftDeleteComment({{ $comment->id }})" 
                                     icon:trailing="eye-slash">
                                     Soft Delete
                                 </flux:menu.item>
@@ -78,8 +76,7 @@ x-on:beforeunload.window="stopPolling()">
                         @endif
                         @if(\App\Support\CachedGate::allows('hardDelete', $comment))
                             <flux:menu.item 
-                                wire:click="hardDeleteComment({{ $comment->id }})" 
-                                wire:confirm="Are you sure you want to permanently delete this comment{{ $comment->isRoot() && $descendantsCount > 0 ? ' and all ' . $descendantsCount . ' replies' : '' }}? This action cannot be undone."
+                                wire:click="confirmHardDeleteComment({{ $comment->id }})" 
                                 icon:trailing="trash" 
                                 variant="danger">
                                 Hard Delete Thread
@@ -89,7 +86,7 @@ x-on:beforeunload.window="stopPolling()">
                     
                     @if(\App\Support\CachedGate::allows('markAsSpam', $comment))
                         <flux:menu.item 
-                            wire:click="markCommentAsSpam({{ $comment->id }})" 
+                            wire:click="confirmMarkAsSpam({{ $comment->id }})" 
                             icon:trailing="shield-exclamation" 
                             variant="danger">
                             Mark as Spam
@@ -98,7 +95,7 @@ x-on:beforeunload.window="stopPolling()">
                     
                     @if(\App\Support\CachedGate::allows('markAsHam', $comment))
                         <flux:menu.item 
-                            wire:click="markCommentAsHam({{ $comment->id }})" 
+                            wire:click="confirmMarkAsClean({{ $comment->id }})" 
                             icon:trailing="shield-check">
                             Mark as Clean
                         </flux:menu.item>
@@ -106,7 +103,7 @@ x-on:beforeunload.window="stopPolling()">
                     
                     @if(\App\Support\CachedGate::allows('checkForSpam', $comment))
                         <flux:menu.item
-                            wire:click="checkCommentForSpam({{ $comment->id }})"
+                            wire:click="confirmCheckForSpam({{ $comment->id }})"
                             icon:trailing="magnifying-glass">
                             Check for Spam
                         </flux:menu.item>

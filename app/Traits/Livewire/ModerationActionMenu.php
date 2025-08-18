@@ -14,32 +14,11 @@ trait ModerationActionMenu
     public bool $menuOpen = false;
 
     /**
-     * The type of confirmation modal currently active.
-     */
-    public ?string $activeModal = null;
-
-    /**
      * Load the action menu and compute permissions if needed.
      */
     public function loadMenu(): void
     {
         $this->menuOpen = true;
-    }
-
-    /**
-     * Open a specific confirmation modal.
-     */
-    public function openModal(string $modalType): void
-    {
-        $this->activeModal = $modalType;
-    }
-
-    /**
-     * Close the active modal.
-     */
-    public function closeModal(): void
-    {
-        $this->activeModal = null;
     }
 
     /**
