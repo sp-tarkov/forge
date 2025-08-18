@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
 use Illuminate\Support\Collection;
@@ -13,14 +15,14 @@ class ModelsThat
      * Retrieves a collection of classes within the application that use a specified trait.
      *
      * @param  string  $trait  The fully qualified name of the trait to search for.
-     * @return Collection A collection of fully qualified class names that use the specified trait.
+     * @return Collection<int, string> A collection of fully qualified class names that use the specified trait.
      */
     public static function useTrait(string $trait): Collection
     {
         $files = File::allFiles(app_path('Models'));
 
         return collect($files)
-            ->map(fn(SplFileInfo $file) => str($file->getPathname())
+            ->map(fn (SplFileInfo $file) => str($file->getPathname())
                 ->after(app_path())
                 ->before('.')
                 ->prepend('App')
