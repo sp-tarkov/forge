@@ -20,18 +20,17 @@ class ModelsThat
         $files = File::allFiles(app_path('Models'));
 
         return collect($files)
-            ->map(function (SplFileInfo $file) {
-                return str($file->getPathname())
-                    ->after(app_path())
-                    ->before('.')
-                    ->prepend('App')
-                    ->replace('/', '\\')
-                    ->value();
-            })
+            ->map(fn(SplFileInfo $file) => str($file->getPathname())
+                ->after(app_path())
+                ->before('.')
+                ->prepend('App')
+                ->replace('/', '\\')
+                ->value())
             ->filter(function (string $class) use ($trait) {
                 if (! class_exists($class)) {
                     return false;
                 }
+
                 $reflection = new ReflectionClass($class);
 
                 return in_array($trait, $reflection->getTraitNames());
