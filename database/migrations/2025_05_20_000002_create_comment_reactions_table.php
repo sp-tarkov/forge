@@ -19,6 +19,9 @@ return new class extends Migration
 
             $table->unique(['user_id', 'comment_id']);
             $table->unique(['hub_id'], 'comment_reactions_hub_id_unique');
+
+            // For userReactionIds() query, which joins on the comment table
+            $table->index(['comment_id', 'user_id'], 'idx_comment_user_reactions');
         });
     }
 

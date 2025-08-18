@@ -30,10 +30,26 @@ return new class extends Migration
             $table->timestamp('pinned_at')->nullable();
             $table->timestamps();
 
+            // Commonly filtered
             $table->index('hub_id');
             $table->index('deleted_at');
             $table->index(['spam_status', 'created_at']);
             $table->index('pinned_at');
+
+            // For rootComments() queries
+            $table->index(['commentable_type', 'commentable_id', 'parent_id', 'root_id', 'pinned_at', 'created_at'], 'idx_root_comments_ordering');
+
+            // For descendants() queries, where root_id = X with ordering
+            $table->index(['root_id', 'created_at'], 'idx_descendants_by_root');
+
+            // For getDescendantCounts() query, where the commentable_type, commentable_id, and root_id are not null
+            $table->index(['commentable_type', 'commentable_id', 'root_id'], 'idx_descendant_counts');
+
+            // For visibleToUser scope, which uses spam_status and user_id for filtering
+            $table->index(['spam_status', 'user_id'], 'idx_visible_comments');
+
+            // For validation queries, commentable, and parent lookups
+            $table->index(['commentable_type', 'commentable_id', 'id'], 'idx_commentable_lookup');
         });
     }
 
