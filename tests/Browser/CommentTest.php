@@ -697,7 +697,7 @@ describe('Comment Deletion Tests', function (): void {
                 ->waitForText('Remove Comment')
                 ->press('Cancel')
                 ->waitUntilMissingText('Remove Comment')
-                ->assertSee($commentText); // Comment should still be there after canceling
+                ->assertSee($commentText); // Comment should still be there after cancelling
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
