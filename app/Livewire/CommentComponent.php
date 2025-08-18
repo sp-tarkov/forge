@@ -309,10 +309,11 @@ class CommentComponent extends Component
         if ($commentId instanceof Comment) {
             $comment = $commentId;
         } else {
-            $commentId = $commentId ?? $this->deletingCommentId;
+            $commentId ??= $this->deletingCommentId;
             if (! $commentId) {
                 return;
             }
+
             $comment = Comment::query()->findOrFail($commentId);
         }
 
@@ -411,7 +412,7 @@ class CommentComponent extends Component
      */
     public function pinComment(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->pinningCommentId;
+        $commentId ??= $this->pinningCommentId;
         if (! $commentId) {
             return;
         }
@@ -432,7 +433,7 @@ class CommentComponent extends Component
      */
     public function unpinComment(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->pinningCommentId;
+        $commentId ??= $this->pinningCommentId;
         if (! $commentId) {
             return;
         }
@@ -466,7 +467,7 @@ class CommentComponent extends Component
      */
     public function softDeleteComment(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->softDeletingCommentId;
+        $commentId ??= $this->softDeletingCommentId;
         if (! $commentId) {
             return;
         }
@@ -506,7 +507,7 @@ class CommentComponent extends Component
      */
     public function restoreComment(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->restoringCommentId;
+        $commentId ??= $this->restoringCommentId;
         if (! $commentId) {
             return;
         }
@@ -559,7 +560,7 @@ class CommentComponent extends Component
      */
     public function markCommentAsSpam(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->spamActionCommentId;
+        $commentId ??= $this->spamActionCommentId;
         if (! $commentId) {
             return;
         }
@@ -585,7 +586,7 @@ class CommentComponent extends Component
      */
     public function markCommentAsHam(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->spamActionCommentId;
+        $commentId ??= $this->spamActionCommentId;
         if (! $commentId) {
             return;
         }
@@ -631,7 +632,7 @@ class CommentComponent extends Component
      */
     public function checkCommentForSpam(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->spamActionCommentId;
+        $commentId ??= $this->spamActionCommentId;
         if (! $commentId) {
             return;
         }
@@ -715,7 +716,7 @@ class CommentComponent extends Component
      */
     public function hardDeleteComment(?int $commentId = null): void
     {
-        $commentId = $commentId ?? $this->hardDeletingCommentId;
+        $commentId ??= $this->hardDeletingCommentId;
         if (! $commentId) {
             return;
         }
@@ -1009,7 +1010,7 @@ class CommentComponent extends Component
      */
     protected function storeComment(string $body, ?int $parentId = null): Comment
     {
-        return $this->commentable->comments()->create([
+        $comment = $this->commentable->comments()->create([
             'user_id' => Auth::id(),
             'body' => $body,
             'parent_id' => $parentId,
@@ -1017,6 +1018,15 @@ class CommentComponent extends Component
             'user_agent' => request()->userAgent() ?? '',
             'referrer' => request()->header('referer') ?? '',
         ]);
+
+        // Auto-subscribe the user when they create a comment or reply.
+        $user = Auth::user();
+        if ($user && ! $this->commentable->isUserSubscribed($user)) {
+            $this->commentable->subscribeUser($user);
+            $this->isSubscribed = true;
+        }
+
+        return $comment;
     }
 
     /**
