@@ -19,14 +19,15 @@
                     type="button"
                     class="relative flex items-center gap-1 transition {{ auth()->check() && $comment->reactions->contains('user_id', auth()->id()) ? 'text-red-400' : '' }} hover:text-red-400"
                     wire:click="toggleReaction({{ $comment->id }})"
-                    x-on:click="animate"
+                    x-on:click="if (!isAnimating) animate()"
+                    :disabled="isAnimating"
                     x-data="{
                         isAnimating: false,
+                        timeoutId: null,
                         animate() {
                             this.isAnimating = true;
-                            requestAnimationFrame(() => {
-                                setTimeout(() => { this.isAnimating = false; }, 800);
-                            });
+                            if (this.timeoutId) clearTimeout(this.timeoutId);
+                            this.timeoutId = setTimeout(() => { this.isAnimating = false; this.timeoutId = null; }, 800);
                         }
                     }">
                     <div class="relative">
