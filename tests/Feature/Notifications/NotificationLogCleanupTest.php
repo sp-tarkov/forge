@@ -104,9 +104,8 @@ it('handles no old logs gracefully', function (): void {
 
 it('works with different notifiable types', function (): void {
     $user = User::factory()->create();
-    $comment = Comment::class;
 
-    // Create old log for a user (different notifiable type)
+    // Create an old log for a user (different notifiable type)
     $oldUserLog = NotificationLog::query()->create([
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,
