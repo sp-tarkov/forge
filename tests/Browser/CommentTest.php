@@ -646,7 +646,7 @@ describe('Comment Deletion Tests', function (): void {
             $browser->loginAs($user)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
-                ->assertSee('Delete');
+                ->assertSee('Remove');
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -669,7 +669,7 @@ describe('Comment Deletion Tests', function (): void {
             $browser->loginAs($user2)
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
-                ->assertDontSee('Delete');
+                ->assertDontSee('Remove');
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -693,10 +693,11 @@ describe('Comment Deletion Tests', function (): void {
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertSee($commentText)
-                ->click('button[wire\\:click*="deleteComment"]')
-                ->waitForDialog()
-                ->dismissDialog()
-                ->assertSee($commentText); // Comment should still be there after dismissing dialog
+                ->click('button[wire\\:click*="confirmDeleteComment"]')
+                ->waitForText('Remove Comment')
+                ->press('Cancel')
+                ->waitUntilMissingText('Remove Comment')
+                ->assertSee($commentText); // Comment should still be there after canceling
 
             $this->assertEmpty($browser->driver->manage()->getLog('browser'));
         });
@@ -720,9 +721,9 @@ describe('Comment Deletion Tests', function (): void {
                 ->visit($mod->detail_url.'#comments')
                 ->waitForText($mod->name, 10)
                 ->assertSee($commentText)
-                ->click('button[wire\\:click*="deleteComment"]')
-                ->waitForDialog()
-                ->acceptDialog()
+                ->click('button[wire\\:click*="confirmDeleteComment"]')
+                ->waitForText('Remove Comment')
+                ->press('Remove Comment')
                 ->waitUntilMissingText($commentText, 5)
                 ->assertDontSee($commentText);
 
