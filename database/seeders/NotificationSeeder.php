@@ -97,7 +97,7 @@ class NotificationSeeder extends Seeder
                 'type' => NewCommentNotification::class,
                 'notifiable_type' => User::class,
                 'notifiable_id' => $user->id,
-                'data' => json_encode($notificationData),
+                'data' => $notificationData,
                 'read_at' => fake()->boolean(30) ? fake()->dateTimeBetween($createdAt, 'now') : null, // 30% read
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
