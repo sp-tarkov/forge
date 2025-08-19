@@ -378,3 +378,76 @@ describe('mod publication logic', function (): void {
         expect($futureMod->canReceiveComments())->toBeFalse();
     });
 });
+
+describe('body trimming', function (): void {
+    it('should trim whitespace when creating a comment', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+
+        $comment = $mod->comments()->create([
+            'body' => '  This is a comment with leading and trailing spaces  ',
+            'user_id' => $user->id,
+        ]);
+
+        expect($comment->body)->toBe('This is a comment with leading and trailing spaces');
+    });
+
+    it('should trim whitespace when updating a comment', function (): void {
+        $comment = Comment::factory()->create([
+            'body' => 'Original comment body',
+        ]);
+
+        $comment->update([
+            'body' => '  Updated comment with spaces  ',
+        ]);
+
+        expect($comment->fresh()->body)->toBe('Updated comment with spaces');
+    });
+
+    it('should trim whitespace when directly setting the body attribute', function (): void {
+        $comment = Comment::factory()->create([
+            'body' => 'Original comment body',
+        ]);
+
+        $comment->body = '  Direct assignment with spaces  ';
+        $comment->save();
+
+        expect($comment->fresh()->body)->toBe('Direct assignment with spaces');
+    });
+
+    it('should handle newlines and tabs properly', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+
+        $comment = $mod->comments()->create([
+            'body' => "\t\n  This comment has tabs and newlines\n\t  ",
+            'user_id' => $user->id,
+        ]);
+
+        expect($comment->body)->toBe('This comment has tabs and newlines');
+    });
+
+    it('should preserve internal whitespace', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+
+        $comment = $mod->comments()->create([
+            'body' => '  This  has  multiple  spaces  between  words  ',
+            'user_id' => $user->id,
+        ]);
+
+        expect($comment->body)->toBe('This  has  multiple  spaces  between  words');
+    });
+
+    it('should handle empty strings after trimming', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+
+        $comment = $mod->comments()->create([
+            'body' => '   ',
+            'user_id' => $user->id,
+        ]);
+
+        expect($comment->body)->toBe('');
+    });
+});

@@ -436,3 +436,47 @@ describe('security', function (): void {
             ->assertForbidden();
     });
 });
+
+describe('body trimming during edit', function (): void {
+    it('should trim whitespace when editing a comment through Livewire', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'body' => 'Original comment',
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', '  Edited comment with spaces  ')
+            ->call('updateComment', $comment)
+            ->assertHasNoErrors();
+
+        $comment->refresh();
+        expect($comment->body)->toBe('Edited comment with spaces');
+    });
+
+    it('should trim tabs and newlines when editing a comment', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'body' => 'Original comment',
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', "\t\n  Edited with tabs and newlines\n\t  ")
+            ->call('updateComment', $comment)
+            ->assertHasNoErrors();
+
+        $comment->refresh();
+        expect($comment->body)->toBe('Edited with tabs and newlines');
+    });
+});

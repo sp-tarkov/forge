@@ -196,6 +196,18 @@ class Comment extends Model implements Reportable
     }
 
     /**
+     * Mutator for the body attribute - automatically trims whitespace.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function body(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value): string => trim($value),
+        );
+    }
+
+    /**
      * Update the root_id of this comment
      */
     public function updateRootId(): void
