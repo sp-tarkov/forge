@@ -121,6 +121,54 @@ describe('reply validation', function (): void {
             ->call('createReply', $comment->id)
             ->assertNotFound(); // Returns 404 because comment not found in mod2
     });
+
+    it('should not allow replies with only whitespace that becomes too short after trimming', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $parentComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+        ]);
+
+        // These should all fail validation because they trim to less than 3 characters
+        $testCases = [
+            '  Hi  ',  // trims to "Hi" (2 chars)
+            ' A ',     // trims to "A" (1 char)
+            '   ',     // trims to "" (0 chars)
+        ];
+
+        foreach ($testCases as $testCase) {
+            Livewire::actingAs($user)
+                ->test(CommentComponent::class, ['commentable' => $mod])
+                ->set('formStates.reply-'.$parentComment->id.'.body', $testCase)
+                ->call('createReply', $parentComment->id)
+                ->assertHasErrors(['formStates.reply-'.$parentComment->id.'.body']);
+        }
+    });
+
+    it('should allow replies that are long enough after trimming', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $parentComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+        ]);
+
+        // This should pass validation because it trims to "Hello" (5 chars)
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('formStates.reply-'.$parentComment->id.'.body', '   Hello   ')
+            ->call('createReply', $parentComment->id)
+            ->assertHasNoErrors();
+
+        // Verify the reply was created with trimmed content
+        $reply = Comment::query()->where('parent_id', $parentComment->id)
+            ->where('user_id', $user->id)
+            ->latest()
+            ->first();
+
+        expect($reply->body)->toBe('Hello');
+    });
 });
 
 describe('comment hierarchy', function (): void {

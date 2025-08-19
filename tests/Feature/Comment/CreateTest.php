@@ -137,6 +137,47 @@ describe('comment validation', function (): void {
             ->assertHasErrors(['newCommentBody' => 'min']);
     });
 
+    it('should not allow creating comments with only whitespace that becomes too short after trimming', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+
+        // These should all fail validation because they trim to less than 3 characters
+        $testCases = [
+            '  Hi  ',  // trims to "Hi" (2 chars)
+            ' A ',     // trims to "A" (1 char)
+            '   ',     // trims to "" (0 chars)
+            "\t\n  Hi  \n\t",  // trims to "Hi" (2 chars)
+        ];
+
+        foreach ($testCases as $testCase) {
+            Livewire::actingAs($user)
+                ->test(CommentComponent::class, ['commentable' => $mod])
+                ->set('newCommentBody', $testCase)
+                ->call('createComment')
+                ->assertHasErrors(['newCommentBody']);
+        }
+    });
+
+    it('should allow creating comments that are long enough after trimming', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+
+        // This should pass validation because it trims to "Hello" (5 chars)
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('newCommentBody', '   Hello   ')
+            ->call('createComment')
+            ->assertHasNoErrors();
+
+        // Verify the comment was created with trimmed content
+        $comment = Comment::query()->where('user_id', $user->id)
+            ->where('commentable_id', $mod->id)
+            ->latest()
+            ->first();
+
+        expect($comment->body)->toBe('Hello');
+    });
+
     it('should not allow creating comments that are too long', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();

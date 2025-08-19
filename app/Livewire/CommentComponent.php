@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -968,6 +969,11 @@ class CommentComponent extends Component
     {
         $minLength = config('comments.validation.min_length', 3);
         $maxLength = config('comments.validation.max_length', 10000);
+
+        // Get the raw value and trim it before validation
+        $rawValue = data_get($this, $fieldKey, '');
+        $trimmedValue = Str::of($rawValue)->trim()->value();
+        data_set($this, $fieldKey, $trimmedValue);
 
         $this->validate([
             $fieldKey => sprintf('required|string|min:%s|max:%s', $minLength, $maxLength),
