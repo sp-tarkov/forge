@@ -38,6 +38,25 @@ describe('reaction permissions', function (): void {
             ->call('toggleReaction', $comment)
             ->assertForbidden();
     });
+
+    it('should not allow unverified users to react to comments', function (): void {
+        $user = User::factory()->unverified()->create();
+        $otherUser = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $otherUser->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->call('toggleReaction', $comment)
+            ->assertForbidden();
+
+        // Verify no reaction was created
+        expect($user->commentReactions()->where('comment_id', $comment->id)->exists())->toBeFalse();
+    });
 });
 
 describe('guest visibility', function (): void {

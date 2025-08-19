@@ -53,6 +53,7 @@ class CommentPolicy
      * Determine whether the user can create a comment.
      *
      * - Must be logged in. Handled by not null User parameter.
+     * - Must have verified email address.
      * - The commentable must allow comments.
      *
      * @param  Commentable<Mod|User>|null  $commentable>
@@ -60,6 +61,11 @@ class CommentPolicy
     public function create(User $user, ?Commentable $commentable = null): bool
     {
         // TODO: Users who are blocked by mod authors can not comment on that author's mods.
+
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
 
         // Commentable is required
         if ($commentable === null) {
@@ -130,11 +136,17 @@ class CommentPolicy
      * Determine whether the user can react to the comment.
      *
      * - Must be logged in. Handled by not null User parameter.
+     * - Must have verified email address.
      * - The comment must exist. Handled by not null Comment parameter.
      * - The user must not be the author of the comment.
      */
     public function react(User $user, Comment $comment): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // The user must not be the author of the comment.
         if ($user->id === $comment->user_id) {
             return false;
@@ -327,10 +339,15 @@ class CommentPolicy
     /**
      * Determine whether the user can report a comment.
      *
-     * Authentication is required.
+     * Authentication and email verification are required.
      */
     public function report(User $user, Model $reportable): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Moderators and administrators cannot create reports.
         if ($user->isModOrAdmin()) {
             return false;

@@ -42,6 +42,24 @@ describe('authenticated user permissions', function (): void {
             'commentable_type' => $mod::class,
         ]);
     });
+
+    it('should not allow an unverified user to create a comment', function (): void {
+        $user = User::factory()->unverified()->create();
+        $mod = Mod::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('newCommentBody', 'This is a test comment.')
+            ->call('createComment')
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('comments', [
+            'body' => 'This is a test comment.',
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+        ]);
+    });
 });
 
 describe('unpublished mod restrictions', function (): void {

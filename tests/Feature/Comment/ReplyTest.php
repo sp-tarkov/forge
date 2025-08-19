@@ -65,6 +65,29 @@ describe('authenticated user replies', function (): void {
             'parent_id' => $parentComment->id,
         ]);
     });
+
+    it('should not allow an unverified user to reply to a comment', function (): void {
+        $user = User::factory()->unverified()->create();
+        $mod = Mod::factory()->create();
+        $parentComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->set('formStates.reply-'.$parentComment->id.'.body', 'This is a reply.')
+            ->call('createReply', $parentComment->id)
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('comments', [
+            'body' => 'This is a reply.',
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'parent_id' => $parentComment->id,
+        ]);
+    });
 });
 
 describe('reply validation', function (): void {

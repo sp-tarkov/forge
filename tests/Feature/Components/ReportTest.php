@@ -131,6 +131,19 @@ describe('ReportComponent', function (): void {
             expect($component->get('canReportItem'))->toBeFalse();
         });
 
+        it('prevents unverified users from reporting', function (): void {
+            $user = User::factory()->unverified()->create();
+            $mod = Mod::factory()->create();
+
+            $component = Livewire::actingAs($user)
+                ->test(ReportComponent::class, [
+                    'reportableId' => $mod->id,
+                    'reportableType' => $mod::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeFalse();
+        });
+
         it('prevents users from reporting their own comments', function (): void {
             $user = User::factory()->create();
             $comment = Comment::factory()->create(['user_id' => $user->id]);

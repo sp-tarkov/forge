@@ -30,6 +30,11 @@ class ReportPolicy
      */
     public function create(User $user): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return ! $user->isModOrAdmin();
     }
 

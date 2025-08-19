@@ -66,12 +66,17 @@ class UserPolicy
     }
 
     /**
-     * Determine whether the user can report a mod.
+     * Determine whether the user can report a user.
      *
-     * Authentication is required.
+     * Authentication and email verification are required.
      */
     public function report(User $user, Model $reportable): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Moderators and administrators cannot create reports.
         if ($user->isModOrAdmin()) {
             return false;
