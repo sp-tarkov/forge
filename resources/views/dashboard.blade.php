@@ -26,8 +26,22 @@
     @endif
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
-            <x-welcome />
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
+                    <x-welcome />
+                </div>
+                
+                @can('viewAny', App\Models\Report::class)
+                    <div class="mt-6">
+                        @livewire('report-centre')
+                    </div>
+                @endcan
+            </div>
+            
+            <div class="lg:col-span-1">
+                @livewire('notification-center')
+            </div>
         </div>
     </div>
 </x-layouts.base>

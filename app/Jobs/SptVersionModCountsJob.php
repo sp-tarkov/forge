@@ -6,13 +6,12 @@ namespace App\Jobs;
 
 use App\Models\SptVersion;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class SptVersionModCountsJob implements ShouldBeUnique, ShouldQueue
+class SptVersionModCountsJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;

@@ -76,6 +76,34 @@ return [
             ],
             'Attr.AllowedFrameTargets' => ['_blank'],
         ],
+        'comments' => [
+            'Core.Encoding' => 'utf-8',
+            'HTML.Doctype' => 'XHTML 1.0 Transitional',
+            'HTML.Allowed' => 'h1,h2,h3,h4,h5,h6,'.
+                'p,br,hr,strong,b,em,i,del,s,'.
+                'a[href|title|rel|target|role|rev],'.
+                'ul,ol[start],li[role],'.
+                'img[src|alt|title|width|height],'.
+                'blockquote,'.
+                'pre[class],code[class],'.
+                'table,thead,tbody,tr,th[align],td[align],'.
+                'dl,dt,dd,'.
+                'sup[id],ins,mark,'.
+                'span,',
+            'HTML.SafeIframe' => true,
+            'HTML.ForbiddenElements' => '',
+            'HTML.TargetBlank' => true,
+            'CSS.AllowedProperties' => 'text-align',
+            'AutoFormat.RemoveEmpty.RemoveNbsp' => true,
+            'AutoFormat.AutoParagraph' => false, // Markdown handles paragraphs
+            'AutoFormat.RemoveEmpty' => true,
+            'AutoFormat.RemoveSpansWithoutAttributes' => true,
+            'URI.AllowedSchemes' => ['http' => true, 'https' => true],
+            'Attr.AllowedClasses' => [
+                'external-link', 'language-js', 'footnotes', 'footnote-ref', 'footnote-backref', 'doc-endnotes',
+                'doc-endnote', 'doc-noteref', 'doc-backlink',
+            ],
+        ],
     ],
 
     /*

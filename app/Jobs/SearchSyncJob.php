@@ -6,12 +6,11 @@ namespace App\Jobs;
 
 use App\Models\Mod;
 use App\Models\User;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Bus;
 
-class SearchSyncJob implements ShouldBeUnique, ShouldQueue
+class SearchSyncJob implements ShouldQueue
 {
     use Queueable;
 

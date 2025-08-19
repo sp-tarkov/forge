@@ -202,30 +202,6 @@ describe('Mod Version Dependencies', function (): void {
             expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
         });
 
-        it('handles a large number of versions efficiently', function (): void {
-            SptVersion::factory()->state(['version' => '3.8.0'])->create();
-
-            $startTime = microtime(true);
-            $versionCount = 100;
-
-            $dependentMod = Mod::factory()->create();
-            for ($i = 0; $i < $versionCount; $i++) {
-                ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.'.$i, 'spt_version_constraint' => '3.8.0']);
-            }
-
-            // Create a mod and mod version, and then create a dependency for all versions of the dependent mod.
-            $modVersion = ModVersion::factory()->create();
-            ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
-                'constraint' => '>=1.0.0',
-            ]);
-
-            $executionTime = microtime(true) - $startTime;
-
-            // Verify that all versions were resolved and that the execution time is reasonable.
-            expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->count())->toBe($versionCount)
-                ->and($executionTime)->toBeLessThan(5); // Arbitrarily picked out of my ass.
-        })->skip('This is a performance test and is skipped by default. It will probably fail.');
-
         it('calls DependencyVersionService when a Mod is updated', function (): void {
             SptVersion::factory()->state(['version' => '3.8.0'])->create();
 

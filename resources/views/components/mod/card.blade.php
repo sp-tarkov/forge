@@ -7,11 +7,11 @@
 
 <div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
 
-    <livewire:ribbon
+    <livewire:ribbon.mod
         wire:key="mod-card-ribbon-{{ $section }}-{{ $mod->id }}"
-        :id="$mod->id"
+        :mod-id="$mod->id"
         :disabled="$mod->disabled"
-        :publishedAt="$mod->published_at"
+        :published-at="$mod->published_at?->toISOString()"
         :featured="$mod->featured"
         :homepage-featured="$homepageFeatured"
     />
@@ -71,7 +71,10 @@
     @can('update', $mod)
         <livewire:mod.action
             wire:key="mod-action-{{ $section }}-{{ $mod->id }}"
-            :mod="$mod"
+            :mod-id="$mod->id"
+            :mod-name="$mod->name"
+            :mod-featured="(bool) $mod->featured"
+            :mod-disabled="(bool) $mod->disabled"
             :homepage-featured="$homepageFeatured"
         />
     @endcan

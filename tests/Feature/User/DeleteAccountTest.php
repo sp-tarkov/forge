@@ -7,23 +7,25 @@ use Laravel\Jetstream\Features;
 use Laravel\Jetstream\Http\Livewire\DeleteUserForm;
 use Livewire\Livewire;
 
-test('user accounts can be deleted', function (): void {
-    $this->actingAs($user = User::factory()->create());
+describe('account deletion', function (): void {
+    it('can delete user accounts', function (): void {
+        $this->actingAs($user = User::factory()->create());
 
-    Livewire::test(DeleteUserForm::class)
-        ->set('password', 'password')
-        ->call('deleteUser');
+        Livewire::test(DeleteUserForm::class)
+            ->set('password', 'password')
+            ->call('deleteUser');
 
-    expect($user->fresh())->toBeNull();
-})->skip(fn (): bool => ! Features::hasAccountDeletionFeatures(), 'Account deletion is not enabled.');
+        expect($user->fresh())->toBeNull();
+    })->skip(fn (): bool => ! Features::hasAccountDeletionFeatures(), 'Account deletion is not enabled.');
 
-test('correct password must be provided before account can be deleted', function (): void {
-    $this->actingAs($user = User::factory()->create());
+    it('requires correct password before deletion', function (): void {
+        $this->actingAs($user = User::factory()->create());
 
-    Livewire::test(DeleteUserForm::class)
-        ->set('password', 'wrong-password')
-        ->call('deleteUser')
-        ->assertHasErrors(['password']);
+        Livewire::test(DeleteUserForm::class)
+            ->set('password', 'wrong-password')
+            ->call('deleteUser')
+            ->assertHasErrors(['password']);
 
-    expect($user->fresh())->not->toBeNull();
-})->skip(fn (): bool => ! Features::hasAccountDeletionFeatures(), 'Account deletion is not enabled.');
+        expect($user->fresh())->not->toBeNull();
+    })->skip(fn (): bool => ! Features::hasAccountDeletionFeatures(), 'Account deletion is not enabled.');
+});

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Jobs\Import;
 
 use App\Exceptions\InvalidVersionNumberException;
+use App\Jobs\Import\DataTransferObjects\CommentDto;
+use App\Jobs\Import\DataTransferObjects\CommentLikeDto;
+use App\Jobs\Import\DataTransferObjects\CommentResponseDto;
 use App\Jobs\Import\DataTransferObjects\GitHubSptVersion;
 use App\Jobs\Import\DataTransferObjects\HubMod;
 use App\Jobs\Import\DataTransferObjects\HubModLicense;
@@ -18,6 +21,8 @@ use App\Jobs\ResolveSptVersionsJob;
 use App\Jobs\SearchSyncJob;
 use App\Jobs\SptVersionModCountsJob;
 use App\Jobs\UpdateModDownloadsJob;
+use App\Models\Comment;
+use App\Models\CommentReaction;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -78,6 +83,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->getGitHubSptVersions();
         $this->getHubMods();
         $this->getHubModVersions();
+        $this->getHubComments();
         $this->removeDeletedHubMods();
         $this->removeModsWithoutHubVersions();
 
@@ -86,7 +92,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             new ResolveDependenciesJob,
             new SptVersionModCountsJob,
             new UpdateModDownloadsJob,
-            (new SearchSyncJob)->onQueue('long')->delay(Carbon::now()->addSeconds(30)),
+            (new SearchSyncJob)->onQueue('long'),
             fn () => Artisan::call('cache:clear'),
         ])->dispatch();
     }
@@ -136,7 +142,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         // Split upsert into separate insert/update operations to avoid ID gaps
         User::withoutEvents(function () use ($userData): void {
-            // Get existing hub_ids to determine which records to update vs insert
+            // Get existing hub_ids to determine which records to update vs. insert
             $hubIds = collect($userData)->pluck('hub_id');
             $existingUsers = User::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
 
@@ -298,8 +304,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Get all user avatars from the Hub database and pass them in batches to be processed.
-     *
-     * @throws ConnectionException
      */
     private function getHubUserAvatars(): void
     {
@@ -340,8 +344,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Get all user cover photos from the Hub database and pass them in batches to be processed.
-     *
-     * @throws ConnectionException
      */
     private function getHubUserCoverPhotos(): void
     {
@@ -492,7 +494,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         ])->toArray();
 
         License::withoutEvents(function () use ($licenseData): void {
-            // Get existing hub_ids to determine which records to update vs insert
+            // Get existing hub_ids to determine which records to update vs. insert
             $hubIds = collect($licenseData)->pluck('hub_id');
             $existingLicenses = License::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
 
@@ -612,7 +614,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         // Split upsert into separate insert/update operations to avoid ID gaps
         SptVersion::withoutEvents(function () use ($versionData): void {
-            // Get existing versions to determine which records to update vs insert
+            // Get existing versions to determine which records to update vs. insert
             $versions = collect($versionData)->pluck('version');
             $existingVersions = SptVersion::query()->whereIn('version', $versions)->pluck('version')->toArray();
 
@@ -809,7 +811,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         // Split upsert into separate insert/update operations to avoid ID gaps
         Mod::withoutEvents(function () use ($modData): void {
-            // Get existing hub_ids to determine which records to update vs insert
+            // Get existing hub_ids to determine which records to update vs. insert
             $hubIds = collect($modData)->pluck('hub_id');
             $existingMods = Mod::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
 
@@ -921,7 +923,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->leftJoin('wcf1_label as spt_version', 'label.labelID', '=', 'spt_version.labelID')
             ->groupBy('version.versionID')
             ->orderBy('version.versionID', 'desc')
-            ->chunk(2000, function (Collection $records): void {
+            ->chunk(1000, function (Collection $records): void {
                 /** @var Collection<int, object> $records */
 
                 /** @var Collection<int, HubModVersion> $hubModVersions */
@@ -994,7 +996,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         // Split upsert into separate insert/update operations to avoid ID gaps
         if (! empty($modVersionData)) {
             ModVersion::withoutEvents(function () use ($modVersionData): void {
-                // Get existing hub_ids to determine which records to update vs insert
+                // Get existing hub_ids to determine which records to update vs. insert
                 $hubIds = collect($modVersionData)->pluck('hub_id');
                 $existingModVersions = ModVersion::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
 
@@ -1089,6 +1091,711 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 }
             }
         });
+    }
+
+    /**
+     * Get all comments from the Hub database and pass them in batches to be processed.
+     */
+    private function getHubComments(): void
+    {
+        // Get object type IDs for file comments and user profile comments
+        $objectTypeIds = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->whereIn('objectType', ['com.woltlab.filebase.fileComment', 'com.woltlab.wcf.user.profileComment'])
+            ->pluck('objectTypeID')
+            ->toArray();
+
+        // Get specific object type IDs for filtering
+        $fileCommentTypeId = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.filebase.fileComment')
+            ->value('objectTypeID');
+
+        $profileCommentTypeId = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.wcf.user.profileComment')
+            ->value('objectTypeID');
+
+        if (empty($objectTypeIds)) {
+            return;
+        }
+
+        $processedCount = 0;
+        DB::connection('hub')
+            ->table('wcf1_comment')
+            ->whereIn('objectTypeID', $objectTypeIds)
+            ->orderBy('commentID')
+            ->chunk(500, function (Collection $records) use (&$processedCount, $fileCommentTypeId, $profileCommentTypeId): void {
+                /** @var Collection<int, object> $records */
+                /** @var Collection<int, CommentDto> $hubComments */
+                $hubComments = $records->map(fn (object $record): CommentDto => CommentDto::fromArray((array) $record));
+
+                $processedCount += $records->count();
+
+                $this->processCommentBatch($hubComments, $fileCommentTypeId, $profileCommentTypeId);
+            });
+
+        // Process comment responses (replies)
+        DB::connection('hub')
+            ->table('wcf1_comment_response as cr')
+            ->join('wcf1_comment as c', 'cr.commentID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->select('cr.*')
+            ->orderBy('cr.responseID')
+            ->chunk(500, function (Collection $records): void {
+                /** @var Collection<int, object> $records */
+                /** @var Collection<int, CommentResponseDto> $hubCommentResponses */
+                $hubCommentResponses = $records->map(fn (object $record): CommentResponseDto => CommentResponseDto::fromArray((array) $record));
+
+                $this->processCommentResponseBatch($hubCommentResponses);
+            });
+
+        // Process comment likes/reactions
+        // First get likes for main comments
+        // Get the objectTypeID for comments in the like system
+        $commentLikeObjectTypeId = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.wcf.comment')
+            ->value('objectTypeID');
+
+        $totalCommentLikes = DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment as c', 'l.objectID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->where('l.objectTypeID', $commentLikeObjectTypeId)
+            ->count();
+
+        DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment as c', 'l.objectID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->where('l.objectTypeID', $commentLikeObjectTypeId)
+            ->select('l.*')
+            ->orderBy('l.likeID')
+            ->chunk(500, function (Collection $records): void {
+                /** @var Collection<int, object> $records */
+                /** @var Collection<int, CommentLikeDto> $hubCommentLikes */
+                $hubCommentLikes = $records->map(fn (object $record): CommentLikeDto => CommentLikeDto::fromArray((array) $record));
+
+                $this->processCommentLikeBatch($hubCommentLikes);
+            });
+
+        // Then get likes for comment responses
+        // Get ALL objectTypeIDs for comment responses from hub config (there can be multiple)
+        $responseObjectTypeIds = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.wcf.comment.response')
+            ->pluck('objectTypeID')
+            ->toArray();
+
+        $totalResponseLikes = DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment_response as cr', 'l.objectID', '=', 'cr.responseID')
+            ->join('wcf1_comment as c', 'cr.commentID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->whereIn('l.objectTypeID', $responseObjectTypeIds)
+            ->count();
+
+        DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment_response as cr', 'l.objectID', '=', 'cr.responseID')
+            ->join('wcf1_comment as c', 'cr.commentID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->whereIn('l.objectTypeID', $responseObjectTypeIds)
+            ->select('l.*')
+            ->orderBy('l.likeID')
+            ->chunk(500, function (Collection $records): void {
+                /** @var Collection<int, object> $records */
+                /** @var Collection<int, CommentLikeDto> $hubCommentLikes */
+                $hubCommentLikes = $records->map(fn (object $record): CommentLikeDto => CommentLikeDto::fromArray((array) $record));
+
+                $this->processCommentResponseLikeBatch($hubCommentLikes);
+            });
+
+        // Clean up hard-deleted comments and reactions
+        $this->removeHardDeletedComments($objectTypeIds);
+        $this->removeHardDeletedCommentReactions($objectTypeIds);
+    }
+
+    /**
+     * Process a batch of Hub comments.
+     *
+     * @param  Collection<int, CommentDto>  $hubComments
+     */
+    private function processCommentBatch(Collection $hubComments, int $fileCommentTypeId, int $profileCommentTypeId): void
+    {
+
+        $hubUserIds = $hubComments->pluck('userID')->filter()->unique();
+        $hubObjectIds = $hubComments->pluck('objectID')->filter()->unique();
+
+        // Combine user IDs and object IDs (for profile comments, objectID is the target user)
+        $allUserIds = $hubUserIds->merge($hubObjectIds)->unique();
+
+        /** @var EloquentCollection<int, User> $localUsers */
+        $localUsers = User::query()->whereIn('hub_id', $allUserIds)->get()->keyBy('hub_id');
+
+        // Get mod comments - filter by objectTypeID for file comments
+        $modComments = $hubComments->filter(function (CommentDto $comment) use ($localUsers, $fileCommentTypeId): bool {
+
+            // Only process if this is a file comment
+            if ($comment->objectTypeID !== $fileCommentTypeId) {
+                return false;
+            }
+
+            // Check if this is a file comment by looking for a corresponding mod
+            $mod = Mod::query()->where('hub_id', $comment->objectID)->first();
+
+            if ($mod === null) {
+                return false;
+            }
+
+            if (! $localUsers->has($comment->userID)) {
+                return false;
+            }
+
+            return true;
+        });
+
+        // Get user profile comments - filter by objectTypeID for profile comments
+        $userComments = $hubComments->filter(function (CommentDto $comment) use ($localUsers, $profileCommentTypeId): bool {
+
+            // Only process if this is a profile comment
+            if ($comment->objectTypeID !== $profileCommentTypeId) {
+                return false;
+            }
+
+            // Check if this is a user profile comment
+            $targetUser = $localUsers->get($comment->objectID);
+
+            if ($targetUser === null) {
+                return false;
+            }
+
+            if (! $localUsers->has($comment->userID)) {
+                return false;
+            }
+
+            return true;
+        });
+
+        // Process mod comments
+        if ($modComments->isNotEmpty()) {
+            $this->processModComments($modComments, $localUsers);
+        }
+
+        // Process user profile comments
+        if ($userComments->isNotEmpty()) {
+            $this->processUserComments($userComments, $localUsers);
+        }
+    }
+
+    /**
+     * Process mod comments.
+     *
+     * @param  Collection<int, CommentDto>  $modComments
+     * @param  EloquentCollection<int, User>  $localUsers
+     */
+    private function processModComments(Collection $modComments, EloquentCollection $localUsers): void
+    {
+        $modHubIds = $modComments->pluck('objectID')->unique();
+
+        /** @var EloquentCollection<int, Mod> $localMods */
+        $localMods = Mod::query()->whereIn('hub_id', $modHubIds)->get()->keyBy('hub_id');
+
+        $commentData = [];
+        $modComments->each(function (CommentDto $hubComment) use ($localUsers, $localMods, &$commentData): void {
+            $localUser = $localUsers->get($hubComment->userID);
+            $localMod = $localMods->get($hubComment->objectID);
+
+            if (! $localUser || ! $localMod) {
+                return;
+            }
+
+            $commentData[] = [
+                'hub_id' => $hubComment->commentID,
+                'user_id' => $localUser->id,
+                'commentable_type' => Mod::class,
+                'commentable_id' => $localMod->id,
+                'body' => $hubComment->getCleanMessage(),
+                'user_ip' => '0.0.0.0', // Default IP for imported comments
+                'user_agent' => 'Hub Import',
+                'referrer' => '',
+                'parent_id' => null,
+                'root_id' => null,
+                'spam_status' => 'clean',
+                'spam_metadata' => null,
+                'spam_checked_at' => null,
+                'spam_recheck_count' => 0,
+                'edited_at' => null,
+                'deleted_at' => $hubComment->isDeleted() ? $hubComment->getCreatedAt() : null,
+                'pinned_at' => $hubComment->isPinned() ? $hubComment->getCreatedAt() : null,
+                'created_at' => $hubComment->getCreatedAt(),
+                'updated_at' => $hubComment->getCreatedAt(),
+            ];
+        });
+
+        if (! empty($commentData)) {
+            $this->insertComments($commentData);
+        }
+    }
+
+    /**
+     * Process user profile comments.
+     *
+     * @param  Collection<int, CommentDto>  $userComments
+     * @param  EloquentCollection<int, User>  $localUsers
+     */
+    private function processUserComments(Collection $userComments, EloquentCollection $localUsers): void
+    {
+        $commentData = [];
+        $userComments->each(function (CommentDto $hubComment) use ($localUsers, &$commentData): void {
+            $commentUser = $localUsers->get($hubComment->userID);
+            $targetUser = $localUsers->get($hubComment->objectID);
+
+            if (! $commentUser || ! $targetUser) {
+                return;
+            }
+
+            $commentData[] = [
+                'hub_id' => $hubComment->commentID,
+                'user_id' => $commentUser->id,
+                'commentable_type' => User::class,
+                'commentable_id' => $targetUser->id,
+                'body' => $hubComment->getCleanMessage(),
+                'user_ip' => '0.0.0.0', // Default IP for imported comments
+                'user_agent' => 'Hub Import',
+                'referrer' => '',
+                'parent_id' => null,
+                'root_id' => null,
+                'spam_status' => 'clean',
+                'spam_metadata' => null,
+                'spam_checked_at' => null,
+                'spam_recheck_count' => 0,
+                'edited_at' => null,
+                'deleted_at' => $hubComment->isDeleted() ? $hubComment->getCreatedAt() : null,
+                'pinned_at' => $hubComment->isPinned() ? $hubComment->getCreatedAt() : null,
+                'created_at' => $hubComment->getCreatedAt(),
+                'updated_at' => $hubComment->getCreatedAt(),
+            ];
+        });
+
+        if (! empty($commentData)) {
+            $this->insertComments($commentData);
+        }
+    }
+
+    /**
+     * Process a batch of Hub comment responses (replies).
+     *
+     * @param  Collection<int, CommentResponseDto>  $hubCommentResponses
+     */
+    private function processCommentResponseBatch(Collection $hubCommentResponses): void
+    {
+        $hubUserIds = $hubCommentResponses->pluck('userID')->filter()->unique();
+        $hubCommentIds = $hubCommentResponses->pluck('commentID')->unique();
+
+        /** @var EloquentCollection<int, User> $localUsers */
+        $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+        /** @var EloquentCollection<int, Comment> $parentComments */
+        $parentComments = Comment::query()->whereIn('hub_id', $hubCommentIds)->get()->keyBy('hub_id');
+
+        $commentData = [];
+        $hubCommentResponses->each(function (CommentResponseDto $hubResponse) use ($localUsers, $parentComments, &$commentData): void {
+            $localUser = $localUsers->get($hubResponse->userID);
+            $parentComment = $parentComments->get($hubResponse->commentID);
+
+            if (! $localUser || ! $parentComment) {
+                return;
+            }
+
+            $commentData[] = [
+                'hub_id' => -$hubResponse->responseID, // Negative to avoid collision with comment IDs
+                'user_id' => $localUser->id,
+                'commentable_type' => $parentComment->commentable_type,
+                'commentable_id' => $parentComment->commentable_id,
+                'body' => $hubResponse->getCleanMessage(),
+                'user_ip' => '0.0.0.0', // Default IP for imported comments
+                'user_agent' => 'Hub Import',
+                'referrer' => '',
+                'parent_id' => $parentComment->id,
+                'root_id' => $parentComment->root_id ?? $parentComment->id,
+                'spam_status' => 'clean',
+                'spam_metadata' => null,
+                'spam_checked_at' => null,
+                'spam_recheck_count' => 0,
+                'edited_at' => null,
+                'deleted_at' => $hubResponse->isDeleted() ? $hubResponse->getCreatedAt() : null,
+                'pinned_at' => null, // Replies cannot be pinned
+                'created_at' => $hubResponse->getCreatedAt(),
+                'updated_at' => $hubResponse->getCreatedAt(),
+            ];
+        });
+
+        if (! empty($commentData)) {
+            $this->insertComments($commentData);
+        }
+    }
+
+    /**
+     * Process a batch of comment likes/reactions.
+     *
+     * @param  Collection<int, CommentLikeDto>  $hubCommentLikes
+     */
+    private function processCommentLikeBatch(Collection $hubCommentLikes): void
+    {
+        $hubUserIds = $hubCommentLikes->pluck('userID')->filter()->unique();
+
+        /** @var EloquentCollection<int, User> $localUsers */
+        $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+        // Get comment IDs and response IDs to find local comments
+        $hubCommentIds = $hubCommentLikes->pluck('objectID')->unique();
+
+        /** @var EloquentCollection<int, Comment> $localComments */
+        $localComments = Comment::query()->whereIn('hub_id', $hubCommentIds)->get()->keyBy('hub_id');
+
+        $reactionData = [];
+        $filteredOutCount = 0;
+
+        $hubCommentLikes->each(function (CommentLikeDto $hubLike) use ($localUsers, $localComments, &$reactionData, &$filteredOutCount): void {
+            $localUser = $localUsers->get($hubLike->userID);
+            $localComment = $localComments->get($hubLike->objectID);
+
+            if (! $localUser || ! $localComment) {
+                $filteredOutCount++;
+
+                return;
+            }
+
+            // Convert all reactions to "like" as specified
+            $reactionData[] = [
+                'hub_id' => $hubLike->likeID,
+                'comment_id' => $localComment->id,
+                'user_id' => $localUser->id,
+                'created_at' => $hubLike->getCreatedAt(),
+                'updated_at' => $hubLike->getCreatedAt(),
+            ];
+        });
+
+        if (! empty($reactionData)) {
+            $this->insertCommentReactions($reactionData);
+        }
+    }
+
+    /**
+     * Process a batch of comment response likes/reactions.
+     *
+     * @param  Collection<int, CommentLikeDto>  $hubCommentLikes
+     */
+    private function processCommentResponseLikeBatch(Collection $hubCommentLikes): void
+    {
+        $hubUserIds = $hubCommentLikes->pluck('userID')->filter()->unique();
+
+        /** @var EloquentCollection<int, User> $localUsers */
+        $localUsers = User::query()->whereIn('hub_id', $hubUserIds)->get()->keyBy('hub_id');
+
+        // Get response IDs and convert to negative hub_ids to find local comments
+        $hubResponseIds = $hubCommentLikes->pluck('objectID')->unique()->map(fn (int $id): int => -$id);
+
+        /** @var EloquentCollection<int, Comment> $localComments */
+        $localComments = Comment::query()->whereIn('hub_id', $hubResponseIds)->get()->keyBy('hub_id');
+
+        $reactionData = [];
+        $filteredOutCount = 0;
+
+        $hubCommentLikes->each(function (CommentLikeDto $hubLike) use ($localUsers, $localComments, &$reactionData, &$filteredOutCount): void {
+
+            $localUser = $localUsers->get($hubLike->userID);
+            $localComment = $localComments->get(-$hubLike->objectID); // Use negative ID to find a response
+
+            if (! $localUser || ! $localComment) {
+                $filteredOutCount++;
+
+                return;
+            }
+
+            // Convert all reactions to "like" as specified
+            $reactionData[] = [
+                'hub_id' => $hubLike->likeID,
+                'comment_id' => $localComment->id,
+                'user_id' => $localUser->id,
+                'created_at' => $hubLike->getCreatedAt(),
+                'updated_at' => $hubLike->getCreatedAt(),
+            ];
+        });
+
+        if (! empty($reactionData)) {
+            $this->insertCommentReactions($reactionData);
+        }
+    }
+
+    /**
+     * Insert comments into the database using bulk operations.
+     *
+     * @param  array<int, array<string, mixed>>  $commentData
+     */
+    private function insertComments(array $commentData): void
+    {
+        Comment::withoutEvents(function () use ($commentData): void {
+            // Get existing hub_ids to determine which records to update vs. insert
+            $hubIds = collect($commentData)->pluck('hub_id');
+            $existingComments = Comment::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($commentData as $comment) {
+                if (in_array($comment['hub_id'], $existingComments)) {
+                    $updateData[] = $comment;
+                } else {
+                    $insertData[] = $comment;
+                }
+            }
+
+            // Insert new comments (only allocates IDs for actual new records)
+            if (! empty($insertData)) {
+                Comment::query()->insert($insertData);
+            }
+
+            // Update existing comments (no ID allocation)
+            foreach ($updateData as $comment) {
+                Comment::query()->where('hub_id', $comment['hub_id'])->update([
+                    'user_id' => $comment['user_id'],
+                    'commentable_type' => $comment['commentable_type'],
+                    'commentable_id' => $comment['commentable_id'],
+                    'body' => $comment['body'],
+                    'user_ip' => $comment['user_ip'],
+                    'user_agent' => $comment['user_agent'],
+                    'referrer' => $comment['referrer'],
+                    'parent_id' => $comment['parent_id'],
+                    'root_id' => $comment['root_id'],
+                    'spam_status' => $comment['spam_status'],
+                    'spam_metadata' => $comment['spam_metadata'],
+                    'spam_checked_at' => $comment['spam_checked_at'],
+                    'spam_recheck_count' => $comment['spam_recheck_count'],
+                    'edited_at' => $comment['edited_at'],
+                    'deleted_at' => $comment['deleted_at'],
+                    'pinned_at' => $comment['pinned_at'],
+                    'created_at' => $comment['created_at'],
+                    'updated_at' => $comment['updated_at'],
+                ]);
+            }
+        });
+    }
+
+    /**
+     * Insert comment reactions into the database using bulk operations.
+     *
+     * @param  array<int, array<string, mixed>>  $reactionData
+     */
+    private function insertCommentReactions(array $reactionData): void
+    {
+
+        CommentReaction::withoutEvents(function () use ($reactionData): void {
+            // Get existing hub_ids to determine which records to update vs. insert
+            $hubIds = collect($reactionData)->pluck('hub_id')->filter();
+            $existingReactionsByHubId = CommentReaction::query()
+                ->whereIn('hub_id', $hubIds)
+                ->pluck('hub_id')
+                ->toArray();
+
+            // Get existing user+comment combinations to avoid unique constraint violations
+            $userCommentPairs = collect($reactionData)
+                ->map(fn (array $reaction): array => ['user_id' => $reaction['user_id'], 'comment_id' => $reaction['comment_id']])
+                ->unique(fn (array $pair): string => $pair['user_id'].'-'.$pair['comment_id']);
+
+            $existingReactionsByUserComment = CommentReaction::query()
+                ->whereIn('user_id', $userCommentPairs->pluck('user_id'))
+                ->whereIn('comment_id', $userCommentPairs->pluck('comment_id'))
+                ->get()
+                ->mapWithKeys(fn (CommentReaction $reaction): array => [$reaction->user_id.'-'.$reaction->comment_id => $reaction])
+                ->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($reactionData as $reaction) {
+                $userCommentKey = $reaction['user_id'].'-'.$reaction['comment_id'];
+                $hubIdExists = in_array($reaction['hub_id'], $existingReactionsByHubId);
+                $userCommentExists = isset($existingReactionsByUserComment[$userCommentKey]);
+
+                if ($hubIdExists || $userCommentExists) {
+                    // Update the existing reaction (prefer hub_id match, fallback to user+comment match)
+                    $updateData[] = $reaction;
+                } else {
+                    // Insert a new reaction
+                    $insertData[] = $reaction;
+                }
+            }
+
+            // Insert new reactions (only allocates IDs for actual new records)
+            if (! empty($insertData)) {
+                // Remove any potential duplicates within the insert batch itself
+                $uniqueInsertData = collect($insertData)
+                    ->unique(fn (array $reaction): string => $reaction['user_id'].'-'.$reaction['comment_id'])
+                    ->values()
+                    ->toArray();
+
+                if (! empty($uniqueInsertData)) {
+                    CommentReaction::query()->insert($uniqueInsertData);
+                }
+            }
+
+            // Update existing reactions
+            foreach ($updateData as $reaction) {
+                $userCommentKey = $reaction['user_id'].'-'.$reaction['comment_id'];
+
+                if (in_array($reaction['hub_id'], $existingReactionsByHubId)) {
+                    // Update by hub_id
+                    CommentReaction::query()->where('hub_id', $reaction['hub_id'])->update([
+                        'comment_id' => $reaction['comment_id'],
+                        'user_id' => $reaction['user_id'],
+                        'created_at' => $reaction['created_at'],
+                        'updated_at' => $reaction['updated_at'],
+                    ]);
+                } elseif (isset($existingReactionsByUserComment[$userCommentKey])) {
+                    // Update by user+comment combination
+                    CommentReaction::query()
+                        ->where('user_id', $reaction['user_id'])
+                        ->where('comment_id', $reaction['comment_id'])
+                        ->update([
+                            'hub_id' => $reaction['hub_id'],
+                            'created_at' => $reaction['created_at'],
+                            'updated_at' => $reaction['updated_at'],
+                        ]);
+                }
+            }
+        });
+    }
+
+    /**
+     * Remove comments that have been hard-deleted from the Hub database.
+     *
+     * @param  array<int>  $objectTypeIds
+     */
+    private function removeHardDeletedComments(array $objectTypeIds): void
+    {
+        if (empty($objectTypeIds)) {
+            return;
+        }
+
+        // Get all comment IDs that still exist in the hub for the relevant object types
+        $existingHubCommentIds = DB::connection('hub')
+            ->table('wcf1_comment')
+            ->whereIn('objectTypeID', $objectTypeIds)
+            ->pluck('commentID')
+            ->toArray();
+
+        // Get all response IDs that still exist in the hub
+        $existingHubResponseIds = DB::connection('hub')
+            ->table('wcf1_comment_response as cr')
+            ->join('wcf1_comment as c', 'cr.commentID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->pluck('cr.responseID')
+            ->toArray();
+
+        // Convert response IDs to negative values to match how they're stored locally
+        $existingNegativeResponseIds = array_map(fn (int $id): int => -$id, $existingHubResponseIds);
+
+        // Combine comment IDs (positive) and response IDs (negative)
+        $allExistingHubIds = array_merge($existingHubCommentIds, $existingNegativeResponseIds);
+
+        if (empty($allExistingHubIds)) {
+            // If no comments exist in the hub, delete all local comments with hub_id
+            Comment::query()->whereNotNull('hub_id')->delete();
+        } else {
+            // Get all local hub_ids first, then find which ones to delete
+            $localHubIds = Comment::query()
+                ->whereNotNull('hub_id')
+                ->pluck('hub_id')
+                ->toArray();
+
+            // Find hub_ids that exist locally but not in the hub
+            $hubIdsToDelete = array_diff($localHubIds, $allExistingHubIds);
+
+            if (! empty($hubIdsToDelete)) {
+                // Chunk the delete operation to avoid MySQL's 65,535 placeholder limits
+                $chunkSize = 50000; // Well below the 65,535 limits to be safe
+                $chunks = array_chunk($hubIdsToDelete, $chunkSize);
+
+                foreach ($chunks as $chunk) {
+                    Comment::query()->whereIn('hub_id', $chunk)->delete();
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove comment reactions that have been hard-deleted from the Hub database.
+     *
+     * @param  array<int>  $objectTypeIds
+     */
+    private function removeHardDeletedCommentReactions(array $objectTypeIds): void
+    {
+        if (empty($objectTypeIds)) {
+            return;
+        }
+
+        // Get all like IDs that still exist in the hub for comments
+        $commentLikeObjectTypeId = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.wcf.comment')
+            ->value('objectTypeID');
+
+        $existingCommentLikeIds = DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment as c', 'l.objectID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->where('l.objectTypeID', $commentLikeObjectTypeId)
+            ->pluck('l.likeID')
+            ->toArray();
+
+        // Get all like IDs that still exist in the hub for comment responses
+        // Get ALL objectTypeIDs for comment responses from hub config (there can be multiple)
+        $responseObjectTypeIds = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.wcf.comment.response')
+            ->pluck('objectTypeID')
+            ->toArray();
+
+        $existingResponseLikeIds = DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment_response as cr', 'l.objectID', '=', 'cr.responseID')
+            ->join('wcf1_comment as c', 'cr.commentID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->whereIn('l.objectTypeID', $responseObjectTypeIds)
+            ->pluck('l.likeID')
+            ->toArray();
+
+        // Combine both arrays - these are all the hub like IDs that should still exist
+        $allExistingLikeIds = array_merge($existingCommentLikeIds, $existingResponseLikeIds);
+
+        if (empty($allExistingLikeIds)) {
+            // If no likes exist in hub, delete all reactions with hub_id (imported from hub)
+            CommentReaction::query()->whereNotNull('hub_id')->delete();
+        } else {
+            // Get all local hub_ids first, then find which ones to delete
+            $localHubIds = CommentReaction::query()
+                ->whereNotNull('hub_id')
+                ->pluck('hub_id')
+                ->toArray();
+
+            // Find hub_ids that exist locally but not in the hub
+            $hubIdsToDelete = array_diff($localHubIds, $allExistingLikeIds);
+
+            if (! empty($hubIdsToDelete)) {
+                // Chunk the delete operation to avoid MySQL's 65,535 placeholder limits
+                $chunkSize = 50000; // Well below the 65,535 limits to be safe
+                $chunks = array_chunk($hubIdsToDelete, $chunkSize);
+
+                foreach ($chunks as $chunk) {
+                    CommentReaction::query()->whereIn('hub_id', $chunk)->delete();
+                }
+            }
+        }
     }
 
     /**

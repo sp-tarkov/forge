@@ -157,7 +157,7 @@ class Index extends Component
      *
      * @return array<int, Collection<int, SptVersion>>
      */
-    #[Computed]
+    #[Computed(cache: true)]
     public function splitSptVersions(): array
     {
         $versions = $this->availableSptVersions;
