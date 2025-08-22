@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\ModVersion;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
@@ -401,6 +403,8 @@ class Edit extends Component
                 ]);
             }
         }
+
+        Track::event(TrackingEventType::VERSION_EDIT, $this->modVersion);
 
         flash()->success('Mod version has been successfully updated.');
 

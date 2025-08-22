@@ -6,6 +6,8 @@ namespace App\Livewire;
 
 use App\Contracts\Commentable;
 use App\Enums\SpamStatus;
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Models\CommentReaction;
@@ -199,7 +201,9 @@ class CommentComponent extends Component
         }
 
         $this->validateComment('newCommentBody');
-        $this->storeComment($this->newCommentBody);
+        $comment = $this->storeComment($this->newCommentBody);
+
+        Track::event(TrackingEventType::COMMENT_CREATE, $comment);
 
         $this->applyRateLimit();
 
@@ -231,7 +235,9 @@ class CommentComponent extends Component
 
         $body = $this->formStates[$formKey]['body'] ?? '';
         $this->validateComment($fieldKey, 'reply');
-        $this->storeComment($body, $parentId);
+        $comment = $this->storeComment($body, $parentId);
+
+        Track::event(TrackingEventType::COMMENT_CREATE, $comment);
 
         $this->applyRateLimit();
 
@@ -281,6 +287,8 @@ class CommentComponent extends Component
             'body' => $body,
             'edited_at' => now(),
         ]);
+
+        Track::event(TrackingEventType::COMMENT_EDIT, $comment);
 
         $this->hideForm('edit', $comment->id);
     }
@@ -341,6 +349,8 @@ class CommentComponent extends Component
             $comment->update(['deleted_at' => now()]);
         }
 
+        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+
         // Clear cached computed properties.
         unset($this->commentCount);
 
@@ -368,8 +378,10 @@ class CommentComponent extends Component
 
         if ($reaction) {
             $reaction->delete();
+            Track::event(TrackingEventType::COMMENT_UNLIKE, $comment);
         } else {
             $user->commentReactions()->create(['comment_id' => $comment->id]);
+            Track::event(TrackingEventType::COMMENT_LIKE, $comment);
         }
 
         // Get the updated reactions_count.
@@ -478,6 +490,8 @@ class CommentComponent extends Component
         $this->authorize('softDelete', $comment);
 
         $comment->update(['deleted_at' => now()]);
+
+        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
 
         $this->updateCachedDescendant($comment);
 
@@ -733,6 +747,8 @@ class CommentComponent extends Component
 
         // Delete the comment itself.
         $comment->delete();
+
+        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
 
         $this->showHardDeleteModal = false;
         $this->hardDeletingCommentId = null;

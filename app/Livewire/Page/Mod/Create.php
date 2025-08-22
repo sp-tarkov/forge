@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\Mod;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -160,6 +162,8 @@ class Create extends Component
 
         // Save the mod.
         $mod->save();
+
+        Track::event(TrackingEventType::MOD_CREATE, $mod);
 
         flash()->success('Mod has been Successfully Created');
 

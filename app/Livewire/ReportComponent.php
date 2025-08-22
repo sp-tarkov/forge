@@ -6,6 +6,9 @@ namespace App\Livewire;
 
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
+use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\Report;
 use App\Models\User;
@@ -117,6 +120,19 @@ class ReportComponent extends Component
             'context' => $this->context,
             'status' => ReportStatus::PENDING,
         ]);
+
+        // Track comment and mod reports
+        if ($this->reportableType === Comment::class) {
+            $comment = Comment::query()->find($this->reportableId);
+            if ($comment) {
+                Track::event(TrackingEventType::COMMENT_REPORT, $comment);
+            }
+        } elseif ($this->reportableType === Mod::class) {
+            $mod = Mod::query()->find($this->reportableId);
+            if ($mod) {
+                Track::event(TrackingEventType::MOD_REPORT, $mod);
+            }
+        }
 
         $moderatorAdminIds = $this->getModeratorAdminIds();
         if (! empty($moderatorAdminIds)) {

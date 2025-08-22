@@ -31,6 +31,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
 use SensitiveParameter;
+use Shetabit\Visitor\Traits\Visitor;
 
 /**
  * @property int $id
@@ -86,6 +87,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     use Notifiable;
     use Searchable;
     use TwoFactorAuthenticatable;
+    use Visitor;
 
     protected $hidden = [
         'password',

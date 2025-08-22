@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\ModVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,9 @@ class ModVersionController extends Controller
         $rateIdentifier = $request->user()?->id ?: $request->session()->getId();
         $rateKey = sprintf('mod.version.download.%s.%d', $rateIdentifier, $modId);
         abort_if(RateLimiter::tooManyAttempts($rateKey, maxAttempts: 5), 429);
+
+        // Track the download event.
+        Track::event(TrackingEventType::MOD_DOWNLOAD, $modVersion);
 
         // Increment downloads counts in the background.
         defer(fn () => $modVersion->incrementDownloads());

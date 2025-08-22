@@ -23,8 +23,6 @@ use Override;
 use Throwable;
 
 /**
- * SptVersion Model
- *
  * @property int $id
  * @property string $version
  * @property int $version_major

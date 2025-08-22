@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Trackable;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModVersionObserver;
@@ -25,11 +26,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Override;
+use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
 /**
- * ModVersion Model
- *
  * @property int $id
  * @property int|null $hub_id
  * @property int $mod_id
@@ -57,10 +57,12 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
-class ModVersion extends Model
+class ModVersion extends Model implements Trackable
 {
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
+
+    use Visitable;
 
     /**
      * Update the parent mod's updated_at timestamp when the mod version is updated.
@@ -252,5 +254,43 @@ class ModVersion extends Model
                 Markdown::convert($this->description)->getContent()
             )
         )->shouldCache();
+    }
+
+    /**
+     * Get the URL to view this trackable resource.
+     */
+    public function getTrackingUrl(): string
+    {
+        return route('mod.show', [$this->mod->id, $this->mod->slug]);
+    }
+
+    /**
+     * Get the display title for this trackable resource.
+     */
+    public function getTrackingTitle(): string
+    {
+        return sprintf('%s v%s', $this->mod->name, $this->version);
+    }
+
+    /**
+     * Get the snapshot data to store for this trackable resource.
+     *
+     * @return array<string, mixed>
+     */
+    public function getTrackingSnapshot(): array
+    {
+        return [
+            'version_name' => $this->version,
+            'mod_name' => $this->mod?->name,
+            'version_changelog' => $this->changelog,
+        ];
+    }
+
+    /**
+     * Get contextual information about this trackable resource.
+     */
+    public function getTrackingContext(): ?string
+    {
+        return sprintf('Version %s of %s', $this->version, $this->mod?->name);
     }
 }

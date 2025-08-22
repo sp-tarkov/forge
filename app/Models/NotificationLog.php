@@ -10,9 +10,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 
 /**
- * @use HasFactory<NotificationLogFactory>
+ * @property int $id
+ * @property string $notifiable_type
+ * @property int $notifiable_id
+ * @property int $user_id
+ * @property NotificationType $notification_type
+ * @property string $notification_class
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Model $notifiable
  */
 class NotificationLog extends Model
 {

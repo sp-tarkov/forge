@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\Mod;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -180,6 +182,8 @@ class Edit extends Component
         }
 
         $this->mod->save();
+
+        Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 
         flash()->success('Mod has been Successfully Updated');
 

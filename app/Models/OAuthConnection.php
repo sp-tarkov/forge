@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * OAuthConnection Model
- *
  * @property int $id
  * @property int $user_id
  * @property string $provider

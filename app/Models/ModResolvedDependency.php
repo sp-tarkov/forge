@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * ModResolvedDependency Model
- *
  * @property int $id
  * @property int $mod_version_id
  * @property int $dependency_id

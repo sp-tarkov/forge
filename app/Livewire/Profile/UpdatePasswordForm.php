@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Profile;
 
 use App\Actions\Fortify\PasswordValidationRules;
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -31,6 +33,7 @@ class UpdatePasswordForm extends JetstreamUpdatePasswordForm
 
         if ($user->password !== null) {
             parent::updatePassword($updatesUserPasswords);
+            Track::event(TrackingEventType::PASSWORD_CHANGE);
         } else {
 
             // User has a null password. Allow them to set a new password without their current password.
@@ -47,6 +50,8 @@ class UpdatePasswordForm extends JetstreamUpdatePasswordForm
                 'password' => '',
                 'password_confirmation' => '',
             ];
+
+            Track::event(TrackingEventType::PASSWORD_CHANGE);
 
             $this->dispatch('saved');
         }

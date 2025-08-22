@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\TrackingEventType;
 use App\Exceptions\Api\V0\InvalidQuery;
+use App\Facades\Track;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
+use App\Services\TrackService;
 use Carbon\Carbon;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
@@ -38,6 +44,12 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
+
+        // Register the Track service
+        $this->app->singleton(TrackService::class);
+
+        // Register the Track facade alias
+        $this->app->alias(TrackService::class, 'track');
     }
 
     /**
@@ -67,9 +79,25 @@ class AppServiceProvider extends ServiceProvider
         // This gate determines who can access the Pulse dashboard.
         Gate::define('viewPulse', fn (User $user): bool => $user->isAdmin());
 
+        // This gate determines who can access admin features.
+        Gate::define('admin', fn (User $user): bool => $user->isAdmin());
+
         // Register the Discord socialite provider.
         Event::listen(function (SocialiteWasCalled $socialiteWasCalled): void {
             $socialiteWasCalled->extendSocialite('discord', Provider::class);
+        });
+
+        // Track authentication events
+        Event::listen(Login::class, function (): void {
+            Track::event(TrackingEventType::LOGIN);
+        });
+
+        Event::listen(Logout::class, function (): void {
+            Track::event(TrackingEventType::LOGOUT);
+        });
+
+        Event::listen(Registered::class, function (): void {
+            Track::event(TrackingEventType::REGISTER);
         });
 
         // Filter out specific exceptions from being reported to Flare.

@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * CommentReaction Model
- *
  * @property int $id
  * @property int|null $hub_id
  * @property int $comment_id

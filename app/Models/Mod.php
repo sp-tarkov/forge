@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
+use App\Contracts\Trackable;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
@@ -28,11 +29,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
 /**
- * Mod Model
- *
  * @property int $id
  * @property int|null $hub_id
  * @property string $guid
@@ -65,7 +65,7 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModObserver::class])]
-class Mod extends Model implements Commentable, Reportable
+class Mod extends Model implements Commentable, Reportable, Trackable
 {
     /** @use HasComments<self> */
     use HasComments;
@@ -77,6 +77,7 @@ class Mod extends Model implements Commentable, Reportable
     use HasReports;
 
     use Searchable;
+    use Visitable;
 
     protected $appends = [
         'detail_url',
@@ -411,5 +412,45 @@ class Mod extends Model implements Commentable, Reportable
     public function getReportableUrl(): string
     {
         return $this->detail_url;
+    }
+
+    /**
+     * Get the URL to view this trackable resource.
+     */
+    public function getTrackingUrl(): string
+    {
+        return route('mod.show', [$this->id, $this->slug]);
+    }
+
+    /**
+     * Get the display title for this trackable resource.
+     */
+    public function getTrackingTitle(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get the snapshot data to store for this trackable resource.
+     *
+     * @return array<string, mixed>
+     */
+    public function getTrackingSnapshot(): array
+    {
+        $latestVersion = $this->versions()->latest()->first();
+
+        return [
+            'mod_name' => $this->name,
+            'mod_description' => $this->description,
+            'mod_version' => $latestVersion?->version,
+        ];
+    }
+
+    /**
+     * Get contextual information about this trackable resource.
+     */
+    public function getTrackingContext(): ?string
+    {
+        return $this->description;
     }
 }

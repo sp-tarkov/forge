@@ -13,8 +13,6 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
 /**
- * CommentSubscription Model
- *
  * @property int $id
  * @property int $user_id
  * @property int $commentable_id

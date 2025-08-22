@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\SpamStatus;
+use App\Enums\TrackingEventType;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModDependency;
 use App\Models\ModVersion;
+use App\Models\TrackingEvent;
 use App\Models\User;
 use App\Models\UserRole;
+use Faker\Generator;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Laravel\Prompts\Progress;
@@ -21,6 +25,16 @@ use function Laravel\Prompts\progress;
 
 class DatabaseSeeder extends Seeder
 {
+    private Generator $faker;
+
+    /**
+     * Create a new seeder instance.
+     */
+    public function __construct()
+    {
+        $this->faker = \Faker\Factory::create();
+    }
+
     /**
      * Seed the application's database.
      */
@@ -37,6 +51,7 @@ class DatabaseSeeder extends Seeder
             'user' => 100,
             'mod' => 200,
             'modVersion' => 1500,
+            'trackingEvents' => 800,
         ];
 
         // Licenses
@@ -115,7 +130,7 @@ class DatabaseSeeder extends Seeder
             label: 'Adding Mod Dependencies...',
             steps: $modVersions,
             callback: function (ModVersion $modVersion, Progress $progress) use ($mods) {
-                // 70% chance to not have dependencies
+                // 70% chance has no dependencies
                 if (rand(0, 9) >= 3) {
                     return;
                 }
@@ -224,6 +239,43 @@ class DatabaseSeeder extends Seeder
             }
         );
 
+        // Generate realistic tracking events
+        progress(
+            label: 'Adding Tracking Events...',
+            steps: $counts['trackingEvents'],
+            callback: function (int $step) use ($allUsers, $mods, $modVersions) {
+                $eventType = $this->getRandomEventType();
+                $user = null;
+                $trackable = null;
+
+                // 70% chance to be an authenticated user event
+                if (rand(0, 9) < 7) {
+                    $user = $allUsers->random();
+                }
+
+                // Get a trackable model for events that require one
+                if ($eventType->requiresTrackable()) {
+                    $trackable = $this->getTrackableForEventType($eventType, $mods, $modVersions);
+                }
+
+                // Create the tracking event
+                $trackingEvent = TrackingEvent::factory()
+                    ->eventType($eventType)
+                    ->make([
+                        'visitor_type' => $user ? User::class : null,
+                        'visitor_id' => $user?->id,
+                        'created_at' => $this->getRandomTimestamp(),
+                    ]);
+
+                if ($trackable) {
+                    $trackingEvent->visitable_type = get_class($trackable);
+                    $trackingEvent->visitable_id = $trackable->id;
+                }
+
+                $trackingEvent->saveQuietly();
+            }
+        );
+
         // Load the content of the tests/Mock/MarkdownContent.md and create a new Mod with the content as the description.
         $mod = Mod::factory()->hasVersions(3)->create([
             'name' => 'Markdown Test',
@@ -259,6 +311,93 @@ class DatabaseSeeder extends Seeder
             return SpamStatus::PENDING;
         } else {
             return SpamStatus::SPAM;
+        }
+    }
+
+    /**
+     * Get a random tracking event type with realistic distribution.
+     */
+    private function getRandomEventType(): TrackingEventType
+    {
+        $random = rand(1, 100);
+
+        if ($random <= 40) {
+            // 40% page visits and downloads (most common)
+            return TrackingEventType::MOD_DOWNLOAD;
+        } elseif ($random <= 60) {
+            // 20% authentication events
+            return $this->faker->randomElement([
+                TrackingEventType::LOGIN,
+                TrackingEventType::LOGOUT,
+                TrackingEventType::REGISTER,
+            ]);
+        } elseif ($random <= 80) {
+            // 20% comment interactions
+            return $this->faker->randomElement([
+                TrackingEventType::COMMENT_CREATE,
+                TrackingEventType::COMMENT_LIKE,
+                TrackingEventType::COMMENT_EDIT,
+                TrackingEventType::COMMENT_DELETE,
+            ]);
+        } else {
+            // 20% other events (mod management, versions, etc.)
+            return $this->faker->randomElement([
+                TrackingEventType::MOD_CREATE,
+                TrackingEventType::MOD_EDIT,
+                TrackingEventType::VERSION_CREATE,
+                TrackingEventType::VERSION_EDIT,
+                TrackingEventType::PASSWORD_CHANGE,
+            ]);
+        }
+    }
+
+    /**
+     * Get a trackable model for the given event type.
+     */
+    private function getTrackableForEventType(TrackingEventType $eventType, $mods, $modVersions): ?Model
+    {
+        return match ($eventType) {
+            TrackingEventType::MOD_DOWNLOAD,
+            TrackingEventType::MOD_CREATE,
+            TrackingEventType::MOD_EDIT,
+            TrackingEventType::MOD_DELETE,
+            TrackingEventType::MOD_REPORT => $mods->random(),
+
+            TrackingEventType::VERSION_CREATE,
+            TrackingEventType::VERSION_EDIT,
+            TrackingEventType::VERSION_DELETE => $modVersions->random(),
+
+            TrackingEventType::COMMENT_CREATE,
+            TrackingEventType::COMMENT_EDIT,
+            TrackingEventType::COMMENT_DELETE,
+            TrackingEventType::COMMENT_LIKE,
+            TrackingEventType::COMMENT_UNLIKE,
+            TrackingEventType::COMMENT_REPORT => Comment::inRandomOrder()->first(),
+
+            default => null,
+        };
+    }
+
+    /**
+     * Get a random timestamp with realistic distribution.
+     */
+    private function getRandomTimestamp(): \DateTime
+    {
+        $random = rand(1, 100);
+
+        // Weight recent events more heavily for realistic analytics
+        if ($random <= 30) {
+            // 30% in the last week
+            return $this->faker->dateTimeBetween('-1 week', 'now');
+        } elseif ($random <= 60) {
+            // 30% in the last month
+            return $this->faker->dateTimeBetween('-1 month', '-1 week');
+        } elseif ($random <= 85) {
+            // 25% in the last 3 months
+            return $this->faker->dateTimeBetween('-3 months', '-1 month');
+        } else {
+            // 15% older than 3 months (up to 6 months)
+            return $this->faker->dateTimeBetween('-6 months', '-3 months');
         }
     }
 }

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
+use App\Contracts\Trackable;
 use App\Enums\SpamStatus;
 use App\Observers\CommentObserver;
 use App\Support\Akismet\SpamCheckResult;
@@ -24,11 +25,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
 /**
- * Comment Model
- *
  * @property int $id
  * @property int|null $hub_id
  * @property int $user_id
@@ -56,13 +56,15 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Comment|null $root
  */
 #[ObservedBy([CommentObserver::class])]
-class Comment extends Model implements Reportable
+class Comment extends Model implements Reportable, Trackable
 {
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
 
     /** @use HasReports<Comment> */
     use HasReports;
+
+    use Visitable;
 
     /**
      * The relationship between a comment and it's user.
@@ -179,6 +181,54 @@ class Comment extends Model implements Reportable
         $tabHash = $commentable->getCommentTabHash();
 
         return $tabHash ? $tabHash.'-comment-'.$this->id : 'comment-'.$this->id;
+    }
+
+    /**
+     * Get the URL to view this trackable resource.
+     */
+    public function getTrackingUrl(): string
+    {
+        return $this->getUrl();
+    }
+
+    /**
+     * Get the display title for this trackable resource.
+     */
+    public function getTrackingTitle(): string
+    {
+        /** @var Commentable<Model> $commentable */
+        $commentable = $this->commentable;
+
+        if ($commentable instanceof User) {
+            return sprintf("Comment on %s's profile", $commentable->name);
+        }
+
+        if (method_exists($commentable, 'name') && $commentable->name) {
+            return 'Comment on '.$commentable->name;
+        }
+
+        return 'Comment';
+    }
+
+    /**
+     * Get the snapshot data to store for this trackable resource.
+     *
+     * @return array<string, mixed>
+     */
+    public function getTrackingSnapshot(): array
+    {
+        return [
+            'comment_body' => $this->body,
+            'comment_user_name' => $this->user?->name,
+        ];
+    }
+
+    /**
+     * Get contextual information about this trackable resource.
+     */
+    public function getTrackingContext(): ?string
+    {
+        return $this->body;
     }
 
     /**
