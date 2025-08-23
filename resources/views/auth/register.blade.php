@@ -39,7 +39,7 @@
 
             <div class="mt-4">
                 <x-label for="timezone" value="{{ __('Timezone') }}" />
-                <select id="timezone" name="timezone" class="block mt-1 w-full rounded-md border-0 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm" required>
+                <select id="timezone" name="timezone" data-tz-auto="true" class="block mt-1 w-full rounded-md border-0 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm" required>
                     <option value="" @selected(!old('timezone')) selected>{{ __('Select your timezone') }}</option>
                     @foreach (\DateTimeZone::listIdentifiers() as $tz)
                         <option value="{{ $tz }}" @selected(old('timezone') === $tz)>{{ $tz }}</option>
