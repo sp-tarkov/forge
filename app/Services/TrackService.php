@@ -30,6 +30,8 @@ class TrackService
      * Records comprehensive event data including user information, request details, device/browser information,
      * geolocation data, and any additional custom data. This method captures both authenticated and anonymous user
      * actions when triggered. The actual tracking is deferred to avoid blocking the response.
+     *
+     * @param  array<string, mixed>  $additionalData
      */
     public function event(TrackingEventType $eventType, ?Model $trackable = null, array $additionalData = []): void
     {
@@ -115,6 +117,9 @@ class TrackService
 
     /**
      * Extract contextual data for the event based on the event type and trackable model.
+     *
+     * @param  array<string, mixed>  $additionalData
+     * @return array<string, mixed>
      */
     private function extractEventData(TrackingEventType $eventType, ?Model $trackable, array $additionalData): array
     {

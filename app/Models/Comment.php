@@ -203,7 +203,7 @@ class Comment extends Model implements Reportable, Trackable
             return sprintf("Comment on %s's profile", $commentable->name);
         }
 
-        if (method_exists($commentable, 'name') && $commentable->name) {
+        if (method_exists($commentable, 'name') && property_exists($commentable, 'name') && $commentable->name) {
             return 'Comment on '.$commentable->name;
         }
 
@@ -219,7 +219,7 @@ class Comment extends Model implements Reportable, Trackable
     {
         return [
             'comment_body' => $this->body,
-            'comment_user_name' => $this->user?->name,
+            'comment_user_name' => $this->user->name,
         ];
     }
 

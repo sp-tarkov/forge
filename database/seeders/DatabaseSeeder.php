@@ -269,7 +269,7 @@ class DatabaseSeeder extends Seeder
 
                 if ($trackable) {
                     $trackingEvent->visitable_type = get_class($trackable);
-                    $trackingEvent->visitable_id = $trackable->id;
+                    $trackingEvent->visitable_id = $trackable->getKey();
                 }
 
                 $trackingEvent->saveQuietly();
@@ -353,6 +353,9 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Get a trackable model for the given event type.
+     *
+     * @param  \Illuminate\Support\Collection<int, Mod>  $mods
+     * @param  \Illuminate\Support\Collection<int, ModVersion>  $modVersions
      */
     private function getTrackableForEventType(TrackingEventType $eventType, $mods, $modVersions): ?Model
     {

@@ -17,10 +17,10 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string|null $event_name
- * @property array|null $event_data
+ * @property array<string, mixed>|null $event_data
  * @property string|null $url
  * @property string|null $referer
- * @property array|null $languages
+ * @property array<int, string>|null $languages
  * @property string|null $useragent
  * @property string|null $device
  * @property string|null $platform
@@ -96,6 +96,8 @@ class TrackingEvent extends Model
 
     /**
      * Get the user-friendly display name for this event.
+     *
+     * @return Attribute<string, never>
      */
     protected function eventDisplayName(): Attribute
     {
@@ -120,6 +122,8 @@ class TrackingEvent extends Model
      * Get contextual information about this tracking event.
      *
      * Returns details that provide context about what was tracked, such as comment snippets, model names, etc...
+     *
+     * @return Attribute<string|null, never>
      */
     protected function eventContext(): Attribute
     {
@@ -164,6 +168,8 @@ class TrackingEvent extends Model
      *
      * Returns a URL that's relevant to the tracked event, such as a link
      * to the model that was interacted with or the original page URL.
+     *
+     * @return Attribute<string|null, never>
      */
     protected function eventUrl(): Attribute
     {

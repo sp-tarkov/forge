@@ -55,7 +55,10 @@ class TrackingEventFactory extends Factory
             'ip' => $this->faker->ipv4(),
             'country_code' => $this->faker->countryCode(),
             'country_name' => $this->faker->country(),
-            'region_name' => $this->faker->state(),
+            'region_name' => $this->faker->randomElement([
+                'California', 'New York', 'Texas', 'Florida', 'Illinois',
+                'Pennsylvania', 'Ohio', 'Georgia', 'North Carolina', 'Michigan',
+            ]),
             'city_name' => $this->faker->city(),
             'latitude' => $this->faker->latitude(),
             'longitude' => $this->faker->longitude(),
@@ -72,7 +75,7 @@ class TrackingEventFactory extends Factory
         // Add trackable model if event type requires it
         if ($eventType->requiresTrackable()) {
             $trackable = $this->createTrackableModel($eventType);
-            if ($trackable) {
+            if ($trackable instanceof Trackable) {
                 $data['visitable_type'] = get_class($trackable);
                 $data['visitable_id'] = $trackable->getKey();
 
@@ -140,10 +143,12 @@ class TrackingEventFactory extends Factory
      */
     public function anonymous(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'visitor_type' => null,
-            'visitor_id' => null,
-        ]);
+        return $this->state(function (array $attributes): array {
+            return [
+                'visitor_type' => null,
+                'visitor_id' => null,
+            ];
+        });
     }
 
     /**
@@ -151,10 +156,12 @@ class TrackingEventFactory extends Factory
      */
     public function authenticated(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'visitor_type' => User::class,
-            'visitor_id' => User::factory(),
-        ]);
+        return $this->state(function (array $attributes): array {
+            return [
+                'visitor_type' => User::class,
+                'visitor_id' => User::factory(),
+            ];
+        });
     }
 
     /**
@@ -168,7 +175,7 @@ class TrackingEventFactory extends Factory
             // Add trackable model if required
             if ($eventType->requiresTrackable()) {
                 $trackable = $this->createTrackableModel($eventType);
-                if ($trackable) {
+                if ($trackable instanceof Trackable) {
                     $data['visitable_type'] = get_class($trackable);
                     $data['visitable_id'] = $trackable->getKey();
 
@@ -188,8 +195,10 @@ class TrackingEventFactory extends Factory
      */
     public function recent(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'created_at' => $this->faker->dateTimeBetween('-30 days', 'now'),
-        ]);
+        return $this->state(function (array $attributes): array {
+            return [
+                'created_at' => $this->faker->dateTimeBetween('-30 days', 'now'),
+            ];
+        });
     }
 }

@@ -74,6 +74,9 @@ class VisitorAnalytics extends Component
      */
     public bool $showEventModal = false;
 
+    /**
+     * @var array<string, mixed>|null
+     */
     public ?array $selectedEvent = null;
 
     /**
@@ -90,6 +93,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Get paginated tracking events based on current filters.
+     *
+     * @return LengthAwarePaginator<int, TrackingEvent>
      */
     #[Computed]
     public function events(): LengthAwarePaginator
@@ -126,6 +131,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Get the active filters for breadcrumb display.
+     *
+     * @return array<int, string>
      */
     public function getActiveFilters(): array
     {
@@ -191,6 +198,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Get analytics statistics based on all current filters.
+     *
+     * @return array<string, mixed>
      */
     public function getStats(): array
     {
@@ -262,6 +271,7 @@ class VisitorAnalytics extends Component
             'country' => $this->countryFilter = $value,
             'region' => $this->regionFilter = $value,
             'city' => $this->cityFilter = $value,
+            default => null,
         };
 
         $this->resetPage();
@@ -281,13 +291,13 @@ class VisitorAnalytics extends Component
             'event_display_name' => $event->event_display_name,
             'event_context' => $event->event_context,
             'event_data' => $event->event_data,
-            'method' => $event->method,
-            'request' => $event->request,
+            'method' => $event->event_data['method'] ?? null,
+            'request' => $event->event_data['request'] ?? null,
             'url' => $event->url,
             'referer' => $event->referer,
             'languages' => $event->languages,
             'useragent' => $event->useragent,
-            'headers' => $event->headers,
+            'headers' => $event->event_data['headers'] ?? null,
             'device' => $event->device,
             'platform' => $event->platform,
             'browser' => $event->browser,
@@ -310,9 +320,9 @@ class VisitorAnalytics extends Component
                 'name' => $event->user->name,
                 'email' => $event->user->email,
             ] : null,
-            'trackable' => $event->trackable ? [
+            'trackable' => $event->trackable !== null ? [
                 'type' => $event->trackable::class,
-                'id' => $event->trackable->id,
+                'id' => $event->trackable->getKey(),
                 'data' => $event->trackable->toArray(),
             ] : null,
         ];
@@ -331,6 +341,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Apply all active filters to the given query.
+     *
+     * @param  Builder<TrackingEvent>  $query
      */
     private function applyFilters(Builder $query): void
     {
@@ -343,6 +355,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Apply date range filters to the query.
+     *
+     * @param  Builder<TrackingEvent>  $query
      */
     private function applyDateFilters(Builder $query): void
     {
@@ -357,6 +371,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Apply event-specific filters to the query.
+     *
+     * @param  Builder<TrackingEvent>  $query
      */
     private function applyEventFilters(Builder $query): void
     {
@@ -371,6 +387,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Apply technical filters (IP, browser, platform, device, referer) to the query.
+     *
+     * @param  Builder<TrackingEvent>  $query
      */
     private function applyTechnicalFilters(Builder $query): void
     {
@@ -405,6 +423,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Apply geographic filters to the query.
+     *
+     * @param  Builder<TrackingEvent>  $query
      */
     private function applyGeographicFilters(Builder $query): void
     {
@@ -423,6 +443,8 @@ class VisitorAnalytics extends Component
 
     /**
      * Apply user-related filters to the query.
+     *
+     * @param  Builder<TrackingEvent>  $query
      */
     private function applyUserFilters(Builder $query): void
     {
@@ -444,6 +466,9 @@ class VisitorAnalytics extends Component
 
     /**
      * Get top events statistics.
+     *
+     * @param  Builder<TrackingEvent>  $query
+     * @return Collection<int, TrackingEvent>
      */
     private function getTopEvents(Builder $query): Collection
     {
@@ -457,6 +482,9 @@ class VisitorAnalytics extends Component
 
     /**
      * Get top browsers statistics.
+     *
+     * @param  Builder<TrackingEvent>  $query
+     * @return Collection<int, TrackingEvent>
      */
     private function getTopBrowsers(Builder $query): Collection
     {
@@ -471,6 +499,9 @@ class VisitorAnalytics extends Component
 
     /**
      * Get top platforms statistics.
+     *
+     * @param  Builder<TrackingEvent>  $query
+     * @return Collection<int, TrackingEvent>
      */
     private function getTopPlatforms(Builder $query): Collection
     {
@@ -485,6 +516,9 @@ class VisitorAnalytics extends Component
 
     /**
      * Get top countries statistics.
+     *
+     * @param  Builder<TrackingEvent>  $query
+     * @return Collection<int, TrackingEvent>
      */
     private function getTopCountries(Builder $query): Collection
     {
@@ -503,7 +537,6 @@ class VisitorAnalytics extends Component
     public function render(): View
     {
         return view('livewire.admin.visitor-analytics', [
-            'events' => $this->events,
             'stats' => $this->getStats(),
         ])->layout('components.layouts.base', [
             'title' => 'Event Analytics - The Forge',

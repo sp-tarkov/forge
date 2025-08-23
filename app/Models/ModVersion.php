@@ -281,8 +281,8 @@ class ModVersion extends Model implements Trackable
     {
         return [
             'version_name' => $this->version,
-            'mod_name' => $this->mod?->name,
-            'version_changelog' => $this->changelog,
+            'mod_name' => $this->mod->name,
+            'version_changelog' => $this->description,
         ];
     }
 
@@ -291,6 +291,6 @@ class ModVersion extends Model implements Trackable
      */
     public function getTrackingContext(): ?string
     {
-        return sprintf('Version %s of %s', $this->version, $this->mod?->name);
+        return sprintf('Version %s of %s', $this->version, $this->mod->name);
     }
 }
