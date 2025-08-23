@@ -291,7 +291,6 @@ describe('TrackService', function (): void {
             // The service should have the geolocation service as a dependency
             $reflection = new ReflectionClass($this->trackService);
             $property = $reflection->getProperty('geolocationService');
-            $property->setAccessible(true);
 
             expect($property->getValue($this->trackService))->toBe($this->geolocationService);
         });

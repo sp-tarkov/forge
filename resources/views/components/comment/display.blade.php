@@ -81,6 +81,7 @@
             <div class="mt-2.5">
                 <x-comment.form
                     form-key="formStates.reply-{{ $comment->id }}.body"
+                    data-test="reply-body-{{ $comment->id }}"
                     submit-action="createReply({{ $comment->id }})"
                     submit-text="{{ __('Post Reply') }}"
                     cancel-action="toggleReplyForm({{ $comment->id }})"
@@ -96,6 +97,7 @@
             <div class="mt-2.5">
                 <x-comment.form
                     form-key="formStates.edit-{{ $comment->id }}.body"
+                    data-test="edit-body-{{ $comment->id }}"
                     submit-action="updateComment({{ $comment->id }})"
                     submit-text="{{ __('Update Comment') }}"
                     cancel-action="toggleEditForm({{ $comment->id }})"

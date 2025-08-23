@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
-use Laravel\Dusk\Dusk;
 use Livewire\Livewire;
 use Override;
 use SocialiteProviders\Discord\Provider;
@@ -114,8 +113,6 @@ class AppServiceProvider extends ServiceProvider
             )
         );
 
-        // Set the Dusk attribute to a valid data-* attribute.
-        Dusk::selectorHtmlAttribute('data-dusk');
     }
 
     /**

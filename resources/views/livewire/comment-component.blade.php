@@ -42,6 +42,7 @@
 
                 <flux:button
                     wire:click="toggleSubscription"
+                    data-test="subscription-toggle"
                     variant="{{ $isSubscribed ? 'primary' : 'outline' }}"
                     icon="{{ $isSubscribed ? 'bell' : 'bell-alert' }}"
                     size="sm"
@@ -61,6 +62,7 @@
                 <div class="flex-1">
                     <x-comment.form
                         form-key="newCommentBody"
+                        data-test="new-comment-body"
                         submit-action="createComment"
                         submit-text="{{ __('Post Comment') }}"
                     />
@@ -166,7 +168,7 @@
                 <flux:button wire:click="$set('showDeleteModal', false)" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
-                <flux:button wire:click="deleteComment" variant="primary" size="sm" icon="trash" class="bg-red-600 hover:bg-red-700">
+                <flux:button wire:click="deleteComment" data-test="confirm-delete-comment" variant="primary" size="sm" icon="trash" class="bg-red-600 hover:bg-red-700">
                     {{ __('Remove Comment') }}
                 </flux:button>
             </div>
@@ -241,7 +243,7 @@
                         {{ __('You are about to permanently remove this comment. This action cannot be undone.') }}
                     @endif
                 </flux:text>
-                
+
                 @if ($hardDeleteDescendantCount > 0)
                     <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg p-4">
                         <div class="flex items-start gap-3">
@@ -312,7 +314,7 @@
                 <flux:button wire:click="$set('showPinModal', false)" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
-                <flux:button wire:click="pinComment" variant="primary" size="sm" icon="bookmark" class="bg-blue-600 hover:bg-blue-700 text-white">
+                <flux:button wire:click="pinComment" data-test="confirm-pin-comment" variant="primary" size="sm" icon="bookmark" class="bg-blue-600 hover:bg-blue-700 text-white">
                     {{ __('Pin Comment') }}
                 </flux:button>
             </div>
@@ -351,7 +353,7 @@
                 <flux:button wire:click="$set('showUnpinModal', false)" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
-                <flux:button wire:click="unpinComment" variant="primary" size="sm" icon="bookmark-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
+                <flux:button wire:click="unpinComment" data-test="confirm-unpin-comment" variant="primary" size="sm" icon="bookmark-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
                     {{ __('Unpin Comment') }}
                 </flux:button>
             </div>

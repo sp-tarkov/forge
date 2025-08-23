@@ -19,6 +19,7 @@
                     type="button"
                     class="relative flex items-center gap-1 transition {{ auth()->check() && $comment->reactions->contains('user_id', auth()->id()) ? 'text-red-400' : '' }} hover:text-red-400"
                     wire:click="toggleReaction({{ $comment->id }})"
+                    data-test="reaction-button-{{ $comment->id }}"
                     x-on:click="if (!isAnimating) animate()"
                     :disabled="isAnimating"
                     x-data="{
@@ -54,6 +55,7 @@
         @if (\App\Support\CachedGate::allows('update', $comment))
             <button type="button"
                     wire:click="toggleEditForm({{ $comment->id }})"
+                    data-test="edit-button-{{ $comment->id }}"
                     x-show="canEdit"
                     class="hover:underline cursor-pointer text-xs">
                 {{ __('Edit') }}
@@ -63,6 +65,7 @@
         @if (\App\Support\CachedGate::allows('delete', $comment))
             <button type="button"
                     wire:click="confirmDeleteComment({{ $comment->id }})"
+                    data-test="delete-button-{{ $comment->id }}"
                     class="hover:underline cursor-pointer text-xs text-red-500 hover:text-red-700">
                 {{ __('Remove') }}
             </button>
@@ -84,7 +87,7 @@
         />
 
         @auth
-            <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" class="hover:underline cursor-pointer text-xs">
+            <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" data-test="reply-button-{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
                 {{ __('Reply') }}
             </button>
         @endauth
@@ -93,6 +96,7 @@
     @if ($showRepliesToggle && $manager->getDescendantCount($comment->id) > 0)
         <button type="button"
                 wire:click="toggleDescendants({{ $comment->id }})"
+                data-test="toggle-replies-{{ $comment->id }}"
                 class="hover:underline cursor-pointer text-xs">
             {{ ($manager->showDescendants[$comment->id] ?? false) ? 'Hide' : 'Show' }} Replies ({{ $manager->getDescendantCount($comment->id) }})
         </button>

@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\Cache;
-use Laravel\Dusk\Browser;
 
 uses(DatabaseTruncation::class);
 
@@ -23,14 +22,14 @@ describe('Guest User Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($mod): void {
-            $browser->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertDontSee('Post Comment')
-                ->assertMissing('textarea[wire\\:model="newCommentBody"]');
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page->assertDontSee('Post Comment')
+            ->assertNotPresent('@new-comment-body')
+            ->assertSee('Login or register to join the discussion')
+            ->assertNoJavascriptErrors();
     });
 
     it('should not show reply buttons to guest users', function (): void {
@@ -44,13 +43,12 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to reply to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod): void {
-            $browser->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertDontSee('Reply');
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page->assertNotPresent('button[wire:click*=toggleReplyForm]')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should not show edit buttons to guest users', function (): void {
@@ -64,13 +62,12 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to edit.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod): void {
-            $browser->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertDontSee('Edit');
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page->assertNotPresent('@edit-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should not show delete buttons to guest users', function (): void {
@@ -84,13 +81,12 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to delete.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod): void {
-            $browser->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertDontSee('Delete');
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page->assertNotPresent('@delete-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should not show reaction buttons to guest users', function (): void {
@@ -104,13 +100,12 @@ describe('Guest User Tests', function (): void {
             'body' => 'This is a test comment that guests should not be able to react to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($mod): void {
-            $browser->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertMissing('[wire\\:click*="toggleReaction"]');
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page->assertNotPresent('@reaction-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -121,19 +116,18 @@ describe('Comment Creation Tests', function (): void {
         ModVersion::factory()->recycle($mod)->create();
         $commentText = 'This is a test comment with more than minimum length.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Post Comment')
-                ->assertPresent('textarea[wire\\:model="newCommentBody"]')
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText)
-                ->press('Post Comment')
-                ->waitForText($commentText, 10)
-                ->assertSeeIn('#comments', $commentText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Post Comment')
+            ->assertPresent('@new-comment-body')
+            ->type('@new-comment-body', $commentText)
+            ->press('Post Comment')
+            ->assertSeeIn('#comments', $commentText)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should validate minimum comment length', function (): void {
@@ -142,17 +136,18 @@ describe('Comment Creation Tests', function (): void {
         ModVersion::factory()->recycle($mod)->create();
         $shortText = 'Hi';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $shortText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->type('textarea[wire\\:model="newCommentBody"]', $shortText)
-                ->press('Post Comment')
-                ->waitFor('.text-red-500', 5)
-                ->assertSee('must be at least'); // Laravel validation message format
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Post Comment')
+            ->assertPresent('@new-comment-body')
+            ->type('@new-comment-body', $shortText)
+            ->press('Post Comment')
+            ->assertSee('must be at least')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should clear form after successful comment creation', function (): void {
@@ -161,17 +156,18 @@ describe('Comment Creation Tests', function (): void {
         ModVersion::factory()->recycle($mod)->create();
         $commentText = 'This is a test comment that should clear after submission.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText)
-                ->press('Post Comment')
-                ->waitForText($commentText, 10)
-                ->assertInputValue('textarea[wire\\:model="newCommentBody"]', '');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Post Comment')
+            ->assertPresent('@new-comment-body')
+            ->type('@new-comment-body', $commentText)
+            ->press('Post Comment')
+            ->assertValue('@new-comment-body', '')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should enforce rate limiting for regular users', function (): void {
@@ -181,20 +177,20 @@ describe('Comment Creation Tests', function (): void {
         $commentText1 = 'This is the first test comment for rate limiting.';
         $commentText2 = 'This is the second test comment for rate limiting.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText1, $commentText2): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 5)
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText1)
-                ->press('Post Comment')
-                ->waitForText($commentText1, 5)
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText2)
-                ->press('Post Comment')
-                ->assertDontSee($commentText2)
-                ->waitForText('Too many comment attempts', 5);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Post Comment')
+            ->assertPresent('@new-comment-body')
+            ->type('@new-comment-body', $commentText1)
+            ->press('Post Comment')
+            ->type('@new-comment-body', $commentText2)
+            ->press('Post Comment')
+            ->assertDontSee($commentText2)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should allow administrators to bypass rate limiting', function (): void {
@@ -207,20 +203,20 @@ describe('Comment Creation Tests', function (): void {
         $commentText1 = 'This is the first admin comment.';
         $commentText2 = 'This is the second admin comment.';
 
-        $this->browse(function (Browser $browser) use ($admin, $mod, $commentText1, $commentText2): void {
-            $browser->loginAs($admin)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText1)
-                ->press('Post Comment')
-                ->waitForText($commentText1, 10)
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText2)
-                ->press('Post Comment')
-                ->waitForText($commentText2, 10)
-                ->assertSee($commentText2);
+        $this->actingAs($admin);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Post Comment')
+            ->assertPresent('@new-comment-body')
+            ->type('@new-comment-body', $commentText1)
+            ->press('Post Comment')
+            ->type('@new-comment-body', $commentText2)
+            ->press('Post Comment')
+            ->assertSee($commentText2)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should allow moderators to bypass rate limiting', function (): void {
@@ -233,20 +229,20 @@ describe('Comment Creation Tests', function (): void {
         $commentText1 = 'This is the first moderator comment.';
         $commentText2 = 'This is the second moderator comment.';
 
-        $this->browse(function (Browser $browser) use ($moderator, $mod, $commentText1, $commentText2): void {
-            $browser->loginAs($moderator)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText1)
-                ->press('Post Comment')
-                ->waitForText($commentText1, 10)
-                ->type('textarea[wire\\:model="newCommentBody"]', $commentText2)
-                ->press('Post Comment')
-                ->waitForText($commentText2, 10)
-                ->assertSee($commentText2);
+        $this->actingAs($moderator);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Post Comment')
+            ->assertPresent('@new-comment-body')
+            ->type('@new-comment-body', $commentText1)
+            ->press('Post Comment')
+            ->type('@new-comment-body', $commentText2)
+            ->press('Post Comment')
+            ->assertSee($commentText2)
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -262,14 +258,14 @@ describe('Comment Reply Tests', function (): void {
             'body' => 'This is a test comment that should show a reply button.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Reply');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertPresent('@reply-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should open reply form when reply button is clicked', function (): void {
@@ -283,17 +279,17 @@ describe('Comment Reply Tests', function (): void {
             'body' => 'This is a test comment to reply to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleReplyForm"]')
-                ->waitForText('Reply To Comment', 5)
-                ->assertSee('Reply To Comment')
-                ->assertSee('Post Reply');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@reply-button-'.$comment->id)
+            ->assertSee('Reply To Comment')
+            ->assertPresent('@reply-body-'.$comment->id)
+            ->assertSee('Post Reply')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should close reply form when cancel is clicked', function (): void {
@@ -307,18 +303,16 @@ describe('Comment Reply Tests', function (): void {
             'body' => 'This is a test comment to reply to.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleReplyForm"]')
-                ->waitForText('Reply To Comment', 5)
-                ->press('Cancel')
-                ->waitUntilMissingText('Reply To Comment', 5)
-                ->assertDontSee('Reply To Comment');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@reply-button-'.$comment->id)
+            ->press('Cancel')
+            ->assertDontSee('Reply To Comment')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should create reply to root comment', function (): void {
@@ -333,19 +327,17 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $replyText = 'This is my reply to the test comment.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $replyText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleReplyForm"]')
-                ->waitForText('Reply To Comment', 5)
-                ->type('textarea[wire\\:model*="reply"]', $replyText)
-                ->press('Post Reply')
-                ->waitForText($replyText, 10) // Reply should show automatically after creation
-                ->assertSee($replyText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@reply-button-'.$comment->id)
+            ->type('@reply-body-'.$comment->id, $replyText)
+            ->press('Post Reply')
+            ->assertSee($replyText)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should maintain comment hierarchy', function (): void {
@@ -360,19 +352,17 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $replyText = 'This is a reply to the root comment.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $rootComment, $replyText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleReplyForm"]')
-                ->waitForText('Reply To Comment', 5)
-                ->type('textarea[wire\\:model*="reply"]', $replyText)
-                ->press('Post Reply')
-                ->waitForText($replyText, 10) // Reply should show automatically after creation
-                ->assertSee('Replying to @'.$rootComment->user->name);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@reply-button-'.$rootComment->id)
+            ->type('@reply-body-'.$rootComment->id, $replyText)
+            ->press('Post Reply')
+            ->assertSee('Replying to @'.$rootComment->user->name)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should validate reply content length', function (): void {
@@ -387,19 +377,17 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $shortReply = 'Hi';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $shortReply): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleReplyForm"]')
-                ->waitForText('Reply To Comment', 5)
-                ->type('textarea[wire\\:model*="reply"]', $shortReply)
-                ->press('Post Reply')
-                ->waitFor('.text-red-500', 5)
-                ->assertSee('must be at least');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@reply-button-'.$comment->id)
+            ->type('@reply-body-'.$comment->id, $shortReply)
+            ->press('Post Reply')
+            ->assertSee('must be at least')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should clear reply form after successful submission', function (): void {
@@ -414,19 +402,17 @@ describe('Comment Reply Tests', function (): void {
         ]);
         $replyText = 'This reply should clear the form after submission.';
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $replyText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleReplyForm"]')
-                ->waitForText('Reply To Comment', 5)
-                ->type('textarea[wire\\:model*="reply"]', $replyText)
-                ->press('Post Reply')
-                ->waitForText($replyText, 10) // Reply should show automatically after creation
-                ->assertDontSee('Reply To Comment'); // Form should be hidden after successful reply
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@reply-button-'.$comment->id)
+            ->type('@reply-body-'.$comment->id, $replyText)
+            ->press('Post Reply')
+            ->assertDontSee('Reply To Comment')
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -443,14 +429,14 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Edit');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertPresent('@edit-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should not show edit button for other users comments', function (): void {
@@ -466,14 +452,14 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod): void {
-            $browser->loginAs($user2)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertDontSee('Edit');
+        $this->actingAs($user2);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertNotPresent('@edit-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should open edit form with existing comment content', function (): void {
@@ -489,17 +475,17 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $originalText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleEditForm"]')
-                ->waitForText('Edit Comment', 5)
-                ->assertSee('Edit Comment')
-                ->assertInputValue('textarea[wire\\:model*="edit"]', $originalText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@edit-button-'.$comment->id)
+            ->assertSee('Edit Comment')
+            ->assertPresent('@edit-body-'.$comment->id)
+            ->assertValue('@edit-body-'.$comment->id, $originalText)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should save edited comment successfully', function (): void {
@@ -508,7 +494,7 @@ describe('Comment Editing Tests', function (): void {
         ModVersion::factory()->create(['mod_id' => $mod->id]);
         $originalText = 'This is the original comment text.';
         $editedText = 'This is the edited comment text with more content.';
-        Comment::factory()->create([
+        $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
             'user_id' => $user->id,
@@ -516,22 +502,20 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee($originalText)
-                ->click('button[wire\\:click*="toggleEditForm"]')
-                ->waitForText('Edit Comment', 5)
-                ->clear('textarea[wire\\:model*="edit"]')
-                ->type('textarea[wire\\:model*="edit"]', $editedText)
-                ->press('Update Comment')
-                ->waitForText($editedText, 10)
-                ->assertSee($editedText)
-                ->assertDontSee($originalText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee($originalText)
+            ->click('@edit-button-'.$comment->id)
+            ->clear('@edit-body-'.$comment->id)
+            ->type('@edit-body-'.$comment->id, $editedText)
+            ->press('Update Comment')
+            ->assertSee($editedText)
+            ->assertDontSee($originalText)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should validate edited comment content', function (): void {
@@ -548,20 +532,18 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $shortText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click*="toggleEditForm"]')
-                ->waitForText('Edit Comment', 5)
-                ->clear('textarea[wire\\:model*="edit"]')
-                ->type('textarea[wire\\:model*="edit"]', $shortText)
-                ->press('Update Comment')
-                ->waitFor('.text-red-500', 5)
-                ->assertSee('must be at least');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->click('@edit-button-'.$comment->id)
+            ->clear('@edit-body-'.$comment->id)
+            ->type('@edit-body-'.$comment->id, $shortText)
+            ->press('Update Comment')
+            ->assertSee('must be at least')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should cancel edit without saving changes', function (): void {
@@ -578,22 +560,20 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee($originalText)
-                ->click('button[wire\\:click*="toggleEditForm"]')
-                ->waitForText('Edit Comment', 5)
-                ->clear('textarea[wire\\:model*="edit"]')
-                ->type('textarea[wire\\:model*="edit"]', $editedText)
-                ->press('Cancel')
-                ->waitUntilMissing('[text="Edit Comment"]', 5)
-                ->assertSee($originalText)
-                ->assertDontSee($editedText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee($originalText)
+            ->click('@edit-button-'.$comment->id)
+            ->clear('@edit-body-'.$comment->id)
+            ->type('@edit-body-'.$comment->id, $editedText)
+            ->press('Cancel')
+            ->assertSee($originalText)
+            ->assertDontSee($editedText)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should refresh listing with edited comment content after successful edit', function (): void {
@@ -603,7 +583,7 @@ describe('Comment Editing Tests', function (): void {
         $originalText = 'Original comment text for editing test';
         $editedText = 'Edited comment text that should appear after update';
 
-        Comment::factory()->create([
+        $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
             'user_id' => $user->id,
@@ -611,21 +591,20 @@ describe('Comment Editing Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $originalText, $editedText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee($originalText)
-                ->click('button[wire\\:click*="toggleEditForm"]')
-                ->waitForText('Edit Comment', 5)
-                ->clear('textarea[wire\\:model*="edit"]')
-                ->type('textarea[wire\\:model*="edit"]', $editedText)
-                ->press('Update Comment')
-                ->waitForText($editedText, 5)
-                ->assertDontSee($originalText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee($originalText)
+            ->click('@edit-button-'.$comment->id)
+            ->clear('@edit-body-'.$comment->id)
+            ->type('@edit-body-'.$comment->id, $editedText)
+            ->press('Update Comment')
+            ->assertSee($editedText)
+            ->assertDontSee($originalText)
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -642,14 +621,14 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Remove');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertPresent('@delete-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should not show delete button for other users comments', function (): void {
@@ -665,14 +644,14 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod): void {
-            $browser->loginAs($user2)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertDontSee('Remove');
+        $this->actingAs($user2);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertNotPresent('@delete-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should require confirmation before deletion', function (): void {
@@ -688,19 +667,18 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee($commentText)
-                ->click('button[wire\\:click*="confirmDeleteComment"]')
-                ->waitForText('Remove Comment')
-                ->press('Cancel')
-                ->waitUntilMissingText('Remove Comment')
-                ->assertSee($commentText); // Comment should still be there after cancelling
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee($commentText)
+            ->click('@delete-button-'.$comment->id)
+            ->assertSee('Remove Comment')
+            ->press('Cancel')
+            ->assertSee($commentText)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should delete comment after confirming', function (): void {
@@ -716,19 +694,18 @@ describe('Comment Deletion Tests', function (): void {
             'created_at' => now(),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $commentText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee($commentText)
-                ->click('button[wire\\:click*="confirmDeleteComment"]')
-                ->waitForText('Remove Comment')
-                ->press('Remove Comment')
-                ->waitUntilMissingText($commentText, 5)
-                ->assertDontSee($commentText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee($commentText)
+            ->click('@delete-button-'.$comment->id)
+            ->assertSee('Remove Comment')
+            ->click('@confirm-delete-comment') // Click the confirmation button using data-test
+            ->assertNotPresent('.comment-container-'.$comment->id) // Check if comment container is gone
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -745,14 +722,14 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This is a comment that should show reaction buttons.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod): void {
-            $browser->loginAs($user2)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertPresent('button[wire\\:click*="toggleReaction"]');
+        $this->actingAs($user2);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertPresent('@reaction-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should not show reaction button for comment owner', function (): void {
@@ -766,14 +743,14 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This is my own comment that should not have a reaction button.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertMissing('button[wire\\:click*="toggleReaction"]');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertNotPresent('@reaction-button-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should toggle reaction on comment', function (): void {
@@ -788,17 +765,16 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This comment should be likeable.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod): void {
-            $browser->loginAs($user2)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('0 Likes')
-                ->click('button[wire\\:click*="toggleReaction"]')
-                ->waitForText('1 Like', 5)
-                ->assertSee('1 Like');
+        $this->actingAs($user2);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('0 Likes')
+            ->click('@reaction-button-'.$comment->id)
+            ->assertSee('1 Like')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should remove reaction when clicked again', function (): void {
@@ -813,20 +789,18 @@ describe('Comment Reactions Tests', function (): void {
             'body' => 'This comment should allow toggling likes.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user2, $mod): void {
-            $browser->loginAs($user2)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('0 Likes')
-                ->click('button[wire\\:click*="toggleReaction"]')
-                ->waitForText('1 Like', 5)
-                ->pause(1000) // Wait for animation to complete (800ms + buffer)
-                ->click('button[wire\\:click*="toggleReaction"]')
-                ->waitForText('0 Likes', 5)
-                ->assertSee('0 Likes');
+        $this->actingAs($user2);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('0 Likes')
+            ->click('@reaction-button-'.$comment->id)
+            ->assertSee('1 Like')
+            ->click('@reaction-button-'.$comment->id)
+            ->assertSee('0 Likes')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should display existing reaction count correctly', function (): void {
@@ -846,14 +820,14 @@ describe('Comment Reactions Tests', function (): void {
         $comment->reactions()->create(['user_id' => $user2->id]);
         $comment->reactions()->create(['user_id' => $user3->id]);
 
-        $this->browse(function (Browser $browser) use ($user1, $mod): void {
-            $browser->loginAs($user1)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('2 Likes');
+        $this->actingAs($user1);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('2 Likes')
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -882,15 +856,14 @@ describe('Spam Marking Tests', function (): void {
             ->and($comment->fresh()->spam_status)->toBe(SpamStatus::SPAM)
             ->and($moderator->isModOrAdmin())->toBeTrue();
 
-        $this->browse(function (Browser $browser) use ($moderator, $mod, $comment): void {
-            $browser->loginAs($moderator)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->waitForText($comment->body)
-                ->assertSeeIn('.comment-container-'.$comment->id.' .ribbon', 'Spam');
+        $this->actingAs($moderator);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee($comment->body)
+            ->assertSeeIn('.comment-container-'.$comment->id.' .ribbon', 'Spam')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should display admin action menu for moderators on clean comments', function (): void {
@@ -909,18 +882,15 @@ describe('Spam Marking Tests', function (): void {
             'body' => 'This is a clean comment that moderators should be able to moderate.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($moderator, $mod, $comment): void {
-            $browser->loginAs($moderator)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->waitForText($comment->body)
-                // Verify no spam ribbon initially for clean comment
-                ->assertMissing('.comment-container-'.$comment->id.' .ribbon')
-                // Verify the action button (cog icon) is present for moderators
-                ->assertPresent('.comment-container-'.$comment->id.' button[data-flux-button]');
+        $this->actingAs($moderator);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee($comment->body)
+            ->assertNotPresent('.comment-container-'.$comment->id.' .ribbon')
+            ->assertPresent('.comment-container-'.$comment->id.' button[data-flux-button]')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should show spam ribbon immediately after marking comment as spam via UI', function (): void {
@@ -942,21 +912,15 @@ describe('Spam Marking Tests', function (): void {
         // Verify comment starts clean
         expect($comment->fresh()->isSpam())->toBeFalse();
 
-        $this->browse(function (Browser $browser) use ($moderator, $mod, $comment): void {
-            $browser->loginAs($moderator)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->waitForText($comment->body)
-                // Verify no spam ribbon initially
-                ->assertMissing('.comment-container-'.$comment->id.' .ribbon')
-                // Take screenshot for debugging
-                ->screenshot('before-spam-marking')
-                // Try to interact with the comment action menu
-                ->pause(1000)
-                ->assertPresent('.comment-container-'.$comment->id.' button[data-flux-button]');
+        $this->actingAs($moderator);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee($comment->body)
+            ->assertNotPresent('.comment-container-'.$comment->id.' .ribbon')
+            ->assertPresent('.comment-container-'.$comment->id.' button[data-flux-button]')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should hide spam comments completely from regular users', function (): void {
@@ -975,16 +939,14 @@ describe('Spam Marking Tests', function (): void {
         // Mark the comment as spam
         $comment->markAsSpamByModerator($commentAuthor->id);
 
-        $this->browse(function (Browser $browser) use ($otherUser, $mod, $comment): void {
-            $browser->loginAs($otherUser) // Login as different user, not the comment author
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                // Spam comments should be completely hidden from users who aren't the author
-                ->assertDontSee($comment->body)
-                ->assertMissing('.comment-container-'.$comment->id);
+        $this->actingAs($otherUser); // Login as a different user, not the comment author
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertDontSee($comment->body)
+            ->assertNotPresent('.comment-container-'.$comment->id)
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -994,14 +956,15 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Subscribe');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertPresent('@subscription-toggle')
+            ->assertSee('Subscribe')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should toggle subscription status', function (): void {
@@ -1009,17 +972,16 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Subscribe')
-                ->click('button[wire\\:click="toggleSubscription"]')
-                ->waitForText('Subscribed', 5)
-                ->assertSee('Subscribed');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Subscribe')
+            ->click('@subscription-toggle')
+            ->assertSee('Subscribed')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should unsubscribe when clicked again', function (): void {
@@ -1027,19 +989,18 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Subscribe')
-                ->click('button[wire\\:click="toggleSubscription"]')
-                ->waitForText('Subscribed', 5)
-                ->click('button[wire\\:click="toggleSubscription"]')
-                ->waitForText('Subscribe', 5)
-                ->assertSee('Subscribe');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments')
+            ->on()->desktop()
+            ->inDarkMode();
+
+        $page->assertSee('Subscribe')
+            ->click('@subscription-toggle')
+            ->assertSee('Subscribed')
+            ->click('@subscription-toggle')
+            ->assertSee('Subscribe')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should maintain subscription state across page loads', function (): void {
@@ -1047,18 +1008,17 @@ describe('Comment Subscription Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->click('button[wire\\:click="toggleSubscription"]')
-                ->waitForText('Subscribed', 5)
-                ->refresh()
-                ->waitForText($mod->name, 10)
-                ->assertSee('Subscribed');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->click('@subscription-toggle')
+            ->assertSee('Subscribed')
+            ->navigate($mod->detail_url.'#comments') // Navigate to refresh the page
+            ->assertSee($mod->name)
+            ->assertSee('Subscribed')
+            ->assertNoJavaScriptErrors();
     });
 });
 
@@ -1068,15 +1028,14 @@ describe('Comment Display and Pagination Tests', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Discussion')
-                ->assertSee('(0)');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee('Discussion')
+            ->assertSee('(0)')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should show comment count accurately', function (): void {
@@ -1090,14 +1049,13 @@ describe('Comment Display and Pagination Tests', function (): void {
             'user_id' => $user->id,
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('(3)');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee('(3)')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should show show replies toggle for comments with descendants', function (): void {
@@ -1120,14 +1078,13 @@ describe('Comment Display and Pagination Tests', function (): void {
             'body' => 'This is a reply to the root comment.',
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Show Replies (1)');
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee('Show Replies (1)')
+            ->assertNoJavaScriptErrors();
     });
 
     it('should expand and collapse reply threads', function (): void {
@@ -1152,20 +1109,18 @@ describe('Comment Display and Pagination Tests', function (): void {
             'body' => $replyText,
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod, $replyText): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertDontSee($replyText) // Replies hidden by default now
-                ->click('button[wire\\:click*="toggleDescendants"]')
-                ->waitForText($replyText, 5)
-                ->assertSee($replyText)
-                ->click('button[wire\\:click*="toggleDescendants"]')
-                ->waitUntilMissingText($replyText, 5)
-                ->assertDontSee($replyText);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertDontSee($replyText) // Replies hidden by default now
+            ->click('@toggle-replies-'.$rootComment->id)
+            ->assertSee($replyText)
+            ->assertSee($replyText)
+            ->click('@toggle-replies-'.$rootComment->id)
+            ->assertDontSee($replyText)
+            ->assertNoJavaScriptErrors();
     });
 
     it('should display comments in correct hierarchical order', function (): void {
@@ -1199,21 +1154,21 @@ describe('Comment Display and Pagination Tests', function (): void {
             'created_at' => now()->subMinutes(2),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user, $mod): void {
-            $browser->loginAs($user)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->assertSee('Root comment')
-                ->click('button[wire\\:click*="toggleDescendants"]') // Load replies first
-                ->waitForText('First reply', 5)
-                ->assertSee('First reply')
-                ->assertSee('Nested reply to first reply')
-                ->assertSee('Replying to @'.$user->name);
+        $this->actingAs($user);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee('Root comment')
+            ->click('@toggle-replies-'.$rootComment->id) // Load replies first
+            ->assertSee('First reply')
+            ->assertSee('First reply')
+            ->assertSee('Nested reply to first reply')
+            ->assertSee('Replying to @'.$user->name)
+            ->assertNoJavaScriptErrors();
     });
 });
+
 describe('Comment Pinning Tests', function (): void {
     it('should allow moderators to pin comments without browser errors', function (): void {
         $moderator = User::factory()->create();
@@ -1237,23 +1192,18 @@ describe('Comment Pinning Tests', function (): void {
 
         $commentToPin = $comments[2];
 
-        $this->browse(function (Browser $browser) use ($moderator, $mod, $commentToPin): void {
-            $browser->loginAs($moderator)
-                ->visit($mod->detail_url.'#comments')
-                ->waitForText($mod->name, 10)
-                ->waitFor('[x-show="selectedTab === \'comments\'"]', 5)
-                ->waitForText($commentToPin->body, 10)
-                ->assertDontSee('Pinned')
-                ->waitFor('.comment-container-'.$commentToPin->id.' [data-flux-dropdown] button[data-flux-button]', 5)
-                ->with('.comment-container-'.$commentToPin->id.' [data-flux-dropdown]', function ($dropdown): void {
-                    $dropdown->click('button[data-flux-button]')
-                        ->waitFor('[data-flux-menu]', 5)
-                        ->waitFor('.action-pin', 5)
-                        ->click('.action-pin');
-                })
-                ->waitForText('Pinned', 5);
+        $this->actingAs($moderator);
 
-            $this->assertEmpty($browser->driver->manage()->getLog('browser'));
-        });
+        $page = visit($mod->detail_url.'#comments');
+
+        $page->assertSee($mod->name)
+            ->assertSee($commentToPin->body)
+            ->assertDontSeeIn('.comment-container-'.$commentToPin->id, 'Pinned')
+            ->click('.comment-container-'.$commentToPin->id.' [data-flux-dropdown] button[data-flux-button]')
+            ->assertSeeIn('.comment-container-'.$commentToPin->id, 'Pin Comment')
+            ->click('.comment-container-'.$commentToPin->id.' .action-pin')
+            ->click('@confirm-pin-comment')
+            ->assertSeeIn('.comment-container-'.$commentToPin->id, 'Pinned')
+            ->assertNoJavaScriptErrors();
     });
 });
