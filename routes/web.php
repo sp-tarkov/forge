@@ -82,6 +82,5 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::view('/guidelines', 'static.guidelines');
     Route::view('/installer', 'static.installer');
     Route::view('/privacy-policy', 'static.privacy')->name('policy.show');
-    Route::view('/releases', 'static.releases');
     Route::view('/terms-of-service', 'static.tos')->name('terms.show');
 });
