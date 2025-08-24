@@ -51,8 +51,15 @@
                 </div>
             </div>
         </div>
-        <div class="mt-8 border-t border-white/10 pt-8 md:flex md:items-center md:justify-between">
-            <p class="mt-8 text-xs leading-5 text-gray-400 md:order-1 md:mt-0">&copy; {{ date('Y') }} {{ config('app.name', 'The Forge') }}. All rights reserved.</p>
+        <div class="mt-8 border-t border-white/10 pt-8">
+            <div class="flex flex-col space-y-6 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                <div class="flex items-center space-x-6 text-xs text-gray-400">
+                    <p>&copy; {{ date('Y') }} {{ config('app.name', 'The Forge') }}. All rights reserved.</p>
+                </div>
+                <div class="flex items-center">
+                    <livewire:visitor-counter />
+                </div>
+            </div>
         </div>
     </div>
 </footer>
