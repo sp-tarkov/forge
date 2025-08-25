@@ -57,7 +57,7 @@
                         Escape from Tarkov is a registered trademark of Battlestate Games Limited.<br />
                         The Forge is not affiliated with Battlestate Games Limited in any way.
                     </p>
-                </p>
+                </div>
                 <div class="flex items-center">
                     <livewire:visitor-counter />
                 </div>
