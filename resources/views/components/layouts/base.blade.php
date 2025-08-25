@@ -35,7 +35,6 @@
         @vite(['resources/css/app.css'])
     </head>
     <body class="font-sans antialiased">
-
         @if ($variant !== 'simple')
             <x-warning />
             <x-banner />

@@ -58,7 +58,7 @@
                     </p>
                 </div>
                 <div class="flex items-center">
-                    <livewire:visitor-counter />
+                    <livewire:visitors />
                 </div>
             </div>
         </div>
