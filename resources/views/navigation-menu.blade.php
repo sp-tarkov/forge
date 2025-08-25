@@ -13,6 +13,10 @@
                 <div class="hidden lg:ml-6 lg:block">
                     <div class="flex space-x-4">
                         <x-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-nav-link>
+                        <a href="https://wiki.sp-tarkov.com/" target="_blank" class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700 hover:text-black dark:hover:text-white transition duration-150 ease-in-out inline-flex items-center gap-1">
+                            {{ __('Wiki') }}
+                            <flux:icon.arrow-top-right-on-square class="h-3 w-3" />
+                        </a>
                         {{-- additional menu links here --}}
                     </div>
                 </div>
@@ -168,6 +172,10 @@
         </div>
         <div class="border-y border-gray-300 dark:border-gray-700 space-y-1 mx-3 py-3">
             <x-responsive-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-responsive-nav-link>
+            <a href="https://wiki.sp-tarkov.com/" target="_blank" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white transition duration-150 ease-in-out flex items-center gap-2">
+                {{ __('Wiki') }}
+                <flux:icon.arrow-top-right-on-square class="h-4 w-4" />
+            </a>
             {{-- Additional menu links here --}}
         </div>
         @auth
