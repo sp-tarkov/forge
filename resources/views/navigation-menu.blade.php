@@ -12,6 +12,7 @@
                 </div>
                 <div class="hidden lg:ml-6 lg:block">
                     <div class="flex space-x-4">
+                        <x-nav-link href="{{ route('installer') }}" :active="request()->routeIs('installer')">{{ __('Install') }}</x-nav-link>
                         <x-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-nav-link>
                         {{-- additional menu links here --}}
                     </div>
@@ -167,6 +168,7 @@
             </div>
         </div>
         <div class="border-y border-gray-300 dark:border-gray-700 space-y-1 mx-3 py-3">
+            <x-responsive-nav-link href="{{ route('installer') }}" :active="request()->routeIs('installer')">{{ __('Install') }}</x-responsive-nav-link>
             <x-responsive-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-responsive-nav-link>
             {{-- Additional menu links here --}}
         </div>

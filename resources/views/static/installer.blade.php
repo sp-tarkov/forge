@@ -1,87 +1,265 @@
 <x-layouts.base>
     <x-slot name="title">
-        {{ __('Installer') }}
+        {{ __('SPT Installer') }}
     </x-slot>
     <x-slot name="description">
-        {{ __('The dashboard for your account on The Forge.') }}
+        {{ __('Simple installer for SPT, fully automated. Get up and running with Single Player Tarkov in minutes.') }}
     </x-slot>
 
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
-                {{ __('Installer') }}
-            </h2>
-            <a href="https://ligma.waffle-lord.net/SPTInstaller.exe" target="_blank">
-                <button
-                    class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-sm w-full h-10 px-4">
+            <div class="flex items-center gap-3">
+                <flux:icon name="cloud-arrow-down" class="size-8 text-gray-800 dark:text-gray-100" />
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
+                    {{ __('SPT Installer') }}
+                </h2>
+                <flux:badge icon="check-circle" color="green" class="backdrop-blur-sm">
+                    Official
+                </flux:badge>
+            </div>
+            <a href="https://ligma.waffle-lord.net/SPTInstaller.exe" target="_blank" class="group relative inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-700 to-emerald-600 px-6 py-3 text-base font-semibold text-white shadow-xl border border-emerald-600 hover:from-emerald-600 hover:to-emerald-500 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/25 active:scale-95 transition-all duration-300 backdrop-blur-sm transform hover:-translate-y-0.5">
+                {{-- Animated background effect --}}
+                <div class="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                {{-- Button content --}}
+                <div class="relative flex items-center">
+                    <flux:icon name="cloud-arrow-down" class="mr-2 h-5 w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Download Installer
-                </button>
+                </div>
+
+                {{-- Shine effect --}}
+                <div class="absolute inset-0 rounded-lg overflow-hidden opacity-0 group-hover:opacity-100">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-out w-1/2"></div>
+                </div>
             </a>
         </div>
     </x-slot>
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
-            <div
-                class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
+        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
+            <div class="px-4 py-8 sm:px-6 lg:px-8">
 
-                <p class="pb-4">Simple installer for SPT, fully automated</p>
+                {{-- Hero Section --}}
+                <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-950 dark:from-black dark:via-gray-950 dark:to-black border border-gray-800 dark:border-gray-900 rounded-xl shadow-2xl mb-12">
+                    {{-- Dark gritty texture overlays --}}
+                    <div class="absolute inset-0 bg-gradient-to-br from-gray-800/20 via-transparent to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-700/10 to-transparent"></div>
 
-                <h2 class="font-semibold text-xl">Warning:</h2>
-                <ul class="list-disc list-inside mt-2">
-                    <li>Make sure live EFT is updated before running the installer.</li>
-                    <li>Do not place the install on your desktop and run it.</li>
-                </ul>
+                    {{-- Noise/grain pattern for texture --}}
+                    <div class="absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 4px 4px;"></div>
 
-                <hr class="my-4">
+                    {{-- Industrial wear patterns --}}
+                    <div class="absolute top-0 left-1/4 w-32 h-px bg-gray-600/20 transform rotate-2"></div>
+                    <div class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-500/15 transform -rotate-1"></div>
+                    <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-600/10"></div>
 
-                <h2 class="font-semibold text-xl">The Installer Will:</h2>
-                <ul class="list-disc list-inside mt-2">
-                    <li>Check you have .Net installed, as you will need this for the launcher.</li>
-                    <li>Copy EFT for you into the selected folder.</li>
-                    <li>Patch the copied EFT files to the needed version for SPT.</li>
-                    <li>Download most recently released SPT from the SPT website and install it into the same folder.
-                    </li>
-                </ul>
+                    {{-- Subtle inner shadow for depth --}}
+                    <div class="absolute inset-0 rounded-xl shadow-inner shadow-black/40"></div>
 
-                <hr class="my-4">
+                    <div class="relative px-6 py-10 sm:px-8 sm:py-12">
+                        <div class="mx-auto max-w-4xl text-center">
+                            <div class="mb-6 flex justify-center">
+                                <div class="relative flex h-24 w-24 items-center justify-center rounded-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black dark:from-gray-900 dark:via-black dark:to-gray-950 shadow-2xl overflow-hidden border border-gray-700 dark:border-gray-800">
+                                    {{-- Gritty texture overlays --}}
+                                    <div class="absolute inset-0 bg-gradient-to-br from-gray-700/30 via-transparent to-gray-900/40"></div>
+                                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-600/20 to-transparent"></div>
 
-                <h2 class="font-semibold text-xl">Usage Guide:</h2>
-                <ul class="list-decimal list-inside my-2">
-                    <li>Download installer.</li>
-                    <li>Place in new folder e.g. `SPT`.</li>
-                    <li>Ensure live EFT is updated to latest.</li>
-                    <li>Run installer.
-                        <ul class="list-disc list-inside">
-                            <li class="ml-4">If something shows as RED, you should pay attention to it.</li>
-                        </ul>
-                    </li>
-                    <li>Wait for it to say it has completed.</li>
-                    <li>Close the installer box, you are ready to play.</li>
-                    <li>From this point onwards, any issues please use the FAQ and the support channel in discord.</li>
-                </ul>
-                <p>
-                    <a href="#" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">Video Guide</a> made by McDewgle</p>
+                                    {{-- Noise/grain effect --}}
+                                    <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 3px 3px;"></div>
 
-                <hr class="my-4">
+                                    <flux:icon name="cloud-arrow-down" class="relative z-10 size-12 text-gray-200 drop-shadow-2xl" />
+                                </div>
+                            </div>
 
-                <h2 class="font-semibold text-xl">How to run SPT:</h2>
-                <ul class="list-decimal list-inside mt-2 mb-6">
-                    <li>Start the Spt.Server.exe wait for it to say Happy Playing!</li>
-                    <li>Start the Spt.Launcher.exe.</li>
-                    <li>Create a profile.</li>
-                    <li>Launch the game.</li>
-                </ul>
+                            <h1 class="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-4">
+                                SPT Installer
+                            </h1>
+                            <p class="text-lg text-gray-300 mb-6">
+                                Get up and running with Single Player Tarkov in a few clicks. Our installer handles all the complex setup for you.
+                            </p>
 
-                <p>Before you download and use this, understand that it will download SPT and the relevant Patcher required for your client version from our GIT Repo. (the same place as if you download them separately)</p>
+                            {{-- Compact features --}}
+                            <div class="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+                                <span class="flex items-center">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    Lightning Fast Setup
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    Fully Automated Reliability
+                                </span>
+                                <span class="flex items-center">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    Beginner Friendly
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <hr class="my-4">
+                {{-- Two Column Layout for Installer Info & Warning --}}
+                <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-stretch">
+                    {{-- What the Installer Does --}}
+                    <div class="relative h-full overflow-hidden">
+                        {{-- Background Icon --}}
+                        <div class="absolute -top-8 -right-8 text-blue-600/15 dark:text-blue-400/10 select-none pointer-events-none z-0">
+                            <flux:icon name="cog-6-tooth" class="size-48" />
+                        </div>
+                        <div class="relative z-10 h-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                            <h3 class="font-semibold text-lg text-blue-900 dark:text-blue-100 mb-4">The Installer Will:</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
+                                    <span class="text-blue-800 dark:text-blue-200">Check you have the correct version of .NET installed.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
+                                    <span class="text-blue-800 dark:text-blue-200">Duplicate your EFT installation to a selected folder.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
+                                    <span class="text-blue-800 dark:text-blue-200">Patch the duplicated EFT files to the version required for SPT.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
+                                    <span class="text-blue-800 dark:text-blue-200">Download most recent version of SPT and install it into the duplicated folder.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
 
-                <p>Example of the installer:</p>
-                <img src="https://i.imgur.com/pdYoolR.png" alt="Image of the installer" class="my-4">
-                <p>Cached files are located in %appdata%/spt-installer/cache</p>
-                <p>You can locate this folder by typing %appdata% into windows startbar, find spt-installer/cache and
-                    inside there are the zips</p>
+                    {{-- Warning Section --}}
+                    <div class="relative h-full overflow-hidden">
+                        {{-- Background Icon --}}
+                        <div class="absolute -top-8 -right-8 text-yellow-600/15 dark:text-yellow-400/10 select-none pointer-events-none z-0">
+                            <flux:icon name="exclamation-triangle" class="size-48" />
+                        </div>
+                        <div class="relative z-10 h-full bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
+                            <h3 class="font-semibold text-lg text-yellow-900 dark:text-yellow-100 mb-4">Things to Note</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <flux:icon name="arrow-right" class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0" />
+                                    <span class="text-yellow-800 dark:text-yellow-200">Make sure you have a legitimate copy of Escape From Tarkov installed and up-to-date before running the installer.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <flux:icon name="arrow-right" class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0" />
+                                    <span class="text-yellow-800 dark:text-yellow-200">Do not place this installer on your desktop and run it.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <flux:icon name="arrow-right" class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0" />
+                                    <span class="text-yellow-800 dark:text-yellow-200">The installer downloads SPT and patcher files to <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs whitespace-nowrap">%appdata%\spt-installer\cache</code></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Two Column Layout for Usage Guide & How to Run SPT --}}
+                <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-stretch">
+                    {{-- Usage Guide --}}
+                    <div class="relative h-full overflow-hidden">
+                        {{-- Background Icon --}}
+                        <div class="absolute -top-8 -right-8 text-green-600/15 dark:text-green-400/10 select-none pointer-events-none z-0">
+                            <flux:icon name="book-open" class="size-48" />
+                        </div>
+                        <div class="relative z-10 h-full bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-xl p-6">
+                            <h3 class="font-semibold text-lg text-green-900 dark:text-green-100 mb-4">Step-by-Step Usage Guide</h3>
+                            <ol class="space-y-3 mb-6">
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">1</span>
+                                    <span class="text-green-800 dark:text-green-200">Download installer.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">2</span>
+                                    <span class="text-green-800 dark:text-green-200">Place in a new folder. We recommend: <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm whitespace-nowrap">C:\Users\YOURNAME\SPT\</code></span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">3</span>
+                                    <span class="text-green-800 dark:text-green-200">Ensure your EFT install is updated to the latest version.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">4</span>
+                                    <div class="text-green-800 dark:text-green-200">
+                                        <span>Run installer.</span>
+                                        <div class="mt-1 ml-2 text-sm text-red-600 dark:text-red-400">
+                                            <flux:icon name="exclamation-triangle" class="size-4 inline mr-1" />
+                                            If something shows as <span class="font-medium">RED</span>, you should read carefully!
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">5</span>
+                                    <span class="text-green-800 dark:text-green-200">Wait for it to say it has completed.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">6</span>
+                                    <span class="text-green-800 dark:text-green-200">Close the installer. You are ready to play!</span>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    {{-- How to Run SPT --}}
+                    <div class="relative h-full overflow-hidden">
+                        {{-- Background Icon --}}
+                        <div class="absolute -top-8 -right-8 text-cyan-600/15 dark:text-cyan-400/10 select-none pointer-events-none z-0">
+                            <flux:icon name="play" class="size-48" />
+                        </div>
+                        <div class="relative z-10 h-full bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200 dark:border-cyan-800 rounded-xl p-6">
+                            <h3 class="font-semibold text-lg text-cyan-900 dark:text-cyan-100 mb-4">How to Run SPT After Installation</h3>
+                            <ol class="space-y-3">
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">1</span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Start the <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Spt.Server.exe</code> wait for it to say <span class="text-green-600 font-medium">Happy Playing!</span></span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">2</span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Start the <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Spt.Launcher.exe</code>.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">3</span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Create a profile.</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">4</span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Launch the game.</span>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Video Guide Section --}}
+                <div id="video-guide" class="text-center">
+                    <h3 class="font-semibold text-lg mb-2 text-gray-800 dark:text-gray-200">Video Installation Guide</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Created by McDewgle</p>
+                    <div class="max-w-4xl mx-auto">
+                        <div class="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-2xl p-2">
+                            <div class="aspect-video w-full">
+                                <video
+                                    class="w-full h-full rounded-lg"
+                                    controls
+                                    preload="metadata"
+                                    poster="{{ Vite::asset('resources/video/video-installation-guide-poster.jpg') }}"
+                                >
+                                    <source src="{{ Vite::asset('resources/video/video-installation-guide.mp4') }}" type="video/mp4">
+                                    <p class="text-center p-4 text-gray-600 dark:text-gray-400">
+                                        Your browser does not support the video element. Please upgrade your browser to view the installation guide.
+                                    </p>
+                                </video>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                            Step-by-step walkthrough of the SPT installation process
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
