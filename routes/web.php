@@ -77,9 +77,11 @@ Route::middleware('auth.banned')->group(function (): void {
     });
 
     // Routes for static content
-    Route::view('/mods-disclaimer', 'static.mods-disclaimer');
-    // Route::view('/dmca', 'static.dmca');
+    Route::view('/contact', 'static.contact')->name('contact.show');
+    Route::view('/dmca', 'static.dmca')->name('dmca.show');
     Route::view('/guidelines', 'static.guidelines');
+    Route::view('/content-guidelines', 'static.content-guidelines')->name('content-guidelines.show');
+    Route::view('/file-submission-guidelines', 'static.file-submission-guidelines');
     Route::view('/installer', 'static.installer');
     Route::view('/privacy-policy', 'static.privacy')->name('policy.show');
     Route::view('/terms-of-service', 'static.tos')->name('terms.show');
