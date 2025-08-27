@@ -6,12 +6,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4]
-
-    name: Tests (Shard ${{ matrix.shard }}/4)
+    name: Tests
 
     services:
       mysql:
@@ -62,7 +57,7 @@ jobs:
         run: php artisan storage:link
 
       - name: Run Tests
-        run: ./vendor/bin/pest --ci --parallel --shard=${{ matrix.shard }}/4
+        run: ./vendor/bin/pest --ci --parallel
 
       - name: Upload Screenshots
         if: failure()
@@ -78,12 +73,7 @@ jobs:
   type-coverage:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2]
-
-    name: Type Coverage (Shard ${{ matrix.shard }}/4)
+    name: Type Coverage
 
     steps:
       - name: Checkout
@@ -104,7 +94,7 @@ jobs:
           php artisan optimize
 
       - name: Run Type Coverage
-        run: ./vendor/bin/pest --type-coverage --min=99 --shard=${{ matrix.shard }}/4
+        run: ./vendor/bin/pest --type-coverage --min=99
 
       - name: Display Laravel Log
         if: failure()
