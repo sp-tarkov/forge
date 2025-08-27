@@ -19,7 +19,7 @@
         @endswitch
     @endif
 
-    <flux:modal wire:model.self="showReportModal" class="md:w-[500px] lg:w-[600px]">
+    <flux:modal name="report-modal" wire:model.self="showReportModal" class="md:w-[500px] lg:w-[600px]">
         @if (!$submitted)
             {{-- Form Content --}}
             <div class="space-y-0">

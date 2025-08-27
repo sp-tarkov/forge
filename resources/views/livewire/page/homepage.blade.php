@@ -122,14 +122,14 @@
                                         <a href="{{ route('static.installer') }}" class="group relative inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-700 to-emerald-600 px-8 py-4 text-base font-semibold text-white shadow-xl border border-emerald-600 hover:from-emerald-600 hover:to-emerald-500 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/25 active:scale-95 transition-all duration-300 backdrop-blur-sm transform hover:-translate-y-0.5">
                                             <!-- Animated background effect -->
                                             <div class="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            
+
                                             <!-- Button content -->
                                             <div class="relative flex items-center">
                                                 <flux:icon name="cloud-arrow-down" class="mr-3 h-5 w-5 transform group-hover:scale-110 transition-transform duration-200" />
                                                 Download Installer
                                                 <flux:icon name="arrow-right" class="ml-3 h-4 w-4 transform group-hover:translate-x-1 group-hover:scale-110 transition-all duration-200" />
                                             </div>
-                                            
+
                                             <!-- Shine effect -->
                                             <div class="absolute inset-0 rounded-lg overflow-hidden opacity-0 group-hover:opacity-100">
                                                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-out w-1/2"></div>
