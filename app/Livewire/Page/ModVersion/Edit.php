@@ -10,6 +10,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
 use App\Models\SptVersion;
+use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
 use Composer\Semver\Semver;
@@ -56,8 +57,12 @@ class Edit extends Component
     /**
      * The link to the mod version.
      */
-    #[Validate('required|string|url|starts_with:https://,http://')]
     public string $link = '';
+
+    /**
+     * The DirectDownloadLink rule instance (for content length extraction).
+     */
+    private ?DirectDownloadLink $downloadLinkRule = null;
 
     /**
      * The SPT version constraint.
@@ -160,6 +165,10 @@ class Edit extends Component
                 $rules[sprintf('dependencies.%d.constraint', $index)] = ['nullable', 'string', new SemverConstraintRule];
             }
         }
+
+        // Download link validation
+        $this->downloadLinkRule = new DirectDownloadLink;
+        $rules['link'] = ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule];
 
         return $rules;
     }
@@ -379,6 +388,7 @@ class Edit extends Component
         $this->modVersion->version = $validated['version'];
         $this->modVersion->description = $validated['description'];
         $this->modVersion->link = $validated['link'];
+        $this->modVersion->content_length = $this->downloadLinkRule?->contentLength;
         $this->modVersion->spt_version_constraint = $validated['sptVersionConstraint'];
         $this->modVersion->virus_total_link = $validated['virusTotalLink'];
         $this->modVersion->published_at = $publishedAtCarbon;

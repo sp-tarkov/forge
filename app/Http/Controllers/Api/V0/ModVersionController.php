@@ -22,8 +22,11 @@ class ModVersionController extends Controller
      *
      * Retrieves a paginated list of mod versions, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>hub_id, version, description, link, spt_version_constraint, virus_total_link,
+     * Fields available:<br /><code>hub_id, version, description, link, content_length, spt_version_constraint, virus_total_link,
      * downloads, published_at, created_at, updated_at</code>
+     *
+     * The <code>content_length</code> field contains the file size in bytes as determined by the Content-Length header
+     * from the download link. This field may be null for versions created before file size validation was implemented.
      *
      * <aside class="notice">This endpoint only offers limited mod version dependency information. Only the immediate
      * dependencies will be included. If a dependency has dependencies of its own, they will not be included. To resolve
@@ -39,6 +42,7 @@ class ModVersionController extends Controller
      *              "version": "0.2.9",
      *              "description": "Magni eius ad temporibus similique accusamus assumenda aliquid. Quisquam placeat in necessitatibus ducimus quasi odit. Autem nulla ea minus itaque.",
      *              "link": "http://kautzer.com/enim-ut-quis-suscipit-dolores.html",
+     *              "content_length": 52428800,
      *              "spt_version_constraint": "^1.0.0",
      *              "virus_total_link": "https://herman.net/accusantium-vitae-et-totam-deleniti-cupiditate-dolorem-non-sit.html",
      *              "downloads": 8,

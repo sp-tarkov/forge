@@ -10,6 +10,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
 use App\Models\SptVersion;
+use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
 use App\Support\Version;
@@ -52,8 +53,12 @@ class Create extends Component
     /**
      * The link to the mod version.
      */
-    #[Validate('required|string|url|starts_with:https://,http://')]
     public string $link = '';
+
+    /**
+     * The DirectDownloadLink rule instance (for content length extraction).
+     */
+    private ?DirectDownloadLink $downloadLinkRule = null;
 
     /**
      * The SPT version constraint.
@@ -145,6 +150,10 @@ class Create extends Component
                 $rules[sprintf('dependencies.%d.constraint', $index)] = ['nullable', 'string', new SemverConstraintRule];
             }
         }
+
+        // Download link validation
+        $this->downloadLinkRule = new DirectDownloadLink;
+        $rules['link'] = ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule];
 
         return $rules;
     }
@@ -347,6 +356,7 @@ class Create extends Component
             'version' => $validated['version'],
             'description' => $validated['description'],
             'link' => $validated['link'],
+            'content_length' => $this->downloadLinkRule?->contentLength,
             'spt_version_constraint' => $validated['sptVersionConstraint'],
             'virus_total_link' => $validated['virusTotalLink'],
             'published_at' => $this->publishedAt,

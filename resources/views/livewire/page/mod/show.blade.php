@@ -132,6 +132,7 @@
                     :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
                     :version-description-html="$mod->latestVersion->description_html"
                     :version-updated-at="$mod->latestVersion->updated_at"
+                    :file-size="$mod->latestVersion->formatted_file_size"
                 />
             @endif
 
@@ -214,6 +215,7 @@
                     :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
                     :version-description-html="$mod->latestVersion->description_html"
                     :version-updated-at="$mod->latestVersion->updated_at"
+                    :file-size="$mod->latestVersion->formatted_file_size"
                 />
             @endif
 
