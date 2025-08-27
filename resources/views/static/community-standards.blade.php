@@ -231,7 +231,7 @@
         <li>No mods designed for use in live Escape From Tarkov</li>
         <li>No tools that could be used for competitive advantage in multiplayer games</li>
         <li>No hacks, aimbots, ESP, or similar cheating software</li>
-        <li>Development and testing tools are allowed if clearly labeled</li>
+        <li>Development and testing tools are allowed if clearly labelled</li>
     </ul>
 
     <p><strong>Malicious Software:</strong></p>
@@ -412,16 +412,16 @@
 
     <h2 id="getting-help">10. Getting Help</h2>
 
-    <p><strong>Need help or have questions?</strong> Visit our <a href="/contact" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Contact page</a> for detailed information on how to reach our staff and community.</p>
+    <p><strong>Need help or have questions?</strong> Visit our <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Contact page</a> for detailed information on how to reach our staff and community.</p>
 
     <h3>10.1 Questions About Standards</h3>
 
     <p><strong>If you're unsure about something:</strong></p>
     <ul>
-        <li>Ask <a href="/contact" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">staff</a> for clarification before posting</li>
+        <li>Ask <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">staff</a> for clarification before posting</li>
         <li>Review similar content to see how rules apply</li>
         <li>When in doubt, err on the side of caution</li>
-        <li>Contact us through our <a href="/contact" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Discord server or email</a></li>
+        <li>Contact us through our <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Discord server or email</a></li>
     </ul>
 
     <h3>10.2 Conflict Resolution</h3>
@@ -431,7 +431,7 @@
         <li>Try to resolve issues through private discussion first</li>
         <li>Use respectful communication and assume good faith</li>
         <li>Focus on finding solutions rather than being "right"</li>
-        <li>Involve <a href="/contact" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">staff</a> if you cannot reach a resolution</li>
+        <li>Involve <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">staff</a> if you cannot reach a resolution</li>
     </ul>
 
     <h3>10.3 Improving the Community</h3>
@@ -469,11 +469,11 @@
 
     <p><strong>Remember:</strong> These standards exist to keep The Forge a welcoming place for everyone. When in doubt, choose kindness and reach out to staff for guidance.</p>
 
-    <p><strong>Questions?</strong> Visit our <a href="/contact" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Contact page</a> for all the ways to reach us.</p>
+    <p><strong>Questions?</strong> Visit our <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Contact page</a> for all the ways to reach us.</p>
 
     <hr>
 
-    <p><em>These Community Standards work together with our <a href="/terms-of-service/">Terms of Service</a>, <a href="/privacy-policy/">Privacy Policy</a>, <a href="/content-guidelines/">Content Guidelines</a>, and <a href="/dmca">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
+    <p><em>These Community Standards work together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
 </x-layouts.static-toc>

@@ -420,7 +420,7 @@
 
     <p><em>This policy is governed by Canadian privacy laws including PIPEDA, and complies with GDPR for EU users.</em></p>
 
-    <p><em>This Privacy Policy works together with our <a href="/terms-of-service/">Terms of Service</a>, <a href="/guidelines">Community Standards</a>, <a href="/content-guidelines/">Content Guidelines</a>, and <a href="/dmca">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
+    <p><em>This Privacy Policy works together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a href="{{ route('static.community-standards') }}">Community Standards</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
 </x-layouts.static-toc>

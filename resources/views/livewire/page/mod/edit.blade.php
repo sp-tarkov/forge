@@ -20,8 +20,8 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mod Information</h3>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">You may update your mod details using this form. Changes will be visible immediately after saving.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
-                        Please ensure you follow the <a href="/guidelines" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Community Standards</a>
-                        and the <a href="/content-guidelines" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Content Guidelines</a>.
+                        Please ensure you follow the <a href="{{ route('static.community-standards') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Community Standards</a>
+                        and the <a href="{{ route('static.content-guidelines') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Content Guidelines</a>.
                     </p>
                 </div>
                 <div class="px-4 sm:px-0"></div>

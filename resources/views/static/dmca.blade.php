@@ -154,7 +154,7 @@
 
     <hr>
 
-    <p><em>This DMCA Copyright Notice works together with our <a href="/terms-of-service/">Terms of Service</a>, <a href="/privacy-policy/">Privacy Policy</a>, <a href="/guidelines">Community Standards</a>, and <a href="/content-guidelines/">Content Guidelines</a> to govern your use of The Forge.</em></p>
+    <p><em>This DMCA Copyright Notice works together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a href="{{ route('static.community-standards') }}">Community Standards</a>, and <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
 </x-layouts.static-toc>

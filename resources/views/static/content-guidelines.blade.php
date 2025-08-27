@@ -304,7 +304,7 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
     </ul>
     <p><strong>Allowed Development Tools:</strong></p>
     <ul>
-        <li>Debug overlays and development menus are acceptable when clearly labeled as development tools</li>
+        <li>Debug overlays and development menus are acceptable when clearly labelled as development tools</li>
         <li>Testing utilities that require developer mode or special setup serve legitimate development purposes</li>
         <li>Educational tools that demonstrate game mechanics provide valuable learning opportunities</li>
         <li>Diagnostic tools for troubleshooting mod conflicts help maintain a healthy modding ecosystem</li>
@@ -397,7 +397,7 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
 
     <hr>
 
-    <p><em>These Content Guidelines work together with our <a href="/terms-of-service/">Terms of Service</a>, <a href="/privacy-policy/">Privacy Policy</a>, <a href="/guidelines">Community Standards</a>, and <a href="/dmca">DMCA Copyright Notice</a> to govern content on The Forge.</em></p>
+    <p><em>These Content Guidelines work together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a href="{{ route('static.community-standards') }}">Community Standards</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern content on The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
 </x-layouts.static-toc>

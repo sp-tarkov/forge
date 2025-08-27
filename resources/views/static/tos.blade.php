@@ -187,7 +187,7 @@
 
     <h2 id="privacy-data">7. Privacy and Data</h2>
 
-    <p>Your privacy is important to us. Our data practices are detailed in our <a href="/privacy-policy/">Privacy Policy</a>, including:</p>
+    <p>Your privacy is important to us. Our data practices are detailed in our <a href="{{ route('static.privacy') }}">Privacy Policy</a>, including:</p>
     <ul>
         <li>What information we collect and why</li>
         <li>How we use and protect your data</li>
@@ -197,7 +197,7 @@
 
     <h2 id="community-standards">8. Community Standards</h2>
 
-    <p>Detailed behavioral expectations are outlined in our <a href="/guidelines">Community Standards</a>. Key principles:</p>
+    <p>Detailed behavioral expectations are outlined in our <a href="{{ route('static.community-standards') }}">Community Standards</a>. Key principles:</p>
 
     <h3>Be Respectful</h3>
     <ul>
@@ -380,11 +380,11 @@
         <li><strong>Stay informed:</strong> We may update these Terms with notice</li>
     </ul>
 
-    <p>By using The Forge, you agree to these Terms and our <a href="/guidelines">Community Standards</a>. Thank you for being part of our community!</p>
+    <p>By using The Forge, you agree to these Terms and our <a href="{{ route('static.community-standards') }}">Community Standards</a>. Thank you for being part of our community!</p>
 
     <hr>
 
-    <p><em>These Terms of Service work together with our <a href="/privacy-policy/">Privacy Policy</a>, <a href="/guidelines">Community Standards</a>, <a href="/content-guidelines/">Content Guidelines</a>, and <a href="/dmca">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
+    <p><em>These Terms of Service work together with our <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a href="{{ route('static.community-standards') }}">Community Standards</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: 2025-08-26</em></p>
 </x-layouts.static-toc>
