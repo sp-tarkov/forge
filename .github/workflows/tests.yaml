@@ -50,6 +50,9 @@ jobs:
           php artisan key:generate
           php artisan optimize
 
+      - name: Start Reverb Server
+        run: php artisan reverb:start --host=127.0.0.1 --port=8080 &
+
       - name: Run Database Migrations
         run: php artisan migrate
 
