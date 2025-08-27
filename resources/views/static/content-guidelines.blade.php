@@ -53,9 +53,8 @@
     <p><strong>Archive Requirements:</strong></p>
     <p>The Forge maintains strict archive standards to ensure consistency and ease of installation across all submitted content. These requirements help prevent compatibility issues and streamline the user experience.</p>
     <ul>
-        <li>All mods must be packaged in 7-Zip format (<code>.7z</code> only) to ensure consistent compression and extraction behavior across different operating systems</li>
-        <li>Maximum file size is limited to 100MB per upload, with larger files requiring external hosting solutions to maintain platform performance</li>
-        <li>Archives must contain all necessary files for mod functionality, ensuring users receive complete packages without missing dependencies</li>
+        <li>All mods must be packaged in 7-Zip format (<code>.7z</code> only) to ensure consistent compression and extraction behavior across different operating systems and by different tooling</li>
+        <li>Archives must contain all necessary files for mod functionality, ensuring users receive complete packages without missing external dependencies</li>
         <li>Password-protected archives are prohibited to prevent access issues and maintain security transparency</li>
     </ul>
     <p><strong>File Structure:</strong></p>
@@ -178,7 +177,7 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
 
     <h3 id="functional-requirements">4.1 Functional Requirements</h3>
     <p><strong>Testing Standards:</strong></p>
-    <p>All submitted mods must load without errors in SPT and demonstrate that all advertised features work as described in the documentation. Testing must confirm that no conflicts exist with base SPT functionality, and authors must verify compatibility using a clean SPT installation before submission to ensure that the mod functions correctly in standard user environments without requiring specific system configurations or additional modifications.</p>
+    <p>Mod authors must thoroughly test their submissions using a fresh SPT installation (with all documented dependencies properly installed) to ensure compatibility and stability before making them available to the community. All advertised features must work as described. The mod must load without errors, and without causing unintended changes to base SPT functionality. Testing should verify that the mod functions correctly in standard user environments without requiring undocumented system configurations or additional modifications.</p>
     <p><strong>Performance Requirements:</strong></p>
     <p>Mods should not cause significant, unintended performance degradation during normal gameplay or system operation. Memory leaks and excessive resource usage are strictly prohibited as they negatively impact user experience and system stability. Loading times should remain reasonable compared to base SPT performance, and mods must not contain infinite loops or blocking operations that could cause system freezes or unresponsive behavior.</p>
     <p><strong>Error Handling:</strong></p>
@@ -312,39 +311,25 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
     </ul>
 
     <h3 id="compilation-guidelines">7.3 Compilation and Collection Guidelines</h3>
-    <p><strong>Acceptable Compilations:</strong></p>
-    <p>Compilation mods can provide value by integrating multiple components or creating themed experiences. These guidelines ensure compilations add meaningful value rather than simply repackaging existing content.</p>
-    <ul>
-        <li>Mod packs with configuration integration that resolve compatibility issues provide clear user value</li>
-        <li>Themed collections with unified aesthetics create cohesive experiences beyond individual components</li>
-        <li>Compatibility patches that enable mods to work together serve important technical purposes</li>
-        <li>Curated selections with installation automation reduce user complexity and improve accessibility</li>
-    </ul>
-    <p><strong>Requirements for Compilations:</strong></p>
-    <ul>
-        <li>Permission from all included mod authors must be obtained and documented to respect creator rights</li>
-        <li>Added value beyond simple repackaging must be demonstrated through integration work or curation</li>
-        <li>Clear attribution for all included components must be provided to respect original creators</li>
-        <li>Individual mod licensing must be respected and properly documented throughout the compilation</li>
-    </ul>
+    <p><strong>Prohibited Content:</strong></p>
+    <p>Mod compilations, collections, and modpacks are not permitted on The Forge. While these packages may appear to offer convenience by bundling multiple mods together, they create significant and ongoing maintenance challenges that cannot be sustainably managed.</p>
+    <p>Permission tracking becomes unmanageable as compilations require explicit consent from every included mod author. Compatibility maintenance is equally problematic since individual mods within a compilation update independently, often breaking compatibility with other included components. Version synchronization across multiple mods with different release schedules creates constant conflicts that require continuous manual intervention.</p>
+    <p>The Forge encourages users to install individual mods directly from their original creators to ensure they receive proper updates, support, and compatibility verification. This approach guarantees that users get the most current versions while supporting mod authors directly and maintaining clear accountability for each component.</p>
 
     <h2 id="file-hosting">8. File Hosting and Distribution</h2>
 
     <h3>8.1 Download Link Requirements</h3>
-    <p><strong>Primary Hosting:</strong></p>
-    <p>Download accessibility ensures users can obtain content without unnecessary barriers while maintaining long-term availability for community use.</p>
+    <p><strong>Direct Download Links (DDL) Required:</strong></p>
+    <p>All download links must be direct download links that immediately begin downloading the file when visited. This requirement ensures the best user experience and enables automated tooling to download mods without user interaction.</p>
     <ul>
-        <li>No requirement for user registration on external sites to maintain accessibility</li>
+        <li>Links must initiate the download immediately</li>
+        <li>The download link must confirm that the file is a 7-zip archive (.7z) as required by our archive standards</li>
         <li>Links must remain accessible indefinitely to ensure long-term availability</li>
     </ul>
-    <p><strong>Prohibited Hosting:</strong></p>
-    <ul>
-        <li>Ad-heavy download sites (ModsFire, ShareMods, etc.) create poor user experiences and potential security risks</li>
-        <li>Sites requiring payment or surveys to download violate accessibility principles</li>
-        <li>Temporary file sharing services (WeTransfer, etc.) do not provide adequate long-term availability</li>
-        <li>Sites with wait times or download limits create unnecessary barriers to access</li>
-    </ul>
-    <p>We recommend hosting mod releases through GitHub releases, which provides reliable hosting with proper version control integration.</p>
+    <p><strong>Prohibited Link Types:</strong></p>
+    <p>Any download link that does not meet the direct download requirement is prohibited. This includes but is not limited to file sharing services with landing pages, ad-supported download sites, services requiring user interaction, temporary file sharing platforms, and any link that redirects users through multiple pages before downloading.</p>
+    <p><strong>Recommended Hosting:</strong></p>
+    <p>GitHub releases provide reliable direct download links with proper version control integration and meet all requirements for direct downloads of 7-zip archives.</p>
 
     <h2 id="violation-consequences">9. Violation Consequences and Appeals</h2>
 

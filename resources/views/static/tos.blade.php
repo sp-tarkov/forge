@@ -38,7 +38,7 @@
 
     <p><strong>Key Points:</strong></p>
     <ul>
-        <li>You must be at least 16 years old to use our services</li>
+        <li>You must be at least 18 years old to use our services</li>
         <li>You're responsible for your account and content you submit</li>
         <li>We provide services for SPT, a single-player modification of Escape From Tarkov</li>
         <li>We reserve the right to modify or discontinue services at any time</li>
