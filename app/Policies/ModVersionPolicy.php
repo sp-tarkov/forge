@@ -58,7 +58,7 @@ class ModVersionPolicy
      */
     public function delete(User $user, ModVersion $modVersion): bool
     {
-        return $user->isAdmin() || $modVersion->mod->owner->id === $user->id;
+        return $user->isAdmin() || $modVersion->mod->owner?->id === $user->id;
     }
 
     /**
@@ -107,6 +107,22 @@ class ModVersionPolicy
     public function enable(User $user, ModVersion $modVersion): bool
     {
         return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can unpublish the model.
+     */
+    public function unpublish(User $user, ModVersion $modVersion): bool
+    {
+        return $this->isAuthorOrOwner($user, $modVersion->mod);
+    }
+
+    /**
+     * Determine whether the user can publish the model.
+     */
+    public function publish(User $user, ModVersion $modVersion): bool
+    {
+        return $this->isAuthorOrOwner($user, $modVersion->mod);
     }
 
     /**

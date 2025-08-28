@@ -64,6 +64,7 @@
                         :mod-name="$mod->name"
                         :mod-featured="(bool) $mod->featured"
                         :mod-disabled="(bool) $mod->disabled"
+                        :mod-published="(bool) $mod->published_at && $mod->published_at <= now()"
                     />
                 @endcan
 

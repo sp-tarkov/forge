@@ -6,6 +6,7 @@ use App\Livewire\Page\Mod\Edit;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 describe('Mod Edit Form', function (): void {
@@ -106,7 +107,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         config()->set('honeypot.enabled', false);
     });
 
-    uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+    uses(RefreshDatabase::class);
 
     it('allows mod owners to access edit page via browser', function (): void {
         $owner = User::factory()->withMfa()->create();
@@ -143,7 +144,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         $this->actingAs($owner);
 
         // Test the form functionality using Livewire component test (more reliable)
-        Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+        Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Updated Mod Name')
             ->set('guid', 'com.test.updatedmod')
@@ -199,7 +200,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->assertNoJavascriptErrors();
 
         // Test the form functionality using Livewire component test
-        Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+        Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Updated by Author')
             ->set('guid', 'com.author.collaborativemod')
@@ -228,7 +229,7 @@ describe('HTTP Tests - Mod Editing Authorization', function (): void {
         config()->set('honeypot.enabled', false);
     });
 
-    uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+    uses(RefreshDatabase::class);
 
     it('prevents unauthorized users from editing mods', function (): void {
         $owner = User::factory()->withMfa()->create();
@@ -265,7 +266,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         config()->set('honeypot.enabled', false);
     });
 
-    uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+    uses(RefreshDatabase::class);
 
     it('allows owners to update all mod fields including checkboxes', function (): void {
         $license = License::factory()->create();
@@ -279,7 +280,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+        Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Comprehensive Update')
             ->set('guid', 'com.comprehensive.update')
@@ -314,7 +315,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+        Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', '')
             ->set('teaser', '')
@@ -333,7 +334,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+        Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('guid', 'invalid-guid-format')
             ->call('save')
@@ -350,7 +351,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(\App\Livewire\Page\Mod\Edit::class, ['modId' => $mod->id])
+        Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Successfully Updated Mod')
             ->set('guid', 'com.success.updated')

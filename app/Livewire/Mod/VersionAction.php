@@ -6,6 +6,7 @@ namespace App\Livewire\Mod;
 
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModerationActionMenu;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -45,14 +46,26 @@ class VersionAction extends Component
     public bool $versionDisabled;
 
     /**
+     * Whether the version is published.
+     */
+    #[Locked]
+    public bool $versionPublished;
+
+    /**
+     * The publish date for the version.
+     */
+    public ?string $publishedAt = null;
+
+    /**
      * Initialize the component with optimized data.
      */
-    public function mount(int $versionId, int $modId, string $versionNumber, bool $versionDisabled): void
+    public function mount(int $versionId, int $modId, string $versionNumber, bool $versionDisabled, bool $versionPublished): void
     {
         $this->versionId = $versionId;
         $this->modId = $modId;
         $this->versionNumber = $versionNumber;
         $this->versionDisabled = $versionDisabled;
+        $this->versionPublished = $versionPublished;
     }
 
     /**
@@ -61,8 +74,8 @@ class VersionAction extends Component
     #[Computed(persist: true)]
     public function version(): ModVersion
     {
-        return ModVersion::query()->select(['id', 'version', 'disabled', 'mod_id'])
-            ->with(['mod:id,name'])
+        return ModVersion::query()->select(['id', 'version', 'disabled', 'published_at', 'mod_id'])
+            ->with(['mod:id,name,owner_id', 'mod.owner:id', 'mod.authors:id'])
             ->findOrFail($this->versionId);
     }
 
@@ -88,6 +101,8 @@ class VersionAction extends Component
                 'delete' => Gate::allows('delete', $this->version),
                 'disable' => Gate::allows('disable', $this->version),
                 'enable' => Gate::allows('enable', $this->version),
+                'publish' => Gate::allows('publish', $this->version),
+                'unpublish' => Gate::allows('unpublish', $this->version),
                 'isModOrAdmin' => $user->isModOrAdmin(),
             ]
         );
@@ -127,6 +142,46 @@ class VersionAction extends Component
         $this->dispatch('mod-version-updated.'.$this->versionId, disabled: false);
 
         flash()->success('Mod version successfully enabled!');
+
+        $this->menuOpen = false;
+    }
+
+    /**
+     * Publishes the version with a specified date.
+     */
+    public function publish(): void
+    {
+        $this->authorize('publish', $this->version);
+
+        $publishedDate = $this->publishedAt ? Carbon::parse($this->publishedAt) : now();
+
+        ModVersion::query()->where('id', $this->versionId)->update(['published_at' => $publishedDate]);
+
+        $this->versionPublished = true;
+        $this->clearPermissionCache(sprintf('mod_version.%d.permissions.', $this->versionId).auth()->id());
+
+        $this->dispatch('mod-version-updated.'.$this->versionId, published: true);
+
+        flash()->success('Mod version successfully published!');
+
+        $this->menuOpen = false;
+    }
+
+    /**
+     * Unpublishes the version.
+     */
+    public function unpublish(): void
+    {
+        $this->authorize('unpublish', $this->version);
+
+        ModVersion::query()->where('id', $this->versionId)->update(['published_at' => null]);
+
+        $this->versionPublished = false;
+        $this->clearPermissionCache(sprintf('mod_version.%d.permissions.', $this->versionId).auth()->id());
+
+        $this->dispatch('mod-version-updated.'.$this->versionId, published: false);
+
+        flash()->success('Mod version successfully unpublished!');
 
         $this->menuOpen = false;
     }

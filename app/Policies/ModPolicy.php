@@ -87,7 +87,7 @@ class ModPolicy
      */
     public function disable(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->owner->id === $user->id;
+        return $user->isModOrAdmin();
     }
 
     /**
@@ -95,7 +95,23 @@ class ModPolicy
      */
     public function enable(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->owner->id === $user->id;
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can unpublish the model.
+     */
+    public function unpublish(User $user, Mod $mod): bool
+    {
+        return $this->isAuthorOrOwner($user, $mod);
+    }
+
+    /**
+     * Determine whether the user can publish the model.
+     */
+    public function publish(User $user, Mod $mod): bool
+    {
+        return $this->isAuthorOrOwner($user, $mod);
     }
 
     /**

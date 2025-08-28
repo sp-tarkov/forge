@@ -15,6 +15,8 @@ use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Livewire\Page\User\Show as UserShow;
 use App\Models\Mod;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth.banned')->group(function (): void {
@@ -53,7 +55,7 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {
 
         // Authenticated and verified routes
-        Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+        Route::get('/dashboard', fn (): View|Factory => view('dashboard'))->name('dashboard');
 
         Route::get('/mod/create', ModCreate::class)
             ->name('mod.create');

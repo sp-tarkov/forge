@@ -19,6 +19,7 @@
                 :mod-id="$version->mod_id"
                 :version-number="$version->version"
                 :version-disabled="(bool) $version->disabled"
+                :version-published="(bool) $version->published_at && $version->published_at <= now()"
             />
         @endcan
 
