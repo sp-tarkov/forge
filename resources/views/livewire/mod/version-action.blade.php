@@ -10,7 +10,7 @@
         <flux:menu>
             @if($this->menuOpen)
                 @if($this->permissions['viewActions'] ?? false)
-                    <flux:menu.group heading="Mod Version Actions">
+                    <flux:menu.group heading="Author Actions">
                         @if($this->permissions['update'] ?? false)
                             <flux:menu.item href="{{ route('mod.version.edit', [$this->modId, $this->versionId]) }}" icon="pencil">Edit Version</flux:menu.item>
                         @endif
