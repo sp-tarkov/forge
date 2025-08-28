@@ -27,7 +27,7 @@ Route::middleware('auth.banned')->group(function (): void {
         ->name('mods');
 
     Route::get('/mod/{modId}/{slug}', ModShow::class)
-        ->where(['modId' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
+        ->where(['modId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
         ->name('mod.show');
 
     Route::get('/mod/download/{mod}/{slug}/{version}', [ModVersionController::class, 'show'])
