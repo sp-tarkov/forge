@@ -215,6 +215,84 @@
         </flux:modal>
     @endif
 
+    {{-- Mod Owner Soft-delete Comment Modal --}}
+    @if($showModOwnerSoftDeleteModal)
+        <flux:modal wire:model.self="showModOwnerSoftDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="eye-slash" class="w-8 h-8 text-amber-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Soft-delete Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Hide comment from public view') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to soft-delete this comment? The comment will be hidden from public view but can be restored by moderators.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button x-on:click="$wire.showModOwnerSoftDeleteModal = false" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="modOwnerSoftDeleteComment" variant="primary" size="sm" icon="eye-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
+                    {{ __('Soft-delete Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Mod Owner Restore Comment Modal --}}
+    @if($showModOwnerRestoreModal)
+        <flux:modal wire:model.self="showModOwnerRestoreModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="arrow-path" class="w-8 h-8 text-green-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Restore Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Make comment visible again') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to restore this comment? The comment will become visible to all users again.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button x-on:click="$wire.showModOwnerRestoreModal = false" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="modOwnerRestoreComment" variant="primary" size="sm" icon="arrow-path" class="bg-green-600 hover:bg-green-700 text-white">
+                    {{ __('Restore Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
     {{-- Permanently Remove Comment Modal --}}
     @if($showHardDeleteModal)
         <flux:modal wire:model.self="showHardDeleteModal" class="md:w-[500px] lg:w-[600px]">
