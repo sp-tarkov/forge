@@ -62,37 +62,50 @@
         </div>
 
         <!-- Log Out Other Devices Confirmation Modal -->
-        <x-dialog-modal wire:model.live="confirmingLogout">
-            <x-slot name="title">
-                {{ __('Log Out Other Browser Sessions') }}
-            </x-slot>
-
-            <x-slot name="content">
-                {{ __('Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.') }}
-
-                <div class="mt-4" x-data="{}" x-on:confirming-logout-other-browser-sessions.window="setTimeout(() => $refs.password.focus(), 250)">
-                    <x-input type="password" class="mt-1 block w-3/4"
-                                autocomplete="current-password"
-                                placeholder="{{ __('Password') }}"
-                                x-ref="password"
-                                wire:model="password"
-                                wire:keydown.enter="logoutOtherBrowserSessions" />
-
-                    <x-input-error for="password" class="mt-2" />
+        <flux:modal wire:model.live="confirmingLogout" class="md:w-[500px] lg:w-[600px]">
+            <div class="space-y-0">
+                {{-- Header Section --}}
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                    <div class="flex items-center gap-3">
+                        <flux:icon name="arrow-right-start-on-rectangle" class="w-8 h-8 text-red-600" />
+                        <div>
+                            <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                                {{ __('Log Out Other Browser Sessions') }}
+                            </flux:heading>
+                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                {{ __('Confirm your password to proceed') }}
+                            </flux:text>
+                        </div>
+                    </div>
                 </div>
-            </x-slot>
 
-            <x-slot name="footer">
-                <x-secondary-button wire:click="$toggle('confirmingLogout')" wire:loading.attr="disabled">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
+                {{-- Content Section --}}
+                <div class="space-y-4">
+                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                        {{ __('Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.') }}
+                    </flux:text>
 
-                <x-button class="ms-3"
-                            wire:click="logoutOtherBrowserSessions"
-                            wire:loading.attr="disabled">
-                    {{ __('Log Out Other Browser Sessions') }}
-                </x-button>
-            </x-slot>
-        </x-dialog-modal>
+                    <div x-data="{}" x-on:confirming-logout-other-browser-sessions.window="setTimeout(() => $refs.password.focus(), 250)">
+                        <flux:input type="password" class="w-3/4"
+                                    autocomplete="current-password"
+                                    placeholder="{{ __('Password') }}"
+                                    x-ref="password"
+                                    wire:model="password"
+                                    wire:keydown.enter="logoutOtherBrowserSessions" />
+                        <x-input-error for="password" class="mt-2" />
+                    </div>
+                </div>
+
+                {{-- Footer Actions --}}
+                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    <flux:button wire:click="$toggle('confirmingLogout')" wire:loading.attr="disabled" variant="outline" size="sm">
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button wire:click="logoutOtherBrowserSessions" wire:loading.attr="disabled" variant="primary" size="sm" icon="arrow-right-start-on-rectangle" class="bg-red-600 hover:bg-red-700 text-white">
+                        {{ __('Log Out Other Browser Sessions') }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
     </x-slot>
 </x-action-section>

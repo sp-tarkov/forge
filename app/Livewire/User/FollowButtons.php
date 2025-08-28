@@ -19,7 +19,6 @@ class FollowButtons extends Component
     /**
      * Whether the authenticated user is currently following the profile user.
      */
-    #[Locked]
     public bool $isFollowing;
 
     /**

@@ -24,7 +24,6 @@ class FollowCards extends Component
      *
      * @var Collection<int, int>
      */
-    #[Locked]
     public Collection $authFollowIds;
 
     /**
