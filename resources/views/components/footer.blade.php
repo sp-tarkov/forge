@@ -25,6 +25,7 @@
                 <div class="sm:order-first">
                     <h3 class="text-sm font-semibold leading-6 text-white">Single Player Tarkov</h3>
                     <ul role="list" class="mt-6 space-y-4">
+                        <li><a href="{{ route('static.installer') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Installer</a></li>
                         <li><a href="{{ route('mods') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Mods</a></li>
                         <li><a href="https://wiki.sp-tarkov.com" target="_blank" class="text-sm leading-6 text-gray-300 hover:text-white">SPT Wiki</a></li>
                         <li><a href="{{ route('static.contact') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Contact</a></li>
