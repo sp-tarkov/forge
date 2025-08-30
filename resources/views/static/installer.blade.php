@@ -116,19 +116,19 @@
                             <ul class="space-y-3">
                                 <li class="flex items-start">
                                     <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
-                                    <span class="text-blue-800 dark:text-blue-200">Check you have the correct version of .NET installed.</span>
+                                    <span class="text-blue-800 dark:text-blue-200">Check you have the correct version of .NET installed</span>
                                 </li>
                                 <li class="flex items-start">
                                     <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
-                                    <span class="text-blue-800 dark:text-blue-200">Duplicate your EFT installation to a selected folder.</span>
+                                    <span class="text-blue-800 dark:text-blue-200">Duplicate your EFT installation to a selected folder</span>
                                 </li>
                                 <li class="flex items-start">
                                     <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
-                                    <span class="text-blue-800 dark:text-blue-200">Patch the duplicated EFT files to the version required for SPT.</span>
+                                    <span class="text-blue-800 dark:text-blue-200">Patch the duplicated EFT files to the version required for SPT</span>
                                 </li>
                                 <li class="flex items-start">
                                     <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
-                                    <span class="text-blue-800 dark:text-blue-200">Download most recent version of SPT and install it into the duplicated folder.</span>
+                                    <span class="text-blue-800 dark:text-blue-200">Download most recent version of SPT and install it into the duplicated folder</span>
                                 </li>
                             </ul>
                         </div>
@@ -145,15 +145,15 @@
                             <ul class="space-y-3">
                                 <li class="flex items-start">
                                     <flux:icon name="arrow-right" class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0" />
-                                    <span class="text-yellow-800 dark:text-yellow-200">Make sure you have a legitimate copy of Escape From Tarkov installed and up-to-date before running the installer.</span>
+                                    <span class="text-yellow-800 dark:text-yellow-200">Make sure you have a legitimate copy of Escape From Tarkov installed and up-to-date before running the installer</span>
                                 </li>
                                 <li class="flex items-start">
                                     <flux:icon name="arrow-right" class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0" />
-                                    <span class="text-yellow-800 dark:text-yellow-200">Do not place this installer on your desktop and run it.</span>
+                                    <span class="text-yellow-800 dark:text-yellow-200">Do not place this installer on your desktop and run it</span>
                                 </li>
                                 <li class="flex items-start">
                                     <flux:icon name="arrow-right" class="size-4 mt-1 mr-3 text-yellow-600 flex-shrink-0" />
-                                    <span class="text-yellow-800 dark:text-yellow-200">The installer downloads SPT and patcher files to <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs whitespace-nowrap">%appdata%\spt-installer\cache</code></span>
+                                    <span class="text-yellow-800 dark:text-yellow-200">The installer downloads SPT and patcher files to: <br /><code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs whitespace-nowrap">%appdata%\spt-installer\cache</code></span>
                                 </li>
                             </ul>
                         </div>
@@ -173,20 +173,20 @@
                             <ol class="space-y-3">
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">1</span>
-                                    <span class="text-green-800 dark:text-green-200">Download installer.</span>
+                                    <span class="text-green-800 dark:text-green-200">Download installer</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">2</span>
-                                    <span class="text-green-800 dark:text-green-200">Place in a new folder. We recommend: <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm whitespace-nowrap">C:\Users\YOURNAME\SPT\</code></span>
+                                    <span class="text-green-800 dark:text-green-200">Place in a new folder. We recommend: <br /><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm whitespace-nowrap">C:\Games\SPT-3.11\</code></span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">3</span>
-                                    <span class="text-green-800 dark:text-green-200">Ensure your EFT install is updated to the latest version.</span>
+                                    <span class="text-green-800 dark:text-green-200">Ensure your EFT install is updated to the latest version</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">4</span>
                                     <div class="text-green-800 dark:text-green-200">
-                                        <span>Run installer.</span>
+                                        <span>Run installer</span>
                                         <div class="mt-1 ml-2 text-sm text-red-600 dark:text-red-400">
                                             <flux:icon name="exclamation-triangle" class="size-4 inline mr-1" />
                                             If something shows as <span class="font-medium">RED</span>, you should read carefully!
@@ -195,7 +195,7 @@
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">5</span>
-                                    <span class="text-green-800 dark:text-green-200">Wait for it to say it has completed.</span>
+                                    <span class="text-green-800 dark:text-green-200">Wait for it to say it has completed</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">6</span>
@@ -216,19 +216,19 @@
                             <ol class="space-y-3">
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">1</span>
-                                    <span class="text-cyan-800 dark:text-cyan-200">Start the <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Spt.Server.exe</code> wait for it to say <span class="text-green-600 font-medium">Happy Playing!</span></span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Start the <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Spt.Server.exe</code> and wait for it to say <span class="text-green-600 font-medium">Happy Playing!</span></span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">2</span>
-                                    <span class="text-cyan-800 dark:text-cyan-200">Start the <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Spt.Launcher.exe</code>.</span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Start the <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Spt.Launcher.exe</code></span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">3</span>
-                                    <span class="text-cyan-800 dark:text-cyan-200">Create a profile.</span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Create a profile</span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">4</span>
-                                    <span class="text-cyan-800 dark:text-cyan-200">Launch the game.</span>
+                                    <span class="text-cyan-800 dark:text-cyan-200">Launch the game</span>
                                 </li>
                             </ol>
                         </div>
