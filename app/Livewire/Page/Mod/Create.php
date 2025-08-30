@@ -78,6 +78,11 @@ class Create extends Component
     public bool $containsAds = false;
 
     /**
+     * Whether comments are disabled for the mod.
+     */
+    public bool $commentsDisabled = false;
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -105,6 +110,7 @@ class Create extends Component
             'publishedAt' => 'nullable|date',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
+            'commentsDisabled' => 'boolean',
         ];
     }
 
@@ -146,6 +152,7 @@ class Create extends Component
             'source_code_url' => $this->sourceCodeUrl,
             'contains_ai_content' => $this->containsAiContent,
             'contains_ads' => $this->containsAds,
+            'comments_disabled' => $this->commentsDisabled,
             'published_at' => $this->publishedAt,
         ]);
 

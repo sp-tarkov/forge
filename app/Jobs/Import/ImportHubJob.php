@@ -804,6 +804,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'contains_ai_content' => (bool) $hubMod->contains_ai,
             'contains_ads' => (bool) $hubMod->contains_ads,
             'disabled' => (bool) $hubMod->isDisabled,
+            'comments_disabled' => ! (bool) $hubMod->enableComments,
             'published_at' => $hubMod->getTime(),
             'created_at' => $hubMod->getTime(),
             'updated_at' => $hubMod->getLastChangeTime(),

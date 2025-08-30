@@ -84,6 +84,11 @@ class Edit extends Component
     public bool $containsAds = false;
 
     /**
+     * Whether comments are disabled for the mod.
+     */
+    public bool $commentsDisabled = false;
+
+    /**
      * Mount the component.
      */
     public function mount(int $modId): void
@@ -104,6 +109,7 @@ class Edit extends Component
         $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
+        $this->commentsDisabled = (bool) $this->mod->comments_disabled;
     }
 
     /**
@@ -124,6 +130,7 @@ class Edit extends Component
             'publishedAt' => 'nullable|date',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
+            'commentsDisabled' => 'boolean',
         ];
     }
 
@@ -161,6 +168,7 @@ class Edit extends Component
         $this->mod->source_code_url = $this->sourceCodeUrl;
         $this->mod->contains_ai_content = $this->containsAiContent;
         $this->mod->contains_ads = $this->containsAds;
+        $this->mod->comments_disabled = $this->commentsDisabled;
         $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.

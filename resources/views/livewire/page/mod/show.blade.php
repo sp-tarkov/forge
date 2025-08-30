@@ -150,7 +150,9 @@
                         <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-cyan-500 dark:focus:ring-cyan-400">
                             <option value="description">{{ __('Description') }}</option>
                             <option value="versions">{{ __('Versions') }}</option>
-                            <option value="comments">{{ __('Comments') }}</option>
+                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user()))
+                                <option value="comments">{{ __('Comments') }}</option>
+                            @endif
                         </select>
                     </div>
 
@@ -159,7 +161,9 @@
                         <nav class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                             <x-tab-button name="Description" />
                             <x-tab-button name="Versions" />
-                            <x-tab-button name="Comments" />
+                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user()))
+                                <x-tab-button name="Comments" />
+                            @endif
                         </nav>
                     </div>
                 </div>
@@ -192,12 +196,23 @@
                 </div>
 
                 {{-- Comments --}}
-                <div id="comments" x-show="selectedTab === 'comments'">
-                    <livewire:comment-component
-                        wire:key="comment-component-{{ $mod->id }}"
-                        :commentable="$mod"
-                    />
-                </div>
+                @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user()))
+                    <div id="comments" x-show="selectedTab === 'comments'">
+                        @if ($mod->comments_disabled && (auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user())))
+                            <div class="mb-6">
+                                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                                    <flux:callout.text>
+                                        {{ __('Comments have been disabled for this mod and are not visible to normal users. As :role, you can still view and manage all comments.', ['role' => auth()->user()?->isModOrAdmin() ? 'an administrator or moderator' : 'the mod owner or author']) }}
+                                    </flux:callout.text>
+                                </flux:callout>
+                            </div>
+                        @endif
+                        <livewire:comment-component
+                            wire:key="comment-component-{{ $mod->id }}"
+                            :commentable="$mod"
+                        />
+                    </div>
+                @endif
             </div>
         </div>
 

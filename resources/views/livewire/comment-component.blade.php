@@ -50,24 +50,31 @@
                     {{ $isSubscribed ? __('Subscribed') : __('Subscribe') }}
                 </flux:button>
             </div>
-            <div class="flex items-start">
-                <div class="mr-3">
-                    <flux:avatar
-                        src="{{ auth()->user()->profile_photo_url }}"
-                        color="auto"
-                        color:seed="{{ auth()->user()->id }}"
-                        circle="circle"
-                    />
+            @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $commentable]))
+                <div class="flex items-start">
+                    <div class="mr-3">
+                        <flux:avatar
+                            src="{{ auth()->user()->profile_photo_url }}"
+                            color="auto"
+                            color:seed="{{ auth()->user()->id }}"
+                            circle="circle"
+                        />
+                    </div>
+                    <div class="flex-1">
+                        <x-comment.form
+                            form-key="newCommentBody"
+                            data-test="new-comment-body"
+                            submit-action="createComment"
+                            submit-text="{{ __('Post Comment') }}"
+                        />
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <x-comment.form
-                        form-key="newCommentBody"
-                        data-test="new-comment-body"
-                        submit-action="createComment"
-                        submit-text="{{ __('Post Comment') }}"
-                    />
+            @else
+                <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                    <flux:icon.chat-bubble-left-ellipsis class="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>{{ __('Comments are disabled.') }}</p>
                 </div>
-            </div>
+            @endif
         </div>
     @endauth
 

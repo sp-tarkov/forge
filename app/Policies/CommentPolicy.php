@@ -25,6 +25,36 @@ class CommentPolicy
      */
     public function view(?User $user, Comment $comment): bool
     {
+        // Check if comments are disabled for mods first
+        if ($comment->commentable_type === Mod::class) {
+            /** @var Mod $mod */
+            $mod = $comment->commentable;
+            if ($mod->comments_disabled) {
+                // Guest users cannot view disabled comments
+                if ($user === null) {
+                    return false;
+                }
+
+                // Moderators and admins can view disabled comments
+                if ($user->isModOrAdmin()) {
+                    return true;
+                }
+
+                // Mod owners can view their mod's comments
+                if ($mod->owner_id === $user->id) {
+                    return true;
+                }
+
+                // Mod authors can view comments on their authored mods
+                if ($mod->authors->contains($user)) {
+                    return true;
+                }
+
+                // All other users cannot view disabled comments
+                return false;
+            }
+        }
+
         // Clean comments are visible to everyone
         if ($comment->isSpamClean()) {
             return true;
@@ -97,7 +127,6 @@ class CommentPolicy
 
     /**
      * Determine whether the user can delete the model.
-     * Users can only delete their own comments.
      */
     public function delete(User $user, Comment $comment): bool
     {
@@ -134,11 +163,6 @@ class CommentPolicy
 
     /**
      * Determine whether the user can react to the comment.
-     *
-     * - Must be logged in. Handled by not null User parameter.
-     * - Must have verified email address.
-     * - The comment must exist. Handled by not null Comment parameter.
-     * - The user must not be the author of the comment.
      */
     public function react(User $user, Comment $comment): bool
     {
@@ -157,11 +181,6 @@ class CommentPolicy
 
     /**
      * Determine whether the user can see the spam status ribbon for a comment.
-     *
-     * Ribbons are shown to moderators/admins when:
-     * - The comment is not clean (spam or pending), AND
-     * - The comment is spam (always shown to mods/admins), OR
-     * - The current user is not the comment author (show pending to mods/admins who didn't write it)
      */
     public function seeRibbon(?User $user, Comment $comment): bool
     {
@@ -428,8 +447,6 @@ class CommentPolicy
 
     /**
      * Determine whether the user can report a comment.
-     *
-     * Authentication and email verification are required.
      */
     public function report(User $user, Model $reportable): bool
     {

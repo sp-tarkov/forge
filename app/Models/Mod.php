@@ -49,6 +49,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $contains_ai_content
  * @property bool $contains_ads
  * @property bool $disabled
+ * @property bool $comments_disabled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
@@ -274,7 +275,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     protected function detailUrl(): Attribute
     {
-        return Attribute::get(fn () => route('mod.show', [$this->id, $this->slug]));
+        return Attribute::get(fn (): string => route('mod.show', [$this->id, $this->slug]));
     }
 
     /**
@@ -288,6 +289,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'contains_ai_content' => 'boolean',
             'contains_ads' => 'boolean',
             'disabled' => 'boolean',
+            'comments_disabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'published_at' => 'datetime',
@@ -323,10 +325,14 @@ class Mod extends Model implements Commentable, Reportable, Trackable
 
     /**
      * Determine if this mod can receive comments.
-     * Only published mods can receive comments.
+     * Only published mods that don't have comments disabled can receive comments.
      */
     public function canReceiveComments(): bool
     {
+        if ($this->comments_disabled) {
+            return false;
+        }
+
         return $this->published_at !== null && $this->published_at <= now();
     }
 

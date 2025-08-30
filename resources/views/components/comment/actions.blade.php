@@ -87,9 +87,11 @@
         />
 
         @auth
-            <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" data-test="reply-button-{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
-                {{ __('Reply') }}
-            </button>
+            @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
+                <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" data-test="reply-button-{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
+                    {{ __('Reply') }}
+                </button>
+            @endif
         @endauth
     @endif
 

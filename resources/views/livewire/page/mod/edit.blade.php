@@ -162,6 +162,17 @@
                                 </flux:checkbox.group>
                             </flux:field>
 
+                            <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Comments">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="commentsDisabled"
+                                        label="Disable Comments"
+                                        description="When enabled, normal users will not be able to view or create comments on this mod. Administrators and moderators will still have full access."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
                             <x-honeypot livewire-model="honeypotData" />
 
                         </div>
