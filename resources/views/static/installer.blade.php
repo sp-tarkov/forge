@@ -170,7 +170,7 @@
                         </div>
                         <div class="relative z-10 h-full bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-xl p-6">
                             <h3 class="font-semibold text-lg text-green-900 dark:text-green-100 mb-4">Step-by-Step Usage Guide</h3>
-                            <ol class="space-y-3 mb-6">
+                            <ol class="space-y-3">
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">1</span>
                                     <span class="text-green-800 dark:text-green-200">Download installer.</span>
@@ -246,9 +246,9 @@
                                     class="w-full h-full rounded-lg"
                                     controls
                                     preload="metadata"
-                                    poster="{{ Vite::asset('resources/video/video-installation-guide-poster.jpg') }}"
+                                    poster="{{ Vite::asset('resources/images/installation-guide-poster.png') }}"
                                 >
-                                    <source src="{{ Vite::asset('resources/video/video-installation-guide.mp4') }}" type="video/mp4">
+                                    <source src="{{ Vite::asset('resources/video/installation-guide.mp4') }}" type="video/mp4">
                                     <p class="text-center p-4 text-gray-600 dark:text-gray-400">
                                         Your browser does not support the video element. Please upgrade your browser to view the installation guide.
                                     </p>

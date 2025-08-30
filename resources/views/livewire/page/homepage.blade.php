@@ -29,9 +29,9 @@
             </div>
 
             <div class="pb-10">
-                <div class="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
+                <div class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
                     <!-- Large Installer Callout -->
-                    <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-950 dark:from-black dark:via-gray-950 dark:to-black border border-gray-800 dark:border-gray-900 rounded-xl shadow-2xl mb-16">
+                    <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-950 dark:from-black dark:via-gray-950 dark:to-black border border-gray-800 dark:border-gray-900 rounded-xl shadow-2xl mb-10">
                         <!-- Dark gritty texture overlays -->
                         <div class="absolute inset-0 bg-gradient-to-br from-gray-800/20 via-transparent to-black/30"></div>
                         <div class="absolute inset-0 bg-gradient-to-tl from-gray-700/10 to-transparent"></div>
