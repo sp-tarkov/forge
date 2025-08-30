@@ -6,6 +6,7 @@ use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
 describe('Mod Version Create Form', function (): void {
@@ -13,6 +14,24 @@ describe('Mod Version Create Form', function (): void {
     beforeEach(function (): void {
         // Disable honeypot for testing
         config()->set('honeypot.enabled', false);
+
+        // Mock HTTP responses for download link validation
+        Http::fake([
+            'https://example.com/download.7z' => Http::response('', 200, [
+                'content-type' => 'application/octet-stream',
+                'content-length' => '1048576',
+            ]),
+            'https://example.com/download.zip' => Http::response('', 200, [
+                'content-type' => 'application/octet-stream',
+                'content-disposition' => 'attachment; filename="mod.7z"',
+                'content-length' => '2097152',
+            ]),
+            '*' => Http::response('', 200, [
+                'content-type' => 'application/octet-stream',
+                'content-disposition' => 'attachment; filename="mod.7z"',
+                'content-length' => '1048576',
+            ]),
+        ]);
     });
 
     describe('Form Validation', function (): void {

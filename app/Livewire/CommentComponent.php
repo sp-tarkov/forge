@@ -105,6 +105,20 @@ class CommentComponent extends Component
     public ?int $softDeletingCommentId = null;
 
     /**
+     * Mod owner soft delete modal state properties.
+     */
+    public bool $showModOwnerSoftDeleteModal = false;
+
+    public ?int $modOwnerSoftDeletingCommentId = null;
+
+    /**
+     * Mod owner restore modal state properties.
+     */
+    public bool $showModOwnerRestoreModal = false;
+
+    public ?int $modOwnerRestoringCommentId = null;
+
+    /**
      * Hard delete modal state properties.
      */
     public bool $showHardDeleteModal = false;
@@ -502,6 +516,88 @@ class CommentComponent extends Component
         $this->softDeletingCommentId = null;
 
         flash()->success('Comment successfully deleted!');
+    }
+
+    /**
+     * Show mod owner soft delete confirmation modal.
+     */
+    public function confirmModOwnerSoftDeleteComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('modOwnerSoftDelete', $comment);
+
+        $this->modOwnerSoftDeletingCommentId = $commentId;
+        $this->showModOwnerSoftDeleteModal = true;
+    }
+
+    /**
+     * Mod owner soft delete a comment.
+     */
+    public function modOwnerSoftDeleteComment(?int $commentId = null): void
+    {
+        $commentId ??= $this->modOwnerSoftDeletingCommentId;
+        if (! $commentId) {
+            return;
+        }
+
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('modOwnerSoftDelete', $comment);
+
+        $comment->update(['deleted_at' => now()]);
+
+        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+
+        $this->updateCachedDescendant($comment);
+
+        // Dispatch event to update the ribbon component.
+        $this->dispatch('comment-updated', $commentId, deleted: true);
+
+        $this->showModOwnerSoftDeleteModal = false;
+        $this->modOwnerSoftDeletingCommentId = null;
+
+        flash()->success('Comment successfully deleted!');
+    }
+
+    /**
+     * Show mod owner restore confirmation modal.
+     */
+    public function confirmModOwnerRestoreComment(int $commentId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('modOwnerRestore', $comment);
+
+        $this->modOwnerRestoringCommentId = $commentId;
+        $this->showModOwnerRestoreModal = true;
+    }
+
+    /**
+     * Mod owner restore a comment.
+     */
+    public function modOwnerRestoreComment(?int $commentId = null): void
+    {
+        $commentId ??= $this->modOwnerRestoringCommentId;
+        if (! $commentId) {
+            return;
+        }
+
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('modOwnerRestore', $comment);
+
+        $comment->update(['deleted_at' => null]);
+
+        $this->updateCachedDescendant($comment);
+
+        // Dispatch event to update the ribbon component.
+        $this->dispatch('comment-updated', $commentId, deleted: false);
+
+        $this->showModOwnerRestoreModal = false;
+        $this->modOwnerRestoringCommentId = null;
+
+        flash()->success('Comment successfully restored!');
     }
 
     /**

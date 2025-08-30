@@ -139,7 +139,7 @@
 
     {{-- Remove Comment Modal --}}
     @if($showDeleteModal)
-        <flux:modal wire:model="showDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showDeleteModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -165,7 +165,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showDeleteModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showDeleteModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="deleteComment" data-test="confirm-delete-comment" variant="primary" size="sm" icon="trash" class="bg-red-600 hover:bg-red-700">
@@ -178,7 +178,7 @@
 
     {{-- Hide Comment Modal --}}
     @if($showSoftDeleteModal)
-        <flux:modal wire:model="showSoftDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showSoftDeleteModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -204,7 +204,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showSoftDeleteModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showSoftDeleteModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="softDeleteComment" variant="primary" size="sm" icon="eye-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
@@ -215,9 +215,87 @@
         </flux:modal>
     @endif
 
+    {{-- Mod Owner Soft-delete Comment Modal --}}
+    @if($showModOwnerSoftDeleteModal)
+        <flux:modal wire:model.self="showModOwnerSoftDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="eye-slash" class="w-8 h-8 text-amber-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Soft-delete Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Hide comment from public view') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to soft-delete this comment? The comment will be hidden from public view but can be restored by moderators.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button x-on:click="$wire.showModOwnerSoftDeleteModal = false" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="modOwnerSoftDeleteComment" variant="primary" size="sm" icon="eye-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
+                    {{ __('Soft-delete Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
+    {{-- Mod Owner Restore Comment Modal --}}
+    @if($showModOwnerRestoreModal)
+        <flux:modal wire:model.self="showModOwnerRestoreModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="arrow-path" class="w-8 h-8 text-green-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __('Restore Comment') }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('Make comment visible again') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                    {{ __('Are you sure you want to restore this comment? The comment will become visible to all users again.') }}
+                </flux:text>
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button x-on:click="$wire.showModOwnerRestoreModal = false" variant="outline" size="sm">
+                    {{ __('Cancel') }}
+                </flux:button>
+                <flux:button wire:click="modOwnerRestoreComment" variant="primary" size="sm" icon="arrow-path" class="bg-green-600 hover:bg-green-700 text-white">
+                    {{ __('Restore Comment') }}
+                </flux:button>
+            </div>
+        </div>
+        </flux:modal>
+    @endif
+
     {{-- Permanently Remove Comment Modal --}}
     @if($showHardDeleteModal)
-        <flux:modal wire:model="showHardDeleteModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showHardDeleteModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -271,7 +349,7 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <flux:button wire:click="$set('showHardDeleteModal', false)" variant="outline" size="sm">
+                    <flux:button x-on:click="$wire.showHardDeleteModal = false" variant="outline" size="sm">
                         {{ __('Cancel') }}
                     </flux:button>
                     <flux:button wire:click="hardDeleteComment" variant="primary" size="sm" icon="trash" class="bg-red-600 hover:bg-red-700 text-white">
@@ -285,7 +363,7 @@
 
     {{-- Pin Comment Modal --}}
     @if($showPinModal)
-        <flux:modal wire:model="showPinModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showPinModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -311,7 +389,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showPinModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showPinModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="pinComment" data-test="confirm-pin-comment" variant="primary" size="sm" icon="bookmark" class="bg-blue-600 hover:bg-blue-700 text-white">
@@ -324,7 +402,7 @@
 
     {{-- Unpin Comment Modal --}}
     @if($showUnpinModal)
-        <flux:modal wire:model="showUnpinModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showUnpinModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -350,7 +428,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showUnpinModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showUnpinModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="unpinComment" data-test="confirm-unpin-comment" variant="primary" size="sm" icon="bookmark-slash" class="bg-amber-600 hover:bg-amber-700 text-white">
@@ -363,7 +441,7 @@
 
     {{-- Mark as Spam Modal --}}
     @if($showMarkAsSpamModal)
-        <flux:modal wire:model="showMarkAsSpamModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showMarkAsSpamModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -389,7 +467,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showMarkAsSpamModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showMarkAsSpamModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="markCommentAsSpam" variant="primary" size="sm" icon="shield-exclamation" class="bg-red-600 hover:bg-red-700 text-white">
@@ -402,7 +480,7 @@
 
     {{-- Mark as Clean Modal --}}
     @if($showMarkAsCleanModal)
-        <flux:modal wire:model="showMarkAsCleanModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showMarkAsCleanModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -428,7 +506,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showMarkAsCleanModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showMarkAsCleanModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="markCommentAsHam" variant="primary" size="sm" icon="shield-check" class="bg-green-600 hover:bg-green-700 text-white">
@@ -441,7 +519,7 @@
 
     {{-- Check for Spam Modal --}}
     @if($showCheckForSpamModal)
-        <flux:modal wire:model="showCheckForSpamModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showCheckForSpamModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -467,7 +545,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showCheckForSpamModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showCheckForSpamModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="checkCommentForSpam" variant="primary" size="sm" icon="magnifying-glass" class="bg-blue-600 hover:bg-blue-700 text-white">
@@ -480,7 +558,7 @@
 
     {{-- Restore Comment Modal --}}
     @if($showRestoreModal)
-        <flux:modal wire:model="showRestoreModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal wire:model.self="showRestoreModal" class="md:w-[500px] lg:w-[600px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -506,7 +584,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showRestoreModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showRestoreModal = false" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="restoreComment" variant="primary" size="sm" icon="arrow-path" class="bg-green-600 hover:bg-green-700 text-white">

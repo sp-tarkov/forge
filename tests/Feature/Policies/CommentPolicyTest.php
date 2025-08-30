@@ -113,3 +113,278 @@ describe('seeRibbon Policy Method', function (): void {
         expect($this->policy->seeRibbon($this->admin, $comment))->toBeFalse();
     });
 });
+
+describe('modOwnerSoftDelete Policy Method', function (): void {
+    it('returns false for already deleted comments', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($this->user, $comment))->toBeFalse();
+    });
+
+    it('returns false for moderators who are not mod owners or authors', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($this->moderator, $comment))->toBeFalse();
+    });
+
+    it('returns false for admins who are not mod owners or authors', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($this->admin, $comment))->toBeFalse();
+    });
+
+    it('returns false for regular users who are not mod owners or authors', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($this->user, $comment))->toBeFalse();
+    });
+
+    it('returns true for mod owners', function (): void {
+        $modOwner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $modOwner->id]);
+        $comment = Comment::factory()->for($mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($modOwner, $comment))->toBeTrue();
+    });
+
+    it('returns true for mod authors', function (): void {
+        $modAuthor = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $mod->authors()->attach($modAuthor);
+        $comment = Comment::factory()->for($mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($modAuthor, $comment))->toBeTrue();
+    });
+
+    it('returns false for users who do not own the profile being commented on', function (): void {
+        $profileOwner = User::factory()->create();
+        $comment = Comment::factory()->for($profileOwner, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($this->user, $comment))->toBeFalse();
+    });
+
+    it('returns false for mod owners on different mods', function (): void {
+        $modOwner = User::factory()->create();
+        $mod1 = Mod::factory()->create(['owner_id' => $modOwner->id]);
+        $mod2 = Mod::factory()->create();
+        $comment = Comment::factory()->for($mod2, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($modOwner, $comment))->toBeFalse();
+    });
+
+    it('returns true for administrators who are also mod owners', function (): void {
+        $mod = Mod::factory()->create(['owner_id' => $this->admin->id]);
+        $comment = Comment::factory()->for($mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($this->admin, $comment))->toBeTrue();
+    });
+
+    it('returns true for moderators who are also mod authors', function (): void {
+        $mod = Mod::factory()->create();
+        $mod->authors()->attach($this->moderator);
+        $comment = Comment::factory()->for($mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerSoftDelete($this->moderator, $comment))->toBeTrue();
+    });
+
+    it('returns true for user profile owners on their own profile comments', function (): void {
+        $profileOwner = User::factory()->create();
+        $commenter = User::factory()->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $commenter->id,
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($profileOwner, $comment))->toBeTrue();
+    });
+
+    it('returns false for users on other users profile comments', function (): void {
+        $profileOwner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $commenter = User::factory()->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $commenter->id,
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($otherUser, $comment))->toBeFalse();
+    });
+
+    it('returns true for administrators who own profile being commented on', function (): void {
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $this->admin->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($this->admin, $comment))->toBeTrue();
+    });
+
+    it('returns false for mod owners trying to delete comments made by administrators', function (): void {
+        $modOwner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $modOwner->id]);
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'user_id' => $this->admin->id,
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($modOwner, $comment))->toBeFalse();
+    });
+
+    it('returns false for mod owners trying to delete comments made by moderators', function (): void {
+        $modOwner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $modOwner->id]);
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'user_id' => $this->moderator->id,
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($modOwner, $comment))->toBeFalse();
+    });
+
+    it('returns false for profile owners trying to delete comments made by administrators', function (): void {
+        $profileOwner = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $this->admin->id,
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($profileOwner, $comment))->toBeFalse();
+    });
+
+    it('returns false for profile owners trying to delete comments made by moderators', function (): void {
+        $profileOwner = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $this->moderator->id,
+        ]);
+
+        expect($this->policy->modOwnerSoftDelete($profileOwner, $comment))->toBeFalse();
+    });
+});
+
+describe('modOwnerRestore Policy Method', function (): void {
+    it('returns false for non-deleted comments', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create();
+
+        expect($this->policy->modOwnerRestore($this->user, $comment))->toBeFalse();
+    });
+
+    it('returns true for mod owners on deleted mod comments', function (): void {
+        $modOwner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $modOwner->id]);
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($modOwner, $comment))->toBeTrue();
+    });
+
+    it('returns true for mod authors on deleted mod comments', function (): void {
+        $modAuthor = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $mod->authors()->attach($modAuthor);
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($modAuthor, $comment))->toBeTrue();
+    });
+
+    it('returns true for profile owners on deleted profile comments', function (): void {
+        $profileOwner = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $this->user->id,
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($profileOwner, $comment))->toBeTrue();
+    });
+
+    it('returns false for users who do not own the mod or profile', function (): void {
+        $profileOwner = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $this->user->id,
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($this->user, $comment))->toBeFalse();
+    });
+
+    it('returns true for administrators who own the profile being commented on', function (): void {
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $this->admin->id,
+            'user_id' => $this->user->id,
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($this->admin, $comment))->toBeTrue();
+    });
+
+    it('returns true for moderators who are mod authors on deleted mod comments', function (): void {
+        $mod = Mod::factory()->create();
+        $mod->authors()->attach($this->moderator);
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($this->moderator, $comment))->toBeTrue();
+    });
+
+    it('returns false for mod owners trying to restore deleted comments made by administrators', function (): void {
+        $modOwner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $modOwner->id]);
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'user_id' => $this->admin->id,
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($modOwner, $comment))->toBeFalse();
+    });
+
+    it('returns false for mod owners trying to restore deleted comments made by moderators', function (): void {
+        $modOwner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $modOwner->id]);
+        $comment = Comment::factory()->for($mod, 'commentable')->create([
+            'user_id' => $this->moderator->id,
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($modOwner, $comment))->toBeFalse();
+    });
+
+    it('returns false for profile owners trying to restore deleted comments made by administrators', function (): void {
+        $profileOwner = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $this->admin->id,
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($profileOwner, $comment))->toBeFalse();
+    });
+
+    it('returns false for profile owners trying to restore deleted comments made by moderators', function (): void {
+        $profileOwner = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => User::class,
+            'commentable_id' => $profileOwner->id,
+            'user_id' => $this->moderator->id,
+            'deleted_at' => now(),
+        ]);
+
+        expect($this->policy->modOwnerRestore($profileOwner, $comment))->toBeFalse();
+    });
+});

@@ -295,6 +295,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             'version',
             'description',
             'link',
+            'content_length',
             'spt_version_constraint',
             'virus_total_link',
             'downloads',

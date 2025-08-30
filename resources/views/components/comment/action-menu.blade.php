@@ -28,8 +28,30 @@ x-on:beforeunload.window="stopPolling()">
             size="sm"
         />
         <flux:menu class="action-comments">
+            @if(\App\Support\CachedGate::allows('modOwnerSoftDelete', $comment) || \App\Support\CachedGate::allows('modOwnerRestore', $comment))
+                <flux:menu.group heading="Author Actions">
+                    @if($comment->isDeleted())
+                        @if(\App\Support\CachedGate::allows('modOwnerRestore', $comment))
+                            <flux:menu.item 
+                                wire:click="confirmModOwnerRestoreComment({{ $comment->id }})" 
+                                icon:trailing="arrow-path">
+                                Restore Comment
+                            </flux:menu.item>
+                        @endif
+                    @else
+                        @if(\App\Support\CachedGate::allows('modOwnerSoftDelete', $comment))
+                            <flux:menu.item 
+                                wire:click="confirmModOwnerSoftDeleteComment({{ $comment->id }})" 
+                                icon:trailing="eye-slash">
+                                Soft Delete
+                            </flux:menu.item>
+                        @endif
+                    @endif
+                </flux:menu.group>
+            @endif
+            
             @if(\App\Support\CachedGate::allows('viewActions', $comment))
-                <flux:menu.group heading="Comment Actions">
+                <flux:menu.group heading="Administrator Actions">
                     @if(\App\Support\CachedGate::allows('pin', $comment))
                         @if($comment->isPinned())
                             <flux:menu.item

@@ -19,6 +19,7 @@
                 :mod-id="$version->mod_id"
                 :version-number="$version->version"
                 :version-disabled="(bool) $version->disabled"
+                :version-published="(bool) $version->published_at && $version->published_at <= now()"
             />
         @endcan
 
@@ -30,21 +31,24 @@
                         <flux:icon icon="arrow-down-on-square-stack" class="inline-block size-6 ml-2 relative -top-1" />
                     </flux:tooltip>
                 </a>
-                <div class="mt-3 flex flex-row justify-start">
+                <div class="mt-3 flex flex-row justify-start items-center gap-2.5">
                     <flux:tooltip content="Latest Compatible SPT Version" position="right">
-                        <p>
-                            @if ($version->latestSptVersion)
-                                <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                    {{ $version->latestSptVersion->version_formatted }}
-                                </span>
-                            @else
-                                <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
-                                    {{ __('Unknown SPT Version') }}
-                                </span>
-                            @endif
-                        </p>
+                        @if ($version->latestSptVersion)
+                            <span class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                {{ $version->latestSptVersion->version_formatted }}
+                            </span>
+                        @else
+                            <span class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                {{ __('Unknown SPT Version') }}
+                            </span>
+                        @endif
                     </flux:tooltip>
-                    <p class="ml-2.5 text-sm text-gray-800 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">
+                    @if ($version->formatted_file_size)
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ $version->formatted_file_size }}
+                        </p>
+                    @endif
+                    <p class="text-sm text-gray-800 dark:text-gray-300" title="{{ __('Exactly') }} {{ $version->downloads }}">
                         {{ Number::downloads($version->downloads) }} {{ __('Downloads') }}
                     </p>
                 </div>

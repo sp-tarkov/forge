@@ -42,37 +42,68 @@
     @endif
 
     {{-- View All Dialog --}}
-    @push('modals')
-        <x-dialog-modal wire:model="showFollowDialog">
-            <x-slot name="title">
-                <h2 class="text-2xl">{{ __($dialogTitle, ['name' => $profileUser->name]) }}</h2>
-            </x-slot>
-            <x-slot name="content">
+    <flux:modal wire:model.self="showFollowDialog" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+                <div class="flex items-center gap-3">
+                    <flux:icon name="users" class="w-8 h-8 text-blue-600" />
+                    <div>
+                        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            {{ __($dialogTitle, ['name' => $profileUser->name]) }}
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            {{ __('View all connections') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
                 <div class="h-96 overflow-y-auto">
                     @foreach ($followUsers as $user)
-                        <div class="flex group/item dark:hover:bg-gray-950 items-center p-2 pr-3 rounded-md">
-                            <a href="{{ $user->profile_url }}" class="shrink-0 w-16 h-16 items-center">
-                                <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="block w-16 h-16 rounded-full" />
+                        <div wire:key="follow-user-{{ $user->id }}" class="flex group/item dark:hover:bg-gray-950 items-center p-2 pr-3 rounded-md">
+                            <a href="{{ $user->profile_url }}" class="shrink-0 w-12 h-12 items-center">
+                                <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="block w-12 h-12 rounded-full" />
                             </a>
                             <div class="flex flex-col w-full pl-3">
-                                <a href="{{ $user->profile_url }}" class="text-2xl group-hover/item:underline group-hover/item:text-white">{{ $user->name }}</a>
-                                <span>
+                                <a href="{{ $user->profile_url }}" class="text-lg group-hover/item:underline group-hover/item:text-white">{{ $user->name }}</a>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">
                                     {{ __("Member Since") }}
                                     <x-time :datetime="$user->created_at" />
                                 </span>
                             </div>
                             @if (auth()->check() && auth()->user()->id !== $user->id)
-                                <livewire:user.follow-buttons :profile-user-id="$user->id" :is-following="$authFollowIds->contains($user->id)" />
+                                <div wire:key="follow-action-{{ $user->id }}">
+                                    @if ($authFollowIds->contains($user->id))
+                                        <flux:button wire:click="unfollowUser({{ $user->id }})" variant="outline" size="sm" class="whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <flux:icon.heart variant="solid" class="text-red-500 mr-1.5" />
+                                                {{ __('Following') }}
+                                            </div>
+                                        </flux:button>
+                                    @else
+                                        <flux:button wire:click="followUser({{ $user->id }})" variant="outline" size="sm" class="whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <flux:icon.heart variant="outline" class="text-white mr-1.5" />
+                                                {{ __('Follow') }}
+                                            </div>
+                                        </flux:button>
+                                    @endif
+                                </div>
                             @endif
                         </div>
                     @endforeach
                 </div>
-            </x-slot>
-            <x-slot name="footer">
-                <x-button x-on:click="show = false">
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-end items-center pt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <flux:button x-on:click="$wire.showFollowDialog = false" variant="primary" size="sm">
                     {{ __('Close') }}
-                </x-button>
-            </x-slot>
-        </x-dialog-modal>
-    @endpush
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 </div>

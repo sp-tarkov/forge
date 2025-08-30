@@ -32,8 +32,8 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Version Information</h3>
                     <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Add a new version to your mod by filling out this form. It will be unpublished by default.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
-                        Please ensure you follow the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">community guidelines</a>
-                        and the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">file submission guidelines</a>.
+                        Please ensure you follow the <a href="{{ route('static.community-standards') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Community Standards</a>
+                        and the <a href="{{ route('static.content-guidelines') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Content Guidelines</a>.
                         Failing to do so will result in your mod being removed from the Forge and possible action being taken against your account.
                     </p>
                 </div>

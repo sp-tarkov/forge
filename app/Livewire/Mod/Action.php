@@ -6,6 +6,7 @@ namespace App\Livewire\Mod;
 
 use App\Models\Mod;
 use App\Traits\Livewire\ModerationActionMenu;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -45,6 +46,17 @@ class Action extends Component
     public bool $modDisabled;
 
     /**
+     * Whether the mod is published.
+     */
+    #[Locked]
+    public bool $modPublished;
+
+    /**
+     * The publish date for the mod.
+     */
+    public ?string $publishedAt = null;
+
+    /**
      * The route name of the current page on initialization of the component.
      */
     #[Locked]
@@ -60,12 +72,13 @@ class Action extends Component
     /**
      * Initialize the component with optimized data.
      */
-    public function mount(int $modId, string $modName, bool $modFeatured, bool $modDisabled, bool $homepageFeatured = false): void
+    public function mount(int $modId, string $modName, bool $modFeatured, bool $modDisabled, bool $modPublished, bool $homepageFeatured = false): void
     {
         $this->modId = $modId;
         $this->modName = $modName;
         $this->modFeatured = $modFeatured;
         $this->modDisabled = $modDisabled;
+        $this->modPublished = $modPublished;
         $this->homepageFeatured = $homepageFeatured;
         $this->routeName = request()->route()?->getName() ?? '';
     }
@@ -76,7 +89,7 @@ class Action extends Component
     #[Computed(persist: true)]
     public function mod(): Mod
     {
-        return Mod::query()->select(['id', 'name', 'featured', 'disabled', 'owner_id'])
+        return Mod::query()->select(['id', 'name', 'featured', 'disabled', 'published_at', 'owner_id'])
             ->with('owner:id,name')
             ->findOrFail($this->modId);
     }
@@ -105,6 +118,8 @@ class Action extends Component
                 'unfeature' => Gate::allows('unfeature', $this->mod),
                 'disable' => Gate::allows('disable', $this->mod),
                 'enable' => Gate::allows('enable', $this->mod),
+                'publish' => Gate::allows('publish', $this->mod),
+                'unpublish' => Gate::allows('unpublish', $this->mod),
                 'isModOrAdmin' => $user->isModOrAdmin(),
             ]
         );
@@ -187,6 +202,48 @@ class Action extends Component
         $this->dispatch('mod-updated.'.$this->modId, disabled: false);
 
         flash()->success('Mod successfully enabled!');
+
+        $this->menuOpen = false;
+    }
+
+    /**
+     * Publishes the mod with a specified date.
+     */
+    public function publish(): void
+    {
+        $this->authorize('publish', $this->mod);
+
+        $publishedDate = $this->publishedAt ? Carbon::parse($this->publishedAt) : now();
+
+        Mod::query()->where('id', $this->modId)->update(['published_at' => $publishedDate]);
+
+        $this->modPublished = true;
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+
+        // Dispatch event to update ribbon
+        $this->dispatch('mod-updated.'.$this->modId, published: true);
+
+        flash()->success('Mod successfully published!');
+
+        $this->menuOpen = false;
+    }
+
+    /**
+     * Unpublishes the mod.
+     */
+    public function unpublish(): void
+    {
+        $this->authorize('unpublish', $this->mod);
+
+        Mod::query()->where('id', $this->modId)->update(['published_at' => null]);
+
+        $this->modPublished = false;
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+
+        // Dispatch event to update ribbon
+        $this->dispatch('mod-updated.'.$this->modId, published: false);
+
+        flash()->success('Mod successfully unpublished!');
 
         $this->menuOpen = false;
     }

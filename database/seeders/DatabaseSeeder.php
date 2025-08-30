@@ -19,6 +19,7 @@ use Faker\Generator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
 use Laravel\Prompts\Progress;
 
 use function Laravel\Prompts\progress;
@@ -43,6 +44,36 @@ class DatabaseSeeder extends Seeder
         // Increase memory limit for seeding
         ini_set('memory_limit', '512M');
 
+        // Disable ALL events globally during seeding to prevent job dispatch
+        Model::unsetEventDispatcher();
+
+        // Disable Scout search syncing for models that use Searchable trait
+        Mod::withoutSyncingToSearch(function () {
+            User::withoutSyncingToSearch(function () {
+                $this->runSeeding();
+            });
+        });
+
+        // Re-enable events by setting a new event dispatcher
+        Model::setEventDispatcher(app('events'));
+
+        Artisan::call('app:search-sync');
+        Artisan::call('app:resolve-versions');
+        Artisan::call('app:count-mods');
+        Artisan::call('app:update-downloads');
+        $this->command->outputComponents()->info('Jobs added to queue. Ensure queue is running!');
+
+        Artisan::call('cache:clear');
+        $this->command->outputComponents()->success('Cache cleared');
+
+        $this->command->outputComponents()->success('Database seeding complete');
+    }
+
+    /**
+     * Run the actual seeding logic.
+     */
+    private function runSeeding(): void
+    {
         // How many of each entity to create.
         $counts = [
             'license' => 10,
@@ -84,7 +115,29 @@ class DatabaseSeeder extends Seeder
         progress(
             label: 'adding user follows ...',
             steps: $allUsers,
-            callback: function ($user) use ($allUsers) {
+            callback: function ($user) use ($allUsers, $testAccount) {
+                // Special handling for test account
+                if ($user->id === $testAccount->id) {
+                    // Test account should have exactly 15 followers and follow exactly 15 users
+                    $otherUsers = $allUsers->where('id', '!=', $testAccount->id);
+
+                    // Give test account 15 followers
+                    $followers = $otherUsers->random(15)->pluck('id')->toArray();
+                    $user->followers()->attach($followers);
+
+                    // Make test account follow 15 different users (avoiding overlap where possible)
+                    $following = $otherUsers->whereNotIn('id', $followers)->random(min(15, $otherUsers->whereNotIn('id', $followers)->count()))->pluck('id')->toArray();
+                    if (count($following) < 15) {
+                        // If we don't have enough non-followers, fill from all other users
+                        $remaining = $otherUsers->whereNotIn('id', $following)->random(15 - count($following))->pluck('id')->toArray();
+                        $following = array_merge($following, $remaining);
+                    }
+                    $user->following()->attach($following);
+
+                    return;
+                }
+
+                // Regular random follow logic for other users
                 $hasFollowers = rand(0, 100) < 70; // 70% chance to have followers
                 $isFollowing = rand(0, 100) < 70; // 70% chance to be following other users
 
@@ -118,14 +171,14 @@ class DatabaseSeeder extends Seeder
             }
         );
 
-        // Add mod versions, assigning them to the mods we just created.
+        // Add mod versions, assigning them to the mods we just created
         $modVersions = collect(progress(
             label: 'Adding Mod Versions...',
             steps: $counts['modVersion'],
             callback: fn () => ModVersion::factory()->recycle([$mods])->create()
         ));
 
-        // Add mod dependencies to *some* mod versions.
+        // Add mod dependencies to *some* mod versions
         progress(
             label: 'Adding Mod Dependencies...',
             steps: $modVersions,
@@ -143,81 +196,79 @@ class DatabaseSeeder extends Seeder
             }
         );
 
-        // Add comments to mods (without triggering observers/notifications)
-        Comment::withoutEvents(function () use ($mods, $allUsers) {
-            progress(
-                label: 'Adding Comments...',
-                steps: $mods,
-                callback: function (Mod $mod, Progress $progress) use ($allUsers) {
-                    // Create 1-20 parent comments with varied spam statuses
-                    $parentCommentCount = rand(1, 20);
+        // Add comments to mods
+        progress(
+            label: 'Adding Comments...',
+            steps: $mods,
+            callback: function (Mod $mod, Progress $progress) use ($allUsers) {
+                // Create 1-20 parent comments with varied spam statuses
+                $parentCommentCount = rand(1, 20);
 
-                    for ($i = 0; $i < $parentCommentCount; $i++) {
-                        // Determine spam status and deletion status
-                        $spamStatus = $this->getRandomSpamStatus();
-                        $isDeleted = rand(0, 100) < 10; // 10% chance to be deleted
+                for ($i = 0; $i < $parentCommentCount; $i++) {
+                    // Determine spam status and deletion status
+                    $spamStatus = $this->getRandomSpamStatus();
+                    $isDeleted = rand(0, 100) < 10; // 10% chance to be deleted
 
-                        $commentData = [
-                            'spam_status' => $spamStatus,
-                        ];
-                        if ($isDeleted) {
-                            $commentData['deleted_at'] = now()->subDays(rand(1, 30));
-                        }
+                    $commentData = [
+                        'spam_status' => $spamStatus,
+                    ];
+                    if ($isDeleted) {
+                        $commentData['deleted_at'] = now()->subDays(rand(1, 30));
+                    }
 
-                        $comment = Comment::factory()
-                            ->recycle([$mod])
-                            ->recycle($allUsers)
-                            ->create($commentData);
+                    $comment = Comment::factory()
+                        ->recycle([$mod])
+                        ->recycle($allUsers)
+                        ->create($commentData);
 
-                        // For each comment, 30% chance to have replies
-                        if (rand(0, 9) < 3) {
-                            // Create 1-4 replies to the parent comment
-                            $replyCount = rand(1, 4);
+                    // For each comment, 30% chance to have replies
+                    if (rand(0, 9) < 3) {
+                        // Create 1-4 replies to the parent comment
+                        $replyCount = rand(1, 4);
 
-                            for ($j = 0; $j < $replyCount; $j++) {
-                                $replySpamStatus = $this->getRandomSpamStatus();
-                                $replyIsDeleted = rand(0, 100) < 8; // 8% chance for replies to be deleted
+                        for ($j = 0; $j < $replyCount; $j++) {
+                            $replySpamStatus = $this->getRandomSpamStatus();
+                            $replyIsDeleted = rand(0, 100) < 8; // 8% chance for replies to be deleted
 
-                                $replyData = [
-                                    'spam_status' => $replySpamStatus,
-                                ];
-                                if ($replyIsDeleted) {
-                                    $replyData['deleted_at'] = now()->subDays(rand(1, 15));
-                                }
+                            $replyData = [
+                                'spam_status' => $replySpamStatus,
+                            ];
+                            if ($replyIsDeleted) {
+                                $replyData['deleted_at'] = now()->subDays(rand(1, 15));
+                            }
 
-                                $firstLevelReply = Comment::factory()
-                                    ->reply($comment)
-                                    ->recycle($allUsers)
-                                    ->create($replyData);
+                            $firstLevelReply = Comment::factory()
+                                ->reply($comment)
+                                ->recycle($allUsers)
+                                ->create($replyData);
 
-                                // For each first-level reply, 40% chance to have nested replies
-                                if (rand(0, 9) < 4) {
-                                    // Create 1-2 nested replies
-                                    $nestedReplyCount = rand(1, 2);
+                            // For each first-level reply, 40% chance to have nested replies
+                            if (rand(0, 9) < 4) {
+                                // Create 1-2 nested replies
+                                $nestedReplyCount = rand(1, 2);
 
-                                    for ($k = 0; $k < $nestedReplyCount; $k++) {
-                                        $nestedSpamStatus = $this->getRandomSpamStatus();
-                                        $nestedIsDeleted = rand(0, 100) < 5; // 5% chance for nested replies to be deleted
+                                for ($k = 0; $k < $nestedReplyCount; $k++) {
+                                    $nestedSpamStatus = $this->getRandomSpamStatus();
+                                    $nestedIsDeleted = rand(0, 100) < 5; // 5% chance for nested replies to be deleted
 
-                                        $nestedData = [
-                                            'spam_status' => $nestedSpamStatus,
-                                        ];
-                                        if ($nestedIsDeleted) {
-                                            $nestedData['deleted_at'] = now()->subDays(rand(1, 7));
-                                        }
-
-                                        Comment::factory()
-                                            ->reply($firstLevelReply)
-                                            ->recycle($allUsers)
-                                            ->create($nestedData);
+                                    $nestedData = [
+                                        'spam_status' => $nestedSpamStatus,
+                                    ];
+                                    if ($nestedIsDeleted) {
+                                        $nestedData['deleted_at'] = now()->subDays(rand(1, 7));
                                     }
+
+                                    Comment::factory()
+                                        ->reply($firstLevelReply)
+                                        ->recycle($allUsers)
+                                        ->create($nestedData);
                                 }
                             }
                         }
                     }
                 }
-            );
-        });
+            }
+        );
 
         // Add reactions to comments
         progress(
@@ -275,7 +326,7 @@ class DatabaseSeeder extends Seeder
             }
         );
 
-        // Load the content of the tests/Mock/MarkdownContent.md and create a new Mod with the content as the description.
+        // Load the content of the tests/Mock/MarkdownContent.md and create a new Mod with the content as the description
         $mod = Mod::factory()->hasVersions(3)->create([
             'name' => 'Markdown Test',
             'slug' => 'markdown-test',
@@ -283,17 +334,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command->outputComponents()->success('Initial seeding complete');
-
-        Artisan::call('app:search-sync');
-        Artisan::call('app:resolve-versions');
-        Artisan::call('app:count-mods');
-        Artisan::call('app:update-downloads');
-        $this->command->outputComponents()->warn('Jobs added to queue. Ensure Horizon is running!');
-
-        Artisan::call('cache:clear');
-        $this->command->outputComponents()->info('Cache cleared');
-
-        $this->command->outputComponents()->success('Database seeding complete');
     }
 
     /**

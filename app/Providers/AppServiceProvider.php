@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Enums\TrackingEventType;
 use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\Track;
+use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use App\Services\TrackService;
@@ -16,9 +17,11 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
@@ -75,6 +78,14 @@ class AppServiceProvider extends ServiceProvider
         // Register Livewire component overrides.
         $this->registerLivewireOverrides();
 
+        // Register the broadcasting.auth early to load our extended controller.
+        $this->app->booted(function (): void {
+            Route::match(['get', 'post'], 'broadcasting/auth', [VisitorsPresenceBroadcastingController::class, 'authenticate'])
+                ->name('broadcasting.auth')
+                ->middleware('web')
+                ->withoutMiddleware([VerifyCsrfToken::class]);
+        });
+
         // This gate determines who can access the Pulse dashboard.
         Gate::define('viewPulse', fn (User $user): bool => $user->isAdmin());
 
@@ -90,11 +101,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, function (): void {
             Track::event(TrackingEventType::LOGIN);
         });
-
         Event::listen(Logout::class, function (): void {
             Track::event(TrackingEventType::LOGOUT);
         });
-
         Event::listen(Registered::class, function (): void {
             Track::event(TrackingEventType::REGISTER);
         });

@@ -15,6 +15,8 @@ use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Livewire\Page\User\Show as UserShow;
 use App\Models\Mod;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth.banned')->group(function (): void {
@@ -27,7 +29,7 @@ Route::middleware('auth.banned')->group(function (): void {
         ->name('mods');
 
     Route::get('/mod/{modId}/{slug}', ModShow::class)
-        ->where(['modId' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
+        ->where(['modId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
         ->name('mod.show');
 
     Route::get('/mod/download/{mod}/{slug}/{version}', [ModVersionController::class, 'show'])
@@ -53,7 +55,7 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {
 
         // Authenticated and verified routes
-        Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+        Route::get('/dashboard', fn (): View|Factory => view('dashboard'))->name('dashboard');
 
         Route::get('/mod/create', ModCreate::class)
             ->name('mod.create');
@@ -77,10 +79,11 @@ Route::middleware('auth.banned')->group(function (): void {
     });
 
     // Routes for static content
-    Route::view('/mods-disclaimer', 'static.mods-disclaimer');
-    // Route::view('/dmca', 'static.dmca');
-    Route::view('/guidelines', 'static.guidelines');
-    Route::view('/installer', 'static.installer')->name('installer');
-    Route::view('/privacy-policy', 'static.privacy')->name('policy.show');
-    Route::view('/terms-of-service', 'static.tos')->name('terms.show');
+    Route::view('/contact', 'static.contact')->name('static.contact');
+    Route::view('/dmca', 'static.dmca')->name('static.dmca');
+    Route::view('/community-standards', 'static.community-standards')->name('static.community-standards');
+    Route::view('/content-guidelines', 'static.content-guidelines')->name('static.content-guidelines');
+    Route::view('/installer', 'static.installer')->name('static.installer');
+    Route::view('/privacy-policy', 'static.privacy')->name('static.privacy');
+    Route::view('/terms-of-service', 'static.tos')->name('static.terms');
 });

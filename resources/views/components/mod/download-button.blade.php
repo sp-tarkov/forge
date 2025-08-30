@@ -8,12 +8,18 @@
     'sptVersionColorClass' => null,
     'versionDescriptionHtml',
     'versionUpdatedAt',
+    'fileSize' => null,
 ])
 
 <div class="{{ $name === 'download-show-mobile' ? 'lg:hidden block' : 'hidden lg:block' }}">
     <flux:modal.trigger name="{{ $name }}">
         <button class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20">
-            {{ __('Download Latest Version') }} ({{ $versionString }})
+            <div class="flex flex-col justify-center items-center">
+                <div>{{ __('Download Latest Version') }} ({{ $versionString }})</div>
+                @if ($fileSize)
+                    <div class="text-sm font-normal opacity-75">{{ $fileSize }}</div>
+                @endif
+            </div>
         </button>
     </flux:modal.trigger>
 
@@ -28,7 +34,7 @@
                             {{ __('Latest Version') }} {{ $versionString }}
                         </flux:heading>
 
-                        <div class="flex items-center gap-3 mt-3">
+                        <div class="flex items-center gap-3 mt-3 flex-wrap">
                             @if ($sptVersionFormatted)
                                 <span class="badge-version {{ $sptVersionColorClass }} inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold text-nowrap shadow-sm">
                                     {{ $sptVersionFormatted }}
@@ -38,6 +44,12 @@
                             <flux:text class="text-gray-600 dark:text-gray-400 text-sm">
                                 {{ __('Updated') }} {{ \Carbon\Carbon::dynamicFormat($versionUpdatedAt) }}
                             </flux:text>
+
+                            @if ($fileSize)
+                                <flux:text class="text-gray-600 dark:text-gray-400 text-sm">
+                                    {{ $fileSize }}
+                                </flux:text>
+                            @endif
                         </div>
                     </div>
                 </div>

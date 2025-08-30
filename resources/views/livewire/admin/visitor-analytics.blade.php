@@ -584,7 +584,7 @@ use Illuminate\Support\Str;
     </div>
 
     {{-- Event Details Modal --}}
-    <flux:modal wire:model="showEventModal" class="md:w-[800px] lg:w-[1000px]">
+    <flux:modal wire:model.self="showEventModal" class="md:w-[800px] lg:w-[1000px]">
         <div class="space-y-0">
             {{-- Header Section --}}
             <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
@@ -612,7 +612,7 @@ use Illuminate\Support\Str;
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button wire:click="$set('showEventModal', false)" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showEventModal = false" variant="outline" size="sm">
                     Close
                 </flux:button>
             </div>

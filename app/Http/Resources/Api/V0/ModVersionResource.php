@@ -74,6 +74,10 @@ class ModVersionResource extends JsonResource
             $data['link'] = $this->resource->link;
         }
 
+        if ($this->shouldInclude('content_length')) {
+            $data['content_length'] = $this->resource->content_length;
+        }
+
         if ($this->shouldInclude('spt_version_constraint')) {
             $data['spt_version_constraint'] = $this->resource->spt_version_constraint;
         }

@@ -40,6 +40,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $version_labels
  * @property string $description
  * @property string $link
+ * @property int|null $content_length
  * @property string $spt_version_constraint
  * @property string $virus_total_link
  * @property int $downloads
@@ -292,5 +293,19 @@ class ModVersion extends Model implements Trackable
     public function getTrackingContext(): ?string
     {
         return sprintf('Version %s of %s', $this->version, $this->mod->name);
+    }
+
+    /**
+     * Get the formatted file size in MB.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function formattedFileSize(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => $this->content_length
+                ? number_format($this->content_length / 1024 / 1024, 1).' MB'
+                : null
+        );
     }
 }

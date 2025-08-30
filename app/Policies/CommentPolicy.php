@@ -218,6 +218,96 @@ class CommentPolicy
     }
 
     /**
+     * Determine whether the mod owner/author or profile owner can soft-delete the comment.
+     */
+    public function modOwnerSoftDelete(User $user, Comment $comment): bool
+    {
+        // Comment must not yet be deleted
+        if ($comment->isDeleted()) {
+            return false;
+        }
+
+        // Cannot delete comments made by administrators or moderators
+        if ($comment->user->isModOrAdmin()) {
+            return false;
+        }
+
+        // For mod comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Mod::class) {
+            /** @var Mod $mod */
+            $mod = $comment->commentable;
+
+            // Check if the user is the mod owner
+            if ($mod->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the mod authors
+            if ($mod->authors->contains($user)) {
+                return true;
+            }
+        }
+
+        // For user profile comments, check if the user owns the profile
+        if ($comment->commentable_type === User::class) {
+            /** @var User $profileUser */
+            $profileUser = $comment->commentable;
+
+            // Check if the user owns the profile being commented on
+            if ($profileUser->id === $user->id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the mod owner/author or profile owner can restore the comment.
+     */
+    public function modOwnerRestore(User $user, Comment $comment): bool
+    {
+        // Comment must be soft-deleted to be restored
+        if (! $comment->isDeleted()) {
+            return false;
+        }
+
+        // Cannot restore comments made by administrators or moderators
+        if ($comment->user->isModOrAdmin()) {
+            return false;
+        }
+
+        // For mod comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Mod::class) {
+            /** @var Mod $mod */
+            $mod = $comment->commentable;
+
+            // Check if the user is the mod owner
+            if ($mod->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the mod authors
+            if ($mod->authors->contains($user)) {
+                return true;
+            }
+        }
+
+        // For user profile comments, check if the user owns the profile
+        if ($comment->commentable_type === User::class) {
+            /** @var User $profileUser */
+            $profileUser = $comment->commentable;
+
+            // Check if the user owns the profile being commented on
+            if ($profileUser->id === $user->id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Determine whether the user can hard delete the comment thread.
      */
     public function hardDelete(User $user, Comment $comment): bool
