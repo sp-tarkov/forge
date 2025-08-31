@@ -72,7 +72,9 @@ class Show extends Component
             request()->user()?->can('view-disabled-user-mods', $this->user),
             fn (Builder $q): Builder => $q
                 ->whereDisabled(false)
-                ->whereHas('latestVersion')
+                ->whereHas('versions', function (Builder $versionQuery): void {
+                    $versionQuery->where('disabled', false)->whereNotNull('published_at');
+                })
         );
 
         return $query->paginate(10)

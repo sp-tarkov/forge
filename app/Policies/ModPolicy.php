@@ -30,8 +30,17 @@ class ModPolicy
             return $user?->isModOrAdmin() ?? false;
         }
 
-        if (! $this->hasValidSptVersion($mod)) {
-            $isPrivilegedUser = $user && ($this->isAuthorOrOwner($user, $mod) || $user->isModOrAdmin());
+        // Check if mod is published
+        if (! $mod->published_at) {
+            $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
+            if (! $isPrivilegedUser) {
+                return false;
+            }
+        }
+
+        // Check if mod has valid SPT versions that are also published
+        if (! $this->hasValidPublishedSptVersion($mod, $user)) {
+            $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
             if (! $isPrivilegedUser) {
                 return false;
             }
@@ -55,7 +64,7 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->owner->id === $user->id || $mod->authors->contains($user);
+        return $user->isModOrAdmin() || $mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -103,7 +112,7 @@ class ModPolicy
      */
     public function unpublish(User $user, Mod $mod): bool
     {
-        return $this->isAuthorOrOwner($user, $mod);
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -111,7 +120,7 @@ class ModPolicy
      */
     public function publish(User $user, Mod $mod): bool
     {
-        return $this->isAuthorOrOwner($user, $mod);
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -135,29 +144,25 @@ class ModPolicy
      */
     public function viewActions(User $user, Mod $mod): bool
     {
-        return $this->isAuthorOrOwner($user, $mod);
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**
-     * Check if a version has a valid SPT version tag.
+     * Check if a version has a valid SPT version tag and is published.
      */
-    private function hasValidSptVersion(Mod $mod): bool
+    private function hasValidPublishedSptVersion(Mod $mod, ?User $user): bool
     {
         $mod->loadMissing(['versions.latestSptVersion']);
 
-        return $mod->versions->contains(fn (ModVersion $version): bool => ! is_null($version->latestSptVersion));
-    }
+        $showUnpublished = $user?->isModOrAdmin() ?? false;
 
-    /**
-     * Check if the user is an author or the owner of the mod.
-     */
-    private function isAuthorOrOwner(?User $user, Mod $mod): bool
-    {
-        if ($user === null) {
-            return false;
-        }
+        return $mod->versions->contains(function (ModVersion $version) use ($showUnpublished): bool {
+            $hasValidSptVersion = ! is_null($version->latestSptVersion);
+            $isPublished = ! is_null($version->published_at);
+            $isEnabled = ! $version->disabled;
 
-        return $user->id === $mod->owner?->id || $mod->authors->pluck('id')->contains($user->id);
+            return $hasValidSptVersion && $isEnabled && ($isPublished || $showUnpublished);
+        });
     }
 
     /**

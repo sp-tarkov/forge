@@ -51,7 +51,8 @@ class ModFilter
                     ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                     ->whereColumn('mod_versions.mod_id', 'mods.id')
                     ->where('spt_versions.version', '!=', '0.0.0')
-                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mods.disabled', false));
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
             });
     }
 
@@ -133,14 +134,18 @@ class ModFilter
             return $this->builder;
         }
 
-        return $this->builder->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($versions): void {
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
+        return $this->builder->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($versions, $showDisabled): void {
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
                 ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                 ->whereColumn('mod_versions.mod_id', 'mods.id')
                 ->whereIn('spt_versions.version', $versions)
-                ->where('spt_versions.version', '!=', '0.0.0');
+                ->where('spt_versions.version', '!=', '0.0.0')
+                ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $query) => $query->where('mod_versions.disabled', false))
+                ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $query) => $query->whereNotNull('mod_versions.published_at'));
         });
     }
 }

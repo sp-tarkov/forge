@@ -31,26 +31,25 @@
 
 <div>
 
-    @can('create', [App\Models\ModVersion::class, $mod])
-        @if (! $mod->latestVersion)
-            <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                    <flux:callout.heading>Not Discoverable</flux:callout.heading>
-                    <flux:callout.text>In order for this mod to be discoverable by other users you must first create a mod version.</flux:callout.text>
-                    <x-slot name="actions" class="@md:h-full m-0!">
-                        <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version</flux:button>
-                    </x-slot>
-                </flux:callout>
-            </div>
-        @elseif ($mod->latestVersion && (is_null($mod->published_at) || $mod->published_at > now() || !$mod->versions()->whereNotNull('published_at')->where('published_at', '<=', now())->exists()))
-            <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                    <flux:callout.heading>Not Discoverable</flux:callout.heading>
-                    <flux:callout.text>This mod is not yet published or scheduled for future publication. Once the mod (and at least one of its versions) are published, the mod will be become available to the public.</flux:callout.text>
-                </flux:callout>
-            </div>
-        @endif
-    @endcan
+    @if ($shouldShowWarnings && !empty($warningMessages))
+        <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+            <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                <flux:callout.heading>Visibility Warning</flux:callout.heading>
+                <flux:callout.text>
+                    @foreach ($warningMessages as $warning)
+                        <div>{{ $warning }}</div>
+                    @endforeach
+                </flux:callout.text>
+                @can('create', [App\Models\ModVersion::class, $mod])
+                    @if (isset($warningMessages['no_versions']))
+                        <x-slot name="actions" class="@md:h-full m-0!">
+                            <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version</flux:button>
+                        </x-slot>
+                    @endif
+                @endcan
+            </flux:callout>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto py-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
@@ -150,7 +149,7 @@
                         <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-cyan-500 dark:focus:ring-cyan-400">
                             <option value="description">{{ __('Description') }}</option>
                             <option value="versions">{{ __('Versions') }}</option>
-                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user()))
+                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
                                 <option value="comments">{{ __('Comments') }}</option>
                             @endif
                         </select>
@@ -161,7 +160,7 @@
                         <nav class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                             <x-tab-button name="Description" />
                             <x-tab-button name="Versions" />
-                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user()))
+                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
                                 <x-tab-button name="Comments" />
                             @endif
                         </nav>
@@ -196,9 +195,9 @@
                 </div>
 
                 {{-- Comments --}}
-                @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user()))
+                @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
                     <div id="comments" x-show="selectedTab === 'comments'">
-                        @if ($mod->comments_disabled && (auth()->user()?->isModOrAdmin() || auth()->user()?->id === $mod->owner_id || $mod->authors->contains(auth()->user())))
+                        @if ($mod->comments_disabled && (auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user())))
                             <div class="mb-6">
                                 <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
                                     <flux:callout.text>

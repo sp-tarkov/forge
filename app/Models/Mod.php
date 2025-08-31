@@ -214,27 +214,32 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        // Eager load the latest mod version, and it's latest SPT version.
-        $this->loadMissing([
-            'latestVersion',
-            'latestVersion.latestSptVersion',
-        ]);
-
-        // Ensure the mod has a latest version.
-        if (! $this->latestVersion) {
+        // Check if mod has any versions compatible with active SPT releases
+        if (! $this->hasActiveSptCompatibility()) {
             return false;
         }
-
-        // Ensure the latest version has a latest SPT version.
-        if (! $this->latestVersion->latestSptVersion) {
-            return false;
-        }
-
-        // Ensure the latest SPT version is within the last three minor versions.
-        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
 
         // All conditions are met; the mod should be searchable.
-        return $activeSptVersions->contains('version', $this->latestVersion->latestSptVersion->version);
+        return true;
+    }
+
+    /**
+     * Check if a mod has publicly visible versions that are compatible with active SPT releases.
+     * Used for search indexing to ensure only relevant mods appear in search results.
+     */
+    private function hasActiveSptCompatibility(): bool
+    {
+        // Get active SPT versions (last three minor versions) for search
+        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
+        $activeSptVersionIds = $activeSptVersions->pluck('version')->toArray();
+
+        // Use the scope to filter and then check for active SPT versions
+        return $this->versions()
+            ->publiclyVisible()
+            ->whereHas('latestSptVersion', function ($query) use ($activeSptVersionIds) {
+                $query->whereIn('version', $activeSptVersionIds);
+            })
+            ->exists();
     }
 
     /**
@@ -458,5 +463,17 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     public function getTrackingContext(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * Check if the given user is an author or the owner of this mod.
+     */
+    public function isAuthorOrOwner(?User $user): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        return $user->id === $this->owner?->id || $this->authors->pluck('id')->contains($user->id);
     }
 }

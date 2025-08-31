@@ -308,4 +308,26 @@ class ModVersion extends Model implements Trackable
                 : null
         );
     }
+
+    /**
+     * Query scope for mod versions that are publicly visible.
+     * These are versions that are published, enabled, and have SPT compatibility tags.
+     */
+    public function scopePubliclyVisible($query)
+    {
+        return $query->whereNotNull('published_at')
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion');
+    }
+
+    /**
+     * Check if this mod version is publicly visible.
+     * A version is considered publicly visible if it's published, enabled, and has SPT compatibility tags.
+     */
+    public function isPubliclyVisible(): bool
+    {
+        return ! is_null($this->published_at)
+            && ! $this->disabled
+            && ! is_null($this->latestSptVersion);
+    }
 }

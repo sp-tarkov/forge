@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Mod;
 
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\User;
 use App\Traits\Livewire\ModeratesMod;
 use App\Traits\Livewire\ModeratesModVersion;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -79,6 +80,80 @@ class Show extends Component
     }
 
     /**
+     * Check if the current user should see warnings about this mod.
+     */
+    public function shouldShowWarnings(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        // Only show warnings to privileged users (owners, authors, mods, admins)
+        return $user->isModOrAdmin() || $this->mod->isAuthorOrOwner($user);
+    }
+
+    /**
+     * Get the warning messages for this mod.
+     *
+     * @return array<string, string>
+     */
+    public function getWarningMessages(): array
+    {
+        $warnings = [];
+
+        // Check if the mod has no versions at all
+        if ($this->mod->versions()->count() === 0) {
+            $warnings['no_versions'] = 'This mod has no versions. Users will be unable to view this mod until a version is created.';
+        } else {
+            // Check if the mod has no published versions
+            $publishedVersions = $this->mod->versions()->whereNotNull('published_at')->count();
+            $enabledVersions = $this->mod->versions()->where('disabled', false)->count();
+
+            if ($publishedVersions === 0) {
+                $warnings['no_published_versions'] = 'This mod has no published versions. Users will be unable to view this mod until a version is published.';
+            }
+
+            if ($enabledVersions === 0) {
+                $warnings['no_enabled_versions'] = 'This mod has no enabled versions. Users will be unable to view this mod until a version is enabled.';
+            }
+        }
+
+        // Check if the mod itself is unpublished
+        if (! $this->mod->published_at) {
+            $warnings['unpublished'] = 'This mod is unpublished. Users will be unable to view this mod until it is published.';
+        }
+
+        // Check if the mod is disabled
+        if ($this->mod->disabled) {
+            $warnings['disabled'] = 'This mod is disabled. Users will be unable to view this mod until it is enabled.';
+        }
+
+        // Check if the mod has no publicly visible versions
+        if (! $this->hasPublicVersions()) {
+            $user = auth()->user();
+            $isPrivilegedUser = $user && ($this->mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
+
+            if ($isPrivilegedUser) {
+                $warnings['no_valid_spt_versions'] = 'This mod has no valid published SPT versions. Users will be unable to view this mod until a version with valid SPT compatibility is published and enabled.';
+            }
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Check if a mod has versions which are publicly visible versions. This determines if the mod should show warnings
+     * to privileged users about regular user visibility.
+     */
+    private function hasPublicVersions(): bool
+    {
+        // Use the scope to check for publicly visible versions
+        return $this->mod->versions()->publiclyVisible()->exists();
+    }
+
+    /**
      * Render the component.
      */
     #[Layout('components.layouts.base')]
@@ -87,6 +162,8 @@ class Show extends Component
         return view('livewire.page.mod.show', [
             'mod' => $this->mod,
             'versions' => $this->versions(),
+            'shouldShowWarnings' => $this->shouldShowWarnings(),
+            'warningMessages' => $this->getWarningMessages(),
         ]);
     }
 }

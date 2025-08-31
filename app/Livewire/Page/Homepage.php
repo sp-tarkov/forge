@@ -38,7 +38,12 @@ class Homepage extends Component
     {
         $query = Mod::query()
             ->whereFeatured(true)
-            ->whereHas('latestVersion')
+            ->whereHas('versions', function (Builder $query): void {
+                $query->where('disabled', false);
+                if (! $this->viewDisabled) {
+                    $query->whereNotNull('published_at');
+                }
+            })
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
@@ -62,7 +67,12 @@ class Homepage extends Component
     protected function newest(): Collection
     {
         $query = Mod::query()
-            ->whereHas('latestVersion')
+            ->whereHas('versions', function (Builder $query): void {
+                $query->where('disabled', false);
+                if (! $this->viewDisabled) {
+                    $query->whereNotNull('published_at');
+                }
+            })
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
@@ -86,7 +96,12 @@ class Homepage extends Component
     protected function updated(): Collection
     {
         $query = Mod::query()
-            ->whereHas('latestVersion')
+            ->whereHas('versions', function (Builder $query): void {
+                $query->where('disabled', false);
+                if (! $this->viewDisabled) {
+                    $query->whereNotNull('published_at');
+                }
+            })
             ->with([
                 'latestUpdatedVersion',
                 'latestUpdatedVersion.latestSptVersion',

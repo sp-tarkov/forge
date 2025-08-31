@@ -42,7 +42,7 @@ class ModVersionPolicy
      */
     public function create(User $user, Mod $mod): bool
     {
-        return $this->isAuthorOrOwner($user, $mod) && $user->hasMfaEnabled();
+        return $mod->isAuthorOrOwner($user) && $user->hasMfaEnabled();
     }
 
     /**
@@ -50,7 +50,7 @@ class ModVersionPolicy
      */
     public function update(User $user, ModVersion $modVersion): bool
     {
-        return $user->isModOrAdmin() || $this->isAuthorOrOwner($user, $modVersion->mod);
+        return $user->isModOrAdmin() || $modVersion->mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -114,7 +114,7 @@ class ModVersionPolicy
      */
     public function unpublish(User $user, ModVersion $modVersion): bool
     {
-        return $this->isAuthorOrOwner($user, $modVersion->mod);
+        return $modVersion->mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -122,18 +122,6 @@ class ModVersionPolicy
      */
     public function publish(User $user, ModVersion $modVersion): bool
     {
-        return $this->isAuthorOrOwner($user, $modVersion->mod);
-    }
-
-    /**
-     * Check if the user is an author or the owner of the mod.
-     */
-    private function isAuthorOrOwner(?User $user, Mod $mod): bool
-    {
-        if ($user === null) {
-            return false;
-        }
-
-        return $user->id === $mod->owner?->id || $mod->authors->pluck('id')->contains($user->id);
+        return $modVersion->mod->isAuthorOrOwner($user);
     }
 }
