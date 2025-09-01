@@ -848,6 +848,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     'contains_ai_content' => $mod['contains_ai_content'],
                     'contains_ads' => $mod['contains_ads'],
                     'disabled' => $mod['disabled'],
+                    'comments_disabled' => $mod['comments_disabled'],
                     'published_at' => $mod['published_at'],
                     'created_at' => $mod['created_at'],
                     'updated_at' => $mod['updated_at'],
