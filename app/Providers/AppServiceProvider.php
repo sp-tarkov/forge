@@ -204,5 +204,9 @@ class AppServiceProvider extends ServiceProvider
                     echo '<meta property=\"og:image:alt\" content=\"' . e(\$__ogImageAlt) . '\" />';
                 }
             ?>");
+
+        // Email verification directives
+        Blade::if('verified', fn (): bool => auth()->check() && auth()->user()->hasVerifiedEmail());
+        Blade::if('unverified', fn (): bool => auth()->check() && ! auth()->user()->hasVerifiedEmail());
     }
 }

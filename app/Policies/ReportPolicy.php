@@ -14,6 +14,11 @@ class ReportPolicy
      */
     public function viewAny(User $user): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
@@ -22,6 +27,11 @@ class ReportPolicy
      */
     public function view(User $user, Report $report): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin() || $user->id === $report->reporter_id;
     }
 
@@ -43,6 +53,11 @@ class ReportPolicy
      */
     public function update(User $user, Report $report): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
@@ -51,6 +66,11 @@ class ReportPolicy
      */
     public function delete(User $user, Report $report): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 
@@ -59,6 +79,11 @@ class ReportPolicy
      */
     public function restore(User $user, Report $report): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 
@@ -67,6 +92,11 @@ class ReportPolicy
      */
     public function forceDelete(User $user, Report $report): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 }

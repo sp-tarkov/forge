@@ -33,24 +33,24 @@
     @endif
 
     @auth
-        <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-white">
-                    {{ __('Discussion') }}
-                    <span class="font-normal text-slate-400">{{ '(' . $this->commentCount . ')' ?? '' }}</span>
-                </h2>
+        @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $commentable]))
+            <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-white">
+                        {{ __('Discussion') }}
+                        <span class="font-normal text-slate-400">{{ '(' . $this->commentCount . ')' ?? '' }}</span>
+                    </h2>
 
-                <flux:button
-                    wire:click="toggleSubscription"
-                    data-test="subscription-toggle"
-                    variant="{{ $isSubscribed ? 'primary' : 'outline' }}"
-                    icon="{{ $isSubscribed ? 'bell' : 'bell-alert' }}"
-                    size="sm"
-                >
-                    {{ $isSubscribed ? __('Subscribed') : __('Subscribe') }}
-                </flux:button>
-            </div>
-            @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $commentable]))
+                    <flux:button
+                        wire:click="toggleSubscription"
+                        data-test="subscription-toggle"
+                        variant="{{ $isSubscribed ? 'primary' : 'outline' }}"
+                        icon="{{ $isSubscribed ? 'bell' : 'bell-alert' }}"
+                        size="sm"
+                    >
+                        {{ $isSubscribed ? __('Subscribed') : __('Subscribe') }}
+                    </flux:button>
+                </div>
                 <div class="flex items-start">
                     <div class="mr-3">
                         <flux:avatar
@@ -69,13 +69,25 @@
                         />
                     </div>
                 </div>
-            @else
-                <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                    <flux:icon.chat-bubble-left-ellipsis class="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>{{ __('Comments are disabled.') }}</p>
+            </div>
+        @else
+            <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                    <flux:icon.chat-bubble-left-ellipsis class="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    @if ($commentable->comments_disabled)
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Comments Disabled') }}</h3>
+                        <p>{{ __('Comments are disabled.') }}</p>
+                    @elseif (!auth()->user()->hasVerifiedEmail())
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Email Verification Required') }}</h3>
+                        <p class="mb-4">{{ __('Please verify your email address to participate in discussions.') }}</p>
+                        <flux:button href="{{ route('verification.notice') }}" size="sm">{{ __('Verify Email') }}</flux:button>
+                    @else
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Cannot Comment') }}</h3>
+                        <p>{{ __('You do not have permission to comment on this content.') }}</p>
+                    @endif
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
     @endauth
 
     @if ($rootComments->hasPages() && $visibleRootComments->count() > 0)

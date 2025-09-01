@@ -144,6 +144,11 @@ class CommentPolicy
      */
     public function restore(User $user, Comment $comment): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Comment must be soft-deleted to be restored
         if (! $comment->isDeleted()) {
             return false;
@@ -218,6 +223,11 @@ class CommentPolicy
             return false;
         }
 
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Must be moderator or admin
         return $user->isModOrAdmin();
     }
@@ -227,6 +237,11 @@ class CommentPolicy
      */
     public function softDelete(User $user, Comment $comment): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Comment must not yet be deleted
         if ($comment->isDeleted()) {
             return false;
@@ -331,6 +346,11 @@ class CommentPolicy
      */
     public function hardDelete(User $user, Comment $comment): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Must be administrator
         return $user->isAdmin();
     }
@@ -340,6 +360,11 @@ class CommentPolicy
      */
     public function markAsSpam(User $user, Comment $comment): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Comment must not yet be marked as spam
         if ($comment->isSpam()) {
             return false;
@@ -354,6 +379,11 @@ class CommentPolicy
      */
     public function markAsHam(User $user, Comment $comment): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Comment must be marked as spam to mark as ham
         if (! $comment->isSpam()) {
             return false;
@@ -368,6 +398,11 @@ class CommentPolicy
      */
     public function checkForSpam(User $user, Comment $comment): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         // Must be moderator or admin
         if (! $user->isModOrAdmin()) {
             return false;

@@ -50,6 +50,11 @@ class ModVersionPolicy
      */
     public function update(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin() || $modVersion->mod->isAuthorOrOwner($user);
     }
 
@@ -58,6 +63,11 @@ class ModVersionPolicy
      */
     public function delete(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin() || $modVersion->mod->owner?->id === $user->id;
     }
 
@@ -98,6 +108,11 @@ class ModVersionPolicy
      */
     public function disable(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
@@ -106,6 +121,11 @@ class ModVersionPolicy
      */
     public function enable(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
@@ -114,6 +134,11 @@ class ModVersionPolicy
      */
     public function unpublish(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $modVersion->mod->isAuthorOrOwner($user);
     }
 
@@ -122,6 +147,11 @@ class ModVersionPolicy
      */
     public function publish(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $modVersion->mod->isAuthorOrOwner($user);
     }
 }

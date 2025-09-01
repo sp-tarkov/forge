@@ -2,7 +2,7 @@
 
 <div class="flex items-center gap-6 mt-4 text-slate-400">
     @if (!$comment->isDeleted())
-        @auth
+        @verified
             @if ($comment->user_id === auth()->id())
                 <flux:tooltip content="You cannot like your own comment" position="right" gap="10">
                     <button type="button" class="relative flex items-center gap-1 transition cursor-not-allowed!" disabled>
@@ -43,14 +43,14 @@
                 </button>
             @endif
         @else
-            {{-- Show reaction count to guests but without interaction --}}
+            {{-- Show reaction count to unverified users and guests but without interaction --}}
             <div class="relative flex items-center gap-1 text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="none" viewBox="0 0 20 20" class="w-5 h-5">
                     <path d="M3.172 5.172a4 4 0 0 1 5.656 0L10 6.343l1.172-1.171a4 4 0 1 1 5.656 5.656L10 17.657l-6.828-6.829a4 4 0 0 1 0-5.656Z"/>
                 </svg>
                 <span class="text-xs">{{ $comment->reactions_count ?? 0 }} {{ ($comment->reactions_count ?? 0) === 1 ? 'Like' : 'Likes' }}</span>
             </div>
-        @endauth
+        @endverified
 
         @if (\App\Support\CachedGate::allows('update', $comment))
             <button type="button"
@@ -86,13 +86,13 @@
             :reportable-type="get_class($comment)"
         />
 
-        @auth
+        @verified
             @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
                 <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" data-test="reply-button-{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
                     {{ __('Reply') }}
                 </button>
             @endif
-        @endauth
+        @endverified
     @endif
 
     @if ($showRepliesToggle && $manager->getDescendantCount($comment->id) > 0)

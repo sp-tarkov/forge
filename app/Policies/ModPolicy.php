@@ -64,6 +64,11 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin() || $mod->isAuthorOrOwner($user);
     }
 
@@ -72,6 +77,11 @@ class ModPolicy
      */
     public function delete(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin() || $mod->owner->id === $user->id;
     }
 
@@ -96,6 +106,11 @@ class ModPolicy
      */
     public function disable(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
@@ -104,6 +119,11 @@ class ModPolicy
      */
     public function enable(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
@@ -112,6 +132,11 @@ class ModPolicy
      */
     public function unpublish(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $mod->isAuthorOrOwner($user);
     }
 
@@ -120,6 +145,11 @@ class ModPolicy
      */
     public function publish(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $mod->isAuthorOrOwner($user);
     }
 
@@ -128,6 +158,11 @@ class ModPolicy
      */
     public function feature(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 
@@ -136,6 +171,11 @@ class ModPolicy
      */
     public function unfeature(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 
