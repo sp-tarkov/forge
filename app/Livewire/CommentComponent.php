@@ -1137,10 +1137,9 @@ class CommentComponent extends Component
             'referrer' => request()->header('referer') ?? '',
         ]);
 
-        // Auto-subscribe the user when they create a comment or reply.
+        // User is automatically subscribed when they create a comment (via Observer).
         $user = Auth::user();
-        if ($user && ! $this->commentable->isUserSubscribed($user)) {
-            $this->commentable->subscribeUser($user);
+        if ($user) {
             $this->isSubscribed = true;
         }
 

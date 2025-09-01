@@ -20,10 +20,10 @@ class CommentObserver
     {
         $comment->updateRootId();
 
-        // Ensure default subscriptions exist for the commentable.
+        // Subscribe the commenter to future comments.
         /** @var Commentable<Model> $commentable */
         $commentable = $comment->commentable;
-        $commentable->ensureDefaultSubscriptions();
+        $commentable->subscribeUser($comment->user);
 
         // Dispatch the spam check job.
         CheckCommentForSpam::dispatch($comment);

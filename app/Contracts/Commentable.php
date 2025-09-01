@@ -47,13 +47,6 @@ interface Commentable
     public function getTitle(): string;
 
     /**
-     * Get the default subscribers for this commentable model.
-     *
-     * @return Collection<int, User>
-     */
-    public function getDefaultSubscribers(): Collection;
-
-    /**
      * Get the URL to view this commentable model.
      */
     public function getCommentableUrl(): string;
@@ -85,11 +78,6 @@ interface Commentable
      * Check if a user is subscribed to comment notifications for this commentable.
      */
     public function isUserSubscribed(User $user): bool;
-
-    /**
-     * Ensure default subscribers are subscribed to this commentable.
-     */
-    public function ensureDefaultSubscriptions(): void;
 
     /**
      * Load descendants for a specific comment.

@@ -440,19 +440,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
-     * Get the default subscribers for this user (themselves).
-     *
-     * @return Collection<int, User>
-     */
-    public function getDefaultSubscribers(): Collection
-    {
-        /** @var Collection<int, User> $collection */
-        $collection = new Collection([$this]);
-
-        return $collection;
-    }
-
-    /**
      * Get the URL to view this user's profile.
      */
     public function getCommentableUrl(): string

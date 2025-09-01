@@ -83,6 +83,11 @@ class Create extends Component
     public bool $commentsDisabled = false;
 
     /**
+     * Whether to subscribe to comment notifications for the mod.
+     */
+    public bool $subscribeToComments = true;
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -111,6 +116,7 @@ class Create extends Component
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
+            'subscribeToComments' => 'boolean',
         ];
     }
 
@@ -169,6 +175,11 @@ class Create extends Component
 
         // Save the mod.
         $mod->save();
+
+        // Subscribe the owner to comment notifications if requested.
+        if ($this->subscribeToComments) {
+            $mod->subscribeUser(auth()->user());
+        }
 
         Track::event(TrackingEventType::MOD_CREATE, $mod);
 

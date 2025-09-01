@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Livewire\Page\Mod\Create;
+use App\Models\CommentSubscription;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\User;
@@ -122,6 +123,64 @@ describe('Mod Create Form', function (): void {
                 ->call('save')
                 ->assertHasNoErrors()
                 ->assertRedirect();
+        });
+    });
+
+    describe('Subscription', function (): void {
+        beforeEach(function (): void {
+            $this->user = User::factory()->withMfa()->create();
+            $this->actingAs($this->user);
+
+            License::factory()->create(['id' => 1, 'name' => 'MIT']);
+        });
+
+        it('subscribes user to comment notifications when checkbox is checked', function (): void {
+            Livewire::test(Create::class)
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'Test Mod')
+                ->set('guid', 'com.test.mod')
+                ->set('teaser', 'A test mod')
+                ->set('description', 'This is a test mod')
+                ->set('license', 1)
+                ->set('sourceCodeUrl', 'https://github.com/test/test')
+                ->set('subscribeToComments', true)
+                ->call('save');
+
+            $mod = Mod::query()->where('name', 'Test Mod')->first();
+            expect($mod)->not->toBeNull();
+
+            // Assert that the user is subscribed
+            expect(CommentSubscription::isSubscribed($this->user, $mod))->toBeTrue();
+        });
+
+        it('does not subscribe user when checkbox is unchecked', function (): void {
+            Livewire::test(Create::class)
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'Test Mod 2')
+                ->set('guid', 'com.test.mod2')
+                ->set('teaser', 'A test mod')
+                ->set('description', 'This is a test mod')
+                ->set('license', 1)
+                ->set('sourceCodeUrl', 'https://github.com/test/test')
+                ->set('subscribeToComments', false)
+                ->call('save');
+
+            $mod = Mod::query()->where('name', 'Test Mod 2')->first();
+            expect($mod)->not->toBeNull();
+
+            // Assert that the user is NOT subscribed
+            expect(CommentSubscription::isSubscribed($this->user, $mod))->toBeFalse();
+        });
+
+        it('defaults to subscribing the user', function (): void {
+            $component = Livewire::test(Create::class);
+
+            // Assert that the default value is true
+            expect($component->instance()->subscribeToComments)->toBeTrue();
         });
     });
 });

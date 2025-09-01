@@ -103,18 +103,6 @@ trait HasComments
     }
 
     /**
-     * Ensure default subscribers are subscribed to this commentable.
-     */
-    public function ensureDefaultSubscriptions(): void
-    {
-        $defaultSubscribers = $this->getDefaultSubscribers();
-
-        foreach ($defaultSubscribers as $user) {
-            $this->subscribeUser($user);
-        }
-    }
-
-    /**
      * Load descendants for a specific comment.
      *
      * @return Collection<int, Comment>

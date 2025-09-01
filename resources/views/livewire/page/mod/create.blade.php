@@ -177,6 +177,17 @@
                                 </flux:checkbox.group>
                             </flux:field>
 
+                            <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Notifications">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="subscribeToComments"
+                                        label="Subscribe to Comment Notifications"
+                                        description="When enabled, you will receive notifications when users comment on this mod. You can unsubscribe later from individual notifications."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
                             <x-honeypot livewire-model="honeypotData" />
 
                         </div>

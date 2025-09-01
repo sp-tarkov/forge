@@ -32,7 +32,7 @@ describe('Comment Notifications', function (): void {
         Bus::assertDispatched(CheckCommentForSpam::class, fn ($job) => $job->comment->is($comment));
     });
 
-    it('automatically subscribes mod owner to comments', function (): void {
+    it('automatically subscribes commenter but not mod owner', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
 
@@ -44,11 +44,14 @@ describe('Comment Notifications', function (): void {
             'user_id' => $commenter->id,
         ]);
 
-        // Assert that the owner is subscribed
-        expect(CommentSubscription::isSubscribed($owner, $mod))->toBeTrue();
+        // Assert that the commenter is subscribed
+        expect(CommentSubscription::isSubscribed($commenter, $mod))->toBeTrue();
+
+        // Assert that the owner is NOT automatically subscribed
+        expect(CommentSubscription::isSubscribed($owner, $mod))->toBeFalse();
     });
 
-    it('automatically subscribes user to their profile comments', function (): void {
+    it('automatically subscribes commenter but not profile owner', function (): void {
         $user = User::factory()->create();
 
         // Create a comment from another user on the profile
@@ -59,8 +62,11 @@ describe('Comment Notifications', function (): void {
             'user_id' => $commenter->id,
         ]);
 
-        // Assert that the user is subscribed to their own profile
-        expect(CommentSubscription::isSubscribed($user, $user))->toBeTrue();
+        // Assert that the commenter is subscribed
+        expect(CommentSubscription::isSubscribed($commenter, $user))->toBeTrue();
+
+        // Assert that the profile owner is NOT automatically subscribed
+        expect(CommentSubscription::isSubscribed($user, $user))->toBeFalse();
     });
 
     it('sends notification to subscribers after five minutes', function (): void {
@@ -68,6 +74,9 @@ describe('Comment Notifications', function (): void {
 
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+        // Manually subscribe the owner to test notifications
+        $mod->subscribeUser($owner);
 
         $commenter = User::factory()->create();
         $comment = Comment::factory()->create([
@@ -94,6 +103,9 @@ describe('Comment Notifications', function (): void {
 
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+        // Manually subscribe the owner for this test
+        $mod->subscribeUser($owner);
 
         $commenter = User::factory()->create();
         $comment = Comment::factory()->create([
@@ -143,6 +155,9 @@ describe('Comment Notifications', function (): void {
         $owner = User::factory()->create(['email_notifications_enabled' => false]);
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
 
+        // Manually subscribe the owner for this test
+        $mod->subscribeUser($owner);
+
         $commenter = User::factory()->create();
         $comment = Comment::factory()->create([
             'commentable_type' => Mod::class,
@@ -166,9 +181,10 @@ describe('Comment Notifications', function (): void {
         // Also fake the queue to prevent the notification itself from being queued
         Queue::fake();
 
-        // Create a mod owner who will be automatically subscribed
+        // Create a mod owner and manually subscribe them
         $owner = User::factory()->create(['email_notifications_enabled' => true]);
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        CommentSubscription::subscribe($owner, $mod);
 
         // Create additional subscribers with email notifications enabled
         $subscriber1 = User::factory()->create(['email_notifications_enabled' => true]);
@@ -245,6 +261,9 @@ describe('Comment Notifications', function (): void {
 
         $owner = User::factory()->create(['email_notifications_enabled' => true]);
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+        // Manually subscribe the owner for this test
+        CommentSubscription::subscribe($owner, $mod);
 
         // Create subscribers with different email preferences
         $subscriberWithEmail = User::factory()->create(['email_notifications_enabled' => true]);

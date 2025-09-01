@@ -350,26 +350,6 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
-     * Get the default subscribers for this mod (owners and authors).
-     *
-     * @return Collection<int, User>
-     */
-    public function getDefaultSubscribers(): Collection
-    {
-        $subscribers = new Collection;
-
-        if ($this->owner) {
-            $subscribers->push($this->owner);
-        }
-
-        // Add authors
-        $subscribers = $subscribers->merge($this->authors);
-
-        // Remove duplicates and filter null values
-        return $subscribers->filter()->unique();
-    }
-
-    /**
      * Get the URL to view this mod.
      */
     public function getCommentableUrl(): string
