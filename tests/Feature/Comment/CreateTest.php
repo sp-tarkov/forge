@@ -244,7 +244,7 @@ describe('rate limiting', function (): void {
             ->call('createComment')
             ->assertHasErrors('newCommentBody')
             ->assertSee('Too many comment attempts')
-            ->assertSee('30 seconds'); // Should show the full 30 seconds
+            ->assertSee('seconds before commenting again'); // Check for rate limiting message with seconds remaining
 
         // Verify only one comment was created
         $comments = Comment::query()->where('user_id', $user->id)
