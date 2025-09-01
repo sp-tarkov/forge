@@ -1217,6 +1217,13 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         // Clean up hard-deleted comments and reactions
         $this->removeHardDeletedComments($objectTypeIds);
         $this->removeHardDeletedCommentReactions($objectTypeIds);
+
+        // Remove forge-only comments (comments created on the forge but not on the hub)
+        $this->removeForgeOnlyComments();
+        $this->removeForgeOnlyCommentReactions();
+
+        // Reset comment reactions to hub values (remove any local reactions not present in hub)
+        $this->resetCommentReactionsToHubValues($objectTypeIds);
     }
 
     /**
@@ -1824,5 +1831,83 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     private function removeModsWithoutHubVersions(): void
     {
         Mod::query()->whereNull('hub_id')->delete();
+    }
+
+    /**
+     * Remove comments that were created on the forge but don't exist on the hub.
+     * This allows for testing the forge without worrying about cleanup.
+     */
+    private function removeForgeOnlyComments(): void
+    {
+        // Delete all comments that don't have a hub_id (created directly on forge)
+        Comment::query()->whereNull('hub_id')->delete();
+    }
+
+    /**
+     * Remove comment reactions that were created on the forge but don't exist on the hub.
+     * This allows for testing the forge without worrying about cleanup.
+     */
+    private function removeForgeOnlyCommentReactions(): void
+    {
+        // Delete all comment reactions that don't have a hub_id (created directly on forge)
+        CommentReaction::query()->whereNull('hub_id')->delete();
+    }
+
+    /**
+     * Reset comment reactions to hub values by removing any local reactions
+     * that don't match what exists in the hub.
+     *
+     * @param  array<int>  $objectTypeIds
+     */
+    private function resetCommentReactionsToHubValues(array $objectTypeIds): void
+    {
+        if (empty($objectTypeIds)) {
+            return;
+        }
+
+        // Get all existing hub reaction IDs that should exist after import
+        $commentLikeObjectTypeId = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.wcf.comment')
+            ->value('objectTypeID');
+
+        $existingCommentLikeIds = DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment as c', 'l.objectID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->where('l.objectTypeID', $commentLikeObjectTypeId)
+            ->pluck('l.likeID')
+            ->toArray();
+
+        // Get response reaction IDs
+        $responseObjectTypeIds = DB::connection('hub')
+            ->table('wcf1_object_type')
+            ->where('objectType', 'com.woltlab.wcf.comment.response')
+            ->pluck('objectTypeID')
+            ->toArray();
+
+        $existingResponseLikeIds = DB::connection('hub')
+            ->table('wcf1_like as l')
+            ->join('wcf1_comment_response as cr', 'l.objectID', '=', 'cr.responseID')
+            ->join('wcf1_comment as c', 'cr.commentID', '=', 'c.commentID')
+            ->whereIn('c.objectTypeID', $objectTypeIds)
+            ->whereIn('l.objectTypeID', $responseObjectTypeIds)
+            ->pluck('l.likeID')
+            ->toArray();
+
+        $allValidHubIds = array_merge($existingCommentLikeIds, $existingResponseLikeIds);
+
+        if (empty($allValidHubIds)) {
+            // If no reactions should exist from hub, remove all hub-imported reactions
+            CommentReaction::query()
+                ->whereNotNull('hub_id')
+                ->delete();
+        } else {
+            // Remove any reactions with hub_ids that are no longer valid
+            CommentReaction::query()
+                ->whereNotNull('hub_id')
+                ->whereNotIn('hub_id', $allValidHubIds)
+                ->delete();
+        }
     }
 }
