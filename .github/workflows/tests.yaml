@@ -41,14 +41,14 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Build Front-end Assets
-        run: npm run build
-
       - name: Prepare Laravel Environment
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate
           php artisan optimize
+
+      - name: Build Front-end Assets
+        run: npm run build
 
       - name: Start Reverb Server
         run: php artisan reverb:start --host=127.0.0.1 --port=8080 &
