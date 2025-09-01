@@ -236,7 +236,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         // Use the scope to filter and then check for active SPT versions
         return $this->versions()
             ->publiclyVisible()
-            ->whereHas('latestSptVersion', function ($query) use ($activeSptVersionIds) {
+            ->whereHas('latestSptVersion', function ($query) use ($activeSptVersionIds): void {
                 $query->whereIn('version', $activeSptVersionIds);
             })
             ->exists();

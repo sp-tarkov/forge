@@ -6,7 +6,6 @@ namespace App\Livewire\Page\Mod;
 
 use App\Models\Mod;
 use App\Models\ModVersion;
-use App\Models\User;
 use App\Traits\Livewire\ModeratesMod;
 use App\Traits\Livewire\ModeratesModVersion;
 use Illuminate\Pagination\LengthAwarePaginator;

@@ -12,7 +12,9 @@ use App\Support\Version;
 use Database\Factories\ModVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -312,8 +314,12 @@ class ModVersion extends Model implements Trackable
     /**
      * Query scope for mod versions that are publicly visible.
      * These are versions that are published, enabled, and have SPT compatibility tags.
+     *
+     * @param  Builder<ModVersion>  $query
+     * @return Builder<ModVersion>
      */
-    public function scopePubliclyVisible($query)
+    #[Scope]
+    protected function publiclyVisible(Builder $query): Builder
     {
         return $query->whereNotNull('published_at')
             ->where('disabled', false)
