@@ -320,3 +320,8 @@ button {
         opacity: 0;
     }
 }
+
+/* Fix z-index for flash messages to appear above navigation */
+.fl-wrapper {
+    z-index: 60 !important;
+}
