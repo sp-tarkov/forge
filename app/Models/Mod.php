@@ -153,6 +153,9 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     {
         return $this->versions()
             ->one()
+            ->whereNotNull('published_at')
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion')
             ->ofMany('updated_at', 'max');
     }
 
@@ -249,14 +252,14 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function latestVersion(): HasOne
     {
-        return $this->versions()
-            ->one()
-            ->ofMany([
-                'version_major' => 'max',
-                'version_minor' => 'max',
-                'version_patch' => 'max',
-                'version_labels' => 'min',
-            ]);
+        return $this->hasOne(ModVersion::class)
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels');
     }
 
     /**
@@ -428,7 +431,12 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function getTrackingSnapshot(): array
     {
-        $latestVersion = $this->versions()->latest()->first();
+        $latestVersion = $this->versions()
+            ->whereNotNull('published_at')
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion')
+            ->latest()
+            ->first();
 
         return [
             'mod_name' => $this->name,
