@@ -1,8 +1,26 @@
 <nav
     x-data="{ profileDropdownOpen: false, mobileMenuOpen: false }"
-    class="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800"
+    class="relative bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-900 dark:via-black dark:to-gray-950 border-b border-gray-200 dark:border-gray-800 z-50"
 >
-    <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
+    {{-- Background container with overflow hidden --}}
+    <div class="absolute inset-0 overflow-hidden">
+        {{-- Light/Dark gritty texture overlays --}}
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-200/30 via-transparent to-gray-300/20 dark:from-gray-800/30 dark:via-transparent dark:to-black/40"></div>
+        <div class="absolute inset-0 bg-gradient-to-tl from-gray-300/15 to-transparent dark:from-gray-700/20 dark:to-transparent"></div>
+
+        {{-- Noise/grain pattern for texture --}}
+        <div class="absolute inset-0 opacity-20 dark:opacity-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0); background-size: 4px 4px;"></div>
+        <div class="absolute inset-0 opacity-0 dark:opacity-35" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0); background-size: 4px 4px;"></div>
+
+        {{-- Industrial wear patterns --}}
+        <div class="absolute top-0 left-1/4 w-32 h-px bg-gray-400/25 dark:bg-gray-600/30 transform rotate-2"></div>
+        <div class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-400/20 dark:bg-gray-500/25 transform -rotate-1"></div>
+        <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-400/15 dark:bg-gray-600/20"></div>
+
+        {{-- Subtle inner shadow for depth --}}
+        <div class="absolute inset-0 shadow-inner shadow-gray-400/30 dark:shadow-black/60"></div>
+    </div>
+    <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8 z-10">
         <div class="relative flex h-16 items-center justify-between">
             <div class="flex items-center px-2 lg:px-0">
                 <div class="shrink-0">
@@ -14,7 +32,7 @@
                     <div class="flex space-x-4">
                         <x-nav-link href="{{ route('static.installer') }}" :active="request()->routeIs('static.installer')">{{ __('Install') }}</x-nav-link>
                         <x-nav-link href="{{ route('mods') }}" :active="request()->routeIs('mods')">{{ __('Mods') }}</x-nav-link>
-                        <a href="https://wiki.sp-tarkov.com/" target="_blank" class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700 hover:text-black dark:hover:text-white transition duration-150 ease-in-out inline-flex items-center gap-1">
+                        <a href="https://wiki.sp-tarkov.com/" target="_blank" class="rounded-md px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out inline-flex items-center gap-1">
                             {{ __('Wiki') }}
                             <flux:icon.arrow-top-right-on-square class="h-3 w-3" />
                         </a>
@@ -30,7 +48,7 @@
                 <button
                     x-on:click="mobileMenuOpen = !mobileMenuOpen"
                     type="button"
-                    class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-white"
+                    class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white focus:outline-hidden focus:ring-2 focus:ring-inset focus:ring-gray-500 dark:focus:ring-white"
                     aria-controls="mobile-menu"
                     :aria-expanded="mobileMenuOpen"
                 >
@@ -88,7 +106,7 @@
                                 x-on:click.outside="profileDropdownOpen = false, openedWithKeyboard = false"
                                 x-on:keydown.down.prevent="$focus.wrap().next()"
                                 x-on:keydown.up.prevent="$focus.wrap().previous()"
-                                class="absolute top-11 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                class="absolute top-11 right-0 z-[100] flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
                                 role="menu"
                             >
                                 <div class="flex flex-col py-1.5">
@@ -147,7 +165,7 @@
 
                     @guest
                         <div>
-                            <a href="{{ route('login') }}" class="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 whitespace-nowrap">Log in <span aria-hidden="true">&rarr;</span></a>
+                            <a href="{{ route('login') }}" class="text-sm font-semibold leading-6 text-gray-700 dark:text-gray-100 whitespace-nowrap">Log in <span aria-hidden="true">&rarr;</span></a>
                         </div>
                     @endguest
                 </div>
@@ -157,7 +175,7 @@
 
     {{-- Mobile Menu --}}
     <div
-        class="lg:hidden"
+        class="lg:hidden relative z-50"
         x-show="mobileMenuOpen"
         id="mobile-menu"
     >

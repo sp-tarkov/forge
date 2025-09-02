@@ -40,46 +40,48 @@
             <div class="px-4 py-8 sm:px-6 lg:px-8">
 
                 {{-- Hero Section --}}
-                <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-950 dark:from-black dark:via-gray-950 dark:to-black border border-gray-800 dark:border-gray-900 rounded-xl shadow-2xl mb-12">
-                    {{-- Dark gritty texture overlays --}}
-                    <div class="absolute inset-0 bg-gradient-to-br from-gray-800/20 via-transparent to-black/30"></div>
-                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-700/10 to-transparent"></div>
+                <div class="relative overflow-hidden bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-900 dark:via-black dark:to-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl mb-12">
+                    {{-- Light/Dark gritty texture overlays --}}
+                    <div class="absolute inset-0 bg-gradient-to-br from-gray-200/30 via-transparent to-gray-300/20 dark:from-gray-800/20 dark:via-transparent dark:to-black/30"></div>
+                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-300/15 to-transparent dark:from-gray-700/10 dark:to-transparent"></div>
 
                     {{-- Noise/grain pattern for texture --}}
-                    <div class="absolute inset-0 opacity-25" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 4px 4px;"></div>
+                    <div class="absolute inset-0 opacity-20 dark:opacity-25" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0); background-size: 4px 4px;"></div>
+                    <div class="absolute inset-0 opacity-0 dark:opacity-25" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 4px 4px;"></div>
 
                     {{-- Industrial wear patterns --}}
-                    <div class="absolute top-0 left-1/4 w-32 h-px bg-gray-600/20 transform rotate-2"></div>
-                    <div class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-500/15 transform -rotate-1"></div>
-                    <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-600/10"></div>
+                    <div class="absolute top-0 left-1/4 w-32 h-px bg-gray-400/25 dark:bg-gray-600/20 transform rotate-2"></div>
+                    <div class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-400/20 dark:bg-gray-500/15 transform -rotate-1"></div>
+                    <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-400/15 dark:bg-gray-600/10"></div>
 
                     {{-- Subtle inner shadow for depth --}}
-                    <div class="absolute inset-0 rounded-xl shadow-inner shadow-black/40"></div>
+                    <div class="absolute inset-0 rounded-xl shadow-inner shadow-gray-400/30 dark:shadow-black/40"></div>
 
                     <div class="relative px-6 py-10 sm:px-8 sm:py-12">
                         <div class="mx-auto max-w-4xl text-center">
                             <div class="mb-6 flex justify-center">
-                                <div class="relative flex h-24 w-24 items-center justify-center rounded-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black dark:from-gray-900 dark:via-black dark:to-gray-950 shadow-2xl overflow-hidden border border-gray-700 dark:border-gray-800">
-                                    {{-- Gritty texture overlays --}}
-                                    <div class="absolute inset-0 bg-gradient-to-br from-gray-700/30 via-transparent to-gray-900/40"></div>
-                                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-600/20 to-transparent"></div>
+                                <div class="relative flex h-24 w-24 items-center justify-center rounded-lg bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 dark:from-gray-800 dark:via-gray-900 dark:to-black shadow-2xl overflow-hidden border border-gray-300 dark:border-gray-700">
+                                    {{-- Light/Dark gritty texture overlays --}}
+                                    <div class="absolute inset-0 bg-gradient-to-br from-gray-400/20 via-transparent to-gray-500/30 dark:from-gray-700/30 dark:via-transparent dark:to-gray-900/40"></div>
+                                    <div class="absolute inset-0 bg-gradient-to-tl from-gray-500/15 to-transparent dark:from-gray-600/20 dark:to-transparent"></div>
 
                                     {{-- Noise/grain effect --}}
-                                    <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 3px 3px;"></div>
+                                    <div class="absolute inset-0 opacity-30 dark:opacity-40" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 3px 3px;"></div>
+                                    <div class="absolute inset-0 opacity-0 dark:opacity-40" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 3px 3px;"></div>
 
-                                    <flux:icon name="cloud-arrow-down" class="relative z-10 size-12 text-gray-200 drop-shadow-2xl" />
+                                    <flux:icon name="cloud-arrow-down" class="relative z-10 size-12 text-gray-700 dark:text-gray-200 drop-shadow-2xl" />
                                 </div>
                             </div>
 
-                            <h1 class="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-4">
+                            <h1 class="text-3xl font-bold tracking-tight text-gray-800 dark:text-gray-100 sm:text-4xl mb-4">
                                 SPT Installer
                             </h1>
-                            <p class="text-lg text-gray-300 mb-6">
+                            <p class="text-lg text-gray-600 dark:text-gray-300 mb-6">
                                 Get up and running with Single Player Tarkov in a few clicks. Our installer handles all the complex setup for you.
                             </p>
 
                             {{-- Compact features --}}
-                            <div class="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+                            <div class="flex flex-wrap justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                                 <span class="flex items-center">
                                     <svg class="h-4 w-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
