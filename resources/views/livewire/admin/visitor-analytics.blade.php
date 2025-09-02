@@ -298,9 +298,9 @@ use Illuminate\Support\Str;
             </div>
 
             {{-- Top Pagination --}}
-            @if($events->hasPages())
+            @if($this->events->hasPages())
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    {{ $events->links(data: ['scrollTo' => '#filters-container']) }}
+                    {{ $this->events->links(data: ['scrollTo' => '#filters-container']) }}
                 </div>
             @endif
 
@@ -408,7 +408,7 @@ use Illuminate\Support\Str;
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        @forelse($events as $event)
+                        @forelse($this->events as $event)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                     <div class="text-xs">
@@ -575,9 +575,9 @@ use Illuminate\Support\Str;
                 </table>
             </div>
 
-            @if($events->hasPages())
+            @if($this->events->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                    {{ $events->links(data: ['scrollTo' => '#filters-container']) }}
+                    {{ $this->events->links(data: ['scrollTo' => '#filters-container']) }}
                 </div>
             @endif
         </div>
