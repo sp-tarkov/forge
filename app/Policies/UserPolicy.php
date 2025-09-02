@@ -90,4 +90,41 @@ class UserPolicy
         // User cannot report the same item more than once.
         return ! $reportable->hasBeenReportedBy($user->id);
     }
+
+    /**
+     * Determine whether the user can ban another user.
+     *
+     * Only administrators can ban users, with the following restrictions:
+     * - Cannot ban other administrators
+     * - Cannot ban themselves
+     */
+    public function ban(User $user, User $targetUser): bool
+    {
+        // Only administrators can ban users
+        if (! $user->isAdmin()) {
+            return false;
+        }
+
+        // Cannot ban other administrators
+        if ($targetUser->isAdmin()) {
+            return false;
+        }
+
+        // Cannot ban yourself
+        if ($user->id === $targetUser->id) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Determine whether the user can unban another user.
+     *
+     * Uses the same authorization logic as ban since unbanning requires the same administrative privileges.
+     */
+    public function unban(User $user, User $targetUser): bool
+    {
+        return $this->ban($user, $targetUser);
+    }
 }
