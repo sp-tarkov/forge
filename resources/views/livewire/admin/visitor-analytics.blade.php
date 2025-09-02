@@ -311,7 +311,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('created_at')"
+                                    wire:click="sortByColumn('created_at')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>Time</span>
@@ -323,7 +323,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('event_name')"
+                                    wire:click="sortByColumn('event_name')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>Event</span>
@@ -335,7 +335,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('visitor_id')"
+                                    wire:click="sortByColumn('visitor_id')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>User</span>
@@ -347,7 +347,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('ip')"
+                                    wire:click="sortByColumn('ip')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>IP</span>
@@ -359,7 +359,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('browser')"
+                                    wire:click="sortByColumn('browser')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>Browser</span>
@@ -371,7 +371,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('platform')"
+                                    wire:click="sortByColumn('platform')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>Platform</span>
@@ -383,7 +383,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('device')"
+                                    wire:click="sortByColumn('device')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>Device</span>
@@ -395,7 +395,7 @@ use Illuminate\Support\Str;
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                 <button
                                     type="button"
-                                    wire:click="sortBy('country_name')"
+                                    wire:click="sortByColumn('country_name')"
                                     class="flex items-center space-x-1 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 select-none w-full text-left"
                                 >
                                     <span>Location</span>

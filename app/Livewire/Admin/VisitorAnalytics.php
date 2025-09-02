@@ -99,8 +99,11 @@ class VisitorAnalytics extends Component
     #[Computed]
     public function events(): LengthAwarePaginator
     {
+        $validEventNames = collect(\App\Enums\TrackingEventType::cases())->map(fn($case) => $case->value)->toArray();
+        
         $query = TrackingEvent::query()
             ->with(['user', 'trackable'])
+            ->whereIn('event_name', $validEventNames)
             ->select([
                 'tracking_events.id',
                 'tracking_events.event_name',
@@ -250,7 +253,7 @@ class VisitorAnalytics extends Component
      * Toggle sorting by the specified field.
      * If already sorting by this field, toggle a direction. Otherwise, sort desc by this field.
      */
-    public function sortBy(string $field): void
+    public function sortByColumn(string $field): void
     {
         if ($this->sortBy === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -472,8 +475,11 @@ class VisitorAnalytics extends Component
      */
     private function getTopEvents(Builder $query): Collection
     {
+        $validEventNames = collect(\App\Enums\TrackingEventType::cases())->map(fn($case) => $case->value)->toArray();
+        
         return $query
             ->select('event_name', DB::raw('COUNT(*) as count'))
+            ->whereIn('event_name', $validEventNames)
             ->groupBy('event_name')
             ->orderByDesc('count')
             ->limit(10)

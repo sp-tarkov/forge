@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\CommentSubscriptionController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
+use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
 use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Create as ModCreate;
@@ -75,6 +76,7 @@ Route::middleware('auth.banned')->group(function (): void {
         // Authenticated, verified, administrator routes
         Route::middleware('can:admin')->group(function (): void {
             Route::get('/admin/visitor-analytics', VisitorAnalytics::class)->name('admin.visitor-analytics');
+            Route::get('/admin/user-management', UserManagement::class)->name('admin.user-management');
         });
     });
 
