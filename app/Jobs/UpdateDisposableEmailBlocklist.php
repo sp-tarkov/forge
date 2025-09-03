@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use Exception;
 use App\Models\DisposableEmailBlocklist;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +66,7 @@ class UpdateDisposableEmailBlocklist implements ShouldQueue
                 // Insert new domains in chunks
                 $chunks = array_chunk($domains, 1000);
                 foreach ($chunks as $chunk) {
-                    $records = array_map(fn($domain): array => [
+                    $records = array_map(fn ($domain): array => [
                         'domain' => $domain,
                         'created_at' => now(),
                         'updated_at' => now(),

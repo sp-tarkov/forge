@@ -16,7 +16,7 @@ class DisposableEmailBlocklist extends Model
      */
     public static function isDisposable(string $domain): bool
     {
-        return Cache::remember('disposable_email_'.$domain, 3600, fn() => self::query()->where('domain', $domain)->exists());
+        return Cache::remember('disposable_email_'.$domain, 3600, fn () => self::query()->where('domain', $domain)->exists());
     }
 
     /**
