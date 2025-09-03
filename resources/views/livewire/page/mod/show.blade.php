@@ -238,6 +238,29 @@
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
                 <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100 ">
+                    <li class="px-4 py-4 last:pb-0 sm:px-0">
+                        <h3>{{ __('GUID') }}</h3>
+                        <p class="flex items-center gap-2">
+                            @if ($mod->guid)
+                                <span class="font-mono text-sm truncate" title="{{ $mod->guid }}">{{ $mod->guid }}</span>
+                                <button 
+                                    x-data="{ copied: false }"
+                                    @click="navigator.clipboard.writeText('{{ $mod->guid }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    title="Copy GUID"
+                                >
+                                    <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <svg x-show="copied" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </button>
+                            @else
+                                <span class="text-gray-500 dark:text-gray-400 italic">{{ __('Not Available') }}</span>
+                            @endif
+                        </p>
+                    </li>
                     @if ($mod->authors->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3>{{ __('Additional Authors') }}</h3>
