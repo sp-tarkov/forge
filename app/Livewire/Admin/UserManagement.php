@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\User;
 use App\Models\UserRole;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Mchev\Banhammer\Models\Ban;
+use stdClass;
 
 class UserManagement extends Component
 {
@@ -63,7 +67,7 @@ class UserManagement extends Component
     /**
      * IP addresses data.
      *
-     * @var array<int, \stdClass>
+     * @var array<int, stdClass>
      */
     public array $userIpAddresses = [];
 
@@ -97,10 +101,10 @@ class UserManagement extends Component
     /**
      * Get available user roles for filter dropdown.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, UserRole>
+     * @return Collection<int, UserRole>
      */
     #[Computed]
-    public function roles(): \Illuminate\Database\Eloquent\Collection
+    public function roles(): Collection
     {
         return UserRole::query()->orderBy('name')->get();
     }
@@ -145,7 +149,7 @@ class UserManagement extends Component
      */
     public function showBanUser(int $userId): void
     {
-        $user = User::findOrFail($userId);
+        $user = User::query()->findOrFail($userId);
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
@@ -186,9 +190,9 @@ class UserManagement extends Component
             ->orderByDesc('last_seen')
             ->get()
             ->map(function ($item) {
-                $item->is_banned = Ban::where('ip', $item->ip)
+                $item->is_banned = Ban::query()->where('ip', $item->ip)
                     ->whereNull('deleted_at')
-                    ->where(function ($query) {
+                    ->where(function ($query): void {
                         $query->whereNull('expired_at')
                             ->orWhere('expired_at', '>', now());
                     })
@@ -212,7 +216,7 @@ class UserManagement extends Component
             'banDuration' => 'required|string|in:1_hour,24_hours,7_days,30_days,permanent',
         ]);
 
-        $user = User::findOrFail($this->selectedUserId);
+        $user = User::query()->findOrFail($this->selectedUserId);
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
@@ -235,7 +239,9 @@ class UserManagement extends Component
 
         $user->ban($attributes);
 
-        flash()->success("User {$user->name} has been banned successfully.");
+        Track::event(TrackingEventType::USER_BAN, $user);
+
+        flash()->success(sprintf('User %s has been banned successfully.', $user->name));
         $this->closeBanModal();
     }
 
@@ -244,10 +250,12 @@ class UserManagement extends Component
      */
     public function unbanUser(): void
     {
-        $user = User::findOrFail($this->selectedUserId);
+        $user = User::query()->findOrFail($this->selectedUserId);
         $user->unban();
 
-        flash()->success("User {$user->name} has been unbanned successfully.");
+        Track::event(TrackingEventType::USER_UNBAN, $user);
+
+        flash()->success(sprintf('User %s has been unbanned successfully.', $user->name));
         $this->closeUnbanModal();
     }
 
@@ -263,9 +271,9 @@ class UserManagement extends Component
             return;
         }
 
-        $existingBan = Ban::where('ip', $ip)
+        $existingBan = Ban::query()->where('ip', $ip)
             ->whereNull('deleted_at')
-            ->where(function ($query) {
+            ->where(function ($query): void {
                 $query->whereNull('expired_at')
                     ->orWhere('expired_at', '>', now());
             })
@@ -274,10 +282,11 @@ class UserManagement extends Component
         if ($existingBan) {
             // Unban IP
             $existingBan->delete();
-            flash()->success("IP address {$ip} has been unbanned.");
+            Track::event(TrackingEventType::IP_UNBAN, additionalData: ['ip' => $ip]);
+            flash()->success(sprintf('IP address %s has been unbanned.', $ip));
         } else {
             // Ban IP with 1 month expiry
-            Ban::create([
+            Ban::query()->create([
                 'bannable_type' => null,
                 'bannable_id' => null,
                 'created_by_type' => User::class,
@@ -286,11 +295,14 @@ class UserManagement extends Component
                 'ip' => $ip,
                 'expired_at' => now()->addMonth(),
             ]);
-            flash()->success("IP address {$ip} has been banned for 1 month.");
+            Track::event(TrackingEventType::IP_BAN, additionalData: ['ip' => $ip]);
+            flash()->success(sprintf('IP address %s has been banned for 1 month.', $ip));
         }
 
-        // Refresh IP data
-        $this->showUserIpAddresses($this->selectedUserId);
+        // Refresh IP data if we have a selected user
+        if ($this->selectedUserId !== null) {
+            $this->showUserIpAddresses($this->selectedUserId);
+        }
     }
 
     /**
@@ -348,9 +360,9 @@ class UserManagement extends Component
 
         // Role filter
         if (! empty($this->roleFilter)) {
-            $role = $this->roles->firstWhere('id', $this->roleFilter);
+            $role = $this->roles()->firstWhere('id', $this->roleFilter);
             if ($role) {
-                $filters[] = sprintf("Role: %s", $role->name);
+                $filters[] = sprintf('Role: %s', $role->name);
             }
         }
 
@@ -363,14 +375,14 @@ class UserManagement extends Component
 
         // Date range filters
         if ($this->joinedFrom && $this->joinedTo) {
-            $fromDate = \Carbon\Carbon::parse($this->joinedFrom)->format('M j, Y');
-            $toDate = \Carbon\Carbon::parse($this->joinedTo)->format('M j, Y');
+            $fromDate = Carbon::parse($this->joinedFrom)->format('M j, Y');
+            $toDate = Carbon::parse($this->joinedTo)->format('M j, Y');
             $filters[] = sprintf('Joined: %s - %s', $fromDate, $toDate);
         } elseif ($this->joinedFrom) {
-            $fromDate = \Carbon\Carbon::parse($this->joinedFrom)->format('M j, Y');
+            $fromDate = Carbon::parse($this->joinedFrom)->format('M j, Y');
             $filters[] = sprintf('Joined after: %s', $fromDate);
         } elseif ($this->joinedTo) {
-            $toDate = \Carbon\Carbon::parse($this->joinedTo)->format('M j, Y');
+            $toDate = Carbon::parse($this->joinedTo)->format('M j, Y');
             $filters[] = sprintf('Joined before: %s', $toDate);
         }
 

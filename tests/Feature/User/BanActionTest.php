@@ -5,11 +5,12 @@ declare(strict_types=1);
 use App\Livewire\User\BanAction;
 use App\Models\User;
 use App\Models\UserRole;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
-it('shows ban button for admin viewing regular user', function () {
+it('shows ban button for admin viewing regular user', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -19,12 +20,12 @@ it('shows ban button for admin viewing regular user', function () {
     $component = Livewire::actingAs($admin)
         ->test(BanAction::class, ['user' => $user]);
 
-    expect($component->instance()->canBanUser())->toBeTrue();
+    expect($admin->can('ban', $user))->toBeTrue();
     expect($user->isBanned())->toBeFalse();
     $component->assertSee('Ban User');
 });
 
-it('shows unban button for admin viewing banned user', function () {
+it('shows unban button for admin viewing banned user', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -35,12 +36,12 @@ it('shows unban button for admin viewing banned user', function () {
     $component = Livewire::actingAs($admin)
         ->test(BanAction::class, ['user' => $user]);
 
-    expect($component->instance()->canBanUser())->toBeTrue();
+    expect($admin->can('ban', $user))->toBeTrue();
     expect($user->isBanned())->toBeTrue();
     $component->assertSee('Unban User');
 });
 
-it('does not show ban buttons for moderators', function () {
+it('does not show ban buttons for moderators', function (): void {
     $moderator = User::factory()->create();
     $moderator->assignRole(UserRole::factory()->create(['name' => 'Moderator']));
 
@@ -49,20 +50,20 @@ it('does not show ban buttons for moderators', function () {
     $component = Livewire::actingAs($moderator)
         ->test(BanAction::class, ['user' => $user]);
 
-    expect($component->instance()->canBanUser())->toBeFalse();
+    expect($moderator->can('ban', $user))->toBeFalse();
 });
 
-it('does not show ban buttons for regular users', function () {
+it('does not show ban buttons for regular users', function (): void {
     $regularUser = User::factory()->create();
     $targetUser = User::factory()->create();
 
     $component = Livewire::actingAs($regularUser)
         ->test(BanAction::class, ['user' => $targetUser]);
 
-    expect($component->instance()->canBanUser())->toBeFalse();
+    expect($regularUser->can('ban', $targetUser))->toBeFalse();
 });
 
-it('does not allow admin to ban other admin', function () {
+it('does not allow admin to ban other admin', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
 
     $admin1 = User::factory()->create();
@@ -74,10 +75,10 @@ it('does not allow admin to ban other admin', function () {
     $component = Livewire::actingAs($admin1)
         ->test(BanAction::class, ['user' => $admin2]);
 
-    expect($component->instance()->canBanUser())->toBeFalse();
+    expect($admin1->can('ban', $admin2))->toBeFalse();
 });
 
-it('does not allow admin to ban themselves', function () {
+it('does not allow admin to ban themselves', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -85,10 +86,10 @@ it('does not allow admin to ban themselves', function () {
     $component = Livewire::actingAs($admin)
         ->test(BanAction::class, ['user' => $admin]);
 
-    expect($component->instance()->canBanUser())->toBeFalse();
+    expect($admin->can('ban', $admin))->toBeFalse();
 });
 
-it('allows admin to ban user with duration', function () {
+it('allows admin to ban user with duration', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -110,7 +111,7 @@ it('allows admin to ban user with duration', function () {
     expect($ban->expired_at)->not->toBeNull();
 });
 
-it('allows admin to ban user permanently', function () {
+it('allows admin to ban user permanently', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -129,7 +130,7 @@ it('allows admin to ban user permanently', function () {
     expect($ban->expired_at)->toBeNull();
 });
 
-it('allows admin to unban user', function () {
+it('allows admin to unban user', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -146,7 +147,7 @@ it('allows admin to unban user', function () {
     expect($user->fresh()->isBanned())->toBeFalse();
 });
 
-it('opens ban modal when clicking ban button', function () {
+it('opens ban modal when clicking ban button', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -160,7 +161,7 @@ it('opens ban modal when clicking ban button', function () {
         ->assertSet('showBanModal', true);
 });
 
-it('opens unban modal when clicking unban button', function () {
+it('opens unban modal when clicking unban button', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -175,7 +176,7 @@ it('opens unban modal when clicking unban button', function () {
         ->assertSet('showUnbanModal', true);
 });
 
-it('requires duration selection for ban', function () {
+it('requires duration selection for ban', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
@@ -188,7 +189,7 @@ it('requires duration selection for ban', function () {
         ->assertHasErrors(['duration']);
 });
 
-it('provides correct duration options', function () {
+it('provides correct duration options', function (): void {
     $admin = User::factory()->create();
     $user = User::factory()->create();
 

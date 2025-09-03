@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -99,8 +102,8 @@ class VisitorAnalytics extends Component
     #[Computed]
     public function events(): LengthAwarePaginator
     {
-        $validEventNames = collect(\App\Enums\TrackingEventType::cases())->map(fn($case) => $case->value)->toArray();
-        
+        $validEventNames = collect(TrackingEventType::cases())->map(fn ($case) => $case->value)->toArray();
+
         $query = TrackingEvent::query()
             ->with(['user', 'trackable'])
             ->whereIn('event_name', $validEventNames)
@@ -111,6 +114,7 @@ class VisitorAnalytics extends Component
                 'tracking_events.visitor_id',
                 'tracking_events.visitable_type',
                 'tracking_events.visitable_id',
+                'tracking_events.url',
                 'tracking_events.ip',
                 'tracking_events.browser',
                 'tracking_events.platform',
@@ -475,8 +479,8 @@ class VisitorAnalytics extends Component
      */
     private function getTopEvents(Builder $query): Collection
     {
-        $validEventNames = collect(\App\Enums\TrackingEventType::cases())->map(fn($case) => $case->value)->toArray();
-        
+        $validEventNames = collect(TrackingEventType::cases())->map(fn ($case) => $case->value)->toArray();
+
         return $query
             ->select('event_name', DB::raw('COUNT(*) as count'))
             ->whereIn('event_name', $validEventNames)
@@ -535,6 +539,72 @@ class VisitorAnalytics extends Component
             ->orderByDesc('count')
             ->limit(10)
             ->get();
+    }
+
+    /**
+     * Get the display text for an event based on its type and data.
+     */
+    public function getEventDisplayText(TrackingEvent $event): ?string
+    {
+        $eventType = TrackingEventType::from($event->event_name);
+
+        // Only show context if the event type allows it
+        if (! $eventType->shouldShowContext()) {
+            return null;
+        }
+
+        $eventData = $event->event_data ?? [];
+
+        // Check for snapshot data first
+        if (isset($eventData['snapshot'])) {
+            $snapshot = $eventData['snapshot'];
+
+            if (isset($snapshot['mod_name']) && isset($snapshot['version_name'])) {
+                // ModVersion events
+                return $snapshot['mod_name'].' v'.$snapshot['version_name'];
+            } elseif (isset($snapshot['mod_name'])) {
+                // Mod events
+                return $snapshot['mod_name'];
+            } elseif (isset($snapshot['comment_body'])) {
+                // Comment events
+                return 'Comment: '.Str::limit($snapshot['comment_body'], 30);
+            }
+        }
+
+        // Fallback to existing event context
+        if ($event->event_context) {
+            return $event->event_context;
+        }
+
+        // Handle IP ban/unban events that store IP in event_data
+        if (isset($eventData['ip'])) {
+            return 'IP: '.$eventData['ip'];
+        }
+
+        // For user ban/unban events, try to get the user name from the trackable relationship
+        if ($event->trackable instanceof User) {
+            return 'User: '.$event->trackable->name;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the URL for an event if it should be displayed as a link.
+     */
+    public function getEventUrl(TrackingEvent $event): ?string
+    {
+        $eventType = TrackingEventType::from($event->event_name);
+
+        // Only show URL if the event type allows it
+        if (! $eventType->shouldShowUrl()) {
+            return null;
+        }
+
+        $eventData = $event->event_data ?? [];
+
+        // Prioritize event_data.url over the general event_url
+        return $eventData['url'] ?? $event->event_url;
     }
 
     /**

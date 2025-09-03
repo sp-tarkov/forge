@@ -422,8 +422,17 @@ use Illuminate\Support\Str;
                                             <flux:icon name="{{ \App\Enums\TrackingEventType::from($event->event_name)->getIcon() }}" class="w-3 h-3 mr-1" />
                                             {{ $event->event_display_name }}
                                         </flux:badge>
-                                        @if($event->event_context)
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ Str::limit($event->event_context, 40) }}</div>
+                                        
+                                        @if($displayText = $this->getEventDisplayText($event))
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                @if($eventUrl = $this->getEventUrl($event))
+                                                    <a href="{{ $eventUrl }}" class="hover:text-gray-700 dark:hover:text-gray-300 underline hover:no-underline" target="_blank">
+                                                        {{ Str::limit($displayText, 40) }}
+                                                    </a>
+                                                @else
+                                                    {{ Str::limit($displayText, 40) }}
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </td>

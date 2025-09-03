@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\User;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -60,6 +63,8 @@ class BanAction extends Component
 
         $this->user->ban($attributes);
 
+        Track::event(TrackingEventType::USER_BAN, $this->user);
+
         flash()->success('User successfully banned!');
 
         $this->showBanModal = false;
@@ -76,6 +81,8 @@ class BanAction extends Component
         $this->authorize('unban', $this->user);
 
         $this->user->unban();
+
+        Track::event(TrackingEventType::USER_UNBAN, $this->user);
 
         flash()->success('User successfully unbanned!');
 
@@ -117,7 +124,7 @@ class BanAction extends Component
     /**
      * Render the component view.
      */
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         return view('livewire.user.ban-action');
     }

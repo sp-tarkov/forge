@@ -40,6 +40,8 @@ trait ModeratesMod
         $mod->featured = false;
         $mod->save();
 
+        Track::event(TrackingEventType::MOD_UNFEATURE, $mod);
+
         flash()->success('Mod successfully unfeatured!');
     }
 }

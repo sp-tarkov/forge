@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Mod;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\Mod;
 use App\Traits\Livewire\ModerationActionMenu;
 use Carbon\Carbon;
@@ -89,7 +91,7 @@ class Action extends Component
     #[Computed(persist: true)]
     public function mod(): Mod
     {
-        return Mod::query()->select(['id', 'name', 'featured', 'disabled', 'published_at', 'owner_id'])
+        return Mod::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'featured', 'disabled', 'published_at', 'owner_id'])
             ->with('owner:id,name')
             ->findOrFail($this->modId);
     }
@@ -134,6 +136,8 @@ class Action extends Component
 
         Mod::query()->where('id', $this->modId)->update(['featured' => true]);
 
+        Track::event(TrackingEventType::MOD_FEATURE, $this->mod);
+
         $this->modFeatured = true;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
 
@@ -153,6 +157,8 @@ class Action extends Component
 
         // Update the database directly
         Mod::query()->where('id', $this->modId)->update(['featured' => false]);
+
+        Track::event(TrackingEventType::MOD_UNFEATURE, $this->mod);
 
         $this->modFeatured = false;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
@@ -175,6 +181,8 @@ class Action extends Component
         // Update the database directly
         Mod::query()->where('id', $this->modId)->update(['disabled' => true]);
 
+        Track::event(TrackingEventType::MOD_DISABLE, $this->mod);
+
         $this->modDisabled = true;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
 
@@ -194,6 +202,8 @@ class Action extends Component
         $this->authorize('enable', $this->mod);
 
         Mod::query()->where('id', $this->modId)->update(['disabled' => false]);
+
+        Track::event(TrackingEventType::MOD_ENABLE, $this->mod);
 
         $this->modDisabled = false;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
@@ -217,6 +227,8 @@ class Action extends Component
 
         Mod::query()->where('id', $this->modId)->update(['published_at' => $publishedDate]);
 
+        Track::event(TrackingEventType::MOD_PUBLISH, $this->mod);
+
         $this->modPublished = true;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
 
@@ -236,6 +248,8 @@ class Action extends Component
         $this->authorize('unpublish', $this->mod);
 
         Mod::query()->where('id', $this->modId)->update(['published_at' => null]);
+
+        Track::event(TrackingEventType::MOD_UNPUBLISH, $this->mod);
 
         $this->modPublished = false;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());

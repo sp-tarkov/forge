@@ -450,6 +450,8 @@ class CommentComponent extends Component
 
         $comment->update(['pinned_at' => now()]);
 
+        Track::event(TrackingEventType::COMMENT_PIN, $comment);
+
         flash()->success('Comment successfully pinned!');
         $this->showPinModal = false;
         $this->pinningCommentId = null;
@@ -470,6 +472,8 @@ class CommentComponent extends Component
         $this->authorize('pin', $comment);
 
         $comment->update(['pinned_at' => null]);
+
+        Track::event(TrackingEventType::COMMENT_UNPIN, $comment);
 
         flash()->success('Comment successfully unpinned!');
         $this->showUnpinModal = false;

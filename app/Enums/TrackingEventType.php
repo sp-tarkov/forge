@@ -7,6 +7,7 @@ namespace App\Enums;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\User;
 
 enum TrackingEventType: string
 {
@@ -39,6 +40,20 @@ enum TrackingEventType: string
     /** Account management events */
     case ACCOUNT_DELETE = 'account_delete';
 
+    /** Moderator/Administrator actions */
+    case USER_BAN = 'user_ban';
+    case USER_UNBAN = 'user_unban';
+    case IP_BAN = 'ip_ban';
+    case IP_UNBAN = 'ip_unban';
+    case MOD_FEATURE = 'mod_feature';
+    case MOD_UNFEATURE = 'mod_unfeature';
+    case MOD_DISABLE = 'mod_disable';
+    case MOD_ENABLE = 'mod_enable';
+    case MOD_PUBLISH = 'mod_publish';
+    case MOD_UNPUBLISH = 'mod_unpublish';
+    case COMMENT_PIN = 'comment_pin';
+    case COMMENT_UNPIN = 'comment_unpin';
+
     /**
      * Get the user-friendly display name for this event type.
      */
@@ -64,6 +79,18 @@ enum TrackingEventType: string
             self::COMMENT_REPORT => 'Reported comment',
             self::MOD_REPORT => 'Reported mod',
             self::ACCOUNT_DELETE => 'Deleted account',
+            self::USER_BAN => 'Banned user',
+            self::USER_UNBAN => 'Unbanned user',
+            self::IP_BAN => 'Banned IP address',
+            self::IP_UNBAN => 'Unbanned IP address',
+            self::MOD_FEATURE => 'Featured mod',
+            self::MOD_UNFEATURE => 'Unfeatured mod',
+            self::MOD_DISABLE => 'Disabled mod',
+            self::MOD_ENABLE => 'Enabled mod',
+            self::MOD_PUBLISH => 'Published mod',
+            self::MOD_UNPUBLISH => 'Unpublished mod',
+            self::COMMENT_PIN => 'Pinned comment',
+            self::COMMENT_UNPIN => 'Unpinned comment',
         };
     }
 
@@ -92,6 +119,18 @@ enum TrackingEventType: string
             self::COMMENT_REPORT => 'User reported a comment',
             self::MOD_REPORT => 'User reported a mod',
             self::ACCOUNT_DELETE => 'User deleted their account',
+            self::USER_BAN => 'Moderator banned a user',
+            self::USER_UNBAN => 'Moderator unbanned a user',
+            self::IP_BAN => 'Moderator banned an IP address',
+            self::IP_UNBAN => 'Moderator unbanned an IP address',
+            self::MOD_FEATURE => 'Moderator featured a mod',
+            self::MOD_UNFEATURE => 'Moderator unfeatured a mod',
+            self::MOD_DISABLE => 'Moderator disabled a mod',
+            self::MOD_ENABLE => 'Moderator enabled a mod',
+            self::MOD_PUBLISH => 'Moderator published a mod',
+            self::MOD_UNPUBLISH => 'Moderator unpublished a mod',
+            self::COMMENT_PIN => 'Moderator pinned a comment',
+            self::COMMENT_UNPIN => 'Moderator unpinned a comment',
         };
     }
 
@@ -101,9 +140,10 @@ enum TrackingEventType: string
     public function getTrackableModel(): ?string
     {
         return match ($this) {
-            self::MOD_CREATE, self::MOD_EDIT, self::MOD_DELETE, self::MOD_REPORT => Mod::class,
+            self::MOD_CREATE, self::MOD_EDIT, self::MOD_DELETE, self::MOD_REPORT, self::MOD_FEATURE, self::MOD_UNFEATURE, self::MOD_DISABLE, self::MOD_ENABLE, self::MOD_PUBLISH, self::MOD_UNPUBLISH => Mod::class,
             self::MOD_DOWNLOAD, self::VERSION_CREATE, self::VERSION_EDIT, self::VERSION_DELETE => ModVersion::class,
-            self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT => Comment::class,
+            self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT, self::COMMENT_PIN, self::COMMENT_UNPIN => Comment::class,
+            self::USER_BAN, self::USER_UNBAN => User::class,
             default => null,
         };
     }
@@ -144,6 +184,18 @@ enum TrackingEventType: string
             self::COMMENT_UNLIKE => 'heart',
             self::COMMENT_REPORT => 'exclamation-triangle',
             self::ACCOUNT_DELETE => 'user-minus',
+            self::USER_BAN => 'no-symbol',
+            self::USER_UNBAN => 'check-circle',
+            self::IP_BAN => 'shield-exclamation',
+            self::IP_UNBAN => 'shield-check',
+            self::MOD_FEATURE => 'star',
+            self::MOD_UNFEATURE => 'star',
+            self::MOD_DISABLE => 'eye-slash',
+            self::MOD_ENABLE => 'eye',
+            self::MOD_PUBLISH => 'globe-alt',
+            self::MOD_UNPUBLISH => 'eye-slash',
+            self::COMMENT_PIN => 'bookmark',
+            self::COMMENT_UNPIN => 'bookmark',
         };
     }
 
@@ -181,6 +233,20 @@ enum TrackingEventType: string
 
             // Account management - Rose theme
             self::ACCOUNT_DELETE => 'rose',
+
+            // Moderation actions - Red/Orange/Gray theme for enforcement
+            self::USER_BAN => 'red',
+            self::USER_UNBAN => 'green',
+            self::IP_BAN => 'red',
+            self::IP_UNBAN => 'green',
+            self::MOD_FEATURE => 'yellow',
+            self::MOD_UNFEATURE => 'gray',
+            self::MOD_DISABLE => 'red',
+            self::MOD_ENABLE => 'green',
+            self::MOD_PUBLISH => 'blue',
+            self::MOD_UNPUBLISH => 'gray',
+            self::COMMENT_PIN => 'blue',
+            self::COMMENT_UNPIN => 'gray',
         };
     }
 
@@ -213,7 +279,9 @@ enum TrackingEventType: string
     public function isPrivate(): bool
     {
         return match ($this) {
-            self::LOGIN, self::LOGOUT, self::REGISTER, self::PASSWORD_CHANGE, self::ACCOUNT_DELETE, self::MOD_REPORT, self::COMMENT_REPORT => true,
+            self::LOGIN, self::LOGOUT, self::REGISTER, self::PASSWORD_CHANGE, self::ACCOUNT_DELETE, self::MOD_REPORT, self::COMMENT_REPORT,
+            self::USER_BAN, self::USER_UNBAN, self::IP_BAN, self::IP_UNBAN, self::MOD_FEATURE, self::MOD_UNFEATURE,
+            self::MOD_DISABLE, self::MOD_ENABLE, self::MOD_PUBLISH, self::MOD_UNPUBLISH, self::COMMENT_PIN, self::COMMENT_UNPIN => true,
             default => false,
         };
     }
