@@ -20,4 +20,5 @@ extend-exclude = [
     "/composer.lock",
     "*.min.*",
     ".gitignore",
+    "/storage/app/blocklists/",
 ]

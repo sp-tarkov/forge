@@ -110,6 +110,22 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
+     * Check if the user's email is from a disposable email provider
+     */
+    public function hasDisposableEmail(): bool
+    {
+        $parts = explode('@', $this->email);
+
+        if (count($parts) !== 2) {
+            return false;
+        }
+
+        $domain = strtolower($parts[1]);
+
+        return DisposableEmailBlocklist::isDisposable($domain);
+    }
+
+    /**
      * The relationship between a user and the mods they own.
      *
      * @return HasMany<Mod, $this>

@@ -113,10 +113,10 @@ use Illuminate\Support\Str;
                 @endif
 
                 <div class="w-full overflow-x-auto">
-                    <table class="w-full table-auto" style="min-width: 1200px;">
+                    <table class="w-full table-auto" style="min-width: 1000px;">
                         <thead class="bg-gray-100 dark:bg-gray-900">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('name')"
@@ -128,7 +128,7 @@ use Illuminate\Support\Str;
                                         @endif
                                     </button>
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('user_role_id')"
@@ -140,8 +140,8 @@ use Illuminate\Support\Str;
                                         @endif
                                     </button>
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Ban Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                <th class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Ban Status</th>
+                                <th class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('email_verified_at')"
@@ -153,9 +153,9 @@ use Illuminate\Support\Str;
                                         @endif
                                     </button>
                                 </th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">MFA</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Content</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <th class="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">MFA</th>
+                                <th class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Content</th>
+                                <th class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     <button
                                         type="button"
                                         wire:click="sortByColumn('created_at')"
@@ -167,15 +167,15 @@ use Illuminate\Support\Str;
                                         @endif
                                     </button>
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Actions</th>
+                                <th class="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($this->users as $user)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                     {{-- User Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        <div class="flex items-center space-x-3">
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
+                                        <div class="flex items-center space-x-2">
                                             <flux:avatar
                                                 circle="circle"
                                                 src="{{ $user->profile_photo_url }}"
@@ -185,17 +185,17 @@ use Illuminate\Support\Str;
                                             />
                                             <div class="min-w-0">
                                                 <a href="{{ $user->profile_url }}" 
-                                                   class="text-sm font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate block max-w-32">
+                                                   class="text-sm font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate block max-w-32 lg:max-w-48">
                                                     {{ $user->name }}
                                                 </a>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-32">{{ $user->email }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</p>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500">ID: {{ $user->id }}</p>
                                             </div>
                                         </div>
                                     </td>
 
                                     {{-- Role Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
                                         @if($user->role)
                                             <flux:badge color="{{ $user->role->color_class }}" size="sm">
                                                 {{ $user->role->short_name }}
@@ -206,7 +206,7 @@ use Illuminate\Support\Str;
                                     </td>
 
                                     {{-- Ban Status Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
                                         @php
                                             $activeBan = $user->bans->where('deleted_at', null)
                                                 ->where(function($ban) {
@@ -235,16 +235,28 @@ use Illuminate\Support\Str;
                                     </td>
 
                                     {{-- Email Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
-                                        @if($user->email_verified_at)
-                                            <flux:badge color="green" size="sm">Verified</flux:badge>
-                                        @else
-                                            <flux:badge color="red" size="sm">Unverified</flux:badge>
-                                        @endif
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
+                                        <div class="flex items-center gap-2">
+                                            @if($user->email_verified_at)
+                                                <flux:badge color="green" size="sm">Verified</flux:badge>
+                                            @else
+                                                <flux:badge color="red" size="sm">Unverified</flux:badge>
+                                            @endif
+                                            @if($user->hasDisposableEmail())
+                                                <flux:tooltip>
+                                                    <flux:icon.exclamation-triangle class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                                                    <flux:tooltip.content>
+                                                        <div class="text-sm">
+                                                            This email address is flagged as being disposable
+                                                        </div>
+                                                    </flux:tooltip.content>
+                                                </flux:tooltip>
+                                            @endif
+                                        </div>
                                     </td>
 
                                     {{-- MFA Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap text-center">
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap text-center">
                                         @if($user->hasMfaEnabled())
                                             <flux:icon.shield-check class="w-4 h-4 text-green-600 dark:text-green-400 mx-auto" />
                                         @else
@@ -253,7 +265,7 @@ use Illuminate\Support\Str;
                                     </td>
 
                                     {{-- Content Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
                                         <div class="text-xs text-gray-900 dark:text-gray-100">
                                             <div>Mods: {{ number_format($user->mods_count) }}</div>
                                             <div>Comments: {{ number_format($user->comments_count) }}</div>
@@ -261,13 +273,13 @@ use Illuminate\Support\Str;
                                     </td>
 
                                     {{-- Joined Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-900 dark:text-gray-100">
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap text-xs text-gray-900 dark:text-gray-100">
                                         <div>{{ $user->created_at->format('M j, Y') }}</div>
                                         <div class="text-gray-500 dark:text-gray-400">{{ $user->created_at->diffForHumans() }}</div>
                                     </td>
 
                                     {{-- Actions Column --}}
-                                    <td class="px-4 py-4 whitespace-nowrap">
+                                    <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
                                         <flux:dropdown align="end">
                                             <flux:button variant="outline" size="xs" icon="ellipsis-horizontal">
                                                 Actions
