@@ -20,7 +20,10 @@ class UserActivity extends Component
     public User $user;
 
     /**
-     * Initialize the component with a user.
+     * Livewire lifecycle method: Initialize the component with a user.
+     *
+     * This magic method is automatically called when the component is first mounted.
+     * It receives the User model passed from the parent view.
      */
     public function mount(User $user): void
     {
@@ -36,8 +39,9 @@ class UserActivity extends Component
     public function recentActivity(): Collection
     {
         $events = TrackingEvent::query()
+            // Get all events where the user is the visitor (simplified since logout now has visitor_id)
             ->where('visitor_id', $this->user->id)
-            ->with(['trackable'])
+            ->with(['visitable'])
             ->orderBy('created_at', 'desc')
             ->limit(15)
             ->get();
@@ -106,7 +110,10 @@ class UserActivity extends Component
     }
 
     /**
-     * Render the component view.
+     * Livewire lifecycle method: Render the component view.
+     *
+     * This magic method is automatically called by Livewire to generate the component's
+     * HTML output. It's called on initial load and after any property updates.
      */
     public function render(): View
     {

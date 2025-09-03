@@ -78,8 +78,14 @@
         "rector-fix": [
             "./vendor/bin/rector process --config=rector.php"
         ],
+        "coverage": [
+            "./vendor/bin/pest --type-coverage --min=99"
+        ],
         "pint": [
             "./vendor/bin/pint --config pint.json"
+        ],
+        "spell": [
+            "typos . --config ./typos.toml && echo 'DONE'"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

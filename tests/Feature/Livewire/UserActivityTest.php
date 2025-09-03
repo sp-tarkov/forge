@@ -343,10 +343,10 @@ describe('UserActivity Component', function (): void {
             $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
             $recentActivity = $component->get('recentActivity');
 
-            // Check that trackable relationship is loaded
-            $eventWithTrackable = $recentActivity->first(fn ($event): bool => $event->visitable_type === Comment::class);
-            expect($eventWithTrackable)->not->toBeNull();
-            expect($eventWithTrackable->relationLoaded('trackable'))->toBeTrue();
+            // Check that visitable relationship is loaded
+            $eventWithVisitable = $recentActivity->first(fn ($event): bool => $event->visitable_type === Comment::class);
+            expect($eventWithVisitable)->not->toBeNull();
+            expect($eventWithVisitable->relationLoaded('visitable'))->toBeTrue();
         });
     });
 
