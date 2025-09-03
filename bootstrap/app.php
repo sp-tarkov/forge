@@ -23,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(IPBanned::class);
 
+        // Trust proxies to get real client IP addresses
+        $middleware->trustProxies(at: '*');
+
         // Protect against spam on the web middleware group.
         $middleware->web(append: [
             ProtectAgainstSpam::class,
