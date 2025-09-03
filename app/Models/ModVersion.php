@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Trackable;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModVersionObserver;
@@ -11,7 +12,9 @@ use App\Support\Version;
 use Database\Factories\ModVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,15 +23,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Override;
+use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
 /**
- * ModVersion Model
- *
  * @property int $id
  * @property int|null $hub_id
  * @property int $mod_id
@@ -39,6 +42,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $version_labels
  * @property string $description
  * @property string $link
+ * @property int|null $content_length
  * @property string $spt_version_constraint
  * @property string $virus_total_link
  * @property int $downloads
@@ -56,10 +60,12 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
-class ModVersion extends Model
+class ModVersion extends Model implements Trackable
 {
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
+
+    use Visitable;
 
     /**
      * Update the parent mod's updated_at timestamp when the mod version is updated.
@@ -133,7 +139,7 @@ class ModVersion extends Model
     {
         return $this->belongsToMany(ModVersion::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
             ->withPivot('dependency_id')
-            ->join('mod_versions as latest_versions', function ($join): void {
+            ->join('mod_versions as latest_versions', function (JoinClause $join): void {
                 $join->on('latest_versions.id', '=', 'mod_versions.id')
                     ->whereRaw('latest_versions.version = (SELECT MAX(mv.version) FROM mod_versions mv WHERE mv.mod_id = mod_versions.mod_id)');
             })
@@ -251,5 +257,83 @@ class ModVersion extends Model
                 Markdown::convert($this->description)->getContent()
             )
         )->shouldCache();
+    }
+
+    /**
+     * Get the URL to view this trackable resource.
+     */
+    public function getTrackingUrl(): string
+    {
+        return route('mod.show', [$this->mod->id, $this->mod->slug]);
+    }
+
+    /**
+     * Get the display title for this trackable resource.
+     */
+    public function getTrackingTitle(): string
+    {
+        return sprintf('%s v%s', $this->mod->name, $this->version);
+    }
+
+    /**
+     * Get the snapshot data to store for this trackable resource.
+     *
+     * @return array<string, mixed>
+     */
+    public function getTrackingSnapshot(): array
+    {
+        return [
+            'version_name' => $this->version,
+            'mod_name' => $this->mod->name,
+            'version_changelog' => $this->description,
+        ];
+    }
+
+    /**
+     * Get contextual information about this trackable resource.
+     */
+    public function getTrackingContext(): ?string
+    {
+        return sprintf('Version %s of %s', $this->version, $this->mod->name);
+    }
+
+    /**
+     * Get the formatted file size in MB.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function formattedFileSize(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => $this->content_length
+                ? number_format($this->content_length / 1024 / 1024, 1).' MB'
+                : null
+        );
+    }
+
+    /**
+     * Query scope for mod versions that are publicly visible.
+     * These are versions that are published, enabled, and have SPT compatibility tags.
+     *
+     * @param  Builder<ModVersion>  $query
+     * @return Builder<ModVersion>
+     */
+    #[Scope]
+    protected function publiclyVisible(Builder $query): Builder
+    {
+        return $query->whereNotNull('published_at')
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion');
+    }
+
+    /**
+     * Check if this mod version is publicly visible.
+     * A version is considered publicly visible if it's published, enabled, and has SPT compatibility tags.
+     */
+    public function isPubliclyVisible(): bool
+    {
+        return ! is_null($this->published_at)
+            && ! $this->disabled
+            && ! is_null($this->latestSptVersion);
     }
 }

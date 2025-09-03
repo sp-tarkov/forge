@@ -6,43 +6,45 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
-it('returns token abilities for authenticated user', function (): void {
-    $user = User::factory()->create([
-        'password' => Hash::make('password123'),
-    ]);
-    $abilities = ['read', 'create'];
-    $token = $user->createToken('test-token', $abilities)->plainTextToken;
-
-    $response = $this->withToken($token)->getJson(route('api.v0.auth.abilities'));
-
-    $response->assertStatus(Response::HTTP_OK)
-        ->assertJson([
-            'success' => true,
-            'data' => $abilities,
+describe('Auth Abilities API', function (): void {
+    it('returns token abilities for authenticated user', function (): void {
+        $user = User::factory()->create([
+            'password' => Hash::make('password123'),
         ]);
-});
+        $abilities = ['read', 'create'];
+        $token = $user->createToken('test-token', $abilities)->plainTextToken;
 
-it('returns empty array if token has no abilities', function (): void {
-    $user = User::factory()->create([
-        'password' => Hash::make('password123'),
-    ]);
-    $token = $user->createToken('test-token', [])->plainTextToken;
+        $response = $this->withToken($token)->getJson(route('api.v0.auth.abilities'));
 
-    $response = $this->withToken($token)->getJson(route('api.v0.auth.abilities'));
+        $response->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'success' => true,
+                'data' => $abilities,
+            ]);
+    });
 
-    $response->assertStatus(Response::HTTP_OK)
-        ->assertJson([
-            'success' => true,
-            'data' => [],
+    it('returns empty array if token has no abilities', function (): void {
+        $user = User::factory()->create([
+            'password' => Hash::make('password123'),
         ]);
-});
+        $token = $user->createToken('test-token', [])->plainTextToken;
 
-it('returns error for unauthenticated request', function (): void {
-    $response = $this->getJson(route('api.v0.auth.abilities'));
+        $response = $this->withToken($token)->getJson(route('api.v0.auth.abilities'));
 
-    $response->assertStatus(Response::HTTP_UNAUTHORIZED)
-        ->assertJson([
-            'success' => false,
-            'code' => 'UNAUTHENTICATED',
-        ]);
+        $response->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'success' => true,
+                'data' => [],
+            ]);
+    });
+
+    it('returns error for unauthenticated request', function (): void {
+        $response = $this->getJson(route('api.v0.auth.abilities'));
+
+        $response->assertStatus(Response::HTTP_UNAUTHORIZED)
+            ->assertJson([
+                'success' => false,
+                'code' => 'UNAUTHENTICATED',
+            ]);
+    });
 });

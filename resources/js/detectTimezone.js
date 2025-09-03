@@ -1,5 +1,7 @@
 import jstz from 'jstz';
 
+window.jstz = jstz; // Livewire access
+
 function setTimezoneSelectToDetected(tzSelect) {
     if (!tzSelect) return;
     var tz = jstz.determine().name();
@@ -21,8 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var tzSelect = document.getElementById('timezone');
     var detectBtn = document.getElementById('detect-timezone');
 
-    // Auto-detect if empty.
-    if (tzSelect && !tzSelect.value) {
+    // Only auto-populate if the field has data-tz-auto="true" attribute and is empty
+    if (tzSelect && !tzSelect.value && tzSelect.getAttribute('data-tz-auto') === 'true') {
         setTimezoneSelectToDetected(tzSelect);
     }
 

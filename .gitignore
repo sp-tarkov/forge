@@ -35,3 +35,4 @@ yarn-error.log
 .scribe
 .rector
 /.nova
+tests/Browser/Screenshots

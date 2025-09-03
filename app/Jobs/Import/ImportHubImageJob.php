@@ -52,7 +52,7 @@ class ImportHubImageJob implements ShouldQueue
             'user_avatar' => $this->processUserAvatar(),
             'user_cover' => $this->processUserCoverPhoto(),
             'mod_thumbnail' => $this->processModThumbnail(),
-            default => throw new Exception('Unknown image type: ' . $this->imageType),
+            default => throw new Exception('Unknown image type: '.$this->imageType),
         };
     }
 
@@ -173,7 +173,7 @@ class ImportHubImageJob implements ShouldQueue
             try {
                 $path = self::generateAwesomeFontThumbnail($hubMod->fileID, $hubMod->getFontAwesomeIcon());
 
-                return ['path' => $path, 'hash' => ''];
+                return ['path' => $path, 'hash' => md5($hubMod->getFontAwesomeIcon())];
             } catch (ImagickDrawException|ImagickException) {
                 Log::error('There was an error attempting to generate the Font Awesome thumbnail for mod with hub ID: '.$hubMod->fileID);
 

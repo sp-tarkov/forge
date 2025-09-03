@@ -12,6 +12,7 @@
         "aws/aws-sdk-php": "^3.342.32",
         "composer/semver": "^3.4.3",
         "elgigi/commonmark-emoji": "^2.0",
+        "geoip2/geoip2": "^3.2",
         "graham-campbell/markdown": "^16.0",
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^12.15",
@@ -19,6 +20,7 @@
         "laravel/jetstream": "^5.3.6",
         "laravel/octane": "^2.9.1",
         "laravel/pulse": "^1.4.1",
+        "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.1.0",
         "laravel/scout": "^10.14.1",
         "laravel/socialite": "^5.20.0",
@@ -30,10 +32,10 @@
         "mchev/banhammer": "^2.4.0",
         "meilisearch/meilisearch-php": "^1.14",
         "php-flasher/flasher-laravel": "^2.1.6",
+        "shetabit/visitor": "^4.4",
         "socialiteproviders/discord": "^4.2",
         "spatie/laravel-flare": "^2.0",
         "spatie/laravel-honeypot": "^4.6",
-        "spatie/laravel-query-builder": "^6.3.2",
         "stevebauman/purify": "^6.3.0"
     },
     "require-dev": {
@@ -42,13 +44,16 @@
         "fakerphp/faker": "^1.24.1",
         "knuckleswtf/scribe": "^5.2",
         "larastan/larastan": "^3.4.0",
+        "laravel/boost": "^1.0",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.22",
         "laravel/sail": "^1.41.1",
         "laravel/telescope": "^5.7",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.8.0",
-        "pestphp/pest": "^3.8.2",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-browser": "^4.0",
+        "pestphp/pest-plugin-type-coverage": "^4.0",
         "rector/rector": "^2.0.12"
     },
     "autoload": {
@@ -94,7 +99,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --queue=long,default --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
         ]
     },
     "extra": {

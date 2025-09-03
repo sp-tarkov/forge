@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Traits\Livewire;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\Mod;
 
 trait ModeratesMod
@@ -14,6 +16,8 @@ trait ModeratesMod
     public function deleteMod(Mod $mod, string $route = ''): void
     {
         $this->authorize('delete', $mod);
+
+        Track::event(TrackingEventType::MOD_DELETE, $mod);
 
         $mod->delete();
 
@@ -35,6 +39,8 @@ trait ModeratesMod
 
         $mod->featured = false;
         $mod->save();
+
+        Track::event(TrackingEventType::MOD_UNFEATURE, $mod);
 
         flash()->success('Mod successfully unfeatured!');
     }

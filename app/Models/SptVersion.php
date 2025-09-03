@@ -23,8 +23,6 @@ use Override;
 use Throwable;
 
 /**
- * SptVersion Model
- *
  * @property int $id
  * @property string $version
  * @property int $version_major
@@ -58,16 +56,22 @@ class SptVersion extends Model
         $majorVersions = array_column($lastThreeMinorVersions, 'major');
         $minorVersions = array_column($lastThreeMinorVersions, 'minor');
 
-        // Fetch all versions for the last three minor versions with mod count.
-        return self::query()->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count'])
-            ->join('mod_version_spt_version', 'spt_versions.id', '=', 'mod_version_spt_version.spt_version_id')
-            ->join('mod_versions', 'mod_version_spt_version.mod_version_id', '=', 'mod_versions.id')
-            ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
-            ->where('spt_versions.version', '!=', '0.0.0')
-            ->whereIn('spt_versions.version_major', $majorVersions)
-            ->whereIn('spt_versions.version_minor', $minorVersions)
-            ->where('spt_versions.mod_count', '>', 0)
-            ->groupBy('spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count')
+        // Fetch all versions for the last three minor versions.
+        $query = self::query()
+            ->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count'])
+            ->where('spt_versions.version', '!=', '0.0.0');
+
+        // Add WHERE conditions for each major.minor pair
+        $query->where(function ($query) use ($lastThreeMinorVersions): void {
+            foreach ($lastThreeMinorVersions as $minorVersion) {
+                $query->orWhere(function ($subQuery) use ($minorVersion): void {
+                    $subQuery->where('spt_versions.version_major', $minorVersion['major'])
+                        ->where('spt_versions.version_minor', $minorVersion['minor']);
+                });
+            }
+        });
+
+        return $query->groupBy('spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count')
             ->orderBy('spt_versions.version_major', 'DESC')
             ->orderBy('spt_versions.version_minor', 'DESC')
             ->orderBy('spt_versions.version_patch', 'DESC')
@@ -217,20 +221,23 @@ class SptVersion extends Model
     }
 
     /**
-     * Get all the minor/patch versions of the latest major version.
+     * Get all the minor/patch versions of the latest minor release.
      *
      * @return Collection<int, $this>
      */
     public static function getLatestMinorVersions(): Collection
     {
-        $latestMajor = self::getLatest();
-        if ($latestMajor === null) {
+        // Get the absolute latest version to determine the latest minor release
+        $latestVersion = self::getLatest();
+        if ($latestVersion === null) {
             return new Collection;
         }
 
+        // Get all patch versions for this major.minor combination
         return self::query()
-            ->where('version_major', $latestMajor->version_major)
-            ->where('version_minor', $latestMajor->version_minor)
+            ->where('version_major', $latestVersion->version_major)
+            ->where('version_minor', $latestVersion->version_minor)
+            ->where('version', '!=', '0.0.0')
             ->orderBy('version_patch', 'desc')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels')

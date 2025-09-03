@@ -32,8 +32,8 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Version Information</h3>
                     <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Add a new version to your mod by filling out this form. It will be unpublished by default.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
-                        Please ensure you follow the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">community guidelines</a>
-                        and the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">file submission guidelines</a>.
+                        Please ensure you follow the <a href="{{ route('static.community-standards') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Community Standards</a>
+                        and the <a href="{{ route('static.content-guidelines') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Content Guidelines</a>.
                         Failing to do so will result in your mod being removed from the Forge and possible action being taken against your account.
                     </p>
                 </div>
@@ -90,6 +90,70 @@
                                 <flux:description>{!! __('Provide a link to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod.') !!}</flux:description>
                                 <flux:input type="url" wire:model.blur="virusTotalLink" placeholder="https://www.virustotal.com..." />
                                 <flux:error name="virusTotalLink" />
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
+                                <flux:label>{{ __('Mod Dependencies') }}</flux:label>
+                                <flux:description>{{ __('Specify other mods that this version depends on. Use semantic version constraints to define compatible versions.') }}</flux:description>
+                                
+                                <div class="space-y-4">
+                                    @foreach($dependencies as $index => $dependency)
+                                        <div wire:key="dependency-{{ $dependency['id'] ?? $index }}" class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
+                                                <flux:button size="xs" variant="outline" wire:click="removeDependency({{ $index }})" type="button">
+                                                    {{ __('Remove') }}
+                                                </flux:button>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <flux:field>
+                                                    <flux:label>{{ __('Mod') }}</flux:label>
+                                                    <livewire:components.mod-autocomplete 
+                                                        :key="'autocomplete-' . ($dependency['id'] ?? $index)"
+                                                        :exclude-mod-id="$mod->id"
+                                                        :selected-mod-id="$dependencies[$index]['modId'] ?? ''"
+                                                        placeholder="Type to search for a mod..."
+                                                        label="Select dependency mod"
+                                                        @mod-selected="updateDependencyModId({{ $index }}, $event.detail.modId)"
+                                                    />
+                                                    <flux:error name="dependencies.{{ $index }}.modId" />
+                                                </flux:field>
+                                                
+                                                <flux:field>
+                                                    <flux:label>{{ __('Version Constraint') }}</flux:label>
+                                                    <flux:input 
+                                                        type="text" 
+                                                        wire:model.live.debounce="dependencies.{{ $index }}.constraint" 
+                                                        placeholder="~1.0.0"
+                                                    />
+                                                    <flux:error name="dependencies.{{ $index }}.constraint" />
+                                                </flux:field>
+                                            </div>
+                                            
+                                            @if(isset($matchingDependencyVersions[$index]) && count($matchingDependencyVersions[$index]) > 0)
+                                                <div class="mt-3">
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ __('Matching Versions:') }}</p>
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach($matchingDependencyVersions[$index] as $version)
+                                                            <span class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-800 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                                                {{ $version['mod_name'] }} v{{ $version['version'] }}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @elseif(!empty($dependencies[$index]['modId']) && !empty($dependencies[$index]['constraint']))
+                                                <div class="mt-3">
+                                                    <p class="text-sm text-yellow-600 dark:text-yellow-400">{{ __('No matching versions found for this constraint.') }}</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                    
+                                    <flux:button size="sm" variant="outline" wire:click="addDependency" type="button">
+                                        {{ __('+ Add Dependency') }}
+                                    </flux:button>
+                                </div>
                             </flux:field>
 
                             <flux:field class="col-span-6" x-data="{

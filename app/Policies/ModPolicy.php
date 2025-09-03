@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Mod;
+use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Database\Eloquent\Model;
 
 class ModPolicy
 {
@@ -28,8 +30,17 @@ class ModPolicy
             return $user?->isModOrAdmin() ?? false;
         }
 
-        if (! $this->hasValidSptVersion($mod)) {
-            $isPrivilegedUser = $user && ($this->isAuthorOrOwner($user, $mod) || $user->isModOrAdmin());
+        // Check if mod is published
+        if (! $mod->published_at) {
+            $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
+            if (! $isPrivilegedUser) {
+                return false;
+            }
+        }
+
+        // Check if mod has valid SPT versions that are also published
+        if (! $this->hasValidPublishedSptVersion($mod, $user)) {
+            $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
             if (! $isPrivilegedUser) {
                 return false;
             }
@@ -53,7 +64,12 @@ class ModPolicy
      */
     public function update(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->owner->id === $user->id || $mod->authors->contains($user);
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isModOrAdmin() || $mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -61,6 +77,11 @@ class ModPolicy
      */
     public function delete(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin() || $mod->owner->id === $user->id;
     }
 
@@ -85,7 +106,12 @@ class ModPolicy
      */
     public function disable(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->owner->id === $user->id;
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isModOrAdmin();
     }
 
     /**
@@ -93,7 +119,38 @@ class ModPolicy
      */
     public function enable(User $user, Mod $mod): bool
     {
-        return $user->isModOrAdmin() || $mod->owner->id === $user->id;
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can unpublish the model.
+     */
+    public function unpublish(User $user, Mod $mod): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $mod->isAuthorOrOwner($user);
+    }
+
+    /**
+     * Determine whether the user can publish the model.
+     */
+    public function publish(User $user, Mod $mod): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -101,6 +158,11 @@ class ModPolicy
      */
     public function feature(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 
@@ -109,6 +171,11 @@ class ModPolicy
      */
     public function unfeature(User $user, Mod $mod): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 
@@ -117,28 +184,50 @@ class ModPolicy
      */
     public function viewActions(User $user, Mod $mod): bool
     {
-        return $this->isAuthorOrOwner($user, $mod);
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**
-     * Check if a version has a valid SPT version tag.
+     * Check if a version has a valid SPT version tag and is published.
      */
-    private function hasValidSptVersion(Mod $mod): bool
+    private function hasValidPublishedSptVersion(Mod $mod, ?User $user): bool
     {
         $mod->loadMissing(['versions.latestSptVersion']);
 
-        return $mod->versions->contains(fn ($version): bool => ! is_null($version->latestSptVersion));
+        $showUnpublished = $user?->isModOrAdmin() ?? false;
+
+        return $mod->versions->contains(function (ModVersion $version) use ($showUnpublished): bool {
+            $hasValidSptVersion = ! is_null($version->latestSptVersion);
+            $isPublished = ! is_null($version->published_at);
+            $isEnabled = ! $version->disabled;
+
+            return $hasValidSptVersion && $isEnabled && ($isPublished || $showUnpublished);
+        });
     }
 
     /**
-     * Check if the user is an author or the owner of the mod.
+     * Determine whether the user can report a mod.
+     *
+     * Authentication and email verification are required.
      */
-    private function isAuthorOrOwner(?User $user, Mod $mod): bool
+    public function report(User $user, Model $reportable): bool
     {
-        if ($user === null) {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
             return false;
         }
 
-        return $user->id === $mod->owner?->id || $mod->authors->pluck('id')->contains($user->id);
+        // Moderators and administrators cannot create reports.
+        if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Check if the reportable model has the required method.
+        if (! method_exists($reportable, 'hasBeenReportedBy')) {
+            return false;
+        }
+
+        // User cannot report the same item more than once.
+        return ! $reportable->hasBeenReportedBy($user->id);
     }
 }

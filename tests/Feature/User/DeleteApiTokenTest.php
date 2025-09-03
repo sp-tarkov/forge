@@ -8,22 +8,24 @@ use Laravel\Jetstream\Features;
 use Laravel\Jetstream\Http\Livewire\ApiTokenManager;
 use Livewire\Livewire;
 
-test('api tokens can be deleted', function (): void {
-    if (Features::hasTeamFeatures()) {
-        $this->actingAs($user = User::factory()->withPersonalTeam()->create());
-    } else {
-        $this->actingAs($user = User::factory()->create());
-    }
+describe('API token deletion', function (): void {
+    it('can delete api tokens', function (): void {
+        if (Features::hasTeamFeatures()) {
+            $this->actingAs($user = User::factory()->withPersonalTeam()->create());
+        } else {
+            $this->actingAs($user = User::factory()->create());
+        }
 
-    $token = $user->tokens()->create([
-        'name' => 'Test Token',
-        'token' => Str::random(40),
-        'abilities' => ['create', 'read'],
-    ]);
+        $token = $user->tokens()->create([
+            'name' => 'Test Token',
+            'token' => Str::random(40),
+            'abilities' => ['create', 'read'],
+        ]);
 
-    Livewire::test(ApiTokenManager::class)
-        ->set(['apiTokenIdBeingDeleted' => $token->id])
-        ->call('deleteApiToken');
+        Livewire::test(ApiTokenManager::class)
+            ->set(['apiTokenIdBeingDeleted' => $token->id])
+            ->call('deleteApiToken');
 
-    expect($user->fresh()->tokens)->toHaveCount(0);
-})->skip(fn (): bool => ! Features::hasApiFeatures(), 'API support is not enabled.');
+        expect($user->fresh()->tokens)->toHaveCount(0);
+    })->skip(fn (): bool => ! Features::hasApiFeatures(), 'API support is not enabled.');
+});

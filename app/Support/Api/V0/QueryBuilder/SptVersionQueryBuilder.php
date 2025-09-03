@@ -184,7 +184,7 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
     protected function applySorts(): void
     {
         if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn ($sort): bool => ! empty($sort));
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
             if (empty($this->sorts)) {
                 return; // All sorts were empty and filtered out, return early.
             }

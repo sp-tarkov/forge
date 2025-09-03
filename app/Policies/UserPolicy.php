@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Database\Eloquent\Model;
 
 class UserPolicy
 {
@@ -62,5 +63,68 @@ class UserPolicy
     public function forceDelete(User $user, User $model): bool
     {
         return false;
+    }
+
+    /**
+     * Determine whether the user can report a user.
+     *
+     * Authentication and email verification are required.
+     */
+    public function report(User $user, Model $reportable): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        // Moderators and administrators cannot create reports.
+        if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Check if the reportable model has the required method.
+        if (! method_exists($reportable, 'hasBeenReportedBy')) {
+            return false;
+        }
+
+        // User cannot report the same item more than once.
+        return ! $reportable->hasBeenReportedBy($user->id);
+    }
+
+    /**
+     * Determine whether the user can ban another user.
+     *
+     * Only administrators can ban users, with the following restrictions:
+     * - Cannot ban other administrators
+     * - Cannot ban themselves
+     */
+    public function ban(User $user, User $targetUser): bool
+    {
+        // Only administrators can ban users
+        if (! $user->isAdmin()) {
+            return false;
+        }
+
+        // Cannot ban other administrators
+        if ($targetUser->isAdmin()) {
+            return false;
+        }
+
+        // Cannot ban yourself
+        if ($user->id === $targetUser->id) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Determine whether the user can unban another user.
+     *
+     * Uses the same authorization logic as ban since unbanning requires the same administrative privileges.
+     */
+    public function unban(User $user, User $targetUser): bool
+    {
+        return $this->ban($user, $targetUser);
     }
 }

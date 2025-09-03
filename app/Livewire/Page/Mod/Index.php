@@ -127,7 +127,7 @@ class Index extends Component
         }
 
         // Find the closest allowed value.
-        $this->perPage = $allowed->sortBy(fn ($item): int => abs($item - $value))->first();
+        $this->perPage = $allowed->sortBy(fn (int $item): int => abs($item - $value))->first();
     }
 
     /**
@@ -157,7 +157,7 @@ class Index extends Component
      *
      * @return array<int, Collection<int, SptVersion>>
      */
-    #[Computed]
+    #[Computed(cache: true)]
     public function splitSptVersions(): array
     {
         $versions = $this->availableSptVersions;

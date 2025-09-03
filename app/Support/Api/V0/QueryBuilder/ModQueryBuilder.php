@@ -23,9 +23,11 @@ class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
         $query = Mod::query()
             ->select('mods.*')
-            ->where('mods.disabled', false);
+            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false));
 
         // Apply the SPT version condition if the filter is not being used
         if (! $this->hasFilter('spt_version')) {
@@ -43,7 +45,9 @@ class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function applySptVersionCondition(Builder $query, ?array $compatibleVersions = null): void
     {
-        $query->whereExists(function ($query) use ($compatibleVersions): void {
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
+        $query->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($compatibleVersions, $showDisabled): void {
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
@@ -51,7 +55,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 ->whereColumn('mod_versions.mod_id', 'mods.id')
                 ->whereNotNull('spt_versions.version')
                 ->where('spt_versions.version', '!=', '0.0.0')
-                ->where('mod_versions.disabled', false);
+                ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $query) => $query->where('mod_versions.disabled', false))
+                ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $query) => $query->whereNotNull('mod_versions.published_at'));
 
             // Get all mods with versions compatible with specific SPT versions.
             if ($compatibleVersions !== null) {

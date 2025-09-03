@@ -72,6 +72,42 @@ button {
 }
 
 .user-markdown {
+
+    &.deleted {
+        @apply mt-1 text-red-500 dark:text-red-400;
+    }
+
+    .deleted {
+        @apply text-red-500 dark:text-red-400;
+
+        & * {
+            color: var(--color-red-500) !important;
+        }
+
+        .dark & * {
+            color: var(--color-red-400) !important;
+        }
+
+        & a {
+            color: var(--color-red-500) !important;
+            &:hover {
+                color: var(--color-red-500) !important;
+            }
+        }
+
+        .dark & a {
+            color: var(--color-red-400) !important;
+            &:hover {
+                color: var(--color-red-400) !important;
+            }
+        }
+
+        & img {
+            filter: grayscale(100%) !important;
+            opacity: 0.7;
+        }
+    }
+
     a {
         @apply underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors break-all;
     }
@@ -119,8 +155,7 @@ button {
     hr {
         border: 0;
         height: 2px;
-        background: #333;
-        background-image: linear-gradient(to right, var(--color-gray-950), var(--color-cyan-600), var(--color-gray-950));
+        background: #333 linear-gradient(to right, var(--color-gray-950), var(--color-cyan-600), var(--color-gray-950));
         margin: 1rem 0;
     }
 
@@ -214,6 +249,10 @@ button {
     &.gray {
         @apply text-white bg-gray-500 dark:bg-gray-700;
     }
+
+    &.yellow {
+        @apply text-black bg-yellow-400 dark:bg-yellow-600;
+    }
 }
 
 .rainbow {
@@ -231,42 +270,6 @@ button {
     animation: rainbow 18s ease infinite;
 }
 
-@-webkit-keyframes rainbow {
-    0% {
-        background-position: 0 82%
-    }
-    50% {
-        background-position: 100% 19%
-    }
-    100% {
-        background-position: 0 82%
-    }
-}
-
-@-moz-keyframes rainbow {
-    0% {
-        background-position: 0 82%
-    }
-    50% {
-        background-position: 100% 19%
-    }
-    100% {
-        background-position: 0 82%
-    }
-}
-
-@-o-keyframes rainbow {
-    0% {
-        background-position: 0 82%
-    }
-    50% {
-        background-position: 100% 19%
-    }
-    100% {
-        background-position: 0 82%
-    }
-}
-
 @keyframes rainbow {
     0% {
         background-position: 0 82%
@@ -277,4 +280,48 @@ button {
     100% {
         background-position: 0 82%
     }
+}
+
+@layer utilities {
+    .animate-heart-bounce {
+        animation: heart-bounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        transform-origin: center;
+    }
+    .animate-heart-bounce::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        background: radial-gradient(circle at center, currentColor 0%, transparent 70%);
+        opacity: 0;
+        animation: pulse 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+}
+
+@keyframes heart-bounce {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.2;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Fix z-index for flash messages to appear above navigation */
+.fl-wrapper {
+    z-index: 60 !important;
 }

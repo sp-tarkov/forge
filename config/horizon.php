@@ -211,18 +211,18 @@ return [
     'environments' => [
         'production' => [
             'supervisor-default' => [
-                'maxProcesses' => 10,
+                'maxProcesses' => 20,
             ],
             'supervisor-long' => [
-                'maxProcesses' => 3,
+                'maxProcesses' => 5,
             ],
         ],
         'local' => [
             'supervisor-default' => [
-                'maxProcesses' => 1,
+                'maxProcesses' => 5,
             ],
             'supervisor-long' => [
-                'maxProcesses' => 1,
+                'maxProcesses' => 2,
             ],
         ],
     ],

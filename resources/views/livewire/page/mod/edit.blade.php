@@ -20,8 +20,8 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mod Information</h3>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">You may update your mod details using this form. Changes will be visible immediately after saving.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
-                        Please ensure you follow the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">community guidelines</a>
-                        and the <a href="#" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">file submission guidelines</a>.
+                        Please ensure you follow the <a href="{{ route('static.community-standards') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Community Standards</a>
+                        and the <a href="{{ route('static.content-guidelines') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Content Guidelines</a>.
                     </p>
                 </div>
                 <div class="px-4 sm:px-0"></div>
@@ -158,6 +158,17 @@
                                         wire:model.blur="containsAds"
                                         label="Contains Ads"
                                         description="This mod contains advertisements for products, services, or other content."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Comments">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="commentsDisabled"
+                                        label="Disable Comments"
+                                        description="When enabled, normal users will not be able to view or create comments on this mod. Administrators and moderators will still have full access."
                                     />
                                 </flux:checkbox.group>
                             </flux:field>

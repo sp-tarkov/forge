@@ -42,7 +42,7 @@ class ModVersionPolicy
      */
     public function create(User $user, Mod $mod): bool
     {
-        return $this->isAuthorOrOwner($user, $mod) && $user->hasMfaEnabled();
+        return $mod->isAuthorOrOwner($user) && $user->hasMfaEnabled();
     }
 
     /**
@@ -50,7 +50,12 @@ class ModVersionPolicy
      */
     public function update(User $user, ModVersion $modVersion): bool
     {
-        return $user->isModOrAdmin() || $this->isAuthorOrOwner($user, $modVersion->mod);
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isModOrAdmin() || $modVersion->mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -58,7 +63,12 @@ class ModVersionPolicy
      */
     public function delete(User $user, ModVersion $modVersion): bool
     {
-        return $user->isAdmin() || $modVersion->mod->owner->id === $user->id;
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isAdmin() || $modVersion->mod->owner?->id === $user->id;
     }
 
     /**
@@ -98,6 +108,11 @@ class ModVersionPolicy
      */
     public function disable(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
@@ -106,18 +121,37 @@ class ModVersionPolicy
      */
     public function enable(User $user, ModVersion $modVersion): bool
     {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
         return $user->isModOrAdmin();
     }
 
     /**
-     * Check if the user is an author or the owner of the mod.
+     * Determine whether the user can unpublish the model.
      */
-    private function isAuthorOrOwner(?User $user, Mod $mod): bool
+    public function unpublish(User $user, ModVersion $modVersion): bool
     {
-        if ($user === null) {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
             return false;
         }
 
-        return $user->id === $mod->owner?->id || $mod->authors->pluck('id')->contains($user->id);
+        return $modVersion->mod->isAuthorOrOwner($user);
+    }
+
+    /**
+     * Determine whether the user can publish the model.
+     */
+    public function publish(User $user, ModVersion $modVersion): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $modVersion->mod->isAuthorOrOwner($user);
     }
 }

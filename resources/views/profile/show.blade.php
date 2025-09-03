@@ -43,6 +43,12 @@
             </div>
             <x-section-border />
 
+            {{-- Notification Preferences --}}
+            <div class="mt-10 sm:mt-0">
+                @livewire('profile.notification-preferences')
+            </div>
+            <x-section-border />
+
             @if (config('session.driver') === 'database')
                 <div class="mt-10 sm:mt-0">
                     @livewire('profile.logout-other-browser-sessions-form')

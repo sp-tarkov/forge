@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
+use App\Contracts\Reportable;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
+use App\Traits\HasReports;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -27,6 +31,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
 use SensitiveParameter;
+use Shetabit\Visitor\Traits\Visitor;
 
 /**
  * @property int $id
@@ -38,35 +43,51 @@ use SensitiveParameter;
  * @property string|null $password
  * @property string $about
  * @property int|null $user_role_id
- * @property string|null $remember_token
  * @property string|null $profile_photo_path
  * @property string|null $cover_photo_path
- * @property string|null $timezone
+ * @property string|null $remember_token
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property-read string $slug
- * @property-read string $profile_url
- * @property-read string $profile_photo_url
+ * @property string|null $two_factor_secret
+ * @property string|null $two_factor_recovery_codes
+ * @property Carbon|null $two_factor_confirmed_at
+ * @property string|null $timezone
+ * @property bool $email_notifications_enabled
+ * @property-read string $cover_photo_url attribute
+ * @property-read string $profile_photo_url attribute
+ * @property-read string $profile_url attribute
+ * @property-read string $slug attribute
  * @property-read UserRole|null $role
  * @property-read Collection<int, Mod> $ownedMods
  * @property-read Collection<int, Mod> $authoredMods
  * @property-read Collection<int, User> $followers
  * @property-read Collection<int, User> $following
  * @property-read Collection<int, OAuthConnection> $oAuthConnections
+ *
+ * @implements Commentable<self>
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable
 {
     use Bannable;
     use HasApiTokens;
+
+    /** @use HasComments<self> */
+    use HasComments;
+
     use HasCoverPhoto;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
     use HasProfilePhoto;
+
+    /** @use HasReports<User> */
+    use HasReports;
+
     use Notifiable;
     use Searchable;
     use TwoFactorAuthenticatable;
+    use Visitor;
 
     protected $hidden = [
         'password',
@@ -86,6 +107,22 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function profilePhotoStoragePath(): string
     {
         return 'profile-photos';
+    }
+
+    /**
+     * Check if the user's email is from a disposable email provider
+     */
+    public function hasDisposableEmail(): bool
+    {
+        $parts = explode('@', $this->email);
+
+        if (count($parts) !== 2) {
+            return false;
+        }
+
+        $domain = strtolower($parts[1]);
+
+        return DisposableEmailBlocklist::isDisposable($domain);
     }
 
     /**
@@ -351,6 +388,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'user_role_id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'email_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -365,7 +403,114 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasEnabledTwoFactorAuthentication()
             || (
                 $this->oAuthConnections->isNotEmpty()
-                && $this->oAuthConnections->every(fn ($connection) => $connection->mfa_enabled)
+                && $this->oAuthConnections->every(fn (OAuthConnection $connection): bool => (bool) $connection->mfa_enabled)
             );
+    }
+
+    /**
+     * The relationship between a user and their authored comments.
+     *
+     * @return HasMany<Comment, $this>
+     */
+    public function authoredComments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * The relationship between a user and their comment reactions.
+     *
+     * @return HasMany<CommentReaction, $this>
+     */
+    public function commentReactions(): HasMany
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    /**
+     * Get all comment subscriptions for this user.
+     *
+     * @return HasMany<CommentSubscription, $this>
+     */
+    public function commentSubscriptions(): HasMany
+    {
+        return $this->hasMany(CommentSubscription::class);
+    }
+
+    /**
+     * Determine if this user's profile can receive comments.
+     * For now, all user profiles can receive comments.
+     * In the future, this could check privacy settings, banned status, etc.
+     */
+    public function canReceiveComments(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the display name for this commentable model.
+     */
+    public function getCommentableDisplayName(): string
+    {
+        return 'profile';
+    }
+
+    /**
+     * Get the URL to view this user's profile.
+     */
+    public function getCommentableUrl(): string
+    {
+        return route('user.show', [
+            'userId' => $this->id,
+            'slug' => $this->slug,
+        ]);
+    }
+
+    /**
+     * Get the title of this user's profile for display in notifications and UI.
+     */
+    public function getTitle(): string
+    {
+        return $this->name."'s Profile";
+    }
+
+    /**
+     * Comments on user profiles are displayed on the 'wall' tab.
+     */
+    public function getCommentTabHash(): ?string
+    {
+        return 'wall';
+    }
+
+    /**
+     * Get a human-readable display name for the reportable model.
+     */
+    public function getReportableDisplayName(): string
+    {
+        return 'user profile';
+    }
+
+    /**
+     * Get the title of the reportable model.
+     */
+    public function getReportableTitle(): string
+    {
+        return $this->name ?? 'user #'.$this->id;
+    }
+
+    /**
+     * Get an excerpt of the reportable content for display in notifications.
+     */
+    public function getReportableExcerpt(): ?string
+    {
+        return $this->about ? Str::words($this->about, 15, '...') : null;
+    }
+
+    /**
+     * Get the URL to view the reportable content.
+     */
+    public function getReportableUrl(): string
+    {
+        return $this->profile_url;
     }
 }

@@ -12,8 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * License Model
- *
  * @property int $id
  * @property int|null $hub_id
  * @property string $name

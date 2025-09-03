@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
+use App\Contracts\Reportable;
+use App\Contracts\Trackable;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
+use App\Traits\HasComments;
+use App\Traits\HasReports;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -24,11 +29,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
 /**
- * Mod Model
- *
  * @property int $id
  * @property int|null $hub_id
  * @property string $guid
@@ -45,6 +49,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $contains_ai_content
  * @property bool $contains_ads
  * @property bool $disabled
+ * @property bool $comments_disabled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
@@ -56,15 +61,24 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, ModVersion> $versions
  * @property-read ModVersion|null $latestVersion
  * @property-read ModVersion|null $latestUpdatedVersion
+ *
+ * @implements Commentable<self>
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModObserver::class])]
-class Mod extends Model
+class Mod extends Model implements Commentable, Reportable, Trackable
 {
+    /** @use HasComments<self> */
+    use HasComments;
+
     /** @use HasFactory<ModFactory> */
     use HasFactory;
 
+    /** @use HasReports<Mod> */
+    use HasReports;
+
     use Searchable;
+    use Visitable;
 
     protected $appends = [
         'detail_url',
@@ -139,6 +153,9 @@ class Mod extends Model
     {
         return $this->versions()
             ->one()
+            ->whereNotNull('published_at')
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion')
             ->ofMany('updated_at', 'max');
     }
 
@@ -200,27 +217,32 @@ class Mod extends Model
             return false;
         }
 
-        // Eager load the latest mod version, and it's latest SPT version.
-        $this->loadMissing([
-            'latestVersion',
-            'latestVersion.latestSptVersion',
-        ]);
-
-        // Ensure the mod has a latest version.
-        if (! $this->latestVersion) {
+        // Check if mod has any versions compatible with active SPT releases
+        if (! $this->hasActiveSptCompatibility()) {
             return false;
         }
-
-        // Ensure the latest version has a latest SPT version.
-        if (! $this->latestVersion->latestSptVersion) {
-            return false;
-        }
-
-        // Ensure the latest SPT version is within the last three minor versions.
-        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
 
         // All conditions are met; the mod should be searchable.
-        return $activeSptVersions->contains('version', $this->latestVersion->latestSptVersion->version);
+        return true;
+    }
+
+    /**
+     * Check if a mod has publicly visible versions that are compatible with active SPT releases.
+     * Used for search indexing to ensure only relevant mods appear in search results.
+     */
+    private function hasActiveSptCompatibility(): bool
+    {
+        // Get active SPT versions (last three minor versions) for search
+        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
+        $activeSptVersionIds = $activeSptVersions->pluck('version')->toArray();
+
+        // Use the scope to filter and then check for active SPT versions
+        return $this->versions()
+            ->publiclyVisible()
+            ->whereHas('latestSptVersion', function ($query) use ($activeSptVersionIds): void {
+                $query->whereIn('version', $activeSptVersionIds);
+            })
+            ->exists();
     }
 
     /**
@@ -230,14 +252,14 @@ class Mod extends Model
      */
     public function latestVersion(): HasOne
     {
-        return $this->versions()
-            ->one()
-            ->ofMany([
-                'version_major' => 'max',
-                'version_minor' => 'max',
-                'version_patch' => 'max',
-                'version_labels' => 'min',
-            ]);
+        return $this->hasOne(ModVersion::class)
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels');
     }
 
     /**
@@ -261,7 +283,7 @@ class Mod extends Model
      */
     protected function detailUrl(): Attribute
     {
-        return Attribute::get(fn () => route('mod.show', [$this->id, $this->slug]));
+        return Attribute::get(fn (): string => route('mod.show', [$this->id, $this->slug]));
     }
 
     /**
@@ -275,6 +297,7 @@ class Mod extends Model
             'contains_ai_content' => 'boolean',
             'contains_ads' => 'boolean',
             'disabled' => 'boolean',
+            'comments_disabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'published_at' => 'datetime',
@@ -306,5 +329,139 @@ class Mod extends Model
                 Markdown::convert($this->description)->getContent()
             )
         )->shouldCache();
+    }
+
+    /**
+     * Determine if this mod can receive comments.
+     * Only published mods that don't have comments disabled can receive comments.
+     */
+    public function canReceiveComments(): bool
+    {
+        if ($this->comments_disabled) {
+            return false;
+        }
+
+        return $this->published_at !== null && $this->published_at <= now();
+    }
+
+    /**
+     * Get the display name for this commentable model.
+     */
+    public function getCommentableDisplayName(): string
+    {
+        return 'mod';
+    }
+
+    /**
+     * Get the URL to view this mod.
+     */
+    public function getCommentableUrl(): string
+    {
+        return route('mod.show', [$this->id, $this->slug]);
+    }
+
+    /**
+     * Get the title of this mod for display in notifications and UI.
+     */
+    public function getTitle(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Comments on mods are displayed on the 'comments' tab.
+     */
+    public function getCommentTabHash(): ?string
+    {
+        return 'comments';
+    }
+
+    /**
+     * Get a human-readable display name for the reportable model.
+     */
+    public function getReportableDisplayName(): string
+    {
+        return 'mod';
+    }
+
+    /**
+     * Get the title of the reportable model.
+     */
+    public function getReportableTitle(): string
+    {
+        return $this->name ?? 'mod #'.$this->id;
+    }
+
+    /**
+     * Get an excerpt of the reportable content for display in notifications.
+     */
+    public function getReportableExcerpt(): ?string
+    {
+        return $this->description ? Str::words($this->description, 15, '...') : null;
+    }
+
+    /**
+     * Get the URL to view the reportable content.
+     */
+    public function getReportableUrl(): string
+    {
+        return $this->detail_url;
+    }
+
+    /**
+     * Get the URL to view this trackable resource.
+     */
+    public function getTrackingUrl(): string
+    {
+        return route('mod.show', [$this->id, $this->slug]);
+    }
+
+    /**
+     * Get the display title for this trackable resource.
+     */
+    public function getTrackingTitle(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get the snapshot data to store for this trackable resource.
+     *
+     * @return array<string, mixed>
+     */
+    public function getTrackingSnapshot(): array
+    {
+        $latestVersion = $this->versions()
+            ->whereNotNull('published_at')
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion')
+            ->latest()
+            ->first();
+
+        return [
+            'mod_name' => $this->name,
+            'mod_description' => $this->description,
+            'mod_version' => $latestVersion?->version,
+        ];
+    }
+
+    /**
+     * Get contextual information about this trackable resource.
+     */
+    public function getTrackingContext(): ?string
+    {
+        return $this->description;
+    }
+
+    /**
+     * Check if the given user is an author or the owner of this mod.
+     */
+    public function isAuthorOrOwner(?User $user): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        return $user->id === $this->owner?->id || $this->authors->pluck('id')->contains($user->id);
     }
 }

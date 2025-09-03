@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * ModVersionSptVersion Pivot Model
- *
  * @property int $id
  * @property int $mod_version_id
  * @property int $spt_version_id
@@ -17,5 +17,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class ModVersionSptVersion extends Pivot
 {
+    /** @use HasFactory<Factory<ModVersionSptVersion>> */
+    use HasFactory;
+
     public $incrementing = true;
 }

@@ -62,7 +62,7 @@ class Version implements Stringable
             // Ensure that the semver is three parts with no leading zeros.
             $segments = explode('.', $semver);
             $segments = array_pad($segments, 3, '0');
-            $semver = implode('.', array_map(fn ($s): string => (string) (int) $s, $segments));
+            $semver = implode('.', array_map(fn (string $s): string => (string) (int) $s, $segments));
 
             $cleanedVersion = $metadata ? sprintf('%s+%s', $semver, $metadata) : $semver;
         } else {

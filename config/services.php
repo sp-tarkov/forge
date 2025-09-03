@@ -49,4 +49,9 @@ return [
         'avatar_default_extension' => env('DISCORD_EXTENSION_DEFAULT', 'webp'),
     ],
 
+    'maxmind' => [
+        'account_id' => env('MAXMIND_ACCOUNT_ID'),
+        'license_key' => env('MAXMIND_LICENSE_KEY'),
+    ],
+
 ];

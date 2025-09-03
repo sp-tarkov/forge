@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * ModResolvedDependency Model
- *
  * @property int $id
  * @property int $mod_version_id
  * @property int $dependency_id
@@ -23,6 +23,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ModResolvedDependency extends Model
 {
+    /** @use HasFactory<Factory<ModResolvedDependency>> */
+    use HasFactory;
+
     /**
      * The relationship between the resolved dependency and the *parent* mod version.
      *

@@ -7,6 +7,7 @@ namespace App\Livewire\Page\User;
 use App\Models\Mod;
 use App\Models\User;
 use App\Traits\Livewire\ModeratesMod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -69,9 +70,11 @@ class Show extends Component
 
         $query->unless(
             request()->user()?->can('view-disabled-user-mods', $this->user),
-            fn ($q) => $q
+            fn (Builder $q): Builder => $q
                 ->whereDisabled(false)
-                ->whereHas('latestVersion')
+                ->whereHas('versions', function (Builder $versionQuery): void {
+                    $versionQuery->where('disabled', false)->whereNotNull('published_at');
+                })
         );
 
         return $query->paginate(10)

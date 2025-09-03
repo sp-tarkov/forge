@@ -6,6 +6,7 @@ namespace App\Livewire\Page;
 
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -37,7 +38,12 @@ class Homepage extends Component
     {
         $query = Mod::query()
             ->whereFeatured(true)
-            ->whereHas('latestVersion')
+            ->whereHas('versions', function (Builder $query): void {
+                $query->where('disabled', false);
+                if (! $this->viewDisabled) {
+                    $query->whereNotNull('published_at');
+                }
+            })
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
@@ -48,7 +54,7 @@ class Homepage extends Component
             ->inRandomOrder()
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->whereDisabled(false));
 
         return $query->get();
     }
@@ -61,7 +67,12 @@ class Homepage extends Component
     protected function newest(): Collection
     {
         $query = Mod::query()
-            ->whereHas('latestVersion')
+            ->whereHas('versions', function (Builder $query): void {
+                $query->where('disabled', false);
+                if (! $this->viewDisabled) {
+                    $query->whereNotNull('published_at');
+                }
+            })
             ->with([
                 'latestVersion',
                 'latestVersion.latestSptVersion',
@@ -72,7 +83,7 @@ class Homepage extends Component
             ->orderByDesc('created_at')
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->whereDisabled(false));
 
         return $query->get();
     }
@@ -85,7 +96,12 @@ class Homepage extends Component
     protected function updated(): Collection
     {
         $query = Mod::query()
-            ->whereHas('latestVersion')
+            ->whereHas('versions', function (Builder $query): void {
+                $query->where('disabled', false);
+                if (! $this->viewDisabled) {
+                    $query->whereNotNull('published_at');
+                }
+            })
             ->with([
                 'latestUpdatedVersion',
                 'latestUpdatedVersion.latestSptVersion',
@@ -96,7 +112,7 @@ class Homepage extends Component
             ->orderByDesc('updated_at')
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn ($q) => $q->whereDisabled(false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->whereDisabled(false));
 
         return $query->get();
     }

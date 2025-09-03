@@ -66,4 +66,24 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => now(),
         ]);
     }
+
+    /**
+     * Indicate that the user should be a moderator.
+     */
+    public function moderator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_role_id' => \App\Models\UserRole::where('name', 'Moderator')->first()?->id,
+        ]);
+    }
+
+    /**
+     * Indicate that the user should be an administrator.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_role_id' => \App\Models\UserRole::where('name', 'Administrator')->first()?->id,
+        ]);
+    }
 }

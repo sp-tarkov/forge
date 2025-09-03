@@ -57,7 +57,6 @@ class FollowCard extends Component
      *
      * @var Collection<int, int>
      */
-    #[Locked]
     public Collection $authFollowIds;
 
     /**
@@ -65,7 +64,6 @@ class FollowCard extends Component
      *
      * @var Collection<int, User>
      */
-    #[Locked]
     public Collection $followUsers;
 
     /**
@@ -147,5 +145,31 @@ class FollowCard extends Component
     public function toggleFollowDialog(): void
     {
         $this->showFollowDialog = ! $this->showFollowDialog;
+    }
+
+    /**
+     * Follow a user.
+     */
+    public function followUser(int $userId): void
+    {
+        auth()->user()->follow($userId);
+
+        // Update the authFollowIds collection
+        $this->authFollowIds = $this->authFollowIds->push($userId);
+
+        $this->dispatch('user-follow-change');
+    }
+
+    /**
+     * Unfollow a user.
+     */
+    public function unfollowUser(int $userId): void
+    {
+        auth()->user()->unfollow($userId);
+
+        // Update the authFollowIds collection
+        $this->authFollowIds = $this->authFollowIds->reject(fn ($id): bool => $id === $userId);
+
+        $this->dispatch('user-follow-change');
     }
 }

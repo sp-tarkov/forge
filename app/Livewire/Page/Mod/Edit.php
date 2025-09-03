@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\Mod;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -82,6 +84,11 @@ class Edit extends Component
     public bool $containsAds = false;
 
     /**
+     * Whether comments are disabled for the mod.
+     */
+    public bool $commentsDisabled = false;
+
+    /**
      * Mount the component.
      */
     public function mount(int $modId): void
@@ -99,9 +106,10 @@ class Edit extends Component
         $this->description = $this->mod->description;
         $this->license = (string) $this->mod->license_id;
         $this->sourceCodeUrl = $this->mod->source_code_url;
-        $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->toDateTimeString() : null;
+        $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
+        $this->commentsDisabled = (bool) $this->mod->comments_disabled;
     }
 
     /**
@@ -122,6 +130,7 @@ class Edit extends Component
             'publishedAt' => 'nullable|date',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
+            'commentsDisabled' => 'boolean',
         ];
     }
 
@@ -142,10 +151,11 @@ class Edit extends Component
         }
 
         // Parse the published at date in the user's timezone, convert to UTC for DB storage.
+        // Zero out seconds for consistency with datetime-local input format.
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
         if ($this->publishedAt !== null) {
-            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC');
+            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         // Update mod fields
@@ -158,6 +168,7 @@ class Edit extends Component
         $this->mod->source_code_url = $this->sourceCodeUrl;
         $this->mod->contains_ai_content = $this->containsAiContent;
         $this->mod->contains_ads = $this->containsAds;
+        $this->mod->comments_disabled = $this->commentsDisabled;
         $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
@@ -179,6 +190,8 @@ class Edit extends Component
         }
 
         $this->mod->save();
+
+        Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 
         flash()->success('Mod has been Successfully Updated');
 

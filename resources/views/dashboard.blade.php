@@ -13,21 +13,25 @@
         </h2>
     </x-slot>
 
-    @if (auth()->user()->timezone === null)
-        <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-            <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                <flux:callout.heading>Set Your Timezone</flux:callout.heading>
-                <flux:callout.text>Please set your timezone in your profile to ensure that the correct time is displayed across the site.</flux:callout.text>
-                <x-slot name="actions" class="@md:h-full m-0!">
-                    <flux:button href="/user/profile">Edit Profile</flux:button>
-                </x-slot>
-            </flux:callout>
-        </div>
-    @endif
+    @livewire('timezone-warning')
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
-            <x-welcome />
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
+                    <x-welcome />
+                </div>
+                
+                @can('viewAny', App\Models\Report::class)
+                    <div class="mt-6">
+                        @livewire('report-centre')
+                    </div>
+                @endcan
+            </div>
+            
+            <div class="lg:col-span-1">
+                @livewire('notification-center')
+            </div>
         </div>
     </div>
 </x-layouts.base>

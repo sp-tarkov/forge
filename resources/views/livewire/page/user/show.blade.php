@@ -32,16 +32,13 @@
                         {{-- Follow Buttons --}}
                         <livewire:user.follow-buttons :profile-user-id="$user->id" :is-following="auth()->user()->isFollowing($user->id)" />
 
-                        {{-- Message button --}}
-                        <x-profile-button>
-                            <x-slot:icon>
-                                <svg class="-ml-0.5 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-                                    <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-                                </svg>
-                            </x-slot:icon>
-                            {{ __('Message') }}
-                        </x-profile-button>
+                        {{-- Ban/Unban Action --}}
+                        @can('ban', $user)
+                            <livewire:user.ban-action :user="$user" />
+                        @endcan
+
+                        {{-- Report button --}}
+                        <livewire:report-component variant="button" :reportable-id="$user->id" :reportable-type="get_class($user)" />
                     @endif
                 </div>
             </div>
@@ -50,7 +47,11 @@
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {{-- Left Column --}}
-            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'wall' }" x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})" class="lg:col-span-3 flex flex-col gap-6">
+            <div
+                x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'wall' }"
+                x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
+                class="lg:col-span-3 flex flex-col gap-6"
+            >
 
                 {{-- About --}}
                 @if ($user->about)
@@ -82,8 +83,11 @@
                 </div>
 
                 {{-- Wall --}}
-                <div x-show="selectedTab === 'wall'" class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
-                    <p>Not quite yet...</p>
+                <div x-show="selectedTab === 'wall'">
+                    <livewire:comment-component
+                        wire:key="comment-component-{{ $user->id }}"
+                        :commentable="$user"
+                    />
                 </div>
 
                 {{-- Mods --}}
@@ -111,7 +115,7 @@
 
                 {{-- Activity --}}
                 <div x-show="selectedTab === 'activity'" class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
-                    <p>Not quite yet...</p>
+                    <livewire:user-activity :user="$user" />
                 </div>
             </div>
 

@@ -4,15 +4,24 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\TrackingEventType;
 use App\Exceptions\Api\V0\InvalidQuery;
+use App\Facades\Track;
+use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
+use App\Services\TrackService;
 use Carbon\Carbon;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
@@ -37,6 +46,12 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
             $this->app->register(TelescopeServiceProvider::class);
         }
+
+        // Register the Track service
+        $this->app->singleton(TrackService::class);
+
+        // Register the Track facade alias
+        $this->app->alias(TrackService::class, 'track');
     }
 
     /**
@@ -63,12 +78,34 @@ class AppServiceProvider extends ServiceProvider
         // Register Livewire component overrides.
         $this->registerLivewireOverrides();
 
+        // Register the broadcasting.auth early to load our extended controller.
+        $this->app->booted(function (): void {
+            Route::match(['get', 'post'], 'broadcasting/auth', [VisitorsPresenceBroadcastingController::class, 'authenticate'])
+                ->name('broadcasting.auth')
+                ->middleware('web')
+                ->withoutMiddleware([VerifyCsrfToken::class]);
+        });
+
         // This gate determines who can access the Pulse dashboard.
         Gate::define('viewPulse', fn (User $user): bool => $user->isAdmin());
+
+        // This gate determines who can access admin features.
+        Gate::define('admin', fn (User $user): bool => $user->isAdmin());
 
         // Register the Discord socialite provider.
         Event::listen(function (SocialiteWasCalled $socialiteWasCalled): void {
             $socialiteWasCalled->extendSocialite('discord', Provider::class);
+        });
+
+        // Track authentication events
+        Event::listen(Login::class, function (): void {
+            Track::event(TrackingEventType::LOGIN);
+        });
+        Event::listen(Logout::class, function (): void {
+            Track::event(TrackingEventType::LOGOUT);
+        });
+        Event::listen(Registered::class, function (): void {
+            Track::event(TrackingEventType::REGISTER);
         });
 
         // Filter out specific exceptions from being reported to Flare.
@@ -84,6 +121,7 @@ class AppServiceProvider extends ServiceProvider
                 true
             )
         );
+
     }
 
     /**
@@ -166,5 +204,9 @@ class AppServiceProvider extends ServiceProvider
                     echo '<meta property=\"og:image:alt\" content=\"' . e(\$__ogImageAlt) . '\" />';
                 }
             ?>");
+
+        // Email verification directives
+        Blade::if('verified', fn (): bool => auth()->check() && auth()->user()->hasVerifiedEmail());
+        Blade::if('unverified', fn (): bool => auth()->check() && ! auth()->user()->hasVerifiedEmail());
     }
 }

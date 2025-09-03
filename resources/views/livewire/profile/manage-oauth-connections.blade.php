@@ -72,24 +72,40 @@
         </div>
 
         <!-- Confirmation Modal -->
-        <x-dialog-modal wire:model="confirmingConnectionDeletion">
-            <x-slot name="title">
-                {{ __('Remove Connected Account') }}
-            </x-slot>
+        <flux:modal wire:model="confirmingConnectionDeletion" class="md:w-[500px] lg:w-[600px]">
+            <div class="space-y-0">
+                {{-- Header Section --}}
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                    <div class="flex items-center gap-3">
+                        <flux:icon name="link-slash" class="w-8 h-8 text-red-600" />
+                        <div>
+                            <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                                {{ __('Remove Connected Account') }}
+                            </flux:heading>
+                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                {{ __('This action cannot be undone') }}
+                            </flux:text>
+                        </div>
+                    </div>
+                </div>
 
-            <x-slot name="content">
-                {{ __('Are you sure you want to remove this connected account? This action cannot be undone.') }}
-            </x-slot>
+                {{-- Content Section --}}
+                <div class="space-y-4">
+                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                        {{ __('You will not be able to sign in using this connected account after it has been removed. Are you sure you want to remove this connected account?') }}
+                    </flux:text>
+                </div>
 
-            <x-slot name="footer">
-                <x-secondary-button wire:click="$toggle('confirmingConnectionDeletion')" wire:loading.attr="disabled">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
-
-                <x-danger-button class="ms-3" wire:click="deleteConnection" wire:loading.attr="disabled">
-                    {{ __('Remove') }}
-                </x-danger-button>
-            </x-slot>
-        </x-dialog-modal>
+                {{-- Footer Actions --}}
+                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    <flux:button wire:click="$toggle('confirmingConnectionDeletion')" wire:loading.attr="disabled" variant="outline" size="sm">
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button wire:click="deleteConnection" wire:loading.attr="disabled" variant="primary" size="sm" icon="link-slash" class="bg-red-600 hover:bg-red-700 text-white">
+                        {{ __('Remove') }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
     </x-slot>
 </x-action-section>

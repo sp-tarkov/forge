@@ -31,26 +31,25 @@
 
 <div>
 
-    @can('create', [App\Models\ModVersion::class, $mod])
-        @if (! $mod->latestVersion)
-            <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                    <flux:callout.heading>Not Discoverable</flux:callout.heading>
-                    <flux:callout.text>In order for this mod to be discoverable by other users you must first create a mod version.</flux:callout.text>
-                    <x-slot name="actions" class="@md:h-full m-0!">
-                        <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version</flux:button>
-                    </x-slot>
-                </flux:callout>
-            </div>
-        @elseif ($mod->latestVersion && (is_null($mod->published_at) || $mod->published_at > now() || !$mod->versions()->whereNotNull('published_at')->where('published_at', '<=', now())->exists()))
-            <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                    <flux:callout.heading>Not Discoverable</flux:callout.heading>
-                    <flux:callout.text>This mod is not yet published or scheduled for future publication. Once the mod (and at least one of its versions) are published, the mod will be become available to the public.</flux:callout.text>
-                </flux:callout>
-            </div>
-        @endif
-    @endcan
+    @if ($shouldShowWarnings && !empty($warningMessages))
+        <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
+            <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                <flux:callout.heading>Visibility Warning</flux:callout.heading>
+                <flux:callout.text>
+                    @foreach ($warningMessages as $warning)
+                        <div>{{ $warning }}</div>
+                    @endforeach
+                </flux:callout.text>
+                @can('create', [App\Models\ModVersion::class, $mod])
+                    @if (isset($warningMessages['no_versions']))
+                        <x-slot name="actions" class="@md:h-full m-0!">
+                            <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version</flux:button>
+                        </x-slot>
+                    @endif
+                @endcan
+            </flux:callout>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 max-w-7xl mx-auto py-6 px-4 gap-6 sm:px-6 lg:px-8">
         <div class="lg:col-span-2 flex flex-col gap-6">
@@ -58,14 +57,21 @@
             {{-- Main Mod Details Card --}}
             <div class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
                 @can('update', $mod)
-                    <livewire:mod.action wire:key="mod-action-show-{{ $mod->id }}" :mod="$mod" />
+                    <livewire:mod.action
+                        wire:key="mod-action-show-{{ $mod->id }}"
+                        :mod-id="$mod->id"
+                        :mod-name="$mod->name"
+                        :mod-featured="(bool) $mod->featured"
+                        :mod-disabled="(bool) $mod->disabled"
+                        :mod-published="(bool) $mod->published_at && $mod->published_at <= now()"
+                    />
                 @endcan
 
-                <livewire:ribbon
+                <livewire:ribbon.mod
                     wire:key="mod-ribbon-show-{{ $mod->id }}"
-                    :id="$mod->id"
+                    :mod-id="$mod->id"
                     :disabled="$mod->disabled"
-                    :publishedAt="$mod->published_at"
+                    :published-at="$mod->published_at?->toISOString()"
                     :featured="$mod->featured"
                 />
 
@@ -116,13 +122,26 @@
 
             {{-- Mobile Download Button --}}
             @if ($mod->latestVersion)
-                <livewire:mod.download-button key="mod-download-button-mobile" :mod="$mod" classes="block lg:hidden" />
+                <x-mod.download-button
+                    name="download-show-mobile"
+                    :mod-id="$mod->id"
+                    :latest-version-id="$mod->latestVersion->id"
+                    :download-url="$mod->downloadUrl()"
+                    :version-string="$mod->latestVersion->version"
+                    :spt-version-formatted="$mod->latestVersion->latestSptVersion?->version_formatted"
+                    :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
+                    :version-description-html="$mod->latestVersion->description_html"
+                    :version-updated-at="$mod->latestVersion->updated_at"
+                    :file-size="$mod->latestVersion->formatted_file_size"
+                />
             @endif
 
             {{-- Tabs --}}
-            <div x-data="{ selectedTab: window.location.hash ? window.location.hash.substring(1) : 'description' }"
-                 x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
-                 class="lg:col-span-2 flex flex-col gap-6">
+            <div
+                x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'description' }"
+                x-init="$watch('selectedTab', (tab) => {window.location.hash = tab})"
+                class="lg:col-span-2 flex flex-col gap-6"
+            >
                 <div>
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
@@ -130,7 +149,9 @@
                         <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-cyan-500 dark:focus:ring-cyan-400">
                             <option value="description">{{ __('Description') }}</option>
                             <option value="versions">{{ __('Versions') }}</option>
-                            <option value="comments">{{ __('Comments') }}</option>
+                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
+                                <option value="comments">{{ __('Comments') }}</option>
+                            @endif
                         </select>
                     </div>
 
@@ -139,7 +160,9 @@
                         <nav class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                             <x-tab-button name="Description" />
                             <x-tab-button name="Versions" />
-                            <x-tab-button name="Comments" />
+                            @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
+                                <x-tab-button name="Comments" />
+                            @endif
                         </nav>
                     </div>
                 </div>
@@ -150,7 +173,7 @@
                         !DANGER ZONE!
 
                         This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
-                        fields like this when you're absolutly sure that the data is safe. Which is almost never.
+                        fields like this when you're absolutely sure that the data is safe. Which is almost never.
                      --}}
                     {!! $mod->description_html !!}
                 </div>
@@ -172,10 +195,23 @@
                 </div>
 
                 {{-- Comments --}}
-                <div x-show="selectedTab === 'comments'" class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                    <p class="text-gray-900 dark:text-gray-200">{{ __('Not quite yet...') }}</p>
-                </div>
-
+                @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
+                    <div id="comments" x-show="selectedTab === 'comments'">
+                        @if ($mod->comments_disabled && (auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user())))
+                            <div class="mb-6">
+                                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                                    <flux:callout.text>
+                                        {{ __('Comments have been disabled for this mod and are not visible to normal users. As :role, you can still view and manage all comments.', ['role' => auth()->user()?->isModOrAdmin() ? 'an administrator or moderator' : 'the mod owner or author']) }}
+                                    </flux:callout.text>
+                                </flux:callout>
+                            </div>
+                        @endif
+                        <livewire:comment-component
+                            wire:key="comment-component-{{ $mod->id }}"
+                            :commentable="$mod"
+                        />
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -184,16 +220,26 @@
 
             {{-- Desktop Download Button --}}
             @if ($mod->latestVersion)
-                <livewire:mod.download-button key="mod-download-button-desktop" :mod="$mod" classes="hidden lg:block" />
+                <x-mod.download-button
+                    name="download-show-desktop"
+                    :mod-id="$mod->id"
+                    :latest-version-id="$mod->latestVersion->id"
+                    :download-url="$mod->downloadUrl()"
+                    :version-string="$mod->latestVersion->version"
+                    :spt-version-formatted="$mod->latestVersion->latestSptVersion?->version_formatted"
+                    :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
+                    :version-description-html="$mod->latestVersion->description_html"
+                    :version-updated-at="$mod->latestVersion->updated_at"
+                    :file-size="$mod->latestVersion->formatted_file_size"
+                />
             @endif
 
             {{-- Additional Mod Details --}}
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
-                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100">
-
+                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100 ">
                     @if ($mod->authors->isNotEmpty())
-                        <li class="px-4 py-4 sm:px-0">
+                        <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3>{{ __('Additional Authors') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->authors->sortDesc() as $user)
@@ -203,7 +249,7 @@
                         </li>
                     @endif
                     @if ($mod->license)
-                        <li class="px-4 py-4 sm:px-0">
+                        <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3>{{ __('License') }}</h3>
                             <p class="truncate">
                                 <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
@@ -213,7 +259,7 @@
                         </li>
                     @endif
                     @if ($mod->source_code_url)
-                        <li class="px-4 py-4 sm:px-0">
+                        <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3>{{ __('Source Code') }}</h3>
                             <p class="truncate">
                                 <a href="{{ $mod->source_code_url }}" title="{{ $mod->source_code_url }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
@@ -223,7 +269,7 @@
                         </li>
                     @endif
                     @if ($mod->latestVersion?->virus_total_link)
-                        <li class="px-4 py-4 sm:px-0">
+                        <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3>{{ __('Latest Version VirusTotal Result') }}</h3>
                             <p class="truncate">
                                 <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
@@ -233,7 +279,7 @@
                         </li>
                     @endif
                     @if ($mod->latestVersion?->dependencies->isNotEmpty() && $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
-                        <li class="px-4 py-4 sm:px-0">
+                        <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3>{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
@@ -246,7 +292,7 @@
                         </li>
                     @endif
                     @if ($mod->contains_ads)
-                        <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
+                        <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
                             <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
                                 <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
                             </svg>
@@ -256,7 +302,7 @@
                         </li>
                     @endif
                     @if ($mod->contains_ai_content)
-                        <li class="px-4 py-4 sm:px-0 flex flex-row gap-2 items-center">
+                        <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
                             <svg class="grow-0 w-[16px] h-[16px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
                                 <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
                             </svg>
@@ -266,6 +312,7 @@
                         </li>
                     @endif
                 </ul>
+                <livewire:report-component variant="link" :reportable-id="$mod->id" :reportable-type="get_class($mod)" />
             </div>
         </div>
     </div>

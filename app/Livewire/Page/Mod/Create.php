@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
 use App\Models\Mod;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -76,6 +78,16 @@ class Create extends Component
     public bool $containsAds = false;
 
     /**
+     * Whether comments are disabled for the mod.
+     */
+    public bool $commentsDisabled = false;
+
+    /**
+     * Whether to subscribe to comment notifications for the mod.
+     */
+    public bool $subscribeToComments = true;
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -103,6 +115,8 @@ class Create extends Component
             'publishedAt' => 'nullable|date',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
+            'commentsDisabled' => 'boolean',
+            'subscribeToComments' => 'boolean',
         ];
     }
 
@@ -123,11 +137,12 @@ class Create extends Component
         }
 
         // Parse the published at date in the user's timezone, falling back to UTC if the user has no timezone, and
-        // convert it to UTC for DB storage.
+        // convert it to UTC for DB storage. Zero out seconds for consistency with datetime-local input format.
         if ($this->publishedAt !== null) {
             $userTimezone = auth()->user()->timezone ?? 'UTC';
             $this->publishedAt = Carbon::parse($this->publishedAt, $userTimezone)
                 ->setTimezone('UTC')
+                ->second(0)
                 ->toDateTimeString();
         }
 
@@ -143,6 +158,7 @@ class Create extends Component
             'source_code_url' => $this->sourceCodeUrl,
             'contains_ai_content' => $this->containsAiContent,
             'contains_ads' => $this->containsAds,
+            'comments_disabled' => $this->commentsDisabled,
             'published_at' => $this->publishedAt,
         ]);
 
@@ -159,6 +175,13 @@ class Create extends Component
 
         // Save the mod.
         $mod->save();
+
+        // Subscribe the owner to comment notifications if requested.
+        if ($this->subscribeToComments) {
+            $mod->subscribeUser(auth()->user());
+        }
+
+        Track::event(TrackingEventType::MOD_CREATE, $mod);
 
         flash()->success('Mod has been Successfully Created');
 

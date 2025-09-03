@@ -66,6 +66,6 @@ class ApiResponse
             $payload['errors'] = $errors;
         }
 
-        return response()->json(array_filter($payload, fn ($value): bool => ! is_null($value)), $status, $headers);
+        return response()->json(array_filter($payload, fn (mixed $value): bool => ! is_null($value)), $status, $headers);
     }
 }
