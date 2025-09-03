@@ -15,22 +15,22 @@ use Illuminate\Support\Facades\Validator;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Clear any cached domains
     Cache::flush();
 });
 
-describe('DisposableEmailBlocklist Model', function () {
-    it('can check if a domain is disposable', function () {
+describe('DisposableEmailBlocklist Model', function (): void {
+    it('can check if a domain is disposable', function (): void {
         // Add a disposable domain to the database
-        DisposableEmailBlocklist::create(['domain' => 'tempmail.com']);
+        DisposableEmailBlocklist::query()->create(['domain' => 'tempmail.com']);
 
         expect(DisposableEmailBlocklist::isDisposable('tempmail.com'))->toBeTrue();
         expect(DisposableEmailBlocklist::isDisposable('gmail.com'))->toBeFalse();
     });
 
-    it('caches the disposable check result', function () {
-        DisposableEmailBlocklist::create(['domain' => 'tempmail.com']);
+    it('caches the disposable check result', function (): void {
+        DisposableEmailBlocklist::query()->create(['domain' => 'tempmail.com']);
 
         // First call should query the database
         DisposableEmailBlocklist::isDisposable('tempmail.com');
@@ -44,9 +44,9 @@ describe('DisposableEmailBlocklist Model', function () {
     });
 });
 
-describe('NotDisposableEmail Validation Rule', function () {
-    it('fails validation for disposable email addresses', function () {
-        DisposableEmailBlocklist::create(['domain' => 'tempmail.com']);
+describe('NotDisposableEmail Validation Rule', function (): void {
+    it('fails validation for disposable email addresses', function (): void {
+        DisposableEmailBlocklist::query()->create(['domain' => 'tempmail.com']);
 
         $validator = Validator::make(
             ['email' => 'test@tempmail.com'],
@@ -57,7 +57,7 @@ describe('NotDisposableEmail Validation Rule', function () {
         expect($validator->errors()->first('email'))->toBe('This email address has been detected as disposable and is not supported.');
     });
 
-    it('passes validation for non-disposable email addresses', function () {
+    it('passes validation for non-disposable email addresses', function (): void {
         $validator = Validator::make(
             ['email' => 'test@gmail.com'],
             ['email' => new NotDisposableEmail]
@@ -66,7 +66,7 @@ describe('NotDisposableEmail Validation Rule', function () {
         expect($validator->passes())->toBeTrue();
     });
 
-    it('handles invalid email formats gracefully', function () {
+    it('handles invalid email formats gracefully', function (): void {
         $validator = Validator::make(
             ['email' => 'not-an-email'],
             ['email' => new NotDisposableEmail]
@@ -83,9 +83,9 @@ describe('NotDisposableEmail Validation Rule', function () {
     });
 });
 
-describe('User Registration with Disposable Email Blocking', function () {
-    it('prevents registration with a disposable email', function () {
-        DisposableEmailBlocklist::create(['domain' => 'tempmail.com']);
+describe('User Registration with Disposable Email Blocking', function (): void {
+    it('prevents registration with a disposable email', function (): void {
+        DisposableEmailBlocklist::query()->create(['domain' => 'tempmail.com']);
 
         $response = $this->postJson('/api/v0/auth/register', [
             'name' => 'TestUser',
@@ -98,7 +98,7 @@ describe('User Registration with Disposable Email Blocking', function () {
         $response->assertJsonValidationErrors(['email']);
     });
 
-    it('allows registration with a non-disposable email', function () {
+    it('allows registration with a non-disposable email', function (): void {
         $response = $this->postJson('/api/v0/auth/register', [
             'name' => 'TestUser',
             'email' => 'test@gmail.com',
@@ -111,9 +111,9 @@ describe('User Registration with Disposable Email Blocking', function () {
     });
 });
 
-describe('User Model hasDisposableEmail Method', function () {
-    it('correctly identifies users with disposable emails', function () {
-        DisposableEmailBlocklist::create(['domain' => 'tempmail.com']);
+describe('User Model hasDisposableEmail Method', function (): void {
+    it('correctly identifies users with disposable emails', function (): void {
+        DisposableEmailBlocklist::query()->create(['domain' => 'tempmail.com']);
 
         $userWithDisposable = User::factory()->create(['email' => 'user@tempmail.com']);
         $userWithNormal = User::factory()->create(['email' => 'user@gmail.com']);
@@ -122,15 +122,15 @@ describe('User Model hasDisposableEmail Method', function () {
         expect($userWithNormal->hasDisposableEmail())->toBeFalse();
     });
 
-    it('handles invalid email formats gracefully', function () {
+    it('handles invalid email formats gracefully', function (): void {
         $user = User::factory()->create(['email' => 'invalid-email']);
 
         expect($user->hasDisposableEmail())->toBeFalse();
     });
 });
 
-describe('UpdateDisposableEmailBlocklist Job', function () {
-    it('downloads and updates the blocklist successfully', function () {
+describe('UpdateDisposableEmailBlocklist Job', function (): void {
+    it('downloads and updates the blocklist successfully', function (): void {
         Storage::fake();
 
         // Mock the HTTP response
@@ -150,10 +150,10 @@ describe('UpdateDisposableEmailBlocklist Job', function () {
         $this->assertDatabaseHas('disposable_email_blocklist', ['domain' => 'guerrillamail.com']);
 
         // Check that the count is correct (3 domains, no comments or empty lines)
-        expect(DisposableEmailBlocklist::count())->toBe(3);
+        expect(DisposableEmailBlocklist::query()->count())->toBe(3);
     });
 
-    it('handles HTTP failures gracefully', function () {
+    it('handles HTTP failures gracefully', function (): void {
         Storage::fake();
 
         Http::fake([
@@ -164,15 +164,15 @@ describe('UpdateDisposableEmailBlocklist Job', function () {
         $job->handle();
 
         // Should not create any records on failure
-        expect(DisposableEmailBlocklist::count())->toBe(0);
+        expect(DisposableEmailBlocklist::query()->count())->toBe(0);
     });
 
-    it('replaces existing blocklist entries on update', function () {
+    it('replaces existing blocklist entries on update', function (): void {
         // Add initial entries
-        DisposableEmailBlocklist::create(['domain' => 'old-domain.com']);
-        DisposableEmailBlocklist::create(['domain' => 'another-old.com']);
+        DisposableEmailBlocklist::query()->create(['domain' => 'old-domain.com']);
+        DisposableEmailBlocklist::query()->create(['domain' => 'another-old.com']);
 
-        expect(DisposableEmailBlocklist::count())->toBe(2);
+        expect(DisposableEmailBlocklist::query()->count())->toBe(2);
 
         Storage::fake();
         Http::fake([
@@ -191,10 +191,10 @@ describe('UpdateDisposableEmailBlocklist Job', function () {
         $this->assertDatabaseHas('disposable_email_blocklist', ['domain' => 'another-new.com']);
         $this->assertDatabaseHas('disposable_email_blocklist', ['domain' => 'third-new.com']);
 
-        expect(DisposableEmailBlocklist::count())->toBe(3);
+        expect(DisposableEmailBlocklist::query()->count())->toBe(3);
     });
 
-    it('is scheduled to run daily', function () {
+    it('is scheduled to run daily', function (): void {
         Queue::fake();
 
         // The schedule is defined in routes/console.php

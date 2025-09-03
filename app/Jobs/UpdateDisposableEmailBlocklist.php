@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use Exception;
 use App\Models\DisposableEmailBlocklist;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -58,22 +59,20 @@ class UpdateDisposableEmailBlocklist implements ShouldQueue
             }
 
             // Update the database in chunks to avoid memory issues
-            DB::transaction(function () use ($domains) {
+            DB::transaction(function () use ($domains): void {
                 // Delete existing entries (truncate doesn't work in transactions)
                 DB::table('disposable_email_blocklist')->delete();
 
                 // Insert new domains in chunks
                 $chunks = array_chunk($domains, 1000);
                 foreach ($chunks as $chunk) {
-                    $records = array_map(function ($domain) {
-                        return [
-                            'domain' => $domain,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }, $chunk);
+                    $records = array_map(fn($domain): array => [
+                        'domain' => $domain,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ], $chunk);
 
-                    DisposableEmailBlocklist::insert($records);
+                    DisposableEmailBlocklist::query()->insert($records);
                 }
             });
 
@@ -81,9 +80,9 @@ class UpdateDisposableEmailBlocklist implements ShouldQueue
             DisposableEmailBlocklist::clearAllCaches();
 
             Log::info('Successfully updated disposable email blocklist', ['count' => count($domains)]);
-        } catch (\Exception $e) {
-            Log::error('Error updating disposable email blocklist', ['error' => $e->getMessage()]);
-            throw $e;
+        } catch (Exception $exception) {
+            Log::error('Error updating disposable email blocklist', ['error' => $exception->getMessage()]);
+            throw $exception;
         }
     }
 }
