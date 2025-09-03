@@ -25,7 +25,7 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:36', 'unique:users'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', new NotDisposableEmail()],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', new NotDisposableEmail],
             'password' => $this->passwordRules(),
             'timezone' => ['required', 'string', 'in:'.implode(',', DateTimeZone::listIdentifiers())],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',

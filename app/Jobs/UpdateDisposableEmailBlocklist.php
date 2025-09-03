@@ -49,7 +49,7 @@ class UpdateDisposableEmailBlocklist implements ShouldQueue
             // Parse the domains
             $lines = explode("\n", $content);
             $domains = [];
-            
+
             foreach ($lines as $line) {
                 $domain = trim($line);
                 if ($domain !== '' && ! str_starts_with($domain, '#')) {
