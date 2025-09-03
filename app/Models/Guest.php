@@ -74,7 +74,7 @@ class Guest implements Authenticatable
      *
      * Guests don't support remember tokens, so this method does nothing.
      */
-    public function setRememberToken($value): void
+    public function setRememberToken(mixed $value): void
     {
         //
     }

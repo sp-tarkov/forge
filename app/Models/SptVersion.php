@@ -10,6 +10,7 @@ use App\Support\Version;
 use Carbon\Carbon;
 use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -62,9 +63,9 @@ class SptVersion extends Model
             ->where('spt_versions.version', '!=', '0.0.0');
 
         // Add WHERE conditions for each major.minor pair
-        $query->where(function ($query) use ($lastThreeMinorVersions): void {
+        $query->where(function (Builder $query) use ($lastThreeMinorVersions): void {
             foreach ($lastThreeMinorVersions as $minorVersion) {
-                $query->orWhere(function ($subQuery) use ($minorVersion): void {
+                $query->orWhere(function (Builder $subQuery) use ($minorVersion): void {
                     $subQuery->where('spt_versions.version_major', $minorVersion['major'])
                         ->where('spt_versions.version_minor', $minorVersion['minor']);
                 });

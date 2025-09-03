@@ -66,7 +66,7 @@ class UpdateDisposableEmailBlocklist implements ShouldQueue
                 // Insert new domains in chunks
                 $chunks = array_chunk($domains, 1000);
                 foreach ($chunks as $chunk) {
-                    $records = array_map(fn ($domain): array => [
+                    $records = array_map(fn (string $domain): array => [
                         'domain' => $domain,
                         'created_at' => now(),
                         'updated_at' => now(),

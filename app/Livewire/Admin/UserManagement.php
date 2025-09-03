@@ -189,10 +189,10 @@ class UserManagement extends Component
             ->groupBy('ip')
             ->orderByDesc('last_seen')
             ->get()
-            ->map(function ($item) {
+            ->map(function (stdClass $item): stdClass {
                 $item->is_banned = Ban::query()->where('ip', $item->ip)
                     ->whereNull('deleted_at')
-                    ->where(function ($query): void {
+                    ->where(function (Builder $query): void {
                         $query->whereNull('expired_at')
                             ->orWhere('expired_at', '>', now());
                     })
@@ -273,7 +273,7 @@ class UserManagement extends Component
 
         $existingBan = Ban::query()->where('ip', $ip)
             ->whereNull('deleted_at')
-            ->where(function ($query): void {
+            ->where(function (Builder $query): void {
                 $query->whereNull('expired_at')
                     ->orWhere('expired_at', '>', now());
             })
@@ -412,7 +412,7 @@ class UserManagement extends Component
     {
         // Search filter
         if (! empty($this->search)) {
-            $query->where(function ($q): void {
+            $query->where(function (Builder $q): void {
                 $q->where('name', 'like', '%'.$this->search.'%')
                     ->orWhere('email', 'like', '%'.$this->search.'%')
                     ->orWhere('id', 'like', '%'.$this->search.'%');
@@ -421,22 +421,22 @@ class UserManagement extends Component
 
         // Role filter
         if (! empty($this->roleFilter)) {
-            $query->whereHas('role', function ($q): void {
+            $query->whereHas('role', function (Builder $q): void {
                 $q->where('id', $this->roleFilter);
             });
         }
 
         // Status filter
         if ($this->statusFilter === 'active') {
-            $query->whereDoesntHave('bans', function ($q): void {
-                $q->where(function ($subQ): void {
+            $query->whereDoesntHave('bans', function (Builder $q): void {
+                $q->where(function (Builder $subQ): void {
                     $subQ->whereNull('expired_at')
                         ->orWhere('expired_at', '>', now());
                 })->whereNull('deleted_at');
             });
         } elseif ($this->statusFilter === 'banned') {
-            $query->whereHas('bans', function ($q): void {
-                $q->where(function ($subQ): void {
+            $query->whereHas('bans', function (Builder $q): void {
+                $q->where(function (Builder $subQ): void {
                     $subQ->whereNull('expired_at')
                         ->orWhere('expired_at', '>', now());
                 })->whereNull('deleted_at');
