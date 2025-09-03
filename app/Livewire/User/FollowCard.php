@@ -168,7 +168,7 @@ class FollowCard extends Component
         auth()->user()->unfollow($userId);
 
         // Update the authFollowIds collection
-        $this->authFollowIds = $this->authFollowIds->reject(fn ($id): bool => $id === $userId);
+        $this->authFollowIds = $this->authFollowIds->reject(fn (int $id): bool => $id === $userId);
 
         $this->dispatch('user-follow-change');
     }
