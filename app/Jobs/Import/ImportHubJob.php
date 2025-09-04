@@ -257,11 +257,19 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      */
     private function getHubUserOptions(): void
     {
-        // Currently, we're only getting rows where the about text has value.
+        // Get rows where either the about text or timezone has value.
         DB::connection('hub')
             ->table('wcf1_user_option_value')
-            ->whereNotNull('userOption1') // About field
-            ->whereNot('userOption1', value: '')
+            ->where(function ($query): void {
+                $query->where(function ($q): void {
+                    $q->whereNotNull('userOption1') // About field
+                        ->whereNot('userOption1', value: '');
+                })
+                    ->orWhere(function ($q): void {
+                        $q->whereNotNull('userOption14') // Timezone field
+                            ->whereNot('userOption14', value: '');
+                    });
+            })
             ->orderBy('userID')
             ->chunk(5000, function (Collection $records): void {
                 /** @var Collection<int, object> $records */
@@ -288,15 +296,25 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         User::withoutEvents(function () use ($hubUserOptionValues, $localUsers, $now): void {
             $hubUserOptionValues
-                ->filter(fn (HubUserOptionValue $hubUserOptionValue): bool => $hubUserOptionValue->getAbout() !== '')
+                ->filter(fn (HubUserOptionValue $hubUserOptionValue): bool => $hubUserOptionValue->getAbout() !== '' || $hubUserOptionValue->getTimezone() !== null)
                 ->each(function (HubUserOptionValue $hubUserOptionValue) use ($localUsers, $now): void {
                     if ($localUser = $localUsers->get($hubUserOptionValue->userID)) {
+                        $updateData = ['updated_at' => $now];
+
+                        // Update about text if present
+                        if ($hubUserOptionValue->getAbout() !== '') {
+                            $updateData['about'] = $hubUserOptionValue->getAbout();
+                        }
+
+                        // Update timezone if present and not already set locally
+                        $timezone = $hubUserOptionValue->getTimezone();
+                        if ($timezone !== null && empty($localUser->timezone)) {
+                            $updateData['timezone'] = $timezone;
+                        }
+
                         User::query()
                             ->where('id', $localUser->id)
-                            ->update([
-                                'about' => $hubUserOptionValue->getAbout(),
-                                'updated_at' => $now,
-                            ]);
+                            ->update($updateData);
                     }
                 });
         });
