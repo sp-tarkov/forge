@@ -63,10 +63,10 @@
                     {{-- Desktop Theme Toggle --}}
                     <flux:dropdown align="end" x-data="">
                         <flux:button variant="subtle" class="group" aria-label="Preferred color scheme" square="true">
-                            <flux:icon.sun x-show="$flux.appearance === 'light'" variant="mini" class="text-zinc-500 dark:text-white" />
-                            <flux:icon.moon x-show="$flux.appearance === 'dark'" variant="mini" class="text-zinc-500 dark:text-white" />
-                            <flux:icon.moon x-show="$flux.appearance === 'system' && $flux.dark" variant="mini" />
-                            <flux:icon.sun x-show="$flux.appearance === 'system' && ! $flux.dark" variant="mini" />
+                            <flux:icon.sun x-cloak x-show="$flux.appearance === 'light'" variant="mini" class="text-zinc-500 dark:text-white" />
+                            <flux:icon.moon x-cloak x-show="$flux.appearance === 'dark'" variant="mini" class="text-zinc-500 dark:text-white" />
+                            <flux:icon.moon x-cloak x-show="$flux.appearance === 'system' && $flux.dark" variant="mini" />
+                            <flux:icon.sun x-cloak x-show="$flux.appearance === 'system' && ! $flux.dark" variant="mini" />
                         </flux:button>
                         <flux:menu>
                             <flux:menu.item icon="sun" x-on:click="$flux.appearance = 'light'">Light</flux:menu.item>
