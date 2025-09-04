@@ -1089,25 +1089,31 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         ModVersion::withoutEvents(function () use ($versionsGroupedByMod, $now): void {
             foreach ($versionsGroupedByMod as $modId => $modVersions) {
-                $latestModVersion = $modVersions->first();
-                if (! $latestModVersion) {
+                $latestEnabledVersion = $modVersions->where('disabled', false)->first();
+                if (! $latestEnabledVersion) {
                     continue;
                 }
 
                 $versionConstraintsForMod = $this->sptVersionConstraints[$modId] ?? null;
-                $latestVersionHubId = $latestModVersion->hub_id;
+                if (! $versionConstraintsForMod) {
+                    continue;
+                }
 
-                if ($versionConstraintsForMod && isset($versionConstraintsForMod[$latestVersionHubId])) {
-                    $constraintValue = $versionConstraintsForMod[$latestVersionHubId];
-
-                    if ($latestModVersion->spt_version_constraint !== $constraintValue) {
-                        ModVersion::query()
-                            ->where('id', $latestModVersion->id)
-                            ->update([
-                                'spt_version_constraint' => $constraintValue,
-                                'updated_at' => $now,
-                            ]);
+                $constraintValue = null;
+                foreach ($versionConstraintsForMod as $constraint) {
+                    if ($constraint !== '' && $constraint !== '0.0.0') {
+                        $constraintValue = $constraint;
+                        break;
                     }
+                }
+
+                if ($constraintValue && $latestEnabledVersion->spt_version_constraint !== $constraintValue) {
+                    ModVersion::query()
+                        ->where('id', $latestEnabledVersion->id)
+                        ->update([
+                            'spt_version_constraint' => $constraintValue,
+                            'updated_at' => $now,
+                        ]);
                 }
             }
         });
