@@ -203,14 +203,27 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     $updateData[] = $user;
 
                 } elseif ($existingByEmail) {
-                    // Email exists but hub_id doesn't - this is a conflict, log and skip
-                    Log::warning('New hub user has email that already exists', [
-                        'hub_id' => $user['hub_id'],
-                        'email' => $user['email'],
-                        'existing_user_hub_id' => $existingByEmail->hub_id,
-                    ]);
+                    // Email exists but hub_id doesn't
+                    if ($existingByEmail->hub_id === null) {
+                        // User exists with this email but no hub_id - update them with the hub_id
+                        Log::info('Updating existing user with hub_id', [
+                            'user_id' => $existingByEmail->id,
+                            'email' => $user['email'],
+                            'new_hub_id' => $user['hub_id'],
+                        ]);
 
-                    continue;
+                        // Update the user with hub_id and other hub data
+                        $updateData[] = $user;
+                    } else {
+                        // Email exists with a different hub_id - this is a conflict, log and skip
+                        Log::warning('New hub user has email that already exists', [
+                            'hub_id' => $user['hub_id'],
+                            'email' => $user['email'],
+                            'existing_user_hub_id' => $existingByEmail->hub_id,
+                        ]);
+
+                        continue;
+                    }
                 } else {
                     $insertData[] = $user; // New user
                 }
@@ -222,13 +235,25 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
             // Update existing users
             foreach ($updateData as $user) {
-                User::query()->where('hub_id', $user['hub_id'])->update([
+                // Try to update by hub_id first, if no rows affected, update by email
+                $affected = User::query()->where('hub_id', $user['hub_id'])->update([
                     'name' => $user['name'],
                     'email' => $user['email'],
                     'password' => $user['password'],
                     'created_at' => $user['created_at'],
                     'updated_at' => $user['updated_at'],
                 ]);
+
+                // If no rows were updated by hub_id, try updating by email (for users with null hub_id)
+                if ($affected === 0) {
+                    User::query()->where('email', $user['email'])->whereNull('hub_id')->update([
+                        'hub_id' => $user['hub_id'],
+                        'name' => $user['name'],
+                        'password' => $user['password'],
+                        'created_at' => $user['created_at'],
+                        'updated_at' => $user['updated_at'],
+                    ]);
+                }
             }
         });
 
