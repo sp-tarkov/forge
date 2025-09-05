@@ -322,7 +322,19 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
 
         // Check if the role exists before associating
         if (! UserRole::query()->where('id', $roleId)->exists()) {
-            Log::warning(sprintf('Attempted to assign non-existent role ID: %d to user ID: %d', $roleId, $this->id));
+            $availableRoles = UserRole::query()->pluck('id')->toArray();
+            $userEmail = $this->email ?? 'unknown';
+            $userName = $this->name ?? 'unknown';
+
+            Log::warning('Failed to assign role to user', [
+                'attempted_role_id' => $roleId,
+                'user_id' => $this->id,
+                'user_email' => $userEmail,
+                'user_name' => $userName,
+                'available_role_ids' => $availableRoles,
+                'role_exists_check' => UserRole::query()->where('id', $roleId)->exists(),
+                'total_roles_count' => UserRole::query()->count(),
+            ]);
 
             return false;
         }

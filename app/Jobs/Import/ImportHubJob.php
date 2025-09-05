@@ -968,10 +968,16 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      */
     private function processModVersionBatch(Collection $hubModVersions, EloquentCollection $localMods): void
     {
+        // Get all available SPT versions for validation
+        static $availableSptVersions = null;
+        if ($availableSptVersions === null) {
+            $availableSptVersions = SptVersion::allValidVersions();
+        }
+
         // Prepare data for upsert.
         $modVersionData = [];
 
-        $hubModVersions->each(function (HubModVersion $hubModVersion) use ($localMods, &$modVersionData): void {
+        $hubModVersions->each(function (HubModVersion $hubModVersion) use ($localMods, &$modVersionData, $availableSptVersions): void {
             try {
                 $version = Version::cleanModImport($hubModVersion->versionNumber);
                 $localMod = $localMods->get($hubModVersion->fileID);
@@ -983,9 +989,15 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
                 $modId = $localMod->id;
 
-                // Accumulate the SPT version constraints for separate processing. Store with local mod ID as the key.
+                // Get and validate the SPT version constraint from hub tag
                 $sptConstraint = $hubModVersion->getSptVersionConstraint();
-                $this->sptVersionConstraints[$modId][$hubModVersion->versionID] = $sptConstraint;
+                // Only store valid constraints for later processing
+                if ($sptConstraint !== '' && $sptConstraint !== '0.0.0') {
+                    $validatedConstraint = $this->validateSptConstraint($sptConstraint, $availableSptVersions);
+                    if ($validatedConstraint) {
+                        $this->sptVersionConstraints[$modId][$hubModVersion->versionID] = $validatedConstraint;
+                    }
+                }
 
                 $publishedAt = $hubModVersion->getPublishedAt();
                 $createdAt = Carbon::parse($hubModVersion->uploadTime, 'UTC')->toDateTimeString();
@@ -1063,12 +1075,16 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Update the latest versions of mods with their SPT version constraints.
+     * Also parse SPT version compatibility from mod version descriptions.
      */
     private function processModVersionSptConstraints(): void
     {
         if (empty($this->sptVersionConstraints)) {
             return;
         }
+
+        // Get all available SPT versions for validation
+        $availableSptVersions = SptVersion::allValidVersions();
 
         $modIdsToProcess = array_keys($this->sptVersionConstraints);
 
@@ -1088,7 +1104,10 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $versionsGroupedByMod = $allRelevantVersions->groupBy('mod_id');
         $now = Carbon::now('UTC')->toDateTimeString();
 
-        ModVersion::withoutEvents(function () use ($versionsGroupedByMod, $now): void {
+        // Process each mod's versions to apply SPT version constraints
+        $this->applyParsedSptVersionConstraints($versionsGroupedByMod, $availableSptVersions, $now);
+
+        ModVersion::withoutEvents(function () use ($versionsGroupedByMod, $availableSptVersions, $now): void {
             foreach ($versionsGroupedByMod as $modId => $modVersions) {
                 $latestEnabledVersion = $modVersions->where('disabled', false)->first();
                 if (! $latestEnabledVersion) {
@@ -1108,13 +1127,237 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     }
                 }
 
-                if ($constraintValue && $latestEnabledVersion->spt_version_constraint !== $constraintValue) {
-                    ModVersion::query()
-                        ->where('id', $latestEnabledVersion->id)
-                        ->update([
-                            'spt_version_constraint' => $constraintValue,
-                            'updated_at' => $now,
-                        ]);
+                // Only update if there's a valid constraint value from the hub tag
+                if ($constraintValue) {
+                    // Validate the constraint against actual SPT versions
+                    $validatedConstraint = $this->validateSptConstraint($constraintValue, $availableSptVersions);
+
+                    if ($validatedConstraint && $latestEnabledVersion->spt_version_constraint !== $validatedConstraint) {
+                        ModVersion::query()
+                            ->where('id', $latestEnabledVersion->id)
+                            ->update([
+                                'spt_version_constraint' => $validatedConstraint,
+                                'updated_at' => $now,
+                            ]);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Parse SPT version compatibility from mod version description.
+     *
+     * @param  string  $description  The mod version description to parse
+     * @param  array<string>  $availableSptVersions  List of available SPT versions to match against
+     * @return string|null The parsed SPT version constraint or null if none found
+     */
+    private function parseSptVersionFromDescription(string $description, array $availableSptVersions): ?string
+    {
+        // Pattern to catch version numbers in various contexts
+        // This will match:
+        // - Any version number (3.7.0, 3.8, etc.) that appears in the text
+        // - With optional 'v' prefix (v3.7.0)
+        // - With .x or .X suffix (3.7.x)
+        $versionPattern = '/\b(?:v)?([0-9]+\.[0-9]+(?:\.[0-9]+)?(?:\.[xX])?)\b/i';
+
+        $foundVersions = [];
+
+        if (preg_match_all($versionPattern, $description, $matches)) {
+            foreach ($matches[1] as $versionNumber) {
+                $normalizedVersion = $this->normalizeVersionString($versionNumber);
+                if ($normalizedVersion === null) {
+                    continue;
+                }
+
+                // Only consider versions that actually exist in our SPT versions database
+                // or could resolve to an existing SPT version
+                if ($this->matchesSptVersion($normalizedVersion, $availableSptVersions)) {
+                    $foundVersions[] = $normalizedVersion;
+                }
+            }
+        }
+
+        // Remove duplicates
+        $foundVersions = array_unique($foundVersions);
+
+        if (count($foundVersions) === 0) {
+            return null;
+        }
+
+        // If we have multiple versions, prefer the highest one that exists
+        usort($foundVersions, 'version_compare');
+        $bestVersion = end($foundVersions);
+
+        // Parse the version to determine the constraint format
+        $parts = explode('.', $bestVersion);
+
+        // If we only have major.minor (2 parts), use tilde constraint for flexibility
+        if (count($parts) === 2) {
+            // Add .0 for a complete version and use tilde
+            return '~'.$bestVersion.'.0';
+        }
+
+        // If we have a full version with patch (3+ parts), use exact constraint
+        // No tilde needed when patch version is specified
+        while (count($parts) < 3) {
+            $parts[] = '0';
+        }
+
+        $normalizedVersion = implode('.', array_slice($parts, 0, 3));
+
+        return $normalizedVersion;
+    }
+
+    /**
+     * Check if a version matches or could resolve to an actual SPT version.
+     *
+     * @param  string  $version  The version number to check
+     * @param  array<string>  $availableSptVersions  List of available SPT versions
+     * @return bool True if this matches an SPT version
+     */
+    private function matchesSptVersion(string $version, array $availableSptVersions): bool
+    {
+        // Direct match - the version exists exactly
+        if (in_array($version, $availableSptVersions, true)) {
+            return true;
+        }
+
+        // Check if it's a major.minor that exists
+        $parts = explode('.', $version);
+        if (count($parts) === 2) {
+            $majorMinor = $parts[0].'.'.$parts[1];
+
+            // Check if any available version starts with this major.minor
+            foreach ($availableSptVersions as $availableVersion) {
+                if (str_starts_with($availableVersion, $majorMinor.'.')) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Normalize a version string to ensure it has proper format.
+     *
+     * @param  string  $version  The version string to normalize
+     * @return string|null The normalized version or null if invalid
+     */
+    private function normalizeVersionString(string $version): ?string
+    {
+        // Remove any trailing .x or .X
+        $version = preg_replace('/\.[xX]$/', '', $version);
+
+        // Validate the version format
+        if (! preg_match('/^[0-9]+\.[0-9]+(?:\.[0-9]+)?$/', (string) $version)) {
+            return null;
+        }
+
+        return $version;
+    }
+
+    /**
+     * Validate an SPT constraint against available SPT versions.
+     * Converts invalid constraints to valid ones when possible.
+     *
+     * @param  string  $constraint  The SPT version constraint to validate
+     * @param  array<string>  $availableSptVersions  List of available SPT versions
+     * @return string|null The validated constraint or null if invalid
+     */
+    private function validateSptConstraint(string $constraint, array $availableSptVersions): ?string
+    {
+        // Remove tilde if present to get the base version
+        $baseVersion = ltrim($constraint, '~');
+        $hasTilde = str_starts_with($constraint, '~');
+
+        // Parse the version parts
+        $parts = explode('.', $baseVersion);
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        $major = $parts[0];
+        $minor = $parts[1];
+        $patch = $parts[2] ?? '0';
+
+        // Check if this major.minor combination exists in available versions
+        $majorMinorExists = false;
+        $exactVersionExists = false;
+
+        foreach ($availableSptVersions as $availableVersion) {
+            if (str_starts_with($availableVersion, $major.'.'.$minor.'.')) {
+                $majorMinorExists = true;
+                if ($availableVersion === $major.'.'.$minor.'.'.$patch) {
+                    $exactVersionExists = true;
+                }
+            }
+        }
+
+        // If the major.minor doesn't exist at all, the constraint is invalid
+        if (! $majorMinorExists) {
+            return null;
+        }
+
+        // If it has a tilde, it should be for major.minor flexibility
+        if ($hasTilde) {
+            // Tilde constraints should use .0 as the patch version
+            return '~'.$major.'.'.$minor.'.0';
+        }
+
+        // For exact constraints, verify the exact version exists
+        if ($exactVersionExists) {
+            return $major.'.'.$minor.'.'.$patch;
+        }
+
+        // If exact version doesn't exist but major.minor does,
+        // convert to a tilde constraint for flexibility
+        return '~'.$major.'.'.$minor.'.0';
+    }
+
+    /**
+     * Apply parsed SPT version constraints from mod version descriptions.
+     *
+     * @param  \Illuminate\Support\Collection<int, \Illuminate\Database\Eloquent\Collection<int, ModVersion>>  $versionsGroupedByMod  Mod versions grouped by mod ID
+     * @param  array<string>  $availableSptVersions  Available SPT versions
+     * @param  string  $now  Current timestamp
+     */
+    private function applyParsedSptVersionConstraints(\Illuminate\Support\Collection $versionsGroupedByMod, array $availableSptVersions, string $now): void
+    {
+        ModVersion::withoutEvents(function () use ($versionsGroupedByMod, $availableSptVersions, $now): void {
+            foreach ($versionsGroupedByMod as $modVersions) {
+                /** @var \Illuminate\Database\Eloquent\Collection<int, ModVersion> $modVersions */
+                foreach ($modVersions as $modVersion) {
+                    // Skip if this version already has a constraint
+                    if (! empty($modVersion->spt_version_constraint)) {
+                        continue;
+                    }
+
+                    // Skip if the version is disabled
+                    if ($modVersion->disabled) {
+                        continue;
+                    }
+
+                    // Skip if there's no description to parse
+                    if (empty($modVersion->description)) {
+                        continue;
+                    }
+
+                    // Try to parse SPT version from the description
+                    $parsedConstraint = $this->parseSptVersionFromDescription(
+                        $modVersion->description,
+                        $availableSptVersions
+                    );
+
+                    if ($parsedConstraint) {
+                        ModVersion::query()
+                            ->where('id', $modVersion->id)
+                            ->update([
+                                'spt_version_constraint' => $parsedConstraint,
+                                'updated_at' => $now,
+                            ]);
+                    }
                 }
             }
         });
