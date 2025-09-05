@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -50,6 +51,17 @@ class TrackService
                 // Extract contextual information based on the event type and trackable model
                 $eventData = $this->extractEventData($eventType, $trackable, $additionalData);
 
+                // For authentication events (login, logout, register), the user is both the visitor and visitable
+                $visitorId = Auth::id();
+                $visitorType = Auth::check() ? Auth::user()::class : null;
+
+                // Special handling for authentication events where trackable is the user
+                if (in_array($eventType, [TrackingEventType::LOGIN, TrackingEventType::LOGOUT, TrackingEventType::REGISTER]) && $trackable instanceof User) {
+                    // Use the trackable user as the visitor since Auth might be cleared (especially for logout)
+                    $visitorId = $trackable->getKey();
+                    $visitorType = $trackable->getMorphClass();
+                }
+
                 // Record the event
                 TrackingEvent::query()->create([
                     'event_name' => $eventType->value,
@@ -64,8 +76,8 @@ class TrackService
                     'ip' => $ip,
                     'visitable_type' => $trackable?->getMorphClass(),
                     'visitable_id' => $trackable?->getKey(),
-                    'visitor_type' => Auth::check() ? Auth::user()::class : null,
-                    'visitor_id' => Auth::id(),
+                    'visitor_type' => $visitorType,
+                    'visitor_id' => $visitorId,
                     'country_code' => $locationData['country_code'] ?? null,
                     'country_name' => $locationData['country_name'] ?? null,
                     'region_name' => $locationData['region_name'] ?? null,

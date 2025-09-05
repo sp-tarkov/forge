@@ -437,34 +437,34 @@ use Illuminate\Support\Str;
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm">
-                                    @if($event->visitor_id && $event->user)
+                                    @if($this->getEventDisplayUser($event) && $this->getEventUserId($event))
                                         <div class="flex items-center space-x-2">
                                             <flux:avatar
                                                 circle="circle"
-                                                src="{{ $event->user->profile_photo_url }}"
+                                                src="{{ $this->getEventDisplayUser($event)->profile_photo_url }}"
                                                 color="auto"
-                                                color:seed="{{ $event->user->id }}"
+                                                color:seed="{{ $this->getEventDisplayUser($event)->id }}"
                                                 size="xs"
                                             />
                                             <div class="flex flex-col">
-                                                <a href="{{ route('user.show', ['userId' => $event->visitor_id, 'slug' => Str::slug($event->user->name)]) }}"
+                                                <a href="{{ route('user.show', ['userId' => $this->getEventUserId($event), 'slug' => Str::slug($this->getEventDisplayUser($event)->name)]) }}"
                                                    class="text-xs font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate max-w-24">
-                                                    {{ $event->user->name }}
+                                                    {{ $this->getEventDisplayUser($event)->name }}
                                                 </a>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $event->visitor_id }}</span>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $this->getEventUserId($event) }}</span>
                                             </div>
                                         </div>
-                                    @elseif($event->visitor_id)
+                                    @elseif($this->getEventUserId($event))
                                         <div class="flex items-center space-x-2">
                                             <flux:avatar
                                                 circle="circle"
                                                 color="auto"
-                                                color:seed="{{ $event->visitor_id }}"
+                                                color:seed="{{ $this->getEventUserId($event) }}"
                                                 size="xs"
                                             />
                                             <div class="flex flex-col">
                                                 <span class="text-xs text-gray-900 dark:text-gray-100">Unknown User</span>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $event->visitor_id }}</span>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $this->getEventUserId($event) }}</span>
                                             </div>
                                         </div>
                                     @else

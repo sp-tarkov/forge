@@ -42,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property-read null|string $event_context attribute
  * @property-read string $event_display_name attribute
  * @property-read null|string $event_url attribute
- * @property Model $trackable
+ * @property Model|null $visitable
  * @property User|null $user
  */
 class TrackingEvent extends Model
@@ -81,9 +81,9 @@ class TrackingEvent extends Model
      *
      * @return MorphTo<Model, $this>
      */
-    public function trackable(): MorphTo
+    public function visitable(): MorphTo
     {
-        return $this->morphTo('visitable');
+        return $this->morphTo('visitable', 'visitable_type', 'visitable_id');
     }
 
     /**
@@ -136,14 +136,30 @@ class TrackingEvent extends Model
                     return $this->url ?? null;
                 }
 
-                // Try the trackable model first (only if we have valid polymorphic data)
-                $trackable = null;
-                if ($this->visitable_type && $this->visitable_id) {
-                    $trackable = $this->trackable()->first();
+                // For authentication events, simply return the name
+                if (in_array($this->event_name, ['login', 'logout', 'register'])) {
+                    // Try the model reference first
+                    if ($this->visitable_type && $this->visitable_id) {
+                        $visitable = $this->visitable;
+                        if ($visitable instanceof Trackable) {
+                            return $visitable->getTrackingTitle();
+                        }
+                    }
+
+                    // Fallback to snapshot data if model not available
+                    if (isset($this->event_data['snapshot']['name'])) {
+                        return $this->event_data['snapshot']['name'];
+                    }
                 }
 
-                if ($trackable instanceof Trackable) {
-                    $context = $trackable->getTrackingContext();
+                // Try the visitable model first (only if we have valid polymorphic data)
+                $visitable = null;
+                if ($this->visitable_type && $this->visitable_id) {
+                    $visitable = $this->visitable;
+                }
+
+                if ($visitable instanceof Trackable) {
+                    $context = $visitable->getTrackingContext();
                     if ($context) {
                         return $context;
                     }
@@ -182,14 +198,14 @@ class TrackingEvent extends Model
                     return null;
                 }
 
-                // Try trackable model first (only if we have valid polymorphic data)
-                $trackable = null;
+                // Try the visitable model first (only if we have valid polymorphic data)
+                $visitable = null;
                 if ($this->visitable_type && $this->visitable_id) {
-                    $trackable = $this->trackable()->first();
+                    $visitable = $this->visitable;
                 }
 
-                if ($trackable instanceof Trackable) {
-                    return $trackable->getTrackingUrl();
+                if ($visitable instanceof Trackable) {
+                    return $visitable->getTrackingUrl();
                 }
 
                 // Final fallback to request URL

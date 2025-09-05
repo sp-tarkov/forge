@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -83,7 +82,10 @@ class VisitorAnalytics extends Component
     public ?array $selectedEvent = null;
 
     /**
-     * Initialize the component and set default values.
+     * Livewire lifecycle method: Initialize the component and set default values.
+     *
+     * This magic method is automatically called when the component is first mounted.
+     * It runs once before the initial render.
      */
     public function mount(): void
     {
@@ -102,10 +104,10 @@ class VisitorAnalytics extends Component
     #[Computed]
     public function events(): LengthAwarePaginator
     {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn ($case) => $case->value)->toArray();
+        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->toArray();
 
         $query = TrackingEvent::query()
-            ->with(['user', 'trackable'])
+            ->with(['user', 'visitable'])
             ->whereIn('event_name', $validEventNames)
             ->select([
                 'tracking_events.id',
@@ -212,7 +214,6 @@ class VisitorAnalytics extends Component
     {
         $baseQuery = TrackingEvent::query();
 
-        // Apply all filters for stats (not just date filters)
         $this->applyFilters($baseQuery);
 
         return [
@@ -226,7 +227,7 @@ class VisitorAnalytics extends Component
             'top_countries' => $this->getTopCountries(clone $baseQuery),
             'unique_countries' => (clone $baseQuery)
                 ->whereNotNull('country_code')
-                ->distinct('country_code')
+                ->distinct(['country_code'])
                 ->count('country_code'),
         ];
     }
@@ -289,7 +290,7 @@ class VisitorAnalytics extends Component
      */
     public function showEventDetails(int $eventId): void
     {
-        $event = TrackingEvent::with(['user', 'trackable'])->findOrFail($eventId);
+        $event = TrackingEvent::with(['user', 'visitable'])->findOrFail($eventId);
 
         // Convert the event to an array with all its data
         $this->selectedEvent = [
@@ -327,10 +328,10 @@ class VisitorAnalytics extends Component
                 'name' => $event->user->name,
                 'email' => $event->user->email,
             ] : null,
-            'trackable' => $event->trackable !== null ? [
-                'type' => $event->trackable::class,
-                'id' => $event->trackable->getKey(),
-                'data' => $event->trackable->toArray(),
+            'visitable' => $event->visitable !== null ? [
+                'type' => $event->visitable::class,
+                'id' => $event->visitable->getKey(),
+                'data' => $event->visitable->toArray(),
             ] : null,
         ];
 
@@ -338,8 +339,12 @@ class VisitorAnalytics extends Component
     }
 
     /**
-     * Reset pagination when any filter property is updated.
-     * This is a catch-all for all the updated* methods that were previously defined.
+     * Livewire lifecycle method: Called after any component property is updated.
+     *
+     * This magic method is automatically triggered by Livewire whenever any property
+     * with wire:model is updated. It ensures pagination resets to page 1 when filters
+     * change, preventing "no results" confusion when the current page doesn't exist
+     * in the filtered dataset.
      */
     public function updated(): void
     {
@@ -464,7 +469,7 @@ class VisitorAnalytics extends Component
 
         // User search
         if (! empty($this->userSearch)) {
-            $query->whereHas('user', function ($q): void {
+            $query->whereHas('user', function (Builder $q): void {
                 $q->where('name', 'like', '%'.$this->userSearch.'%')
                     ->orWhere('email', 'like', '%'.$this->userSearch.'%');
             })->orWhere('tracking_events.visitor_id', 'like', '%'.$this->userSearch.'%');
@@ -472,14 +477,14 @@ class VisitorAnalytics extends Component
     }
 
     /**
-     * Get top events statistics.
+     * Get top events' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
      * @return Collection<int, TrackingEvent>
      */
     private function getTopEvents(Builder $query): Collection
     {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn ($case) => $case->value)->toArray();
+        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->toArray();
 
         return $query
             ->select('event_name', DB::raw('COUNT(*) as count'))
@@ -491,7 +496,7 @@ class VisitorAnalytics extends Component
     }
 
     /**
-     * Get top browsers statistics.
+     * Get top browsers' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
      * @return Collection<int, TrackingEvent>
@@ -525,7 +530,7 @@ class VisitorAnalytics extends Component
     }
 
     /**
-     * Get top countries statistics.
+     * Get top countries' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
      * @return Collection<int, TrackingEvent>
@@ -548,45 +553,33 @@ class VisitorAnalytics extends Component
     {
         $eventType = TrackingEventType::from($event->event_name);
 
-        // Only show context if the event type allows it
         if (! $eventType->shouldShowContext()) {
             return null;
         }
 
-        $eventData = $event->event_data ?? [];
+        return $event->event_context;
+    }
 
-        // Check for snapshot data first
-        if (isset($eventData['snapshot'])) {
-            $snapshot = $eventData['snapshot'];
-
-            if (isset($snapshot['mod_name']) && isset($snapshot['version_name'])) {
-                // ModVersion events
-                return $snapshot['mod_name'].' v'.$snapshot['version_name'];
-            } elseif (isset($snapshot['mod_name'])) {
-                // Mod events
-                return $snapshot['mod_name'];
-            } elseif (isset($snapshot['comment_body'])) {
-                // Comment events
-                return 'Comment: '.Str::limit($snapshot['comment_body'], 30);
-            }
-        }
-
-        // Fallback to existing event context
-        if ($event->event_context) {
-            return $event->event_context;
-        }
-
-        // Handle IP ban/unban events that store IP in event_data
-        if (isset($eventData['ip'])) {
-            return 'IP: '.$eventData['ip'];
-        }
-
-        // For user ban/unban events, try to get the user name from the trackable relationship
-        if ($event->trackable instanceof User) {
-            return 'User: '.$event->trackable->name;
+    /**
+     * Get the user model associated with an event for display purposes.
+     */
+    public function getEventDisplayUser(TrackingEvent $event): ?User
+    {
+        // Simply check if we have a user from visitor_id
+        if ($event->visitor_id && $event->user) {
+            return $event->user;
         }
 
         return null;
+    }
+
+    /**
+     * Get the user ID associated with an event for display purposes.
+     */
+    public function getEventUserId(TrackingEvent $event): ?int
+    {
+        // Simply return the visitor_id
+        return $event->visitor_id;
     }
 
     /**
@@ -601,14 +594,14 @@ class VisitorAnalytics extends Component
             return null;
         }
 
-        $eventData = $event->event_data ?? [];
-
-        // Prioritize event_data.url over the general event_url
-        return $eventData['url'] ?? $event->event_url;
+        return $event->event_url;
     }
 
     /**
-     * Render the component.
+     * Livewire lifecycle method: Render the component view.
+     *
+     * This magic method is automatically called by Livewire to generate the component's
+     * HTML output. It's called on initial load and after any property updates or actions.
      */
     public function render(): View
     {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs\Import\DataTransferObjects;
 
+use DateTimeZone;
+use Exception;
 use Illuminate\Support\Str;
 use League\HTMLToMarkdown\HtmlConverter;
 use Stevebauman\Purify\Facades\Purify;
@@ -115,5 +117,26 @@ class HubUserOptionValue
 
         // Convert the HTML to Markdown.
         return (new HtmlConverter)->convert($clean);
+    }
+
+    /**
+     * Get the user's timezone from userOption14.
+     * Validates that the timezone is a valid PHP timezone identifier.
+     */
+    public function getTimezone(): ?string
+    {
+        if (empty($this->userOption14)) {
+            return null;
+        }
+
+        // Validate the timezone by attempting to create a DateTimeZone object
+        try {
+            new DateTimeZone($this->userOption14);
+
+            return $this->userOption14;
+        } catch (Exception) {
+            // Invalid timezone, return null
+            return null;
+        }
     }
 }

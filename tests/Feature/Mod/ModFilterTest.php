@@ -199,6 +199,134 @@ describe('combined filtering', function (): void {
     });
 });
 
+describe('legacy versions filtering', function (): void {
+    it('filters mods to show only legacy versions when legacy is selected', function (): void {
+        // Create a full set of SPT versions to simulate production environment
+        // Active versions (last three minors)
+        $activeSptVersions = [
+            SptVersion::factory()->create(['version' => '3.11.4']),
+            SptVersion::factory()->create(['version' => '3.11.3']),
+            SptVersion::factory()->create(['version' => '3.11.0']),
+            SptVersion::factory()->create(['version' => '3.10.5']),
+            SptVersion::factory()->create(['version' => '3.10.0']),
+            SptVersion::factory()->create(['version' => '3.9.8']),
+        ];
+
+        // Legacy version (not in the last three minors)
+        $legacySptVersion = SptVersion::factory()->create(['version' => '3.8.0']);
+
+        // Create mods with different version associations
+        $modActive = Mod::factory()->create();
+        $modVersionActive = ModVersion::factory()->recycle($modActive)->create([
+            'spt_version_constraint' => '3.11.0',
+        ]);
+
+        $modLegacy = Mod::factory()->create();
+        $modVersionLegacy = ModVersion::factory()->recycle($modLegacy)->create([
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        // Apply the legacy filter
+        $filters = ['sptVersions' => ['legacy']];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        // Assert that the legacy mod should be returned (it's not in the active versions list)
+        expect($filteredMods->pluck('id')->toArray())->toContain($modLegacy->id);
+
+        // Assert that the active mod should NOT be returned
+        expect($filteredMods->pluck('id')->toArray())->not->toContain($modActive->id);
+    });
+
+    it('shows 0.0.0 versions in legacy filter only for admins', function (): void {
+        // Create an administrator
+        $userRole = UserRole::factory()->administrator()->create();
+        $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+
+        // Create active SPT versions to establish proper context
+        $activeSptVersions = [
+            SptVersion::factory()->create(['version' => '3.11.4']),
+            SptVersion::factory()->create(['version' => '3.11.0']),
+            SptVersion::factory()->create(['version' => '3.10.5']),
+            SptVersion::factory()->create(['version' => '3.9.8']),
+        ];
+
+        // Create fallback SPT version
+        $fallbackSptVersion = SptVersion::factory()->create(['version' => '0.0.0']);
+
+        // Create mod with fallback version
+        $modFallback = Mod::factory()->create();
+        $modVersionFallback = ModVersion::factory()->recycle($modFallback)->create([
+            'spt_version_constraint' => '0.0.0',
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+        // Apply the legacy filter
+        $filters = ['sptVersions' => ['legacy']];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        // Assert that the fallback mod is returned for admin
+        expect($filteredMods->pluck('id')->toArray())->toContain($modFallback->id);
+    });
+
+    it('does not show 0.0.0 versions in legacy filter for regular users', function (): void {
+        // Create active SPT versions to establish proper context
+        $activeSptVersions = [
+            SptVersion::factory()->create(['version' => '3.11.4']),
+            SptVersion::factory()->create(['version' => '3.11.0']),
+            SptVersion::factory()->create(['version' => '3.10.5']),
+            SptVersion::factory()->create(['version' => '3.9.8']),
+        ];
+
+        // Create fallback SPT version
+        $fallbackSptVersion = SptVersion::factory()->create(['version' => '0.0.0']);
+
+        // Create mod with fallback version
+        $modFallback = Mod::factory()->create();
+        $modVersionFallback = ModVersion::factory()->recycle($modFallback)->create([
+            'spt_version_constraint' => '0.0.0',
+        ]);
+
+        // Apply the legacy filter as regular user (not authenticated)
+        $filters = ['sptVersions' => ['legacy']];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        // Assert that the 0.0.0 mod is not returned for regular user
+        expect($filteredMods->pluck('id')->toArray())->not->toContain($modFallback->id);
+    });
+
+    it('combines legacy and normal version filters with OR logic', function (): void {
+        // Create active SPT versions to establish proper context
+        $activeSptVersions = [
+            SptVersion::factory()->create(['version' => '3.11.4']),
+            SptVersion::factory()->create(['version' => '3.11.0']),
+            SptVersion::factory()->create(['version' => '3.10.5']),
+            SptVersion::factory()->create(['version' => '3.9.8']),
+        ];
+
+        // Create legacy SPT versions (not in the last three minors)
+        $legacySptVersion = SptVersion::factory()->create(['version' => '3.8.0']);
+
+        // Create mods with different version associations
+        $modActive = Mod::factory()->create();
+        $modVersionActive = ModVersion::factory()->recycle($modActive)->create([
+            'spt_version_constraint' => '3.11.0',
+        ]);
+
+        $modLegacy = Mod::factory()->create();
+        $modVersionLegacy = ModVersion::factory()->recycle($modLegacy)->create([
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        // Apply both active and legacy filters
+        $filters = ['sptVersions' => ['3.11.0', 'legacy']];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        // Assert that both mods are returned
+        expect($filteredMods->pluck('id')->toArray())->toContain($modActive->id, $modLegacy->id);
+    });
+});
+
 describe('disabled mods filtering', function (): void {
     it('does not show disabled mods to unauthorized users', function (): void {
         // Create the SPT versions

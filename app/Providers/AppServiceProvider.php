@@ -98,14 +98,21 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Track authentication events
-        Event::listen(Login::class, function (): void {
-            Track::event(TrackingEventType::LOGIN);
+        Event::listen(Login::class, function (Login $event): void {
+            /** @var User|null $user */
+            $user = $event->user instanceof User ? $event->user : null;
+            Track::event(TrackingEventType::LOGIN, $user);
         });
-        Event::listen(Logout::class, function (): void {
-            Track::event(TrackingEventType::LOGOUT);
+        Event::listen(Logout::class, function (Logout $event): void {
+            // Pass the user as the trackable model to capture user data
+            /** @var User|null $user */
+            $user = $event->user instanceof User ? $event->user : null;
+            Track::event(TrackingEventType::LOGOUT, $user);
         });
-        Event::listen(Registered::class, function (): void {
-            Track::event(TrackingEventType::REGISTER);
+        Event::listen(Registered::class, function (Registered $event): void {
+            /** @var User|null $user */
+            $user = $event->user instanceof User ? $event->user : null;
+            Track::event(TrackingEventType::REGISTER, $user);
         });
 
         // Filter out specific exceptions from being reported to Flare.

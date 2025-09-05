@@ -28,7 +28,6 @@ class Index extends Component
     /**
      * The search query value.
      */
-    #[Session]
     #[Url]
     public string $query = '';
 
@@ -56,12 +55,12 @@ class Index extends Component
 
     /**
      * The SPT versions filter value.
+     * Can be "all" for all versions, "legacy" for legacy versions, or an array of version strings.
      *
-     * @var array<int, string>|null
+     * @var string|array<int, string>
      */
-    #[Session]
     #[Url(as: 'versions')]
-    public ?array $sptVersions = null;
+    public string|array $sptVersions = [];
 
     /**
      * The featured filter value.
@@ -82,15 +81,15 @@ class Index extends Component
      */
     public function mount(): void
     {
-        // Fetch all versions in the last three minor versions.
+        // Fetch all versions in the last three minor versions
         $this->availableSptVersions ??= Cache::remember(
             'active-spt-versions',
             600,
             fn (): Collection => SptVersion::getVersionsForLastThreeMinors()
         );
 
-        // Only set the default version filter values if the property is empty after URL and session hydration.
-        if ($this->sptVersions === null) {
+        // Set default versions if none provided via URL
+        if (empty($this->sptVersions)) {
             $this->sptVersions = $this->defaultSptVersions();
         }
     }
@@ -103,6 +102,8 @@ class Index extends Component
         $this->query = '';
         $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
+
+        unset($this->splitSptVersions); // Clear computed property cache
     }
 
     /**
@@ -113,6 +114,80 @@ class Index extends Component
     public function defaultSptVersions(): array
     {
         return SptVersion::getLatestMinorVersions()->pluck('version')->toArray();
+    }
+
+    /**
+     * Toggle a version filter on or off.
+     */
+    public function toggleVersionFilter(string $version): void
+    {
+        if ($version === 'all') {
+            $this->toggleAllVersions();
+        } else {
+            $this->toggleIndividualVersion($version);
+        }
+
+        $this->resetPage();
+        unset($this->splitSptVersions); // Clear cached computed property
+    }
+
+    /**
+     * Toggle "All Versions" on or off.
+     */
+    private function toggleAllVersions(): void
+    {
+        $this->sptVersions = ($this->sptVersions === 'all')
+            ? $this->defaultSptVersions()
+            : 'all';
+    }
+
+    /**
+     * Toggle an individual version on or off.
+     */
+    private function toggleIndividualVersion(string $version): void
+    {
+        if ($this->sptVersions === 'all') {
+            $this->sptVersions = [$version];
+
+            return;
+        }
+
+        $currentVersions = $this->ensureVersionsArray();
+        $this->sptVersions = $this->toggleVersionInArray($version, $currentVersions);
+
+        // If no versions are selected after toggling, switch to "all"
+        if (empty($this->sptVersions)) {
+            $this->sptVersions = 'all';
+        }
+    }
+
+    /**
+     * Ensure sptVersions is treated as an array.
+     *
+     * @return array<int, string>
+     */
+    private function ensureVersionsArray(): array
+    {
+        return is_array($this->sptVersions) ? $this->sptVersions : [$this->sptVersions];
+    }
+
+    /**
+     * Toggle a version in the given array and return the result.
+     *
+     * @param  array<int, string>  $versions
+     * @return array<int, string>
+     */
+    private function toggleVersionInArray(string $version, array $versions): array
+    {
+        $key = array_search($version, $versions);
+
+        if ($key !== false) {
+            unset($versions[$key]);
+
+            return array_values($versions);
+        }
+
+        return [...$versions, $version];
     }
 
     /**
@@ -184,7 +259,14 @@ class Index extends Component
             $count++;
         }
 
-        return $count + count($this->sptVersions);
+        // Count sptVersions filter if it's not 'all' and not empty
+        if (is_array($this->sptVersions)) {
+            $count += count($this->sptVersions);
+        } elseif ($this->sptVersions !== 'all' && ! empty($this->sptVersions)) {
+            $count++;
+        }
+
+        return $count;
     }
 
     /**

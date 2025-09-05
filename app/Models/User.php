@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
+use App\Contracts\Trackable;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Traits\HasComments;
@@ -66,7 +67,7 @@ use Shetabit\Visitor\Traits\Visitor;
  *
  * @implements Commentable<self>
  */
-class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable
+class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
 {
     use Bannable;
     use HasApiTokens;
@@ -321,7 +322,19 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
 
         // Check if the role exists before associating
         if (! UserRole::query()->where('id', $roleId)->exists()) {
-            Log::warning(sprintf('Attempted to assign non-existent role ID: %d to user ID: %d', $roleId, $this->id));
+            $availableRoles = UserRole::query()->pluck('id')->toArray();
+            $userEmail = $this->email ?? 'unknown';
+            $userName = $this->name ?? 'unknown';
+
+            Log::warning('Failed to assign role to user', [
+                'attempted_role_id' => $roleId,
+                'user_id' => $this->id,
+                'user_email' => $userEmail,
+                'user_name' => $userName,
+                'available_role_ids' => $availableRoles,
+                'role_exists_check' => UserRole::query()->where('id', $roleId)->exists(),
+                'total_roles_count' => UserRole::query()->count(),
+            ]);
 
             return false;
         }
@@ -512,5 +525,46 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function getReportableUrl(): string
     {
         return $this->profile_url;
+    }
+
+    /**
+     * Get the URL to view this trackable resource.
+     */
+    public function getTrackingUrl(): string
+    {
+        return $this->profile_url;
+    }
+
+    /**
+     * Get the display title for this trackable resource.
+     */
+    public function getTrackingTitle(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get the snapshot data to store for this trackable resource.
+     *
+     * @return array<string, mixed>
+     */
+    public function getTrackingSnapshot(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'role' => $this->role?->name,
+            'verified' => $this->hasVerifiedEmail(),
+            'two_factor_enabled' => $this->hasEnabledTwoFactorAuthentication(),
+        ];
+    }
+
+    /**
+     * Get contextual information about this trackable resource.
+     */
+    public function getTrackingContext(): ?string
+    {
+        return $this->role?->name;
     }
 }

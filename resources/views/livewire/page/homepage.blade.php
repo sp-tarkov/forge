@@ -143,7 +143,7 @@
                         </div>
                     </div>
 
-                    <x-page-content-title :title="__('Featured Mods')" :button-text="__('View All')" button-link="/mods?featured=only" />
+                    <x-page-content-title :title="__('Featured Mods')" :button-text="__('View All')" button-link="/mods?featured=only&order=&query=&versions=" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                         @foreach ($featured as $mod)
                             <div wire:key="homepage-featured-{{ $mod->id }}">
@@ -152,7 +152,7 @@
                         @endforeach
                     </div>
 
-                    <x-page-content-title :title="__('Newest Mods')" :button-text="__('View All')" button-link="/mods" />
+                    <x-page-content-title :title="__('Newest Mods')" :button-text="__('View All')" button-link="/mods?featured=&order=&query=&versions=" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                         @foreach ($newest as $mod)
                             <div wire:key="homepage-newest-{{ $mod->id }}">
@@ -161,7 +161,7 @@
                         @endforeach
                     </div>
 
-                    <x-page-content-title :title="__('Recently Updated Mods')" :button-text="__('View All')" button-link="/mods?order=updated" />
+                    <x-page-content-title :title="__('Recently Updated Mods')" :button-text="__('View All')" button-link="/mods?featured=&order=updated&query=&versions=" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                         @foreach ($updated as $mod)
                             <div wire:key="homepage-updated-{{ $mod->id }}">
