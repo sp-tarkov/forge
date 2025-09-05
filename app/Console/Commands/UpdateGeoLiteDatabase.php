@@ -289,7 +289,7 @@ class UpdateGeoLiteDatabase extends Command
 
         if (! $result->successful()) {
             $errorOutput = $result->errorOutput() ?: $result->output();
-            throw new Exception('Failed to extract database: ' . $errorOutput);
+            throw new Exception('Failed to extract database: '.$errorOutput);
         }
 
         $this->info('✓ Database extraction completed');
@@ -307,7 +307,7 @@ class UpdateGeoLiteDatabase extends Command
             $contents = File::glob($tempDir.'/*');
             $contentsInfo = empty($contents) ? 'directory is empty' : 'found: '.implode(', ', array_map('basename', $contents));
 
-            throw new Exception('Could not find GeoLite2-City.mmdb in extracted files. Directory contents: ' . $contentsInfo);
+            throw new Exception('Could not find GeoLite2-City.mmdb in extracted files. Directory contents: '.$contentsInfo);
         }
 
         $extractedDatabase = $extractedFiles[0];
@@ -330,7 +330,7 @@ class UpdateGeoLiteDatabase extends Command
                 File::move($databasePath, $backupPath);
                 $this->info('✓ Existing database backed up to: '.$backupPath);
             } catch (Exception $e) {
-                throw new Exception('Failed to backup existing database: ' . $e->getMessage());
+                throw new Exception('Failed to backup existing database: '.$e->getMessage());
             }
         }
     }
