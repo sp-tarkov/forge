@@ -107,7 +107,7 @@ class Visitors extends Component
      * @param  array{id: string, type: string, ...}  $visitor
      */
     #[On('echo-presence:visitors,joining')]
-    public function visitorJoining($visitor): void
+    public function visitorJoining(array $visitor): void
     {
         if ($this->getVisitors()->doesntContain('id', $visitor['id'])) {
             $this->getVisitors()->push($visitor);
@@ -126,9 +126,9 @@ class Visitors extends Component
      * @param  array{id: string, type: string, ...}  $visitor
      */
     #[On('echo-presence:visitors,leaving')]
-    public function visitorLeaving($visitor): void
+    public function visitorLeaving(array $visitor): void
     {
-        $this->visitors = $this->getVisitors()->reject(fn ($v): bool => $v['id'] === $visitor['id']);
+        $this->visitors = $this->getVisitors()->reject(fn (array $v): bool => $v['id'] === $visitor['id']);
 
         $this->updateCounts();
     }
@@ -141,7 +141,7 @@ class Visitors extends Component
     private function updateCounts(): void
     {
         $this->totalVisitorCount = $this->getVisitors()->count();
-        $this->authUserCount = $this->getVisitors()->filter(fn ($v): bool => $v['type'] === 'authenticated')->count();
+        $this->authUserCount = $this->getVisitors()->filter(fn (array $v): bool => $v['type'] === 'authenticated')->count();
     }
 
     /**
@@ -169,7 +169,7 @@ class Visitors extends Component
      * @param  array{count: int, date: string}  $data
      */
     #[On('echo:peak-visitors,PeakVisitorUpdated')]
-    public function peakUpdated($data): void
+    public function peakUpdated(array $data): void
     {
         $this->peakCount = $data['count'];
         $this->peakDate = $data['date'];

@@ -36,6 +36,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
@@ -260,12 +261,12 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         // Get rows where either the about text or timezone has value.
         DB::connection('hub')
             ->table('wcf1_user_option_value')
-            ->where(function ($query): void {
-                $query->where(function ($q): void {
+            ->where(function (Builder $query): void {
+                $query->where(function (Builder $q): void {
                     $q->whereNotNull('userOption1') // About field
                         ->whereNot('userOption1', value: '');
                 })
-                    ->orWhere(function ($q): void {
+                    ->orWhere(function (Builder $q): void {
                         $q->whereNotNull('userOption14') // Timezone field
                             ->whereNot('userOption14', value: '');
                     });

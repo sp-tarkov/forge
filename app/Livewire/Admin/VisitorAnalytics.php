@@ -104,7 +104,7 @@ class VisitorAnalytics extends Component
     #[Computed]
     public function events(): LengthAwarePaginator
     {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn ($case) => $case->value)->toArray();
+        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->toArray();
 
         $query = TrackingEvent::query()
             ->with(['user', 'visitable'])
@@ -469,7 +469,7 @@ class VisitorAnalytics extends Component
 
         // User search
         if (! empty($this->userSearch)) {
-            $query->whereHas('user', function ($q): void {
+            $query->whereHas('user', function (Builder $q): void {
                 $q->where('name', 'like', '%'.$this->userSearch.'%')
                     ->orWhere('email', 'like', '%'.$this->userSearch.'%');
             })->orWhere('tracking_events.visitor_id', 'like', '%'.$this->userSearch.'%');
@@ -484,7 +484,7 @@ class VisitorAnalytics extends Component
      */
     private function getTopEvents(Builder $query): Collection
     {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn ($case) => $case->value)->toArray();
+        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->toArray();
 
         return $query
             ->select('event_name', DB::raw('COUNT(*) as count'))

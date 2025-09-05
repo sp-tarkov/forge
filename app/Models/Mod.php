@@ -15,6 +15,7 @@ use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -239,7 +240,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         // Use the scope to filter and then check for active SPT versions
         return $this->versions()
             ->publiclyVisible()
-            ->whereHas('latestSptVersion', function ($query) use ($activeSptVersionIds): void {
+            ->whereHas('latestSptVersion', function (Builder $query) use ($activeSptVersionIds): void {
                 $query->whereIn('version', $activeSptVersionIds);
             })
             ->exists();

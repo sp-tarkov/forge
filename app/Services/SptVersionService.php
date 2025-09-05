@@ -58,7 +58,7 @@ class SptVersionService
         $satisfyingVersions = Semver::satisfiedBy($availableVersions->keys()->toArray(), $constraint);
 
         return collect($satisfyingVersions)
-            ->whenEmpty(fn ($collection): Collection => $this->handleLegacyFallback($availableVersions))
+            ->whenEmpty(fn (Collection $collection): Collection => $this->handleLegacyFallback($availableVersions))
             ->map(fn (string $version): int => $availableVersions[$version])
             ->values()
             ->all();
