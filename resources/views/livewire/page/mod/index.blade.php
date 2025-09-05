@@ -93,21 +93,81 @@
                 class="py-10 border-b border-gray-400 dark:border-gray-700"
             >
                 <div class="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
-                    <div class="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
-                        <fieldset>
+                    <div class="grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 md:gap-y-2 md:grid-cols-2 md:gap-x-6">
+                        <!-- SPT Versions fieldset spanning both columns -->
+                        <fieldset class="col-span-1 md:col-span-2">
                             <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
-                            <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                            <div class="pt-6 sm:pt-4 pb-2 sm:pb-2 md:pb-1">
+                                <div class="flex items-center text-base sm:text-sm">
+                                    <input 
+                                        id="sptVersions-all" 
+                                        type="checkbox" 
+                                        wire:click="toggleVersionFilter('all')"
+                                        wire:key="all-{{ md5(json_encode($sptVersions)) }}"
+                                        @checked($sptVersions === 'all')
+                                        class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
+                                        wire:loading.attr="disabled"
+                                    >
+                                    <label for="sptVersions-all" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ __('All Versions') }}</label>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <!-- First column of versions -->
+                        <fieldset class="pt-4 sm:pt-4">
+                            <div class="space-y-6 pt-0 sm:space-y-4">
                                 @foreach ($this->splitSptVersions[0] as $version)
-                                    <x-filter-checkbox id="sptVersions-{{ $version->version }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
+                                    <div class="flex items-center text-base sm:text-sm">
+                                        <input 
+                                            id="sptVersions-{{ $version->version }}" 
+                                            type="checkbox" 
+                                            wire:click="toggleVersionFilter('{{ $version->version }}')"
+                                            wire:key="{{ $version->version }}-{{ md5(json_encode($sptVersions)) }}"
+                                            @checked($sptVersions !== 'all' && is_array($sptVersions) && in_array($version->version, $sptVersions))
+                                            class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
+                                            wire:loading.attr="disabled"
+                                        >
+                                        <label for="sptVersions-{{ $version->version }}" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ $version->version }}</label>
+                                    </div>
                                 @endforeach
                             </div>
                         </fieldset>
-                        <fieldset>
-                            <legend class="block font-medium text-gray-800 dark:text-gray-100">&nbsp;</legend>
-                            <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                        
+                        <!-- Second column of versions -->
+                        <fieldset class="pt-4 sm:pt-4">
+                            <div class="space-y-6 pt-0 sm:space-y-4">
                                 @foreach ($this->splitSptVersions[1] as $version)
-                                    <x-filter-checkbox id="sptVersions-{{ $version->version }}" name="sptVersions" value="{{ $version->version }}">{{ $version->version }}</x-filter-checkbox>
+                                    <div class="flex items-center text-base sm:text-sm">
+                                        <input 
+                                            id="sptVersions-{{ $version->version }}" 
+                                            type="checkbox" 
+                                            wire:click="toggleVersionFilter('{{ $version->version }}')"
+                                            wire:key="{{ $version->version }}-{{ md5(json_encode($sptVersions)) }}"
+                                            @checked($sptVersions !== 'all' && is_array($sptVersions) && in_array($version->version, $sptVersions))
+                                            class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
+                                            wire:loading.attr="disabled"
+                                        >
+                                        <label for="sptVersions-{{ $version->version }}" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ $version->version }}</label>
+                                    </div>
                                 @endforeach
+                            </div>
+                        </fieldset>
+                        
+                        <!-- Legacy Versions fieldset spanning both columns -->
+                        <fieldset class="col-span-1 md:col-span-2 pt-6 sm:pt-4 md:pt-2">
+                            <div class="pt-2">
+                                <div class="flex items-center text-base sm:text-sm">
+                                    <input 
+                                        id="sptVersions-legacy" 
+                                        type="checkbox" 
+                                        wire:click="toggleVersionFilter('legacy')"
+                                        wire:key="legacy-{{ md5(json_encode($sptVersions)) }}"
+                                        @checked($sptVersions !== 'all' && ((is_array($sptVersions) && in_array('legacy', $sptVersions)) || $sptVersions === 'legacy'))
+                                        class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
+                                        wire:loading.attr="disabled"
+                                    >
+                                    <label for="sptVersions-legacy" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ __('Legacy Versions') }}</label>
+                                </div>
                             </div>
                         </fieldset>
                     </div>

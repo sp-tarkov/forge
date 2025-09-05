@@ -6,6 +6,7 @@ use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
@@ -15,12 +16,18 @@ uses(DatabaseTruncation::class);
 
 beforeEach(function (): void {
     Cache::flush(); // Prevent rate limiting interference.
+
+    // Create a default SPT version that will be used by mod versions
+    SptVersion::factory()->create(['version' => '1.0.0']);
 });
 
 describe('Guest User Tests', function (): void {
     it('should not show comment form to guest users', function (): void {
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '1.0.0',
+        ]);
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
@@ -34,7 +41,7 @@ describe('Guest User Tests', function (): void {
 
     it('should not show reply buttons to guest users', function (): void {
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $user = User::factory()->create();
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -53,7 +60,7 @@ describe('Guest User Tests', function (): void {
 
     it('should not show edit buttons to guest users', function (): void {
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $user = User::factory()->create();
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -72,7 +79,7 @@ describe('Guest User Tests', function (): void {
 
     it('should not show delete buttons to guest users', function (): void {
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $user = User::factory()->create();
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -91,7 +98,7 @@ describe('Guest User Tests', function (): void {
 
     it('should not show reaction buttons to guest users', function (): void {
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $user = User::factory()->create();
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -113,7 +120,7 @@ describe('Comment Creation Tests', function (): void {
     it('should allow logged in user to create a root comment without browser errors', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->recycle($mod)->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         $commentText = 'This is a test comment with more than minimum length.';
 
         $this->actingAs($user);
@@ -133,7 +140,7 @@ describe('Comment Creation Tests', function (): void {
     it('should validate minimum comment length', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->recycle($mod)->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         $shortText = 'Hi';
 
         $this->actingAs($user);
@@ -153,7 +160,7 @@ describe('Comment Creation Tests', function (): void {
     it('should clear form after successful comment creation', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->recycle($mod)->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         $commentText = 'This is a test comment that should clear after submission.';
 
         $this->actingAs($user);
@@ -173,7 +180,7 @@ describe('Comment Creation Tests', function (): void {
     it('should enforce rate limiting for regular users', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->recycle($mod)->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         $commentText1 = 'This is the first test comment for rate limiting.';
         $commentText2 = 'This is the second test comment for rate limiting.';
 
@@ -199,7 +206,7 @@ describe('Comment Creation Tests', function (): void {
         $admin->assignRole($adminRole);
 
         $mod = Mod::factory()->create();
-        ModVersion::factory()->recycle($mod)->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         $commentText1 = 'This is the first admin comment.';
         $commentText2 = 'This is the second admin comment.';
 
@@ -226,7 +233,7 @@ describe('Comment Creation Tests', function (): void {
         $moderator->assignRole($moderatorRole);
 
         $mod = Mod::factory()->create();
-        ModVersion::factory()->recycle($mod)->create();
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         $commentText1 = 'This is the first moderator comment.';
         $commentText2 = 'This is the second moderator comment.';
 
@@ -252,7 +259,7 @@ describe('Comment Reply Tests', function (): void {
     it('should show reply button for authenticated users', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -273,7 +280,7 @@ describe('Comment Reply Tests', function (): void {
     it('should open reply form when reply button is clicked', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -297,7 +304,7 @@ describe('Comment Reply Tests', function (): void {
     it('should close reply form when cancel is clicked', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -320,7 +327,7 @@ describe('Comment Reply Tests', function (): void {
     it('should create reply to root comment', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -345,7 +352,7 @@ describe('Comment Reply Tests', function (): void {
     it('should maintain comment hierarchy', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $rootComment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -370,7 +377,7 @@ describe('Comment Reply Tests', function (): void {
     it('should validate reply content length', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -395,7 +402,7 @@ describe('Comment Reply Tests', function (): void {
     it('should clear reply form after successful submission', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -422,7 +429,7 @@ describe('Comment Editing Tests', function (): void {
     it('should show edit button for comment owner within time limit', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -445,7 +452,7 @@ describe('Comment Editing Tests', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -467,7 +474,7 @@ describe('Comment Editing Tests', function (): void {
     it('should open edit form with existing comment content', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $originalText = 'This is the original comment text that should appear in the edit form.';
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -493,7 +500,7 @@ describe('Comment Editing Tests', function (): void {
     it('should save edited comment successfully', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $originalText = 'This is the original comment text.';
         $editedText = 'This is the edited comment text with more content.';
         $comment = Comment::factory()->create([
@@ -523,7 +530,7 @@ describe('Comment Editing Tests', function (): void {
     it('should validate edited comment content', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $originalText = 'This is the original comment text.';
         $shortText = 'Hi';
         $comment = Comment::factory()->create([
@@ -551,7 +558,7 @@ describe('Comment Editing Tests', function (): void {
     it('should cancel edit without saving changes', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $originalText = 'This is the original comment text that should remain unchanged.';
         $editedText = 'This edited text should not be saved when cancelled.';
         $comment = Comment::factory()->create([
@@ -581,7 +588,7 @@ describe('Comment Editing Tests', function (): void {
     it('should refresh listing with edited comment content after successful edit', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $originalText = 'Original comment text for editing test';
         $editedText = 'Edited comment text that should appear after update';
 
@@ -614,7 +621,7 @@ describe('Comment Deletion Tests', function (): void {
     it('should show delete button for comment owner', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -637,7 +644,7 @@ describe('Comment Deletion Tests', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -659,7 +666,7 @@ describe('Comment Deletion Tests', function (): void {
     it('should require confirmation before deletion', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $commentText = 'This comment should require confirmation before deletion.';
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -686,7 +693,7 @@ describe('Comment Deletion Tests', function (): void {
     it('should delete comment after confirming', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $commentText = 'This comment should be deleted after confirmation.';
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -716,7 +723,7 @@ describe('Comment Reactions Tests', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -737,7 +744,7 @@ describe('Comment Reactions Tests', function (): void {
     it('should not show reaction button for comment owner', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -759,7 +766,7 @@ describe('Comment Reactions Tests', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -783,7 +790,7 @@ describe('Comment Reactions Tests', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -810,7 +817,7 @@ describe('Comment Reactions Tests', function (): void {
         $user2 = User::factory()->create();
         $user3 = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
             'commentable_type' => Mod::class,
@@ -841,7 +848,7 @@ describe('Spam Marking Tests', function (): void {
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -875,7 +882,7 @@ describe('Spam Marking Tests', function (): void {
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -902,7 +909,7 @@ describe('Spam Marking Tests', function (): void {
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -929,7 +936,7 @@ describe('Spam Marking Tests', function (): void {
         $commentAuthor = User::factory()->create();
         $otherUser = User::factory()->create(); // Different user who shouldn't see spam
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -956,7 +963,7 @@ describe('Comment Subscription Tests', function (): void {
     it('should show subscription button for authenticated users', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $this->actingAs($user);
 
@@ -972,7 +979,7 @@ describe('Comment Subscription Tests', function (): void {
     it('should toggle subscription status', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $this->actingAs($user);
 
@@ -989,7 +996,7 @@ describe('Comment Subscription Tests', function (): void {
     it('should unsubscribe when clicked again', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $this->actingAs($user);
 
@@ -1008,7 +1015,7 @@ describe('Comment Subscription Tests', function (): void {
     it('should maintain subscription state across page loads', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $this->actingAs($user);
 
@@ -1028,7 +1035,7 @@ describe('Comment Display and Pagination Tests', function (): void {
     it('should display empty state when no comments exist', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $this->actingAs($user);
 
@@ -1043,7 +1050,7 @@ describe('Comment Display and Pagination Tests', function (): void {
     it('should show comment count accurately', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         Comment::factory()->count(3)->create([
             'commentable_id' => $mod->id,
@@ -1063,7 +1070,7 @@ describe('Comment Display and Pagination Tests', function (): void {
     it('should show show replies toggle for comments with descendants', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $rootComment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -1092,7 +1099,7 @@ describe('Comment Display and Pagination Tests', function (): void {
     it('should expand and collapse reply threads', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $rootComment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -1128,7 +1135,7 @@ describe('Comment Display and Pagination Tests', function (): void {
     it('should display comments in correct hierarchical order', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         $rootComment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -1179,7 +1186,7 @@ describe('Comment Pinning Tests', function (): void {
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id]);
+        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
 
         // Create 5 comments
         $comments = [];

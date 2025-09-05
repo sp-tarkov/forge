@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
+use Illuminate\Support\Collection;
 
 class SptVersionService
 {
@@ -26,31 +27,65 @@ class SptVersionService
      */
     private function satisfyConstraint(ModVersion $modVersion): array
     {
-        if ($modVersion->spt_version_constraint === '' || $modVersion->spt_version_constraint === '0.0.0') {
-            return [];
-        }
+        return match ($modVersion->spt_version_constraint) {
+            '' => [],
+            '0.0.0' => $this->getLegacyVersionId(),
+            default => $this->resolveSemverConstraint($modVersion->spt_version_constraint),
+        };
+    }
 
-        $availableVersions = SptVersion::query()
-            ->orderBy('version', 'desc')
-            ->pluck('id', 'version')
+    /**
+     * Get the ID of the legacy 0.0.0 version if it exists.
+     *
+     * @return array<int>
+     */
+    private function getLegacyVersionId(): array
+    {
+        return SptVersion::query()
+            ->where('version', '0.0.0')
+            ->pluck('id')
             ->toArray();
+    }
 
-        // Attempt to satisfy the SemVer constraint with the available SPT versions
-        $satisfyingVersions = Semver::satisfiedBy(array_keys($availableVersions), $modVersion->spt_version_constraint);
+    /**
+     * Resolve a SemVer constraint to matching version IDs.
+     *
+     * @return array<int>
+     */
+    private function resolveSemverConstraint(string $constraint): array
+    {
+        $availableVersions = $this->getAvailableVersions();
+        $satisfyingVersions = Semver::satisfiedBy($availableVersions->keys()->toArray(), $constraint);
 
-        if (empty($satisfyingVersions)) {
-            // Check if this is an outdated constraint (for SPT versions that no longer exist) by checking if the
-            // constraint is for a version lower than our minimum SPT version
-            $minAvailableVersion = min(array_filter(array_keys($availableVersions), fn ($v): bool => $v !== '0.0.0'));
+        return collect($satisfyingVersions)
+            ->whenEmpty(fn ($collection): Collection => $this->handleLegacyFallback($availableVersions))
+            ->map(fn (string $version): int => $availableVersions[$version])
+            ->values()
+            ->all();
+    }
 
-            if (isset($availableVersions['0.0.0'])) {
-                return [$availableVersions['0.0.0']]; // Constraint for a legacy mod
-            }
+    /**
+     * Get all available SPT versions as a collection.
+     *
+     * @return Collection<string, int>
+     */
+    private function getAvailableVersions(): Collection
+    {
+        return SptVersion::query()
+            ->orderBy('version', 'desc')
+            ->pluck('id', 'version');
+    }
 
-            return []; // Invalid constraint
-        }
-
-        // Return the IDs of all satisfying versions
-        return array_map(fn (string $version): int => $availableVersions[$version], $satisfyingVersions);
+    /**
+     * Handle legacy constraint fallback when no satisfying versions are found.
+     *
+     * @param  Collection<string, int>  $availableVersions
+     * @return Collection<int, int>
+     */
+    private function handleLegacyFallback(Collection $availableVersions): Collection
+    {
+        return $availableVersions->has('0.0.0')
+            ? collect([$availableVersions['0.0.0']])
+            : collect([]);
     }
 }
