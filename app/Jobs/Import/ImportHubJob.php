@@ -141,30 +141,86 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'updated_at' => Carbon::now('UTC')->toDateTimeString(),
         ])->toArray();
 
+        // Check for duplicate hub_ids or emails within the batch
+        $hubIdCounts = collect($userData)->countBy('hub_id');
+        if ($hubIdCounts->filter(fn ($count): bool => $count > 1)->isNotEmpty()) {
+            Log::warning('Duplicate hub_ids found within batch', [
+                'duplicates' => $hubIdCounts->filter(fn ($count): bool => $count > 1)->toArray(),
+            ]);
+        }
+
+        $emailCounts = collect($userData)->countBy('email');
+        if ($emailCounts->filter(fn ($count): bool => $count > 1)->isNotEmpty()) {
+            Log::warning('Duplicate emails found within batch', [
+                'duplicates' => $emailCounts->filter(fn ($count): bool => $count > 1)->toArray(),
+            ]);
+        }
+
+        // Remove duplicates within the batch, keeping only the first occurrence
+        $userData = collect($userData)
+            ->unique('hub_id')
+            ->unique('email')
+            ->values()
+            ->toArray();
+
         // Split upsert into separate insert/update operations to avoid ID gaps
         User::withoutEvents(function () use ($userData): void {
-            // Get existing hub_ids to determine which records to update vs. insert
+            // Get existing hub_ids and emails to determine which records to update vs. insert
             $hubIds = collect($userData)->pluck('hub_id');
-            $existingUsers = User::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+            $emails = collect($userData)->pluck('email');
 
-            // Split data into inserts (new) and updates (existing)
+            // Get all fresh existing users by hub_id and email
+            $existingUsersByHubId = User::query()
+                ->whereIn('hub_id', $hubIds)
+                ->get()
+                ->keyBy('hub_id');
+            $existingUsersByEmail = User::query()
+                ->whereIn('email', $emails)
+                ->get()
+                ->keyBy('email');
+
             $insertData = [];
             $updateData = [];
 
             foreach ($userData as $user) {
-                if (in_array($user['hub_id'], $existingUsers)) {
+                $existingByHubId = $existingUsersByHubId->get($user['hub_id']);
+                $existingByEmail = $existingUsersByEmail->get($user['email']);
+
+                // If user exists by hub_id, update them
+                if ($existingByHubId) {
+                    // Check if the email is being changed to one that belongs to a different user
+                    // Log the conflict and skip this user to avoid constraint violation
+                    if ($existingByEmail && $existingByEmail->hub_id !== $user['hub_id']) {
+                        Log::warning('Email conflict during hub import', [
+                            'hub_id' => $user['hub_id'],
+                            'attempted_email' => $user['email'],
+                            'conflicting_user_hub_id' => $existingByEmail->hub_id,
+                        ]);
+
+                        continue;
+                    }
+
                     $updateData[] = $user;
+
+                } elseif ($existingByEmail) {
+                    // Email exists but hub_id doesn't - this is a conflict, log and skip
+                    Log::warning('New hub user has email that already exists', [
+                        'hub_id' => $user['hub_id'],
+                        'email' => $user['email'],
+                        'existing_user_hub_id' => $existingByEmail->hub_id,
+                    ]);
+
+                    continue;
                 } else {
-                    $insertData[] = $user;
+                    $insertData[] = $user; // New user
                 }
             }
 
-            // Insert new users (only allocates IDs for actual new records)
             if (! empty($insertData)) {
                 User::query()->insert($insertData);
             }
 
-            // Update existing users (no ID allocation)
+            // Update existing users
             foreach ($updateData as $user) {
                 User::query()->where('hub_id', $user['hub_id'])->update([
                     'name' => $user['name'],
