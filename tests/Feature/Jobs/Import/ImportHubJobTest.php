@@ -421,4 +421,37 @@ describe('user batch processing', function (): void {
         expect(User::query()->where('hub_id', 400)->first()->email)->toBe('user1@example.com');
         expect(User::query()->where('hub_id', 401)->first()->email)->toBe('user2@example.com');
     });
+
+    it('updates existing user with null hub_id when email matches', function (): void {
+        // Create an existing user with email but no hub_id (e.g., registered directly)
+        $existingUser = User::factory()->create([
+            'email' => 'nohub@example.com',
+            'hub_id' => null,
+            'name' => 'Old Name',
+        ]);
+
+        // Create hub user with same email
+        $hubUsers = collect([
+            new HubUser([
+                'userID' => 600,
+                'username' => 'NewName',
+                'email' => 'nohub@example.com',
+                'password' => 'bcrypt::$2y$10$test',
+                'registrationDate' => now()->subDays(3)->timestamp,
+            ]),
+        ]);
+
+        $job = new ImportHubJob;
+        $method = new ReflectionMethod(ImportHubJob::class, 'processUserBatch');
+
+        // Process the batch
+        $result = $method->invoke($job, $hubUsers);
+
+        // Existing user should be updated with hub_id
+        expect(User::query()->count())->toBe(1);
+        $existingUser->refresh();
+        expect($existingUser->hub_id)->toBe(600);
+        expect($existingUser->name)->toBe('NewName');
+        expect($existingUser->email)->toBe('nohub@example.com');
+    });
 });
