@@ -73,13 +73,11 @@ class UpdateGeoLiteDatabase extends Command
                 ->timeout(300)
                 ->get($downloadUrl);
 
-            if (! $response->successful()) {
-                throw new Exception(sprintf(
-                    'Failed to download database: HTTP %d - %s',
-                    $response->status(),
-                    $response->body()
-                ));
-            }
+            throw_unless($response->successful(), new Exception(sprintf(
+                'Failed to download database: HTTP %d - %s',
+                $response->status(),
+                $response->body()
+            )));
 
             $downloadSize = strlen($response->body());
             $this->info(sprintf('Downloaded %s bytes', number_format($downloadSize)));
@@ -248,13 +246,11 @@ class UpdateGeoLiteDatabase extends Command
             try {
                 File::ensureDirectoryExists($dir);
 
-                if (! is_writable($dir)) {
-                    throw new Exception("{$name} directory is not writable: {$dir}");
-                }
+                throw_unless(is_writable($dir), new Exception(sprintf('%s directory is not writable: %s', $name, $dir)));
 
-                $this->info("✓ {$name} directory ready: {$dir}");
+                $this->info(sprintf('✓ %s directory ready: %s', $name, $dir));
             } catch (Exception $e) {
-                throw new Exception("Failed to create {$name} directory: {$dir}. Error: {$e->getMessage()}");
+                throw new Exception(sprintf('Failed to create %s directory: %s. Error: %s', $name, $dir, $e->getMessage()));
             }
         }
     }
@@ -271,17 +267,15 @@ class UpdateGeoLiteDatabase extends Command
                 ->timeout(30)
                 ->head($url);
 
-            if (! $response->successful()) {
-                throw new Exception(sprintf(
-                    'Network connectivity test failed: HTTP %d - %s',
-                    $response->status(),
-                    $response->body()
-                ));
-            }
+            throw_unless($response->successful(), new Exception(sprintf(
+                'Network connectivity test failed: HTTP %d - %s',
+                $response->status(),
+                $response->body()
+            )));
 
             $this->info('✓ Network connectivity test passed');
-        } catch (Exception $e) {
-            throw new Exception('Network connectivity test failed: '.$e->getMessage());
+        } catch (Exception $exception) {
+            throw new Exception('Network connectivity test failed: '.$exception->getMessage());
         }
     }
 
@@ -295,7 +289,7 @@ class UpdateGeoLiteDatabase extends Command
 
         if (! $result->successful()) {
             $errorOutput = $result->errorOutput() ?: $result->output();
-            throw new Exception("Failed to extract database: {$errorOutput}");
+            throw new Exception('Failed to extract database: ' . $errorOutput);
         }
 
         $this->info('✓ Database extraction completed');
@@ -313,13 +307,13 @@ class UpdateGeoLiteDatabase extends Command
             $contents = File::glob($tempDir.'/*');
             $contentsInfo = empty($contents) ? 'directory is empty' : 'found: '.implode(', ', array_map('basename', $contents));
 
-            throw new Exception("Could not find GeoLite2-City.mmdb in extracted files. Directory contents: {$contentsInfo}");
+            throw new Exception('Could not find GeoLite2-City.mmdb in extracted files. Directory contents: ' . $contentsInfo);
         }
 
         $extractedDatabase = $extractedFiles[0];
         $fileSize = File::size($extractedDatabase);
 
-        $this->info("✓ Found extracted database: {$extractedDatabase} (".number_format($fileSize).' bytes)');
+        $this->info(sprintf('✓ Found extracted database: %s (', $extractedDatabase).number_format($fileSize).' bytes)');
 
         return $extractedDatabase;
     }
@@ -336,7 +330,7 @@ class UpdateGeoLiteDatabase extends Command
                 File::move($databasePath, $backupPath);
                 $this->info('✓ Existing database backed up to: '.$backupPath);
             } catch (Exception $e) {
-                throw new Exception("Failed to backup existing database: {$e->getMessage()}");
+                throw new Exception('Failed to backup existing database: ' . $e->getMessage());
             }
         }
     }
