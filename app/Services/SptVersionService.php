@@ -50,7 +50,7 @@ class SptVersionService
     /**
      * Resolve a SemVer constraint to matching version IDs.
      *
-     * @return array<int>
+     * @return array<int, int>
      */
     private function resolveSemverConstraint(string $constraint): array
     {
@@ -59,7 +59,8 @@ class SptVersionService
 
         return collect($satisfyingVersions)
             ->whenEmpty(fn (Collection $collection): Collection => $this->handleLegacyFallback($availableVersions))
-            ->map(fn (string $version): int => $availableVersions[$version])
+            ->map(fn (string $version): ?int => $availableVersions[$version] ?? null)
+            ->filter()
             ->values()
             ->all();
     }
@@ -80,12 +81,12 @@ class SptVersionService
      * Handle legacy constraint fallback when no satisfying versions are found.
      *
      * @param  Collection<string, int>  $availableVersions
-     * @return Collection<int, int>
+     * @return Collection<int, string>
      */
     private function handleLegacyFallback(Collection $availableVersions): Collection
     {
         return $availableVersions->has('0.0.0')
-            ? collect([$availableVersions['0.0.0']])
+            ? collect(['0.0.0'])
             : collect([]);
     }
 }
