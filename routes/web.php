@@ -7,6 +7,7 @@ use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
+use App\Livewire\Page\Chat;
 use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Create as ModCreate;
 use App\Livewire\Page\Mod\Edit as ModEdit;
@@ -72,6 +73,9 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::get('/mod/{mod}/version/{modVersion}/edit', ModVersionEdit::class)
             ->where(['mod' => '[0-9]+', 'modVersion' => '[0-9]+'])
             ->name('mod.version.edit');
+
+        Route::get('/chat', Chat::class)
+            ->name('chat');
 
         // Authenticated, verified, administrator routes
         Route::middleware('can:admin')->group(function (): void {

@@ -75,6 +75,14 @@
                         </flux:menu>
                     </flux:dropdown>
 
+                    {{-- Chat Button --}}
+                    @auth
+                        <a href="{{ route('chat') }}" class="rounded-md p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out">
+                            <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
+                            <span class="sr-only">{{ __('Chat') }}</span>
+                        </a>
+                    @endauth
+
                     @auth
                         {{-- Profile Dropdown --}}
                         <div
@@ -207,10 +215,15 @@
                 <div class="shrink-0">
                     <img class="h-10 w-10 rounded-full" src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}">
                 </div>
-                <div class="ml-3">
+                <div class="ml-3 flex-1">
                     <div class="text-base font-medium text-gray-900 dark:text-gray-100">{{ auth()->user()->name }}</div>
                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ auth()->user()->email }}</div>
                 </div>
+                {{-- Mobile Chat Button --}}
+                <a href="{{ route('chat') }}" class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out">
+                    <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
+                    <span>{{ __('Chat') }}</span>
+                </a>
             </div>
             <div class="space-y-1 mx-3 py-3">
                 <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-responsive-nav-link>
