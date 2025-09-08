@@ -152,7 +152,7 @@
                         @endforeach
                     </div>
 
-                    <x-page-content-title :title="__('Newest Mods')" :button-text="__('View All')" button-link="/mods?featured=&order=&query=&versions=" />
+                    <x-page-content-title :title="__('Newest Mods')" :button-text="__('View All')" button-link="/mods?featured=&order=created&query=&versions=" />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                         @foreach ($newest as $mod)
                             <div wire:key="homepage-newest-{{ $mod->id }}">
