@@ -11,6 +11,8 @@ use Livewire\Component;
 
 class Chat extends Component
 {
+    public bool $showNewConversation = false;
+
     #[Layout('components.layouts.base')]
     public function render(): View|Factory
     {
