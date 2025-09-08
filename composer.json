@@ -87,6 +87,14 @@
         "spell": [
             "typos . --config ./typos.toml && echo 'DONE'"
         ],
+        "sendit": [
+            "composer rector-fix",
+            "composer pint",
+            "composer phpstan",
+            "composer spell",
+            "composer coverage",
+            "@php artisan test --parallel"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

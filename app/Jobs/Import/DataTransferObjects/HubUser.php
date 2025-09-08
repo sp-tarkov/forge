@@ -190,14 +190,14 @@ class HubUser
      */
     public function getRegistrationDate(): string
     {
-        $date = Carbon::createFromTimestamp($this->registrationDate);
+        $date = Carbon::createFromTimestamp($this->registrationDate, 'UTC');
 
         // If the registration date is in the future, set it to now.
         if ($date->isFuture()) {
             $date = Carbon::now('UTC');
         }
 
-        return $date->toDateTimeString();
+        return $date->setTimezone('UTC')->format('Y-m-d H:i:s');
     }
 
     /**

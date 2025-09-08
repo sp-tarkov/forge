@@ -83,7 +83,7 @@ class Version implements Stringable
         // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         $pattern = "/^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildMetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/";
 
-        throw_unless(preg_match($pattern, $this->version, $matches), new InvalidVersionNumberException('Invalid SemVer: '.$this->version));
+        throw_unless(preg_match($pattern, (string) $this->version, $matches), new InvalidVersionNumberException('Invalid SemVer: '.$this->version));
 
         $this->major = (int) $matches['major'];
         $this->minor = (int) $matches['minor'];
