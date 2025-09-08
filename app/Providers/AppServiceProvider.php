@@ -9,6 +9,7 @@ use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\Track;
 use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Livewire\Profile\UpdatePasswordForm;
+use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Services\TrackService;
 use Carbon\Carbon;
@@ -68,9 +69,9 @@ class AppServiceProvider extends ServiceProvider
         // Have Laravel automatically eager load Model relationships.
         Model::automaticallyEagerLoadRelationships();
 
-        // Register custom macros.
-        $this->registerNumberMacros();
-        $this->registerCarbonMacros();
+        // Register custom macros and mixins.
+        $this->registerMacros();
+        $this->registerMixins();
 
         // Register custom Blade directives.
         $this->registerBladeDirectives();
@@ -134,7 +135,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register custom number macros.
      */
-    private function registerNumberMacros(): void
+    private function registerMacros(): void
     {
         // Format download numbers.
         Number::macro('downloads', fn (int|float $number) => Number::forHumans(
@@ -146,22 +147,11 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register custom Carbon macros.
+     * Register custom Carbon mixin.
      */
-    private function registerCarbonMacros(): void
+    private function registerMixins(): void
     {
-        // Format dates dynamically based on the time passed.
-        Carbon::macro('dynamicFormat', function (Carbon $date): string {
-            if ($date->diff(now())->m > 1) {
-                return $date->format('M jS, Y');
-            }
-
-            if ($date->diff(now())->d === 0) {
-                return $date->diffForHumans();
-            }
-
-            return $date->format('M jS, g:i A');
-        });
+        Carbon::mixin(new CarbonMixin);
     }
 
     /**

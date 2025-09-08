@@ -15,6 +15,8 @@ use App\Traits\HasReports;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -134,6 +136,27 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function mods(): HasMany
     {
         return $this->hasMany(Mod::class, 'owner_id');
+    }
+
+    /**
+     * Get all conversations for the user.
+     *
+     * @return HasMany<Conversation, $this>
+     */
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'user1_id')
+            ->orWhere('user2_id', $this->id);
+    }
+
+    /**
+     * Get all messages sent by the user.
+     *
+     * @return HasMany<Message, $this>
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
     }
 
     /**
@@ -566,5 +589,27 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function getTrackingContext(): ?string
     {
         return $this->role?->name;
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function conversationSearch(Builder $query, User $user, string $search): Builder
+    {
+        return $query
+            ->where('id', '!=', $user->id)
+            ->whereNotNull('email_verified_at')
+            ->whereDoesntHave('bans', function (Builder $query): void {
+                $query->whereNull('expired_at')->orWhere('expired_at', '>', now());
+            })
+            ->where(function (Builder $query) use ($search): void {
+                $query->where('name', 'like', '%'.$search.'%');
+            })
+            ->withCount(['mods' => function (Builder $query): void {
+                $query->whereNotNull('published_at')->where('published_at', '<=', now());
+            }])
+            ->limit(10);
     }
 }

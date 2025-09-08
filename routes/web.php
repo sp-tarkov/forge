@@ -74,7 +74,8 @@ Route::middleware('auth.banned')->group(function (): void {
             ->where(['mod' => '[0-9]+', 'modVersion' => '[0-9]+'])
             ->name('mod.version.edit');
 
-        Route::get('/chat', Chat::class)
+        Route::get('/chat/{conversationHash?}', Chat::class)
+            ->where(['conversationHash' => '[a-zA-Z0-9]+'])
             ->name('chat');
 
         // Authenticated, verified, administrator routes

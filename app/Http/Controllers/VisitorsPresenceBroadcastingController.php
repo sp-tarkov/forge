@@ -45,8 +45,8 @@ class VisitorsPresenceBroadcastingController extends BroadcastController
      * Authenticate users for the "visitors" presence channel.
      *
      * This method allows both authenticated users and guest users to join the "visitors" presence channel. For
-     * unauthenticated requests, it creates a Guest user instance using the session ID as the identifier and configures
-     * the request to resolve that instance for user information.
+     * unauthenticated requests, it creates a Guest user instance using a hashed version of the session ID as the
+     * identifier to prevent leaking the actual session ID.
      *
      * @return Response|JsonResponse|array{id: string, name?: string, type?: string}
      */
@@ -54,20 +54,23 @@ class VisitorsPresenceBroadcastingController extends BroadcastController
     {
         $user = $request->user();
 
-        // If this isn't an authenticated user, we will create a "guest" user and bind it to the request.
+        // If this isn't an authenticated user, we will create a "guest" user and bind it to the request
         if (! $user) {
             $sessionId = $request->session()->getId();
             if (! $sessionId) {
                 return response('No session available', 403);
             }
 
-            $guestUser = new Guest($sessionId);
+            // Hash the session ID to prevent leaking the actual session ID
+            // Using a deterministic hash so the same session always gets the same ID
+            $maskedSessionId = substr(hash('sha256', $sessionId.config('app.key')), 0, 16);
+            $guestUser = new Guest($maskedSessionId);
 
             // Set this as the user for the request
             $request->setUserResolver(fn (): Guest => $guestUser);
         }
 
-        // Let Laravel's parent method handle everything else.
+        // Let Laravel's parent method handle everything else
         return parent::authenticate($request);
     }
 }

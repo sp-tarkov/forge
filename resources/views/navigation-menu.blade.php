@@ -2,22 +2,14 @@
     x-data="{ profileDropdownOpen: false, mobileMenuOpen: false }"
     class="relative bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-900 dark:via-black dark:to-gray-950 border-b border-gray-200 dark:border-gray-800 z-50"
 >
-    {{-- Background container with overflow hidden --}}
     <div class="absolute inset-0 overflow-hidden">
-        {{-- Light/Dark gritty texture overlays --}}
         <div class="absolute inset-0 bg-gradient-to-br from-gray-200/30 via-transparent to-gray-300/20 dark:from-gray-800/30 dark:via-transparent dark:to-black/40"></div>
         <div class="absolute inset-0 bg-gradient-to-tl from-gray-300/15 to-transparent dark:from-gray-700/20 dark:to-transparent"></div>
-
-        {{-- Noise/grain pattern for texture --}}
         <div class="absolute inset-0 opacity-20 dark:opacity-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0); background-size: 4px 4px;"></div>
         <div class="absolute inset-0 opacity-0 dark:opacity-35" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0); background-size: 4px 4px;"></div>
-
-        {{-- Industrial wear patterns --}}
         <div class="absolute top-0 left-1/4 w-32 h-px bg-gray-400/25 dark:bg-gray-600/30 transform rotate-2"></div>
         <div class="absolute bottom-0 right-1/3 w-24 h-px bg-gray-400/20 dark:bg-gray-500/25 transform -rotate-1"></div>
         <div class="absolute top-1/3 right-0 w-px h-16 bg-gray-400/15 dark:bg-gray-600/20"></div>
-
-        {{-- Subtle inner shadow for depth --}}
         <div class="absolute inset-0 shadow-inner shadow-gray-400/30 dark:shadow-black/60"></div>
     </div>
     <div class="relative mx-auto max-w-7xl px-2 sm:px-4 lg:px-8 z-10">
@@ -36,7 +28,6 @@
                             {{ __('Wiki') }}
                             <flux:icon.arrow-top-right-on-square class="h-3 w-3" />
                         </a>
-                        {{-- additional menu links here --}}
                     </div>
                 </div>
             </div>
@@ -60,28 +51,28 @@
             </div>
             <div class="hidden lg:ml-4 lg:block">
                 <div class="flex items-center gap-4">
-                    {{-- Desktop Theme Toggle --}}
-                    <flux:dropdown align="end" x-data="">
-                        <flux:button variant="subtle" class="group" aria-label="Preferred color scheme" square="true">
-                            <flux:icon.sun x-cloak x-show="$flux.appearance === 'light'" variant="mini" class="text-zinc-500 dark:text-white" />
-                            <flux:icon.moon x-cloak x-show="$flux.appearance === 'dark'" variant="mini" class="text-zinc-500 dark:text-white" />
-                            <flux:icon.moon x-cloak x-show="$flux.appearance === 'system' && $flux.dark" variant="mini" />
-                            <flux:icon.sun x-cloak x-show="$flux.appearance === 'system' && ! $flux.dark" variant="mini" />
-                        </flux:button>
-                        <flux:menu>
-                            <flux:menu.item icon="sun" x-on:click="$flux.appearance = 'light'">Light</flux:menu.item>
-                            <flux:menu.item icon="moon" x-on:click="$flux.appearance = 'dark'">Dark</flux:menu.item>
-                            <flux:menu.item icon="computer-desktop" x-on:click="$flux.appearance = 'system'">System</flux:menu.item>
-                        </flux:menu>
-                    </flux:dropdown>
+                    {{-- Theme Toggle and Chat grouped together --}}
+                    <div class="flex items-center gap-2">
+                        {{-- Desktop Theme Toggle --}}
+                        <flux:dropdown align="end" x-data="">
+                            <flux:button variant="subtle" class="group" aria-label="Preferred color scheme" square="true">
+                                <flux:icon.sun x-cloak x-show="$flux.appearance === 'light'" variant="mini" class="text-zinc-500 dark:text-white" />
+                                <flux:icon.moon x-cloak x-show="$flux.appearance === 'dark'" variant="mini" class="text-zinc-500 dark:text-white" />
+                                <flux:icon.moon x-cloak x-show="$flux.appearance === 'system' && $flux.dark" variant="mini" />
+                                <flux:icon.sun x-cloak x-show="$flux.appearance === 'system' && ! $flux.dark" variant="mini" />
+                            </flux:button>
+                            <flux:menu>
+                                <flux:menu.item icon="sun" x-on:click="$flux.appearance = 'light'">Light</flux:menu.item>
+                                <flux:menu.item icon="moon" x-on:click="$flux.appearance = 'dark'">Dark</flux:menu.item>
+                                <flux:menu.item icon="computer-desktop" x-on:click="$flux.appearance = 'system'">System</flux:menu.item>
+                            </flux:menu>
+                        </flux:dropdown>
 
-                    {{-- Chat Button --}}
-                    @auth
-                        <a href="{{ route('chat') }}" class="rounded-md p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out">
-                            <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
-                            <span class="sr-only">{{ __('Chat') }}</span>
-                        </a>
-                    @endauth
+                        {{-- Chat Dropdown --}}
+                        @auth
+                            <livewire:navigation-chat />
+                        @endauth
+                    </div>
 
                     @auth
                         {{-- Profile Dropdown --}}
@@ -174,7 +165,6 @@
                             </div>
                         </div>
                     @endauth
-
                     @guest
                         <div>
                             <a href="{{ route('login') }}" class="text-sm font-semibold leading-6 text-gray-700 dark:text-gray-100 whitespace-nowrap">Log in <span aria-hidden="true">&rarr;</span></a>
@@ -208,7 +198,6 @@
                 {{ __('Wiki') }}
                 <flux:icon.arrow-top-right-on-square class="h-4 w-4" />
             </a>
-            {{-- Additional menu links here --}}
         </div>
         @auth
             <div class="flex items-center px-5 pt-3">

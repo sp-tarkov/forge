@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('spt_versions', function (Blueprint $table) {
-            $table->dropUnique('version');
+            $table->dropUnique('spt_versions_version_unique');
         });
     }
 };

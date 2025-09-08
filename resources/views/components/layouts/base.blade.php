@@ -10,6 +10,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        @auth
+            <meta name="user-id" content="{{ auth()->id() }}">
+        @endauth
 
         <title>{{ $title }}</title>
         <meta property="og:title" content="{{ $title }}">
@@ -34,13 +37,13 @@
         @fluxAppearance
         @vite(['resources/css/app.css'])
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased flex flex-col min-h-screen">
         @if ($variant !== 'simple')
             <x-warning />
             <x-banner />
         @endif
 
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-800">
+        <div class="flex-grow bg-gray-100 dark:bg-gray-800">
             @if ($variant !== 'simple')
                 <livewire:navigation-menu />
             @endif
