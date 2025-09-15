@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.356.14",
+            "version": "3.356.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "54013c2919ba3f5e1ffb88001a14705129b76415"
+                "reference": "d0357fbe2535bb7d832e594a4ff2ff8da29d229c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/54013c2919ba3f5e1ffb88001a14705129b76415",
-                "reference": "54013c2919ba3f5e1ffb88001a14705129b76415",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d0357fbe2535bb7d832e594a4ff2ff8da29d229c",
+                "reference": "d0357fbe2535bb7d832e594a4ff2ff8da29d229c",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "guzzlehttp/psr7": "^2.4.5",
                 "mtdowling/jmespath.php": "^2.8.0",
                 "php": ">=8.1",
-                "psr/http-message": "^2.0"
+                "psr/http-message": "^1.0 || ^2.0"
             },
             "require-dev": {
                 "andrewsville/php-token-reflection": "^1.4",
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.356.14"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.356.17"
             },
-            "time": "2025-09-09T18:07:13+00:00"
+            "time": "2025-09-12T18:07:37+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -8064,16 +8064,16 @@
         },
         {
             "name": "spatie/flare-client-php",
-            "version": "2.1.0",
+            "version": "2.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/flare-client-php.git",
-                "reference": "ea0a5c2c66cb92ea2f24ae8d47df5e2fae4a79d4"
+                "reference": "57e295e719f636b53c29398c85f9e146c5188906"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/ea0a5c2c66cb92ea2f24ae8d47df5e2fae4a79d4",
-                "reference": "ea0a5c2c66cb92ea2f24ae8d47df5e2fae4a79d4",
+                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/57e295e719f636b53c29398c85f9e146c5188906",
+                "reference": "57e295e719f636b53c29398c85f9e146c5188906",
                 "shasum": ""
             },
             "require": {
@@ -8123,7 +8123,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/flare-client-php/issues",
-                "source": "https://github.com/spatie/flare-client-php/tree/2.1.0"
+                "source": "https://github.com/spatie/flare-client-php/tree/2.2.2"
             },
             "funding": [
                 {
@@ -8131,20 +8131,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-27T10:40:48+00:00"
+            "time": "2025-09-11T10:30:39+00:00"
         },
         {
             "name": "spatie/laravel-error-share",
-            "version": "1.0.4",
+            "version": "1.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-error-share.git",
-                "reference": "5ebaabadb0eaa2cd19c9bfa82ef6c69d1870715f"
+                "reference": "5927fdddc2d597c0e5fa96a2c162891ad2030ce4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-error-share/zipball/5ebaabadb0eaa2cd19c9bfa82ef6c69d1870715f",
-                "reference": "5ebaabadb0eaa2cd19c9bfa82ef6c69d1870715f",
+                "url": "https://api.github.com/repos/spatie/laravel-error-share/zipball/5927fdddc2d597c0e5fa96a2c162891ad2030ce4",
+                "reference": "5927fdddc2d597c0e5fa96a2c162891ad2030ce4",
                 "shasum": ""
             },
             "require": {
@@ -8205,7 +8205,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-error-share/issues",
-                "source": "https://github.com/spatie/laravel-error-share/tree/1.0.4"
+                "source": "https://github.com/spatie/laravel-error-share/tree/1.0.5"
             },
             "funding": [
                 {
@@ -8213,20 +8213,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-26T07:20:40+00:00"
+            "time": "2025-09-12T08:06:33+00:00"
         },
         {
             "name": "spatie/laravel-flare",
-            "version": "2.1.2",
+            "version": "2.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-flare.git",
-                "reference": "42f1cae8edc491c370512cd162502da1fd7be049"
+                "reference": "904d261197409a8c5898f90ce1f37ce6ffcb1022"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/42f1cae8edc491c370512cd162502da1fd7be049",
-                "reference": "42f1cae8edc491c370512cd162502da1fd7be049",
+                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/904d261197409a8c5898f90ce1f37ce6ffcb1022",
+                "reference": "904d261197409a8c5898f90ce1f37ce6ffcb1022",
                 "shasum": ""
             },
             "require": {
@@ -8236,7 +8236,7 @@
                 "illuminate/support": "^11.44|^12.0",
                 "php": "^8.2",
                 "spatie/error-solutions": "^2.0",
-                "spatie/flare-client-php": "^2.1.0",
+                "spatie/flare-client-php": "^2.2.2",
                 "spatie/laravel-error-share": "^1.0.3",
                 "symfony/console": "^7.2.1",
                 "symfony/var-dumper": "^7.2.3"
@@ -8304,7 +8304,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-27T14:00:25+00:00"
+            "time": "2025-09-11T10:33:04+00:00"
         },
         {
             "name": "spatie/laravel-honeypot",
