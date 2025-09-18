@@ -14,9 +14,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Override;
 use Stevebauman\Purify\Facades\Purify;
 
+/**
+ * @property int $id
+ * @property int $conversation_id
+ * @property int $user_id
+ * @property string $content
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property string $content_html
+ * @property bool $is_mine
+ * @property bool $is_read
+ * @property Conversation $conversation
+ * @property Collection<int, User> $readBy
+ * @property-read int $read_by_count
+ * @property Collection<int, MessageRead> $reads
+ * @property-read int $reads_count
+ * @property User $user
+ */
 class Message extends Model
 {
     /** @use HasFactory<MessageFactory> */
@@ -138,7 +157,7 @@ class Message extends Model
         // Update the conversation's last message fields when a message is created
         static::created(function (Message $message): void {
             $conversation = $message->conversation;
-            if ($conversation) {
+            if ($conversation->exists()) {
                 $conversation->update([
                     'last_message_id' => $message->id,
                     'last_message_at' => $message->created_at,
@@ -189,7 +208,7 @@ class Message extends Model
             if ($this->relationLoaded('reads')) {
                 // Find if the other user has read this message
                 $conversation = $this->conversation;
-                if ($conversation) {
+                if ($conversation->exists()) {
                     $otherUser = $conversation->other_user;
                     if ($otherUser) {
                         return $this->reads->contains('user_id', $otherUser->id);
@@ -201,7 +220,7 @@ class Message extends Model
 
             // Fallback to checking the database
             $conversation = $this->conversation;
-            if ($conversation) {
+            if ($conversation->exists()) {
                 $currentUserId = $this->attributes['current_user_id'] ?? auth()->id();
 
                 $otherUserId = $conversation->user1_id === $currentUserId

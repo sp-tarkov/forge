@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page;
 
+use App\Events\ConversationUpdated;
+use App\Events\MessageRead;
+use App\Events\MessageSent;
+use App\Events\UserStartedTyping;
+use App\Events\UserStoppedTyping;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -11,7 +16,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Chat extends Component
@@ -62,6 +66,25 @@ class Chat extends Component
     public bool $hasMoreMessages = true;
 
     /**
+     * Array of users currently typing in the conversation.
+     *
+     * @var array<int, array{id: int, name: string}>
+     */
+    public array $typingUsers = [];
+
+    /**
+     * Track if the current user is typing.
+     */
+    public bool $isTyping = false;
+
+    /**
+     * Array of currently online user IDs.
+     *
+     * @var array<int, bool>
+     */
+    public array $onlineUsers = [];
+
+    /**
      * Initialize the component with optional conversation.
      */
     public function boot(): void
@@ -90,7 +113,6 @@ class Chat extends Component
     /**
      * Handle the switch-conversation event from navigation.
      */
-    #[On('switch-conversation')]
     public function handleSwitchConversation(string $hashId): void
     {
         $this->switchConversation($hashId);
@@ -114,10 +136,18 @@ class Chat extends Component
 
         $this->selectedConversation = $conversation;
         $this->conversationHash = $hashId;
+        $this->typingUsers = [];
+        $this->isTyping = false;
 
         $conversation->markReadBy($user);
 
+        // Broadcast that messages have been read
+        broadcast(new MessageRead($conversation, $user))->toOthers();
+
         $this->pagesLoaded = 1;
+
+        // Join the conversation's presence channel
+        $this->dispatch('join-conversation-presence', conversationHash: $hashId);
 
         // Check if there are more messages than one page
         $totalMessages = Message::query()
@@ -130,6 +160,81 @@ class Chat extends Component
 
         // Trigger scroll to bottom for new conversation
         $this->dispatch('conversation-switched');
+    }
+
+    /**
+     * Get listeners for this component.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        $listeners = [
+            'switch-conversation' => 'handleSwitchConversation',
+
+            // Listen for forwarded events from NavigationChat
+            'navigation-message-received' => 'handleForwardedMessage',
+            'navigation-conversation-updated' => 'handleForwardedConversationUpdate',
+            'navigation-users-online' => 'updateOnlineUsers',
+            'navigation-user-joined' => 'handleForwardedUserJoined',
+            'navigation-user-left' => 'handleForwardedUserLeft',
+        ];
+
+        // Keep conversation-specific listeners for typing indicators and conversation presence
+        if ($this->conversationHash) {
+            $listeners[sprintf('echo-private:conversation.%s,MessageSent', $this->conversationHash)] = 'handleIncomingMessage';
+            $listeners[sprintf('echo-private:conversation.%s,MessageRead', $this->conversationHash)] = 'handleMessageRead';
+            $listeners[sprintf('echo-presence:conversation.%s,UserStartedTyping', $this->conversationHash)] = 'handleUserStartedTyping';
+            $listeners[sprintf('echo-presence:conversation.%s,UserStoppedTyping', $this->conversationHash)] = 'handleUserStoppedTyping';
+            $listeners[sprintf('echo-presence:conversation.%s,leaving', $this->conversationHash)] = 'handleUserLeavingConversation';
+        }
+
+        return $listeners;
+    }
+
+    /**
+     * Handle incoming message from broadcast.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    public function handleIncomingMessage(array $event): void
+    {
+        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash) {
+            return;
+        }
+
+        // Clear typing indicator for the sender since they sent a message
+        if (isset($event['message']['user_id'])) {
+            unset($this->typingUsers[$event['message']['user_id']]);
+        }
+
+        $user = Auth::user();
+
+        // Mark the conversation as read since user is actively viewing it
+        if ($user) {
+            $this->selectedConversation->markReadBy($user);
+
+            // Broadcast that messages have been read
+            broadcast(new MessageRead($this->selectedConversation, $user))->toOthers();
+        }
+
+        // Refresh messages to include the new one
+        $this->dispatch('messages-updated');
+    }
+
+    /**
+     * Handle message read event from broadcast.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    public function handleMessageRead(array $event): void
+    {
+        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash) {
+            return;
+        }
+
+        // Refresh to update read status
+        $this->dispatch('messages-updated');
     }
 
     /**
@@ -158,15 +263,22 @@ class Chat extends Component
 
         abort_if($user->cannot('sendMessage', $this->selectedConversation), 403);
 
-        $this->selectedConversation->messages()->create([
+        $user->updateLastSeen();
+
+        $message = $this->selectedConversation->messages()->create([
             'user_id' => $user->id,
             'content' => trim($this->messageText),
         ]);
 
         $this->messageText = '';
+        $this->stopTyping();
 
         $this->selectedConversation->unarchiveForAllUsers();
         $this->selectedConversation->refresh();
+
+        // Broadcast the message to other users
+        broadcast(new MessageSent($message, $user))->toOthers();
+        broadcast(new ConversationUpdated($this->selectedConversation))->toOthers();
 
         $this->dispatch('messages-updated'); // Trigger scroll
         $this->dispatch('conversation-updated')->to('navigation-chat'); // Update navigation dropdown
@@ -273,8 +385,7 @@ class Chat extends Component
         $messagesPerPage = $this->perPage * $this->pagesLoaded;
         $this->hasMoreMessages = $totalMessages > $messagesPerPage;
 
-        // Fetch messages with pagination; get the latest messages and show them in chronological order
-        // We always fetch the N most recent messages where N = perPage * pagesLoaded
+        // Fetch messages with pagination.
         return Message::query()
             ->where('conversation_id', $this->selectedConversation->id)
             ->withUserContext($user)
@@ -334,6 +445,192 @@ class Chat extends Component
         $this->closeNewConversationModal();
 
         $this->switchConversation($conversation->hash_id);
+    }
+
+    /**
+     * Handle typing input. Called when user types in the message field.
+     */
+    public function handleTyping(): void
+    {
+        if (! $this->selectedConversation || ! Auth::check()) {
+            return;
+        }
+
+        $user = Auth::user();
+
+        if (! $this->isTyping && $user) {
+            $this->isTyping = true;
+            broadcast(new UserStartedTyping($this->selectedConversation, $user))->toOthers();
+        }
+    }
+
+    /**
+     * Stop typing. Called when timer expires or user stops typing.
+     */
+    public function stopTyping(): void
+    {
+        if (! $this->selectedConversation || ! $this->isTyping || ! Auth::check()) {
+            return;
+        }
+
+        $user = Auth::user();
+
+        if ($user) {
+            $this->isTyping = false;
+            broadcast(new UserStoppedTyping($this->selectedConversation, $user))->toOthers();
+        }
+    }
+
+    /**
+     * Handle user started typing event from broadcast.
+     *
+     * @param  array{user_id: int, user_name: string}  $event
+     */
+    public function handleUserStartedTyping(array $event): void
+    {
+        // Don't show typing indicator for current user
+        if ($event['user_id'] === Auth::id()) {
+            return;
+        }
+
+        if (! isset($this->typingUsers[$event['user_id']])) {
+            $this->typingUsers[$event['user_id']] = [
+                'id' => $event['user_id'],
+                'name' => $event['user_name'],
+            ];
+        }
+    }
+
+    /**
+     * Handle user stopped typing event from broadcast.
+     *
+     * @param  array{user_id: int, user_name: string}  $event
+     */
+    public function handleUserStoppedTyping(array $event): void
+    {
+        // Don't process for current user
+        if ($event['user_id'] === Auth::id()) {
+            return;
+        }
+
+        unset($this->typingUsers[$event['user_id']]);
+    }
+
+    /**
+     * Handle user leaving the conversation presence channel.
+     *
+     * @param  array{id: int, name: string, profile_photo_url: string}|bool  $user
+     */
+    public function handleUserLeavingConversation(array|bool $user): void
+    {
+        // Handle the case where we receive a boolean (authorization failure)
+        if (is_bool($user)) {
+            return;
+        }
+
+        unset($this->typingUsers[$user['id']]);
+    }
+
+    /**
+     * Check if a user is online.
+     */
+    public function isUserOnline(int $userId): bool
+    {
+        return isset($this->onlineUsers[$userId]) && $this->onlineUsers[$userId];
+    }
+
+    /**
+     * Get the last seen time for a user.
+     */
+    public function getUserLastSeen(int $userId): ?string
+    {
+        if ($this->isUserOnline($userId)) {
+            return null;
+        }
+
+        $user = User::query()->select('last_seen_at')->find($userId);
+        if ($user && $user->last_seen_at) {
+            $diffInMinutes = $user->last_seen_at->diffInMinutes(now());
+
+            return match (true) {
+                $diffInMinutes < 1 => __('Last seen just now'),
+                $diffInMinutes >= 1 && $diffInMinutes < 2 => __('Last seen 1 minute ago'),
+                $diffInMinutes < 60 => __('Last seen :minutes minutes ago', ['minutes' => (int) $diffInMinutes]),
+                $diffInMinutes < 120 => __('Last seen 1 hour ago'),
+                $diffInMinutes < 1440 => __('Last seen :hours hours ago', ['hours' => (int) floor($diffInMinutes / 60)]),
+                default => __('Last seen :date', ['date' => $diffInMinutes]),
+            };
+        }
+
+        return __('Offline');
+    }
+
+    /**
+     * Handle forwarded message event from NavigationChat.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    public function handleForwardedMessage(array $event): void
+    {
+        // Only process if this message is for the current conversation
+        if (! $this->selectedConversation || ! isset($event['message']['conversation_hash_id'])) {
+            return;
+        }
+
+        if ($this->selectedConversation->hash_id === $event['message']['conversation_hash_id']) {
+            // Clear typing indicator for the sender
+            if (isset($event['message']['user_id'])) {
+                unset($this->typingUsers[$event['message']['user_id']]);
+            }
+
+            // Refresh messages to include the new one
+            $this->dispatch('messages-updated');
+        }
+    }
+
+    /**
+     * Handle forwarded conversation update event from NavigationChat.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    public function handleForwardedConversationUpdate(array $event): void
+    {
+        // Refresh if this is our conversation
+        if ($this->selectedConversation && isset($event['conversation_id']) &&
+            $this->selectedConversation->id === $event['conversation_id']) {
+            $this->dispatch('$refresh');
+        }
+    }
+
+    /**
+     * Update online users from NavigationChat.
+     *
+     * @param  array<int, bool>  $onlineUsers
+     */
+    public function updateOnlineUsers(array $onlineUsers): void
+    {
+        $this->onlineUsers = $onlineUsers;
+    }
+
+    /**
+     * Handle forwarded user joined event from NavigationChat.
+     *
+     * @param  array<int, bool>  $onlineUsers
+     */
+    public function handleForwardedUserJoined(int $userId, array $onlineUsers): void
+    {
+        $this->onlineUsers = $onlineUsers;
+    }
+
+    /**
+     * Handle forwarded user left event from NavigationChat.
+     *
+     * @param  array<int, bool>  $onlineUsers
+     */
+    public function handleForwardedUserLeft(int $userId, array $onlineUsers): void
+    {
+        $this->onlineUsers = $onlineUsers;
+        unset($this->typingUsers[$userId]);
     }
 
     /**

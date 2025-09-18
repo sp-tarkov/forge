@@ -13,8 +13,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Override;
 
+/**
+ * @property int $id
+ * @property string|null $hash_id
+ * @property int $user1_id
+ * @property int $user2_id
+ * @property int|null $created_by
+ * @property Carbon|null $last_message_at
+ * @property int|null $last_message_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property User|null $other_user
+ * @property int $unread_count
+ * @property-read string $url
+ * @property Collection<int, ConversationArchive> $archives
+ * @property-read int $archives_count
+ * @property User|null $creator
+ * @property Message|null $lastMessage
+ * @property Collection<int, Message> $messages
+ * @property-read int $messages_count
+ * @property User $user1
+ * @property User $user2
+ */
 class Conversation extends Model
 {
     /** @use HasFactory<ConversationFactory> */

@@ -35,3 +35,31 @@ Broadcast::channel('conversation.{conversationHashId}', function ($user, $conver
  * Private channel for user notifications
  */
 Broadcast::channel('user.{id}', fn ($user, $id): bool => (int) $user->id === (int) $id);
+
+/*
+ * Presence channel for tracking online users globally
+ */
+Broadcast::channel('presence.online', function ($user) {
+    if ($user) {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'profile_photo_url' => $user->profile_photo_url,
+        ];
+    }
+});
+
+/*
+ * Presence channel for tracking users in a conversation (typing indicators)
+ */
+Broadcast::channel('presence.conversation.{conversationHashId}', function ($user, $conversationHashId) {
+    $conversation = Conversation::query()->where('hash_id', $conversationHashId)->first();
+
+    if ($conversation && $conversation->hasUser($user)) {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'profile_photo_url' => $user->profile_photo_url,
+        ];
+    }
+});

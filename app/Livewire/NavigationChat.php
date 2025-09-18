@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class NavigationChat extends Component
@@ -25,6 +25,36 @@ class NavigationChat extends Component
     public string $searchUser = '';
 
     /**
+     * Array of currently online user IDs.
+     *
+     * @var array<int, bool>
+     */
+    public array $onlineUsers = [];
+
+    /**
+     * Current user ID for event listeners.
+     */
+    public ?int $userId = null;
+
+    /**
+     * Initialize the component
+     */
+    public function mount(): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        $user->updateLastSeen();
+
+        $this->dispatch('join-presence-channel');
+
+        // Set current user ID for private channel listeners
+        $this->dispatch('set-user-id', userId: $user->id);
+    }
+
+    /**
      * Fetch recent conversations for the authenticated user.
      *
      * @return Collection<int, Conversation>
@@ -32,7 +62,6 @@ class NavigationChat extends Component
     private function fetchConversations(): Collection
     {
         $user = Auth::user();
-
         if (! $user) {
             return new Collection;
         }
@@ -55,7 +84,6 @@ class NavigationChat extends Component
     private function fetchUnreadCount(): int
     {
         $user = Auth::user();
-
         if (! $user) {
             return 0;
         }
@@ -73,7 +101,6 @@ class NavigationChat extends Component
     public function markAsRead(int $conversationId): void
     {
         $user = Auth::user();
-
         if (! $user) {
             return;
         }
@@ -132,7 +159,7 @@ class NavigationChat extends Component
                 $this->dispatch('switch-conversation', hashId: $hashId);
             }
 
-            $this->dispatch('dropdown-close'); // Close the dropdown
+            $this->dispatch('close-chat-dropdown'); // Close the dropdown
 
             return;
         }
@@ -143,19 +170,165 @@ class NavigationChat extends Component
     /**
      * Refresh the component when a conversation is archived.
      */
-    #[On('conversation-archived')]
     public function refreshOnArchive(): void
     {
-        // This triggers a render.
+        // Triggers a render.
     }
 
     /**
      * Refresh the component when a conversation is updated.
      */
-    #[On('conversation-updated')]
     public function refreshOnUpdate(): void
     {
-        // This triggers a render.
+        // Triggers a render.
+    }
+
+    /**
+     * Handle user coming online.
+     *
+     * @param  array<int, array{id: int, name: string, profile_photo_url: string}>  $event
+     */
+    public function handleUsersHere(array $event): void
+    {
+        $currentUserId = Auth::id();
+
+        foreach ($event as $user) {
+            $this->onlineUsers[$user['id']] = true;
+
+            // Update our own last seen time when we join
+            if ($user['id'] === $currentUserId) {
+                $currentUser = User::query()->find($currentUserId);
+                if ($currentUser) {
+                    $currentUser->updateLastSeen();
+                }
+            }
+        }
+
+        // Forward online users state to Chat component
+        $this->dispatch('navigation-users-online', onlineUsers: $this->onlineUsers)->to(Chat::class);
+    }
+
+    /**
+     * Handle user joining (coming online).
+     *
+     * @param  array{id: int, name: string, profile_photo_url: string}  $event
+     */
+    public function handleUserJoining(array $event): void
+    {
+        $this->onlineUsers[$event['id']] = true;
+
+        // Update last seen when user comes online (skip if current user)
+        if ($event['id'] !== Auth::id()) {
+            User::query()->where('id', $event['id'])->update(['last_seen_at' => now()]);
+        }
+
+        // Forward updated online users state to Chat component
+        $this->dispatch('navigation-user-joined', userId: $event['id'], onlineUsers: $this->onlineUsers)->to(Chat::class);
+    }
+
+    /**
+     * Handle user leaving (going offline) with debounce.
+     *
+     * @param  array{id: int, name: string, profile_photo_url: string}  $event
+     */
+    public function handleUserLeaving(array $event): void
+    {
+        // Implement a 5-second debounce before marking user as offline
+        $userId = $event['id'];
+
+        // Dispatch JavaScript event to handle the debounced check
+        $this->dispatch('debounce-user-offline', userId: $userId);
+    }
+
+    /**
+     * Check if user is still offline after debounce period.
+     */
+    public function checkUserOffline(int $userId): void
+    {
+        // Remove user from online list
+        unset($this->onlineUsers[$userId]);
+
+        // Update last seen in database (skip if current user)
+        if ($userId !== Auth::id()) {
+            User::query()->where('id', $userId)->update(['last_seen_at' => now()]);
+        }
+
+        // Forward updated online users state to Chat component
+        $this->dispatch('navigation-user-left', userId: $userId, onlineUsers: $this->onlineUsers)->to(Chat::class);
+    }
+
+    /**
+     * Check if a user is online.
+     */
+    public function isUserOnline(int $userId): bool
+    {
+        return isset($this->onlineUsers[$userId]) && $this->onlineUsers[$userId];
+    }
+
+    /**
+     * Get listeners for this component.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        $listeners = [
+            'conversation-archived' => 'refreshOnArchive',
+            'conversation-updated' => 'refreshOnUpdate',
+            'echo-presence:presence.online,here' => 'handleUsersHere',
+            'echo-presence:presence.online,joining' => 'handleUserJoining',
+            'echo-presence:presence.online,leaving' => 'handleUserLeaving',
+            'check-user-offline' => 'checkUserOffline',
+        ];
+
+        // Add dynamic listeners if user is authenticated
+        if ($this->userId) {
+            $listeners[sprintf('echo-private:user.%s,MessageSent', $this->userId)] = 'handleNewMessage';
+            $listeners[sprintf('echo-private:user.%s,ConversationUpdated', $this->userId)] = 'handleConversationUpdated';
+        }
+
+        return $listeners;
+    }
+
+    /**
+     * Handle new message broadcast event.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    public function handleNewMessage(array $event): void
+    {
+        // Forward the message event to the Chat component if it exists
+        $this->dispatch('navigation-message-received', $event)->to(Chat::class);
+
+        // If user is on the chat page and viewing this conversation, mark it as read
+        if (request()->routeIs('chat') && isset($event['message']['conversation_hash_id'])) {
+            $currentConversationHash = request()->route('conversationHash');
+            if ($currentConversationHash === $event['message']['conversation_hash_id']) {
+                $user = Auth::user();
+                $conversation = Conversation::query()->where('hash_id', $event['message']['conversation_hash_id'])->first();
+
+                if ($user && $conversation && $conversation->hasUser($user)) {
+                    $conversation->markReadBy($user);
+                }
+            }
+        }
+
+        // Refresh the conversation list when a new message arrives
+        $this->dispatch('$refresh');
+    }
+
+    /**
+     * Handle conversation updated broadcast event.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    public function handleConversationUpdated(array $event): void
+    {
+        // Forward the conversation updated event to the Chat component
+        $this->dispatch('navigation-conversation-updated', $event)->to(Chat::class);
+
+        // Refresh the conversation list when a conversation is updated
+        $this->dispatch('$refresh');
     }
 
     /**

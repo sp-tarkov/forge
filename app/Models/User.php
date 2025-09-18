@@ -49,6 +49,7 @@ use Shetabit\Visitor\Traits\Visitor;
  * @property string|null $profile_photo_path
  * @property string|null $cover_photo_path
  * @property string|null $remember_token
+ * @property Carbon|null $last_seen_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property string|null $two_factor_secret
@@ -226,6 +227,14 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         $userId = $user instanceof User ? $user->id : $user;
 
         return $this->following()->where('following_id', $userId)->exists();
+    }
+
+    /**
+     * Update the user's last seen timestamp.
+     */
+    public function updateLastSeen(): void
+    {
+        $this->update(['last_seen_at' => now()]);
     }
 
     /**
@@ -423,6 +432,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             'discord_id' => 'integer',
             'user_role_id' => 'integer',
             'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
             'email_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',

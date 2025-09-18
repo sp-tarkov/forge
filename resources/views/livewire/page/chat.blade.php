@@ -48,6 +48,9 @@
                                             color="auto"
                                             color:seed="{{ $conversation->other_user->id }}"
                                         />
+                                        @if($this->isUserOnline($conversation->other_user->id))
+                                            <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-900 bg-green-400"></span>
+                                        @endif
                                     </div>
                                     <div class="flex-1 min-w-0 text-left">
                                         <div class="flex items-center justify-between gap-2">
@@ -67,9 +70,6 @@
                                         </div>
                                         @if($conversation->lastMessage)
                                             <div class="text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                @if($conversation->lastMessage->user_id === auth()->id())
-                                                    <span class="text-gray-500">You:</span>
-                                                @endif
                                                 {{ Str::limit($conversation->lastMessage->content, 50) }}
                                             </div>
                                         @else
@@ -112,8 +112,12 @@
                             </div>
                             <div>
                                 <div class="font-medium text-gray-900 dark:text-gray-100">{{ $selectedConversation->other_user->name }}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ __('Member since') }} {{ $selectedConversation->other_user->created_at->format('M Y') }}
+                                <div class="text-xs">
+                                    @if($this->isUserOnline($selectedConversation->other_user->id))
+                                        <span class="text-green-500 dark:text-green-400">{{ __('Online') }}</span>
+                                    @else
+                                        <span class="text-gray-500 dark:text-gray-400">{{ $this->getUserLastSeen($selectedConversation->other_user->id) }}</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -308,6 +312,74 @@
                         @endforelse
                     </div>
 
+                    {{-- Typing Indicator --}}
+                    <div
+                        x-data="{
+                            show: false,
+                            message: '',
+                            cachedMessage: '',
+                            init() {
+                                // Watch for changes in typing users from Livewire
+                                this.$watch('$wire.typingUsers', (value) => {
+                                    const users = Object.values(value || {});
+                                    if (users.length === 0) {
+                                        this.show = false;
+                                        this.message = this.cachedMessage || ''; // Keep cached message for fade out
+                                    } else {
+                                        // Build the message based on number of users
+                                        let newMessage = '';
+                                        if (users.length === 1) {
+                                            newMessage = users[0].name + ' is typing';
+                                        } else if (users.length === 2) {
+                                            newMessage = users[0].name + ' and ' + users[1].name + ' are typing';
+                                        } else {
+                                            newMessage = users.length + ' people are typing';
+                                        }
+
+                                        this.message = newMessage;
+                                        this.cachedMessage = newMessage;
+                                        this.show = true;
+                                    }
+                                });
+                            }
+                        }"
+                        x-cloak
+                        x-show="show"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="px-4 pb-2 text-sm text-gray-500 dark:text-gray-400 italic"
+                    >
+                        <div class="flex items-center gap-1">
+                            <span x-text="message"></span>
+                            <span x-show="message.length > 0" class="inline-block w-8 text-left">
+                                <span x-data="{
+                                    dots: '...',
+                                    interval: null,
+                                    animateDots() {
+                                        const sequence = ['...', '..', '.', '..'];
+                                        let index = 0;
+                                        this.interval = setInterval(() => {
+                                            this.dots = sequence[index];
+                                            index = (index + 1) % sequence.length;
+                                        }, 400);
+                                    },
+                                    destroy() {
+                                        if (this.interval) {
+                                            clearInterval(this.interval);
+                                        }
+                                    }
+                                }"
+                                x-init="animateDots()"
+                                x-destroy="destroy()"
+                                x-text="dots"></span>
+                            </span>
+                        </div>
+                    </div>
+
                     {{-- Message Input Area --}}
                     <div class="p-4 border-t border-gray-300 dark:border-gray-800 bg-gray-100 dark:bg-gray-900"
                          wire:key="message-input-area"
@@ -315,6 +387,8 @@
                              message: @entangle('messageText'),
                              maxLength: 500,
                              buttonHeight: '46px',
+                             typingTimer: null,
+                             typingDebounce: 1500,
                              get charCount() { return this.message.length; },
                              get remaining() { return this.maxLength - this.charCount; },
                              get showCounter() { return this.charCount >= 350; },
@@ -322,6 +396,18 @@
                                  if (this.remaining <= 10) return 'text-red-500';
                                  if (this.remaining <= 75) return 'text-amber-500';
                                  return 'text-gray-500 dark:text-gray-400';
+                             },
+                             handleTyping() {
+                                 if (this.typingTimer) {
+                                     clearTimeout(this.typingTimer);
+                                 }
+
+                                 $wire.handleTyping();
+
+                                 this.typingTimer = setTimeout(() => {
+                                     $wire.stopTyping();
+                                     this.typingTimer = null;
+                                 }, this.typingDebounce);
                              },
                              resizeTextarea() {
                                  const textarea = this.$refs.messageInput;
@@ -343,6 +429,11 @@
                                  if (event.key === 'Enter' && !event.shiftKey) {
                                      event.preventDefault();
                                      if (this.message.trim() && this.$refs.sendForm) {
+                                         // Clear typing timer when sending
+                                         if (this.typingTimer) {
+                                             clearTimeout(this.typingTimer);
+                                             this.typingTimer = null;
+                                         }
                                          this.$refs.sendForm.requestSubmit();
                                      }
                                  }
@@ -353,7 +444,6 @@
                                          this.resetHeight();
                                      }
                                  });
-                                 
                                  this.$nextTick(() => {
                                      if (this.$refs.messageInput) {
                                          this.$refs.messageInput.focus();
@@ -372,7 +462,7 @@
                             <flux:textarea
                                 wire:model="messageText"
                                 x-ref="messageInput"
-                                x-on:input="resizeTextarea"
+                                x-on:input="resizeTextarea(); handleTyping()"
                                 x-on:keydown="handleKeydown"
                                 placeholder="{{ __('Type a message...') }}"
                                 rows="1"
@@ -470,5 +560,21 @@
         :search-user="$searchUser"
         :search-results="$searchResults" />
 
+    {{-- Presence channel (typing) --}}
+    @script
+        <script>
+            let currentConversationChannel = null;
+            $wire.on('join-conversation-presence', ({ conversationHash }) => {
+                if (!window.Echo || !conversationHash) return;
+                if (currentConversationChannel) {
+                    window.Echo.leave(currentConversationChannel);
+                }
+                currentConversationChannel = `presence.conversation.${conversationHash}`;
+                window.Echo.join(currentConversationChannel)
+                    .leaving((user) => $wire.handleUserLeavingConversation(user))
+                    .listen('UserStartedTyping', (e) => $wire.handleUserStartedTyping(e))
+                    .listen('UserStoppedTyping', (e) => $wire.handleUserStoppedTyping(e));
+            });
+        </script>
+    @endscript
 </div>
-
