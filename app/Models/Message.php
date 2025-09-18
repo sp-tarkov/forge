@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Jobs\ProcessChatMessageNotification;
 use Database\Factories\MessageFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -162,6 +163,12 @@ class Message extends Model
                     'last_message_id' => $message->id,
                     'last_message_at' => $message->created_at,
                 ]);
+
+                // Unarchive conversation for both users when a new message is sent
+                $conversation->unarchiveForAllUsers();
+
+                // Dispatch notification job for the recipient
+                ProcessChatMessageNotification::dispatch($message);
             }
         });
     }

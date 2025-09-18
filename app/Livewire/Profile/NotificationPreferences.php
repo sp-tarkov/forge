@@ -10,18 +10,23 @@ use Livewire\Component;
 
 class NotificationPreferences extends Component
 {
-    public bool $emailNotificationsEnabled = true;
+    public bool $emailCommentNotificationsEnabled = true;
+
+    public bool $emailChatNotificationsEnabled = true;
 
     public function mount(): void
     {
-        $this->emailNotificationsEnabled = Auth::user()->email_notifications_enabled ?? true;
+        $user = Auth::user();
+        $this->emailCommentNotificationsEnabled = $user->email_comment_notifications_enabled ?? true;
+        $this->emailChatNotificationsEnabled = $user->email_chat_notifications_enabled ?? true;
     }
 
     public function updateNotificationPreferences(): void
     {
         $user = Auth::user();
         $user->update([
-            'email_notifications_enabled' => $this->emailNotificationsEnabled,
+            'email_comment_notifications_enabled' => $this->emailCommentNotificationsEnabled,
+            'email_chat_notifications_enabled' => $this->emailChatNotificationsEnabled,
         ]);
 
         $this->dispatch('saved');

@@ -136,6 +136,12 @@
                             <flux:menu>
                                 <flux:menu.item icon="user" href="{{ route('user.show', ['userId' => $selectedConversation->other_user->id, 'slug' => Str::slug($selectedConversation->other_user->name)]) }}">{{ __('View Profile') }}</flux:menu.item>
                                 <flux:menu.separator />
+                                @if($this->isNotificationEnabled())
+                                    <flux:menu.item icon="bell-slash" wire:click="toggleNotifications">{{ __('Disable Notifications') }}</flux:menu.item>
+                                @else
+                                    <flux:menu.item icon="bell" wire:click="toggleNotifications">{{ __('Enable Notifications') }}</flux:menu.item>
+                                @endif
+                                <flux:menu.separator />
                                 <flux:menu.item icon="archive-box" variant="danger" wire:click="openArchiveModal">{{ __('Archive Conversation') }}</flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>

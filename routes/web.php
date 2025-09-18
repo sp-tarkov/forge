@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ChatSubscriptionController;
 use App\Http\Controllers\CommentSubscriptionController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
@@ -52,6 +53,10 @@ Route::middleware('auth.banned')->group(function (): void {
     // Comment unsubscribe route (no auth required for email links)
     Route::get('/comment/unsubscribe/{user}/{commentable_type}/{commentable_id}', [CommentSubscriptionController::class, 'unsubscribe'])
         ->name('comment.unsubscribe');
+
+    // Chat unsubscribe route (no auth required for email links)
+    Route::get('/chat/unsubscribe/{user}/{conversation}', [ChatSubscriptionController::class, 'unsubscribe'])
+        ->name('chat.unsubscribe');
 
     // Jetstream/Profile Routes
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {

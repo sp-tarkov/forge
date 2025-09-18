@@ -648,6 +648,46 @@ class Chat extends Component
     }
 
     /**
+     * Toggle notification settings for the current conversation.
+     */
+    public function toggleNotifications(): void
+    {
+        if ($this->selectedConversation === null) {
+            return;
+        }
+
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        $isEnabled = $this->selectedConversation->toggleNotificationForUser($user);
+
+        if ($isEnabled) {
+            flash()->success('Notifications enabled for this conversation');
+        } else {
+            flash()->success('Notifications disabled for this conversation');
+        }
+    }
+
+    /**
+     * Check if notifications are enabled for the current conversation.
+     */
+    public function isNotificationEnabled(): bool
+    {
+        if ($this->selectedConversation === null) {
+            return true;
+        }
+
+        $user = Auth::user();
+        if (! $user) {
+            return true;
+        }
+
+        return $this->selectedConversation->isNotificationEnabledForUser($user);
+    }
+
+    /**
      * Render the chat component view.
      */
     #[Layout('components.layouts.base')]

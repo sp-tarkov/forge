@@ -473,6 +473,55 @@ class Conversation extends Model
     }
 
     /**
+     * Get subscriptions for this conversation.
+     *
+     * @return HasMany<ConversationSubscription, $this>
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(ConversationSubscription::class);
+    }
+
+    /**
+     * Check if notifications are enabled for a specific user in this conversation.
+     */
+    public function isNotificationEnabledForUser(User $user): bool
+    {
+        $subscription = $this->subscriptions()
+            ->where('user_id', $user->id)
+            ->first();
+
+        // If no subscription exists, default to user's global chat notification setting
+        return $subscription ? $subscription->notifications_enabled : (bool) $user->email_chat_notifications_enabled;
+    }
+
+    /**
+     * Toggle notification subscription for a user in this conversation.
+     */
+    public function toggleNotificationForUser(User $user): bool
+    {
+        /** @var ConversationSubscription|null $subscription */
+        $subscription = $this->subscriptions()
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $subscription) {
+            // Create new subscription with opposite of current state
+            $currentState = $this->isNotificationEnabledForUser($user);
+            $subscription = $this->subscriptions()->create([
+                'user_id' => $user->id,
+                'notifications_enabled' => ! $currentState,
+            ]);
+        } else {
+            // Toggle existing subscription
+            $subscription->notifications_enabled = ! $subscription->notifications_enabled;
+            $subscription->save();
+        }
+
+        return $subscription->notifications_enabled;
+    }
+
+    /**
      * The attributes that should be cast.
      *
      * @return array<string, string>

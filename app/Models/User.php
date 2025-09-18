@@ -56,7 +56,8 @@ use Shetabit\Visitor\Traits\Visitor;
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $timezone
- * @property bool $email_notifications_enabled
+ * @property bool $email_comment_notifications_enabled
+ * @property bool $email_chat_notifications_enabled
  * @property-read string $cover_photo_url attribute
  * @property-read string $profile_photo_url attribute
  * @property-read string $profile_url attribute
@@ -434,7 +435,8 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             'email_verified_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'password' => 'hashed',
-            'email_notifications_enabled' => 'boolean',
+            'email_comment_notifications_enabled' => 'boolean',
+            'email_chat_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
