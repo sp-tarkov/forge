@@ -82,32 +82,28 @@ class Visitors extends Component
     }
 
     /**
-     * Handle visitor updates from the presence manager.
+     * Handle when we receive the initial list of users in the channel.
      *
-     * This method receives the full state from the JavaScript PresenceManager.
-     *
-     * @param  array<int, array{id: string, type: string}>  $visitors
+     * @param  array  $users
      */
-    #[On('presence:visitors-updated')]
-    public function visitorsUpdated(array $visitors, int $totalCount, int $authCount): void
+    #[On('echo-presence:visitors,here')]
+    public function here(array $users): void
     {
-        $this->visitors = collect($visitors);
-        $this->totalVisitorCount = $totalCount;
-        $this->authUserCount = $authCount;
-
+        $this->visitors = collect($users);
+        $this->updateCounts();
         defer(fn () => $this->isPeak());
     }
 
     /**
-     * Handle a new visitor joining from the presence manager.
+     * Handle a new visitor joining the channel.
      *
-     * @param  array{id: string, type: string}  $visitor
+     * @param  array  $user
      */
-    #[On('presence:visitor-joining')]
-    public function visitorJoining(array $visitor): void
+    #[On('echo-presence:visitors,joining')]
+    public function joining(array $user): void
     {
-        if ($this->getVisitors()->doesntContain('id', $visitor['id'])) {
-            $this->getVisitors()->push($visitor);
+        if ($this->getVisitors()->doesntContain('id', $user['id'])) {
+            $this->getVisitors()->push($user);
         }
 
         $this->updateCounts();
@@ -115,15 +111,14 @@ class Visitors extends Component
     }
 
     /**
-     * Handle a visitor leaving from the presence manager.
+     * Handle a visitor leaving the channel.
      *
-     * @param  array{id: string, type: string}  $visitor
+     * @param  array  $user
      */
-    #[On('presence:visitor-leaving')]
-    public function visitorLeaving(array $visitor): void
+    #[On('echo-presence:visitors,leaving')]
+    public function leaving(array $user): void
     {
-        $this->visitors = $this->getVisitors()->reject(fn (array $v): bool => $v['id'] === $visitor['id']);
-
+        $this->visitors = $this->getVisitors()->reject(fn (array $v): bool => $v['id'] === $user['id']);
         $this->updateCounts();
     }
 

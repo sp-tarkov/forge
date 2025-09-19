@@ -26,6 +26,13 @@ class Chat extends Component
     public ?string $conversationHash = null;
 
     /**
+     * Store all conversation hashes to register listeners for cleanup.
+     *
+     * @var array<int, string>
+     */
+    protected array $allConversationHashes = [];
+
+    /**
      * Controls visibility of the new conversation modal.
      */
     public bool $showNewConversation = false;
@@ -178,6 +185,10 @@ class Chat extends Component
             'navigation-users-online' => 'updateOnlineUsers',
             'navigation-user-joined' => 'handleForwardedUserJoined',
             'navigation-user-left' => 'handleForwardedUserLeft',
+
+            // Listen for typing events forwarded from NavigationChat
+            'navigation-typing-started' => 'handleForwardedTypingStarted',
+            'navigation-typing-stopped' => 'handleForwardedTypingStopped',
         ];
 
         // Keep conversation-specific listeners for typing indicators and conversation presence
@@ -189,17 +200,44 @@ class Chat extends Component
             $listeners[sprintf('echo-presence:conversation.%s,leaving', $this->conversationHash)] = 'handleUserLeavingConversation';
         }
 
+        // Also register listeners for all conversations the user is part of
+        // This catches events that arrive after archiving or clearing
+        $user = Auth::user();
+        if ($user) {
+            $conversationHashes = Conversation::query()
+                ->forUser($user)
+                ->pluck('hash_id')
+                ->toArray();
+
+            foreach ($conversationHashes as $hash) {
+                // Only add if not already added for the current conversation
+                if ($hash !== $this->conversationHash) {
+                    $listeners[sprintf('echo-presence:conversation.%s,UserStartedTyping', $hash)] = 'handleUserStartedTyping';
+                    $listeners[sprintf('echo-presence:conversation.%s,UserStoppedTyping', $hash)] = 'handleUserStoppedTyping';
+                    $listeners[sprintf('echo-presence:conversation.%s,leaving', $hash)] = 'handleUserLeavingConversation';
+                    $listeners[sprintf('echo-private:conversation.%s,MessageSent', $hash)] = 'handleIncomingMessage';
+                    $listeners[sprintf('echo-private:conversation.%s,MessageRead', $hash)] = 'handleMessageRead';
+                }
+            }
+        }
+
         return $listeners;
     }
 
     /**
      * Handle incoming message from broadcast.
      *
-     * @param  array<string, mixed>  $event
+     * @param  array<string, mixed>|bool  $event
      */
-    public function handleIncomingMessage(array $event): void
+    public function handleIncomingMessage(array|bool $event): void
     {
-        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash) {
+        // Handle authorization failure or empty event
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
+            return;
+        }
+
+        // Only process if this is for the current conversation
+        if ($this->selectedConversation->hash_id !== $this->conversationHash) {
             return;
         }
 
@@ -225,11 +263,17 @@ class Chat extends Component
     /**
      * Handle message read event from broadcast.
      *
-     * @param  array<string, mixed>  $event
+     * @param  array<string, mixed>|bool  $event
      */
-    public function handleMessageRead(array $event): void
+    public function handleMessageRead(array|bool $event): void
     {
-        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash) {
+        // Handle authorization failure or empty event
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
+            return;
+        }
+
+        // Only process if this is for the current conversation
+        if ($this->selectedConversation->hash_id !== $this->conversationHash) {
             return;
         }
 
@@ -311,17 +355,40 @@ class Chat extends Component
 
         $user = Auth::user();
 
+        // Store the current conversation hash before clearing
+        $oldConversationHash = $this->conversationHash;
+
         $this->selectedConversation->archiveFor($user);
 
         $this->closeArchiveModal();
 
         $this->dispatch('conversation-archived')->to('navigation-chat'); // Update navigation dropdown
 
+        // Always leave the old presence channel before switching or clearing
+        if ($oldConversationHash) {
+            $this->dispatch('leave-conversation-presence', conversationHash: $oldConversationHash);
+        }
+
         $latestConversation = Conversation::query()->latestFor($user)->first();
         if ($latestConversation) {
             $this->switchConversation($latestConversation->hash_id);
         } else {
-            $this->selectedConversation = null;
+            // Reset the component completely
+            $this->reset([
+                'selectedConversation',
+                'conversationHash',
+                'messageText',
+                'typingUsers',
+                'isTyping',
+                'pagesLoaded',
+                'hasMoreMessages',
+            ]);
+
+            // Reset to defaults
+            $this->pagesLoaded = 1;
+            $this->hasMoreMessages = true;
+
+            // Update URL to remove conversation hash
             $this->js("window.history.pushState({}, '', '".route('chat')."')");
         }
     }
@@ -439,8 +506,28 @@ class Chat extends Component
             return;
         }
 
+        $existingConversation = Conversation::query()
+            ->where(function ($query) use ($user, $otherUser) {
+                $query->where('user1_id', $user->id)->where('user2_id', $otherUser->id);
+            })->orWhere(function ($query) use ($user, $otherUser) {
+                $query->where('user1_id', $otherUser->id)->where('user2_id', $user->id);
+            })->first();
+
         // Find or create conversation (pass the creator as the current user)
         $conversation = Conversation::findOrCreateBetween($user, $otherUser, creator: $user);
+
+        // If the conversation is archived for the current user, unarchive it
+        if ($conversation->isArchivedBy($user)) {
+            $conversation->unarchiveFor($user);
+
+            // Notify NavigationChat to refresh since we unarchived
+            $this->dispatch('conversation-updated')->to('navigation-chat');
+        }
+
+        // If this is a new conversation, notify NavigationChat to update its conversation hashes
+        if (! $existingConversation) {
+            $this->dispatch('conversation-created')->to('navigation-chat');
+        }
 
         $this->closeNewConversationModal();
 
@@ -484,10 +571,15 @@ class Chat extends Component
     /**
      * Handle user started typing event from broadcast.
      *
-     * @param  array{user_id: int, user_name: string}  $event
+     * @param  array{user_id: int, user_name: string}|bool  $event
      */
-    public function handleUserStartedTyping(array $event): void
+    public function handleUserStartedTyping(array|bool $event): void
     {
+        // Handle authorization failure or when conversation is not selected
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
+            return;
+        }
+
         // Don't show typing indicator for current user
         if ($event['user_id'] === Auth::id()) {
             return;
@@ -504,10 +596,15 @@ class Chat extends Component
     /**
      * Handle user stopped typing event from broadcast.
      *
-     * @param  array{user_id: int, user_name: string}  $event
+     * @param  array{user_id: int, user_name: string}|bool  $event
      */
-    public function handleUserStoppedTyping(array $event): void
+    public function handleUserStoppedTyping(array|bool $event): void
     {
+        // Handle authorization failure or when conversation is not selected
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
+            return;
+        }
+
         // Don't process for current user
         if ($event['user_id'] === Auth::id()) {
             return;
@@ -572,8 +669,25 @@ class Chat extends Component
      */
     public function handleForwardedMessage(array $event): void
     {
-        // Only process if this message is for the current conversation
-        if (! $this->selectedConversation || ! isset($event['message']['conversation_hash_id'])) {
+        // Check if we have a conversation hash in the event
+        if (! isset($event['message']['conversation_hash_id'])) {
+            return;
+        }
+
+        // If no conversation is selected but we receive a message, it might be for an archived conversation
+        if (! $this->selectedConversation) {
+            // Check if this is a conversation we're part of
+            $user = Auth::user();
+            $conversation = Conversation::query()
+                ->where('hash_id', $event['message']['conversation_hash_id'])
+                ->forUser($user)
+                ->first();
+
+            if ($conversation) {
+                // Switch to this conversation (it may have been unarchived by the message)
+                $this->switchConversation($conversation->hash_id);
+            }
+
             return;
         }
 
@@ -645,6 +759,51 @@ class Chat extends Component
         }
 
         return User::query()->conversationSearch(Auth::user(), $this->searchUser)->get();
+    }
+
+    /**
+     * Handle forwarded typing started event from NavigationChat.
+     *
+     * @param  array{conversation_hash: string, user_id: int, user_name: string}  $event
+     */
+    public function handleForwardedTypingStarted(array $event): void
+    {
+        // Only process if this is for the current conversation
+        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $event['conversation_hash']) {
+            return;
+        }
+
+        // Don't show typing indicator for current user
+        if ($event['user_id'] === Auth::id()) {
+            return;
+        }
+
+        if (! isset($this->typingUsers[$event['user_id']])) {
+            $this->typingUsers[$event['user_id']] = [
+                'id' => $event['user_id'],
+                'name' => $event['user_name'],
+            ];
+        }
+    }
+
+    /**
+     * Handle forwarded typing stopped event from NavigationChat.
+     *
+     * @param  array{conversation_hash: string, user_id: int, user_name: string}  $event
+     */
+    public function handleForwardedTypingStopped(array $event): void
+    {
+        // Only process if this is for the current conversation
+        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $event['conversation_hash']) {
+            return;
+        }
+
+        // Don't process for current user
+        if ($event['user_id'] === Auth::id()) {
+            return;
+        }
+
+        unset($this->typingUsers[$event['user_id']]);
     }
 
     /**

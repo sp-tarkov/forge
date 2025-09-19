@@ -49,6 +49,7 @@ class UserStoppedTyping implements ShouldBroadcastNow
         return [
             'user_id' => $this->user->id,
             'user_name' => $this->user->name,
+            'conversation_hash' => $this->conversation->hash_id,
         ];
     }
 }

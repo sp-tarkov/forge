@@ -95,7 +95,7 @@
             </div>
 
             {{-- Right Column: Selected Conversation --}}
-            <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-[400px] max-h-[600px]" wire:key="conversation-container">
+            <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-[400px] max-h-[600px]" wire:key="conversation-{{ $selectedConversation?->id ?? 'none' }}">
                 @if($selectedConversation)
                     {{-- Conversation Header --}}
                     <div class="p-4 border-b border-gray-300 dark:border-gray-800 flex items-center justify-between bg-gray-100 dark:bg-gray-900">
@@ -324,6 +324,8 @@
                             show: false,
                             message: '',
                             cachedMessage: '',
+                            dots: '...',
+                            interval: null,
                             init() {
                                 // Watch for changes in typing users from Livewire
                                 this.$watch('$wire.typingUsers', (value) => {
@@ -331,6 +333,7 @@
                                     if (users.length === 0) {
                                         this.show = false;
                                         this.message = this.cachedMessage || ''; // Keep cached message for fade out
+                                        this.stopDotsAnimation();
                                     } else {
                                         // Build the message based on number of users
                                         let newMessage = '';
@@ -345,10 +348,32 @@
                                         this.message = newMessage;
                                         this.cachedMessage = newMessage;
                                         this.show = true;
+                                        this.startDotsAnimation();
                                     }
                                 });
+                            },
+                            startDotsAnimation() {
+                                if (this.interval) return; // Already animating
+                                const sequence = ['...', '..', '.', '..'];
+                                let index = 0;
+                                this.interval = setInterval(() => {
+                                    this.dots = sequence[index];
+                                    index = (index + 1) % sequence.length;
+                                }, 400);
+                            },
+                            stopDotsAnimation() {
+                                if (this.interval) {
+                                    clearInterval(this.interval);
+                                    this.interval = null;
+                                    this.dots = '...';
+                                }
+                            },
+                            destroy() {
+                                this.stopDotsAnimation();
                             }
                         }"
+                        x-init="init()"
+                        x-destroy="destroy()"
                         x-cloak
                         x-show="show"
                         x-transition:enter="transition ease-out duration-300"
@@ -361,27 +386,8 @@
                     >
                         <div class="flex items-center gap-1">
                             <span x-text="message"></span>
-                            <span x-show="message.length > 0" class="inline-block w-8 text-left">
-                                <span x-data="{
-                                    dots: '...',
-                                    interval: null,
-                                    animateDots() {
-                                        const sequence = ['...', '..', '.', '..'];
-                                        let index = 0;
-                                        this.interval = setInterval(() => {
-                                            this.dots = sequence[index];
-                                            index = (index + 1) % sequence.length;
-                                        }, 400);
-                                    },
-                                    destroy() {
-                                        if (this.interval) {
-                                            clearInterval(this.interval);
-                                        }
-                                    }
-                                }"
-                                x-init="animateDots()"
-                                x-destroy="destroy()"
-                                x-text="dots"></span>
+                            <span x-show="message && message.length > 0" class="inline-block w-8 text-left">
+                                <span x-text="dots"></span>
                             </span>
                         </div>
                     </div>
@@ -580,6 +586,15 @@
                     .leaving((user) => $wire.handleUserLeavingConversation(user))
                     .listen('UserStartedTyping', (e) => $wire.handleUserStartedTyping(e))
                     .listen('UserStoppedTyping', (e) => $wire.handleUserStoppedTyping(e));
+            });
+
+            // Handle leaving presence channel when archiving or clearing conversation
+            $wire.on('leave-conversation-presence', ({ conversationHash }) => {
+                if (!window.Echo || !conversationHash) return;
+                if (currentConversationChannel === `presence.conversation.${conversationHash}`) {
+                    window.Echo.leave(currentConversationChannel);
+                    currentConversationChannel = null;
+                }
             });
         </script>
     @endscript

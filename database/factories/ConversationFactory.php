@@ -69,4 +69,18 @@ class ConversationFactory extends Factory
             ];
         });
     }
+
+    /**
+     * Indicate that the conversation is between specific users.
+     */
+    public function withUsers(User $user1, User $user2): self
+    {
+        return $this->state(function (array $attributes) use ($user1, $user2) {
+            return [
+                'user1_id' => $user1->id,
+                'user2_id' => $user2->id,
+                'created_by' => $this->faker->randomElement([$user1->id, $user2->id]),
+            ];
+        });
+    }
 }
