@@ -171,9 +171,9 @@ class NavigationChat extends Component
         }
 
         $existingConversation = Conversation::query()
-            ->where(function ($query) use ($user, $otherUser) {
+            ->where(function ($query) use ($user, $otherUser): void {
                 $query->where('user1_id', $user->id)->where('user2_id', $otherUser->id);
-            })->orWhere(function ($query) use ($user, $otherUser) {
+            })->orWhere(function ($query) use ($user, $otherUser): void {
                 $query->where('user1_id', $otherUser->id)->where('user2_id', $user->id);
             })->first();
 

@@ -507,9 +507,9 @@ class Chat extends Component
         }
 
         $existingConversation = Conversation::query()
-            ->where(function ($query) use ($user, $otherUser) {
+            ->where(function ($query) use ($user, $otherUser): void {
                 $query->where('user1_id', $user->id)->where('user2_id', $otherUser->id);
-            })->orWhere(function ($query) use ($user, $otherUser) {
+            })->orWhere(function ($query) use ($user, $otherUser): void {
                 $query->where('user1_id', $otherUser->id)->where('user2_id', $user->id);
             })->first();
 
@@ -675,7 +675,7 @@ class Chat extends Component
         }
 
         // If no conversation is selected but we receive a message, it might be for an archived conversation
-        if (! $this->selectedConversation) {
+        if ($this->selectedConversation === null) {
             // Check if this is a conversation we're part of
             $user = Auth::user();
             $conversation = Conversation::query()
