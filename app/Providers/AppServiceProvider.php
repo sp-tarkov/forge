@@ -97,10 +97,12 @@ class AppServiceProvider extends ServiceProvider
         // Define gates for user blocking
         Gate::define('block', function (User $user, User $target) {
             $policy = new BlockingPolicy;
+
             return $policy->block($user, $target);
         });
         Gate::define('unblock', function (User $user, User $target) {
             $policy = new BlockingPolicy;
+
             return $policy->unblock($user, $target);
         });
 

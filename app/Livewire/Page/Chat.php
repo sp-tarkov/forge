@@ -531,6 +531,7 @@ class Chat extends Component
             } else {
                 flash()->error('Cannot start conversation with this user.');
                 $this->closeNewConversationModal();
+
                 return;
             }
         }
