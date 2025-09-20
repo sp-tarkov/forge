@@ -23,6 +23,11 @@ class ConversationPolicy
      */
     public function view(User $user, Conversation $conversation): bool
     {
+        // Check if conversation is archived
+        if ($conversation->isArchivedFor($user)) {
+            return false;
+        }
+
         // Use the visibility logic: creator can see even without messages,
         // other participant needs at least one message
         return $conversation->isVisibleTo($user);
@@ -35,6 +40,15 @@ class ConversationPolicy
     {
         // Any authenticated user can start a conversation
         return true;
+    }
+
+    /**
+     * Determine whether the user can create a conversation with a specific user.
+     */
+    public function createWithUser(User $user, User $target): bool
+    {
+        // Cannot create conversation if blocked
+        return ! $user->isBlockedMutually($target);
     }
 
     /**
@@ -76,8 +90,46 @@ class ConversationPolicy
      */
     public function sendMessage(User $user, Conversation $conversation): bool
     {
+        // Check if users have blocked each other
+        $otherUser = $conversation->getOtherUser($user);
+        if ($otherUser && $user->isBlockedMutually($otherUser)) {
+            return false;
+        }
+
         // User can send messages if they are part of the conversation
         // (even if they can't see it yet - this allows the non-creator to send the first message)
         return $conversation->hasUser($user);
+    }
+
+    /**
+     * Determine whether the user can unarchive the conversation.
+     */
+    public function unarchive(User $user, Conversation $conversation): bool
+    {
+        // User must be part of the conversation
+        if (! $conversation->hasUser($user)) {
+            return false;
+        }
+
+        $otherUser = $conversation->getOtherUser($user);
+        if ($otherUser === null) {
+            return true;
+        }
+
+        // Allow unarchiving if:
+        // 1. No blocking at all
+        // 2. User is the blocker (can unarchive conversations with users they blocked)
+        // But prevent if BOTH users block each other
+        if ($user->hasBlocked($otherUser) && $user->isBlockedBy($otherUser)) {
+            // Mutual blocking - cannot unarchive
+            return false;
+        }
+
+        // Also prevent if only the other user blocks us (we can't interact with them)
+        if (! $user->hasBlocked($otherUser) && $user->isBlockedBy($otherUser)) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -11,6 +11,7 @@ use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
+use App\Policies\BlockingPolicy;
 use App\Services\TrackService;
 use Carbon\Carbon;
 use Illuminate\Auth\AuthenticationException;
@@ -92,6 +93,16 @@ class AppServiceProvider extends ServiceProvider
 
         // This gate determines who can access admin features.
         Gate::define('admin', fn (User $user): bool => $user->isAdmin());
+
+        // Define gates for user blocking
+        Gate::define('block', function (User $user, User $target) {
+            $policy = new BlockingPolicy;
+            return $policy->block($user, $target);
+        });
+        Gate::define('unblock', function (User $user, User $target) {
+            $policy = new BlockingPolicy;
+            return $policy->unblock($user, $target);
+        });
 
         // Register the Discord socialite provider.
         Event::listen(function (SocialiteWasCalled $socialiteWasCalled): void {

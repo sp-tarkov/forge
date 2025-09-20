@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Livewire\NavigationChat;
 use App\Livewire\Page\Chat;
+use App\Models\Conversation;
 use App\Models\Mod;
 use App\Models\User;
 use Livewire\Livewire;
@@ -78,4 +80,76 @@ it('displays mod count for users with published mods', function (): void {
         ->set('searchUser', 'Mod Creator')
         ->assertSee('Mod Creator')
         ->assertSee('3 mods');
+});
+
+it('excludes users who have blocked the current user from search', function (): void {
+    $blockerUser = User::factory()->create(['name' => 'Blocker User']);
+    $normalUser = User::factory()->create(['name' => 'Normal User']);
+
+    // blockerUser blocks the current user
+    $blockerUser->block($this->user);
+
+    Livewire::test(Chat::class)
+        ->set('showNewConversation', true)
+        ->set('searchUser', 'User')
+        ->assertDontSee('Blocker User')
+        ->assertSee('Normal User');
+});
+
+it('excludes mutually blocked users from search', function (): void {
+    $mutuallyBlockedUser = User::factory()->create(['name' => 'Mutually Blocked']);
+    $normalUser = User::factory()->create(['name' => 'Normal Person']);
+
+    // Both users block each other
+    $this->user->block($mutuallyBlockedUser);
+    $mutuallyBlockedUser->block($this->user);
+
+    Livewire::test(Chat::class)
+        ->set('showNewConversation', true)
+        ->set('searchUser', 'lock') // Should match "Blocked" in the name
+        ->assertDontSee('Mutually Blocked')
+        ->set('searchUser', 'Normal')
+        ->assertSee('Normal Person');
+});
+
+it('prevents starting conversations with users who blocked current user', function (): void {
+    $blockerUser = User::factory()->create(['name' => 'Blocker User']);
+
+    // blockerUser blocks the current user
+    $blockerUser->block($this->user);
+
+    Livewire::test(NavigationChat::class)
+        ->call('startConversation', $blockerUser->id)
+        ->assertSet('showNewConversation', false)
+        ->assertNoRedirect();
+
+    // Verify no conversation was created
+    expect(Conversation::query()->count())->toBe(0);
+});
+
+it('prevents starting conversations with users current user has blocked', function (): void {
+    $blockedUser = User::factory()->create(['name' => 'Blocked User']);
+
+    // Current user blocks blockedUser
+    $this->user->block($blockedUser);
+
+    Livewire::test(NavigationChat::class)
+        ->call('startConversation', $blockedUser->id)
+        ->assertSet('showNewConversation', false)
+        ->assertNoRedirect();
+
+    // Verify no conversation was created
+    expect(Conversation::query()->count())->toBe(0);
+});
+
+it('allows starting conversations with non-blocked users', function (): void {
+    $normalUser = User::factory()->create(['name' => 'Normal User']);
+
+    Livewire::test(NavigationChat::class)
+        ->call('startConversation', $normalUser->id)
+        ->assertRedirect()
+        ->assertSet('showNewConversation', false);
+
+    // No error flash message should be set
+    expect(session('flash_notification.level'))->not->toBe('error');
 });

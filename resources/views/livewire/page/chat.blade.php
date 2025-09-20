@@ -143,6 +143,12 @@
                                 @endif
                                 <flux:menu.separator />
                                 <flux:menu.item icon="archive-box" variant="danger" wire:click="openArchiveModal">{{ __('Archive Conversation') }}</flux:menu.item>
+                                <flux:menu.separator />
+                                @if($this->isUserBlocked)
+                                    <flux:menu.item icon="shield-check" wire:click="openBlockModal">{{ __('Unblock User') }}</flux:menu.item>
+                                @else
+                                    <flux:menu.item icon="shield-exclamation" variant="danger" wire:click="openBlockModal">{{ __('Block User') }}</flux:menu.item>
+                                @endif
                             </flux:menu>
                         </flux:dropdown>
                         @endif
@@ -392,7 +398,16 @@
                         </div>
                     </div>
 
-                    {{-- Message Input Area --}}
+                    {{-- Message Input Area or Blocked Message --}}
+                    @if($this->isConversationBlocked)
+                        <div class="p-4 border-t border-gray-300 dark:border-gray-800 bg-gray-100 dark:bg-gray-900 text-center">
+                            <div class="text-gray-500 dark:text-gray-400">
+                                <flux:icon name="shield-exclamation" class="w-8 h-8 mx-auto mb-2" />
+                                <p class="text-sm font-medium">{{ __('You can\'t send messages in this conversation') }}</p>
+                                <p class="text-xs mt-1">{{ __('One or both users have blocked this conversation') }}</p>
+                            </div>
+                        </div>
+                    @else
                     <div class="p-4 border-t border-gray-300 dark:border-gray-800 bg-gray-100 dark:bg-gray-900"
                          wire:key="message-input-area"
                          x-data="{
@@ -504,6 +519,7 @@
                             <span x-text="charCount"></span>/500 characters
                         </div>
                     </div>
+                    @endif
                 @else
                     {{-- No conversation selected --}}
                     <div class="flex flex-col items-center justify-center h-full text-center p-8">
@@ -566,6 +582,90 @@
         </div>
     </flux:modal>
 
+    {{-- Block User Modal --}}
+    <flux:modal wire:model.live="showBlockModal" class="md:w-[500px] lg:w-[600px]">
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    @if($this->isUserBlocked)
+                        <flux:icon name="shield-check" class="w-8 h-8 text-green-600" />
+                        <div>
+                            <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                                {{ __('Unblock User') }}
+                            </flux:heading>
+                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                {{ __('Allow messages and interactions again') }}
+                            </flux:text>
+                        </div>
+                    @else
+                        <flux:icon name="shield-exclamation" class="w-8 h-8 text-red-600" />
+                        <div>
+                            <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                                {{ __('Block User') }}
+                            </flux:heading>
+                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                {{ __('Prevent messages and interactions') }}
+                            </flux:text>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-4">
+                @if($this->isUserBlocked())
+                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                        {{ __('Are you sure you want to unblock this user? You will be able to send and receive messages again.') }}
+                    </flux:text>
+                @else
+                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                        {{ __('Are you sure you want to block this user?') }}
+                    </flux:text>
+
+                    <div class="space-y-2">
+                        <flux:text class="text-gray-900 dark:text-gray-100 text-sm font-medium">
+                            {{ __('What happens when you block someone:') }}
+                        </flux:text>
+                        <ul class="text-gray-700 dark:text-gray-300 text-sm list-disc list-inside space-y-1 ml-2">
+                            <li>{{ __('You won\'t be able to send messages to each other') }}</li>
+                            <li>{{ __('They won\'t be able to see your profile') }}</li>
+                            <li>{{ __('They can\'t comment on your mods') }}</li>
+                            <li>{{ __('You can unblock them anytime') }}</li>
+                        </ul>
+                    </div>
+
+                    <flux:field>
+                        <flux:label>{{ __('Reason (optional)') }}</flux:label>
+                        <flux:textarea
+                            wire:model="blockReason"
+                            rows="2"
+                            placeholder="{{ __('Why are you blocking this user?') }}"
+                        />
+                    </flux:field>
+                @endif
+            </div>
+
+            {{-- Footer Section --}}
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                <div class="flex justify-end gap-3">
+                    <flux:button variant="ghost" wire:click="closeBlockModal">
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    @if($this->isUserBlocked)
+                        <flux:button variant="primary" wire:click="confirmBlock">
+                            {{ __('Unblock User') }}
+                        </flux:button>
+                    @else
+                        <flux:button variant="danger" wire:click="confirmBlock">
+                            {{ __('Block User') }}
+                        </flux:button>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </flux:modal>
+
     {{-- New Conversation Modal --}}
     <x-new-conversation-modal
         :show-modal="'showNewConversation'"
@@ -596,6 +696,18 @@
                     currentConversationChannel = null;
                 }
             });
+
+            // Listen for blocking events on the user's private channel
+            const currentUserId = {{ auth()->check() ? auth()->id() : 'null' }};
+            if (window.Echo && currentUserId) {
+                window.Echo.private(`user.${currentUserId}`)
+                    .listen('UserBlocked', (e) => {
+                        $wire.handleUserBlocked(e.blocker_id);
+                    })
+                    .listen('UserUnblocked', (e) => {
+                        $wire.handleUserUnblocked(e.unblocker_id);
+                    });
+            }
         </script>
     @endscript
 </div>

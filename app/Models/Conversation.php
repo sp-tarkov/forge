@@ -263,6 +263,16 @@ class Conversation extends Model
     }
 
     /**
+     * Check if a conversation is archived for a specific user.
+     */
+    public function isArchivedFor(User $user): bool
+    {
+        return $this->archives()
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    /**
      * Scope to get conversations visible to a specific user.
      *
      * @param  Builder<self>  $query

@@ -84,7 +84,7 @@ class Visitors extends Component
     /**
      * Handle when we receive the initial list of users in the channel.
      *
-     * @param  array  $users
+     * @param  array<int, array{id: string, type: string, ...}>  $users
      */
     #[On('echo-presence:visitors,here')]
     public function here(array $users): void
@@ -97,7 +97,7 @@ class Visitors extends Component
     /**
      * Handle a new visitor joining the channel.
      *
-     * @param  array  $user
+     * @param  array{id: string, type: string, ...}  $user
      */
     #[On('echo-presence:visitors,joining')]
     public function joining(array $user): void
@@ -113,7 +113,7 @@ class Visitors extends Component
     /**
      * Handle a visitor leaving the channel.
      *
-     * @param  array  $user
+     * @param  array{id: string, type: string, ...}  $user
      */
     #[On('echo-presence:visitors,leaving')]
     public function leaving(array $user): void
