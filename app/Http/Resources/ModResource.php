@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Mod;
+use App\Models\ModSourceCodeLink;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
@@ -25,7 +26,7 @@ class ModResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'source_code_links' => $this->sourceCodeLinks->map(fn ($link): array => [
+            'source_code_links' => $this->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
                 'url' => $link->url,
                 'label' => $link->label,
             ]),

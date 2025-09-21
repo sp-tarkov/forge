@@ -8,6 +8,7 @@ use App\Models\Conversation;
 use App\Models\ConversationArchive;
 use App\Models\User;
 use App\Models\UserBlock;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class UserBlockingService
@@ -94,7 +95,7 @@ class UserBlockingService
         ConversationArchive::query()
             ->whereIn('user_id', [$userOne->id, $userTwo->id])
             ->whereIn('reason', ['blocked', 'blocked_by'])
-            ->whereHas('conversation', function ($query) use ($userId1, $userId2): void {
+            ->whereHas('conversation', function (Builder $query) use ($userId1, $userId2): void {
                 $query->where('user1_id', $userId1)
                     ->where('user2_id', $userId2);
             })

@@ -694,7 +694,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     #[Scope]
     protected function whereNotBlockedBy(Builder $query, User $user): Builder
     {
-        return $query->whereDoesntHave('blockedBy', function ($q) use ($user): void {
+        return $query->whereDoesntHave('blockedBy', function (Builder $q) use ($user): void {
             $q->where('blocker_id', $user->id);
         });
     }
@@ -708,7 +708,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     #[Scope]
     protected function whereNotBlocking(Builder $query, User $user): Builder
     {
-        return $query->whereDoesntHave('blocking', function ($q) use ($user): void {
+        return $query->whereDoesntHave('blocking', function (Builder $q) use ($user): void {
             $q->where('blocked_id', $user->id);
         });
     }

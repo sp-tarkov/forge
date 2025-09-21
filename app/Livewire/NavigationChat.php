@@ -8,6 +8,7 @@ use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -179,9 +180,9 @@ class NavigationChat extends Component
         }
 
         $existingConversation = Conversation::query()
-            ->where(function ($query) use ($user, $otherUser): void {
+            ->where(function (Builder $query) use ($user, $otherUser): void {
                 $query->where('user1_id', $user->id)->where('user2_id', $otherUser->id);
-            })->orWhere(function ($query) use ($user, $otherUser): void {
+            })->orWhere(function (Builder $query) use ($user, $otherUser): void {
                 $query->where('user1_id', $otherUser->id)->where('user2_id', $user->id);
             })->first();
 

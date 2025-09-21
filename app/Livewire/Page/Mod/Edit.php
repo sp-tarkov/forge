@@ -7,6 +7,7 @@ namespace App\Livewire\Page\Mod;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
+use App\Models\ModSourceCodeLink;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -109,7 +110,7 @@ class Edit extends Component
         $this->license = (string) $this->mod->license_id;
 
         // Load existing source code links
-        $this->sourceCodeLinks = $this->mod->sourceCodeLinks->map(fn ($link): array => [
+        $this->sourceCodeLinks = $this->mod->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
             'url' => $link->url,
             'label' => $link->label,
         ])->toArray();
