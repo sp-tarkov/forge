@@ -33,10 +33,23 @@ describe('Mod Show API', function (): void {
             ->assertJsonStructure([
                 'success',
                 'data' => [
-                    'id', 'hub_id', 'name', 'slug', 'teaser', 'source_code_url', 'featured', 'contains_ads',
+                    'id', 'hub_id', 'name', 'slug', 'teaser', 'featured', 'contains_ads',
                     'contains_ai_content', 'published_at', 'created_at', 'updated_at',
                 ],
             ]);
+    });
+
+    it('does not include source_code_links by default', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // Create source code links that should NOT be included
+        $mod->sourceCodeLinks()->create(['url' => 'https://github.com/test/repo', 'label' => 'GitHub']);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mod/'.$mod->id);
+
+        $response->assertStatus(Response::HTTP_OK)
+            ->assertJsonMissingPath('data.source_code_links');
     });
 
     it('returns 404 for non-existent mod', function (): void {
@@ -130,6 +143,33 @@ describe('Mod Show API', function (): void {
             ])
             ->assertJsonPath('data.owner.id', $owner->id)
             ->assertJsonCount(3, 'data.versions');
+    });
+
+    it('includes sourceCodeLinks when requested', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        // Delete any auto-created source code links and create our own
+        $mod->sourceCodeLinks()->delete();
+        $mod->sourceCodeLinks()->create(['url' => 'https://github.com/test/repo', 'label' => 'GitHub']);
+        $mod->sourceCodeLinks()->create(['url' => 'https://gitlab.com/test/repo', 'label' => '']);
+
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s?include=source_code_links', $mod->id));
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'source_code_links' => [
+                        ['url', 'label'],
+                    ],
+                ],
+            ])
+            ->assertJsonCount(2, 'data.source_code_links')
+            ->assertJsonPath('data.source_code_links.0.url', 'https://github.com/test/repo')
+            ->assertJsonPath('data.source_code_links.0.label', 'GitHub')
+            ->assertJsonPath('data.source_code_links.1.url', 'https://gitlab.com/test/repo')
+            ->assertJsonPath('data.source_code_links.1.label', '');
     });
 
     it('throws on invalid includes', function (): void {

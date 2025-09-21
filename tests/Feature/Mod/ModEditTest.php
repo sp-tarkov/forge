@@ -67,7 +67,8 @@ describe('Mod Edit Form', function (): void {
                 ->set('teaser', 'Updated teaser')
                 ->set('description', 'Updated description')
                 ->set('license', (string) $license->id)
-                ->set('sourceCodeUrl', 'https://github.com/example/updated')
+                ->set('sourceCodeLinks.0.url', 'https://github.com/example/updated')
+                ->set('sourceCodeLinks.0.label', '')
                 ->set('containsAiContent', false)
                 ->set('containsAds', false)
                 ->call('save')
@@ -90,7 +91,8 @@ describe('Mod Edit Form', function (): void {
                 ->set('teaser', 'Updated teaser')
                 ->set('description', 'Updated description')
                 ->set('license', (string) $license->id)
-                ->set('sourceCodeUrl', 'https://github.com/example/updated')
+                ->set('sourceCodeLinks.0.url', 'https://github.com/example/updated')
+                ->set('sourceCodeLinks.0.label', '')
                 ->set('containsAiContent', false)
                 ->set('containsAds', false)
                 ->call('save')
@@ -115,7 +117,6 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             'name' => 'Test Mod Name',
             'teaser' => 'Test teaser',
             'description' => 'Test description',
-            'source_code_url' => 'https://github.com/test/repo',
         ]);
 
         // Verify policy allows editing
@@ -138,7 +139,6 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             'name' => 'Original Mod Name',
             'teaser' => 'Original teaser',
             'description' => 'Original description',
-            'source_code_url' => 'https://github.com/original/repo',
         ]);
 
         $this->actingAs($owner);
@@ -150,7 +150,8 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->set('guid', 'com.test.updatedmod')
             ->set('teaser', 'Updated mod teaser')
             ->set('description', 'Updated mod description with more details')
-            ->set('sourceCodeUrl', 'https://github.com/test/repo')
+            ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+            ->set('sourceCodeLinks.0.label', '')
             ->set('license', (string) $license->id)
             ->call('save')
             ->assertHasNoErrors()
@@ -181,7 +182,6 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             'name' => 'Collaborative Mod',
             'teaser' => 'Original author teaser',
             'description' => 'Original author description',
-            'source_code_url' => 'https://github.com/original/collaborative',
         ]);
 
         // Add the user as an author
@@ -206,7 +206,8 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->set('guid', 'com.author.collaborativemod')
             ->set('teaser', 'Updated by collaborative author')
             ->set('description', 'This mod was updated by one of its authors')
-            ->set('sourceCodeUrl', 'https://github.com/author/repo')
+            ->set('sourceCodeLinks.0.url', 'https://github.com/author/repo')
+            ->set('sourceCodeLinks.0.label', '')
             ->set('license', (string) $license->id)
             ->call('save')
             ->assertHasNoErrors()
@@ -235,7 +236,6 @@ describe('HTTP Tests - Mod Editing Authorization', function (): void {
         $owner = User::factory()->withMfa()->create();
         $unauthorizedUser = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
-            'source_code_url' => 'https://github.com/test/unauthorized',
         ]);
 
         // Verify policy denies editing
@@ -250,7 +250,6 @@ describe('HTTP Tests - Mod Editing Authorization', function (): void {
     it('prevents guest users from accessing mod edit page', function (): void {
         $owner = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
-            'source_code_url' => 'https://github.com/test/guest',
         ]);
 
         // Test HTTP response directly - should redirect to login
@@ -272,7 +271,6 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $license = License::factory()->create();
         $owner = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
-            'source_code_url' => 'https://github.com/original/repo',
             'contains_ai_content' => false,
             'contains_ads' => true,
         ]);
@@ -286,7 +284,8 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
             ->set('guid', 'com.comprehensive.update')
             ->set('teaser', 'Comprehensive teaser update')
             ->set('description', 'Comprehensive description update')
-            ->set('sourceCodeUrl', 'https://github.com/updated/repo')
+            ->set('sourceCodeLinks.0.url', 'https://github.com/updated/repo')
+            ->set('sourceCodeLinks.0.label', '')
             ->set('license', (string) $license->id)
             ->set('containsAiContent', true)
             ->set('containsAds', false)
@@ -300,7 +299,6 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         expect($mod->guid)->toBe('com.comprehensive.update');
         expect($mod->teaser)->toBe('Comprehensive teaser update');
         expect($mod->description)->toBe('Comprehensive description update');
-        expect($mod->source_code_url)->toBe('https://github.com/updated/repo');
         expect($mod->license_id)->toBe($license->id);
         expect($mod->contains_ai_content)->toBeTrue();
         expect($mod->contains_ads)->toBeFalse();
@@ -309,7 +307,6 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
     it('shows validation errors when required fields are empty', function (): void {
         $owner = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
-            'source_code_url' => 'https://github.com/test/validation',
         ]);
 
         $this->actingAs($owner);
@@ -320,15 +317,14 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
             ->set('name', '')
             ->set('teaser', '')
             ->set('description', '')
-            ->set('sourceCodeUrl', '')
+            ->set('sourceCodeLinks', [])
             ->call('save')
-            ->assertHasErrors(['name', 'teaser', 'description', 'sourceCodeUrl']);
+            ->assertHasErrors(['name', 'teaser', 'description', 'sourceCodeLinks']);
     });
 
     it('shows GUID validation errors for invalid format', function (): void {
         $owner = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
-            'source_code_url' => 'https://github.com/test/guid-validation',
         ]);
 
         $this->actingAs($owner);
@@ -345,7 +341,6 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $license = License::factory()->create();
         $owner = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
-            'source_code_url' => 'https://github.com/test/redirect',
         ]);
 
         $this->actingAs($owner);
@@ -355,7 +350,8 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
             ->assertSee('Mod Information')
             ->set('name', 'Successfully Updated Mod')
             ->set('guid', 'com.success.updated')
-            ->set('sourceCodeUrl', 'https://github.com/success/repo')
+            ->set('sourceCodeLinks.0.url', 'https://github.com/success/repo')
+            ->set('sourceCodeLinks.0.label', '')
             ->set('license', (string) $license->id)
             ->call('save')
             ->assertHasNoErrors()

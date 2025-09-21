@@ -90,7 +90,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'slug' => 'filterBySlug',
             'guid' => 'filterByGuid',
             'teaser' => 'filterByTeaser',
-            'source_code_url' => 'filterBySourceCodeLink',
             'featured' => 'filterByFeatured',
             'contains_ads' => 'filterByContainsAds',
             'contains_ai_content' => 'filterByContainsAiContent',
@@ -183,20 +182,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
         }
 
         $query->whereLike('mods.teaser', sprintf('%%%s%%', $term));
-    }
-
-    /**
-     * Filter by source code link.
-     *
-     * @param  Builder<Mod>  $query
-     */
-    protected function filterBySourceCodeLink(Builder $query, ?string $term): void
-    {
-        if ($term === null) {
-            return;
-        }
-
-        $query->whereLike('mods.source_code_url', sprintf('%%%s%%', $term));
     }
 
     /**
@@ -305,15 +290,16 @@ class ModQueryBuilder extends AbstractQueryBuilder
     /**
      * Get the allowed relationships that can be included.
      *
-     * @return array<string>
+     * @return array<string, string>
      */
     public static function getAllowedIncludes(): array
     {
         return [
-            'owner',
-            'authors',
-            'versions',
-            'license',
+            'owner' => 'owner',
+            'authors' => 'authors',
+            'versions' => 'versions',
+            'license' => 'license',
+            'source_code_links' => 'sourceCodeLinks',
         ];
     }
 
@@ -348,7 +334,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'description',
             'thumbnail',
             'downloads',
-            'source_code_url',
             'featured',
             'contains_ai_content',
             'contains_ads',

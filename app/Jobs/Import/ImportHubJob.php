@@ -25,6 +25,7 @@ use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModSourceCodeLink;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
@@ -899,7 +900,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'description' => $hubMod->getCleanMessage(),
             'thumbnail' => '', // Will be updated by ImportHubImageJob
             'thumbnail_hash' => '', // Will be updated by ImportHubImageJob
-            'source_code_url' => $hubMod->getSourceCodeLink(),
             'featured' => (bool) $hubMod->isFeatured,
             'contains_ai_content' => (bool) $hubMod->contains_ai,
             'contains_ads' => (bool) $hubMod->contains_ads,
@@ -943,7 +943,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     'teaser' => $mod['teaser'],
                     'description' => $mod['description'],
                     // Don't update thumbnail fields - they'll be handled by queued jobs
-                    'source_code_url' => $mod['source_code_url'],
                     'featured' => $mod['featured'],
                     'contains_ai_content' => $mod['contains_ai_content'],
                     'contains_ads' => $mod['contains_ads'],
@@ -985,6 +984,45 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             foreach ($authorSyncData as $modId => $authorIds) {
                 if ($mod = $localMods->find($modId)) {
                     $mod->authors()->sync($authorIds);
+                }
+            }
+        });
+
+        // Sync source code links
+        $activeHubMods->each(function (HubMod $hubMod) use ($localMods): void {
+            if ($localMod = $localMods->get($hubMod->fileID)) {
+                // Get existing source code links for this mod
+                $existingLinks = ModSourceCodeLink::query()->where('mod_id', $localMod->id)
+                    ->pluck('url', 'id')
+                    ->toArray();
+
+                // Get new source code links from Hub
+                $newLinks = $hubMod->getSourceCodeLinks();
+
+                // Delete links that are no longer in the Hub data
+                $linksToDelete = array_diff($existingLinks, $newLinks);
+                if (! empty($linksToDelete)) {
+                    ModSourceCodeLink::query()->whereIn('id', array_keys($linksToDelete))->delete();
+                }
+
+                // Add or update links
+                foreach ($newLinks as $order => $url) {
+                    // Check if this URL already exists for this mod
+                    $existingLinkId = array_search($url, $existingLinks, true);
+
+                    if ($existingLinkId !== false) {
+                        // Update the order if needed
+                        ModSourceCodeLink::query()->where('id', $existingLinkId)
+                            ->update(['order' => $order]);
+                    } else {
+                        // Create new link
+                        ModSourceCodeLink::query()->create([
+                            'mod_id' => $localMod->id,
+                            'url' => $url,
+                            'label' => null,
+                            'order' => $order,
+                        ]);
+                    }
                 }
             }
         });

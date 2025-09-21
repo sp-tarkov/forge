@@ -294,11 +294,21 @@ class HubMod
     }
 
     /**
-     * Get the source code link.
+     * Get the source code links as an array.
+     *
+     * @return array<int, string>
      */
-    public function getSourceCodeLink(): string
+    public function getSourceCodeLinks(): array
     {
-        return collect(explode(',', $this->source_code_url))->map(fn (string $link): string => trim($link))->reject(fn (string $link): bool => empty($link))->first() ?? '';
+        if (empty($this->source_code_url)) {
+            return [];
+        }
+
+        return collect(explode(',', $this->source_code_url))
+            ->map(fn (string $link): string => trim($link))
+            ->reject(fn (string $link): bool => empty($link))
+            ->values()
+            ->all();
     }
 
     /**

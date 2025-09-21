@@ -265,6 +265,15 @@ abstract class AbstractQueryBuilder
                 $invalidIncludes = array_diff($this->includes, array_keys($allowedIncludes));
                 $validIncludes = array_keys($allowedIncludes);
 
+                // Check for invalid includes
+                if (! empty($invalidIncludes)) {
+                    $invalidInclude = implode(', ', $invalidIncludes);
+                    $validIncludeList = implode(', ', $validIncludes);
+                    throw new InvalidQuery(
+                        sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludeList)
+                    );
+                }
+
                 // Map API includes to actual relationships
                 $relationships = [];
                 foreach ($this->includes as $include) {
@@ -281,15 +290,16 @@ abstract class AbstractQueryBuilder
                 /** @var array<string> $allowedIncludes */
                 $invalidIncludes = array_diff($this->includes, $allowedIncludes);
                 $validIncludes = $allowedIncludes;
-                $this->builder->with($this->includes);
-            }
 
-            if (! empty($invalidIncludes)) {
-                $invalidInclude = implode(', ', $invalidIncludes);
-                $validIncludeList = implode(', ', $validIncludes);
-                throw new InvalidQuery(
-                    sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludeList)
-                );
+                if (! empty($invalidIncludes)) {
+                    $invalidInclude = implode(', ', $invalidIncludes);
+                    $validIncludeList = implode(', ', $validIncludes);
+                    throw new InvalidQuery(
+                        sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludeList)
+                    );
+                }
+
+                $this->builder->with($this->includes);
             }
         }
     }

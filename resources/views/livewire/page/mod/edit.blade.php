@@ -106,10 +106,55 @@
                             </flux:field>
 
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('Source Code Link') }}</flux:label>
-                                <flux:description>{!! __('Provide a link to the source code for your mod. The source code for mods is required to be publicly available. This will be displayed on the mod page. We recommend using a service like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.') !!}</flux:description>
-                                <flux:input type="text" wire:model.blur="sourceCodeUrl" placeholder="https://github.com/username/mod-name" />
-                                <flux:error name="sourceCodeUrl" />
+                                <flux:label>{{ __('Source Code Links') }}</flux:label>
+                                <flux:description>{!! __('Provide links to the source code for your mod. The source code for mods is required to be publicly available. You can add up to 4 links (e.g., main repository, mirror, documentation). We recommend using services like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.') !!}</flux:description>
+
+                                <div class="space-y-3">
+                                    @foreach($sourceCodeLinks as $index => $link)
+                                        <div class="flex gap-2 items-center">
+                                            <div class="flex-1">
+                                                <flux:input
+                                                    type="url"
+                                                    wire:model.blur="sourceCodeLinks.{{ $index }}.url"
+                                                    placeholder="https://github.com/username/mod-name"
+                                                />
+                                            </div>
+                                            <div class="w-40">
+                                                <flux:input
+                                                    type="text"
+                                                    wire:model.blur="sourceCodeLinks.{{ $index }}.label"
+                                                    placeholder="Label (optional)"
+                                                />
+                                            </div>
+                                            @if(count($sourceCodeLinks) > 1)
+                                                <flux:button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    wire:click="removeSourceCodeLink({{ $index }})"
+                                                    type="button"
+                                                    icon="x-mark"
+                                                />
+                                            @endif
+                                        </div>
+                                        @error('sourceCodeLinks.' . $index . '.url')
+                                            <flux:error>{{ $message }}</flux:error>
+                                        @enderror
+                                    @endforeach
+
+                                    @if(count($sourceCodeLinks) < 4)
+                                        <flux:button
+                                            variant="ghost"
+                                            size="sm"
+                                            wire:click="addSourceCodeLink"
+                                            type="button"
+                                            icon="plus"
+                                        >
+                                            {{ __('Add another link') }}
+                                        </flux:button>
+                                    @endif
+                                </div>
+
+                                <flux:error name="sourceCodeLinks" />
                             </flux:field>
 
                             <flux:field class="col-span-6" x-data="{
