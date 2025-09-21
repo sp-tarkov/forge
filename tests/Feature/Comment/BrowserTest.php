@@ -54,7 +54,7 @@ describe('Guest User Tests', function (): void {
             ->on()->desktop()
             ->inDarkMode();
 
-        $page->assertNotPresent('button[wire:click*=toggleReplyForm]')
+        $page->assertNotPresent('button[wire\\:click*=toggleReplyForm]')
             ->assertNoJavascriptErrors();
     });
 
