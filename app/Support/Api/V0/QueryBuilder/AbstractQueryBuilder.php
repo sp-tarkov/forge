@@ -6,10 +6,10 @@ namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQuery;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
@@ -473,6 +473,7 @@ abstract class AbstractQueryBuilder
      */
     public function get(): Collection
     {
+        /** @var Collection<int, TModel> */
         return $this->apply()->get();
     }
 
