@@ -94,6 +94,21 @@ class ModPolicy
     }
 
     /**
+     * Determine whether the user can download the mod.
+     * Blocked users can still download mods.
+     */
+    public function download(?User $user, Mod $mod): bool
+    {
+        // Check if mod can be viewed first
+        if (! $this->view($user, $mod)) {
+            return false;
+        }
+
+        // Allow downloads even if blocked
+        return true;
+    }
+
+    /**
      * Determine whether the user can permanently delete the model.
      */
     public function forceDelete(User $user, Mod $mod): bool

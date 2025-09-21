@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Shetabit\Visitor\Models\Visit;
 use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
@@ -32,6 +33,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $id
  * @property int|null $hub_id
  * @property int $user_id
+ * @property int $commentable_id
+ * @property string $commentable_type
  * @property string $body
  * @property string $user_ip
  * @property string $user_agent
@@ -47,13 +50,21 @@ use Stevebauman\Purify\Facades\Purify;
  * @property Carbon|null $pinned_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property string $body_html
  * @property-read User $user
  * @property-read Model $commentable
  * @property-read Collection<int, Comment> $replies
+ * @property-read int $replies_count
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentReaction> $reactions
+ * @property-read int $reactions_count
  * @property-read Collection<int, Comment> $descendants
+ * @property-read int $descendants_count
  * @property-read Comment|null $root
+ * @property-read Collection<int, Visit> $visitLogs
+ * @property-read int $visit_logs_count
+ * @property-read Collection<int, Report> $reports
+ * @property-read int $reports_count
  */
 #[ObservedBy([CommentObserver::class])]
 class Comment extends Model implements Reportable, Trackable

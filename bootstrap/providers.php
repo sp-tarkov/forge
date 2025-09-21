@@ -6,6 +6,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\HorizonServiceProvider;
 use App\Providers\JetstreamServiceProvider;
+use App\Providers\SqidsServiceProvider;
 use SocialiteProviders\Manager\ServiceProvider;
 
 return [
@@ -13,5 +14,6 @@ return [
     FortifyServiceProvider::class,
     HorizonServiceProvider::class,
     JetstreamServiceProvider::class,
+    SqidsServiceProvider::class,
     ServiceProvider::class,
 ];

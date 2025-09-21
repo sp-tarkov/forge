@@ -152,7 +152,7 @@ describe('Comment Notifications', function (): void {
     it('sends database notifications even when email notifications are disabled', function (): void {
         Notification::fake();
 
-        $owner = User::factory()->create(['email_notifications_enabled' => false]);
+        $owner = User::factory()->create(['email_comment_notifications_enabled' => false]);
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
 
         // Manually subscribe the owner for this test
@@ -182,16 +182,16 @@ describe('Comment Notifications', function (): void {
         Queue::fake();
 
         // Create a mod owner and manually subscribe them
-        $owner = User::factory()->create(['email_notifications_enabled' => true]);
+        $owner = User::factory()->create(['email_comment_notifications_enabled' => true]);
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         CommentSubscription::subscribe($owner, $mod);
 
         // Create additional subscribers with email notifications enabled
-        $subscriber1 = User::factory()->create(['email_notifications_enabled' => true]);
-        $subscriber2 = User::factory()->create(['email_notifications_enabled' => true]);
+        $subscriber1 = User::factory()->create(['email_comment_notifications_enabled' => true]);
+        $subscriber2 = User::factory()->create(['email_comment_notifications_enabled' => true]);
 
         // Create a subscriber with email notifications disabled
-        $subscriberNoEmail = User::factory()->create(['email_notifications_enabled' => false]);
+        $subscriberNoEmail = User::factory()->create(['email_comment_notifications_enabled' => false]);
 
         CommentSubscription::subscribe($subscriber1, $mod);
         CommentSubscription::subscribe($subscriber2, $mod);
@@ -259,15 +259,15 @@ describe('Comment Notifications', function (): void {
     it('records correct notification type based on user preferences', function (): void {
         Notification::fake();
 
-        $owner = User::factory()->create(['email_notifications_enabled' => true]);
+        $owner = User::factory()->create(['email_comment_notifications_enabled' => true]);
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
 
         // Manually subscribe the owner for this test
         CommentSubscription::subscribe($owner, $mod);
 
         // Create subscribers with different email preferences
-        $subscriberWithEmail = User::factory()->create(['email_notifications_enabled' => true]);
-        $subscriberWithoutEmail = User::factory()->create(['email_notifications_enabled' => false]);
+        $subscriberWithEmail = User::factory()->create(['email_comment_notifications_enabled' => true]);
+        $subscriberWithoutEmail = User::factory()->create(['email_comment_notifications_enabled' => false]);
 
         // Subscribe them
         CommentSubscription::subscribe($subscriberWithEmail, $mod);

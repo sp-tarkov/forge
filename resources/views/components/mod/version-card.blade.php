@@ -54,8 +54,8 @@
                 </div>
             </div>
             <div class="flex flex-col items-start text-gray-700 dark:text-gray-400 sm:items-end mt-4 sm:mt-0">
-                <p class="text-left sm:text-right">{{ __('Created') }} {{ Carbon::dynamicFormat($version->created_at) }}</p>
-                <p class="text-left sm:text-right">{{ __('Updated') }} {{ Carbon::dynamicFormat($version->updated_at) }}</p>
+                <p class="text-left sm:text-right">{{ __('Created') }} {{ $version->created_at->dynamicFormat() }}</p>
+                <p class="text-left sm:text-right">{{ __('Updated') }} {{ $version->updated_at->dynamicFormat() }}</p>
                 <a href="{{ $version->virus_total_link }}" class="text-left sm:text-right underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white" rel="nofollow">
                     {{__('Virus Total Results')}}
                 </a>

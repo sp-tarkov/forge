@@ -55,7 +55,7 @@ describe('Guest User Tests', function (): void {
             ->inDarkMode();
 
         $page->assertNotPresent('button[wire:click*=toggleReplyForm]')
-            ->assertNoJavaScriptErrors();
+            ->assertNoJavascriptErrors();
     });
 
     it('should not show edit buttons to guest users', function (): void {
@@ -319,7 +319,8 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$comment->id)
-            ->press('Cancel')
+            ->assertSee('Reply To Comment')
+            ->click('@cancel-reply-body-'.$comment->id)
             ->assertDontSee('Reply To Comment')
             ->assertNoJavaScriptErrors();
     });
@@ -577,9 +578,10 @@ describe('Comment Editing Tests', function (): void {
 
         $page->assertSee($originalText)
             ->click('@edit-button-'.$comment->id)
+            ->assertSee('Edit Comment')
             ->clear('@edit-body-'.$comment->id)
             ->type('@edit-body-'.$comment->id, $editedText)
-            ->press('Cancel')
+            ->click('@cancel-edit-body-'.$comment->id)
             ->assertSee($originalText)
             ->assertDontSee($editedText)
             ->assertNoJavaScriptErrors();
@@ -685,7 +687,7 @@ describe('Comment Deletion Tests', function (): void {
         $page->assertSee($commentText)
             ->click('@delete-button-'.$comment->id)
             ->assertSee('Remove Comment')
-            ->press('Cancel')
+            ->click('@cancel-delete-comment')
             ->assertSee($commentText)
             ->assertNoJavaScriptErrors();
     });

@@ -76,6 +76,25 @@ return [
             ],
             'Attr.AllowedFrameTargets' => ['_blank'],
         ],
+        'messages' => [
+            'Core.Encoding' => 'utf-8',
+            'HTML.Doctype' => 'XHTML 1.0 Transitional',
+            'HTML.Allowed' => 'p,br,strong,b,em,i,del,s,'.
+                'a[href|title|rel|target],'.
+                'ul,ol,li,'.
+                'blockquote,'.
+                'pre[class],code[class],'.
+                'span',
+            'HTML.ForbiddenElements' => '',
+            'HTML.TargetBlank' => true,
+            'CSS.AllowedProperties' => '',
+            'AutoFormat.RemoveEmpty.RemoveNbsp' => true,
+            'AutoFormat.AutoParagraph' => false, // Markdown handles paragraphs
+            'AutoFormat.RemoveEmpty' => true,
+            'AutoFormat.RemoveSpansWithoutAttributes' => true,
+            'URI.AllowedSchemes' => ['http' => true, 'https' => true],
+            'Attr.AllowedFrameTargets' => ['_blank'],
+        ],
         'comments' => [
             'Core.Encoding' => 'utf-8',
             'HTML.Doctype' => 'XHTML 1.0 Transitional',

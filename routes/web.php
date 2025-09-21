@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ChatSubscriptionController;
 use App\Http\Controllers\CommentSubscriptionController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
+use App\Livewire\Page\Chat;
 use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Create as ModCreate;
 use App\Livewire\Page\Mod\Edit as ModEdit;
@@ -52,6 +54,10 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/comment/unsubscribe/{user}/{commentable_type}/{commentable_id}', [CommentSubscriptionController::class, 'unsubscribe'])
         ->name('comment.unsubscribe');
 
+    // Chat unsubscribe route (no auth required for email links)
+    Route::get('/chat/unsubscribe/{user}/{conversation}', [ChatSubscriptionController::class, 'unsubscribe'])
+        ->name('chat.unsubscribe');
+
     // Jetstream/Profile Routes
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {
 
@@ -72,6 +78,10 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::get('/mod/{mod}/version/{modVersion}/edit', ModVersionEdit::class)
             ->where(['mod' => '[0-9]+', 'modVersion' => '[0-9]+'])
             ->name('mod.version.edit');
+
+        Route::get('/chat/{conversationHash?}', Chat::class)
+            ->where(['conversationHash' => '[a-zA-Z0-9]+'])
+            ->name('chat');
 
         // Authenticated, verified, administrator routes
         Route::middleware('can:admin')->group(function (): void {

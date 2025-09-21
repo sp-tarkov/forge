@@ -144,16 +144,16 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         // Check for duplicate hub_ids or emails within the batch
         $hubIdCounts = collect($userData)->countBy('hub_id');
-        if ($hubIdCounts->filter(fn ($count): bool => $count > 1)->isNotEmpty()) {
+        if ($hubIdCounts->filter(fn (int $count): bool => $count > 1)->isNotEmpty()) {
             Log::warning('Duplicate hub_ids found within batch', [
-                'duplicates' => $hubIdCounts->filter(fn ($count): bool => $count > 1)->toArray(),
+                'duplicates' => $hubIdCounts->filter(fn (int $count): bool => $count > 1)->toArray(),
             ]);
         }
 
         $emailCounts = collect($userData)->countBy('email');
-        if ($emailCounts->filter(fn ($count): bool => $count > 1)->isNotEmpty()) {
+        if ($emailCounts->filter(fn (int $count): bool => $count > 1)->isNotEmpty()) {
             Log::warning('Duplicate emails found within batch', [
-                'duplicates' => $emailCounts->filter(fn ($count): bool => $count > 1)->toArray(),
+                'duplicates' => $emailCounts->filter(fn (int $count): bool => $count > 1)->toArray(),
             ]);
         }
 

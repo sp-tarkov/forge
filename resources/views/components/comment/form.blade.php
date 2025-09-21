@@ -24,6 +24,7 @@
             <flux:button
                 type="button"
                 wire:click="{{ $cancelAction }}"
+                data-test="cancel-{{ $dataTest ?? str_replace('.', '-', $formKey) }}"
                 variant="danger"
                 size="sm">
                 {{ __('Cancel') }}

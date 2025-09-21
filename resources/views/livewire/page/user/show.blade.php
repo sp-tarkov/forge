@@ -32,6 +32,9 @@
                         {{-- Follow Buttons --}}
                         <livewire:user.follow-buttons :profile-user-id="$user->id" :is-following="auth()->user()->isFollowing($user->id)" />
 
+                        {{-- Block/Unblock Button --}}
+                        <livewire:block-button :user="$user" />
+
                         {{-- Ban/Unban Action --}}
                         @can('ban', $user)
                             <livewire:user.ban-action :user="$user" />

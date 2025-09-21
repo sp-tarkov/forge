@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 class NewCommentNotification extends Notification
 {
@@ -32,7 +33,7 @@ class NewCommentNotification extends Notification
     {
         $channels = ['database'];
 
-        if ($notifiable instanceof User && $notifiable->email_notifications_enabled) {
+        if ($notifiable instanceof User && $notifiable->email_comment_notifications_enabled) {
             $channels[] = 'mail';
         }
 
@@ -59,11 +60,15 @@ class NewCommentNotification extends Notification
 
         return (new MailMessage)
             ->subject('New comment on '.$commentableTitle)
-            ->line(sprintf('%s posted a new comment on %s "%s".', $commenterName, $commentableType, $commentableTitle))
-            ->line($this->comment->body)
+            ->greeting('Hello!')
+            ->line(sprintf('**%s** posted a new comment on %s **%s**.', $commenterName, $commentableType, $commentableTitle))
+            ->line('')
+            ->line('> '.Str::limit($this->comment->body, 500))
+            ->line('')
             ->action('View Comment', $this->comment->getUrl())
-            ->line('If you no longer wish to receive notifications for this '.$commentableType.', you can unsubscribe using the link below.')
-            ->action('Unsubscribe', $unsubscribeUrl);
+            ->line('')
+            ->line(sprintf('You can [unsubscribe](%s) from notifications for this %s.', $unsubscribeUrl, $commentableType))
+            ->salutation('Regards,  '."\n".config('app.name'));
     }
 
     /**

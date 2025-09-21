@@ -19,7 +19,17 @@ class UserPolicy
 
     public function view(?User $userCurrent, User $userResource): bool
     {
-        // TODO: check to see if either of the users have blocked each other.
+        // Allow viewing if not logged in
+        if ($userCurrent === null) {
+            return true;
+        }
+
+        // Prevent viewing only if the profile owner has blocked the viewer
+        // The blocker can still view the blocked user's profile
+        if ($userResource->hasBlocked($userCurrent)) {
+            return false;
+        }
+
         return true;
     }
 

@@ -37,6 +37,7 @@
         "socialiteproviders/discord": "^4.2",
         "spatie/laravel-flare": "^2.0",
         "spatie/laravel-honeypot": "^4.6",
+        "sqids/sqids": "^0.5.0",
         "stevebauman/purify": "^6.3.0"
     },
     "require-dev": {

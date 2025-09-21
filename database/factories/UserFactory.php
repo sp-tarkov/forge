@@ -42,6 +42,8 @@ class UserFactory extends Factory
             'user_role_id' => null,
             'profile_photo_path' => null,
             'timezone' => fake()->timezone(),
+            'email_comment_notifications_enabled' => true,
+            'email_chat_notifications_enabled' => true,
         ];
     }
 
