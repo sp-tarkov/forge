@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Support\Version;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -16,15 +18,32 @@ class ModVersionFactory extends Factory
 {
     public function definition(): array
     {
+        $versionString = $this->faker->numerify('#.#.#');
+
+        // Parse the version components directly in the factory to ensure that version segments are always set
+        try {
+            $version = new Version($versionString);
+            $versionMajor = $version->getMajor();
+            $versionMinor = $version->getMinor();
+            $versionPatch = $version->getPatch();
+            $versionLabels = $version->getLabels();
+        } catch (InvalidVersionNumberException) {
+            $versionMajor = 0;
+            $versionMinor = 0;
+            $versionPatch = 0;
+            $versionLabels = '';
+        }
+
         return [
             'mod_id' => Mod::factory(),
-            'version' => $this->faker->numerify('#.#.#'),
+            'version' => $versionString,
+            'version_major' => $versionMajor,
+            'version_minor' => $versionMinor,
+            'version_patch' => $versionPatch,
+            'version_labels' => $versionLabels,
             'description' => fake()->text(),
             'link' => fake()->url(),
-
-            // Unless a custom constraint is provided, this will also generate the required SPT versions.
             'spt_version_constraint' => $this->faker->randomElement(['^1.0.0', '^2.0.0', '>=3.0.0', '<4.0.0']),
-
             'virus_total_link' => fake()->url(),
             'downloads' => fake()->randomNumber(),
             'disabled' => false,

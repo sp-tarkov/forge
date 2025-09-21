@@ -91,7 +91,8 @@ describe('Mod Create Form', function (): void {
                 ->set('teaser', 'New teaser')
                 ->set('description', 'New description')
                 ->set('license', (string) $license->id)
-                ->set('sourceCodeUrl', 'https://github.com/example/new')
+                ->set('sourceCodeLinks.0.url', 'https://github.com/example/new')
+                ->set('sourceCodeLinks.0.label', '')
                 ->set('containsAiContent', false)
                 ->set('containsAds', false)
                 ->call('save')
@@ -117,7 +118,8 @@ describe('Mod Create Form', function (): void {
                 ->set('teaser', 'New teaser')
                 ->set('description', 'New description')
                 ->set('license', (string) $license->id)
-                ->set('sourceCodeUrl', 'https://github.com/example/new')
+                ->set('sourceCodeLinks.0.url', 'https://github.com/example/new')
+                ->set('sourceCodeLinks.0.label', '')
                 ->set('containsAiContent', false)
                 ->set('containsAds', false)
                 ->call('save')
@@ -144,7 +146,8 @@ describe('Mod Create Form', function (): void {
                 ->set('teaser', 'A test mod')
                 ->set('description', 'This is a test mod')
                 ->set('license', 1)
-                ->set('sourceCodeUrl', 'https://github.com/test/test')
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/test')
+                ->set('sourceCodeLinks.0.label', '')
                 ->set('subscribeToComments', true)
                 ->call('save');
 
@@ -165,7 +168,8 @@ describe('Mod Create Form', function (): void {
                 ->set('teaser', 'A test mod')
                 ->set('description', 'This is a test mod')
                 ->set('license', 1)
-                ->set('sourceCodeUrl', 'https://github.com/test/test')
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/test')
+                ->set('sourceCodeLinks.0.label', '')
                 ->set('subscribeToComments', false)
                 ->call('save');
 

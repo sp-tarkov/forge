@@ -58,9 +58,13 @@ class Create extends Component
     public string $license = '';
 
     /**
-     * The source code URL of the mod.
+     * The source code links of the mod.
+     *
+     * @var array<int, array{url: string, label: string|null}>
      */
-    public string $sourceCodeUrl = '';
+    public array $sourceCodeLinks = [
+        ['url' => '', 'label' => ''],
+    ];
 
     /**
      * The published at date of the mod.
@@ -111,12 +115,32 @@ class Create extends Component
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',
             'license' => 'required|exists:licenses,id',
-            'sourceCodeUrl' => 'required|url|starts_with:https://,http://',
+            'sourceCodeLinks' => 'required|array|min:1|max:4',
+            'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
+            'sourceCodeLinks.*.label' => 'string|max:50',
             'publishedAt' => 'nullable|date',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'sourceCodeLinks.required' => 'At least one source code link is required.',
+            'sourceCodeLinks.min' => 'At least one source code link is required.',
+            'sourceCodeLinks.max' => 'You can add a maximum of 4 source code links.',
+            'sourceCodeLinks.*.url.required' => 'Please enter a valid URL for the source code.',
+            'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
+            'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
+            'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
         ];
     }
 
@@ -155,7 +179,6 @@ class Create extends Component
             'teaser' => $this->teaser,
             'description' => $this->description,
             'license_id' => $this->license,
-            'source_code_url' => $this->sourceCodeUrl,
             'contains_ai_content' => $this->containsAiContent,
             'contains_ads' => $this->containsAds,
             'comments_disabled' => $this->commentsDisabled,
@@ -176,6 +199,16 @@ class Create extends Component
         // Save the mod.
         $mod->save();
 
+        // Add source code links
+        foreach ($this->sourceCodeLinks as $link) {
+            if (! empty($link['url'])) {
+                $mod->sourceCodeLinks()->create([
+                    'url' => $link['url'],
+                    'label' => $link['label'] ?? '',
+                ]);
+            }
+        }
+
         // Subscribe the owner to comment notifications if requested.
         if ($this->subscribeToComments) {
             $mod->subscribeUser(auth()->user());
@@ -194,6 +227,27 @@ class Create extends Component
     public function removeThumbnail(): void
     {
         $this->thumbnail = null;
+    }
+
+    /**
+     * Add a new source code link input.
+     */
+    public function addSourceCodeLink(): void
+    {
+        if (count($this->sourceCodeLinks) < 4) {
+            $this->sourceCodeLinks[] = ['url' => '', 'label' => ''];
+        }
+    }
+
+    /**
+     * Remove a source code link input.
+     */
+    public function removeSourceCodeLink(int $index): void
+    {
+        if (count($this->sourceCodeLinks) > 1) {
+            array_splice($this->sourceCodeLinks, $index, 1);
+            $this->sourceCodeLinks = array_values($this->sourceCodeLinks);
+        }
     }
 
     /**

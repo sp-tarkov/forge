@@ -42,7 +42,7 @@ describe('Notification Delivery', function (): void {
             'reason' => ReportReason::SPAM,
         ]);
 
-        $moderator = User::factory()->create(['email_notifications_enabled' => true]);
+        $moderator = User::factory()->create(['email_comment_notifications_enabled' => true]);
         $notification = new ReportSubmittedNotification($report);
 
         $channels = $notification->via($moderator);
@@ -61,7 +61,7 @@ describe('Notification Delivery', function (): void {
             'reason' => ReportReason::SPAM,
         ]);
 
-        $moderator = User::factory()->create(['email_notifications_enabled' => false]);
+        $moderator = User::factory()->create(['email_comment_notifications_enabled' => false]);
         $notification = new ReportSubmittedNotification($report);
 
         $channels = $notification->via($moderator);

@@ -82,35 +82,28 @@ class Visitors extends Component
     }
 
     /**
-     * Handle the initial visitor data when joining the presence channel.
+     * Handle when we receive the initial list of users in the channel.
      *
-     * This method is called when the component first connects to the presence channel and receives the list of all
-     * currently connected visitors.
-     *
-     * @param  array<int, array{id: string, type: string, ...}>  $visitors
+     * @param  array<int, array{id: string, type: string, ...}>  $users
      */
     #[On('echo-presence:visitors,here')]
-    public function visitorsHere(array $visitors): void
+    public function here(array $users): void
     {
-        $this->visitors = collect($visitors);
-
+        $this->visitors = collect($users);
         $this->updateCounts();
         defer(fn () => $this->isPeak());
     }
 
     /**
-     * Handle a new visitor joining the presence channel.
+     * Handle a new visitor joining the channel.
      *
-     * This method is called when a new visitor connects to the presence channel. It adds the visitor to the local
-     * collection if they aren't already present.
-     *
-     * @param  array{id: string, type: string, ...}  $visitor
+     * @param  array{id: string, type: string, ...}  $user
      */
     #[On('echo-presence:visitors,joining')]
-    public function visitorJoining(array $visitor): void
+    public function joining(array $user): void
     {
-        if ($this->getVisitors()->doesntContain('id', $visitor['id'])) {
-            $this->getVisitors()->push($visitor);
+        if ($this->getVisitors()->doesntContain('id', $user['id'])) {
+            $this->getVisitors()->push($user);
         }
 
         $this->updateCounts();
@@ -118,18 +111,14 @@ class Visitors extends Component
     }
 
     /**
-     * Handle a visitor leaving the presence channel.
+     * Handle a visitor leaving the channel.
      *
-     * This method is called when a visitor disconnects from the presence channel. It removes the visitor from the
-     * local collection.
-     *
-     * @param  array{id: string, type: string, ...}  $visitor
+     * @param  array{id: string, type: string, ...}  $user
      */
     #[On('echo-presence:visitors,leaving')]
-    public function visitorLeaving(array $visitor): void
+    public function leaving(array $user): void
     {
-        $this->visitors = $this->getVisitors()->reject(fn (array $v): bool => $v['id'] === $visitor['id']);
-
+        $this->visitors = $this->getVisitors()->reject(fn (array $v): bool => $v['id'] === $user['id']);
         $this->updateCounts();
     }
 

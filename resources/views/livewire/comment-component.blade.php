@@ -195,7 +195,7 @@
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                <flux:button x-on:click="$wire.showDeleteModal = false" variant="outline" size="sm">
+                <flux:button x-on:click="$wire.showDeleteModal = false" data-test="cancel-delete-comment" variant="outline" size="sm">
                     {{ __('Cancel') }}
                 </flux:button>
                 <flux:button wire:click="deleteComment" data-test="confirm-delete-comment" variant="primary" size="sm" icon="trash" class="bg-red-600 hover:bg-red-700">

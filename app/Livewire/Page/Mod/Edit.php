@@ -7,6 +7,7 @@ namespace App\Livewire\Page\Mod;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
+use App\Models\ModSourceCodeLink;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -64,9 +65,11 @@ class Edit extends Component
     public string $license = '';
 
     /**
-     * The source code URL of the mod.
+     * The source code links of the mod.
+     *
+     * @var array<int, array{url: string, label: string|null}>
      */
-    public string $sourceCodeUrl = '';
+    public array $sourceCodeLinks = [];
 
     /**
      * The published at date of the mod.
@@ -95,7 +98,7 @@ class Edit extends Component
     {
         $this->honeypotData = new HoneypotData;
 
-        $this->mod = Mod::query()->findOrFail($modId);
+        $this->mod = Mod::query()->with('sourceCodeLinks')->findOrFail($modId);
 
         $this->authorize('update', $this->mod);
 
@@ -105,7 +108,18 @@ class Edit extends Component
         $this->teaser = $this->mod->teaser;
         $this->description = $this->mod->description;
         $this->license = (string) $this->mod->license_id;
-        $this->sourceCodeUrl = $this->mod->source_code_url;
+
+        // Load existing source code links
+        $this->sourceCodeLinks = $this->mod->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
+            'url' => $link->url,
+            'label' => $link->label,
+        ])->toArray();
+
+        // Ensure at least one empty link input if no links exist
+        if (empty($this->sourceCodeLinks)) {
+            $this->sourceCodeLinks[] = ['url' => '', 'label' => ''];
+        }
+
         $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
@@ -126,11 +140,31 @@ class Edit extends Component
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',
             'license' => 'required|exists:licenses,id',
-            'sourceCodeUrl' => 'required|url|starts_with:https://,http://',
+            'sourceCodeLinks' => 'required|array|min:1|max:4',
+            'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
+            'sourceCodeLinks.*.label' => 'string|max:50',
             'publishedAt' => 'nullable|date',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'sourceCodeLinks.required' => 'At least one source code link is required.',
+            'sourceCodeLinks.min' => 'At least one source code link is required.',
+            'sourceCodeLinks.max' => 'You can add a maximum of 4 source code links.',
+            'sourceCodeLinks.*.url.required' => 'Please enter a valid URL for the source code.',
+            'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
+            'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
+            'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
         ];
     }
 
@@ -165,7 +199,6 @@ class Edit extends Component
         $this->mod->teaser = $this->teaser;
         $this->mod->description = $this->description;
         $this->mod->license_id = (int) $this->license;
-        $this->mod->source_code_url = $this->sourceCodeUrl;
         $this->mod->contains_ai_content = $this->containsAiContent;
         $this->mod->contains_ads = $this->containsAds;
         $this->mod->comments_disabled = $this->commentsDisabled;
@@ -191,6 +224,17 @@ class Edit extends Component
 
         $this->mod->save();
 
+        // Update source code links
+        $this->mod->sourceCodeLinks()->delete();
+        foreach ($this->sourceCodeLinks as $link) {
+            if (! empty($link['url'])) {
+                $this->mod->sourceCodeLinks()->create([
+                    'url' => $link['url'],
+                    'label' => $link['label'] ?? '',
+                ]);
+            }
+        }
+
         Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 
         flash()->success('Mod has been Successfully Updated');
@@ -204,6 +248,27 @@ class Edit extends Component
     public function removeThumbnail(): void
     {
         $this->thumbnail = null;
+    }
+
+    /**
+     * Add a new source code link input.
+     */
+    public function addSourceCodeLink(): void
+    {
+        if (count($this->sourceCodeLinks) < 4) {
+            $this->sourceCodeLinks[] = ['url' => '', 'label' => ''];
+        }
+    }
+
+    /**
+     * Remove a source code link input.
+     */
+    public function removeSourceCodeLink(int $index): void
+    {
+        if (count($this->sourceCodeLinks) > 1) {
+            array_splice($this->sourceCodeLinks, $index, 1);
+            $this->sourceCodeLinks = array_values($this->sourceCodeLinks);
+        }
     }
 
     /**

@@ -23,13 +23,13 @@
         @endif
 
         <div class="mt-4 flex items-center justify-between">
-            <form method="POST" action="{{ route('verification.send') }}">
+            <form method="POST" action="{{ route('verification.send') }}" x-data="{ submitting: false }" @submit="submitting = true">
                 @csrf
 
                 <x-honeypot />
 
                 <div>
-                    <x-button type="submit">
+                    <x-button type="submit" x-bind:disabled="submitting" x-text="submitting ? '{{ __('Sending...') }}' : '{{ __('Send Verification Email') }}'">
                         {{ __('Send Verification Email') }}
                     </x-button>
                 </div>

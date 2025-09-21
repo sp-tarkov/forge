@@ -42,7 +42,7 @@
                             @endif
 
                             <flux:text class="text-gray-600 dark:text-gray-400 text-sm">
-                                {{ __('Updated') }} {{ \Carbon\Carbon::dynamicFormat($versionUpdatedAt) }}
+                                {{ __('Updated') }} {{ $versionUpdatedAt->dynamicFormat() }}
                             </flux:text>
 
                             @if ($fileSize)

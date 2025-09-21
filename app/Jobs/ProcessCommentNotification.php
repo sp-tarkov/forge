@@ -87,7 +87,7 @@ class ProcessCommentNotification implements ShouldQueue
 
             // Record that notifications have been sent
             foreach ($subscribersToNotify as $user) {
-                $notificationType = $user->email_notifications_enabled
+                $notificationType = $user->email_comment_notifications_enabled
                     ? NotificationType::ALL
                     : NotificationType::DATABASE;
 

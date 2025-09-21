@@ -34,7 +34,7 @@ describe('Mod Index API', function (): void {
                 'success',
                 'data' => [
                     '*' => [
-                        'id', 'hub_id', 'name', 'slug', 'teaser', 'source_code_url', 'featured', 'contains_ads',
+                        'id', 'hub_id', 'name', 'slug', 'teaser', 'featured', 'contains_ads',
                         'contains_ai_content', 'published_at', 'created_at', 'updated_at',
                     ],
                 ],

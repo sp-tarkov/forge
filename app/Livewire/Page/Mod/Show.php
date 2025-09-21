@@ -50,7 +50,7 @@ class Show extends Component
      */
     protected function getMod(int $modId): Mod
     {
-        return Mod::query()->findOrFail($modId);
+        return Mod::query()->with('sourceCodeLinks')->findOrFail($modId);
     }
 
     /**

@@ -47,7 +47,7 @@ class SptVersion extends Model
     /**
      * Get all versions for the last three minor versions.
      *
-     * @return Collection<int, $this>
+     * @return Collection<int, static>
      */
     public static function getVersionsForLastThreeMinors(): Collection
     {
@@ -72,6 +72,7 @@ class SptVersion extends Model
             }
         });
 
+        /** @var Collection<int, static> */
         return $query->groupBy('spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count')
             ->orderBy('spt_versions.version_major', 'DESC')
             ->orderBy('spt_versions.version_minor', 'DESC')
@@ -224,7 +225,7 @@ class SptVersion extends Model
     /**
      * Get all the minor/patch versions of the latest minor release.
      *
-     * @return Collection<int, $this>
+     * @return Collection<int, static>
      */
     public static function getLatestMinorVersions(): Collection
     {
@@ -235,6 +236,7 @@ class SptVersion extends Model
         }
 
         // Get all patch versions for this major.minor combination
+        /** @var Collection<int, static> */
         return self::query()
             ->where('version_major', $latestVersion->version_major)
             ->where('version_minor', $latestVersion->version_minor)

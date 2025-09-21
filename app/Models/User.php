@@ -15,6 +15,8 @@ use App\Traits\HasReports;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,13 +49,15 @@ use Shetabit\Visitor\Traits\Visitor;
  * @property string|null $profile_photo_path
  * @property string|null $cover_photo_path
  * @property string|null $remember_token
+ * @property Carbon|null $last_seen_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $timezone
- * @property bool $email_notifications_enabled
+ * @property bool $email_comment_notifications_enabled
+ * @property bool $email_chat_notifications_enabled
  * @property-read string $cover_photo_url attribute
  * @property-read string $profile_photo_url attribute
  * @property-read string $profile_url attribute
@@ -137,6 +141,27 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
+     * Get all conversations for the user.
+     *
+     * @return HasMany<Conversation, $this>
+     */
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'user1_id')
+            ->orWhere('user2_id', $this->id);
+    }
+
+    /**
+     * Get all messages sent by the user.
+     *
+     * @return HasMany<Message, $this>
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
+    }
+
+    /**
      * The relationship between a user and the mods they are an author of.
      *
      * @return BelongsToMany<Mod, $this>
@@ -169,6 +194,12 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             return;
         }
 
+        // Don't allow following if there's a blocking relationship
+        $targetUser = $user instanceof User ? $user : \App\Models\User::query()->find($userId);
+        if ($targetUser && $this->isBlockedMutually($targetUser)) {
+            return;
+        }
+
         $this->following()->syncWithoutDetaching([$userId]);
     }
 
@@ -181,6 +212,26 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     {
         return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id')
             ->withTimestamps();
+    }
+
+    /**
+     * Users that this user has blocked.
+     *
+     * @return HasMany<UserBlock, $this>
+     */
+    public function blocking(): HasMany
+    {
+        return $this->hasMany(UserBlock::class, 'blocker_id');
+    }
+
+    /**
+     * Users that have blocked this user.
+     *
+     * @return HasMany<UserBlock, $this>
+     */
+    public function blockedBy(): HasMany
+    {
+        return $this->hasMany(UserBlock::class, 'blocked_id');
     }
 
     /**
@@ -203,6 +254,66 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         $userId = $user instanceof User ? $user->id : $user;
 
         return $this->following()->where('following_id', $userId)->exists();
+    }
+
+    /**
+     * Block a user.
+     */
+    public function block(User $user, ?string $reason = null): UserBlock
+    {
+        // Remove any existing follow relationships
+        $this->unfollow($user);
+        $user->unfollow($this);
+
+        return $this->blocking()->firstOrCreate([
+            'blocked_id' => $user->id,
+        ], [
+            'reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Unblock a user.
+     */
+    public function unblock(User $user): bool
+    {
+        return $this->blocking()->where('blocked_id', $user->id)->delete() > 0;
+    }
+
+    /**
+     * Check if this user has blocked another user.
+     */
+    public function hasBlocked(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->blocking()->where('blocked_id', $userId)->exists();
+    }
+
+    /**
+     * Check if this user is blocked by another user.
+     */
+    public function isBlockedBy(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->blockedBy()->where('blocker_id', $userId)->exists();
+    }
+
+    /**
+     * Check if there is mutual blocking between users.
+     */
+    public function isBlockedMutually(User $user): bool
+    {
+        return $this->hasBlocked($user) || $this->isBlockedBy($user);
+    }
+
+    /**
+     * Update the user's last seen timestamp.
+     */
+    public function updateLastSeen(): void
+    {
+        $this->update(['last_seen_at' => now()]);
     }
 
     /**
@@ -400,8 +511,10 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             'discord_id' => 'integer',
             'user_role_id' => 'integer',
             'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
-            'email_notifications_enabled' => 'boolean',
+            'email_comment_notifications_enabled' => 'boolean',
+            'email_chat_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -566,5 +679,77 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function getTrackingContext(): ?string
     {
         return $this->role?->name;
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    /**
+     * Filter out users blocked by the given user.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function whereNotBlockedBy(Builder $query, User $user): Builder
+    {
+        return $query->whereDoesntHave('blockedBy', function (Builder $q) use ($user): void {
+            $q->where('blocker_id', $user->id);
+        });
+    }
+
+    /**
+     * Filter out users blocking the given user.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function whereNotBlocking(Builder $query, User $user): Builder
+    {
+        return $query->whereDoesntHave('blocking', function (Builder $q) use ($user): void {
+            $q->where('blocked_id', $user->id);
+        });
+    }
+
+    /**
+     * Filter out mutually blocked users.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function withoutBlocked(Builder $query, User $user): Builder
+    {
+        return $query->whereNotBlockedBy($user)
+            ->whereNotBlocking($user);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function conversationSearch(Builder $query, User $user, string $search): Builder
+    {
+        return $query
+            ->where('id', '!=', $user->id)
+            ->whereNotNull('email_verified_at')
+            ->whereDoesntHave('bans', function (Builder $query): void {
+                $query->whereNull('expired_at')->orWhere('expired_at', '>', now());
+            })
+            // Exclude users who have blocked the current user (they blocked us)
+            ->whereDoesntHave('blocking', function (Builder $query) use ($user): void {
+                $query->where('blocked_id', $user->id);
+            })
+            // Don't exclude users we've blocked
+            ->where(function (Builder $query) use ($search): void {
+                $query->where('name', 'like', '%'.$search.'%');
+            })
+            ->withCount(['mods' => function (Builder $query): void {
+                $query->whereNotNull('published_at')->where('published_at', '<=', now());
+            }])
+            ->limit(10);
     }
 }

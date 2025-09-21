@@ -26,8 +26,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('mods', function (Blueprint $table) {
-            $table->dropIndex('published_at');
-            $table->dropIndex('disabled');
+            $table->dropIndex('mods_published_at_index');
+            $table->dropIndex('mods_disabled_index');
             $table->index(['disabled', 'published_at'], 'mods_filtering_index');
         });
     }

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\SpamResponders\AbortResponder;
 use Spatie\Honeypot\SpamProtection;
-use Spatie\Honeypot\SpamResponder\BlankPageResponder;
 
 return [
     /*
@@ -51,7 +51,7 @@ return [
      * A valid responder is any class that implements
      * `Spatie\Honeypot\SpamResponder\SpamResponder`
      */
-    'respond_to_spam_with' => BlankPageResponder::class,
+    'respond_to_spam_with' => AbortResponder::class,
 
     /*
      * When activated, requests will be checked if honeypot fields are missing,

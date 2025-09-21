@@ -45,7 +45,6 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $thumbnail
  * @property int|null $license_id
  * @property int $downloads
- * @property string $source_code_url
  * @property bool $featured
  * @property bool $contains_ai_content
  * @property bool $contains_ads
@@ -60,6 +59,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read License|null $license
  * @property-read Collection<int, User> $authors
  * @property-read Collection<int, ModVersion> $versions
+ * @property-read Collection<int, ModSourceCodeLink> $sourceCodeLinks
  * @property-read ModVersion|null $latestVersion
  * @property-read ModVersion|null $latestUpdatedVersion
  *
@@ -93,6 +93,18 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * The relationship between a mod and its source code links.
+     * Links are sorted alphabetically by label (or URL if no label).
+     *
+     * @return HasMany<ModSourceCodeLink, $this>
+     */
+    public function sourceCodeLinks(): HasMany
+    {
+        return $this->hasMany(ModSourceCodeLink::class)
+            ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
     }
 
     /**
@@ -464,5 +476,16 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         }
 
         return $user->id === $this->owner?->id || $this->authors->pluck('id')->contains($user->id);
+    }
+
+    /**
+     * Add a new source code link to this mod.
+     */
+    public function addSourceCodeLink(string $url, string $label = ''): ModSourceCodeLink
+    {
+        return $this->sourceCodeLinks()->create([
+            'url' => $url,
+            'label' => $label,
+        ]);
     }
 }

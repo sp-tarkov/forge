@@ -239,7 +239,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
                 <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-900 dark:text-gray-100 ">
                     <li class="px-4 py-4 last:pb-0 sm:px-0">
-                        <h3>{{ __('GUID') }}</h3>
+                        <h3 class="font-bold">{{ __('GUID') }}</h3>
                         <p class="flex items-center gap-2">
                             @if ($mod->guid)
                                 <span class="font-mono text-sm truncate" title="{{ $mod->guid }}">{{ $mod->guid }}</span>
@@ -263,7 +263,7 @@
                     </li>
                     @if ($mod->authors->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3>{{ __('Additional Authors') }}</h3>
+                            <h3 class="font-bold">{{ __('Additional Authors') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->authors->sortDesc() as $user)
                                     <a href="{{ $user->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
@@ -273,7 +273,7 @@
                     @endif
                     @if ($mod->license)
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3>{{ __('License') }}</h3>
+                            <h3 class="font-bold">{{ __('License') }}</h3>
                             <p class="truncate">
                                 <a href="{{ $mod->license->link }}" title="{{ $mod->license->name }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->license->name }}
@@ -281,19 +281,28 @@
                             </p>
                         </li>
                     @endif
-                    @if ($mod->source_code_url)
+                    @if ($mod->sourceCodeLinks->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3>{{ __('Source Code') }}</h3>
-                            <p class="truncate">
-                                <a href="{{ $mod->source_code_url }}" title="{{ $mod->source_code_url }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
-                                    {{ $mod->source_code_url }}
-                                </a>
-                            </p>
+                            <h3 class="font-bold">{{ __('Source Code') }}</h3>
+                            @foreach($mod->sourceCodeLinks as $link)
+                                <p class="truncate">
+                                    @if($link->label !== '')
+                                        <span class="text-gray-800 dark:text-gray-200">{{ $link->label }}:</span>
+                                        <a href="{{ $link->url }}" title="{{ $link->url }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                                            {{ $link->url }}
+                                        </a>
+                                    @else
+                                        <a href="{{ $link->url }}" title="{{ $link->url }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                                            {{ $link->url }}
+                                        </a>
+                                    @endif
+                                </p>
+                            @endforeach
                         </li>
                     @endif
                     @if ($mod->latestVersion?->virus_total_link)
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3>{{ __('Latest Version VirusTotal Result') }}</h3>
+                            <h3 class="font-bold">{{ __('Latest Version VirusTotal Result') }}</h3>
                             <p class="truncate">
                                 <a href="{{ $mod->latestVersion->virus_total_link }}" title="{{ $mod->latestVersion->virus_total_link }}" target="_blank" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
                                     {{ $mod->latestVersion->virus_total_link }}
@@ -303,7 +312,7 @@
                     @endif
                     @if ($mod->latestVersion?->dependencies->isNotEmpty() && $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3>{{ __('Latest Version Dependencies') }}</h3>
+                            <h3 class="font-bold">{{ __('Latest Version Dependencies') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->latestVersion->dependencies as $dependency)
                                     <a href="{{ $dependency->resolvedVersion->mod->detail_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
