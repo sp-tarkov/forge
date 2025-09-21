@@ -7,14 +7,17 @@ namespace App\Livewire\Page;
 use App\Events\ConversationUpdated;
 use App\Events\MessageRead;
 use App\Events\MessageSent;
+use App\Events\UserBlocked;
 use App\Events\UserStartedTyping;
 use App\Events\UserStoppedTyping;
+use App\Events\UserUnblocked;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -41,6 +44,16 @@ class Chat extends Component
      * Controls visibility of the archive conversation modal.
      */
     public bool $showArchiveModal = false;
+
+    /**
+     * Controls visibility of the block user modal.
+     */
+    public bool $showBlockModal = false;
+
+    /**
+     * The reason for blocking a user.
+     */
+    public string $blockReason = '';
 
     /**
      * Search query for finding users in the new conversation modal.
@@ -139,7 +152,7 @@ class Chat extends Component
             ->first();
 
         abort_if(! $conversation, 404);
-        abort_if($user->cannot('view', $conversation), 403);
+        abort_if(! $conversation->hasUser($user), 403);
 
         $this->selectedConversation = $conversation;
         $this->conversationHash = $hashId;
@@ -178,17 +191,15 @@ class Chat extends Component
     {
         $listeners = [
             'switch-conversation' => 'handleSwitchConversation',
-
-            // Listen for forwarded events from NavigationChat
             'navigation-message-received' => 'handleForwardedMessage',
             'navigation-conversation-updated' => 'handleForwardedConversationUpdate',
             'navigation-users-online' => 'updateOnlineUsers',
             'navigation-user-joined' => 'handleForwardedUserJoined',
             'navigation-user-left' => 'handleForwardedUserLeft',
-
-            // Listen for typing events forwarded from NavigationChat
             'navigation-typing-started' => 'handleForwardedTypingStarted',
             'navigation-typing-stopped' => 'handleForwardedTypingStopped',
+            'user-blocked' => 'handleUserBlocked',
+            'user-unblocked' => 'handleUserUnblocked',
         ];
 
         // Keep conversation-specific listeners for typing indicators and conversation presence
@@ -200,23 +211,20 @@ class Chat extends Component
             $listeners[sprintf('echo-presence:conversation.%s,leaving', $this->conversationHash)] = 'handleUserLeavingConversation';
         }
 
-        // Also register listeners for all conversations the user is part of
-        // This catches events that arrive after archiving or clearing
+        // Register listeners for all conversations the user is part of
         $user = Auth::user();
         if ($user) {
             $conversationHashes = Conversation::query()
                 ->forUser($user)
                 ->pluck('hash_id')
                 ->toArray();
-
             foreach ($conversationHashes as $hash) {
-                // Only add if not already added for the current conversation
                 if ($hash !== $this->conversationHash) {
+                    $listeners[sprintf('echo-private:conversation.%s,MessageSent', $hash)] = 'handleIncomingMessage';
+                    $listeners[sprintf('echo-private:conversation.%s,MessageRead', $hash)] = 'handleMessageRead';
                     $listeners[sprintf('echo-presence:conversation.%s,UserStartedTyping', $hash)] = 'handleUserStartedTyping';
                     $listeners[sprintf('echo-presence:conversation.%s,UserStoppedTyping', $hash)] = 'handleUserStoppedTyping';
                     $listeners[sprintf('echo-presence:conversation.%s,leaving', $hash)] = 'handleUserLeavingConversation';
-                    $listeners[sprintf('echo-private:conversation.%s,MessageSent', $hash)] = 'handleIncomingMessage';
-                    $listeners[sprintf('echo-private:conversation.%s,MessageRead', $hash)] = 'handleMessageRead';
                 }
             }
         }
@@ -513,15 +521,19 @@ class Chat extends Component
                 $query->where('user1_id', $otherUser->id)->where('user2_id', $user->id);
             })->first();
 
-        // Find or create conversation (pass the creator as the current user)
         $conversation = Conversation::findOrCreateBetween($user, $otherUser, creator: $user);
 
-        // If the conversation is archived for the current user, unarchive it
+        // If the conversation is archived for the current user, try to unarchive it
         if ($conversation->isArchivedBy($user)) {
-            $conversation->unarchiveFor($user);
+            if ($user->can('unarchive', $conversation)) {
+                $conversation->unarchiveFor($user);
+                $this->dispatch('conversation-updated')->to('navigation-chat');
+            } else {
+                flash()->error('Cannot start conversation with this user.');
+                $this->closeNewConversationModal();
 
-            // Notify NavigationChat to refresh since we unarchived
-            $this->dispatch('conversation-updated')->to('navigation-chat');
+                return;
+            }
         }
 
         // If this is a new conversation, notify NavigationChat to update its conversation hashes
@@ -633,6 +645,15 @@ class Chat extends Component
      */
     public function isUserOnline(int $userId): bool
     {
+        // Don't show online status if blocked
+        $currentUser = Auth::user();
+        if ($currentUser) {
+            $otherUser = User::query()->find($userId);
+            if ($otherUser && $currentUser->isBlockedMutually($otherUser)) {
+                return false;
+            }
+        }
+
         return isset($this->onlineUsers[$userId]) && $this->onlineUsers[$userId];
     }
 
@@ -641,6 +662,15 @@ class Chat extends Component
      */
     public function getUserLastSeen(int $userId): ?string
     {
+        // Check if users have blocked each other
+        $currentUser = Auth::user();
+        if ($currentUser) {
+            $otherUser = User::query()->find($userId);
+            if ($otherUser && $currentUser->isBlockedMutually($otherUser)) {
+                return __('Not available');
+            }
+        }
+
         if ($this->isUserOnline($userId)) {
             return null;
         }
@@ -684,7 +714,6 @@ class Chat extends Component
                 ->first();
 
             if ($conversation) {
-                // Switch to this conversation (it may have been unarchived by the message)
                 $this->switchConversation($conversation->hash_id);
             }
 
@@ -844,6 +873,114 @@ class Chat extends Component
         }
 
         return $this->selectedConversation->isNotificationEnabledForUser($user);
+    }
+
+    /**
+     * Open the block user modal.
+     */
+    public function openBlockModal(): void
+    {
+        $this->blockReason = '';
+        $this->showBlockModal = true;
+    }
+
+    /**
+     * Close the block user modal.
+     */
+    public function closeBlockModal(): void
+    {
+        $this->blockReason = '';
+        $this->showBlockModal = false;
+    }
+
+    /**
+     * Get whether the current user has blocked the other user.
+     */
+    #[Computed]
+    public function isUserBlocked(): bool
+    {
+        if (! $this->selectedConversation || ! $this->selectedConversation->other_user) {
+            return false;
+        }
+
+        $user = Auth::user();
+        if (! $user) {
+            return false;
+        }
+
+        return $user->hasBlocked($this->selectedConversation->other_user);
+    }
+
+    /**
+     * Get whether the conversation is blocked (either user blocked the other).
+     */
+    #[Computed]
+    public function isConversationBlocked(): bool
+    {
+        if (! $this->selectedConversation || ! $this->selectedConversation->other_user) {
+            return false;
+        }
+
+        $user = Auth::user();
+        if (! $user) {
+            return false;
+        }
+
+        return $user->isBlockedMutually($this->selectedConversation->other_user);
+    }
+
+    /**
+     * Confirm blocking or unblocking the user.
+     */
+    public function confirmBlock(): void
+    {
+        if (! $this->selectedConversation || ! $this->selectedConversation->other_user) {
+            return;
+        }
+
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        $otherUser = $this->selectedConversation->other_user;
+
+        if ($this->isUserBlocked()) {
+            // Unblock the user
+            $user->unblock($otherUser);
+            flash()->success('User unblocked successfully');
+
+            // Broadcast the unblock event for real-time updates
+            broadcast(new UserUnblocked($user, $otherUser))->toOthers();
+            $this->dispatch('user-unblocked', userId: $otherUser->id)->to('navigation-chat');
+        } else {
+            // Block the user
+            $user->block($otherUser, $this->blockReason ?: null);
+            flash()->success('User blocked successfully');
+
+            // Broadcast the block event for real-time updates
+            broadcast(new UserBlocked($user, $otherUser))->toOthers();
+            $this->dispatch('user-blocked', userId: $otherUser->id)->to('navigation-chat');
+        }
+
+        $this->closeBlockModal();
+        $this->dispatch('$refresh');
+    }
+
+    /**
+     * Handle user blocked event.
+     */
+    public function handleUserBlocked(int $userId): void
+    {
+        $this->dispatch('$refresh');
+    }
+
+    /**
+     * Handle user unblocked event.
+     */
+    public function handleUserUnblocked(int $userId): void
+    {
+        $this->dispatch('$refresh');
     }
 
     /**

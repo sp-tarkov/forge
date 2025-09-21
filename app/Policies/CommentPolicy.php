@@ -90,8 +90,6 @@ class CommentPolicy
      */
     public function create(User $user, ?Commentable $commentable = null): bool
     {
-        // TODO: Users who are blocked by mod authors can not comment on that author's mods.
-
         // Must have verified email address
         if (! $user->hasVerifiedEmail()) {
             return false;
@@ -100,6 +98,22 @@ class CommentPolicy
         // Commentable is required
         if ($commentable === null) {
             return false;
+        }
+
+        // Check blocking for user profile comments
+        if ($commentable instanceof User) {
+            if ($user->isBlockedMutually($commentable)) {
+                return false;
+            }
+        }
+
+        // Check blocking for mod comments
+        if ($commentable instanceof Mod) {
+            /** @var User $owner */
+            $owner = $commentable->owner;
+            if ($user->isBlockedMutually($owner)) {
+                return false;
+            }
         }
 
         // Check if the commentable can receive comments
@@ -178,6 +192,11 @@ class CommentPolicy
 
         // The user must not be the author of the comment.
         if ($user->id === $comment->user_id) {
+            return false;
+        }
+
+        // Check if the user is blocked by the comment author
+        if ($user->isBlockedMutually($comment->user)) {
             return false;
         }
 

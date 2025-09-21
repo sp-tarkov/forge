@@ -170,6 +170,14 @@ class NavigationChat extends Component
             return;
         }
 
+        // Check if either user has blocked the other
+        if ($user->hasBlocked($otherUser) || $user->isBlockedBy($otherUser)) {
+            flash()->error('You cannot start a conversation with this user.');
+            $this->closeNewConversationModal();
+
+            return;
+        }
+
         $existingConversation = Conversation::query()
             ->where(function ($query) use ($user, $otherUser): void {
                 $query->where('user1_id', $user->id)->where('user2_id', $otherUser->id);

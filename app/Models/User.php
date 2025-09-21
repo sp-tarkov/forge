@@ -194,6 +194,12 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             return;
         }
 
+        // Don't allow following if there's a blocking relationship
+        $targetUser = $user instanceof User ? $user : \App\Models\User::query()->find($userId);
+        if ($targetUser && $this->isBlockedMutually($targetUser)) {
+            return;
+        }
+
         $this->following()->syncWithoutDetaching([$userId]);
     }
 
@@ -206,6 +212,26 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     {
         return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id')
             ->withTimestamps();
+    }
+
+    /**
+     * Users that this user has blocked.
+     *
+     * @return HasMany<UserBlock, $this>
+     */
+    public function blocking(): HasMany
+    {
+        return $this->hasMany(UserBlock::class, 'blocker_id');
+    }
+
+    /**
+     * Users that have blocked this user.
+     *
+     * @return HasMany<UserBlock, $this>
+     */
+    public function blockedBy(): HasMany
+    {
+        return $this->hasMany(UserBlock::class, 'blocked_id');
     }
 
     /**
@@ -228,6 +254,58 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         $userId = $user instanceof User ? $user->id : $user;
 
         return $this->following()->where('following_id', $userId)->exists();
+    }
+
+    /**
+     * Block a user.
+     */
+    public function block(User $user, ?string $reason = null): UserBlock
+    {
+        // Remove any existing follow relationships
+        $this->unfollow($user);
+        $user->unfollow($this);
+
+        return $this->blocking()->firstOrCreate([
+            'blocked_id' => $user->id,
+        ], [
+            'reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Unblock a user.
+     */
+    public function unblock(User $user): bool
+    {
+        return $this->blocking()->where('blocked_id', $user->id)->delete() > 0;
+    }
+
+    /**
+     * Check if this user has blocked another user.
+     */
+    public function hasBlocked(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->blocking()->where('blocked_id', $userId)->exists();
+    }
+
+    /**
+     * Check if this user is blocked by another user.
+     */
+    public function isBlockedBy(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->blockedBy()->where('blocker_id', $userId)->exists();
+    }
+
+    /**
+     * Check if there is mutual blocking between users.
+     */
+    public function isBlockedMutually(User $user): bool
+    {
+        return $this->hasBlocked($user) || $this->isBlockedBy($user);
     }
 
     /**
@@ -607,6 +685,51 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
+    /**
+     * Filter out users blocked by the given user.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function whereNotBlockedBy(Builder $query, User $user): Builder
+    {
+        return $query->whereDoesntHave('blockedBy', function ($q) use ($user): void {
+            $q->where('blocker_id', $user->id);
+        });
+    }
+
+    /**
+     * Filter out users blocking the given user.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function whereNotBlocking(Builder $query, User $user): Builder
+    {
+        return $query->whereDoesntHave('blocking', function ($q) use ($user): void {
+            $q->where('blocked_id', $user->id);
+        });
+    }
+
+    /**
+     * Filter out mutually blocked users.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function withoutBlocked(Builder $query, User $user): Builder
+    {
+        return $query->whereNotBlockedBy($user)
+            ->whereNotBlocking($user);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     #[Scope]
     protected function conversationSearch(Builder $query, User $user, string $search): Builder
     {
@@ -616,6 +739,11 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             ->whereDoesntHave('bans', function (Builder $query): void {
                 $query->whereNull('expired_at')->orWhere('expired_at', '>', now());
             })
+            // Exclude users who have blocked the current user (they blocked us)
+            ->whereDoesntHave('blocking', function (Builder $query) use ($user): void {
+                $query->where('blocked_id', $user->id);
+            })
+            // Don't exclude users we've blocked
             ->where(function (Builder $query) use ($search): void {
                 $query->where('name', 'like', '%'.$search.'%');
             })
