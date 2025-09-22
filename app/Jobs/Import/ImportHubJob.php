@@ -53,6 +53,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class ImportHubJob implements ShouldBeUnique, ShouldQueue
 {
@@ -60,6 +61,16 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+
+    /**
+     * The number of seconds the job can run before timing out.
+     */
+    public int $timeout = 3600;
+
+    /**
+     * Indicate if the job should fail on timeout.
+     */
+    public bool $failOnTimeout = true;
 
     /**
      * Accumulator for SPT version constraints across batches.
@@ -98,6 +109,17 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             (new SearchSyncJob)->onQueue('long'),
             fn () => Artisan::call('cache:clear'),
         ])->dispatch();
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ImportHubJob failed', [
+            'exception' => $exception?->getMessage(),
+            'trace' => $exception?->getTraceAsString(),
+        ]);
     }
 
     /**
@@ -1999,31 +2021,53 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
             // Insert new comments (only allocates IDs for actual new records)
             if (! empty($insertData)) {
-                Comment::query()->insert($insertData);
+                try {
+                    Comment::query()->insert($insertData);
+                } catch (UniqueConstraintViolationException $e) {
+                    Log::warning('ImportHubJob: Duplicate comment insert attempted', [
+                        'hub_ids' => collect($insertData)->pluck('hub_id')->toArray(),
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Process records one by one to skip duplicates
+                    foreach ($insertData as $comment) {
+                        try {
+                            Comment::query()->insert([$comment]);
+                        } catch (UniqueConstraintViolationException) {
+                            // Skip this duplicate and continue
+                        }
+                    }
+                }
             }
 
             // Update existing comments (no ID allocation)
             foreach ($updateData as $comment) {
-                Comment::query()->where('hub_id', $comment['hub_id'])->update([
-                    'user_id' => $comment['user_id'],
-                    'commentable_type' => $comment['commentable_type'],
-                    'commentable_id' => $comment['commentable_id'],
-                    'body' => $comment['body'],
-                    'user_ip' => $comment['user_ip'],
-                    'user_agent' => $comment['user_agent'],
-                    'referrer' => $comment['referrer'],
-                    'parent_id' => $comment['parent_id'],
-                    'root_id' => $comment['root_id'],
-                    'spam_status' => $comment['spam_status'],
-                    'spam_metadata' => $comment['spam_metadata'],
-                    'spam_checked_at' => $comment['spam_checked_at'],
-                    'spam_recheck_count' => $comment['spam_recheck_count'],
-                    'edited_at' => $comment['edited_at'],
-                    'deleted_at' => $comment['deleted_at'],
-                    'pinned_at' => $comment['pinned_at'],
-                    'created_at' => $comment['created_at'],
-                    'updated_at' => $comment['updated_at'],
-                ]);
+                try {
+                    Comment::query()->where('hub_id', $comment['hub_id'])->update([
+                        'user_id' => $comment['user_id'],
+                        'commentable_type' => $comment['commentable_type'],
+                        'commentable_id' => $comment['commentable_id'],
+                        'body' => $comment['body'],
+                        'user_ip' => $comment['user_ip'],
+                        'user_agent' => $comment['user_agent'],
+                        'referrer' => $comment['referrer'],
+                        'parent_id' => $comment['parent_id'],
+                        'root_id' => $comment['root_id'],
+                        'spam_status' => $comment['spam_status'],
+                        'spam_metadata' => $comment['spam_metadata'],
+                        'spam_checked_at' => $comment['spam_checked_at'],
+                        'spam_recheck_count' => $comment['spam_recheck_count'],
+                        'edited_at' => $comment['edited_at'],
+                        'deleted_at' => $comment['deleted_at'],
+                        'pinned_at' => $comment['pinned_at'],
+                        'created_at' => $comment['created_at'],
+                        'updated_at' => $comment['updated_at'],
+                    ]);
+                } catch (UniqueConstraintViolationException $e) {
+                    Log::warning('ImportHubJob: Failed to update comment', [
+                        'hub_id' => $comment['hub_id'],
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         });
     }
