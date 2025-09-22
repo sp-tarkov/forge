@@ -340,7 +340,7 @@ describe('Edge cases', function (): void {
 describe('Archived conversation with blocked users', function (): void {
     it('allows blocker to search for and unarchive conversations with blocked users', function (): void {
         $blocker = User::factory()->create();
-        $blocked = User::factory()->create(['name' => 'John Blocked']);
+        $blocked = User::factory()->create(['name' => 'UniqueBlockedUser_'.uniqid()]);
 
         // Create conversation and add a message
         $conversation = Conversation::factory()->create([
@@ -363,7 +363,7 @@ describe('Archived conversation with blocked users', function (): void {
         expect($conversation->isArchivedBy($blocker))->toBeTrue();
 
         // Blocker should be able to find the blocked user in search
-        $searchResults = User::conversationSearch($blocker, 'John')->get();
+        $searchResults = User::conversationSearch($blocker, 'UniqueBlockedUser')->get();
         expect($searchResults)->toHaveCount(1);
         expect($searchResults->first()->id)->toBe($blocked->id);
 
@@ -373,7 +373,7 @@ describe('Archived conversation with blocked users', function (): void {
 
         // Test via Livewire component
         Livewire::test(Chat::class)
-            ->set('searchUser', 'John')
+            ->set('searchUser', 'UniqueBlockedUser')
             ->call('startConversation', $blocked->id)
             ->assertSet('selectedConversation.id', $conversation->id);
 
