@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Jobs\Import;
 
-use Illuminate\Database\UniqueConstraintViolationException;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\Import\DataTransferObjects\CommentDto;
 use App\Jobs\Import\DataTransferObjects\CommentLikeDto;
@@ -40,6 +39,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
