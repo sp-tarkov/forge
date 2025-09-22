@@ -23,8 +23,8 @@
         <link rel="canonical" href="{{ url()->current() }}">
         <meta property="og:url" content="{{ url()->current() }}">
 
-        @if (! empty($openGraphImage))
-            @openGraphImageTags($openGraphImage, $title)
+        @if (isset($openGraphImage) && ! empty($openGraphImage->toHtml()))
+            @openGraphImageTags($openGraphImage->toHtml(), $title)
         @endif
 
         <link rel="icon" href="data:image/x-icon;base64,AA">

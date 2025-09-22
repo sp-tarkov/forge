@@ -40,6 +40,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -113,7 +114,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->select('u.*', 'r.rankTitle')
             ->leftJoin('wcf1_user_rank as r', 'u.rankID', '=', 'r.rankID')
             ->orderBy('u.userID')
-            ->chunk(4000, function (Collection $records) use ($roles): void {
+            ->chunkById(4000, function (Collection $records) use ($roles): void {
                 /** @var Collection<int, object> $records */
 
                 /** @var Collection<int, HubUser> $hubUsers */
@@ -122,7 +123,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 $localUsers = $this->processUserBatch($hubUsers);
                 $this->processUserBatchBans($hubUsers, $localUsers);
                 $this->processUserBatchRoles($hubUsers, $localUsers, $roles);
-            });
+            }, 'u.userID');
     }
 
     /**
@@ -165,21 +166,23 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->values()
             ->toArray();
 
-        // Split upsert into separate insert/update operations to avoid ID gaps
-        User::withoutEvents(function () use ($userData): void {
-            // Get existing hub_ids and emails to determine which records to update vs. insert
-            $hubIds = collect($userData)->pluck('hub_id');
-            $emails = collect($userData)->pluck('email');
+        // Get existing hub_ids and emails to determine which records to update vs. insert
+        // Do this OUTSIDE withoutEvents to ensure we see committed data
+        $hubIds = collect($userData)->pluck('hub_id');
+        $emails = collect($userData)->pluck('email');
 
-            // Get all fresh existing users by hub_id and email
-            $existingUsersByHubId = User::query()
-                ->whereIn('hub_id', $hubIds)
-                ->get()
-                ->keyBy('hub_id');
-            $existingUsersByEmail = User::query()
-                ->whereIn('email', $emails)
-                ->get()
-                ->keyBy('email');
+        // Get all fresh existing users by hub_id and email
+        $existingUsersByHubId = User::query()
+            ->whereIn('hub_id', $hubIds)
+            ->get()
+            ->keyBy('hub_id');
+        $existingUsersByEmail = User::query()
+            ->whereIn('email', $emails)
+            ->get()
+            ->keyBy('email');
+
+        // Split upsert into separate insert/update operations to avoid ID gaps
+        User::withoutEvents(function () use ($userData, $existingUsersByHubId, $existingUsersByEmail): void {
 
             $insertData = [];
             $updateData = [];
@@ -586,10 +589,25 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         /** @var EloquentCollection<int, User> $followersToUpdate */
         $followersToUpdate = User::query()->findMany($followerIdsToSync)->keyBy('id');
 
-        User::withoutEvents(function () use ($followersToUpdate, $followsGroupedByFollower): void {
-            foreach ($followsGroupedByFollower as $followerId => $followings) {
+        // Sort follower IDs to ensure consistent processing order across all jobs
+        $sortedFollowerIds = collect($followsGroupedByFollower)->keys()->sort()->values();
+
+        User::withoutEvents(function () use ($followersToUpdate, $followsGroupedByFollower, $sortedFollowerIds): void {
+            foreach ($sortedFollowerIds as $followerId) {
+                if (! isset($followsGroupedByFollower[$followerId])) {
+                    continue;
+                }
+
+                $followings = $followsGroupedByFollower[$followerId];
+
+                // Sort following IDs to ensure consistent order
+                ksort($followings);
+
                 if ($user = $followersToUpdate->get($followerId)) {
-                    $user->following()->syncWithoutDetaching($followings); // Don't remove existing relationships.
+                    // Retry on deadlock
+                    DB::transaction(function () use ($user, $followings): void {
+                        $user->following()->syncWithoutDetaching($followings); // Don't remove existing relationships.
+                    }, 3); // Retry up to 3 times on deadlock
                 }
             }
         });

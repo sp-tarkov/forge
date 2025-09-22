@@ -29,7 +29,7 @@ class Show extends Component
     /**
      * The OpenGraph image for the mod.
      */
-    public string $openGraphImage;
+    public ?string $openGraphImage = null;
 
     /**
      * Mount the component.
@@ -40,7 +40,7 @@ class Show extends Component
 
         $this->enforceCanonicalSlug($this->mod, $slug);
 
-        $this->openGraphImage = $this->mod->thumbnail ?? '';
+        $this->openGraphImage = $this->mod->thumbnail;
 
         Gate::authorize('view', $this->mod);
     }
