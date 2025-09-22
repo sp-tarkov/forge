@@ -1005,22 +1005,17 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     ModSourceCodeLink::query()->whereIn('id', array_keys($linksToDelete))->delete();
                 }
 
-                // Add or update links
-                foreach ($newLinks as $order => $url) {
+                // Add new links
+                foreach ($newLinks as $url) {
                     // Check if this URL already exists for this mod
                     $existingLinkId = array_search($url, $existingLinks, true);
 
-                    if ($existingLinkId !== false) {
-                        // Update the order if needed
-                        ModSourceCodeLink::query()->where('id', $existingLinkId)
-                            ->update(['order' => $order]);
-                    } else {
-                        // Create new link
+                    if ($existingLinkId === false) {
+                        // Create new link only if it doesn't exist
                         ModSourceCodeLink::query()->create([
                             'mod_id' => $localMod->id,
                             'url' => $url,
                             'label' => null,
-                            'order' => $order,
                         ]);
                     }
                 }
