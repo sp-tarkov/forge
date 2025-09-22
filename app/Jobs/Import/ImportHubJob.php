@@ -588,10 +588,25 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         /** @var EloquentCollection<int, User> $followersToUpdate */
         $followersToUpdate = User::query()->findMany($followerIdsToSync)->keyBy('id');
 
-        User::withoutEvents(function () use ($followersToUpdate, $followsGroupedByFollower): void {
-            foreach ($followsGroupedByFollower as $followerId => $followings) {
+        // Sort follower IDs to ensure consistent processing order across all jobs
+        $sortedFollowerIds = collect($followsGroupedByFollower)->keys()->sort()->values();
+
+        User::withoutEvents(function () use ($followersToUpdate, $followsGroupedByFollower, $sortedFollowerIds): void {
+            foreach ($sortedFollowerIds as $followerId) {
+                if (! isset($followsGroupedByFollower[$followerId])) {
+                    continue;
+                }
+
+                $followings = $followsGroupedByFollower[$followerId];
+
+                // Sort following IDs to ensure consistent order
+                ksort($followings);
+
                 if ($user = $followersToUpdate->get($followerId)) {
-                    $user->following()->syncWithoutDetaching($followings); // Don't remove existing relationships.
+                    // Retry on deadlock
+                    DB::transaction(function () use ($user, $followings): void {
+                        $user->following()->syncWithoutDetaching($followings); // Don't remove existing relationships.
+                    }, 3); // Retry up to 3 times on deadlock
                 }
             }
         });
