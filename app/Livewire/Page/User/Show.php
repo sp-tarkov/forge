@@ -28,7 +28,7 @@ class Show extends Component
     /**
      * The OpenGraph image for the mod.
      */
-    public string $openGraphImage;
+    public ?string $openGraphImage = null;
 
     /**
      * Mount the component.
@@ -39,7 +39,7 @@ class Show extends Component
 
         $this->enforceCanonicalSlug($this->user, $slug);
 
-        $this->openGraphImage = $this->user->profile_photo_path ?? '';
+        $this->openGraphImage = $this->user->profile_photo_path;
 
         Gate::authorize('view', $this->user);
     }

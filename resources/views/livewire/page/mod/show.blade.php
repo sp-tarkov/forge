@@ -27,7 +27,9 @@
     </div>
 </x-slot>
 
-<x-slot:openGraphImage>{{ $openGraphImage }}</x-slot>
+@if($openGraphImage)
+    <x-slot:openGraphImage>{{ $openGraphImage }}</x-slot>
+@endif
 
 <div>
 
