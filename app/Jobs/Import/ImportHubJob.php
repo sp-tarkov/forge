@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Jobs\Import;
 
-use Illuminate\Database\UniqueConstraintViolationException;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\Import\DataTransferObjects\CommentDto;
 use App\Jobs\Import\DataTransferObjects\CommentLikeDto;
@@ -40,6 +39,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -113,7 +113,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->select('u.*', 'r.rankTitle')
             ->leftJoin('wcf1_user_rank as r', 'u.rankID', '=', 'r.rankID')
             ->orderBy('u.userID')
-            ->chunk(4000, function (Collection $records) use ($roles): void {
+            ->chunkById(4000, function (Collection $records) use ($roles): void {
                 /** @var Collection<int, object> $records */
 
                 /** @var Collection<int, HubUser> $hubUsers */
@@ -122,7 +122,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 $localUsers = $this->processUserBatch($hubUsers);
                 $this->processUserBatchBans($hubUsers, $localUsers);
                 $this->processUserBatchRoles($hubUsers, $localUsers, $roles);
-            });
+            }, 'u.userID');
     }
 
     /**
@@ -165,21 +165,23 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->values()
             ->toArray();
 
-        // Split upsert into separate insert/update operations to avoid ID gaps
-        User::withoutEvents(function () use ($userData): void {
-            // Get existing hub_ids and emails to determine which records to update vs. insert
-            $hubIds = collect($userData)->pluck('hub_id');
-            $emails = collect($userData)->pluck('email');
+        // Get existing hub_ids and emails to determine which records to update vs. insert
+        // Do this OUTSIDE withoutEvents to ensure we see committed data
+        $hubIds = collect($userData)->pluck('hub_id');
+        $emails = collect($userData)->pluck('email');
 
-            // Get all fresh existing users by hub_id and email
-            $existingUsersByHubId = User::query()
-                ->whereIn('hub_id', $hubIds)
-                ->get()
-                ->keyBy('hub_id');
-            $existingUsersByEmail = User::query()
-                ->whereIn('email', $emails)
-                ->get()
-                ->keyBy('email');
+        // Get all fresh existing users by hub_id and email
+        $existingUsersByHubId = User::query()
+            ->whereIn('hub_id', $hubIds)
+            ->get()
+            ->keyBy('hub_id');
+        $existingUsersByEmail = User::query()
+            ->whereIn('email', $emails)
+            ->get()
+            ->keyBy('email');
+
+        // Split upsert into separate insert/update operations to avoid ID gaps
+        User::withoutEvents(function () use ($userData, $existingUsersByHubId, $existingUsersByEmail): void {
 
             $insertData = [];
             $updateData = [];
