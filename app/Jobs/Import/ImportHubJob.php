@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Import;
 
+use Illuminate\Database\UniqueConstraintViolationException;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\Import\DataTransferObjects\CommentDto;
 use App\Jobs\Import\DataTransferObjects\CommentLikeDto;
@@ -233,7 +234,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             if (! empty($insertData)) {
                 try {
                     User::query()->insert($insertData);
-                } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                } catch (UniqueConstraintViolationException $e) {
                     // If batch insert fails due to duplicate, try inserting individually
                     Log::warning('Batch insert failed due to duplicate, attempting individual inserts', [
                         'error' => $e->getMessage(),
@@ -243,7 +244,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     foreach ($insertData as $userData) {
                         try {
                             User::query()->insert([$userData]);
-                        } catch (\Illuminate\Database\UniqueConstraintViolationException $individualException) {
+                        } catch (UniqueConstraintViolationException $individualException) {
                             // Check which constraint was violated
                             $message = $individualException->getMessage();
                             if (str_contains($message, 'users_hub_id_unique')) {
