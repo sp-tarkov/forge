@@ -407,7 +407,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         return Attribute::make(
             get: fn (mixed $value, array $attributes): string => route('user.show', [
                 'userId' => $attributes['id'],
-                'slug' => $this->slug,
+                'slug' => Str::slug($attributes['name']),
             ]),
         )->shouldCache();
     }
