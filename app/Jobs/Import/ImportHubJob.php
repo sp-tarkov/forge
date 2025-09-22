@@ -231,7 +231,41 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             }
 
             if (! empty($insertData)) {
-                User::query()->insert($insertData);
+                try {
+                    User::query()->insert($insertData);
+                } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                    // If batch insert fails due to duplicate, try inserting individually
+                    Log::warning('Batch insert failed due to duplicate, attempting individual inserts', [
+                        'error' => $e->getMessage(),
+                        'batch_size' => count($insertData),
+                    ]);
+
+                    foreach ($insertData as $userData) {
+                        try {
+                            User::query()->insert([$userData]);
+                        } catch (\Illuminate\Database\UniqueConstraintViolationException $individualException) {
+                            // Check which constraint was violated
+                            $message = $individualException->getMessage();
+                            if (str_contains($message, 'users_hub_id_unique')) {
+                                Log::warning('Duplicate hub_id during individual insert', [
+                                    'hub_id' => $userData['hub_id'],
+                                    'email' => $userData['email'],
+                                ]);
+                            } elseif (str_contains($message, 'users_email_unique')) {
+                                Log::warning('Duplicate email during individual insert', [
+                                    'hub_id' => $userData['hub_id'],
+                                    'email' => $userData['email'],
+                                ]);
+                            } else {
+                                Log::warning('Unknown unique constraint violation during individual insert', [
+                                    'hub_id' => $userData['hub_id'],
+                                    'email' => $userData['email'],
+                                    'error' => $message,
+                                ]);
+                            }
+                        }
+                    }
+                }
             }
 
             // Update existing users
@@ -1015,7 +1049,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                         ModSourceCodeLink::query()->create([
                             'mod_id' => $localMod->id,
                             'url' => $url,
-                            'label' => null,
+                            'label' => '',
                         ]);
                     }
                 }
