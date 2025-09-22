@@ -9,6 +9,8 @@
 
 The Forge is a Laravel-based web application that provides a platform for the Single Player Tarkov community to share and discover user-generated content, such as mods, guides, and other tools. It is currently under heavy development. Please review this entire document before attempting to contribute, especially the "Development Discussion" section.
 
+![Alt](https://repobeats.axiom.co/api/embed/622043a870c7a5993d774a4ea1659e6a9898c7cc.svg "Repobeats analytics image")
+
 ## Development Environment Setup
 
 We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://github.com/sp-tarkov/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://github.com/sp-tarkov/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.

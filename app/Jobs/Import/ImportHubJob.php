@@ -40,6 +40,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
