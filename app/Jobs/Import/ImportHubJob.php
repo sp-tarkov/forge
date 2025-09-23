@@ -215,6 +215,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                         'attempted_email' => $user['email'],
                         'conflicting_user_hub_id' => $existingByEmail->hub_id,
                     ]);
+
                     continue;
                 }
 
@@ -225,6 +226,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                         'email' => $user['email'],
                         'existing_user_hub_id' => $existingByEmail->hub_id,
                     ]);
+
                     continue;
                 }
 
