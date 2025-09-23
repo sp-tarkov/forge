@@ -188,7 +188,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->toArray();
 
         // Get existing hub_ids and emails to determine which records to update vs. insert
-        // Do this OUTSIDE withoutEvents to ensure we see committed data
         $hubIds = collect($userData)->pluck('hub_id');
         $emails = collect($userData)->pluck('email');
 
@@ -202,117 +201,86 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->get()
             ->keyBy('email');
 
-        // Split upsert into separate insert/update operations to avoid ID gaps
+        // Process users using updateOrInsert method
         User::withoutEvents(function () use ($userData, $existingUsersByHubId, $existingUsersByEmail): void {
-
-            $insertData = [];
-            $updateData = [];
-
             foreach ($userData as $user) {
                 $existingByHubId = $existingUsersByHubId->get($user['hub_id']);
                 $existingByEmail = $existingUsersByEmail->get($user['email']);
 
-                // If user exists by hub_id, update them
-                if ($existingByHubId) {
-                    // Check if the email is being changed to one that belongs to a different user
-                    // Log the conflict and skip this user to avoid constraint violation
-                    if ($existingByEmail && $existingByEmail->hub_id !== $user['hub_id']) {
-                        Log::warning('Email conflict during hub import', [
-                            'hub_id' => $user['hub_id'],
-                            'attempted_email' => $user['email'],
-                            'conflicting_user_hub_id' => $existingByEmail->hub_id,
-                        ]);
+                // Check for conflicts before attempting updateOrInsert
+                if ($existingByHubId && $existingByEmail && $existingByEmail->hub_id !== $user['hub_id']) {
+                    // Email is being changed to one that belongs to a different user
+                    Log::warning('Email conflict during hub import', [
+                        'hub_id' => $user['hub_id'],
+                        'attempted_email' => $user['email'],
+                        'conflicting_user_hub_id' => $existingByEmail->hub_id,
+                    ]);
+                    continue;
+                }
 
-                        continue;
-                    }
+                if (! $existingByHubId && $existingByEmail && $existingByEmail->hub_id !== null) {
+                    // New hub user has email that already exists with a different hub_id
+                    Log::warning('New hub user has email that already exists', [
+                        'hub_id' => $user['hub_id'],
+                        'email' => $user['email'],
+                        'existing_user_hub_id' => $existingByEmail->hub_id,
+                    ]);
+                    continue;
+                }
 
-                    $updateData[] = $user;
-
-                } elseif ($existingByEmail) {
-                    // Email exists but hub_id doesn't
-                    if ($existingByEmail->hub_id === null) {
-                        // User exists with this email but no hub_id - update them with the hub_id
+                try {
+                    // First try to updateOrInsert by hub_id as the primary identifier
+                    if ($existingByHubId || ! $existingByEmail) {
+                        // Either user exists by hub_id, or it's a completely new user
+                        DB::table('users')->updateOrInsert(
+                            ['hub_id' => $user['hub_id']], // Match by hub_id
+                            [
+                                'name' => $user['name'],
+                                'email' => $user['email'],
+                                'password' => $user['password'],
+                                'created_at' => $user['created_at'],
+                                'updated_at' => $user['updated_at'],
+                            ]
+                        );
+                    } elseif ($existingByEmail && $existingByEmail->hub_id === null) {
+                        // User exists with email but no hub_id - update them
                         Log::info('Updating existing user with hub_id', [
                             'user_id' => $existingByEmail->id,
                             'email' => $user['email'],
                             'new_hub_id' => $user['hub_id'],
                         ]);
 
-                        // Update the user with hub_id and other hub data
-                        $updateData[] = $user;
-                    } else {
-                        // Email exists with a different hub_id - this is a conflict, log and skip
-                        Log::warning('New hub user has email that already exists', [
+                        DB::table('users')->updateOrInsert(
+                            ['email' => $user['email']], // Match by email
+                            [
+                                'hub_id' => $user['hub_id'],
+                                'name' => $user['name'],
+                                'password' => $user['password'],
+                                'created_at' => $user['created_at'],
+                                'updated_at' => $user['updated_at'],
+                            ]
+                        );
+                    }
+                } catch (UniqueConstraintViolationException $e) {
+                    // Log the specific constraint violation
+                    $message = $e->getMessage();
+                    if (str_contains($message, 'users_hub_id_unique')) {
+                        Log::warning('Duplicate hub_id during updateOrInsert', [
                             'hub_id' => $user['hub_id'],
                             'email' => $user['email'],
-                            'existing_user_hub_id' => $existingByEmail->hub_id,
                         ]);
-
-                        continue;
+                    } elseif (str_contains($message, 'users_email_unique')) {
+                        Log::warning('Duplicate email during updateOrInsert', [
+                            'hub_id' => $user['hub_id'],
+                            'email' => $user['email'],
+                        ]);
+                    } else {
+                        Log::warning('Unknown unique constraint violation during updateOrInsert', [
+                            'hub_id' => $user['hub_id'],
+                            'email' => $user['email'],
+                            'error' => $message,
+                        ]);
                     }
-                } else {
-                    $insertData[] = $user; // New user
-                }
-            }
-
-            if (! empty($insertData)) {
-                try {
-                    User::query()->insert($insertData);
-                } catch (UniqueConstraintViolationException $e) {
-                    // If batch insert fails due to duplicate, try inserting individually
-                    Log::warning('Batch insert failed due to duplicate, attempting individual inserts', [
-                        'error' => $e->getMessage(),
-                        'batch_size' => count($insertData),
-                    ]);
-
-                    foreach ($insertData as $userData) {
-                        try {
-                            User::query()->insert([$userData]);
-                        } catch (UniqueConstraintViolationException $individualException) {
-                            // Check which constraint was violated
-                            $message = $individualException->getMessage();
-                            if (str_contains($message, 'users_hub_id_unique')) {
-                                Log::warning('Duplicate hub_id during individual insert', [
-                                    'hub_id' => $userData['hub_id'],
-                                    'email' => $userData['email'],
-                                ]);
-                            } elseif (str_contains($message, 'users_email_unique')) {
-                                Log::warning('Duplicate email during individual insert', [
-                                    'hub_id' => $userData['hub_id'],
-                                    'email' => $userData['email'],
-                                ]);
-                            } else {
-                                Log::warning('Unknown unique constraint violation during individual insert', [
-                                    'hub_id' => $userData['hub_id'],
-                                    'email' => $userData['email'],
-                                    'error' => $message,
-                                ]);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Update existing users
-            foreach ($updateData as $user) {
-                // Try to update by hub_id first, if no rows affected, update by email
-                $affected = User::query()->where('hub_id', $user['hub_id'])->update([
-                    'name' => $user['name'],
-                    'email' => $user['email'],
-                    'password' => $user['password'],
-                    'created_at' => $user['created_at'],
-                    'updated_at' => $user['updated_at'],
-                ]);
-
-                // If no rows were updated by hub_id, try updating by email (for users with null hub_id)
-                if ($affected === 0) {
-                    User::query()->where('email', $user['email'])->whereNull('hub_id')->update([
-                        'hub_id' => $user['hub_id'],
-                        'name' => $user['name'],
-                        'password' => $user['password'],
-                        'created_at' => $user['created_at'],
-                        'updated_at' => $user['updated_at'],
-                    ]);
                 }
             }
         });
