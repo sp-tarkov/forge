@@ -144,7 +144,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 $localUsers = $this->processUserBatch($hubUsers);
                 $this->processUserBatchBans($hubUsers, $localUsers);
                 $this->processUserBatchRoles($hubUsers, $localUsers, $roles);
-            }, 'u.userID');
+            }, 'userID');
     }
 
     /**
