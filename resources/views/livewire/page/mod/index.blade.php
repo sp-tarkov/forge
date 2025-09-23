@@ -11,15 +11,17 @@
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
             {{ __('Mod Listings') }}
         </h2>
-        @can('create', [App\Models\Mod::class])
-            <flux:button href="{{ route('mod.create') }}" size="sm">{{ __('Create New Mod') }}</flux:button>
-        @else
-            <flux:tooltip content="Must enable MFA to create mods.">
-                <div>
-                    <flux:button disabled="true" size="sm">{{ __('Create New Mod') }}</flux:button>
-                </div>
-            </flux:tooltip>
-        @endcan
+        @auth
+            @can('create', [App\Models\Mod::class])
+                <flux:button href="{{ route('mod.create') }}" size="sm">{{ __('Create New Mod') }}</flux:button>
+            @else
+                <flux:tooltip content="Must enable MFA to create mods.">
+                    <div>
+                        <flux:button disabled="true" size="sm">{{ __('Create New Mod') }}</flux:button>
+                    </div>
+                </flux:tooltip>
+            @endcan
+        @endauth
     </div>
 </x-slot>
 

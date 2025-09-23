@@ -14,7 +14,7 @@
         @if($this->reports->count() > 0)
             <div class="space-y-4">
                 @foreach($this->reports as $report)
-                    <div class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                    <div class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
                         {{-- Status indicator bar --}}
                         <div class="absolute inset-y-0 left-0 w-1 bg-{{ $report->status === \App\Enums\ReportStatus::PENDING ? 'yellow-400' : ($report->status === \App\Enums\ReportStatus::RESOLVED ? 'green-400' : 'gray-400') }}"></div>
 

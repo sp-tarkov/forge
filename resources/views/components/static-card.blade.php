@@ -16,7 +16,7 @@
         </span>
     </div>
 
-    <a href="{{ $link }}" class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-xl hover:bg-gray-50 dark:hover:bg-gray-900 hover:shadow-blue-200/20 dark:hover:shadow-blue-900/20 transition-all ease-out duration-300 border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+    <a href="{{ $link }}" class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-xl hover:bg-gray-50 dark:hover:bg-gray-900 hover:shadow-blue-200/20 dark:hover:shadow-blue-900/20 transition-[shadow,border] ease-out duration-300 border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
         <div class="h-auto md:h-full md:flex">
             <!-- Icon section -->
             <div class="relative h-32 md:h-full md:w-32 md:shrink-0 overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-800 flex items-center justify-center">
@@ -41,7 +41,7 @@
 
             <div class="flex flex-col w-full justify-between p-6">
                 <div class="pb-3">
-                    <h3 class="my-1 text-xl leading-tight font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">{{ $name }}</h3>
+                    <h3 class="my-1 text-xl leading-tight font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">{{ $name }}</h3>
                     <p class="no-underline mb-3 text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center">
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -55,7 +55,7 @@
                 
                 <!-- Call to action footer -->
                 <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-200">
+                    <div class="flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300">
                         <span>Get started</span>
                         <svg class="ml-1 w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>

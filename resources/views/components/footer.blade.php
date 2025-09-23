@@ -25,10 +25,10 @@
                 <div class="sm:order-first">
                     <h3 class="text-sm font-semibold leading-6 text-white">Single Player Tarkov</h3>
                     <ul role="list" class="mt-6 space-y-4">
-                        <li><a href="{{ route('static.installer') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Installer</a></li>
-                        <li><a href="{{ route('mods') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Mods</a></li>
+                        <li><a href="{{ route('static.installer') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">Installer</a></li>
+                        <li><a href="{{ route('mods') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">Mods</a></li>
                         <li><a href="https://wiki.sp-tarkov.com" target="_blank" class="text-sm leading-6 text-gray-300 hover:text-white">SPT Wiki</a></li>
-                        <li><a href="{{ route('static.contact') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Contact</a></li>
+                        <li><a href="{{ route('static.contact') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">Contact</a></li>
                     </ul>
                 </div>
                 <div class="sm:order-last">
@@ -41,11 +41,11 @@
                 <div>
                     <h3 class="text-sm font-semibold leading-6 text-white">Legal Stuff</h3>
                     <ul role="list" class="mt-6 space-y-4">
-                        <li><a href="{{ route('static.community-standards') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Community Standards</a></li>
-                        <li><a href="{{ route('static.content-guidelines') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Content Guidelines</a></li>
-                        <li><a href="{{ route('static.terms') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Terms of Service</a></li>
-                        <li><a href="{{ route('static.privacy') }}" class="text-sm leading-6 text-gray-300 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="{{ route('static.dmca') }}" class="text-sm leading-6 text-gray-300 hover:text-white">DMCA</a></li>
+                        <li><a href="{{ route('static.community-standards') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">Community Standards</a></li>
+                        <li><a href="{{ route('static.content-guidelines') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">Content Guidelines</a></li>
+                        <li><a href="{{ route('static.terms') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">Terms of Service</a></li>
+                        <li><a href="{{ route('static.privacy') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="{{ route('static.dmca') }}" wire:navigate class="text-sm leading-6 text-gray-300 hover:text-white">DMCA</a></li>
                     </ul>
                 </div>
             </div>
