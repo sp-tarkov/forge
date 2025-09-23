@@ -407,7 +407,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         return Attribute::make(
             get: fn (mixed $value, array $attributes): string => route('user.show', [
                 'userId' => $attributes['id'],
-                'slug' => Str::slug($attributes['name']),
+                'slug' => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
             ]),
         )->shouldCache();
     }
@@ -420,7 +420,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     protected function slug(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes): string => Str::slug($attributes['name']),
+            get: fn (mixed $value, array $attributes): string => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
         )->shouldCache();
     }
 
