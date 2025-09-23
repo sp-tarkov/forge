@@ -123,7 +123,7 @@
                 </flux:button>
 
                 <div class="text-center">
-                    <a class="text-sm text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 underline rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" href="{{ route('login') }}">
+                    <a class="text-sm text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 underline rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" href="{{ route('login') }}" wire:navigate>
                         {{ __('Already registered?') }}
                     </a>
                 </div>

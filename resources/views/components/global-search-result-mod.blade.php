@@ -1,4 +1,4 @@
-<a href="/mod/{{ $result['id'] }}/{{ $result['slug'] }}" class="{{ $linkClass }}" role="listitem" tabindex="0" class="flex flex-col">
+<a href="/mod/{{ $result['id'] }}/{{ $result['slug'] }}" wire:navigate class="{{ $linkClass }}" role="listitem" tabindex="0" class="flex flex-col">
     @empty ($result['thumbnail'])
         <img src="https://placehold.co/450x450/31343C/EEE?font=source-sans-pro&text={{ urlencode($result['name']) }}" alt="{{ $result['name'] }}" class="h-6 w-6 self-center border border-gray-700 group-hover/global-search-link:border-gray-600">
     @else

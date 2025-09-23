@@ -120,7 +120,7 @@
             />
             <div
                 wire:key="comment-{{ $comment->id }}"
-                class="p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
+                class="p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none"
             >
                 <x-comment.display
                     :comment="$comment"
@@ -144,7 +144,7 @@
                                 <div
                                     id="reply-container-{{ $reply->id }}"
                                     wire:key="reply-{{ $reply->id }}"
-                                    class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none transition-all duration-600"
+                                    class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none"
                                 >
                                     <x-comment.display
                                         :comment="$reply"
