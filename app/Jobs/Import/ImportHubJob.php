@@ -97,6 +97,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->getHubUserFollows();
         $this->getHubModLicenses();
         $this->getHubModCategories();
+        $this->removeDeletedHubCategories();
         $this->getGitHubSptVersions();
         $this->getHubMods();
         $this->getHubModVersions();
@@ -2383,6 +2384,24 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     CommentReaction::query()->whereIn('hub_id', $chunk)->delete();
                 }
             }
+        }
+    }
+
+    /**
+     * Remove categories that have been deleted from the Hub.
+     */
+    private function removeDeletedHubCategories(): void
+    {
+        $hubCategoryIds = DB::connection('hub')
+            ->table('filebase1_category')
+            ->pluck('categoryID')
+            ->toArray();
+
+        if (empty($hubCategoryIds)) {
+            // If no categories exist in hub, delete all local categories with hub_id
+            ModCategory::query()->whereNotNull('hub_id')->delete();
+        } else {
+            ModCategory::query()->whereNotNull('hub_id')->whereNotIn('hub_id', $hubCategoryIds)->delete();
         }
     }
 
