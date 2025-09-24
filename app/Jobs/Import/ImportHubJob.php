@@ -695,32 +695,41 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         /** @var Collection<int, HubModCategory> $hubCategories */
         $hubCategories = $allCategories->map(fn (object $record): HubModCategory => HubModCategory::fromArray((array) $record));
 
-        // Process root categories first (parentCategoryID = 0)
-        $rootCategories = $hubCategories->filter(fn (HubModCategory $category): bool => $category->parentCategoryID === 0);
-        $this->processModCategoryBatch($rootCategories);
+        // Build a map of category IDs to their titles for exclusion logic
+        $categoryTitleMap = $hubCategories->pluck('title', 'categoryID');
 
-        // Process child categories by depth to maintain parent-child relationships
-        $remainingCategories = $hubCategories->filter(fn (HubModCategory $category): bool => $category->parentCategoryID !== 0);
+        // Find the ID of "Server mods" category to identify its children (case-insensitive)
+        $serverModsCategoryId = $hubCategories->first(fn (HubModCategory $cat): bool => strtolower($cat->title) === 'server mods')?->categoryID;
 
-        while ($remainingCategories->isNotEmpty()) {
-            // Get categories whose parents have already been processed
-            $processableCategories = collect();
-            $existingHubIds = ModCategory::query()->pluck('hub_id')->toArray();
+        // Categories to exclude by title (lowercase for case-insensitive comparison)
+        $excludedTitles = ['releases', 'client mods', 'server mods'];
 
-            foreach ($remainingCategories as $key => $category) {
-                if (in_array($category->parentCategoryID, $existingHubIds)) {
-                    $processableCategories->push($category);
-                    $remainingCategories->forget($key);
-                }
+        // Filter categories:
+        // 1. Exclude categories with the specified titles (case-insensitive)
+        // 2. Include children of "Server mods" as root categories
+        // 3. Include other root categories not in the exclusion list
+        $categoriesToProcess = $hubCategories->filter(function (HubModCategory $category) use ($excludedTitles, $serverModsCategoryId): bool {
+            // Exclude specific categories by title (case-insensitive)
+            if (in_array(strtolower($category->title), $excludedTitles)) {
+                return false;
             }
 
-            if ($processableCategories->isNotEmpty()) {
-                $this->processModCategoryBatch($processableCategories);
-            } else {
-                // Break if no more categories can be processed (orphaned categories)
-                break;
+            // Include children of "Server mods" category (they'll become root categories)
+            if ($serverModsCategoryId && $category->parentCategoryID === $serverModsCategoryId) {
+                return true;
             }
-        }
+
+            // Include root categories that aren't excluded
+            if ($category->parentCategoryID === 0) {
+                return true;
+            }
+
+            // Exclude all other child categories
+            return false;
+        });
+
+        // Process all filtered categories as root categories
+        $this->processModCategoryBatch($categoriesToProcess);
     }
 
     /**
@@ -736,31 +745,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
 
         $now = Carbon::now('UTC')->toDateTimeString();
 
-        // Get mapping of hub parent IDs to local parent IDs
-        $parentHubIds = $hubModCategories
-            ->pluck('parentCategoryID')
-            ->filter()
-            ->unique();
-
-        /** @var EloquentCollection<int, ModCategory> $parentCategories */
-        $parentCategories = ModCategory::query()->whereIn('hub_id', $parentHubIds)->get()->keyBy('hub_id');
-
-        $categoryData = $hubModCategories->map(function (HubModCategory $hubCategory) use ($parentCategories, $now): array {
-            $parentCategory = null;
-            if ($hubCategory->parentCategoryID > 0) {
-                $parentCategory = $parentCategories->get($hubCategory->parentCategoryID);
-            }
-
-            return [
-                'hub_id' => $hubCategory->categoryID,
-                'parent_category_id' => $parentCategory?->id,
-                'title' => $hubCategory->title,
-                'description' => $hubCategory->description,
-                'show_order' => $hubCategory->showOrder,
-                'created_at' => $hubCategory->getCreatedAt(),
-                'updated_at' => $now,
-            ];
-        })->toArray();
+        $categoryData = $hubModCategories->map(fn (HubModCategory $hubCategory): array => [
+            'hub_id' => $hubCategory->categoryID,
+            'title' => $hubCategory->title,
+            'description' => $hubCategory->description,
+            'show_order' => $hubCategory->showOrder,
+            'created_at' => $hubCategory->getCreatedAt(),
+            'updated_at' => $now,
+        ])->toArray();
 
         ModCategory::withoutEvents(function () use ($categoryData): void {
             // Get existing hub_ids to determine which records to update vs. insert
@@ -787,7 +779,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             // Update existing categories
             foreach ($updateData as $category) {
                 ModCategory::query()->where('hub_id', $category['hub_id'])->update([
-                    'parent_category_id' => $category['parent_category_id'],
                     'title' => $category['title'],
                     'description' => $category['description'],
                     'show_order' => $category['show_order'],
@@ -2393,7 +2384,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     private function removeDeletedHubCategories(): void
     {
         $hubCategoryIds = DB::connection('hub')
-            ->table('filebase1_category')
+            ->table('wcf1_category')
+            ->where('objectTypeID', 310)
             ->pluck('categoryID')
             ->toArray();
 

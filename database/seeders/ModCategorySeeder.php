@@ -14,103 +14,96 @@ class ModCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        // Create root categories
-        $weapons = ModCategory::factory()->create([
+        // Create flat categories (formerly root and child categories merged)
+        ModCategory::factory()->create([
             'title' => 'Weapons',
             'description' => 'Weapon mods for SPT',
             'show_order' => 10,
         ]);
 
-        $items = ModCategory::factory()->create([
+        ModCategory::factory()->create([
             'title' => 'Items',
             'description' => 'Item mods for SPT',
             'show_order' => 20,
         ]);
 
-        $maps = ModCategory::factory()->create([
+        ModCategory::factory()->create([
             'title' => 'Maps',
             'description' => 'Map mods for SPT',
             'show_order' => 30,
         ]);
 
-        $traders = ModCategory::factory()->create([
+        ModCategory::factory()->create([
             'title' => 'Traders',
             'description' => 'Trader mods for SPT',
             'show_order' => 40,
         ]);
 
-        $ai = ModCategory::factory()->create([
+        ModCategory::factory()->create([
             'title' => 'AI & Bots',
             'description' => 'AI and bot behavior mods',
             'show_order' => 50,
         ]);
 
-        $ui = ModCategory::factory()->create([
+        ModCategory::factory()->create([
             'title' => 'User Interface',
             'description' => 'UI and HUD mods',
             'show_order' => 60,
         ]);
 
-        $gameplay = ModCategory::factory()->create([
+        ModCategory::factory()->create([
             'title' => 'Gameplay',
             'description' => 'Gameplay modification mods',
             'show_order' => 70,
         ]);
 
-        $tools = ModCategory::factory()->create([
+        ModCategory::factory()->create([
             'title' => 'Tools & Utilities',
             'description' => 'Tools and utility mods',
             'show_order' => 80,
         ]);
 
-        // Create some subcategories
+        // Former subcategories, now flat categories
         ModCategory::factory()->create([
-            'parent_category_id' => $weapons->id,
             'title' => 'Assault Rifles',
             'description' => 'Assault rifle weapon mods',
-            'show_order' => 10,
+            'show_order' => 90,
         ]);
 
         ModCategory::factory()->create([
-            'parent_category_id' => $weapons->id,
             'title' => 'Pistols',
             'description' => 'Pistol weapon mods',
-            'show_order' => 20,
+            'show_order' => 100,
         ]);
 
         ModCategory::factory()->create([
-            'parent_category_id' => $weapons->id,
             'title' => 'Sniper Rifles',
             'description' => 'Sniper rifle weapon mods',
-            'show_order' => 30,
+            'show_order' => 110,
         ]);
 
         ModCategory::factory()->create([
-            'parent_category_id' => $items->id,
             'title' => 'Armor',
             'description' => 'Armor item mods',
-            'show_order' => 10,
+            'show_order' => 120,
         ]);
 
         ModCategory::factory()->create([
-            'parent_category_id' => $items->id,
             'title' => 'Medical',
             'description' => 'Medical item mods',
-            'show_order' => 20,
+            'show_order' => 130,
         ]);
 
         ModCategory::factory()->create([
-            'parent_category_id' => $gameplay->id,
             'title' => 'Difficulty',
             'description' => 'Difficulty adjustment mods',
-            'show_order' => 10,
+            'show_order' => 140,
         ]);
 
         ModCategory::factory()->create([
-            'parent_category_id' => $gameplay->id,
             'title' => 'Economy',
             'description' => 'Economy and loot mods',
-            'show_order' => 20,
+            'show_order' => 150,
         ]);
 
         $this->command->outputComponents()->info('Mod categories seeded');

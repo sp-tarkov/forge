@@ -109,13 +109,8 @@
                                 <flux:label>{{ __('Category') }}</flux:label>
                                 <flux:description>{{ __('Select the category that best describes your mod. This helps users find your mod more easily.') }}</flux:description>
                                 <flux:select wire:model.blur="category" placeholder="Choose category...">
-                                    @foreach(\App\Models\ModCategory::whereNull('parent_category_id')->orderBy('show_order')->orderBy('title')->get() as $category)
-                                        <optgroup label="{{ $category->title }}">
-                                            <flux:select.option value="{{ $category->id }}">{{ $category->title }}</flux:select.option>
-                                            @foreach($category->children as $childCategory)
-                                                <flux:select.option value="{{ $childCategory->id }}">{{ $childCategory->title }}</flux:select.option>
-                                            @endforeach
-                                        </optgroup>
+                                    @foreach(\App\Models\ModCategory::orderBy('show_order')->orderBy('title')->get() as $category)
+                                        <flux:select.option value="{{ $category->id }}">{{ $category->title }}</flux:select.option>
                                     @endforeach
                                 </flux:select>
                                 <flux:error name="category" />

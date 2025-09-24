@@ -20,21 +20,10 @@ class ModCategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'parent_category_id' => null,
             'title' => fake()->words(rand(2, 4), true),
             'description' => fake()->sentence(),
             'show_order' => fake()->numberBetween(0, 100),
         ];
-    }
-
-    /**
-     * Indicate that the category is a child category.
-     */
-    public function withParent(?ModCategory $parent = null): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'parent_category_id' => $parent ? $parent->id : ModCategory::factory(),
-        ]);
     }
 
     /**
