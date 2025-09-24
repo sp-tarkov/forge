@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mods', function (Blueprint $table) {
-            $table->foreignId('category_id')->nullable()->after('license_id')->constrained('mod_categories')->nullOnDelete();
+            $table->foreignId('category_id')->nullable()->after('license_id')->constrained('mod_categories')->cascadeOnUpdate()->nullOnDelete();
             $table->index('category_id');
         });
     }
