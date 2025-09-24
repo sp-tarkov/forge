@@ -22,7 +22,6 @@ class ModCategoryFactory extends Factory
         return [
             'title' => fake()->words(rand(2, 4), true),
             'description' => fake()->sentence(),
-            'show_order' => fake()->numberBetween(0, 100),
         ];
     }
 

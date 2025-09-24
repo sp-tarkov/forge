@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Mod;
 
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\SptVersion;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Collection;
@@ -70,11 +71,24 @@ class Index extends Component
     public string $featured = 'include';
 
     /**
+     * The category filter value.
+     */
+    #[Url]
+    public ?string $category = null;
+
+    /**
      * The available SPT versions.
      *
      * @var Collection<int, SptVersion>
      */
     public Collection $availableSptVersions;
+
+    /**
+     * The available mod categories.
+     *
+     * @var Collection<int, ModCategory>
+     */
+    public Collection $availableCategories;
 
     /**
      * Called when a component is created.
@@ -86,6 +100,13 @@ class Index extends Component
             'active-spt-versions',
             600,
             fn (): Collection => SptVersion::getVersionsForLastThreeMinors()
+        );
+
+        // Fetch all mod categories
+        $this->availableCategories = Cache::remember(
+            'mod-categories',
+            600,
+            fn (): Collection => ModCategory::query()->orderBy('title')->get()
         );
 
         // Set default versions if none provided via URL
@@ -102,6 +123,7 @@ class Index extends Component
         $this->query = '';
         $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
+        $this->category = null;
 
         unset($this->splitSptVersions); // Clear computed property cache
     }
@@ -259,6 +281,10 @@ class Index extends Component
             $count++;
         }
 
+        if ($this->category !== null) {
+            $count++;
+        }
+
         // Count sptVersions filter if it's not 'all' and not empty
         if (is_array($this->sptVersions)) {
             $count += count($this->sptVersions);
@@ -281,6 +307,7 @@ class Index extends Component
             'featured' => $this->featured,
             'order' => $this->order,
             'sptVersions' => $this->sptVersions,
+            'category' => $this->category,
         ]);
 
         $paginatedMods = $filters->apply()->paginate($this->perPage);

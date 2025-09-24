@@ -749,7 +749,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'hub_id' => $hubCategory->categoryID,
             'title' => $hubCategory->title,
             'description' => $hubCategory->description,
-            'show_order' => $hubCategory->showOrder,
             'created_at' => $hubCategory->getCreatedAt(),
             'updated_at' => $now,
         ])->toArray();
@@ -781,7 +780,6 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 ModCategory::query()->where('hub_id', $category['hub_id'])->update([
                     'title' => $category['title'],
                     'description' => $category['description'],
-                    'show_order' => $category['show_order'],
                     'updated_at' => $category['updated_at'],
                 ]);
             }

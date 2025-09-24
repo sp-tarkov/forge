@@ -93,6 +93,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'featured' => 'filterByFeatured',
             'contains_ads' => 'filterByContainsAds',
             'contains_ai_content' => 'filterByContainsAiContent',
+            'category_id' => 'filterByCategoryId',
+            'category_slug' => 'filterByCategorySlug',
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
             'published_between' => 'filterByPublishedBetween',
@@ -227,6 +229,37 @@ class ModQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
+     * Filter by category ID.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByCategoryId(Builder $query, ?string $categoryIds): void
+    {
+        if ($categoryIds === null) {
+            return;
+        }
+
+        $query->whereIn('mods.category_id', self::parseCommaSeparatedInput($categoryIds, 'integer'));
+    }
+
+    /**
+     * Filter by category slug.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByCategorySlug(Builder $query, ?string $categorySlugs): void
+    {
+        if ($categorySlugs === null) {
+            return;
+        }
+
+        $slugs = self::parseCommaSeparatedInput($categorySlugs, 'string');
+        $query->whereHas('category', function (Builder $query) use ($slugs): void {
+            $query->whereIn('slug', $slugs);
+        });
+    }
+
+    /**
      * Filter by creation date range.
      *
      * @param  Builder<Mod>  $query
@@ -299,6 +332,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'authors' => 'authors',
             'versions' => 'versions',
             'license' => 'license',
+            'category' => 'category',
             'source_code_links' => 'sourceCodeLinks',
         ];
     }
@@ -315,6 +349,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'id',
             'owner_id',
             'license_id',
+            'category_id',
         ];
     }
 
@@ -337,6 +372,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'featured',
             'contains_ai_content',
             'contains_ads',
+            'category_id',
             'published_at',
             'created_at',
             'updated_at',

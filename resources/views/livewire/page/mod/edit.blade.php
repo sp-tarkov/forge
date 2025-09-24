@@ -109,7 +109,7 @@
                                 <flux:label>{{ __('Category') }}</flux:label>
                                 <flux:description>{{ __('Select the category that best describes your mod. This helps users find your mod more easily.') }}</flux:description>
                                 <flux:select wire:model.blur="category" placeholder="Choose category...">
-                                    @foreach(\App\Models\ModCategory::orderBy('show_order')->orderBy('title')->get() as $category)
+                                    @foreach(\App\Models\ModCategory::orderBy('title')->get() as $category)
                                         <flux:select.option value="{{ $category->id }}">{{ $category->title }}</flux:select.option>
                                     @endforeach
                                 </flux:select>

@@ -273,6 +273,16 @@
                             </p>
                         </li>
                     @endif
+                    @if ($mod->category)
+                        <li class="px-4 py-4 last:pb-0 sm:px-0">
+                            <h3 class="font-bold">{{ __('Category') }}</h3>
+                            <p class="truncate">
+                                <a href="{{ route('mods', ['category' => $mod->category->slug]) }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">
+                                    {{ $mod->category->title }}
+                                </a>
+                            </p>
+                        </li>
+                    @endif
                     @if ($mod->license)
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3 class="font-bold">{{ __('License') }}</h3>

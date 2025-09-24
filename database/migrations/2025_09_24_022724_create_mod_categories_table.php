@@ -17,11 +17,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('hub_id')->nullable()->unique()->index()->comment('Hub category ID');
             $table->string('title');
+            $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->integer('show_order')->default(0);
             $table->timestamps();
 
-            $table->index('show_order');
+            $table->index('slug');
         });
     }
 

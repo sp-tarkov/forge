@@ -94,8 +94,8 @@
                 id="disclosure-1"
                 class="py-10 border-b border-gray-400 dark:border-gray-700"
             >
-                <div class="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
-                    <div class="grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 md:gap-y-2 md:grid-cols-2 md:gap-x-6">
+                <div class="mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
+                    <div class="col-span-2 grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 md:gap-y-2 md:grid-cols-2 md:gap-x-6">
                         <!-- SPT Versions fieldset spanning both columns -->
                         <fieldset class="col-span-1 md:col-span-2">
                             <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
@@ -173,16 +173,29 @@
                             </div>
                         </fieldset>
                     </div>
-                    <div class="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
-                        <fieldset>
-                            <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Featured') }}</legend>
-                            <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                                <x-filter-radio id="featured-0" name="featured" value="include">{{ __('Include') }}</x-filter-radio>
-                                <x-filter-radio id="featured-1" name="featured" value="exclude">{{ __('Exclude') }}</x-filter-radio>
-                                <x-filter-radio id="featured-2" name="featured" value="only">{{ __('Only') }}</x-filter-radio>
-                            </div>
-                        </fieldset>
-                    </div>
+                    <fieldset class="col-span-1">
+                        <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Featured') }}</legend>
+                        <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                            <x-filter-radio id="featured-0" name="featured" value="include">{{ __('Include') }}</x-filter-radio>
+                            <x-filter-radio id="featured-1" name="featured" value="exclude">{{ __('Exclude') }}</x-filter-radio>
+                            <x-filter-radio id="featured-2" name="featured" value="only">{{ __('Only') }}</x-filter-radio>
+                        </div>
+                    </fieldset>
+                    <fieldset class="col-span-1">
+                        <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Category') }}</legend>
+                        <div class="pt-6 sm:pt-4">
+                            <select
+                                wire:model.live="category"
+                                class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
+                                wire:loading.attr="disabled"
+                            >
+                                <option value="">{{ __('All Categories') }}</option>
+                                @foreach ($availableCategories as $cat)
+                                    <option value="{{ $cat->slug }}">{{ $cat->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </fieldset>
                 </div>
             </div>
             <div class="col-start-1 row-start-1 py-4">
