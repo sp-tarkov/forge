@@ -10,6 +10,7 @@ use App\Jobs\Import\DataTransferObjects\CommentLikeDto;
 use App\Jobs\Import\DataTransferObjects\CommentResponseDto;
 use App\Jobs\Import\DataTransferObjects\GitHubSptVersion;
 use App\Jobs\Import\DataTransferObjects\HubMod;
+use App\Jobs\Import\DataTransferObjects\HubModCategory;
 use App\Jobs\Import\DataTransferObjects\HubModLicense;
 use App\Jobs\Import\DataTransferObjects\HubModVersion;
 use App\Jobs\Import\DataTransferObjects\HubUser;
@@ -25,6 +26,7 @@ use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\ModSourceCodeLink;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -94,6 +96,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->getHubUserCoverPhotos();
         $this->getHubUserFollows();
         $this->getHubModLicenses();
+        $this->getHubModCategories();
+        $this->removeDeletedHubCategories();
         $this->getGitHubSptVersions();
         $this->getHubMods();
         $this->getHubModVersions();
@@ -675,6 +679,116 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * Get all mod categories from the Hub database and process them.
+     **/
+    private function getHubModCategories(): void
+    {
+        // First, fetch all categories in one query to build the mapping
+        $allCategories = DB::connection('hub')
+            ->table('wcf1_category')
+            ->where('objectTypeID', 310)
+            ->orderBy('parentCategoryID')
+            ->orderBy('showOrder')
+            ->orderBy('categoryID')
+            ->get();
+
+        /** @var Collection<int, HubModCategory> $hubCategories */
+        $hubCategories = $allCategories->map(fn (object $record): HubModCategory => HubModCategory::fromArray((array) $record));
+
+        // Build a map of category IDs to their titles for exclusion logic
+        $categoryTitleMap = $hubCategories->pluck('title', 'categoryID');
+
+        // Find the ID of "Server mods" category to identify its children (case-insensitive)
+        $serverModsCategoryId = $hubCategories->first(fn (HubModCategory $cat): bool => strtolower($cat->title) === 'server mods')?->categoryID;
+
+        // Categories to exclude by title (lowercase for case-insensitive comparison)
+        $excludedTitles = ['releases', 'client mods', 'server mods'];
+
+        // Filter categories:
+        // 1. Exclude categories with the specified titles (case-insensitive)
+        // 2. Include children of "Server mods" as root categories
+        // 3. Include other root categories not in the exclusion list
+        $categoriesToProcess = $hubCategories->filter(function (HubModCategory $category) use ($excludedTitles, $serverModsCategoryId): bool {
+            // Exclude specific categories by title (case-insensitive)
+            if (in_array(strtolower($category->title), $excludedTitles)) {
+                return false;
+            }
+
+            // Include children of "Server mods" category (they'll become root categories)
+            if ($serverModsCategoryId && $category->parentCategoryID === $serverModsCategoryId) {
+                return true;
+            }
+
+            // Include root categories that aren't excluded
+            if ($category->parentCategoryID === 0) {
+                return true;
+            }
+
+            // Exclude all other child categories
+            return false;
+        });
+
+        // Process all filtered categories as root categories
+        $this->processModCategoryBatch($categoriesToProcess);
+    }
+
+    /**
+     * Process a batch of Hub mod categories.
+     *
+     * @param  Collection<int, HubModCategory>  $hubModCategories
+     */
+    private function processModCategoryBatch(Collection $hubModCategories): void
+    {
+        if ($hubModCategories->isEmpty()) {
+            return;
+        }
+
+        $now = Carbon::now('UTC')->toDateTimeString();
+
+        $categoryData = $hubModCategories->map(fn (HubModCategory $hubCategory): array => [
+            'hub_id' => $hubCategory->categoryID,
+            'title' => $hubCategory->title,
+            'slug' => Str::slug($hubCategory->title),
+            'description' => $hubCategory->description,
+            'created_at' => $hubCategory->getCreatedAt(),
+            'updated_at' => $now,
+        ])->toArray();
+
+        ModCategory::withoutEvents(function () use ($categoryData): void {
+            // Get existing hub_ids to determine which records to update vs. insert
+            $hubIds = collect($categoryData)->pluck('hub_id');
+            $existingCategories = ModCategory::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($categoryData as $category) {
+                if (in_array($category['hub_id'], $existingCategories)) {
+                    $updateData[] = $category;
+                } else {
+                    $insertData[] = $category;
+                }
+            }
+
+            // Insert new categories
+            if (! empty($insertData)) {
+                ModCategory::query()->insert($insertData);
+            }
+
+            // Update existing categories
+            foreach ($updateData as $category) {
+                ModCategory::query()->where('hub_id', $category['hub_id'])->update([
+                    'title' => $category['title'],
+                    'slug' => $category['slug'],
+                    'description' => $category['description'],
+                    'updated_at' => $category['updated_at'],
+                ]);
+            }
+        });
+    }
+
+    /**
      * Get all SPT versions from the GitHub build repository:
      * https://github.com/sp-tarkov/build/releases
      *
@@ -837,6 +951,9 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         /** @var EloquentCollection<int, License> $localLicenses */
         $localLicenses = License::all()->keyBy('hub_id');
 
+        /** @var EloquentCollection<int, ModCategory> $localCategories */
+        $localCategories = ModCategory::all()->keyBy('hub_id');
+
         DB::connection('hub')
             ->table('filebase1_file as file')
             ->select(
@@ -879,7 +996,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->groupBy('file.fileID')
             ->orderBy('file.fileID')
             ->having('spt_version_label', '!=', '')
-            ->chunk(1000, function (Collection $records) use ($localLicenses): void {
+            ->chunk(1000, function (Collection $records) use ($localLicenses, $localCategories): void {
                 /** @var Collection<int, object> $records */
 
                 /** @var Collection<int, HubMod> $hubMods */
@@ -905,7 +1022,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     $hubMods,
                     $localOwners,
                     $localLicenses,
-                    $localAuthors
+                    $localAuthors,
+                    $localCategories
                 );
             });
     }
@@ -917,12 +1035,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * @param  EloquentCollection<int, User>  $localOwners
      * @param  EloquentCollection<int, License>  $localLicenses
      * @param  EloquentCollection<int, User>  $localAuthors
+     * @param  EloquentCollection<int, ModCategory>  $localCategories
      */
     private function processModBatch(
         Collection $hubMods,
         EloquentCollection $localOwners,
         EloquentCollection $localLicenses,
-        EloquentCollection $localAuthors
+        EloquentCollection $localAuthors,
+        EloquentCollection $localCategories
     ): void {
         // Filter out deleted mods and collect their hub_ids for deletion
         $deletedHubIds = $hubMods->filter(fn (HubMod $hubMod): bool => (bool) $hubMod->isDeleted)
@@ -940,6 +1060,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'hub_id' => $hubMod->fileID,
             'owner_id' => $localOwners->get($hubMod->userID)?->id,
             'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
+            'category_id' => $localCategories->get($hubMod->categoryID)?->id,
             'name' => $hubMod->subject,
             'slug' => Str::slug($hubMod->subject),
             'teaser' => $hubMod->getTeaser(),
@@ -2254,6 +2375,25 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     CommentReaction::query()->whereIn('hub_id', $chunk)->delete();
                 }
             }
+        }
+    }
+
+    /**
+     * Remove categories that have been deleted from the Hub.
+     */
+    private function removeDeletedHubCategories(): void
+    {
+        $hubCategoryIds = DB::connection('hub')
+            ->table('wcf1_category')
+            ->where('objectTypeID', 310)
+            ->pluck('categoryID')
+            ->toArray();
+
+        if (empty($hubCategoryIds)) {
+            // If no categories exist in hub, delete all local categories with hub_id
+            ModCategory::query()->whereNotNull('hub_id')->delete();
+        } else {
+            ModCategory::query()->whereNotNull('hub_id')->whereNotIn('hub_id', $hubCategoryIds)->delete();
         }
     }
 

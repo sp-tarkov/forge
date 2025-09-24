@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\ModDependency;
 use App\Models\ModVersion;
 use App\Models\User;
@@ -66,12 +67,22 @@ class ModSeeder extends Seeder
     private function seedMods(array $counts, Collection $licenses): void
     {
         $this->mods = collect();
+        $categories = ModCategory::all();
 
-        Mod::withoutEvents(function () use ($counts, $licenses) {
+        Mod::withoutEvents(function () use ($counts, $licenses, $categories) {
             $this->mods = collect(progress(
                 label: 'Adding Mods...',
                 steps: $counts['mod'],
-                callback: fn () => Mod::factory()->recycle([$licenses])->create()
+                callback: function () use ($licenses, $categories) {
+                    $mod = Mod::factory()->recycle([$licenses])->create();
+                    // 80% chance of having a category
+                    if ($categories->isNotEmpty() && rand(1, 10) <= 8) {
+                        $mod->category_id = $categories->random()->id;
+                        $mod->save();
+                    }
+
+                    return $mod;
+                }
             ));
         });
     }

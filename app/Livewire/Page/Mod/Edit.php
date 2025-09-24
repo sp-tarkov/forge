@@ -65,6 +65,11 @@ class Edit extends Component
     public string $license = '';
 
     /**
+     * The category of the mod.
+     */
+    public string $category = '';
+
+    /**
      * The source code links of the mod.
      *
      * @var array<int, array{url: string, label: string|null}>
@@ -108,6 +113,7 @@ class Edit extends Component
         $this->teaser = $this->mod->teaser;
         $this->description = $this->mod->description;
         $this->license = (string) $this->mod->license_id;
+        $this->category = (string) ($this->mod->category_id ?? '');
 
         // Load existing source code links
         $this->sourceCodeLinks = $this->mod->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
@@ -140,6 +146,7 @@ class Edit extends Component
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',
             'license' => 'required|exists:licenses,id',
+            'category' => 'required|exists:mod_categories,id',
             'sourceCodeLinks' => 'required|array|min:1|max:4',
             'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
             'sourceCodeLinks.*.label' => 'string|max:50',
@@ -199,6 +206,7 @@ class Edit extends Component
         $this->mod->teaser = $this->teaser;
         $this->mod->description = $this->description;
         $this->mod->license_id = (int) $this->license;
+        $this->mod->category_id = (int) $this->category;
         $this->mod->contains_ai_content = $this->containsAiContent;
         $this->mod->contains_ads = $this->containsAds;
         $this->mod->comments_disabled = $this->commentsDisabled;

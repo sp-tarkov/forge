@@ -124,6 +124,22 @@ class ModFilter
     }
 
     /**
+     * Filter the results by category slug.
+     *
+     * @return Builder<Mod>
+     */
+    private function category(mixed $categorySlug): Builder
+    {
+        if (! is_string($categorySlug) || empty($categorySlug)) {
+            return $this->builder;
+        }
+
+        return $this->builder->whereHas('category', function (Builder $query) use ($categorySlug): void {
+            $query->where('slug', $categorySlug);
+        });
+    }
+
+    /**
      * Filter the results to specific SPT versions.
      *
      * @param  string|array<int, string>  $versions

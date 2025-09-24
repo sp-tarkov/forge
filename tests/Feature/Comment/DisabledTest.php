@@ -8,6 +8,7 @@ use App\Livewire\Page\Mod\Edit;
 use App\Models\Comment;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -134,6 +135,7 @@ describe('Comment Policy with Disabled Comments', function (): void {
 describe('Mod Create Form', function (): void {
     it('creates mod with comments disabled when checkbox is checked', function (): void {
         $license = License::factory()->create();
+        $category = ModCategory::factory()->create();
         $user = User::factory()->withMfa()->create();
 
         $this->actingAs($user);
@@ -147,6 +149,7 @@ describe('Mod Create Form', function (): void {
             ->set('teaser', 'Test teaser')
             ->set('description', 'Test description')
             ->set('license', (string) $license->id)
+            ->set('category', (string) $category->id)
             ->set('sourceCodeLinks.0.url', 'https://github.com/test/mod')
             ->set('sourceCodeLinks.0.label', '')
             ->set('containsAiContent', false)
@@ -164,6 +167,7 @@ describe('Mod Create Form', function (): void {
 
     it('creates mod with comments enabled by default', function (): void {
         $license = License::factory()->create();
+        $category = ModCategory::factory()->create();
         $user = User::factory()->withMfa()->create();
 
         $this->actingAs($user);
@@ -177,6 +181,7 @@ describe('Mod Create Form', function (): void {
             ->set('teaser', 'Test teaser')
             ->set('description', 'Test description')
             ->set('license', (string) $license->id)
+            ->set('category', (string) $category->id)
             ->set('sourceCodeLinks.0.url', 'https://github.com/test/mod2')
             ->set('sourceCodeLinks.0.label', '')
             ->set('containsAiContent', false)
