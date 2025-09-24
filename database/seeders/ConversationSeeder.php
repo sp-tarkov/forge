@@ -82,6 +82,15 @@ class ConversationSeeder extends Seeder
         // Create messages
         $messages = $this->createMessages($conversation, $user1, $user2, $counts);
 
+        // Update conversation's last message fields (since we're using withoutEvents)
+        if ($messages->isNotEmpty()) {
+            $lastMessage = $messages->last();
+            $conversation->update([
+                'last_message_id' => $lastMessage->id,
+                'last_message_at' => $lastMessage->created_at,
+            ]);
+        }
+
         // Maybe archive the conversation
         $this->maybeArchiveConversation($conversation, $user1, $user2, $messages);
     }
@@ -196,12 +205,14 @@ class ConversationSeeder extends Seeder
      */
     private function createMessage(Conversation $conversation, User $sender, \DateTime $timestamp): Message
     {
-        return Message::factory()->create([
-            'conversation_id' => $conversation->id,
-            'user_id' => $sender->id,
-            'created_at' => $timestamp,
-            'updated_at' => $timestamp,
-        ]);
+        return Message::withoutEvents(function () use ($conversation, $sender, $timestamp) {
+            return Message::factory()->create([
+                'conversation_id' => $conversation->id,
+                'user_id' => $sender->id,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ]);
+        });
     }
 
     /**
@@ -281,12 +292,14 @@ class ConversationSeeder extends Seeder
         $markdownContent = file_get_contents($markdownPath);
 
         // Create initial message from random user with markdown content
-        $markdownMessage = Message::factory()->create([
-            'conversation_id' => $conversation->id,
-            'user_id' => $randomUser->id,
-            'content' => $markdownContent,
-            'created_at' => now()->subHours(3),
-        ]);
+        $markdownMessage = Message::withoutEvents(function () use ($conversation, $randomUser, $markdownContent) {
+            return Message::factory()->create([
+                'conversation_id' => $conversation->id,
+                'user_id' => $randomUser->id,
+                'content' => $markdownContent,
+                'created_at' => now()->subHours(3),
+            ]);
+        });
 
         // Test account reads the message
         MessageRead::factory()->create([
@@ -296,12 +309,14 @@ class ConversationSeeder extends Seeder
         ]);
 
         // Test account responds
-        $response = Message::factory()->create([
-            'conversation_id' => $conversation->id,
-            'user_id' => $testAccount->id,
-            'content' => "Thanks for sharing this! The **markdown formatting** looks great.\n\nI especially like:\n- The code examples\n- The organized structure\n- The helpful links\n\nI'll give it a try and let you know how it goes!",
-            'created_at' => now()->subHours(2),
-        ]);
+        $response = Message::withoutEvents(function () use ($conversation, $testAccount) {
+            return Message::factory()->create([
+                'conversation_id' => $conversation->id,
+                'user_id' => $testAccount->id,
+                'content' => "Thanks for sharing this! The **markdown formatting** looks great.\n\nI especially like:\n- The code examples\n- The organized structure\n- The helpful links\n\nI'll give it a try and let you know how it goes!",
+                'created_at' => now()->subHours(2),
+            ]);
+        });
 
         // Random user reads the response
         MessageRead::factory()->create([
@@ -311,11 +326,19 @@ class ConversationSeeder extends Seeder
         ]);
 
         // Random user sends another message
-        Message::factory()->create([
-            'conversation_id' => $conversation->id,
-            'user_id' => $randomUser->id,
-            'content' => "You're welcome! Let me know if you need any help with the `configuration settings` or if you run into any ~~problems~~ issues.",
-            'created_at' => now()->subMinutes(30),
+        $finalMessage = Message::withoutEvents(function () use ($conversation, $randomUser) {
+            return Message::factory()->create([
+                'conversation_id' => $conversation->id,
+                'user_id' => $randomUser->id,
+                'content' => "You're welcome! Let me know if you need any help with the `configuration settings` or if you run into any ~~problems~~ issues.",
+                'created_at' => now()->subMinutes(30),
+            ]);
+        });
+
+        // Update conversation's last message fields
+        $conversation->update([
+            'last_message_id' => $finalMessage->id,
+            'last_message_at' => $finalMessage->created_at,
         ]);
 
         $this->command->outputComponents()->info("Created markdown test conversation between {$randomUser->email} and {$testAccount->email}");
