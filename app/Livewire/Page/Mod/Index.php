@@ -73,8 +73,8 @@ class Index extends Component
     /**
      * The category filter value.
      */
-    #[Url]
-    public ?string $category = null;
+    #[Url(except: '')]
+    public string $category = '';
 
     /**
      * The available SPT versions.
@@ -123,7 +123,7 @@ class Index extends Component
         $this->query = '';
         $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
-        $this->category = null;
+        $this->category = '';
 
         unset($this->splitSptVersions); // Clear computed property cache
     }
@@ -281,7 +281,7 @@ class Index extends Component
             $count++;
         }
 
-        if ($this->category !== null) {
+        if ($this->category !== '') {
             $count++;
         }
 
