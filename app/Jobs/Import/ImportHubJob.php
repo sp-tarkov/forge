@@ -196,16 +196,18 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->whereIn('hub_id', $hubIds)
             ->get()
             ->keyBy('hub_id');
+        // Use lowercase email as key to ensure case-insensitive matching
         $existingUsersByEmail = User::query()
             ->whereIn('email', $emails)
             ->get()
-            ->keyBy('email');
+            ->keyBy(fn (User $user): string => Str::lower($user->email));
 
         // Process users using updateOrInsert method
         User::withoutEvents(function () use ($userData, $existingUsersByHubId, $existingUsersByEmail): void {
             foreach ($userData as $user) {
                 $existingByHubId = $existingUsersByHubId->get($user['hub_id']);
-                $existingByEmail = $existingUsersByEmail->get($user['email']);
+                // Use lowercase email for lookup to match the key format
+                $existingByEmail = $existingUsersByEmail->get(Str::lower($user['email']));
 
                 // Check for conflicts before attempting updateOrInsert
                 if ($existingByHubId && $existingByEmail && $existingByEmail->hub_id !== $user['hub_id']) {
