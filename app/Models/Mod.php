@@ -44,6 +44,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $description
  * @property string $thumbnail
  * @property int|null $license_id
+ * @property int|null $category_id
  * @property int $downloads
  * @property bool $featured
  * @property bool $contains_ai_content
@@ -57,6 +58,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read string $description_html
  * @property-read User|null $owner
  * @property-read License|null $license
+ * @property-read ModCategory|null $category
  * @property-read Collection<int, User> $authors
  * @property-read Collection<int, ModVersion> $versions
  * @property-read Collection<int, ModSourceCodeLink> $sourceCodeLinks
@@ -155,6 +157,16 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     public function license(): BelongsTo
     {
         return $this->belongsTo(License::class);
+    }
+
+    /**
+     * The relationship between a mod and its category.
+     *
+     * @return BelongsTo<ModCategory, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ModCategory::class);
     }
 
     /**
@@ -306,6 +318,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     {
         return [
             'owner_id' => 'integer',
+            'category_id' => 'integer',
             'featured' => 'boolean',
             'contains_ai_content' => 'boolean',
             'contains_ads' => 'boolean',

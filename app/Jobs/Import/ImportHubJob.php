@@ -10,6 +10,7 @@ use App\Jobs\Import\DataTransferObjects\CommentLikeDto;
 use App\Jobs\Import\DataTransferObjects\CommentResponseDto;
 use App\Jobs\Import\DataTransferObjects\GitHubSptVersion;
 use App\Jobs\Import\DataTransferObjects\HubMod;
+use App\Jobs\Import\DataTransferObjects\HubModCategory;
 use App\Jobs\Import\DataTransferObjects\HubModLicense;
 use App\Jobs\Import\DataTransferObjects\HubModVersion;
 use App\Jobs\Import\DataTransferObjects\HubUser;
@@ -25,6 +26,7 @@ use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\ModSourceCodeLink;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -94,6 +96,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         $this->getHubUserCoverPhotos();
         $this->getHubUserFollows();
         $this->getHubModLicenses();
+        $this->getHubModCategories();
         $this->getGitHubSptVersions();
         $this->getHubMods();
         $this->getHubModVersions();
@@ -675,6 +678,125 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * Get all mod categories from the Hub database and process them.
+     **/
+    private function getHubModCategories(): void
+    {
+        // First, fetch all categories in one query to build the mapping
+        $allCategories = DB::connection('hub')
+            ->table('wcf1_category')
+            ->where('objectTypeID', 310)
+            ->orderBy('parentCategoryID')
+            ->orderBy('showOrder')
+            ->orderBy('categoryID')
+            ->get();
+
+        /** @var Collection<int, HubModCategory> $hubCategories */
+        $hubCategories = $allCategories->map(fn (object $record): HubModCategory => HubModCategory::fromArray((array) $record));
+
+        // Process root categories first (parentCategoryID = 0)
+        $rootCategories = $hubCategories->filter(fn (HubModCategory $category): bool => $category->parentCategoryID === 0);
+        $this->processModCategoryBatch($rootCategories);
+
+        // Process child categories by depth to maintain parent-child relationships
+        $remainingCategories = $hubCategories->filter(fn (HubModCategory $category): bool => $category->parentCategoryID !== 0);
+
+        while ($remainingCategories->isNotEmpty()) {
+            // Get categories whose parents have already been processed
+            $processableCategories = collect();
+            $existingHubIds = ModCategory::query()->pluck('hub_id')->toArray();
+
+            foreach ($remainingCategories as $key => $category) {
+                if (in_array($category->parentCategoryID, $existingHubIds)) {
+                    $processableCategories->push($category);
+                    $remainingCategories->forget($key);
+                }
+            }
+
+            if ($processableCategories->isNotEmpty()) {
+                $this->processModCategoryBatch($processableCategories);
+            } else {
+                // Break if no more categories can be processed (orphaned categories)
+                break;
+            }
+        }
+    }
+
+    /**
+     * Process a batch of Hub mod categories.
+     *
+     * @param  Collection<int, HubModCategory>  $hubModCategories
+     */
+    private function processModCategoryBatch(Collection $hubModCategories): void
+    {
+        if ($hubModCategories->isEmpty()) {
+            return;
+        }
+
+        $now = Carbon::now('UTC')->toDateTimeString();
+
+        // Get mapping of hub parent IDs to local parent IDs
+        $parentHubIds = $hubModCategories
+            ->pluck('parentCategoryID')
+            ->filter()
+            ->unique();
+
+        /** @var EloquentCollection<int, ModCategory> $parentCategories */
+        $parentCategories = ModCategory::query()->whereIn('hub_id', $parentHubIds)->get()->keyBy('hub_id');
+
+        $categoryData = $hubModCategories->map(function (HubModCategory $hubCategory) use ($parentCategories, $now): array {
+            $parentCategory = null;
+            if ($hubCategory->parentCategoryID > 0) {
+                $parentCategory = $parentCategories->get($hubCategory->parentCategoryID);
+            }
+
+            return [
+                'hub_id' => $hubCategory->categoryID,
+                'parent_category_id' => $parentCategory?->id,
+                'title' => $hubCategory->title,
+                'description' => $hubCategory->description,
+                'show_order' => $hubCategory->showOrder,
+                'created_at' => $hubCategory->getCreatedAt(),
+                'updated_at' => $now,
+            ];
+        })->toArray();
+
+        ModCategory::withoutEvents(function () use ($categoryData): void {
+            // Get existing hub_ids to determine which records to update vs. insert
+            $hubIds = collect($categoryData)->pluck('hub_id');
+            $existingCategories = ModCategory::query()->whereIn('hub_id', $hubIds)->pluck('hub_id')->toArray();
+
+            // Split data into inserts (new) and updates (existing)
+            $insertData = [];
+            $updateData = [];
+
+            foreach ($categoryData as $category) {
+                if (in_array($category['hub_id'], $existingCategories)) {
+                    $updateData[] = $category;
+                } else {
+                    $insertData[] = $category;
+                }
+            }
+
+            // Insert new categories
+            if (! empty($insertData)) {
+                ModCategory::query()->insert($insertData);
+            }
+
+            // Update existing categories
+            foreach ($updateData as $category) {
+                ModCategory::query()->where('hub_id', $category['hub_id'])->update([
+                    'parent_category_id' => $category['parent_category_id'],
+                    'title' => $category['title'],
+                    'description' => $category['description'],
+                    'show_order' => $category['show_order'],
+                    'updated_at' => $category['updated_at'],
+                ]);
+            }
+        });
+    }
+
+    /**
      * Get all SPT versions from the GitHub build repository:
      * https://github.com/sp-tarkov/build/releases
      *
@@ -837,6 +959,9 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
         /** @var EloquentCollection<int, License> $localLicenses */
         $localLicenses = License::all()->keyBy('hub_id');
 
+        /** @var EloquentCollection<int, ModCategory> $localCategories */
+        $localCategories = ModCategory::all()->keyBy('hub_id');
+
         DB::connection('hub')
             ->table('filebase1_file as file')
             ->select(
@@ -879,7 +1004,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             ->groupBy('file.fileID')
             ->orderBy('file.fileID')
             ->having('spt_version_label', '!=', '')
-            ->chunk(1000, function (Collection $records) use ($localLicenses): void {
+            ->chunk(1000, function (Collection $records) use ($localLicenses, $localCategories): void {
                 /** @var Collection<int, object> $records */
 
                 /** @var Collection<int, HubMod> $hubMods */
@@ -905,7 +1030,8 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     $hubMods,
                     $localOwners,
                     $localLicenses,
-                    $localAuthors
+                    $localAuthors,
+                    $localCategories
                 );
             });
     }
@@ -917,12 +1043,14 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
      * @param  EloquentCollection<int, User>  $localOwners
      * @param  EloquentCollection<int, License>  $localLicenses
      * @param  EloquentCollection<int, User>  $localAuthors
+     * @param  EloquentCollection<int, ModCategory>  $localCategories
      */
     private function processModBatch(
         Collection $hubMods,
         EloquentCollection $localOwners,
         EloquentCollection $localLicenses,
-        EloquentCollection $localAuthors
+        EloquentCollection $localAuthors,
+        EloquentCollection $localCategories
     ): void {
         // Filter out deleted mods and collect their hub_ids for deletion
         $deletedHubIds = $hubMods->filter(fn (HubMod $hubMod): bool => (bool) $hubMod->isDeleted)
@@ -940,6 +1068,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'hub_id' => $hubMod->fileID,
             'owner_id' => $localOwners->get($hubMod->userID)?->id,
             'license_id' => $localLicenses->get($hubMod->licenseID)?->id,
+            'category_id' => $localCategories->get($hubMod->categoryID)?->id,
             'name' => $hubMod->subject,
             'slug' => Str::slug($hubMod->subject),
             'teaser' => $hubMod->getTeaser(),
