@@ -106,6 +106,22 @@
                             </flux:field>
 
                             <flux:field class="col-span-6">
+                                <flux:label>{{ __('Category') }}</flux:label>
+                                <flux:description>{{ __('Select the category that best describes your mod. This helps users find your mod more easily.') }}</flux:description>
+                                <flux:select wire:model.blur="category" placeholder="Choose category...">
+                                    @foreach(\App\Models\ModCategory::whereNull('parent_category_id')->orderBy('show_order')->orderBy('title')->get() as $category)
+                                        <optgroup label="{{ $category->title }}">
+                                            <flux:select.option value="{{ $category->id }}">{{ $category->title }}</flux:select.option>
+                                            @foreach($category->children as $childCategory)
+                                                <flux:select.option value="{{ $childCategory->id }}">{{ $childCategory->title }}</flux:select.option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endforeach
+                                </flux:select>
+                                <flux:error name="category" />
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
                                 <flux:label>{{ __('Source Code Links') }}</flux:label>
                                 <flux:description>{!! __('Provide links to the source code for your mod. The source code for mods is required to be publicly available. You can add up to 4 links (e.g., main repository, mirror, documentation). We recommend using services like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.') !!}</flux:description>
 
