@@ -236,6 +236,16 @@
                 />
             @endif
 
+            {{-- Profile Binding Notice --}}
+            @if ($requiresProfileBindingNotice)
+                <flux:callout icon="information-circle" color="orange" inline="inline">
+                    <flux:callout.heading>Possibly Profile Binding</flux:callout.heading>
+                    <flux:callout.text>
+                        This mod <em>may</em> make permanent changes to your profile, and <em>may</em> not be removable without starting a new profile. Ensure profile backups exist before using it. <a href="https://wiki.sp-tarkov.com/Installing_Mods#profiles" target="_blank" class="underline text-orange-700 hover:text-orange-800 dark:text-orange-300 dark:hover:text-orange-200">Read more.</a>
+                    </flux:callout.text>
+                </flux:callout>
+            @endif
+
             {{-- Additional Mod Details --}}
             <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
