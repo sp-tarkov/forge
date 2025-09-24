@@ -153,6 +153,25 @@ class Show extends Component
     }
 
     /**
+     * Check if the mod category requires a profile binding notice.
+     */
+    public function requiresProfileBindingNotice(): bool
+    {
+        // Categories that typically bind to the user's profile
+        $profileBindingCategoryIds = [
+            2,  // Overhauls
+            4,  // Items
+            7,  // Quests
+            13, // Weapons
+            14, // Clothing
+            15, // Equipment
+            16, // Traders
+        ];
+
+        return in_array($this->mod->category_id, $profileBindingCategoryIds, true);
+    }
+
+    /**
      * Render the component.
      */
     #[Layout('components.layouts.base')]
@@ -163,6 +182,7 @@ class Show extends Component
             'versions' => $this->versions(),
             'shouldShowWarnings' => $this->shouldShowWarnings(),
             'warningMessages' => $this->getWarningMessages(),
+            'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
         ]);
     }
 }
