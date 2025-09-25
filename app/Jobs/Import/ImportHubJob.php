@@ -2500,4 +2500,30 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                 ->delete();
         }
     }
+
+    /**
+     * Remove smilies images from content.
+     *
+     * Removes image tags with src matching "https://hub.sp-tarkov.com/images/smilies/*"
+     * from HTML content before processing.
+     */
+    public static function removeSmiliesImages(string $content): string
+    {
+        // Pattern to match img tags with hub smilies URLs
+        // Matches various forms of img tags with the smilies URL pattern
+        $patterns = [
+            // Match <img> tags with src attribute containing smilies URL
+            '/<img[^>]*src=["\']https:\/\/hub\.sp-tarkov\.com\/images\/smilies\/[^"\']*["\'][^>]*>/i',
+            // Match markdown image syntax with smilies URL
+            '/!\[[^\]]*\]\(https:\/\/hub\.sp-tarkov\.com\/images\/smilies\/[^)]+\)/i',
+            // Match direct URL references that might be converted to images
+            '/https:\/\/hub\.sp-tarkov\.com\/images\/smilies\/[^\s<>]*/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            $content = preg_replace($pattern, '', (string) $content);
+        }
+
+        return $content;
+    }
 }

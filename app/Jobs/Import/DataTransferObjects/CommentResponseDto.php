@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Import\DataTransferObjects;
 
+use App\Jobs\Import\ImportHubJob;
 use Illuminate\Support\Carbon;
 use League\HTMLToMarkdown\HtmlConverter;
 use Stevebauman\Purify\Facades\Purify;
@@ -56,6 +57,9 @@ class CommentResponseDto
     public function getCleanMessage(): string
     {
         $content = $this->message;
+
+        // Remove smilies images before processing
+        $content = ImportHubJob::removeSmiliesImages($content);
 
         // If HTML is enabled, purify and convert to markdown
         if ($this->enableHtml) {

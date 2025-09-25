@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Import\DataTransferObjects;
 
+use App\Jobs\Import\ImportHubJob;
 use App\Support\Version;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -99,8 +100,11 @@ class HubModVersion
      */
     public function getCleanDescription(): string
     {
+        // Remove smilies images before processing
+        $content = ImportHubJob::removeSmiliesImages($this->description);
+
         // Use HTML Purifier to ensure it's safe and strip out any unsupported formatting.
-        $clean = Purify::clean($this->description);
+        $clean = Purify::clean($content);
 
         // Convert the HTML to Markdown.
         return (new HtmlConverter)->convert($clean);
