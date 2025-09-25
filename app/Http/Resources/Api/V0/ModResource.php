@@ -105,6 +105,10 @@ class ModResource extends JsonResource
             $data['contains_ai_content'] = (bool) $this->resource->contains_ai_content;
         }
 
+        if ($this->shouldInclude('category_id')) {
+            $data['category_id'] = $this->resource->category_id;
+        }
+
         if ($this->shouldInclude('published_at')) {
             $data['published_at'] = $this->resource->published_at?->toISOString();
         }
@@ -122,6 +126,7 @@ class ModResource extends JsonResource
         $data['authors'] = UserResource::collection($this->whenLoaded('authors'));
         $data['versions'] = ModVersionResource::collection($this->whenLoaded('versions', fn (): Collection => $this->resource->versions->take(10)));
         $data['license'] = $this->whenLoaded('license', fn (): ?LicenseResource => $this->resource->license ? new LicenseResource($this->resource->license) : null);
+        $data['category'] = $this->whenLoaded('category', fn (): ?ModCategoryResource => $this->resource->category ? new ModCategoryResource($this->resource->category) : null);
         $data['source_code_links'] = $this->whenLoaded('sourceCodeLinks', fn (): array => $this->resource->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
             'url' => $link->url,
             'label' => $link->label,

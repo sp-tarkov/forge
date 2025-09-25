@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SptVersionSeeder::class,
             UserSeeder::class,
+            ModCategorySeeder::class,
             ModSeeder::class,
             CommentSeeder::class,
             TrackingEventSeeder::class,

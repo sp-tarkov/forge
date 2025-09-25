@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Import\DataTransferObjects;
 
+use App\Jobs\Import\ImportHubJob;
 use App\Models\License;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -185,6 +186,10 @@ class HubMod
     public function getCleanMessage(): string
     {
         $dirty = $this->message;
+
+        // Remove smilies images before processing
+        $dirty = ImportHubJob::removeSmiliesImages($dirty);
+
         $countTabmenuReplaced = 0;
 
         // Replace the old tabmenu tag system with the new H1 tag.

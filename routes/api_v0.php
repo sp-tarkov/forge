@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V0\AuthController;
+use App\Http\Controllers\Api\V0\ModCategoryController;
 use App\Http\Controllers\Api\V0\ModController;
 use App\Http\Controllers\Api\V0\ModVersionController;
 use App\Http\Controllers\Api\V0\PingController;
@@ -31,6 +32,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/mods', [ModController::class, 'index'])->name('api.v0.mods');
     Route::get('/mod/{modId}', [ModController::class, 'show'])->where('modId', '[0-9]+')->name('api.v0.mods.show');
     Route::get('/mod/{modId}/versions', [ModVersionController::class, 'index'])->where('modId', '[0-9]+')->name('api.v0.mod.versions');
+
+    // Mod Categories
+    Route::get('/mod-categories', [ModCategoryController::class, 'index'])->name('api.v0.mod-categories');
+    Route::get('/mod-categories/{identifier}', [ModCategoryController::class, 'show'])->name('api.v0.mod-categories.show');
 
     // SPT Versions
     Route::get('/spt/versions', [SptVersionController::class, 'index'])->name('api.v0.spt.versions');

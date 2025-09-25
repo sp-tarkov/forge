@@ -58,6 +58,11 @@ class Create extends Component
     public string $license = '';
 
     /**
+     * The category of the mod.
+     */
+    public string $category = '';
+
+    /**
      * The source code links of the mod.
      *
      * @var array<int, array{url: string, label: string|null}>
@@ -115,6 +120,7 @@ class Create extends Component
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',
             'license' => 'required|exists:licenses,id',
+            'category' => 'required|exists:mod_categories,id',
             'sourceCodeLinks' => 'required|array|min:1|max:4',
             'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
             'sourceCodeLinks.*.label' => 'string|max:50',
@@ -179,6 +185,7 @@ class Create extends Component
             'teaser' => $this->teaser,
             'description' => $this->description,
             'license_id' => $this->license,
+            'category_id' => (int) $this->category,
             'contains_ai_content' => $this->containsAiContent,
             'contains_ads' => $this->containsAds,
             'comments_disabled' => $this->commentsDisabled,

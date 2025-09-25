@@ -44,17 +44,17 @@ class ModFilter
 
         return Mod::query()
             ->select('mods.*')
-            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false))
-            ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
-                $query->select(DB::raw(1))
-                    ->from('mod_versions')
-                    ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
-                    ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
-                    ->whereColumn('mod_versions.mod_id', 'mods.id')
-                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('spt_versions.version', '!=', '0.0.0'))
-                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
-                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
-            });
+            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false));
+    }
+
+    /**
+     * Check if the filters include a version filter.
+     */
+    private function hasVersionFilter(): bool
+    {
+        $versions = $this->filters['sptVersions'] ?? null;
+
+        return ! empty($versions) && $versions !== 'all';
     }
 
     /**
@@ -78,6 +78,11 @@ class ModFilter
      */
     public function apply(): Builder
     {
+        if (! $this->hasVersionFilter()) {
+            // Only call if we're not applying a specific version filter
+            $this->addBaseExistsClause();
+        }
+
         foreach ($this->filters as $method => $value) {
             if (method_exists($this, $method) && ! empty($value)) {
                 $this->$method($value);
@@ -85,6 +90,25 @@ class ModFilter
         }
 
         return $this->builder;
+    }
+
+    /**
+     * Add the base exists clause. Used when mod versions are being filtered.
+     */
+    private function addBaseExistsClause(): void
+    {
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
+        $this->builder->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
+            $query->select(DB::raw(1))
+                ->from('mod_versions')
+                ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
+                ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                ->whereColumn('mod_versions.mod_id', 'mods.id')
+                ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('spt_versions.version', '!=', '0.0.0'))
+                ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
+                ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
+        });
     }
 
     /**
@@ -124,6 +148,22 @@ class ModFilter
     }
 
     /**
+     * Filter the results by category slug.
+     *
+     * @return Builder<Mod>
+     */
+    private function category(mixed $categorySlug): Builder
+    {
+        if (! is_string($categorySlug) || empty($categorySlug)) {
+            return $this->builder;
+        }
+
+        return $this->builder->whereHas('category', function (Builder $query) use ($categorySlug): void {
+            $query->where('slug', $categorySlug);
+        });
+    }
+
+    /**
      * Filter the results to specific SPT versions.
      *
      * @param  string|array<int, string>  $versions
@@ -131,12 +171,12 @@ class ModFilter
      */
     private function sptVersions(mixed $versions): Builder
     {
-        // If versions is "all" or empty, don't apply version filtering
+        // If versions is "all" or empty, no specific version filtering needed
         if ($versions === 'all' || empty($versions)) {
             return $this->builder;
         }
 
-        // If versions is "legacy", convert it to an array
+        // If versions are "legacy", convert it to an array
         if ($versions === 'legacy') {
             $versions = ['legacy'];
         }
@@ -152,12 +192,28 @@ class ModFilter
 
         // Both normal versions and legacy
         if (! empty($normalVersions) && $hasLegacyVersion) {
-            return $this->builder->where(function (Builder $query) use ($normalVersions, $showDisabled): void {
-                $query->whereExists(function (QueryBuilder $subQuery) use ($normalVersions, $showDisabled): void {
-                    $this->normalVersions($subQuery, $normalVersions, $showDisabled);
-                })->orWhereExists(function (QueryBuilder $subQuery) use ($showDisabled): void {
-                    $this->legacyVersions($subQuery, $showDisabled);
-                });
+            return $this->builder->whereExists(function (QueryBuilder $subQuery) use ($normalVersions, $showDisabled): void {
+                $subQuery->select(DB::raw(1))
+                    ->from('mod_versions')
+                    ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
+                    ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                    ->whereColumn('mod_versions.mod_id', 'mods.id')
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))
+                    ->where(function (QueryBuilder $query) use ($normalVersions, $showDisabled): void {
+                        // Include normal versions
+                        $query->whereIn('spt_versions.version', $normalVersions)
+                            ->where('spt_versions.version', '!=', '0.0.0');
+
+                        // Include legacy versions
+                        $activeSptVersions = SptVersion::getVersionsForLastThreeMinors()->pluck('version')->toArray();
+                        $query->orWhere(function (QueryBuilder $q) use ($activeSptVersions, $showDisabled): void {
+                            $q->whereNotIn('spt_versions.version', $activeSptVersions);
+                            if (! $showDisabled) {
+                                $q->where('spt_versions.version', '!=', '0.0.0');
+                            }
+                        });
+                    });
             });
         }
 
@@ -171,7 +227,15 @@ class ModFilter
         // Only normal versions
         if (! empty($normalVersions) && ! $hasLegacyVersion) {
             return $this->builder->whereExists(function (QueryBuilder $query) use ($normalVersions, $showDisabled): void {
-                $this->normalVersions($query, $normalVersions, $showDisabled);
+                $query->select(DB::raw(1))
+                    ->from('mod_versions')
+                    ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
+                    ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                    ->whereColumn('mod_versions.mod_id', 'mods.id')
+                    ->whereIn('spt_versions.version', $normalVersions)
+                    ->where('spt_versions.version', '!=', '0.0.0')
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
             });
         }
 

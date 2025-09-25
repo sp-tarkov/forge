@@ -6,6 +6,10 @@
     {!! __('Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}
 </x-slot>
 
+<x-slot:rssFeeds>
+    <link rel="alternate" type="application/rss+xml" title="The Forge - SPT Mods RSS Feed" href="{{ route('mods.rss') }}" />
+</x-slot>
+
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
         <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
@@ -29,7 +33,7 @@
     <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
         <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __('Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}</p>
-        <search class="md:hidden relative group mt-6">
+        <search class="lg:hidden relative group mt-6">
             <div class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-5 w-5 text-gray-500">
                     <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
@@ -46,39 +50,172 @@
         >
             <h2 id="filter-heading" class="sr-only">{{ __('Filters') }}</h2>
             <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-400 dark:border-gray-700">
-                <div class="mx-auto flex max-w-7xl text-sm">
-                    <button
-                        type="button"
-                        x-on:click="isFilterOpen = !isFilterOpen"
-                        class="group flex items-center font-medium text-gray-800 dark:text-gray-300 mx-0 pr-6 border-r border-gray-400 dark:border-gray-700"
-                        aria-controls="disclosure-1"
-                        aria-expanded="false"
-                    >
-                        <svg class="mr-2 h-5 w-5 flex-none text-gray-500 group-hover:text-gray-600 dark:text-gray-600" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
+                <div class="mx-auto flex flex-wrap items-center justify-center sm:justify-start gap-2 lg:gap-0 lg:flex-nowrap max-w-7xl text-sm">
+                    {{-- Filters button --}}
+                    <div class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-1 self-stretch">
+                        <button
+                            type="button"
+                            x-on:click="isFilterOpen = !isFilterOpen"
+                            class="group flex items-center font-medium text-gray-800 dark:text-gray-300 pr-3 sm:pr-4 lg:pr-4 xl:pr-6 whitespace-nowrap"
+                            aria-controls="disclosure-1"
+                            aria-expanded="false"
+                        >
+                        <svg class="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-none text-gray-500 group-hover:text-gray-600 dark:text-gray-600" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" />
                         </svg>
-                        {{ $this->filterCount }} {{ __('Filters') }}
-                    </button>
+                        <span class="hidden min-[400px]:inline">{{ $this->filterCount }}</span>
+                            <span class="ml-1">{{ __('Filters') }}</span>
+                        </button>
+                    </div>
 
-                    <search class="hidden md:flex relative group px-6 border-r border-gray-400 dark:border-gray-700">
-                        <div class="pointer-events-none absolute inset-y-0 left-8 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-5 w-5 text-gray-500">
+                    {{-- Search bar (only on large screens and up) --}}
+                    <div class="hidden lg:flex items-center border-r border-gray-400 dark:border-gray-700 flex-1 min-w-[280px] max-w-md order-2 self-stretch">
+                        <search class="flex relative group px-3 sm:px-4 lg:px-4 xl:px-6 w-full">
+                        <div class="pointer-events-none absolute inset-y-0 left-5 sm:left-6 lg:left-8 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 sm:h-5 sm:w-5 text-gray-500">
                                 <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
-                            </svg>
+                        </svg>
                         </div>
-                        <input wire:model.live.debounce.300ms="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
-                    </search>
+                        <input wire:model.live.debounce.300ms="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-8 sm:pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
+                        </search>
+                    </div>
 
-                    <button x-on:click="$wire.call('resetFilters')" type="button" class="px-6 text-gray-600 dark:text-gray-300">{{ __('Reset Filters') }}</button>
+                    {{-- Results Per Page Dropdown --}}
+                    <div class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-2 md:order-3 self-stretch">
+                        <div
+                            class="relative inline-block px-3 sm:px-3 lg:px-3 xl:px-4"
+                            x-data="{ isResultsPerPageOpen: false }"
+                            x-on:click.away="isResultsPerPageOpen = false"
+                        >
+                        <div class="flex">
+                                <button
+                                    type="button"
+                                    x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
+                                    class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                    id="menu-button-per-page"
+                                    :aria-expanded="isResultsPerPageOpen.toString()"
+                                    aria-haspopup="true"
+                                >
+                                    <span class="hidden lg:inline">{{ __('Per Page') }}</span>
+                                    <span class="lg:hidden">{{ __(':perPage/p', ['perPage' => $perPage]) }}</span>
+                                    <svg class="-mr-1 ml-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                        </div>
+                        <div
+                                x-cloak
+                                x-show="isResultsPerPageOpen"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                role="menu"
+                                aria-orientation="vertical"
+                                aria-labelledby="menu-button-per-page"
+                                tabindex="-1"
+                            >
+                                <div class="flex flex-col py-1.5">
+                                    @foreach($perPageOptions as $option)
+                                        <x-filter-menu-item filterName="perPage" :filter="$option" :currentFilter="$perPage">{{ $option }}</x-filter-menu-item>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div class="border-l border-gray-400 dark:border-gray-700" wire:loading.flex>
-                        <p class="pl-6 flex items-center font-medium text-gray-800 dark:text-gray-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin">
-                                <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />
-                                <path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" />
+                    {{-- Sort Dropdown --}}
+                    <div class="flex items-center flex-shrink-0 order-3 md:order-4 self-stretch">
+                        <div
+                            class="relative inline-block px-3 sm:px-3 lg:px-3 xl:px-4"
+                            x-data="{ isSortOpen: false }"
+                            x-on:click.away="isSortOpen = false"
+                        >
+                        <div class="flex">
+                                <button
+                                    type="button"
+                                    x-on:click="isSortOpen = !isSortOpen"
+                                    class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+                                    id="menu-button-sort"
+                                    :aria-expanded="isSortOpen.toString()"
+                                    aria-haspopup="true"
+                                >
+                                    {{ __('Sort') }}
+                                    <svg class="-mr-1 ml-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                        </div>
+                        <div
+                                x-cloak
+                                x-show="isSortOpen"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+                                role="menu"
+                                aria-orientation="vertical"
+                                aria-labelledby="menu-button-sort"
+                                tabindex="-1"
+                            >
+                                <div class="flex flex-col py-1.5">
+                                    <x-filter-menu-item filterName="order" filter="created" :currentFilter="$order">{{ __('Newest') }}</x-filter-menu-item>
+                                    <x-filter-menu-item filterName="order" filter="updated" :currentFilter="$order">{{ __('Recently Updated') }}</x-filter-menu-item>
+                                    <x-filter-menu-item filterName="order" filter="downloaded" :currentFilter="$order">{{ __('Most Downloaded') }}</x-filter-menu-item>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Loading indicator - displays at all breakpoints with reserved space --}}
+                    <div class="hidden sm:flex items-center flex-shrink-0 order-4 md:order-5 self-stretch" wire:loading.class="!flex border-l border-gray-400 dark:border-gray-700">
+                        <div class="px-3 sm:px-4 lg:px-4 xl:px-6 min-w-[2.5rem] lg:min-w-[5rem] xl:min-w-[7rem]">
+                            <p class="flex items-center font-medium text-gray-800 dark:text-gray-300" wire:loading.flex>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin">
+                                    <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />
+                                    <path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" />
+                                </svg>
+                                <span class="pl-1.5 hidden md:inline">{{ __('Loading...') }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Force line break on extra small screens before Reset/RSS --}}
+                    <div class="w-full sm:hidden order-5"></div>
+
+                    {{-- Spacer to push Reset and RSS to the right --}}
+                    <div class="hidden sm:flex flex-1 order-6 sm:order-5 md:order-6"></div>
+
+                    {{-- Reset Filters Button --}}
+                    <div class="flex items-center flex-shrink-0 order-6 sm:order-6 md:order-7 self-stretch">
+                        <button x-on:click="$wire.call('resetFilters')" type="button" class="px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm">
+                            {{ __('Reset Filters') }}
+                        </button>
+                    </div>
+
+                    {{-- RSS Feed Link --}}
+                    <div class="flex items-center sm:border-l border-gray-400 dark:border-gray-700 flex-shrink-0 order-7 sm:order-7 md:order-8 self-stretch">
+                        <a href="{{ route('mods.rss') }}?{{ http_build_query([
+                            'query' => $query,
+                            'order' => $order,
+                            'versions' => is_array($sptVersions) ? implode(',', $sptVersions) : $sptVersions,
+                            'featured' => $featured,
+                            'category' => $category,
+                        ]) }}"
+                           target="_blank"
+                           class="flex items-center px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm"
+                           title="{{ __('RSS Feed for Current Filters') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-1">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 0 0-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                             </svg>
-                            <span class="pl-1.5">{{ __('Loading...') }}</span>
-                        </p>
+                            {{ __('RSS') }}
+                        </a>
                     </div>
                 </div>
             </div>
@@ -94,16 +231,16 @@
                 id="disclosure-1"
                 class="py-10 border-b border-gray-400 dark:border-gray-700"
             >
-                <div class="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
-                    <div class="grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 md:gap-y-2 md:grid-cols-2 md:gap-x-6">
+                <div class="mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
+                    <div class="col-span-2 grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 md:gap-y-2 md:grid-cols-2 md:gap-x-6">
                         <!-- SPT Versions fieldset spanning both columns -->
                         <fieldset class="col-span-1 md:col-span-2">
                             <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
                             <div class="pt-6 sm:pt-4 pb-2 sm:pb-2 md:pb-1">
                                 <div class="flex items-center text-base sm:text-sm">
-                                    <input 
-                                        id="sptVersions-all" 
-                                        type="checkbox" 
+                                    <input
+                                        id="sptVersions-all"
+                                        type="checkbox"
                                         wire:click="toggleVersionFilter('all')"
                                         wire:key="all-{{ md5(json_encode($sptVersions)) }}"
                                         @checked($sptVersions === 'all')
@@ -114,15 +251,15 @@
                                 </div>
                             </div>
                         </fieldset>
-                        
+
                         <!-- First column of versions -->
                         <fieldset class="pt-4 sm:pt-4">
                             <div class="space-y-6 pt-0 sm:space-y-4">
                                 @foreach ($this->splitSptVersions[0] as $version)
                                     <div class="flex items-center text-base sm:text-sm">
-                                        <input 
-                                            id="sptVersions-{{ $version->version }}" 
-                                            type="checkbox" 
+                                        <input
+                                            id="sptVersions-{{ $version->version }}"
+                                            type="checkbox"
                                             wire:click="toggleVersionFilter('{{ $version->version }}')"
                                             wire:key="{{ $version->version }}-{{ md5(json_encode($sptVersions)) }}"
                                             @checked($sptVersions !== 'all' && is_array($sptVersions) && in_array($version->version, $sptVersions))
@@ -134,15 +271,15 @@
                                 @endforeach
                             </div>
                         </fieldset>
-                        
+
                         <!-- Second column of versions -->
                         <fieldset class="pt-4 sm:pt-4">
                             <div class="space-y-6 pt-0 sm:space-y-4">
                                 @foreach ($this->splitSptVersions[1] as $version)
                                     <div class="flex items-center text-base sm:text-sm">
-                                        <input 
-                                            id="sptVersions-{{ $version->version }}" 
-                                            type="checkbox" 
+                                        <input
+                                            id="sptVersions-{{ $version->version }}"
+                                            type="checkbox"
                                             wire:click="toggleVersionFilter('{{ $version->version }}')"
                                             wire:key="{{ $version->version }}-{{ md5(json_encode($sptVersions)) }}"
                                             @checked($sptVersions !== 'all' && is_array($sptVersions) && in_array($version->version, $sptVersions))
@@ -154,14 +291,14 @@
                                 @endforeach
                             </div>
                         </fieldset>
-                        
+
                         <!-- Legacy Versions fieldset spanning both columns -->
                         <fieldset class="col-span-1 md:col-span-2 pt-6 sm:pt-4 md:pt-2">
                             <div class="pt-2">
                                 <div class="flex items-center text-base sm:text-sm">
-                                    <input 
-                                        id="sptVersions-legacy" 
-                                        type="checkbox" 
+                                    <input
+                                        id="sptVersions-legacy"
+                                        type="checkbox"
                                         wire:click="toggleVersionFilter('legacy')"
                                         wire:key="legacy-{{ md5(json_encode($sptVersions)) }}"
                                         @checked($sptVersions !== 'all' && ((is_array($sptVersions) && in_array('legacy', $sptVersions)) || $sptVersions === 'legacy'))
@@ -173,123 +310,29 @@
                             </div>
                         </fieldset>
                     </div>
-                    <div class="grid auto-rows-min grid-cols-1 gap-y-10 md:grid-cols-2 md:gap-x-6">
-                        <fieldset>
-                            <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Featured') }}</legend>
-                            <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                                <x-filter-radio id="featured-0" name="featured" value="include">{{ __('Include') }}</x-filter-radio>
-                                <x-filter-radio id="featured-1" name="featured" value="exclude">{{ __('Exclude') }}</x-filter-radio>
-                                <x-filter-radio id="featured-2" name="featured" value="only">{{ __('Only') }}</x-filter-radio>
-                            </div>
-                        </fieldset>
-                    </div>
-                </div>
-            </div>
-            <div class="col-start-1 row-start-1 py-4">
-                <div class="mx-auto flex max-w-7xl justify-end px-4 sm:px-6 lg:px-8 gap-6">
-                    {{-- Results Per Page Dropdown --}}
-                    <div
-                        class="relative inline-block"
-                        x-data="{ isResultsPerPageOpen: false }"
-                        x-on:click.away="isResultsPerPageOpen = false"
-                    >
-                        <div class="flex">
-                            {{-- Large display can show full text --}}
-                            <button
-                                type="button"
-                                x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
-                                class="hidden group lg:inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
-                                id="menu-button"
-                                :aria-expanded="isResultsPerPageOpen.toString()"
-                                aria-haspopup="true"
-                            >
-                                {{ __('Per Page') }}
-                                <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                            {{-- Only show selected number on smaller screens --}}
-                            <button
-                                type="button"
-                                x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
-                                class="lg:hidden group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
-                                id="menu-button"
-                                :aria-expanded="isResultsPerPageOpen.toString()"
-                                aria-haspopup="true"
-                                title="{{ __(':perPage results per page', ['perPage' => $perPage]) }}"
-                            >
-                                {{ __(':perPage/p', ['perPage' => $perPage]) }}
-                                <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
+                    <fieldset class="col-span-1">
+                        <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Featured') }}</legend>
+                        <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                            <x-filter-radio id="featured-0" name="featured" value="include">{{ __('Include') }}</x-filter-radio>
+                            <x-filter-radio id="featured-1" name="featured" value="exclude">{{ __('Exclude') }}</x-filter-radio>
+                            <x-filter-radio id="featured-2" name="featured" value="only">{{ __('Only') }}</x-filter-radio>
                         </div>
-                        <div
-                            x-cloak
-                            x-show="isResultsPerPageOpen"
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95"
-                            class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
-                            role="menu"
-                            aria-orientation="vertical"
-                            aria-labelledby="menu-button"
-                            tabindex="-1"
-                        >
-                            <div class="flex flex-col py-1.5">
-                                @foreach($perPageOptions as $option)
-                                    <x-filter-menu-item filterName="perPage" :filter="$option" :currentFilter="$perPage">{{ $option }}</x-filter-menu-item>
+                    </fieldset>
+                    <fieldset class="col-span-1">
+                        <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Category') }}</legend>
+                        <div class="pt-6 sm:pt-4">
+                            <select
+                                wire:model.live="category"
+                                class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
+                                wire:loading.attr="disabled"
+                            >
+                                <option value="">{{ __('All Categories') }}</option>
+                                @foreach ($availableCategories as $cat)
+                                    <option value="{{ $cat->slug }}">{{ $cat->title }}</option>
                                 @endforeach
-                            </div>
+                            </select>
                         </div>
-                    </div>
-
-                    {{-- Sort Dropdown --}}
-                    <div
-                        class="relative inline-block"
-                        x-data="{ isSortOpen: false }"
-                        x-on:click.away="isSortOpen = false"
-                    >
-                        <div class="flex">
-                            <button
-                                type="button"
-                                x-on:click="isSortOpen = !isSortOpen"
-                                class="group inline-flex justify-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
-                                id="menu-button"
-                                :aria-expanded="isSortOpen.toString()"
-                                aria-haspopup="true"
-                            >
-                                {{ __('Sort') }}
-                                <svg class="-mr-1 ml-1 h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div
-                            x-cloak
-                            x-show="isSortOpen"
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="transform opacity-0 scale-95"
-                            x-transition:enter-end="transform opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="transform opacity-100 scale-100"
-                            x-transition:leave-end="transform opacity-0 scale-95"
-                            class="absolute top-7 right-0 z-10 flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-400 bg-gray-200 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
-                            role="menu"
-                            aria-orientation="vertical"
-                            aria-labelledby="menu-button"
-                            tabindex="-1"
-                        >
-                            <div class="flex flex-col py-1.5">
-                                <x-filter-menu-item filterName="order" filter="created" :currentFilter="$order">{{ __('Newest') }}</x-filter-menu-item>
-                                <x-filter-menu-item filterName="order" filter="updated" :currentFilter="$order">{{ __('Recently Updated') }}</x-filter-menu-item>
-                                <x-filter-menu-item filterName="order" filter="downloaded" :currentFilter="$order">{{ __('Most Downloaded') }}</x-filter-menu-item>
-                            </div>
-                        </div>
-                    </div>
+                    </fieldset>
                 </div>
             </div>
         </section>

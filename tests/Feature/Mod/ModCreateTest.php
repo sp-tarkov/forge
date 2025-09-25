@@ -6,6 +6,7 @@ use App\Livewire\Page\Mod\Create;
 use App\Models\CommentSubscription;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -101,6 +102,7 @@ describe('Mod Create Form', function (): void {
 
         it('allows creating a mod with unique GUID', function (): void {
             $license = License::factory()->create();
+            $category = ModCategory::factory()->create();
             $user = User::factory()->withMfa()->create();
 
             // Create a mod with a specific GUID to ensure uniqueness check
@@ -118,6 +120,7 @@ describe('Mod Create Form', function (): void {
                 ->set('teaser', 'New teaser')
                 ->set('description', 'New description')
                 ->set('license', (string) $license->id)
+                ->set('category', (string) $category->id)
                 ->set('sourceCodeLinks.0.url', 'https://github.com/example/new')
                 ->set('sourceCodeLinks.0.label', '')
                 ->set('containsAiContent', false)
@@ -134,6 +137,7 @@ describe('Mod Create Form', function (): void {
             $this->actingAs($this->user);
 
             License::factory()->create(['id' => 1, 'name' => 'MIT']);
+            ModCategory::factory()->create(['id' => 1, 'title' => 'Tools']);
         });
 
         it('subscribes user to comment notifications when checkbox is checked', function (): void {
@@ -146,6 +150,7 @@ describe('Mod Create Form', function (): void {
                 ->set('teaser', 'A test mod')
                 ->set('description', 'This is a test mod')
                 ->set('license', 1)
+                ->set('category', 1)
                 ->set('sourceCodeLinks.0.url', 'https://github.com/test/test')
                 ->set('sourceCodeLinks.0.label', '')
                 ->set('subscribeToComments', true)
@@ -168,6 +173,7 @@ describe('Mod Create Form', function (): void {
                 ->set('teaser', 'A test mod')
                 ->set('description', 'This is a test mod')
                 ->set('license', 1)
+                ->set('category', 1)
                 ->set('sourceCodeLinks.0.url', 'https://github.com/test/test')
                 ->set('sourceCodeLinks.0.label', '')
                 ->set('subscribeToComments', false)

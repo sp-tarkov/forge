@@ -31,6 +31,7 @@ class ModFactory extends Factory
             'teaser' => fake()->sentence(),
             'description' => fake()->paragraphs(rand(4, 20), true),
             'license_id' => License::factory(),
+            'category_id' => \App\Models\ModCategory::factory(),
             'featured' => fake()->boolean(),
             'contains_ai_content' => fake()->boolean(),
             'contains_ads' => fake()->boolean(),
