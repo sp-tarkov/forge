@@ -324,6 +324,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'contains_ads' => 'boolean',
             'disabled' => 'boolean',
             'comments_disabled' => 'boolean',
+            'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'published_at' => 'datetime',
