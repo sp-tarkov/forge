@@ -216,6 +216,7 @@ class ModVersion extends Model implements Trackable
             'version_patch' => 'integer',
             'downloads' => 'integer',
             'disabled' => 'boolean',
+            'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',

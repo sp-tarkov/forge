@@ -1072,6 +1072,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
             'contains_ads' => (bool) $hubMod->contains_ads,
             'disabled' => (bool) $hubMod->isDisabled,
             'comments_disabled' => ! (bool) $hubMod->enableComments,
+            'discord_notification_sent' => true, // Mark imported mods as already notified
             'published_at' => $hubMod->getTime(),
             'created_at' => $hubMod->getTime(),
             'updated_at' => $hubMod->getLastChangeTime(),
@@ -1296,6 +1297,7 @@ class ImportHubJob implements ShouldBeUnique, ShouldQueue
                     'virus_total_link' => $hubModVersion->getVirusTotalLink(),
                     'downloads' => max($hubModVersion->downloads, 0), // At least 0.
                     'disabled' => (bool) $hubModVersion->isDisabled,
+                    'discord_notification_sent' => true, // Mark imported mod versions as already notified
                     'published_at' => $publishedAt,
                     'created_at' => $createdAt,
                     'updated_at' => $createdAt,
