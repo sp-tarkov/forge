@@ -33,6 +33,8 @@
         <link href="//fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
         <link href="{{ config('app.asset_url') }}" rel="dns-prefetch">
 
+        {{ $rssFeeds ?? '' }}
+
         @livewireStyles
         @fluxAppearance
         @vite(['resources/css/app.css'])
