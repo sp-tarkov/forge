@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\Mod;
 use App\Models\User;
 
-it('redirects file URL to mod page', function () {
+it('redirects file URL to mod page', function (): void {
     $user = User::factory()->create();
     $mod = Mod::factory()->create([
         'hub_id' => 2973,
@@ -21,7 +21,7 @@ it('redirects file URL to mod page', function () {
     ]));
 });
 
-it('returns 404 when hub_id does not exist', function () {
+it('returns 404 when hub_id does not exist', function (): void {
     $response = $this->get('/files/file/9999-nonexistent');
 
     $response->assertNotFound();

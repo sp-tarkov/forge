@@ -14,7 +14,7 @@ class FileRedirectController extends Controller
      */
     public function redirect(int $hubId, string $slug): RedirectResponse
     {
-        $mod = Mod::where('hub_id', $hubId)->firstOrFail();
+        $mod = Mod::query()->where('hub_id', $hubId)->firstOrFail();
 
         return redirect()->route('mod.show', [
             'modId' => $mod->id,
