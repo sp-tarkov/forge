@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Events\PeakVisitorUpdated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -22,6 +23,9 @@ class PeakVisitor extends Model
     public static function createPeak(int $count): void
     {
         $peak = static::query()->create(['count' => $count]);
+
+        // Clear the cache when a new peak is created
+        Cache::forget('peak_visitor_data');
 
         broadcast(new PeakVisitorUpdated(
             $count,

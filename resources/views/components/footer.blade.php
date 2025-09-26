@@ -60,7 +60,7 @@
                     </p>
                 </div>
                 <div class="flex items-center">
-                    <livewire:visitors />
+                    <x-visitor-tracker />
                 </div>
             </div>
         </div>
