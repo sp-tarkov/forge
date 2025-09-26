@@ -23,17 +23,24 @@ beforeEach(function (): void {
 
 describe('Guest User Tests', function (): void {
     it('should not show comment form to guest users', function (): void {
-        $mod = Mod::factory()->create();
+        $mod = Mod::factory()->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
         ModVersion::factory()->create([
             'mod_id' => $mod->id,
             'spt_version_constraint' => '1.0.0',
+            'disabled' => false,
+            'published_at' => now(),
         ]);
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
             ->inDarkMode();
 
-        $page->assertDontSee('Post Comment')
+        // Wait for page to load before assertions
+        $page->wait(2)
+            ->assertDontSee('Post Comment')
             ->assertNotPresent('@new-comment-body')
             ->assertSee('Login or register to join the discussion')
             ->assertNoJavascriptErrors();
@@ -937,8 +944,20 @@ describe('Spam Marking Tests', function (): void {
     it('should hide spam comments completely from regular users', function (): void {
         $commentAuthor = User::factory()->create();
         $otherUser = User::factory()->create(); // Different user who shouldn't see spam
-        $mod = Mod::factory()->create();
-        ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '1.0.0']);
+
+        // Create mod with minimal required data for faster loading
+        $mod = Mod::factory()->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+        // Create a simple mod version linked to existing SPT version
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '1.0.0',
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -952,9 +971,12 @@ describe('Spam Marking Tests', function (): void {
 
         $this->actingAs($otherUser); // Login as a different user, not the comment author
 
+        // Visit the page - timeout is now configured globally
         $page = visit($mod->detail_url.'#comments');
 
-        $page->assertSee($mod->name)
+        // Wait a bit for page to load, then make assertions
+        $page->wait(2) // Wait 2 seconds for page to fully load
+            ->assertSee($mod->name)
             ->assertDontSee($comment->body)
             ->assertNotPresent('.comment-container-'.$comment->id)
             ->assertNoJavaScriptErrors();

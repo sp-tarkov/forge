@@ -231,11 +231,11 @@
                 id="disclosure-1"
                 class="py-10 border-b border-gray-400 dark:border-gray-700"
             >
-                <div class="mx-auto grid max-w-7xl grid-cols-4 gap-x-4 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
-                    <div class="col-span-2 grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 md:gap-y-2 md:grid-cols-2 md:gap-x-6">
+                <div class="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 sm:gap-y-8 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
+                    <div class="col-span-1 sm:col-span-2 grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 sm:grid-cols-2 sm:gap-x-6">
                         <!-- SPT Versions fieldset spanning both columns -->
-                        <fieldset class="col-span-1 md:col-span-2">
-                            <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
+                        <fieldset class="col-span-1 sm:col-span-2">
+                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
                             <div class="pt-6 sm:pt-4 pb-2 sm:pb-2 md:pb-1">
                                 <div class="flex items-center text-base sm:text-sm">
                                     <input
@@ -293,7 +293,7 @@
                         </fieldset>
 
                         <!-- Legacy Versions fieldset spanning both columns -->
-                        <fieldset class="col-span-1 md:col-span-2 pt-6 sm:pt-4 md:pt-2">
+                        <fieldset class="col-span-1 sm:col-span-2 pt-6 sm:pt-4 md:pt-2">
                             <div class="pt-2">
                                 <div class="flex items-center text-base sm:text-sm">
                                     <input
@@ -310,16 +310,16 @@
                             </div>
                         </fieldset>
                     </div>
-                    <fieldset class="col-span-1">
-                        <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Featured') }}</legend>
+                    <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
+                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}</legend>
                         <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
                             <x-filter-radio id="featured-0" name="featured" value="include">{{ __('Include') }}</x-filter-radio>
                             <x-filter-radio id="featured-1" name="featured" value="exclude">{{ __('Exclude') }}</x-filter-radio>
                             <x-filter-radio id="featured-2" name="featured" value="only">{{ __('Only') }}</x-filter-radio>
                         </div>
                     </fieldset>
-                    <fieldset class="col-span-1">
-                        <legend class="block font-medium text-gray-800 dark:text-gray-100">{{ __('Category') }}</legend>
+                    <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
+                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Category') }}</legend>
                         <div class="pt-6 sm:pt-4">
                             <select
                                 wire:model.live="category"
