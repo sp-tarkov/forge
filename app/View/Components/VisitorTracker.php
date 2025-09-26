@@ -13,6 +13,7 @@ use Illuminate\View\Component;
 class VisitorTracker extends Component
 {
     public int $peakCount;
+
     public string $peakDate;
 
     /**
@@ -23,6 +24,7 @@ class VisitorTracker extends Component
         // Cache the peak visitor data for 5 minutes to reduce database queries
         $peakData = Cache::remember('peak_visitor_data', 300, function () {
             $peak = PeakVisitor::getPeak();
+
             return [
                 'count' => $peak !== null ? $peak->count : 0,
                 'date' => $peak !== null ? $peak->created_at->format('M j, Y') : '',
