@@ -12,32 +12,3 @@ window.Echo = new Echo({
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
 });
-
-// Handle WebSocket connection errors
-window.Echo.connector.pusher.connection.bind('error', function(err) {
-    if (window.Livewire) {
-        window.Livewire.dispatchTo('visitors', 'connection-error');
-    }
-});
-window.Echo.connector.pusher.connection.bind('unavailable', function() {
-    if (window.Livewire) {
-        window.Livewire.dispatchTo('visitors', 'connection-error');
-    }
-});
-window.Echo.connector.pusher.connection.bind('failed', function() {
-    if (window.Livewire) {
-        window.Livewire.dispatchTo('visitors', 'connection-error');
-    }
-});
-window.Echo.connector.pusher.connection.bind('disconnected', function() {
-    if (window.Livewire) {
-        window.Livewire.dispatchTo('visitors', 'connection-error');
-    }
-});
-
-// Handle a successful connection/reconnection
-window.Echo.connector.pusher.connection.bind('connected', function() {
-    if (window.Livewire) {
-        window.Livewire.dispatchTo('visitors', 'connection-restored');
-    }
-});

@@ -70,5 +70,6 @@
         @livewireScriptConfig
         @fluxScripts
         @vite(['resources/js/app.js'])
+        @stack('scripts')
     </body>
 </html>

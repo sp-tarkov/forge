@@ -30,12 +30,13 @@
             <x-table-of-contents-subitem href="#adult-content">Adult Content Policy</x-table-of-contents-subitem>
             <x-table-of-contents-subitem href="#anti-cheat-policy">Anti-Cheat and Exploit Policy</x-table-of-contents-subitem>
             <x-table-of-contents-subitem href="#compilation-guidelines">Compilation and Collection Guidelines</x-table-of-contents-subitem>
+            <x-table-of-contents-subitem href="#payment-policy">Payment and Commercial Activity Policy</x-table-of-contents-subitem>
         </x-table-of-contents-item>
         <x-table-of-contents-item href="#file-hosting" title="File Hosting and Distribution" />
         <x-table-of-contents-item href="#violation-consequences" title="Violation Consequences and Appeals" />
     </x-slot>
 
-    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> August 26, 2025</p>
+    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> September 26, 2025</p>
 
     <h2 id="overview">1. Overview</h2>
     <p>These Content Guidelines establish the technical and quality standards for all files, mods, and content submitted to The Forge. Following these guidelines ensures a consistent, professional experience for all users and maintains the integrity of our modding platform.</p>
@@ -315,6 +316,33 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
     <p>Mod compilations, collections, and modpacks are not permitted on The Forge. While these packages may appear to offer convenience by bundling multiple mods together, they create significant and ongoing maintenance challenges that cannot be sustainably managed.</p>
     <p>Permission tracking becomes unmanageable as compilations require explicit consent from every included mod author. Compatibility maintenance is equally problematic since individual mods within a compilation update independently, often breaking compatibility with other included components. Version synchronization across multiple mods with different release schedules creates constant conflicts that require continuous manual intervention.</p>
     <p>The Forge encourages users to install individual mods directly from their original creators to ensure they receive proper updates, support, and compatibility verification. This approach guarantees that users get the most current versions while supporting mod authors directly and maintaining clear accountability for each component.</p>
+
+    <h3 id="payment-policy">7.4 Payment and Commercial Activity Policy</h3>
+    <p><strong>Free Access Requirement:</strong></p>
+    <p>The Forge strictly prohibits any form of payment requirement for accessing content within our community. All mods, tools, and resources must remain completely free and accessible to all users without any financial barriers or obligations.</p>
+    <p><strong>Prohibited Commercial Activities:</strong></p>
+    <ul>
+        <li>Requiring payment for mod downloads, early access, or premium versions</li>
+        <li>Creating paywalls or subscription models for content access</li>
+        <li>Offering goods or services in exchange for payment within our community</li>
+        <li>Advertising paid services, commissions, or commercial offerings</li>
+        <li>Linking to external sites that require payment for mod-related content</li>
+        <li>Bartering or trading goods/services that have monetary value</li>
+        <li>Withholding features, updates, or support based on donation status</li>
+    </ul>
+    <p><strong>Permitted Donation Links:</strong></p>
+    <p>Voluntary donation links are permitted with the following strict requirements:</p>
+    <ul>
+        <li>Donations must be completely optional with no impact on content access or functionality</li>
+        <li>All mod features, downloads, and updates must remain equally available to all users regardless of donation status</li>
+        <li>Donation links must not be prominently featured or aggressively promoted</li>
+        <li>No exclusive content, early access, or special privileges may be offered to donors</li>
+        <li>Donation requests must not use manipulative or coercive language</li>
+    </ul>
+    <p><strong>Community Standards:</strong></p>
+    <p>This policy ensures equal access to all community members regardless of financial means and maintains the collaborative spirit of the modding community. Content creators who include donation links must understand that all users, whether they donate or not, deserve the same level of access, support, and respect.</p>
+    <p><strong>Consequences for Violations:</strong></p>
+    <p>Any attempt to circumvent this policy through coded language, indirect benefits for donors, or creating a two-tier system based on financial contributions will result in immediate content removal and potential account termination. This includes subtle discrimination against non-donors or preferential treatment for those who contribute financially.</p>
 
     <h2 id="file-hosting">8. File Hosting and Distribution</h2>
 
