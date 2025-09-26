@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\ChatSubscriptionController;
 use App\Http\Controllers\CommentSubscriptionController;
+use App\Http\Controllers\FileRedirectController;
 use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
@@ -35,6 +36,10 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/mods/rss', [ModRssFeedController::class, 'index'])
         ->can('viewAny', Mod::class)
         ->name('mods.rss');
+
+    Route::get('/files/file/{hubId}-{slug}', [FileRedirectController::class, 'redirect'])
+        ->where(['hubId' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
+        ->name('files.redirect');
 
     Route::get('/mod/{modId}/{slug}', ModShow::class)
         ->where(['modId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
