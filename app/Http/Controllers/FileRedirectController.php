@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Mod;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class FileRedirectController extends Controller
 {
