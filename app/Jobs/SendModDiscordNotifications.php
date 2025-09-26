@@ -25,6 +25,10 @@ class SendModDiscordNotifications implements ShouldQueue
      */
     public function handle(): void
     {
+        if (empty(config('discord-alerts.webhook_urls.mods'))) {
+            return;
+        }
+
         $modPolicy = new ModPolicy;
         $versionPolicy = new ModVersionPolicy;
 
@@ -39,6 +43,7 @@ class SendModDiscordNotifications implements ShouldQueue
 
         /** @var array<int> */
         $notifiedModIds = [];
+
         foreach ($mods as $mod) {
             try {
                 $this->sendModNotification($mod);
