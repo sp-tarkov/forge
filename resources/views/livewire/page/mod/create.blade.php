@@ -13,17 +13,6 @@
 </x-slot>
 
 <div>
-    <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-        <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-            <flux:callout.heading>Permanence Warning</flux:callout.heading>
-            <flux:callout.text>
-                Due to the Forge being in active development, mods created using this form may be removed at any time,
-                for any reason. This form should only be used for testing. If you are creating a new mod with the
-                expectation that it remain on this site, please upload it to the Hub and wait for it to sync.
-            </flux:callout.text>
-        </flux:callout>
-    </div>
-
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
         <div class="md:grid md:grid-cols-3 md:gap-6">
             <div class="md:col-span-1 flex justify-between">

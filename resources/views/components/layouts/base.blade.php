@@ -41,7 +41,6 @@
     </head>
     <body class="font-sans antialiased flex flex-col min-h-screen">
         @if ($variant !== 'simple')
-            <x-warning />
             <x-banner />
         @endif
 
