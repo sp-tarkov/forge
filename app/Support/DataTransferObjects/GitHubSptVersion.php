@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs\Import\DataTransferObjects;
+namespace App\Support\DataTransferObjects;
 
 class GitHubSptVersion
 {

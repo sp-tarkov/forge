@@ -34,17 +34,6 @@
 
     @auth
         @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $commentable]))
-            <div class="mb-6">
-                <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
-                    <flux:callout.heading>Permanence Warning</flux:callout.heading>
-                    <flux:callout.text>
-                        Due to the Forge being in active development, created comments may be removed at any time, for any
-                        reason. This form should only be used for testing. If you are creating a comment with the expectation
-                        that it remain on this site, please upload it to the Hub and wait for it to sync.
-                    </flux:callout.text>
-                </flux:callout>
-            </div>
-
             <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-white">

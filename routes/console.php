@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use App\Console\Commands\CleanupOldNotificationLogs;
-use App\Console\Commands\ImportHubCommand;
 use App\Console\Commands\UpdateGeoLiteDatabase;
 use App\Jobs\CleanupOldVisitorRecords;
 use App\Jobs\SendModDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
+use App\Jobs\UpdateGitHubSptVersionsJob;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command(ImportHubCommand::class)->everyThirtyMinutes();
+Schedule::job(new UpdateGitHubSptVersionsJob)->everyFifteenMinutes();
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
 Schedule::command(CleanupOldNotificationLogs::class)->daily();
 Schedule::job(new CleanupOldVisitorRecords)->daily()->at('03:00');

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Jobs\Import\DataTransferObjects\HubMod;
 use App\Livewire\Page\Mod\Create;
 use App\Livewire\Page\Mod\Edit;
 use App\Models\Comment;
@@ -430,41 +429,5 @@ describe('Mod Show Page Comment Visibility', function (): void {
 
         $response->assertDontSee('Enable Comments');
         $response->assertDontSee('Disable Comments');
-    });
-});
-
-describe('Hub Import Comments Disabled Logic', function (): void {
-    it('correctly maps hub enableComments field to local comments_disabled field', function (): void {
-        // Test when Hub has comments enabled (enableComments = 1)
-        $hubModDataEnabled = [
-            'fileID' => 123,
-            'subject' => 'Test Mod',
-            'teaser' => 'Test teaser',
-            'message' => 'Test message',
-            'enableComments' => 1, // Hub: comments enabled
-            'userID' => 1,
-            'time' => 1234567890,
-            'lastChangeTime' => 1234567890,
-            'isFeatured' => 0,
-            'isDisabled' => 0,
-            'contains_ai' => '0',
-            'contains_ads' => '0',
-            'source_code_url' => '',
-        ];
-
-        $hubMod = new HubMod($hubModDataEnabled);
-
-        // When enableComments = 1, comments_disabled should be false
-        expect(! (bool) $hubMod->enableComments)->toBeFalse();
-
-        // Test when Hub has comments disabled (enableComments = 0)
-        $hubModDataDisabled = array_merge($hubModDataEnabled, [
-            'enableComments' => 0, // Hub: comments disabled
-        ]);
-
-        $hubModDisabled = new HubMod($hubModDataDisabled);
-
-        // When enableComments = 0, comments_disabled should be true
-        expect(! (bool) $hubModDisabled->enableComments)->toBeTrue();
     });
 });
