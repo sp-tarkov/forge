@@ -183,12 +183,14 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('openGraphImageTags', fn (string $expression): string => "<?php
                 \$__ogImageArgs = [{$expression}];
                 \$__ogImagePath = \$__ogImageArgs[0] ?? null;
+                if (empty(\$__ogImagePath)) {
+                    return;
+                }
                 \$__ogImageAlt = Str::before(\$__ogImageArgs[1] ?? '', ' - ');
                 \$__ogImageDisk = config('filesystems.asset_upload', 'public');
-                \$__ogImageCacheKey = 'og_image_data:' . \$__ogImageDisk . ':' . md5(\$__ogImagePath);
+                \$__ogImageCacheKey = 'og_image_data:' . \$__ogImageDisk . ':' . \$__ogImagePath;
                 \$__ogImageData = Cache::remember(\$__ogImageCacheKey, 3600, function () use (\$__ogImagePath, \$__ogImageDisk) {
                     try {
-                        if (empty(\$__ogImagePath)) return null;
                         \$disk = Storage::disk(\$__ogImageDisk);
                         if (!\$disk->exists(\$__ogImagePath)) return null;
                         \$contents = \$disk->get(\$__ogImagePath);
