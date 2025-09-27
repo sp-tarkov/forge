@@ -1,13 +1,31 @@
-document.addEventListener("DOMContentLoaded", () => {
+// Function to initialize tabs
+function initializeTabs(container = document) {
     // Find all elements with the "tabset" class within the user-markdown container.
-    const userMarkdownArea = document.querySelector(".user-markdown");
-    if (!userMarkdownArea) {
+    const userMarkdownAreas = container.querySelectorAll(".user-markdown");
+
+    // If no user-markdown areas found, try to find tabsets directly
+    let tabsets = [];
+
+    if (userMarkdownAreas.length > 0) {
+        userMarkdownAreas.forEach(area => {
+            const areaTabs = area.querySelectorAll(".tabset:not([data-tabs-initialized])");
+            tabsets = [...tabsets, ...areaTabs];
+        });
+    } else if (container.classList && container.classList.contains('user-markdown')) {
+        // If the container itself is a user-markdown area
+        tabsets = container.querySelectorAll(".tabset:not([data-tabs-initialized])");
+    }
+
+    if (tabsets.length === 0) {
         return;
     }
 
-    const tabsets = userMarkdownArea.querySelectorAll(".tabset");
+    tabsets.forEach((tabset) => {
+        // Mark this tabset as initialized to prevent duplicate initialization
+        tabset.setAttribute('data-tabs-initialized', 'true');
 
-    tabsets.forEach((tabset, tabsetIndex) => {
+        // Generate a unique index for this tabset
+        const tabsetIndex = Date.now() + Math.random();
         const panels = tabset.querySelectorAll(".tab-panel");
         if (panels.length === 0) return;
 
@@ -68,6 +86,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        // Mark navigation as initialized
+        navigation.setAttribute('data-tabs-initialized', 'true');
+
         // Insert Navigation and Add Event Listener
 
         // Insert the generated navigation links *before* the tabset element.
@@ -116,4 +137,38 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
+}
+
+// Initialize tabs on DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeTabs();
+    });
+} else {
+    // DOM is already loaded, initialize immediately
+    initializeTabs();
+}
+
+// Listen for Livewire events to reinitialize tabs when content is updated
+if (window.Livewire) {
+    // Livewire 3 events
+    document.addEventListener('livewire:navigated', () => {
+        initializeTabs();
+    });
+
+    document.addEventListener('livewire:init', () => {
+        Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
+            succeed(() => {
+                // After a successful Livewire update, reinitialize tabs
+                requestAnimationFrame(() => {
+                    initializeTabs(component.el);
+                });
+            });
+        });
+    });
+}
+
+// Also listen for any custom events that might indicate content has been updated
+document.addEventListener('content-updated', () => {
+    initializeTabs();
 });

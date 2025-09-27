@@ -205,12 +205,24 @@ button {
         }
     }
 
+    /* Style first tab link as active until JS initializes */
+    .tab-navigation:not([data-tabs-initialized]) {
+        .tab-link:first-child {
+            @apply font-bold bg-slate-200 dark:bg-slate-800 border-b-cyan-400 dark:border-b-cyan-600 text-cyan-700 dark:text-cyan-300;
+        }
+    }
+
     .tab-title {
         @apply hidden;
     }
 
     .tab-content {
         @apply mt-1 rounded-t-sm rounded-b-2xl bg-slate-100 dark:bg-gray-900 p-4;
+    }
+
+    /* Hide non-first tab content until JS initializes */
+    .tabset:not([data-tabs-initialized]) .tab-panel:not(:first-child) .tab-content {
+        @apply hidden;
     }
 }
 
