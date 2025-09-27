@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-7xl px-6 pb-8 pt-14 sm:pt-20 lg:px-8 lg:pt-29">
         <div class="xl:grid xl:grid-cols-3 xl:gap-8">
             <div>
-                <p class="text-lg italic font-extrabold leading-6 text-white">The Forge</p>
+                <x-application-mark />
                 <p class="mt-6 flex space-x-4">
                     <a href="https://github.com/sp-tarkov/forge" target="_blank" title="{{ __('View on GitHub') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-white hover:text-gray-300">
