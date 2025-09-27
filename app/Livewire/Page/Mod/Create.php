@@ -12,6 +12,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
@@ -97,6 +98,13 @@ class Create extends Component
     public bool $subscribeToComments = true;
 
     /**
+     * The selected author user IDs.
+     *
+     * @var array<int>
+     */
+    public array $authorIds = [];
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -104,6 +112,17 @@ class Create extends Component
         $this->honeypotData = new HoneypotData;
 
         $this->authorize('create', Mod::class);
+    }
+
+    /**
+     * Update the author IDs from the child component.
+     *
+     * @param  array<int>  $ids
+     */
+    #[On('updateAuthorIds')]
+    public function updateAuthorIds(array $ids): void
+    {
+        $this->authorIds = $ids;
     }
 
     /**
@@ -129,6 +148,8 @@ class Create extends Component
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',
+            'authorIds' => 'array|max:10',
+            'authorIds.*' => 'exists:users,id|distinct',
         ];
     }
 
@@ -205,6 +226,11 @@ class Create extends Component
 
         // Save the mod.
         $mod->save();
+
+        // Add authors
+        if (! empty($this->authorIds)) {
+            $mod->authors()->attach($this->authorIds);
+        }
 
         // Add source code links
         foreach ($this->sourceCodeLinks as $link) {
