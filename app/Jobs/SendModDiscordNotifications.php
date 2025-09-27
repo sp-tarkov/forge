@@ -203,10 +203,17 @@ class SendModDiscordNotifications implements ShouldQueue
             'embed' => $embed,
         ]);
 
+        // Build message with optional role mention
+        $message = 'A new mod has been posted to the Forge!';
+        $roleId = config('discord-alerts.mod_notifications_role_id');
+        if (! empty($roleId)) {
+            $message .= sprintf(' <@&%s>', $roleId);
+        }
+
         // Send the notification
         DiscordAlert::to('mods')
             ->withUsername('ForgeBot')
-            ->message('A new mod has been posted to the Forge!', [$embed]);
+            ->message($message, [$embed]);
     }
 
     /**

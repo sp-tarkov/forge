@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
@@ -97,13 +98,20 @@ class Edit extends Component
     public bool $commentsDisabled = false;
 
     /**
+     * The selected author user IDs.
+     *
+     * @var array<int>
+     */
+    public array $authorIds = [];
+
+    /**
      * Mount the component.
      */
     public function mount(int $modId): void
     {
         $this->honeypotData = new HoneypotData;
 
-        $this->mod = Mod::query()->with('sourceCodeLinks')->findOrFail($modId);
+        $this->mod = Mod::query()->with(['sourceCodeLinks', 'authors'])->findOrFail($modId);
 
         $this->authorize('update', $this->mod);
 
@@ -130,6 +138,20 @@ class Edit extends Component
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
         $this->commentsDisabled = (bool) $this->mod->comments_disabled;
+
+        // Load existing authors
+        $this->authorIds = $this->mod->authors->pluck('id')->toArray();
+    }
+
+    /**
+     * Update the author IDs from the child component.
+     *
+     * @param  array<int>  $ids
+     */
+    #[On('updateAuthorIds')]
+    public function updateAuthorIds(array $ids): void
+    {
+        $this->authorIds = $ids;
     }
 
     /**
@@ -154,6 +176,8 @@ class Edit extends Component
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
+            'authorIds' => 'array|max:10',
+            'authorIds.*' => 'exists:users,id|distinct',
         ];
     }
 
@@ -242,6 +266,9 @@ class Edit extends Component
                 ]);
             }
         }
+
+        // Update authors (sync will add/remove as needed)
+        $this->mod->authors()->sync($this->authorIds);
 
         Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 

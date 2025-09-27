@@ -14,6 +14,12 @@ return [
     ],
 
     /*
+     * The Discord role ID to mention for mod notifications.
+     * Format: Role ID without the <@&> wrapper
+     */
+    'mod_notifications_role_id' => env('DISCORD_MOD_NOTIFICATIONS_ROLE_ID'),
+
+    /*
      * Default avatar is an empty string '' which means it will not be included in the payload.
      * You can add multiple custom avatars and then specify directly with withAvatar()
      */

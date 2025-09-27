@@ -337,7 +337,7 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
         <li>All mod features, downloads, and updates must remain equally available to all users regardless of donation status</li>
         <li>Donation links must not be prominently featured or aggressively promoted</li>
         <li>No exclusive content, early access, or special privileges may be offered to donors</li>
-        <li>Donation requests must not use manipulative or coercive language</li>
+        <li>Donation links must not use manipulative or coercive language</li>
     </ul>
     <p><strong>Community Standards:</strong></p>
     <p>This policy ensures equal access to all community members regardless of financial means and maintains the collaborative spirit of the modding community. Content creators who include donation links must understand that all users, whether they donate or not, deserve the same level of access, support, and respect.</p>

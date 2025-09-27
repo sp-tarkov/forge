@@ -109,6 +109,18 @@
                                 <flux:error name="category" />
                             </flux:field>
 
+                            {{-- Author selection --}}
+                            <div class="col-span-6">
+                                <livewire:components.user-select
+                                    :selected-users="$authorIds"
+                                    :max-users="10"
+                                    :exclude-users="[auth()->user()->id]"
+                                    label="Additional Authors"
+                                    description="Add other users as co-authors of this mod. You are automatically listed as the owner and don't need to add yourself here."
+                                    placeholder="Search for users by name or email..."
+                                />
+                            </div>
+
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Source Code Links') }}</flux:label>
                                 <flux:description>{!! __('Provide links to the source code for your mod. The source code for mods is required to be publicly available. You can add up to 4 links (e.g., main repository, mirror, documentation). We recommend using services like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.') !!}</flux:description>
