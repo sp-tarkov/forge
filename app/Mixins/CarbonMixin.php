@@ -24,48 +24,54 @@ class CarbonMixin
          * @param  bool  $verbose  Whether to use verbose formatting
          */
         return function (bool $includeTime = true, bool $verbose = true): string {
-            $now = now();
+            // Get the user's timezone, fallback to app timezone if not authenticated or no timezone set
+            $userTimezone = auth()->user() ? auth()->user()->timezone : null;
+            $userTimezone ??= config('app.timezone', 'UTC');
+
+            // Convert the date to the user's timezone
+            $localDate = $this->copy()->setTimezone($userTimezone);
+            $now = now()->setTimezone($userTimezone);
 
             // Today
-            if ($this->isToday()) {
-                return $this->format('g:i A');
+            if ($localDate->isToday()) {
+                return $localDate->format('g:i A');
             }
 
             // Yesterday
-            if ($this->isYesterday()) {
+            if ($localDate->isYesterday()) {
                 if (! $includeTime) {
                     return 'Yesterday';
                 }
 
-                return $verbose ? 'Yesterday at '.$this->format('g:i A') : 'Yesterday';
+                return $verbose ? 'Yesterday at '.$localDate->format('g:i A') : 'Yesterday';
             }
 
             // Within the last week
-            if ($this->isAfter($now->copy()->subWeek()) && $this->isBefore($now)) {
+            if ($localDate->isAfter($now->copy()->subWeek()) && $localDate->isBefore($now)) {
                 if (! $includeTime) {
-                    return $this->format('l'); // "Monday"
+                    return $localDate->format('l'); // "Monday"
                 }
 
                 return $verbose
-                    ? $this->format('l \a\t g:i A') // "Monday at 2:30 PM"
-                    : $this->format('l, g:i A'); // "Monday, 2:30 PM"
+                    ? $localDate->format('l \a\t g:i A') // "Monday at 2:30 PM"
+                    : $localDate->format('l, g:i A'); // "Monday, 2:30 PM"
             }
 
             // This year
-            if ($this->format('Y') === $now->format('Y')) {
+            if ($localDate->format('Y') === $now->format('Y')) {
                 if (! $includeTime) {
-                    return $this->format('M j'); // "Mar 15"
+                    return $localDate->format('M j'); // "Mar 15"
                 }
 
-                return $this->format('M j, g:i A'); // "Mar 15, 2:30 PM"
+                return $localDate->format('M j, g:i A'); // "Mar 15, 2:30 PM"
             }
 
             // Different year
             if (! $includeTime) {
-                return $this->format('M j, Y'); // "Mar 15, 2023"
+                return $localDate->format('M j, Y'); // "Mar 15, 2023"
             }
 
-            return $this->format('M j, Y \a\t g:i A'); // "Mar 15, 2023 at 2:30 PM"
+            return $localDate->format('M j, Y \a\t g:i A'); // "Mar 15, 2023 at 2:30 PM"
         };
     }
 }

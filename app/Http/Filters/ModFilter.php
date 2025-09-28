@@ -8,6 +8,7 @@ use App\Models\Mod;
 use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 class ModFilter
@@ -123,10 +124,42 @@ class ModFilter
         }
 
         return match ($type) {
-            'updated' => $this->builder->orderByDesc('mods.updated_at'),
+            'updated' => $this->orderByLatestVersionCreatedAt(),
             'downloaded' => $this->builder->orderByDesc('mods.downloads'),
             default => $this->builder->orderByDesc('mods.created_at'),
         };
+    }
+
+    /**
+     * Order mods by their latest version's created_at date.
+     *
+     * @return Builder<Mod>
+     */
+    private function orderByLatestVersionCreatedAt(): Builder
+    {
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
+        return $this->builder
+            ->leftJoin('mod_versions as latest_versions', function (JoinClause $join) use ($showDisabled): void {
+                $join->on('latest_versions.mod_id', '=', 'mods.id')
+                    ->whereNotNull('latest_versions.published_at')
+                    ->where('latest_versions.disabled', false)
+                    ->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($showDisabled): void {
+                        $query->select(DB::raw(1))
+                            ->from('mod_version_spt_version')
+                            ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                            ->whereColumn('mod_version_spt_version.mod_version_id', 'latest_versions.id')
+                            ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $q) => $q->where('spt_versions.version', '!=', '0.0.0'));
+                    })
+                    ->where('latest_versions.created_at', '=', function (\Illuminate\Database\Query\Builder $query): void {
+                        $query->select(DB::raw('MAX(mv2.created_at)'))
+                            ->from('mod_versions as mv2')
+                            ->whereColumn('mv2.mod_id', 'mods.id')
+                            ->whereNotNull('mv2.published_at')
+                            ->where('mv2.disabled', false);
+                    });
+            })
+            ->orderByDesc('latest_versions.created_at');
     }
 
     /**

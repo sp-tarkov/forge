@@ -33,6 +33,10 @@
                                 <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
                                     <flux:icon.exclamation-triangle class="w-5 h-5 text-white" />
                                 </div>
+                            @elseif($notification->type === 'App\Notifications\NewChatMessageNotification')
+                                <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                    <flux:icon.chat-bubble-left-right class="w-5 h-5 text-white" />
+                                </div>
                             @else
                                 <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                                     <flux:icon.chat-bubble-left-ellipsis class="w-5 h-5 text-white" />
@@ -71,6 +75,49 @@
                                     <a href="{{ $notification->data['reportable_url'] ?? '#' }}"
                                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                                         {{ __('Review') }}
+                                    </a>
+
+                                    @if(!$notification->read_at)
+                                        <button wire:click="markAsRead('{{ $notification->id }}')"
+                                                class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                                            {{ __('Mark as read') }}
+                                        </button>
+                                    @endif
+
+                                    <button wire:click="deleteNotification('{{ $notification->id }}')"
+                                            class="text-sm text-red-500 hover:text-red-700">
+                                        {{ __('Delete') }}
+                                    </button>
+                                </div>
+                            @elseif($notification->type === 'App\Notifications\NewChatMessageNotification')
+                                {{-- Chat message notifications --}}
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ $notification->data['sender_name'] ?? 'Someone' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400" title="{{ $notification->created_at->setTimezone(auth()->user()->timezone ?? 'UTC')->format('F j, Y \a\t g:i A T') }}">
+                                        {{ $notification->created_at->setTimezone(auth()->user()->timezone ?? 'UTC')->diffForHumans() }}
+                                    </p>
+                                </div>
+
+                                <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                                    @if($notification->data['message_count'] > 1)
+                                        {{ __('sent you') }} {{ $notification->data['message_count'] }} {{ __('new messages') }}
+                                    @else
+                                        {{ __('sent you a new message') }}
+                                    @endif
+                                </p>
+
+                                @if($notification->data['latest_message_preview'])
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 italic">
+                                        "{{ $notification->data['latest_message_preview'] }}"
+                                    </p>
+                                @endif
+
+                                <div class="flex items-center space-x-3 mt-3">
+                                    <a href="{{ $notification->data['conversation_url'] ?? '#' }}"
+                                       class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                        {{ __('View Conversation') }}
                                     </a>
 
                                     @if(!$notification->read_at)

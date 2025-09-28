@@ -23,28 +23,46 @@
         @endif
 
         <div class="mt-4 flex items-center justify-between">
-            <form method="POST" action="{{ route('verification.send') }}" x-data="{ submitting: false }" @submit="submitting = true">
-                @csrf
-
-                <x-honeypot />
-
-                <div>
-                    <x-button type="submit" x-bind:disabled="submitting" x-text="submitting ? '{{ __('Sending...') }}' : '{{ __('Send Verification Email') }}'">
-                        {{ __('Send Verification Email') }}
-                    </x-button>
-                </div>
-            </form>
-
-            <div>
-                <a
-                    href="{{ route('profile.show') }}"
-                    class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            @if (session('status') != 'verification-link-sent')
+                <form
+                    method="POST"
+                    action="{{ route('verification.send') }}"
+                    x-data="{
+                        submitting: false,
+                        buttonDisabled: true,
+                        init() {
+                            setTimeout(() => {
+                                this.buttonDisabled = false;
+                            }, 1000);
+                        }
+                    }"
+                    @submit="submitting = true"
                 >
-                    {{ __('Edit Profile') }}</a>
-
-                <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
 
+                    <x-honeypot />
+
+                    <div>
+                        <x-button
+                            type="submit"
+                            disabled
+                            x-bind:disabled="buttonDisabled || submitting"
+                            x-text="buttonDisabled ? '{{ __('Please wait...') }}' : (submitting ? '{{ __('Sending...') }}' : '{{ __('Send Verification Email') }}')"
+                        >
+                            {{ __('Send Verification Email') }}
+                        </x-button>
+                    </div>
+                </form>
+            @else
+                <div></div>
+            @endif
+
+            <div>
+                <a href="{{ route('profile.show') }}" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    {{ __('Edit Profile') }}
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
                     <button type="submit" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ms-2">
                         {{ __('Log Out') }}
                     </button>

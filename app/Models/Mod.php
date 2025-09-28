@@ -181,7 +181,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             ->whereNotNull('published_at')
             ->where('disabled', false)
             ->whereHas('latestSptVersion')
-            ->ofMany('updated_at', 'max');
+            ->ofMany('created_at', 'max');
     }
 
     /**
