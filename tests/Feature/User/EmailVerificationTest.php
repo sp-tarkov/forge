@@ -98,11 +98,11 @@ describe('email verification', function (): void {
             'email_verified_at' => null,
         ]);
 
-        // Verify the form renders correctly without any disabled states
+        // Verify the form renders correctly with initial disabled state
         $response = $this->actingAs($user)->get('/email/verify');
         $response->assertStatus(200);
         $response->assertSee('Send Verification Email');
-        // Should not have any initial delay or disabled state
-        $response->assertDontSee('Please wait...');
+        // Should have initial delay to prevent abuse
+        $response->assertSee('Please wait...');
     })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
 });
