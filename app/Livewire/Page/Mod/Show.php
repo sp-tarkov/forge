@@ -146,6 +146,30 @@ class Show extends Component
     }
 
     /**
+     * Get the total version count visible to the current user.
+     */
+    public function getVersionCount(): int
+    {
+        return $this->mod->versions()
+            ->when(! auth()->user()?->can('viewAny', [ModVersion::class, $this->mod]), function ($query) {
+                $query->publiclyVisible();
+            })
+            ->count();
+    }
+
+    /**
+     * Get the total comment count visible to the current user.
+     */
+    public function getCommentCount(): int
+    {
+        $user = auth()->user();
+
+        return $this->mod->comments()
+            ->visibleToUser($user)
+            ->count();
+    }
+
+    /**
      * Check if the mod category requires a profile binding notice.
      */
     public function requiresProfileBindingNotice(): bool
@@ -177,6 +201,8 @@ class Show extends Component
             'warningMessages' => $this->getWarningMessages(),
             'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
             'openGraphImage' => $this->mod->thumbnail,
+            'versionCount' => $this->getVersionCount(),
+            'commentCount' => $this->getCommentCount(),
         ]);
     }
 }

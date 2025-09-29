@@ -150,9 +150,9 @@
                         <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
                         <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-cyan-500 dark:focus:ring-cyan-400">
                             <option value="description">{{ __('Description') }}</option>
-                            <option value="versions">{{ __('Versions') }}</option>
+                            <option value="versions">{{ $versionCount }} {{ __(Str::plural('Version', $versionCount)) }}</option>
                             @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
-                                <option value="comments">{{ __('Comments') }}</option>
+                                <option value="comments">{{ $commentCount }} {{ __(Str::plural('Comment', $commentCount)) }}</option>
                             @endif
                         </select>
                     </div>
@@ -161,9 +161,17 @@
                     <div class="hidden sm:block">
                         <nav class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                             <x-tab-button name="Description" />
-                            <x-tab-button name="Versions" />
+                            <x-tab-button
+                                name="Versions"
+                                value="versions"
+                                :label="$versionCount . ' ' . Str::plural('Version', $versionCount)"
+                            />
                             @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
-                                <x-tab-button name="Comments" />
+                                <x-tab-button
+                                    name="Comments"
+                                    value="comments"
+                                    :label="$commentCount . ' ' . Str::plural('Comment', $commentCount)"
+                                />
                             @endif
                         </nav>
                     </div>

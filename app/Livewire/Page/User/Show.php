@@ -62,7 +62,7 @@ class Show extends Component
             ->orderByDesc('created_at');
 
         $query->unless(
-            request()->user()?->can('view-disabled-user-mods', $this->user),
+            request()->user()?->can('viewDisabledUserMods', $this->user),
             fn (Builder $q): Builder => $q
                 ->whereDisabled(false)
                 ->whereHas('versions', function (Builder $versionQuery): void {
@@ -72,6 +72,25 @@ class Show extends Component
 
         return $query->paginate(10)
             ->fragment('mods');
+    }
+
+    /**
+     * Get the total mod count visible to the current user.
+     */
+    public function getModCount(): int
+    {
+        $query = $this->user->mods();
+
+        $query->unless(
+            request()->user()?->can('viewDisabledUserMods', $this->user),
+            fn (Builder $q): Builder => $q
+                ->whereDisabled(false)
+                ->whereHas('versions', function (Builder $versionQuery): void {
+                    $versionQuery->where('disabled', false)->whereNotNull('published_at');
+                })
+        );
+
+        return $query->count();
     }
 
     /**
@@ -97,6 +116,7 @@ class Show extends Component
             'user' => $this->user,
             'mods' => $this->getUserMods(),
             'openGraphImage' => $this->user->profile_photo_path,
+            'modCount' => $this->getModCount(),
         ]);
     }
 }
