@@ -75,7 +75,7 @@ class SendModDiscordNotifications implements ShouldQueue
                     ->where('disabled', false)
                     ->whereNotNull('published_at');
             })
-            ->with(['mod.latestVersion.latestSptVersion', 'latestSptVersion'])
+            ->with(['mod.latestVersion.latestSptVersion', 'mod.versions.latestSptVersion', 'latestSptVersion'])
             ->get()
             ->filter(fn (ModVersion $modVersion): bool => $modPolicy->view(null, $modVersion->mod) && $versionPolicy->view(null, $modVersion));
 
@@ -128,8 +128,8 @@ class SendModDiscordNotifications implements ShouldQueue
         $embed = [
             'title' => $mod->name,
             'url' => route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]),
-            'description' => Str::limit($mod->teaser ?? '', 120),
-            'color' => '#58B7FF',
+            'description' => Str::limit($mod->teaser ?? '', 250),
+            'color' => '#00B9D1',
             'fields' => [],
         ];
 
@@ -137,7 +137,7 @@ class SendModDiscordNotifications implements ShouldQueue
             $embed['fields'][] = [
                 'name' => 'Owner',
                 'value' => $mod->owner->name,
-                'inline' => false,
+                'inline' => true,
             ];
         }
 
@@ -146,7 +146,7 @@ class SendModDiscordNotifications implements ShouldQueue
             $embed['fields'][] = [
                 'name' => 'Authors',
                 'value' => implode(', ', $authors),
-                'inline' => false,
+                'inline' => true,
             ];
         }
 
@@ -221,16 +221,69 @@ class SendModDiscordNotifications implements ShouldQueue
      */
     private function sendModVersionNotification(Mod $mod, ModVersion $latestVersion): void
     {
-        $message = sprintf(
-            "**[%s](%s)** has released version `%s`.\nIt is compatible with SPT versions matching `%s`.",
-            $mod->name,
-            route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]),
-            $latestVersion->version,
-            $latestVersion->spt_version_constraint
-        );
+        $embed = [
+            'title' => sprintf('%s - Version %s', $mod->name, $latestVersion->version),
+            'url' => route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]),
+            'description' => Str::limit($latestVersion->description ?? '', 250),
+            'color' => '#0090A3',
+            'fields' => [],
+        ];
 
+        // Get all supported SPT versions for this mod
+        $sptVersions = $mod->versions()
+            ->whereDisabled(false)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->with('latestSptVersion')
+            ->get()
+            ->pluck('latestSptVersion.version')
+            ->unique()
+            ->filter()
+            ->values();
+
+        if ($sptVersions->isNotEmpty()) {
+            $embed['fields'][] = [
+                'name' => 'SPT Versions Supported',
+                'value' => $sptVersions->implode(', '),
+                'inline' => false,
+            ];
+        }
+
+        // Add download size if available
+        if (! empty($latestVersion->content_length)) {
+            $size = $latestVersion->content_length;
+            if ($size < 1024 * 1024) {
+                $sizeStr = number_format($size / 1024, 2).' KB';
+            } elseif ($size < 1024 * 1024 * 1024) {
+                $sizeStr = number_format($size / (1024 * 1024), 2).' MB';
+            } else {
+                $sizeStr = number_format($size / (1024 * 1024 * 1024), 2).' GB';
+            }
+
+            $embed['fields'][] = [
+                'name' => 'Download Size',
+                'value' => $sizeStr,
+                'inline' => true,
+            ];
+        }
+
+        // Add a thumbnail if available
+        if (! empty($mod->thumbnail_url)) {
+            $embed['thumbnail'] = ['url' => $mod->thumbnail_url];
+        }
+
+        Log::info('Sending mod version Discord embed', [
+            'mod_id' => $mod->id,
+            'version' => $latestVersion->version,
+            'embed' => $embed,
+        ]);
+
+        // Build message with optional role mention
+        $message = 'A mod has been updated on the Forge!';
+
+        // Send the notification
         DiscordAlert::to('mods')
             ->withUsername('ForgeBot')
-            ->message($message);
+            ->message($message, [$embed]);
     }
 }
