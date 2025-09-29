@@ -72,10 +72,11 @@ use Illuminate\Support\Str;
                                     // Store focus state and cursor position
                                     let cursorPosition = 0;
                                     let wasFocused = false;
+                                    const componentId = '{{ $this->getId() }}';
 
                                     // Before Livewire update
                                     Livewire.hook('commit', ({ component, commit }) => {
-                                        if (component.id === @this.id) {
+                                        if (component.id === componentId) {
                                             const input = document.getElementById('search');
                                             if (input) {
                                                 wasFocused = document.activeElement === input;
@@ -88,7 +89,7 @@ use Illuminate\Support\Str;
 
                                     // After Livewire update
                                     Livewire.hook('morph.updated', ({ el, component }) => {
-                                        if (component.id === @this.id) {
+                                        if (component.id === componentId) {
                                             const input = document.getElementById('search');
                                             if (input && wasFocused) {
                                                 input.focus();
