@@ -94,12 +94,12 @@ describe('SPT Version API', function (): void {
     });
 
     it('filters between two created_at dates', function (): void {
-        $v1 = SptVersion::factory()->create(['created_at' => '2021-01-01 00:00:00']);
-        $v2 = SptVersion::factory()->create(['created_at' => '2021-01-02 00:00:00']);
-        $v3 = SptVersion::factory()->create(['created_at' => '2021-01-03 00:00:00']);
-        $v4 = SptVersion::factory()->create(['created_at' => '2021-01-04 00:00:00']);
-        $v5 = SptVersion::factory()->create(['created_at' => '2021-01-05 00:00:00']);
-        $v6 = SptVersion::factory()->create(['created_at' => '2021-01-06 00:00:00']);
+        $v1 = SptVersion::factory()->create(['version' => '5.1.0', 'created_at' => '2021-01-01 00:00:00']);
+        $v2 = SptVersion::factory()->create(['version' => '5.2.0', 'created_at' => '2021-01-02 00:00:00']);
+        $v3 = SptVersion::factory()->create(['version' => '5.3.0', 'created_at' => '2021-01-03 00:00:00']);
+        $v4 = SptVersion::factory()->create(['version' => '5.4.0', 'created_at' => '2021-01-04 00:00:00']);
+        $v5 = SptVersion::factory()->create(['version' => '5.5.0', 'created_at' => '2021-01-05 00:00:00']);
+        $v6 = SptVersion::factory()->create(['version' => '5.6.0', 'created_at' => '2021-01-06 00:00:00']);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?filter[created_between]=2021-01-02,2021-01-05');
 

@@ -151,7 +151,7 @@ class Show extends Component
     public function getVersionCount(): int
     {
         return $this->mod->versions()
-            ->when(! auth()->user()?->can('viewAny', [ModVersion::class, $this->mod]), function ($query) {
+            ->when(! auth()->user()?->can('viewAny', [ModVersion::class, $this->mod]), function ($query): void {
                 $query->publiclyVisible();
             })
             ->count();
