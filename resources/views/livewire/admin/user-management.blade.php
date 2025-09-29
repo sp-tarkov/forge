@@ -62,7 +62,46 @@ use Illuminate\Support\Str;
                     {{-- Search Filter --}}
                     <div>
                         <flux:label for="search" class="text-xs">Search</flux:label>
-                        <flux:input wire:model.live.debounce.300ms="search" id="search" placeholder="Name, email, or ID..." size="sm" />
+                        <flux:input
+                            wire:model.live.debounce.300ms="search"
+                            id="search"
+                            placeholder="Name, email, or ID..."
+                            size="sm"
+                            x-data="{
+                                init() {
+                                    // Store focus state and cursor position
+                                    let cursorPosition = 0;
+                                    let wasFocused = false;
+
+                                    // Before Livewire update
+                                    Livewire.hook('commit', ({ component, commit }) => {
+                                        if (component.id === @this.id) {
+                                            const input = document.getElementById('search');
+                                            if (input) {
+                                                wasFocused = document.activeElement === input;
+                                                if (wasFocused) {
+                                                    cursorPosition = input.selectionStart;
+                                                }
+                                            }
+                                        }
+                                    });
+
+                                    // After Livewire update
+                                    Livewire.hook('morph.updated', ({ el, component }) => {
+                                        if (component.id === @this.id) {
+                                            const input = document.getElementById('search');
+                                            if (input && wasFocused) {
+                                                input.focus();
+                                                // Restore cursor position
+                                                if (input.value && cursorPosition <= input.value.length) {
+                                                    input.setSelectionRange(cursorPosition, cursorPosition);
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            }"
+                        />
                     </div>
 
                     {{-- Role Filter --}}

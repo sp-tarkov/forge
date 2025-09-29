@@ -337,9 +337,29 @@ class UserManagement extends Component
     }
 
     /**
-     * Reset pagination when any filter property is updated.
+     * Reset pagination when filter properties are updated.
      */
-    public function updated(): void
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedRoleFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedJoinedFrom(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedJoinedTo(): void
     {
         $this->resetPage();
     }
