@@ -35,6 +35,7 @@ class ModFactory extends Factory
             'featured' => fake()->boolean(),
             'contains_ai_content' => fake()->boolean(),
             'contains_ads' => fake()->boolean(),
+            'discord_notification_sent' => true,
             'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
             'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
             'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
