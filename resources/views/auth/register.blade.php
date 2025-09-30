@@ -4,7 +4,7 @@
     </x-slot>
 
     <x-slot:description>
-        {{ __('Register an account to start using The Forge and join the community.') }}
+        {{ __('Register an account to start using the Forge and join the community.') }}
     </x-slot>
 
     <x-authentication-card>

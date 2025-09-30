@@ -4,7 +4,7 @@
     </x-slot>
 
     <x-slot:description>
-        {{ __('The dashboard for your account on The Forge.') }}
+        {{ __('The dashboard for your account on the Forge.') }}
     </x-slot>
 
     <x-slot:header>
