@@ -7,6 +7,7 @@ namespace App\Livewire\Page\Mod;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -105,6 +106,11 @@ class Create extends Component
     public array $authorIds = [];
 
     /**
+     * Whether to disable the profile binding notice.
+     */
+    public bool $disableProfileBindingNotice = false;
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -123,6 +129,20 @@ class Create extends Component
     public function updateAuthorIds(array $ids): void
     {
         $this->authorIds = $ids;
+    }
+
+    /**
+     * Check if the selected category shows profile binding notice by default.
+     */
+    public function shouldShowProfileBindingField(): bool
+    {
+        if (empty($this->category)) {
+            return false;
+        }
+
+        $category = ModCategory::query()->find($this->category);
+
+        return $category && $category->shows_profile_binding_notice;
     }
 
     /**
@@ -150,6 +170,7 @@ class Create extends Component
             'subscribeToComments' => 'boolean',
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
+            'disableProfileBindingNotice' => 'boolean',
         ];
     }
 
@@ -210,6 +231,7 @@ class Create extends Component
             'contains_ai_content' => $this->containsAiContent,
             'contains_ads' => $this->containsAds,
             'comments_disabled' => $this->commentsDisabled,
+            'profile_binding_notice_disabled' => $this->disableProfileBindingNotice,
             'published_at' => $this->publishedAt,
         ]);
 

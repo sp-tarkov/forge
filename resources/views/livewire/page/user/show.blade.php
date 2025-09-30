@@ -72,7 +72,7 @@
                         <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
                         <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600">
                             <option value="wall">{{ __('Wall') }}</option>
-                            <option value="mods">{{ __('Mods') }}</option>
+                            <option value="mods">{{ $modCount }} {{ __(Str::plural('Mod', $modCount)) }}</option>
                             <option value="activity">{{ __('Activity') }}</option>
                         </select>
                     </div>
@@ -80,9 +80,13 @@
                     {{-- Desktop Tabs --}}
                     <div class="hidden sm:block">
                         <nav class="isolate flex divide-x divide-gray-200 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
-                            <x-tab-button name="{{ __('Wall') }}" />
-                            <x-tab-button name="{{ __('Mods') }}" />
-                            <x-tab-button name="{{ __('Activity') }}" />
+                            <x-tab-button name="{{ __('Wall') }}" value="wall" />
+                            <x-tab-button
+                                name="{{ __('Mods') }}"
+                                value="mods"
+                                :label="$modCount . ' ' . Str::plural('Mod', $modCount)"
+                            />
+                            <x-tab-button name="{{ __('Activity') }}" value="activity" />
                         </nav>
                     </div>
                 </div>

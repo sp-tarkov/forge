@@ -160,7 +160,7 @@ class ModRssFeedController extends Controller
      */
     private function generateFeedDescription(array $filters): string
     {
-        $description = 'Latest SPT mods from The Forge';
+        $description = 'Latest SPT mods on the Forge';
         /** @var array<int, string> $parts */
         $parts = [];
 

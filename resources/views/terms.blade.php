@@ -4,7 +4,7 @@
     </x-slot>
 
     <x-slot:description>
-        {{ __('The terms of service for The Forge.') }}
+        {{ __('The terms of service for the Forge.') }}
     </x-slot>
 
     <x-slot:header></x-slot>

@@ -120,7 +120,7 @@ return [
         'placeholder' => 'YOUR_API_KEY',
 
         // Any extra authentication-related info for your users. Markdown and HTML are supported.
-        'extra_info' => 'You can generate your own API token by logging into The Forge, clicking your profile picture, and clicking <b>API Tokens</b>.',
+        'extra_info' => 'You can generate your own API token by logging into the Forge, clicking your profile picture, and clicking <b>API Tokens</b>.',
     ],
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.

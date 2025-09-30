@@ -4,7 +4,7 @@
     </x-slot>
 
     <x-slot:description>
-        {{ __('The privacy policy for The Forge.') }}
+        {{ __('The privacy policy for the Forge.') }}
     </x-slot>
 
     <x-slot:header></x-slot>

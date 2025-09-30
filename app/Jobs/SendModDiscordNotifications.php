@@ -171,7 +171,7 @@ class SendModDiscordNotifications implements ShouldQueue
 
         if ($sptVersions->isNotEmpty()) {
             $embed['fields'][] = [
-                'name' => 'SPT Versions Supported',
+                'name' => 'Supported SPT Versions',
                 'value' => $sptVersions->implode(', '),
                 'inline' => false,
             ];
@@ -229,21 +229,15 @@ class SendModDiscordNotifications implements ShouldQueue
             'fields' => [],
         ];
 
-        // Get all supported SPT versions for this mod
-        $sptVersions = $mod->versions()
-            ->whereDisabled(false)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->with('latestSptVersion')
-            ->get()
-            ->pluck('latestSptVersion.version')
-            ->unique()
+        // Get SPT versions supported by the latest version
+        $sptVersions = $latestVersion->sptVersions
+            ->pluck('version')
             ->filter()
             ->values();
 
         if ($sptVersions->isNotEmpty()) {
             $embed['fields'][] = [
-                'name' => 'SPT Versions Supported',
+                'name' => 'Supported SPT Versions',
                 'value' => $sptVersions->implode(', '),
                 'inline' => false,
             ];

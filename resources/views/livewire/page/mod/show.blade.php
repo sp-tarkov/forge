@@ -150,9 +150,9 @@
                         <label for="tabs" class="sr-only">{{ __('Select a tab') }}</label>
                         <select id="tabs" name="tabs" x-model="selectedTab" class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-cyan-500 dark:focus:ring-cyan-400">
                             <option value="description">{{ __('Description') }}</option>
-                            <option value="versions">{{ __('Versions') }}</option>
+                            <option value="versions">{{ $versionCount }} {{ __(Str::plural('Version', $versionCount)) }}</option>
                             @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
-                                <option value="comments">{{ __('Comments') }}</option>
+                                <option value="comments">{{ $commentCount }} {{ __(Str::plural('Comment', $commentCount)) }}</option>
                             @endif
                         </select>
                     </div>
@@ -161,9 +161,17 @@
                     <div class="hidden sm:block">
                         <nav class="isolate flex divide-x divide-gray-300 dark:divide-gray-800 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl" aria-label="Tabs">
                             <x-tab-button name="Description" />
-                            <x-tab-button name="Versions" />
+                            <x-tab-button
+                                name="Versions"
+                                value="versions"
+                                :label="$versionCount . ' ' . Str::plural('Version', $versionCount)"
+                            />
                             @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
-                                <x-tab-button name="Comments" />
+                                <x-tab-button
+                                    name="Comments"
+                                    value="comments"
+                                    :label="$commentCount . ' ' . Str::plural('Comment', $commentCount)"
+                                />
                             @endif
                         </nav>
                     </div>
@@ -238,12 +246,18 @@
 
             {{-- Profile Binding Notice --}}
             @if ($requiresProfileBindingNotice)
-                <flux:callout icon="information-circle" color="orange" inline="inline">
-                    <flux:callout.heading>Possibly Profile Binding</flux:callout.heading>
-                    <flux:callout.text>
-                        This mod <em>may</em> make permanent changes to your profile, and <em>may</em> not be removable without starting a new profile. Ensure profile backups exist before using it. <a href="https://wiki.sp-tarkov.com/Installing_Mods#profiles" target="_blank" class="underline text-orange-700 hover:text-orange-800 dark:text-orange-300 dark:hover:text-orange-200">Read more.</a>
-                    </flux:callout.text>
-                </flux:callout>
+                <div class="p-3 sm:p-4 bg-amber-500 dark:bg-amber-600 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <div class="flex gap-3 items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-black dark:text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="text-sm font-medium text-black dark:text-white">
+                            <strong>Notice:</strong> This mod <em>may</em> make permanent changes to your profile, and <em>may</em> not be removable without starting a new profile. <a href="https://wiki.sp-tarkov.com/Installing_Mods#profiles" target="_blank" class="underline text-black hover:text-orange-800 dark:text-white dark:hover:text-white">More information.</a>
+                        </div>
+                    </div>
+                </div>
             @endif
 
             {{-- Additional Mod Details --}}
@@ -255,7 +269,7 @@
                         <p class="flex items-center gap-2">
                             @if ($mod->guid)
                                 <span class="font-mono text-sm truncate" title="{{ $mod->guid }}">{{ $mod->guid }}</span>
-                                <button 
+                                <button
                                     x-data="{ copied: false }"
                                     @click="navigator.clipboard.writeText('{{ $mod->guid }}'); copied = true; setTimeout(() => copied = false, 2000)"
                                     class="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"

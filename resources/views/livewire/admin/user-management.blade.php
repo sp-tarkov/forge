@@ -62,46 +62,12 @@ use Illuminate\Support\Str;
                     {{-- Search Filter --}}
                     <div>
                         <flux:label for="search" class="text-xs">Search</flux:label>
-                        <flux:input
+                        <input
+                            type="text"
                             wire:model.live.debounce.300ms="search"
                             id="search"
                             placeholder="Name, email, or ID..."
-                            size="sm"
-                            x-data="{
-                                init() {
-                                    // Store focus state and cursor position
-                                    let cursorPosition = 0;
-                                    let wasFocused = false;
-                                    const componentId = '{{ $this->getId() }}';
-
-                                    // Before Livewire update
-                                    Livewire.hook('commit', ({ component, commit }) => {
-                                        if (component.id === componentId) {
-                                            const input = document.getElementById('search');
-                                            if (input) {
-                                                wasFocused = document.activeElement === input;
-                                                if (wasFocused) {
-                                                    cursorPosition = input.selectionStart;
-                                                }
-                                            }
-                                        }
-                                    });
-
-                                    // After Livewire update
-                                    Livewire.hook('morph.updated', ({ el, component }) => {
-                                        if (component.id === componentId) {
-                                            const input = document.getElementById('search');
-                                            if (input && wasFocused) {
-                                                input.focus();
-                                                // Restore cursor position
-                                                if (input.value && cursorPosition <= input.value.length) {
-                                                    input.setSelectionRange(cursorPosition, cursorPosition);
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
-                            }"
+                            class="w-full border rounded-lg block disabled:shadow-none dark:shadow-none appearance-none text-sm py-1.5 h-8 leading-[1.125rem] ps-3 pe-3 bg-white dark:bg-white/10 dark:disabled:bg-white/[7%] text-zinc-700 disabled:text-zinc-500 placeholder-zinc-400 disabled:placeholder-zinc-400/70 dark:text-zinc-300 dark:disabled:text-zinc-400 dark:placeholder-zinc-400 dark:disabled:placeholder-zinc-500 shadow-xs border-zinc-200 border-b-zinc-300/80 disabled:border-b-zinc-200 dark:border-white/10 dark:disabled:border-white/5 focus:outline-none focus:ring-2 focus:ring-zinc-950/5 dark:focus:ring-white/10 focus:border-zinc-950/20 dark:focus:border-white/30"
                         />
                     </div>
 

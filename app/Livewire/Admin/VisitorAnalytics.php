@@ -609,7 +609,7 @@ class VisitorAnalytics extends Component
             'stats' => $this->getStats(),
         ])->layout('components.layouts.base', [
             'title' => 'Event Analytics - The Forge',
-            'description' => 'View detailed event analytics and user activity statistics for The Forge.',
+            'description' => 'View detailed event analytics and user activity statistics.',
         ]);
     }
 }

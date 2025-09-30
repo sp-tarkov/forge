@@ -146,22 +146,41 @@ class Show extends Component
     }
 
     /**
-     * Check if the mod category requires a profile binding notice.
+     * Get the total version count visible to the current user.
+     */
+    public function getVersionCount(): int
+    {
+        return $this->mod->versions()
+            ->when(! auth()->user()?->can('viewAny', [ModVersion::class, $this->mod]), function ($query): void {
+                $query->publiclyVisible();
+            })
+            ->count();
+    }
+
+    /**
+     * Get the total comment count visible to the current user.
+     */
+    public function getCommentCount(): int
+    {
+        $user = auth()->user();
+
+        return $this->mod->comments()
+            ->visibleToUser($user)
+            ->count();
+    }
+
+    /**
+     * Check if the mod should display a profile binding notice.
      */
     public function requiresProfileBindingNotice(): bool
     {
-        // Categories that typically bind to the user's profile
-        $profileBindingCategoryIds = [
-            2,  // Overhauls
-            4,  // Items
-            7,  // Quests
-            13, // Weapons
-            14, // Clothing
-            15, // Equipment
-            16, // Traders
-        ];
+        // If the notice is explicitly disabled, don't show it
+        if ($this->mod->profile_binding_notice_disabled) {
+            return false;
+        }
 
-        return in_array($this->mod->category_id, $profileBindingCategoryIds, true);
+        // Otherwise, check if the category shows profile binding notice
+        return $this->mod->category && $this->mod->category->shows_profile_binding_notice;
     }
 
     /**
@@ -177,6 +196,8 @@ class Show extends Component
             'warningMessages' => $this->getWarningMessages(),
             'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
             'openGraphImage' => $this->mod->thumbnail,
+            'versionCount' => $this->getVersionCount(),
+            'commentCount' => $this->getCommentCount(),
         ]);
     }
 }

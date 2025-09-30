@@ -260,7 +260,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $response = $this->actingAs($this->user)
             ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
 
-        $response->assertSee('Comments');
+        $response->assertSeeText('Comment');
         $response->assertSee('comment-component');
     });
 
@@ -270,7 +270,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $response = $this->actingAs($this->otherUser) // Use otherUser instead of user (owner)
             ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
 
-        $response->assertDontSee('Comments', false);
+        $response->assertDontSeeText('Comment');
         $response->assertDontSee('comment-component');
     });
 
@@ -280,7 +280,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $response = $this->actingAs($this->moderator)
             ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
 
-        $response->assertSee('Comments');
+        $response->assertSeeText('Comment');
         $response->assertSee('comment-component');
     });
 
@@ -290,7 +290,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $response = $this->actingAs($this->admin)
             ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
 
-        $response->assertSee('Comments');
+        $response->assertSeeText('Comment');
         $response->assertSee('comment-component');
     });
 
@@ -300,7 +300,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $response = $this->actingAs($this->user)
             ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
 
-        $response->assertSee('Comments');
+        $response->assertSeeText('Comment');
         $response->assertSee('comment-component');
     });
 
@@ -312,7 +312,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $response = $this->actingAs($author)
             ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
 
-        $response->assertSee('Comments');
+        $response->assertSeeText('Comment');
         $response->assertSee('comment-component');
     });
 
@@ -383,7 +383,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $response = $this->actingAs($this->user)
             ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
 
-        $response->assertSee('Comments');
+        $response->assertSeeText('Comment');
         $response->assertSee('comment-component');
         $response->assertDontSee('Comments have been disabled for this mod');
     });
