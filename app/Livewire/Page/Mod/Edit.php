@@ -7,6 +7,7 @@ namespace App\Livewire\Page\Mod;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\ModSourceCodeLink;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -105,6 +106,11 @@ class Edit extends Component
     public array $authorIds = [];
 
     /**
+     * Whether to disable the profile binding notice.
+     */
+    public bool $disableProfileBindingNotice = false;
+
+    /**
      * Mount the component.
      */
     public function mount(int $modId): void
@@ -138,6 +144,7 @@ class Edit extends Component
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
         $this->commentsDisabled = (bool) $this->mod->comments_disabled;
+        $this->disableProfileBindingNotice = (bool) $this->mod->profile_binding_notice_disabled;
 
         // Load existing authors
         $this->authorIds = $this->mod->authors->pluck('id')->toArray();
@@ -152,6 +159,20 @@ class Edit extends Component
     public function updateAuthorIds(array $ids): void
     {
         $this->authorIds = $ids;
+    }
+
+    /**
+     * Check if the selected category shows profile binding notice by default.
+     */
+    public function shouldShowProfileBindingField(): bool
+    {
+        if (empty($this->category)) {
+            return false;
+        }
+
+        $category = ModCategory::query()->find($this->category);
+
+        return $category && $category->shows_profile_binding_notice;
     }
 
     /**
@@ -178,6 +199,7 @@ class Edit extends Component
             'commentsDisabled' => 'boolean',
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
+            'disableProfileBindingNotice' => 'boolean',
         ];
     }
 
@@ -234,6 +256,7 @@ class Edit extends Component
         $this->mod->contains_ai_content = $this->containsAiContent;
         $this->mod->contains_ads = $this->containsAds;
         $this->mod->comments_disabled = $this->commentsDisabled;
+        $this->mod->profile_binding_notice_disabled = $this->disableProfileBindingNotice;
         $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.

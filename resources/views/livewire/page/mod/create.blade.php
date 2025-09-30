@@ -30,7 +30,7 @@
             <div class="mt-5 md:mt-0 md:col-span-2">
                 <form wire:submit="save">
                     <div class="px-4 py-5 bg-white dark:bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
-                        <div class="grid grid-cols-6 gap-6">
+                        <div class="grid grid-cols-6 gap-8">
                             @csrf
 
                             <flux:field class="col-span-6">
@@ -101,7 +101,7 @@
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Category') }}</flux:label>
                                 <flux:description>{{ __('Select the category that best describes your mod. This helps users find your mod more easily.') }}</flux:description>
-                                <flux:select wire:model.blur="category" placeholder="Choose category...">
+                                <flux:select wire:model.live="category" placeholder="Choose category...">
                                     @foreach(\App\Models\ModCategory::orderBy('title')->get() as $category)
                                         <flux:select.option value="{{ $category->id }}">{{ $category->title }}</flux:select.option>
                                     @endforeach
@@ -220,6 +220,14 @@
                                         label="Contains Ads"
                                         description="This mod contains advertisements for products, services, or other content."
                                     />
+                                    @if($this->shouldShowProfileBindingField())
+                                        <flux:checkbox
+                                            value="true"
+                                            wire:model.blur="disableProfileBindingNotice"
+                                            label="Disable Profile Binding Notice"
+                                            description="Check this option if you can confirm that your mod does not make permanent changes to user profiles. Mods in the category you've selected typically do. Leave this unchecked if you are not sure."
+                                        />
+                                    @endif
                                 </flux:checkbox.group>
                             </flux:field>
 
