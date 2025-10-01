@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\ChatSubscriptionController;
 use App\Http\Controllers\CommentSubscriptionController;
 use App\Http\Controllers\FileRedirectController;
@@ -59,6 +60,11 @@ Route::middleware('auth.banned')->group(function (): void {
             ->name('login.socialite');
         Route::get('/login/{provider}/callback', 'callback');
     });
+
+    // Email verification route without auth requirement (Fortify override)
+    Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
+        ->middleware(['web', 'signed', 'throttle:6,1'])
+        ->name('verification.verify');
 
     // Comment unsubscribe route (no auth required for email links)
     Route::get('/comment/unsubscribe/{user}/{commentable_type}/{commentable_id}', [CommentSubscriptionController::class, 'unsubscribe'])

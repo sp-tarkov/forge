@@ -16,6 +16,12 @@
     @livewire('timezone-warning')
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        @session('status')
+            <flux:callout icon="check-circle" color="green" class="mb-6">
+                <flux:callout.text>{{ $value }}</flux:callout.text>
+            </flux:callout>
+        @endsession
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
