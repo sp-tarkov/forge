@@ -88,9 +88,6 @@ class AppServiceProvider extends ServiceProvider
                 ->withoutMiddleware([VerifyCsrfToken::class]);
         });
 
-        // This gate determines who can access the Pulse dashboard.
-        Gate::define('viewPulse', fn (User $user): bool => $user->isAdmin());
-
         // This gate determines who can access admin features.
         Gate::define('admin', fn (User $user): bool => $user->isAdmin());
 

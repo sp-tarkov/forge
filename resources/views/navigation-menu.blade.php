@@ -130,10 +130,6 @@
                                 </div>
                                 @if (auth()->user()->isAdmin())
                                     <div class="flex flex-col py-1.5">
-                                        <a href="/pulse" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                            <flux:icon.eye class="w-4 h-4" />
-                                            {{ __('Pulse Stats') }}
-                                        </a>
                                         <a href="/horizon" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
                                             <flux:icon.queue-list class="w-4 h-4" />
                                             {{ __('Horizon Queue') }}
@@ -220,7 +216,6 @@
                 <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">{{ __('Edit Profile') }}</x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('api-tokens.index') }}" :active="request()->routeIs('api-tokens.index')">{{ __('API Token') }}</x-responsive-nav-link>
                 @if (auth()->user()->isAdmin())
-                    <x-responsive-nav-link href="/pulse" :active="request()->routeIs('api-tokens.index')">{{ __('Pulse Stats') }}</x-responsive-nav-link>
                     <x-responsive-nav-link href="/horizon" :active="request()->routeIs('api-tokens.index')">{{ __('Horizon Queue') }}</x-responsive-nav-link>
                     <x-responsive-nav-link href="{{ route('admin.visitor-analytics') }}" :active="request()->routeIs('admin.visitor-analytics')">{{ __('Visitor Analytics') }}</x-responsive-nav-link>
                     <x-responsive-nav-link href="{{ route('admin.user-management') }}" :active="request()->routeIs('admin.user-management')">{{ __('User Management') }}</x-responsive-nav-link>
