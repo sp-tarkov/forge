@@ -12,7 +12,7 @@
         {{ $logo }}
     </div>
 
-    <div class="relative z-10 w-full sm:max-w-md mt-6 px-6 py-4 bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl overflow-hidden sm:rounded-lg">
+    <div class="relative z-10 w-full sm:max-w-md mt-6 p-6 bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-xl overflow-hidden sm:rounded-lg">
         {{ $slot }}
     </div>
 </div>

@@ -109,9 +109,9 @@ class CommentPolicy
 
         // Check blocking for mod comments
         if ($commentable instanceof Mod) {
-            /** @var User $owner */
+            /** @var User|null $owner */
             $owner = $commentable->owner;
-            if ($user->isBlockedMutually($owner)) {
+            if ($owner !== null && $user->isBlockedMutually($owner)) {
                 return false;
             }
         }

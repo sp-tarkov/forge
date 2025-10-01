@@ -50,10 +50,22 @@ use Illuminate\Support\Str;
 
         <div class="space-y-6">
             {{-- Filters Section --}}
-            <div id="filters-container" class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div id="filters-container" class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6" x-data="{ searchValue: @entangle('search').defer }">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
-                    <flux:button wire:click="resetFilters" variant="outline" size="sm" icon="x-mark">
+                    <flux:button
+                        wire:click="resetFilters"
+                        variant="outline"
+                        size="sm"
+                        icon="x-mark"
+                        x-on:click="
+                            $nextTick(() => {
+                                if ($refs.searchInput) {
+                                    $refs.searchInput.value = '';
+                                }
+                            })
+                        "
+                    >
                         Clear All
                     </flux:button>
                 </div>
@@ -62,13 +74,16 @@ use Illuminate\Support\Str;
                     {{-- Search Filter --}}
                     <div>
                         <flux:label for="search" class="text-xs">Search</flux:label>
-                        <input
-                            type="text"
-                            wire:model.live.debounce.300ms="search"
-                            id="search"
-                            placeholder="Name, email, or ID..."
-                            class="w-full border rounded-lg block disabled:shadow-none dark:shadow-none appearance-none text-sm py-1.5 h-8 leading-[1.125rem] ps-3 pe-3 bg-white dark:bg-white/10 dark:disabled:bg-white/[7%] text-zinc-700 disabled:text-zinc-500 placeholder-zinc-400 disabled:placeholder-zinc-400/70 dark:text-zinc-300 dark:disabled:text-zinc-400 dark:placeholder-zinc-400 dark:disabled:placeholder-zinc-500 shadow-xs border-zinc-200 border-b-zinc-300/80 disabled:border-b-zinc-200 dark:border-white/10 dark:disabled:border-white/5 focus:outline-none focus:ring-2 focus:ring-zinc-950/5 dark:focus:ring-white/10 focus:border-zinc-950/20 dark:focus:border-white/30"
-                        />
+                        <div wire:ignore>
+                            <flux:input
+                                type="text"
+                                wire:model.live.debounce.300ms="search"
+                                id="search"
+                                x-ref="searchInput"
+                                placeholder="Name, email, or ID..."
+                                size="sm"
+                            />
+                        </div>
                     </div>
 
                     {{-- Role Filter --}}

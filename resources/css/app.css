@@ -415,3 +415,60 @@ button {
 .fl-wrapper {
     z-index: 60 !important;
 }
+
+/* Fix autocomplete background colors to match the input field */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: rgb(226 232 240); /* slate-200 for dark mode */
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px rgb(30 41 59); /* slate-800 - Match Flux dark input */
+}
+
+/* For light mode */
+.light input:-webkit-autofill,
+.light input:-webkit-autofill:hover,
+.light input:-webkit-autofill:focus,
+.light input:-webkit-autofill:active,
+.light input:autofill,
+.light input:autofill:hover,
+.light input:autofill:focus,
+.light input:autofill:active {
+    -webkit-text-fill-color: rgb(15 23 42); /* slate-900 for light mode */
+    box-shadow: inset 0 0 20px 20px rgb(255 255 255); /* white - Match Flux light input */
+}
+
+/* Fix 1Password autofill background colors to match normal input backgrounds */
+input[data-com-onepassword-filled],
+select[data-com-onepassword-filled],
+textarea[data-com-onepassword-filled],
+input[data-com-onepassword-filled="light"],
+select[data-com-onepassword-filled="light"],
+textarea[data-com-onepassword-filled="light"] {
+    /* Match Flux UI dark mode input background */
+    background-color: rgb(30 41 59) !important; /* slate-800 */
+    color: rgb(226 232 240) !important; /* slate-200 */
+}
+
+/* For light mode - 1Password */
+.light input[data-com-onepassword-filled],
+.light select[data-com-onepassword-filled],
+.light textarea[data-com-onepassword-filled],
+.light input[data-com-onepassword-filled="light"],
+.light select[data-com-onepassword-filled="light"],
+.light textarea[data-com-onepassword-filled="light"] {
+    /* Match Flux UI light mode input background */
+    background-color: rgb(255 255 255) !important; /* white */
+    color: rgb(15 23 42) !important; /* slate-900 */
+}
+
+/* Fix callout padding to be equal on all sides */
+.flux-callout {
+    padding: 1rem !important;
+}

@@ -130,7 +130,7 @@
                                 </li>
                                 <li class="flex items-start">
                                     <flux:icon name="check-circle" class="size-4 mt-1 mr-3 text-blue-600 flex-shrink-0" />
-                                    <span class="text-blue-800 dark:text-blue-200">Download most recent version of SPT and install it into the duplicated folder</span>
+                                    <span class="text-blue-800 dark:text-blue-200">Download the most recent version of SPT and install it into the duplicated folder</span>
                                 </li>
                             </ul>
                         </div>
