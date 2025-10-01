@@ -31,6 +31,6 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     #[Override]
     protected function gate(): void
     {
-        Gate::define('viewHorizon', fn (mixed $user): bool => $user->isAdmin());
+        Gate::define('viewHorizon', fn (mixed $user): bool => $user?->isAdmin() ?? false);
     }
 }
