@@ -27,6 +27,11 @@ class Show extends Component
     public Mod $mod;
 
     /**
+     * The Open Graph image for social media sharing.
+     */
+    public ?string $openGraphImage = null;
+
+    /**
      * Mount the component.
      */
     public function mount(int $modId, string $slug): void
@@ -36,6 +41,8 @@ class Show extends Component
         $this->enforceCanonicalSlug($this->mod, $slug);
 
         Gate::authorize('view', $this->mod);
+
+        $this->openGraphImage = $this->mod->thumbnail;
     }
 
     /**
@@ -195,7 +202,6 @@ class Show extends Component
             'shouldShowWarnings' => $this->shouldShowWarnings(),
             'warningMessages' => $this->getWarningMessages(),
             'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
-            'openGraphImage' => $this->mod->thumbnail,
             'versionCount' => $this->getVersionCount(),
             'commentCount' => $this->getCommentCount(),
         ]);
