@@ -131,6 +131,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Forge Heartbeat URL
+    |--------------------------------------------------------------------------
+    |
+    | This value is the URL that will be pinged by the Forge heartbeat
+    | scheduled task. Configure this URL in your .env file using
+    | FORGE_HEARTBEAT_URL.
+    |
+    */
+
+    'forge_heartbeat_url' => env('FORGE_HEARTBEAT_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Class Aliases
     |--------------------------------------------------------------------------
     |
