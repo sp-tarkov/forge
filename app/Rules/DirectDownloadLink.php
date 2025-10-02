@@ -20,7 +20,7 @@ class DirectDownloadLink implements ValidationRule
     public ?int $contentLength = null;
 
     /**
-     * Run the validation rule to ensure the URL is a direct download link for a 7z file.
+     * Run the validation rule to ensure the URL is a direct download link for a 7z or zip file.
      *
      * @param  Closure(string, ?string=):PotentiallyTranslatedString  $fail
      */
@@ -64,18 +64,21 @@ class DirectDownloadLink implements ValidationRule
                 return;
             }
 
-            // Check if the URL ends with .7z OR content-disposition has attachment with .7z filename
-            $urlEndsWithSevenZip = str_ends_with(strtolower($value), '.7z');
+            // Check if the URL ends with .7z or .zip OR content-disposition has attachment with .7z or .zip filename
+            $urlLowercase = strtolower($value);
+            $urlEndsWithSevenZip = str_ends_with($urlLowercase, '.7z');
+            $urlEndsWithZip = str_ends_with($urlLowercase, '.zip');
             $hasValidDisposition = false;
 
             if ($contentDisposition) {
                 $hasAttachment = str_contains($contentDisposition, 'attachment');
                 $hasSevenZipFilename = str_contains($contentDisposition, '.7z');
-                $hasValidDisposition = $hasAttachment && $hasSevenZipFilename;
+                $hasZipFilename = str_contains($contentDisposition, '.zip');
+                $hasValidDisposition = $hasAttachment && ($hasSevenZipFilename || $hasZipFilename);
             }
 
-            if (! $urlEndsWithSevenZip && ! $hasValidDisposition) {
-                $fail(__('The download link must be for a 7-zip (.7z) file. Please review our Content Guidelines.'));
+            if (! $urlEndsWithSevenZip && ! $urlEndsWithZip && ! $hasValidDisposition) {
+                $fail(__('The download link must be for a 7-zip (.7z) or ZIP (.zip) file. Please review our Content Guidelines.'));
 
                 return;
             }
