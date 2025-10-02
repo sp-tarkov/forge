@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use App\Enums\SpamStatus;
+use App\Facades\CachedGate;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Support\CachedGate;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

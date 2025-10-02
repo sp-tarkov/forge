@@ -26,10 +26,11 @@ beforeEach(function (): void {
 
 describe('action component visibility', function (): void {
     it('does not display on mod detail pages for normal users', function (): void {
+        $owner = User::factory()->create(); // Different user owns the mod
         $user = User::factory()->create(['user_role_id' => null]);
 
         SptVersion::factory()->create(['version' => '1.0.0']);
-        $mod = Mod::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
         $this->actingAs($user)

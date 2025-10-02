@@ -17,6 +17,9 @@ uses(DatabaseTruncation::class);
 beforeEach(function (): void {
     Cache::flush(); // Prevent rate limiting interference.
 
+    // Disable honeypot spam protection for tests
+    config(['honeypot.enabled' => false]);
+
     // Create a default SPT version that will be used by mod versions
     SptVersion::factory()->create(['version' => '1.0.0']);
 });
@@ -38,9 +41,8 @@ describe('Guest User Tests', function (): void {
             ->on()->desktop()
             ->inDarkMode();
 
-        // Wait for page to load before assertions
-        $page->wait(2)
-            ->assertDontSee('Post Comment')
+        // Check that guest users don't see the comment form
+        $page->assertDontSee('Post Comment')
             ->assertNotPresent('@new-comment-body')
             ->assertSee('Login or register to join the discussion')
             ->assertNoJavascriptErrors();
@@ -974,9 +976,8 @@ describe('Spam Marking Tests', function (): void {
         // Visit the page - timeout is now configured globally
         $page = visit($mod->detail_url.'#comments');
 
-        // Wait a bit for page to load, then make assertions
-        $page->wait(2) // Wait 2 seconds for page to fully load
-            ->assertSee($mod->name)
+        // Make assertions
+        $page->assertSee($mod->name)
             ->assertDontSee($comment->body)
             ->assertNotPresent('.comment-container-'.$comment->id)
             ->assertNoJavaScriptErrors();

@@ -36,7 +36,7 @@
         <x-table-of-contents-item href="#violation-consequences" title="Violation Consequences and Appeals" />
     </x-slot>
 
-    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> September 26, 2025</p>
+    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> October 02, 2025</p>
 
     <h2 id="overview">1. Overview</h2>
     <p>These Content Guidelines establish the technical and quality standards for all files, mods, and content submitted to The Forge. Following these guidelines ensures a consistent, professional experience for all users and maintains the integrity of our modding platform.</p>
@@ -54,7 +54,7 @@
     <p><strong>Archive Requirements:</strong></p>
     <p>The Forge maintains strict archive standards to ensure consistency and ease of installation across all submitted content. These requirements help prevent compatibility issues and streamline the user experience.</p>
     <ul>
-        <li>All mods must be packaged in 7-Zip format (<code>.7z</code> only) to ensure consistent compression and extraction behavior across different operating systems and by different tooling</li>
+        <li>All mods must be packaged in either 7-Zip format (<code>.7z</code>) or ZIP format (<code>.zip</code>) to ensure consistent compression and extraction behavior across different operating systems and by different tooling</li>
         <li>Archives must contain all necessary files for mod functionality, ensuring users receive complete packages without missing external dependencies</li>
         <li>Password-protected archives are prohibited to prevent access issues and maintain security transparency</li>
     </ul>
@@ -351,13 +351,13 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
     <p>All download links must be direct download links that immediately begin downloading the file when visited. This requirement ensures the best user experience and enables automated tooling to download mods without user interaction.</p>
     <ul>
         <li>Links must initiate the download immediately</li>
-        <li>The download link must confirm that the file is a 7-zip archive (.7z) as required by our archive standards</li>
+        <li>The download link must confirm that the file is either a 7-zip archive (.7z) or ZIP archive (.zip) as required by our archive standards</li>
         <li>Links must remain accessible indefinitely to ensure long-term availability</li>
     </ul>
     <p><strong>Prohibited Link Types:</strong></p>
     <p>Any download link that does not meet the direct download requirement is prohibited. This includes but is not limited to file sharing services with landing pages, ad-supported download sites, services requiring user interaction, temporary file sharing platforms, and any link that redirects users through multiple pages before downloading.</p>
     <p><strong>Recommended Hosting:</strong></p>
-    <p>GitHub releases provide reliable direct download links with proper version control integration and meet all requirements for direct downloads of 7-zip archives.</p>
+    <p>GitHub releases provide reliable direct download links with proper version control integration and meet all requirements for direct downloads of 7-zip and ZIP archives.</p>
 
     <h2 id="violation-consequences">9. Violation Consequences and Appeals</h2>
 
@@ -400,7 +400,7 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
     <h2>Content Guidelines Summary</h2>
     <p><strong>Essential Requirements:</strong></p>
     <ul>
-        <li>Proper packaging in standard archive formats with complete file structures</li>
+        <li>Proper packaging in standard archive formats (7z or ZIP) with complete file structures</li>
         <li>Complete documentation including installation and usage instructions for all user skill levels</li>
         <li>Semantic versioning following MAJOR.MINOR.PATCH format with appropriate constraints</li>
         <li>Source code availability for all executable content to enable security review</li>
@@ -427,5 +427,5 @@ public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</
 
     <p><em>These Content Guidelines work together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a href="{{ route('static.community-standards') }}">Community Standards</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern content on The Forge.</em></p>
 
-    <p><em>Last updated: August 26, 2025</em></p>
+    <p><em>Last updated: October 02, 2025</em></p>
 </x-layouts.static-toc>

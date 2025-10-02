@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('Auth Resend Verification API', function (): void {
+    beforeEach(function (): void {
+        Cache::flush();
+    });
     it('allows resend request for unverified user and sends notification', function (): void {
         Notification::fake();
 

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Facades\CachedGate;
 use App\Facades\Track;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Facade;
@@ -131,6 +132,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Forge Heartbeat URL
+    |--------------------------------------------------------------------------
+    |
+    | This value is the URL that will be pinged by the Forge heartbeat
+    | scheduled task. Configure this URL in your .env file using
+    | FORGE_HEARTBEAT_URL.
+    |
+    */
+
+    'forge_heartbeat_url' => env('FORGE_HEARTBEAT_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Class Aliases
     |--------------------------------------------------------------------------
     |
@@ -141,6 +155,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        'CachedGate' => CachedGate::class,
         'Carbon' => Carbon::class,
         'Track' => Track::class,
     ])->toArray(),

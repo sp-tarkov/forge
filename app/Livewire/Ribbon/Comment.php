@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Ribbon;
 
 use App\Enums\SpamStatus;
+use App\Facades\CachedGate;
 use App\Models\Comment as CommentModel;
-use App\Support\CachedGate;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;

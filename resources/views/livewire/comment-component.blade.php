@@ -33,7 +33,7 @@
     @endif
 
     @auth
-        @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $commentable]))
+        @if (CachedGate::allows('create', [App\Models\Comment::class, $commentable]))
             <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-white">
@@ -105,7 +105,7 @@
                 wire:key="ribbon-comment-{{ $comment->id }}"
                 :comment-id="$comment->id"
                 :spam-status="$comment->spam_status->value"
-                :can-see-ribbon="\App\Support\CachedGate::allows('seeRibbon', $comment)"
+                :can-see-ribbon="CachedGate::allows('seeRibbon', $comment)"
             />
             <div
                 wire:key="comment-{{ $comment->id }}"
@@ -128,7 +128,7 @@
                                     wire:key="ribbon-reply-{{ $reply->id }}"
                                     :comment-id="$reply->id"
                                     :spam-status="$reply->spam_status->value"
-                                    :can-see-ribbon="\App\Support\CachedGate::allows('seeRibbon', $reply)"
+                                    :can-see-ribbon="CachedGate::allows('seeRibbon', $reply)"
                                 />
                                 <div
                                     id="reply-container-{{ $reply->id }}"

@@ -109,7 +109,7 @@ describe('DirectDownloadLink validation rule', function (): void {
         expect($failMessage)->toContain('direct download link');
     });
 
-    it('fails validation when URL does not end with .7z and no valid content-disposition', function (): void {
+    it('fails validation when URL does not end with .7z or .zip and no valid content-disposition', function (): void {
         Http::fake([
             'https://example.com/download' => Http::response('', 200, [
                 'content-type' => 'application/octet-stream',
@@ -125,7 +125,7 @@ describe('DirectDownloadLink validation rule', function (): void {
         });
 
         expect($failMessage)->not->toBeNull();
-        expect($failMessage)->toContain('7-zip (.7z) file');
+        expect($failMessage)->toContain('7-zip (.7z) or ZIP (.zip) file');
     });
 
     it('fails validation for missing content-length', function (): void {
@@ -199,5 +199,211 @@ describe('DirectDownloadLink validation rule', function (): void {
 
         expect($failCalled)->toBeFalse();
         expect($rule->contentLength)->toBe(5242880);
+    });
+
+    it('passes validation for valid zip download links with .zip URL extension', function (): void {
+        Http::fake([
+            'https://example.com/mod.zip' => Http::response('', 200, [
+                'content-type' => 'application/zip',
+                'content-length' => '3145728',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failCalled = false;
+
+        $rule->validate('link', 'https://example.com/mod.zip', function ($message) use (&$failCalled): void {
+            $failCalled = true;
+        });
+
+        expect($failCalled)->toBeFalse();
+        expect($rule->contentLength)->toBe(3145728);
+    });
+
+    it('passes validation for zip files with content-disposition', function (): void {
+        Http::fake([
+            'https://example.com/download' => Http::response('', 200, [
+                'content-type' => 'application/octet-stream',
+                'content-disposition' => 'attachment; filename="mod-package.zip"',
+                'content-length' => '2097152',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failCalled = false;
+
+        $rule->validate('link', 'https://example.com/download', function ($message) use (&$failCalled): void {
+            $failCalled = true;
+        });
+
+        expect($failCalled)->toBeFalse();
+        expect($rule->contentLength)->toBe(2097152);
+    });
+
+    it('passes validation for zip files with uppercase extension', function (): void {
+        Http::fake([
+            'https://example.com/MOD.ZIP' => Http::response('', 200, [
+                'content-type' => 'application/x-zip-compressed',
+                'content-length' => '4194304',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failCalled = false;
+
+        $rule->validate('link', 'https://example.com/MOD.ZIP', function ($message) use (&$failCalled): void {
+            $failCalled = true;
+        });
+
+        expect($failCalled)->toBeFalse();
+        expect($rule->contentLength)->toBe(4194304);
+    });
+
+    it('accepts application/x-zip content-type for zip files', function (): void {
+        Http::fake([
+            'https://example.com/mod.zip' => Http::response('', 200, [
+                'content-type' => 'application/x-zip',
+                'content-length' => '2048576',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failCalled = false;
+
+        $rule->validate('link', 'https://example.com/mod.zip', function ($message) use (&$failCalled): void {
+            $failCalled = true;
+        });
+
+        expect($failCalled)->toBeFalse();
+        expect($rule->contentLength)->toBe(2048576);
+    });
+
+    it('accepts various 7z content-types', function (): void {
+        Http::fake([
+            'https://example.com/mod1.7z' => Http::response('', 200, [
+                'content-type' => 'application/7z',
+                'content-length' => '1048576',
+            ]),
+            'https://example.com/mod2.7z' => Http::response('', 200, [
+                'content-type' => 'application/x-7z-compressed',
+                'content-length' => '2097152',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+
+        // Test application/7z
+        $failCalled = false;
+        $rule->validate('link', 'https://example.com/mod1.7z', function ($message) use (&$failCalled): void {
+            $failCalled = true;
+        });
+        expect($failCalled)->toBeFalse();
+        expect($rule->contentLength)->toBe(1048576);
+
+        // Test application/x-7z-compressed
+        $rule2 = new DirectDownloadLink;
+        $failCalled2 = false;
+        $rule2->validate('link', 'https://example.com/mod2.7z', function ($message) use (&$failCalled2): void {
+            $failCalled2 = true;
+        });
+        expect($failCalled2)->toBeFalse();
+        expect($rule2->contentLength)->toBe(2097152);
+    });
+
+    it('passes validation with mixed case content-disposition for zip', function (): void {
+        Http::fake([
+            'https://example.com/download' => Http::response('', 200, [
+                'content-type' => 'application/octet-stream',
+                'content-disposition' => 'Attachment; filename="Package.ZIP"',
+                'content-length' => '1572864',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failCalled = false;
+
+        $rule->validate('link', 'https://example.com/download', function ($message) use (&$failCalled): void {
+            $failCalled = true;
+        });
+
+        expect($failCalled)->toBeFalse();
+        expect($rule->contentLength)->toBe(1572864);
+    });
+
+    it('fails validation for files that are neither 7z nor zip', function (): void {
+        Http::fake([
+            'https://example.com/mod.rar' => Http::response('', 200, [
+                'content-type' => 'application/x-rar-compressed',
+                'content-length' => '1024',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failMessage = null;
+
+        $rule->validate('link', 'https://example.com/mod.rar', function ($message) use (&$failMessage): void {
+            $failMessage = $message;
+        });
+
+        expect($failMessage)->not->toBeNull();
+        expect($failMessage)->toContain('7-zip (.7z) or ZIP (.zip) file');
+    });
+
+    it('validates zip files still require direct download link headers', function (): void {
+        Http::fake([
+            'https://example.com/page.zip' => Http::response('', 200, [
+                'content-type' => 'text/html',  // Not a direct download
+                'content-length' => '1024',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failMessage = null;
+
+        $rule->validate('link', 'https://example.com/page.zip', function ($message) use (&$failMessage): void {
+            $failMessage = $message;
+        });
+
+        expect($failMessage)->not->toBeNull();
+        expect($failMessage)->toContain('direct download link');
+    });
+
+    it('validates zip files still require content-length', function (): void {
+        Http::fake([
+            'https://example.com/mod.zip' => Http::response('', 200, [
+                'content-type' => 'application/zip',
+                // Missing content-length
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failMessage = null;
+
+        $rule->validate('link', 'https://example.com/mod.zip', function ($message) use (&$failMessage): void {
+            $failMessage = $message;
+        });
+
+        expect($failMessage)->not->toBeNull();
+        expect($failMessage)->toContain('valid file size');
+    });
+
+    it('validates correct file type in content-disposition when URL has no extension', function (): void {
+        Http::fake([
+            'https://example.com/download' => Http::response('', 200, [
+                'content-type' => 'application/octet-stream',
+                'content-disposition' => 'attachment; filename="file.txt"',  // Wrong extension
+                'content-length' => '1024',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failMessage = null;
+
+        $rule->validate('link', 'https://example.com/download', function ($message) use (&$failMessage): void {
+            $failMessage = $message;
+        });
+
+        expect($failMessage)->not->toBeNull();
+        expect($failMessage)->toContain('7-zip (.7z) or ZIP (.zip) file');
     });
 });

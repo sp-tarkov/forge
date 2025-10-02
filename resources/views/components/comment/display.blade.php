@@ -1,7 +1,7 @@
 @props(['comment', 'manager', 'isReply' => false, 'commentable' => null])
 
 <div class="relative" x-data="{
-    canEdit: {{ \App\Support\CachedGate::allows('update', $comment) ? 'true' : 'false' }},
+    canEdit: {{ CachedGate::allows('update', $comment) ? 'true' : 'false' }},
     createdAt: new Date('{{ $comment->created_at->toISOString() }}'),
     init() {
         this.updateCanEdit();
@@ -38,7 +38,7 @@
                     {{ 'Replying to @' . $comment->parent->user->name }}
                 </a>
             @endif
-            @if (\App\Support\CachedGate::allows('viewActions', $comment))
+            @if (CachedGate::allows('viewActions', $comment))
                 <x-comment.action-menu 
                     :comment="$comment"
                     :descendants-count="$comment->isRoot() ? $manager->getDescendantCount($comment->id) : null"
@@ -75,7 +75,7 @@
     />
 
     {{-- Reply Form --}}
-    @if ($manager->isFormVisible('reply', $comment->id) && \App\Support\CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
+    @if ($manager->isFormVisible('reply', $comment->id) && CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
         <div class="mt-4">
             <flux:separator text="Reply To Comment" />
             <div class="mt-2.5">

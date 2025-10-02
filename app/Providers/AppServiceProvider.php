@@ -12,7 +12,6 @@ use App\Livewire\Profile\UpdatePasswordForm;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
-use App\Services\TrackService;
 use Carbon\Carbon;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
@@ -49,11 +48,6 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(TelescopeServiceProvider::class);
         }
 
-        // Register the Track service
-        $this->app->singleton(TrackService::class);
-
-        // Register the Track facade alias
-        $this->app->alias(TrackService::class, 'track');
     }
 
     /**
@@ -87,9 +81,6 @@ class AppServiceProvider extends ServiceProvider
                 ->middleware('web')
                 ->withoutMiddleware([VerifyCsrfToken::class]);
         });
-
-        // This gate determines who can access the Pulse dashboard.
-        Gate::define('viewPulse', fn (User $user): bool => $user->isAdmin());
 
         // This gate determines who can access admin features.
         Gate::define('admin', fn (User $user): bool => $user->isAdmin());
