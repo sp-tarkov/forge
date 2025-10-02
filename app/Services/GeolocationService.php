@@ -7,9 +7,14 @@ namespace App\Services;
 use Exception;
 use GeoIp2\Database\Reader;
 use GeoIp2\Exception\AddressNotFoundException;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Service for IP geolocation lookups.
+ */
+#[Singleton]
 class GeolocationService
 {
     /**

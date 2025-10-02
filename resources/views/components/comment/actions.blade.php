@@ -52,7 +52,7 @@
             </div>
         @endverified
 
-        @if (\App\Support\CachedGate::allows('update', $comment))
+        @if (CachedGate::allows('update', $comment))
             <button type="button"
                     wire:click="toggleEditForm({{ $comment->id }})"
                     data-test="edit-button-{{ $comment->id }}"
@@ -62,7 +62,7 @@
             </button>
         @endif
 
-        @if (\App\Support\CachedGate::allows('delete', $comment))
+        @if (CachedGate::allows('delete', $comment))
             <button type="button"
                     wire:click="confirmDeleteComment({{ $comment->id }})"
                     data-test="delete-button-{{ $comment->id }}"
@@ -71,7 +71,7 @@
             </button>
         @endif
 
-        @if (\App\Support\CachedGate::allows('showOwnerPinAction', $comment))
+        @if (CachedGate::allows('showOwnerPinAction', $comment))
             <button type="button"
                     wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"
                     class="hover:underline cursor-pointer text-xs text-cyan-500">
@@ -87,7 +87,7 @@
         />
 
         @verified
-            @if (\App\Support\CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
+            @if (CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
                 <button type="button" wire:click="toggleReplyForm({{ $comment->id }})" data-test="reply-button-{{ $comment->id }}" class="hover:underline cursor-pointer text-xs">
                     {{ __('Reply') }}
                 </button>

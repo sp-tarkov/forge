@@ -13,6 +13,10 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    Cache::flush();
+});
+
 it('initializes with current peak data', function (): void {
     // Create a peak record
     Visitor::query()->create([

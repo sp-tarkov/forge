@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Facades\CachedGate;
 use App\Facades\Track;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Facade;
@@ -154,6 +155,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        'CachedGate' => CachedGate::class,
         'Carbon' => Carbon::class,
         'Track' => Track::class,
     ])->toArray(),

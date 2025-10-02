@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -41,18 +42,18 @@ class ForgeHeartbeat extends Command
             $response = Http::timeout(30)->get($url);
 
             if ($response->successful()) {
-                $message = "Successfully pinged {$url} - Status: {$response->status()}";
+                $message = sprintf('Successfully pinged %s - Status: %d', $url, $response->status());
                 $this->info($message);
                 Log::info($message);
             } else {
-                $message = "Failed to ping {$url} - Status: {$response->status()}";
+                $message = sprintf('Failed to ping %s - Status: %d', $url, $response->status());
                 $this->error($message);
                 Log::warning($message);
             }
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $message = "Error pinging {$url}: {$e->getMessage()}";
+        } catch (Exception $exception) {
+            $message = sprintf('Error pinging %s: %s', $url, $exception->getMessage());
             $this->error($message);
             Log::error($message);
 

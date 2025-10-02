@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Contracts\Commentable;
+use App\Facades\CachedGate;
 use App\Jobs\CheckCommentForSpam;
 use App\Jobs\ProcessCommentNotification;
 use App\Models\Comment;
-use App\Support\CachedGate;
 use Illuminate\Database\Eloquent\Model;
 
 class CommentObserver

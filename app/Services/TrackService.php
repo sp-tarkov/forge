@@ -8,11 +8,16 @@ use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+/**
+ * Service for tracking user events and analytics.
+ */
+#[Singleton]
 class TrackService
 {
     /**
