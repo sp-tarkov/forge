@@ -23,6 +23,7 @@
         "laravel/reverb": "^1.6",
         "laravel/sanctum": "^4.2.0",
         "laravel/scout": "^10.14.1",
+        "laravel/serializable-closure": "^2.0",
         "laravel/socialite": "^5.23.0",
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "^3.29",

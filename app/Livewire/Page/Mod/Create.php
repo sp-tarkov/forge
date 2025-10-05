@@ -155,7 +155,7 @@ class Create extends Component
         return [
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'name' => 'required|string|max:75',
-            'guid' => 'required|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid',
+            'guid' => 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid',
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',
             'license' => 'required|exists:licenses,id',
@@ -223,7 +223,7 @@ class Create extends Component
             'owner_id' => auth()->user()->id,
             'name' => $this->name,
             'slug' => Str::slug($this->name),
-            'guid' => $this->guid,
+            'guid' => $this->guid ?: '',
             'teaser' => $this->teaser,
             'description' => $this->description,
             'license_id' => $this->license,

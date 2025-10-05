@@ -16,6 +16,7 @@ use App\Rules\SemverConstraint as SemverConstraintRule;
 use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
@@ -23,6 +24,9 @@ use Livewire\Component;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
+/**
+ * @property-read bool $modGuidRequired
+ */
 class Edit extends Component
 {
     use UsesSpamProtection;
@@ -104,6 +108,21 @@ class Edit extends Component
     public array $matchingDependencyVersions = [];
 
     /**
+     * The mod GUID (for dynamic validation and updating).
+     */
+    public string $modGuid = '';
+
+    /**
+     * The new GUID to set on the mod if needed.
+     */
+    public string $newModGuid = '';
+
+    /**
+     * Whether the GUID has been successfully saved.
+     */
+    public bool $guidSaved = false;
+
+    /**
      * Mount the component.
      */
     public function mount(Mod $mod, ModVersion $modVersion): void
@@ -112,6 +131,7 @@ class Edit extends Component
 
         $this->mod = $mod;
         $this->modVersion = $modVersion;
+        $this->modGuid = $mod->guid ?? '';
 
         $this->authorize('update', [$this->modVersion, $this->mod]);
 
@@ -127,6 +147,61 @@ class Edit extends Component
         $this->loadExistingDependencies();
 
         $this->updatedSptVersionConstraint();
+    }
+
+    /**
+     * Get whether mod GUID is required based on SPT version constraint.
+     */
+    public function getModGuidRequiredProperty(): bool
+    {
+        if (empty($this->sptVersionConstraint)) {
+            return false;
+        }
+
+        try {
+            $validSptVersions = SptVersion::allValidVersions();
+            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
+
+            // Check if any compatible version is >= 4.0.0
+            foreach ($compatibleSptVersions as $version) {
+                if (Semver::satisfies($version, '>=4.0.0')) {
+                    return true;
+                }
+            }
+        } catch (Exception) {
+            // If there's an error, don't require the GUID
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Save the GUID to the mod without refreshing the page.
+     */
+    public function saveGuid(): void
+    {
+        $this->authorize('update', $this->mod);
+
+        // Validate the GUID
+        $this->validate([
+            'newModGuid' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'],
+        ], [
+            'newModGuid.required' => 'The mod GUID is required.',
+            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
+            'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+        ]);
+
+        // Save the GUID to the mod
+        $this->mod->guid = $this->newModGuid;
+        $this->mod->save();
+
+        // Update the component state
+        $this->modGuid = $this->newModGuid;
+        $this->guidSaved = true;
+
+        // Show success message
+        flash()->success('Mod GUID has been successfully saved.');
     }
 
     /**
@@ -155,6 +230,12 @@ class Edit extends Component
     protected function rules(): array
     {
         $rules = [];
+
+        // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
+        if ($this->modGuidRequired && empty($this->modGuid) && !$this->guidSaved) {
+            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'];
+        }
+
         foreach ($this->dependencies as $index => $dependency) {
             // If either field is filled, both are required
             if (! empty($dependency['modId']) || ! empty($dependency['constraint'])) {
@@ -180,7 +261,12 @@ class Edit extends Component
      */
     protected function messages(): array
     {
-        $messages = [];
+        $messages = [
+            'newModGuid.required' => 'A mod GUID is required for versions compatible with SPT 4.0.0 or above.',
+            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
+            'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+        ];
+
         foreach ($this->dependencies as $index => $dependency) {
             $messages[sprintf('dependencies.%d.modId.required', $index)] = 'Please select a mod.';
             $messages[sprintf('dependencies.%d.modId.exists', $index)] = 'The selected mod does not exist.';
@@ -291,7 +377,7 @@ class Edit extends Component
                     'version' => $version->version,
                 ])
                 ->values()
-                ->toArray();
+                ->all();
 
             $this->matchingDependencyVersions[$index] = $versions;
         } catch (Exception) {
@@ -304,6 +390,9 @@ class Edit extends Component
      */
     public function updatedSptVersionConstraint(): void
     {
+        // Reset GUID saved state when constraint changes
+        $this->guidSaved = false;
+
         if (empty($this->sptVersionConstraint)) {
             $this->matchingSptVersions = [];
 
@@ -326,7 +415,7 @@ class Edit extends Component
                     'version' => $version->version,
                     'color_class' => $version->color_class,
                 ])
-                ->toArray();
+                ->all();
         } catch (Exception) {
             $this->matchingSptVersions = [];
         }
@@ -385,34 +474,44 @@ class Edit extends Component
             $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
-        $this->modVersion->version = $validated['version'];
-        $this->modVersion->description = $validated['description'];
-        $this->modVersion->link = $validated['link'];
-        $this->modVersion->content_length = $this->downloadLinkRule?->contentLength;
-        $this->modVersion->spt_version_constraint = $validated['sptVersionConstraint'];
-        $this->modVersion->virus_total_link = $validated['virusTotalLink'];
-        $this->modVersion->published_at = $publishedAtCarbon;
-
-        $this->modVersion->save();
-
-        // Update dependencies
-        // First, remove all existing dependencies
-        $this->modVersion->dependencies()->delete();
-
-        // Then create new dependencies
-        foreach ($this->dependencies as $dependency) {
-            if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
-                // Skip self-dependencies
-                if ($dependency['modId'] == $this->mod->id) {
-                    continue;
-                }
-
-                $this->modVersion->dependencies()->create([
-                    'dependent_mod_id' => $dependency['modId'],
-                    'constraint' => $dependency['constraint'],
-                ]);
+        // Use a transaction to ensure both mod GUID and version are saved atomically
+        /** @var array{version: string, description: string, link: string, sptVersionConstraint: string, virusTotalLink: string} $validated */
+        DB::transaction(function () use ($validated, $publishedAtCarbon) {
+            // Update the mod's GUID if needed (only if not already saved inline)
+            if ($this->modGuidRequired && empty($this->modGuid) && ! empty($this->newModGuid) && !$this->guidSaved) {
+                $this->mod->guid = $this->newModGuid;
+                $this->mod->save();
             }
-        }
+
+            $this->modVersion->version = $validated['version'];
+            $this->modVersion->description = $validated['description'];
+            $this->modVersion->link = $validated['link'];
+            $this->modVersion->content_length = $this->downloadLinkRule?->contentLength;
+            $this->modVersion->spt_version_constraint = $validated['sptVersionConstraint'];
+            $this->modVersion->virus_total_link = $validated['virusTotalLink'];
+            $this->modVersion->published_at = $publishedAtCarbon;
+
+            $this->modVersion->save();
+
+            // Update dependencies
+            // First, remove all existing dependencies
+            $this->modVersion->dependencies()->delete();
+
+            // Then create new dependencies
+            foreach ($this->dependencies as $dependency) {
+                if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
+                    // Skip self-dependencies
+                    if ($dependency['modId'] == $this->mod->id) {
+                        continue;
+                    }
+
+                    $this->modVersion->dependencies()->create([
+                        'dependent_mod_id' => $dependency['modId'],
+                        'constraint' => $dependency['constraint'],
+                    ]);
+                }
+            }
+        });
 
         Track::event(TrackingEventType::VERSION_EDIT, $this->modVersion);
 

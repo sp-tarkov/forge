@@ -50,7 +50,7 @@ describe('Mod Create Form', function (): void {
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
                 ->call('save')
-                ->assertHasErrors(['name', 'guid', 'teaser', 'description', 'license']);
+                ->assertHasErrors(['name', 'teaser', 'description', 'license']);
         });
 
         it('validates GUID format', function (): void {
@@ -191,6 +191,80 @@ describe('Mod Create Form', function (): void {
 
             // Assert that the default value is true
             expect($component->instance()->subscribeToComments)->toBeTrue();
+        });
+    });
+
+    describe('GUID Requirements', function (): void {
+        beforeEach(function (): void {
+            $this->user = User::factory()->withMfa()->create();
+            $this->license = License::factory()->create();
+            $this->category = ModCategory::factory()->create();
+        });
+
+        it('allows creating a mod without GUID', function (): void {
+            $this->actingAs($this->user);
+
+            Livewire::test(Create::class)
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'Test Mod')
+                ->set('guid', '') // Empty GUID
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $this->license->id)
+                ->set('category', (string) $this->category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('containsAds', false)
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            // Verify the mod was created with empty GUID
+            $mod = Mod::query()->where('name', 'Test Mod')->first();
+            expect($mod)->not->toBeNull();
+            expect($mod->guid)->toBe('');
+        });
+
+        it('validates GUID format when provided', function (): void {
+            $this->actingAs($this->user);
+
+            Livewire::test(Create::class)
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'Test Mod')
+                ->set('guid', 'Invalid GUID Format') // Invalid format
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $this->license->id)
+                ->set('category', (string) $this->category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('containsAds', false)
+                ->call('save')
+                ->assertHasErrors(['guid']);
+
+            // Valid format should work
+            Livewire::test(Create::class)
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'Test Mod 2')
+                ->set('guid', 'com.test.mod') // Valid format
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $this->license->id)
+                ->set('category', (string) $this->category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('containsAds', false)
+                ->call('save')
+                ->assertHasNoErrors();
         });
     });
 });

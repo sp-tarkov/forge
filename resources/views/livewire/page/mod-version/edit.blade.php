@@ -73,6 +73,49 @@
                                 @endif
                             </flux:field>
 
+                            @if ($this->modGuidRequired && empty($modGuid))
+                                <div class="col-span-6">
+                                    <flux:callout icon="information-circle" color="amber">
+                                        <flux:callout.text>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <strong>{{ __('Mod GUID Required') }}</strong>
+                                                    <p class="mt-1 text-sm">
+                                                        {{ __('This mod version targets SPT 4.0.0 or above, which requires a mod GUID. Enter a unique identifier for your mod in reverse domain notation. This GUID will be saved to the mod and should match the one in your mod files.') }}
+                                                        {!! __('Please see the <a href=":url" target="_blank" class="underline hover:no-underline">Content Guidelines</a> for more information.', ['url' => route('static.content-guidelines') . '#mod-types-requirements']) !!}
+                                                    </p>
+                                                </div>
+                                                <div class="flex gap-3 items-start" x-data="{ count: 0, text: '' }">
+                                                    <div class="flex-1">
+                                                        <flux:input
+                                                            type="text"
+                                                            wire:model.live="newModGuid"
+                                                            maxlength="255"
+                                                            x-model="text"
+                                                            @input="count = text.length"
+                                                            placeholder="com.username.modname"
+                                                        />
+                                                        <div class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-text="`Max Length: ${count}/255`"></div>
+                                                    </div>
+                                                    <flux:button
+                                                        variant="primary"
+                                                        size="sm"
+                                                        wire:click="saveGuid"
+                                                        wire:loading.attr="disabled"
+                                                        type="button"
+                                                        class="mt-1"
+                                                    >
+                                                        <span wire:loading.remove wire:target="saveGuid">{{ __('Save GUID') }}</span>
+                                                        <span wire:loading wire:target="saveGuid">{{ __('Saving...') }}</span>
+                                                    </flux:button>
+                                                </div>
+                                                <flux:error name="newModGuid" />
+                                            </div>
+                                        </flux:callout.text>
+                                    </flux:callout>
+                                </div>
+                            @endif
+
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('VirusTotal Link') }}</flux:label>
                                 <flux:description>{!! __('Provide a link to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod.') !!}</flux:description>
