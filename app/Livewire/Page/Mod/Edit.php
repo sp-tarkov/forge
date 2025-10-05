@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
+use Exception;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -213,7 +214,7 @@ class Edit extends Component
                     return true;
                 }
             }
-        } catch (\Exception) {
+        } catch (Exception) {
             // If there's an error parsing the constraint, assume it doesn't require GUID
             return false;
         }

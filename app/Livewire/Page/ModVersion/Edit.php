@@ -476,7 +476,7 @@ class Edit extends Component
 
         // Use a transaction to ensure both mod GUID and version are saved atomically
         /** @var array{version: string, description: string, link: string, sptVersionConstraint: string, virusTotalLink: string} $validated */
-        DB::transaction(function () use ($validated, $publishedAtCarbon) {
+        DB::transaction(function () use ($validated, $publishedAtCarbon): void {
             // Update the mod's GUID if needed (only if not already saved inline)
             if ($this->modGuidRequired && empty($this->modGuid) && ! empty($this->newModGuid) && !$this->guidSaved) {
                 $this->mod->guid = $this->newModGuid;
