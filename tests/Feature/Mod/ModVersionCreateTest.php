@@ -18,6 +18,9 @@ describe('Mod Version Create Form', function (): void {
         // Disable honeypot for testing
         config()->set('honeypot.enabled', false);
 
+        // Disable deferred execution for observer tests
+        $this->withoutDefer();
+
         // Mock HTTP responses for download link validation
         Http::fake([
             'https://example.com/download.7z' => Http::response('', 200, [

@@ -16,7 +16,7 @@ class SptVersionObserver
      */
     public function saved(): void
     {
-        $this->resolveSptVersion();
+        defer(fn () => $this->resolveSptVersion());
     }
 
     /**
@@ -36,6 +36,6 @@ class SptVersionObserver
      */
     public function deleted(): void
     {
-        $this->resolveSptVersion();
+        defer(fn () => $this->resolveSptVersion());
     }
 }

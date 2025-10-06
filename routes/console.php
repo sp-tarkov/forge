@@ -7,10 +7,8 @@ use App\Console\Commands\ForgeHeartbeat;
 use App\Console\Commands\UpdateGeoLiteDatabase;
 use App\Jobs\SendModDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
-use App\Jobs\UpdateGitHubSptVersionsJob;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::job(new UpdateGitHubSptVersionsJob)->everyFifteenMinutes();
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
 Schedule::command(CleanupOldNotificationLogs::class)->daily();
 Schedule::command(UpdateGeoLiteDatabase::class)->daily()->at('02:00');

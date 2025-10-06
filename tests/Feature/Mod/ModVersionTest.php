@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Hash;
 uses(RefreshDatabase::class);
 
 describe('SPT version resolution', function (): void {
+    beforeEach(function (): void {
+        $this->withoutDefer();
+    });
     it('resolves spt versions when mod version is created', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         SptVersion::factory()->create(['version' => '1.1.0']);

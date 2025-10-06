@@ -95,6 +95,7 @@
                                 @if (auth()->user()->isAdmin())
                                     {{-- Staff Submenu --}}
                                     <flux:menu.submenu heading="{{ __('Staff') }}" icon="shield-check">
+                                        <flux:menu.item icon="cube" href="{{ route('admin.spt-versions') }}" wire:navigate>{{ __('SPT Versions') }}</flux:menu.item>
                                         <flux:menu.item icon="queue-list" href="/horizon" wire:navigate>{{ __('Horizon Queue') }}</flux:menu.item>
                                         <flux:menu.item icon="chart-bar" href="{{ route('admin.visitor-analytics') }}" wire:navigate>{{ __('Visitor Analytics') }}</flux:menu.item>
                                         <flux:menu.item icon="users" href="{{ route('admin.user-management') }}" wire:navigate>{{ __('User Management') }}</flux:menu.item>
@@ -165,6 +166,7 @@
                 <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">{{ __('Edit Profile') }}</x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('api-tokens.index') }}" :active="request()->routeIs('api-tokens.index')">{{ __('API Token') }}</x-responsive-nav-link>
                 @if (auth()->user()->isAdmin())
+                    <x-responsive-nav-link href="{{ route('admin.spt-versions') }}" :active="request()->routeIs('admin.spt-versions')">{{ __('SPT Versions') }}</x-responsive-nav-link>
                     <x-responsive-nav-link href="/horizon" :active="request()->routeIs('api-tokens.index')">{{ __('Horizon Queue') }}</x-responsive-nav-link>
                     <x-responsive-nav-link href="{{ route('admin.visitor-analytics') }}" :active="request()->routeIs('admin.visitor-analytics')">{{ __('Visitor Analytics') }}</x-responsive-nav-link>
                     <x-responsive-nav-link href="{{ route('admin.user-management') }}" :active="request()->routeIs('admin.user-management')">{{ __('User Management') }}</x-responsive-nav-link>

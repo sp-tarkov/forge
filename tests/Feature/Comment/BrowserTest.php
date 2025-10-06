@@ -41,9 +41,8 @@ describe('Guest User Tests', function (): void {
             ->on()->desktop()
             ->inDarkMode();
 
-        // Wait for Alpine to process and show the comments tab, then assert content
-        $page->wait(100)
-            ->assertSee('No comments yet')
+        // Assert content directly without waiting
+        $page->assertSee('No comments yet')
             ->assertSee('Login or register to join the discussion')
             ->assertNotPresent('@new-comment-body')
             ->assertNoJavascriptErrors();
@@ -64,9 +63,8 @@ describe('Guest User Tests', function (): void {
             ->on()->desktop()
             ->inDarkMode();
 
-        // Wait for Alpine to process and show the comments tab
-        $page->wait(100)
-            ->assertNotPresent('button[wire\\:click*=toggleReplyForm]')
+        // Assert directly without waiting
+        $page->assertNotPresent('button[wire\\:click*=toggleReplyForm]')
             ->assertNoJavascriptErrors();
     });
 
@@ -1032,9 +1030,7 @@ describe('Comment Subscription Tests', function (): void {
             ->on()->desktop()
             ->inDarkMode();
 
-        // Wait for Alpine to process and show the comments tab
-        $page->wait(100)
-            ->assertSee('Subscribe')
+        $page->assertSee('Subscribe')
             ->click('@subscription-toggle')
             ->assertSee('Subscribed')
             ->click('@subscription-toggle')

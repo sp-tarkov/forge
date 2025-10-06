@@ -159,10 +159,6 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
                     'version_minor' => $version['version_minor'],
                     'version_patch' => $version['version_patch'],
                     'version_labels' => $version['version_labels'],
-                    'link' => $version['link'],
-                    'color_class' => $version['color_class'],
-                    'created_at' => $version['created_at'],
-                    'updated_at' => $version['updated_at'],
                 ]);
             }
         });
