@@ -76,90 +76,39 @@
 
                     @auth
                         {{-- Profile Dropdown --}}
-                        <div
-                            x-data="{ profileDropdownOpen: false, openedWithKeyboard: false }"
-                            x-on:keydown.esc.window="profileDropdownOpen = false, openedWithKeyboard = false"
-                            class="relative"
-                        >
-                            <button
-                                id="user-menu-button"
-                                type="button"
-                                x-on:click="profileDropdownOpen = ! profileDropdownOpen"
-                                x-on:keydown.space.prevent="openedWithKeyboard = true"
-                                x-on:keydown.enter.prevent="openedWithKeyboard = true"
-                                x-on:keydown.down.prevent="openedWithKeyboard = true"
-                                class="relative flex rounded-full bg-gray-800 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                                :class="profileDropdownOpen || openedWithKeyboard ? 'text-black dark:text-white' : 'text-slate-700 dark:text-slate-300'"
-                                :aria-expanded="profileDropdownOpen || openedWithKeyboard"
-                                aria-haspopup="true"
-                            >
-                                <span class="absolute -inset-1.5"></span>
-                                <span class="sr-only">{{ __('Open user menu') }}</span>
+                        <flux:dropdown align="end" class="flex items-center">
+                            <button type="button" class="rounded-full focus:outline-hidden focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                                 <img class="h-8 w-8 rounded-full" src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}">
                             </button>
-                            <div
-                                x-cloak
-                                x-show="profileDropdownOpen || openedWithKeyboard"
-                                x-transition
-                                x-trap="openedWithKeyboard"
-                                x-on:click.outside="profileDropdownOpen = false, openedWithKeyboard = false"
-                                x-on:keydown.down.prevent="$focus.wrap().next()"
-                                x-on:keydown.up.prevent="$focus.wrap().previous()"
-                                class="absolute top-11 right-0 z-[100] flex w-full min-w-[12rem] flex-col divide-y divide-slate-300 overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
-                                role="menu"
-                            >
-                                <div class="flex flex-col py-1.5">
-                                    <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                        <flux:icon.home class="w-4 h-4" />
-                                        {{ __('Dashboard') }}
-                                    </a>
-                                    <a href="{{ auth()->user()->profile_url }}" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                        <flux:icon.user class="w-4 h-4" />
-                                        {{ __('Profile') }}
-                                    </a>
-                                </div>
-                                <div class="flex flex-col py-1.5">
-                                    <a href="{{ route('profile.show') }}" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                        <flux:icon.cog-6-tooth class="w-4 h-4" />
-                                        {{ __('Edit Profile') }}
-                                    </a>
-                                    <a href="{{ route('api-tokens.index') }}" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                        <flux:icon.key class="w-4 h-4" />
-                                        {{ __('API Tokens') }}
-                                    </a>
-                                </div>
+
+                            <flux:menu class="w-56">
+                                {{-- Dashboard --}}
+                                <flux:menu.item icon="home" href="{{ route('dashboard') }}" wire:navigate>{{ __('Dashboard') }}</flux:menu.item>
+
+                                {{-- Profile Submenu --}}
+                                <flux:menu.submenu heading="{{ __('Profile') }}" icon="user">
+                                    <flux:menu.item icon="user-circle" href="{{ auth()->user()->profile_url }}" wire:navigate>{{ __('View Profile') }}</flux:menu.item>
+                                    <flux:menu.item icon="cog-6-tooth" href="{{ route('profile.show') }}" wire:navigate>{{ __('Edit Profile') }}</flux:menu.item>
+                                    <flux:menu.item icon="key" href="{{ route('api-tokens.index') }}" wire:navigate>{{ __('API Tokens') }}</flux:menu.item>
+                                </flux:menu.submenu>
+
                                 @if (auth()->user()->isAdmin())
-                                    <div class="flex flex-col py-1.5">
-                                        <a href="/horizon" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                            <flux:icon.queue-list class="w-4 h-4" />
-                                            {{ __('Horizon Queue') }}
-                                        </a>
-                                        <a href="{{ route('admin.visitor-analytics') }}" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                            <flux:icon.chart-bar class="w-4 h-4" />
-                                            {{ __('Visitor Analytics') }}
-                                        </a>
-                                        <a href="{{ route('admin.user-management') }}" wire:navigate class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white" role="menuitem">
-                                            <flux:icon.users class="w-4 h-4" />
-                                            {{ __('User Management') }}
-                                        </a>
-                                    </div>
+                                    {{-- Staff Submenu --}}
+                                    <flux:menu.submenu heading="{{ __('Staff') }}" icon="shield-check">
+                                        <flux:menu.item icon="queue-list" href="/horizon" wire:navigate>{{ __('Horizon Queue') }}</flux:menu.item>
+                                        <flux:menu.item icon="chart-bar" href="{{ route('admin.visitor-analytics') }}" wire:navigate>{{ __('Visitor Analytics') }}</flux:menu.item>
+                                        <flux:menu.item icon="users" href="{{ route('admin.user-management') }}" wire:navigate>{{ __('User Management') }}</flux:menu.item>
+                                    </flux:menu.submenu>
                                 @endif
-                                <div class="flex flex-col py-1.5">
-                                    <form method="POST" action="{{ route('logout') }}" x-data>
-                                        @csrf
-                                        <a
-                                            href="{{ route('logout') }}"
-                                            x-on:click.prevent="$root.submit();"
-                                            class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
-                                            role="menuitem"
-                                        >
-                                            <flux:icon.arrow-right-start-on-rectangle class="w-4 h-4" />
-                                            {{ __('Log Out') }}
-                                        </a>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+
+                                {{-- Logout (in its own group) --}}
+                                <flux:menu.separator />
+                                <form method="POST" action="{{ route('logout') }}" x-data>
+                                    @csrf
+                                    <flux:menu.item icon="arrow-right-start-on-rectangle" href="{{ route('logout') }}" x-on:click.prevent="$root.submit();">{{ __('Log Out') }}</flux:menu.item>
+                                </form>
+                            </flux:menu>
+                        </flux:dropdown>
                     @endauth
                     @guest
                         <div>
