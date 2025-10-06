@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
-use Exception;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -12,6 +11,7 @@ use App\Models\ModCategory;
 use App\Models\ModSourceCodeLink;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
+use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
