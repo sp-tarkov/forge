@@ -192,7 +192,7 @@ class Create extends Component
         $rules = [];
 
         // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
-        if ($this->modGuidRequired && empty($this->modGuid) && !$this->guidSaved) {
+        if ($this->modGuidRequired && empty($this->modGuid) && ! $this->guidSaved) {
             $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'];
         }
 
@@ -444,7 +444,7 @@ class Create extends Component
         // Use a transaction to ensure both mod GUID and version are saved atomically
         $modVersion = DB::transaction(function () use ($validated) {
             // Update the mod's GUID if needed (only if not already saved inline)
-            if ($this->modGuidRequired && empty($this->modGuid) && ! empty($this->newModGuid) && !$this->guidSaved) {
+            if ($this->modGuidRequired && empty($this->modGuid) && ! empty($this->newModGuid) && ! $this->guidSaved) {
                 $this->mod->guid = $this->newModGuid;
                 $this->mod->save();
             }
