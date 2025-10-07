@@ -120,7 +120,7 @@ public override string Author { get; init; } = "SPTarkov";
 public override SemanticVersioning.Version Version { get; } = new("1.2.3");
 
 // Semantic version constraint for SPT compatibility:
-public override SemanticVersioning.Version SptVersion { get; } = new("4.0.0");</code></pre>
+public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</code></pre>
                 </li>
             </ul>
             <em>See <a href="https://github.com/sp-tarkov/server-mod-examples/">mod examples</a> for more information</em>
