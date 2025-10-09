@@ -232,7 +232,7 @@ class Edit extends Component
         $rules = [];
 
         // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
-        if ($this->modGuidRequired && empty($this->modGuid) && !$this->guidSaved) {
+        if ($this->modGuidRequired && empty($this->modGuid) && ! $this->guidSaved) {
             $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'];
         }
 
@@ -478,7 +478,7 @@ class Edit extends Component
         /** @var array{version: string, description: string, link: string, sptVersionConstraint: string, virusTotalLink: string} $validated */
         DB::transaction(function () use ($validated, $publishedAtCarbon): void {
             // Update the mod's GUID if needed (only if not already saved inline)
-            if ($this->modGuidRequired && empty($this->modGuid) && ! empty($this->newModGuid) && !$this->guidSaved) {
+            if ($this->modGuidRequired && empty($this->modGuid) && ! empty($this->newModGuid) && ! $this->guidSaved) {
                 $this->mod->guid = $this->newModGuid;
                 $this->mod->save();
             }
