@@ -30,6 +30,14 @@ class Version implements Stringable
     }
 
     /**
+     * Get the normalized version string.
+     */
+    public function __toString(): string
+    {
+        return $this->getVersion();
+    }
+
+    /**
      * Create a Version instance specifically for the format of the imported SPT versions from GitHub.
      */
     public static function cleanSptImport(string $version): self
@@ -70,35 +78,6 @@ class Version implements Stringable
         }
 
         return new self($cleanedVersion);
-    }
-
-    /**
-     * Parse the version components using SemVer compliant regex.
-     *
-     * @throws InvalidVersionNumberException
-     */
-    private function parse(): void
-    {
-        // Official SemVer regex pattern:
-        // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-        $pattern = "/^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildMetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/";
-
-        throw_unless(preg_match($pattern, (string) $this->version, $matches), new InvalidVersionNumberException('Invalid SemVer: '.$this->version));
-
-        $this->major = (int) $matches['major'];
-        $this->minor = (int) $matches['minor'];
-        $this->patch = (int) $matches['patch'];
-
-        $labels = '';
-        if (! empty($matches['prerelease'])) {
-            $labels .= Str::trim('-'.$matches['prerelease']);
-        }
-
-        if (! empty($matches['buildMetadata'])) {
-            $labels .= Str::trim('+'.$matches['buildMetadata']);
-        }
-
-        $this->labels = $labels;
     }
 
     /**
@@ -159,14 +138,6 @@ class Version implements Stringable
     }
 
     /**
-     * Get the normalized version string.
-     */
-    public function __toString(): string
-    {
-        return $this->getVersion();
-    }
-
-    /**
      * Get the normalized full version string (SemVer compliant).
      */
     public function getVersion(): string
@@ -179,5 +150,34 @@ class Version implements Stringable
         }
 
         return $version;
+    }
+
+    /**
+     * Parse the version components using SemVer compliant regex.
+     *
+     * @throws InvalidVersionNumberException
+     */
+    private function parse(): void
+    {
+        // Official SemVer regex pattern:
+        // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        $pattern = "/^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildMetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/";
+
+        throw_unless(preg_match($pattern, (string) $this->version, $matches), new InvalidVersionNumberException('Invalid SemVer: '.$this->version));
+
+        $this->major = (int) $matches['major'];
+        $this->minor = (int) $matches['minor'];
+        $this->patch = (int) $matches['patch'];
+
+        $labels = '';
+        if (! empty($matches['prerelease'])) {
+            $labels .= Str::trim('-'.$matches['prerelease']);
+        }
+
+        if (! empty($matches['buildMetadata'])) {
+            $labels .= Str::trim('+'.$matches['buildMetadata']);
+        }
+
+        $this->labels = $labels;
     }
 }

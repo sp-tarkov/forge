@@ -53,6 +53,14 @@ class UserSeeder extends Seeder
     }
 
     /**
+     * Get the test account.
+     */
+    public function getTestAccount(): User
+    {
+        return $this->testAccount;
+    }
+
+    /**
      * Seed user follow relationships.
      */
     private function seedUserFollows(): void
@@ -127,13 +135,5 @@ class UserSeeder extends Seeder
             $following = $allUsers->random(rand(1, 10))->pluck('id')->toArray();
             $user->following()->attach($following);
         }
-    }
-
-    /**
-     * Get the test account.
-     */
-    public function getTestAccount(): User
-    {
-        return $this->testAccount;
     }
 }

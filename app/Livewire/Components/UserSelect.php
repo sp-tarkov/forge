@@ -86,7 +86,7 @@ class UserSelect extends Component
      */
     public function updatedSearch(): void
     {
-        if (strlen($this->search) < 2) {
+        if (mb_strlen($this->search) < 2) {
             $this->searchResults = collect();
             $this->showDropdown = false;
 

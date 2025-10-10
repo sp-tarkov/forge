@@ -203,24 +203,6 @@ class ModPolicy
     }
 
     /**
-     * Check if a version has a valid SPT version tag and is published.
-     */
-    private function hasValidPublishedSptVersion(Mod $mod, ?User $user): bool
-    {
-        $mod->loadMissing(['versions.latestSptVersion']);
-
-        $showUnpublished = $user?->isModOrAdmin() ?? false;
-
-        return $mod->versions->contains(function (ModVersion $version) use ($showUnpublished): bool {
-            $hasValidSptVersion = ! is_null($version->latestSptVersion);
-            $isPublished = ! is_null($version->published_at);
-            $isEnabled = ! $version->disabled;
-
-            return $hasValidSptVersion && $isEnabled && ($isPublished || $showUnpublished);
-        });
-    }
-
-    /**
      * Determine whether the user can report a mod.
      *
      * Authentication and email verification are required.
@@ -244,5 +226,23 @@ class ModPolicy
 
         // User cannot report the same item more than once.
         return ! $reportable->hasBeenReportedBy($user->id);
+    }
+
+    /**
+     * Check if a version has a valid SPT version tag and is published.
+     */
+    private function hasValidPublishedSptVersion(Mod $mod, ?User $user): bool
+    {
+        $mod->loadMissing(['versions.latestSptVersion']);
+
+        $showUnpublished = $user?->isModOrAdmin() ?? false;
+
+        return $mod->versions->contains(function (ModVersion $version) use ($showUnpublished): bool {
+            $hasValidSptVersion = ! is_null($version->latestSptVersion);
+            $isPublished = ! is_null($version->published_at);
+            $isEnabled = ! $version->disabled;
+
+            return $hasValidSptVersion && $isEnabled && ($isPublished || $showUnpublished);
+        });
     }
 }

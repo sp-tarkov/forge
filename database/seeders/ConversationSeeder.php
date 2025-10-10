@@ -10,6 +10,7 @@ use App\Models\Message;
 use App\Models\MessageRead;
 use App\Models\User;
 use Database\Seeders\Traits\SeederHelpers;
+use DateTimeImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
@@ -169,7 +170,7 @@ class ConversationSeeder extends Seeder
     /**
      * Generate chronological timestamps for messages.
      *
-     * @return array<int, \DateTime>
+     * @return array<int, DateTimeImmutable>
      */
     private function generateMessageTimestamps(Conversation $conversation, int $messageCount): array
     {
@@ -178,7 +179,7 @@ class ConversationSeeder extends Seeder
         $endTime = now();
 
         for ($i = 0; $i < $messageCount; $i++) {
-            $messageTimestamps[] = $this->faker->dateTimeBetween($startTime, $endTime);
+            $messageTimestamps[] = DateTimeImmutable::createFromMutable($this->faker->dateTimeBetween($startTime, $endTime));
         }
 
         sort($messageTimestamps);
@@ -203,7 +204,7 @@ class ConversationSeeder extends Seeder
     /**
      * Create a message.
      */
-    private function createMessage(Conversation $conversation, User $sender, \DateTime $timestamp): Message
+    private function createMessage(Conversation $conversation, User $sender, DateTimeImmutable $timestamp): Message
     {
         return Message::withoutEvents(function () use ($conversation, $sender, $timestamp) {
             return Message::factory()->create([
@@ -218,7 +219,7 @@ class ConversationSeeder extends Seeder
     /**
      * Maybe mark a message as read.
      */
-    private function maybeMarkMessageAsRead(Message $message, User $sender, User $user1, User $user2, \DateTime $messageTime): void
+    private function maybeMarkMessageAsRead(Message $message, User $sender, User $user1, User $user2, DateTimeImmutable $messageTime): void
     {
         // 70% chance the message is read by the other user
         if (rand(0, 9) < 7) {

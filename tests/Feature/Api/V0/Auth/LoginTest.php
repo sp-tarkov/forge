@@ -29,7 +29,7 @@ describe('Auth Login API', function (): void {
                 ],
             ])
             ->assertJsonFragment(['success' => true])
-            ->assertJsonPath('data.token', fn ($token): bool => is_string($token) && strlen($token) > 0);
+            ->assertJsonPath('data.token', fn ($token): bool => is_string($token) && mb_strlen($token) > 0);
     });
 
     it('creates a token with a custom name when provided', function (): void {

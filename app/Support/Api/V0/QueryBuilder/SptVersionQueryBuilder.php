@@ -17,27 +17,6 @@ use Override;
 class SptVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
-     * Get the base query for the model.
-     *
-     * @return Builder<SptVersion>
-     */
-    protected function getBaseQuery(): Builder
-    {
-        return SptVersion::query()
-            ->where('version', '!=', '0.0.0'); // Always exclude the base version.
-    }
-
-    /**
-     * Get the model class for this query builder.
-     *
-     * @return class-string<SptVersion>
-     */
-    protected function getModelClass(): string
-    {
-        return SptVersion::class;
-    }
-
-    /**
      * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
      * methods that apply the filter to the builder.
      *
@@ -51,66 +30,6 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
         ];
-    }
-
-    /**
-     * Filter by SPT version IDs.
-     *
-     * @param  Builder<SptVersion>  $query
-     */
-    protected function filterById(Builder $query, ?string $ids): void
-    {
-        if ($ids === null) {
-            return;
-        }
-
-        $query->whereIn('spt_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
-    }
-
-    /**
-     * Filter by SPT version.
-     *
-     * @param  Builder<SptVersion>  $query
-     */
-    protected function filterBySptVersion(Builder $query, ?string $version): void
-    {
-        if ($version === null) {
-            return;
-        }
-
-        $validSptVersions = SptVersion::allValidVersions();
-        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
-        $query->whereIn('spt_versions.version', $compatibleSptVersions);
-    }
-
-    /**
-     * Filter by creation date range.
-     *
-     * @param  Builder<SptVersion>  $query
-     */
-    protected function filterByCreatedBetween(Builder $query, ?string $range): void
-    {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('spt_versions.created_at', [$start, $end]);
-    }
-
-    /**
-     * Filter by update date range.
-     *
-     * @param  Builder<SptVersion>  $query
-     */
-    protected function filterByUpdatedBetween(Builder $query, ?string $range): void
-    {
-        if ($range === null) {
-            return;
-        }
-
-        [$start, $end] = explode(',', $range);
-        $query->whereBetween('spt_versions.updated_at', [$start, $end]);
     }
 
     /**
@@ -173,6 +92,87 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
             'created_at',
             'updated_at',
         ];
+    }
+
+    /**
+     * Get the base query for the model.
+     *
+     * @return Builder<SptVersion>
+     */
+    protected function getBaseQuery(): Builder
+    {
+        return SptVersion::query()
+            ->where('version', '!=', '0.0.0'); // Always exclude the base version.
+    }
+
+    /**
+     * Get the model class for this query builder.
+     *
+     * @return class-string<SptVersion>
+     */
+    protected function getModelClass(): string
+    {
+        return SptVersion::class;
+    }
+
+    /**
+     * Filter by SPT version IDs.
+     *
+     * @param  Builder<SptVersion>  $query
+     */
+    protected function filterById(Builder $query, ?string $ids): void
+    {
+        if ($ids === null) {
+            return;
+        }
+
+        $query->whereIn('spt_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
+    }
+
+    /**
+     * Filter by SPT version.
+     *
+     * @param  Builder<SptVersion>  $query
+     */
+    protected function filterBySptVersion(Builder $query, ?string $version): void
+    {
+        if ($version === null) {
+            return;
+        }
+
+        $validSptVersions = SptVersion::allValidVersions();
+        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+        $query->whereIn('spt_versions.version', $compatibleSptVersions);
+    }
+
+    /**
+     * Filter by creation date range.
+     *
+     * @param  Builder<SptVersion>  $query
+     */
+    protected function filterByCreatedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('spt_versions.created_at', [$start, $end]);
+    }
+
+    /**
+     * Filter by update date range.
+     *
+     * @param  Builder<SptVersion>  $query
+     */
+    protected function filterByUpdatedBetween(Builder $query, ?string $range): void
+    {
+        if ($range === null) {
+            return;
+        }
+
+        [$start, $end] = explode(',', $range);
+        $query->whereBetween('spt_versions.updated_at', [$start, $end]);
     }
 
     /**

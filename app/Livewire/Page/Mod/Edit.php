@@ -197,83 +197,6 @@ class Edit extends Component
     }
 
     /**
-     * Check if a version constraint includes SPT 4.0.0 or above.
-     */
-    private function constraintSatisfiesSpt4OrAbove(string $constraint): bool
-    {
-        try {
-            // Get all valid SPT versions
-            $allSptVersions = SptVersion::allValidVersions();
-
-            // Get versions that match the constraint
-            $matchingVersions = Semver::satisfiedBy($allSptVersions, $constraint);
-
-            // Check if any matching version is >= 4.0.0
-            foreach ($matchingVersions as $version) {
-                if (Semver::satisfies($version, '>=4.0.0')) {
-                    return true;
-                }
-            }
-        } catch (Exception) {
-            // If there's an error parsing the constraint, assume it doesn't require GUID
-            return false;
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
-    protected function rules(): array
-    {
-        // GUID is required if any existing mod version targets SPT >= 4.0.0
-        $guidRules = $this->isGuidRequired
-            ? 'required|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id
-            : 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id;
-
-        return [
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'name' => 'required|string|max:75',
-            'guid' => $guidRules,
-            'teaser' => 'required|string|max:255',
-            'description' => 'required|string',
-            'license' => 'required|exists:licenses,id',
-            'category' => 'required|exists:mod_categories,id',
-            'sourceCodeLinks' => 'required|array|min:1|max:4',
-            'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
-            'sourceCodeLinks.*.label' => 'string|max:50',
-            'publishedAt' => 'nullable|date',
-            'containsAiContent' => 'boolean',
-            'containsAds' => 'boolean',
-            'commentsDisabled' => 'boolean',
-            'authorIds' => 'array|max:10',
-            'authorIds.*' => 'exists:users,id|distinct',
-            'disableProfileBindingNotice' => 'boolean',
-        ];
-    }
-
-    /**
-     * Get custom validation messages.
-     *
-     * @return array<string, string>
-     */
-    protected function messages(): array
-    {
-        return [
-            'sourceCodeLinks.required' => 'At least one source code link is required.',
-            'sourceCodeLinks.min' => 'At least one source code link is required.',
-            'sourceCodeLinks.max' => 'You can add a maximum of 4 source code links.',
-            'sourceCodeLinks.*.url.required' => 'Please enter a valid URL for the source code.',
-            'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
-            'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
-            'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
-        ];
-    }
-
-    /**
      * Save the mod.
      */
     public function save(): void
@@ -390,5 +313,82 @@ class Edit extends Component
         return view('livewire.page.mod.edit', [
             'mod' => $this->mod,
         ]);
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    protected function rules(): array
+    {
+        // GUID is required if any existing mod version targets SPT >= 4.0.0
+        $guidRules = $this->isGuidRequired
+            ? 'required|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id
+            : 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id;
+
+        return [
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'name' => 'required|string|max:75',
+            'guid' => $guidRules,
+            'teaser' => 'required|string|max:255',
+            'description' => 'required|string',
+            'license' => 'required|exists:licenses,id',
+            'category' => 'required|exists:mod_categories,id',
+            'sourceCodeLinks' => 'required|array|min:1|max:4',
+            'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
+            'sourceCodeLinks.*.label' => 'string|max:50',
+            'publishedAt' => 'nullable|date',
+            'containsAiContent' => 'boolean',
+            'containsAds' => 'boolean',
+            'commentsDisabled' => 'boolean',
+            'authorIds' => 'array|max:10',
+            'authorIds.*' => 'exists:users,id|distinct',
+            'disableProfileBindingNotice' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'sourceCodeLinks.required' => 'At least one source code link is required.',
+            'sourceCodeLinks.min' => 'At least one source code link is required.',
+            'sourceCodeLinks.max' => 'You can add a maximum of 4 source code links.',
+            'sourceCodeLinks.*.url.required' => 'Please enter a valid URL for the source code.',
+            'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
+            'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
+            'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
+        ];
+    }
+
+    /**
+     * Check if a version constraint includes SPT 4.0.0 or above.
+     */
+    private function constraintSatisfiesSpt4OrAbove(string $constraint): bool
+    {
+        try {
+            // Get all valid SPT versions
+            $allSptVersions = SptVersion::allValidVersions();
+
+            // Get versions that match the constraint
+            $matchingVersions = Semver::satisfiedBy($allSptVersions, $constraint);
+
+            // Check if any matching version is >= 4.0.0
+            foreach ($matchingVersions as $version) {
+                if (Semver::satisfies($version, '>=4.0.0')) {
+                    return true;
+                }
+            }
+        } catch (Exception) {
+            // If there's an error parsing the constraint, assume it doesn't require GUID
+            return false;
+        }
+
+        return false;
     }
 }

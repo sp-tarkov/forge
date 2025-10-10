@@ -53,8 +53,8 @@ class DirectDownloadLink implements ValidationRule
 
             // Get headers (case-insensitive)
             $headers = $response->headers();
-            $contentType = strtolower($response->header('content-type'));
-            $contentDisposition = strtolower($response->header('content-disposition'));
+            $contentType = mb_strtolower($response->header('content-type'));
+            $contentDisposition = mb_strtolower($response->header('content-disposition'));
             $contentLength = $response->header('content-length');
 
             // Validate content-type starts with `application/`
@@ -65,7 +65,7 @@ class DirectDownloadLink implements ValidationRule
             }
 
             // Check if the URL ends with .7z or .zip OR content-disposition has attachment with .7z or .zip filename
-            $urlLowercase = strtolower($value);
+            $urlLowercase = mb_strtolower($value);
             $urlEndsWithSevenZip = str_ends_with($urlLowercase, '.7z');
             $urlEndsWithZip = str_ends_with($urlLowercase, '.zip');
             $hasValidDisposition = false;

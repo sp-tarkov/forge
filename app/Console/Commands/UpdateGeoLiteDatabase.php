@@ -79,7 +79,7 @@ class UpdateGeoLiteDatabase extends Command
                 $response->body()
             )));
 
-            $downloadSize = strlen($response->body());
+            $downloadSize = mb_strlen($response->body());
             $this->info(sprintf('Downloaded %s bytes', number_format($downloadSize)));
 
             File::put($tempFile, $response->body());
@@ -161,7 +161,7 @@ class UpdateGeoLiteDatabase extends Command
         if (! $tarResult->successful()) {
             $issues[] = 'tar command not found in PATH';
         } else {
-            $this->info('✓ tar command available: '.trim($tarResult->output()));
+            $this->info('✓ tar command available: '.mb_trim($tarResult->output()));
         }
 
         // Check PHP version and memory limit
@@ -220,8 +220,8 @@ class UpdateGeoLiteDatabase extends Command
      */
     private function convertToBytes(string $value): int
     {
-        $value = trim($value);
-        $last = strtolower($value[strlen($value) - 1]);
+        $value = mb_trim($value);
+        $last = mb_strtolower($value[mb_strlen($value) - 1]);
         $number = (int) $value;
 
         return match ($last) {

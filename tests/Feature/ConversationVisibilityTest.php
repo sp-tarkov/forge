@@ -19,11 +19,11 @@ it('filters search results to show only verified non-banned users', function ():
     $this->actingAs($this->user1);
 
     Livewire::test(NavigationChat::class)
-        ->set('searchUser', substr((string) $this->user2->name, 0, 3))
+        ->set('searchUser', mb_substr((string) $this->user2->name, 0, 3))
         ->assertSee($this->user2->name)
-        ->set('searchUser', substr((string) $this->bannedUser->name, 0, 3))
+        ->set('searchUser', mb_substr((string) $this->bannedUser->name, 0, 3))
         ->assertDontSee($this->bannedUser->name)
-        ->set('searchUser', substr((string) $this->unverifiedUser->name, 0, 3))
+        ->set('searchUser', mb_substr((string) $this->unverifiedUser->name, 0, 3))
         ->assertDontSee($this->unverifiedUser->name);
 });
 

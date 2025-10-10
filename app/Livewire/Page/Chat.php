@@ -30,13 +30,6 @@ class Chat extends Component
     public ?string $conversationHash = null;
 
     /**
-     * Store all conversation hashes to register listeners for cleanup.
-     *
-     * @var array<int, string>
-     */
-    protected array $allConversationHashes = [];
-
-    /**
      * Controls visibility of the new conversation modal.
      */
     public bool $showNewConversation = false;
@@ -106,6 +99,13 @@ class Chat extends Component
     public array $onlineUsers = [];
 
     /**
+     * Store all conversation hashes to register listeners for cleanup.
+     *
+     * @var array<int, string>
+     */
+    protected array $allConversationHashes = [];
+
+    /**
      * Initialize the component with optional conversation.
      */
     public function boot(): void
@@ -115,19 +115,6 @@ class Chat extends Component
             $this->switchConversation($this->conversationHash);
         } elseif (! $this->selectedConversation && ! $this->conversationHash) {
             $this->redirectToLatestIfExists();
-        }
-    }
-
-    /**
-     * Redirect to the latest conversation if one exists.
-     */
-    private function redirectToLatestIfExists(): void
-    {
-        $user = Auth::user();
-
-        $latestConversation = Conversation::query()->latestFor($user)->first();
-        if ($latestConversation) {
-            $this->redirectToConversation($latestConversation->hash_id);
         }
     }
 
@@ -308,7 +295,7 @@ class Chat extends Component
      */
     public function sendMessage(): void
     {
-        if (! $this->selectedConversation || empty(trim($this->messageText))) {
+        if (! $this->selectedConversation || empty(mb_trim($this->messageText))) {
             return;
         }
 
@@ -320,7 +307,7 @@ class Chat extends Component
 
         $message = $this->selectedConversation->messages()->create([
             'user_id' => $user->id,
-            'content' => trim($this->messageText),
+            'content' => mb_trim($this->messageText),
         ]);
 
         $this->messageText = '';
@@ -400,77 +387,6 @@ class Chat extends Component
             // Update URL to remove conversation hash
             $this->js("window.history.pushState({}, '', '".route('chat')."')");
         }
-    }
-
-    /**
-     * Get all visible conversations for the authenticated user.
-     *
-     * @return Collection<int, Conversation>
-     */
-    private function fetchConversations(): Collection
-    {
-        $user = Auth::user();
-
-        if (! $user) {
-            return new Collection;
-        }
-
-        return Conversation::query()
-            ->visibleTo($user)
-            ->notArchivedBy($user)
-            ->withUserContext($user)
-            ->withUnreadCount($user)
-            ->with(['user1', 'user2', 'lastMessage'])
-            ->orderBy('last_message_at', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-
-    /**
-     * Get all messages for the selected conversation.
-     *
-     * @return Collection<int, Message>
-     **/
-    private function fetchMessages(): Collection
-    {
-        if ($this->selectedConversation === null) {
-            return new Collection;
-        }
-
-        $user = Auth::user();
-
-        if (! $user) {
-            return new Collection;
-        }
-
-        // Reload the conversation with user context for accessors
-        $conversation = Conversation::query()
-            ->withUserContext($user)
-            ->with(['user1', 'user2'])
-            ->find($this->selectedConversation->id);
-
-        if ($conversation) {
-            $this->selectedConversation = $conversation;
-        }
-
-        // Get a total count to determine if there are more messages
-        $totalMessages = Message::query()
-            ->where('conversation_id', $this->selectedConversation->id)
-            ->count();
-
-        $messagesPerPage = $this->perPage * $this->pagesLoaded;
-        $this->hasMoreMessages = $totalMessages > $messagesPerPage;
-
-        // Fetch messages with pagination.
-        return Message::query()
-            ->where('conversation_id', $this->selectedConversation->id)
-            ->withUserContext($user)
-            ->with(['user', 'reads'])
-            ->orderBy('created_at', 'desc')
-            ->limit($messagesPerPage)
-            ->get()
-            ->reverse()
-            ->values();
     }
 
     /**
@@ -778,20 +694,6 @@ class Chat extends Component
     }
 
     /**
-     * Get search results for finding users to start conversations with.
-     *
-     * @return Collection<int, User>
-     */
-    private function fetchSearchResults(): Collection
-    {
-        if (empty($this->searchUser)) {
-            return new Collection;
-        }
-
-        return User::query()->conversationSearch(Auth::user(), $this->searchUser)->get();
-    }
-
-    /**
      * Handle forwarded typing started event from NavigationChat.
      *
      * @param  array{conversation_hash: string, user_id: int, user_name: string}  $event
@@ -995,5 +897,103 @@ class Chat extends Component
             'messages' => $this->fetchMessages(),
             'searchResults' => $this->fetchSearchResults(),
         ]);
+    }
+
+    /**
+     * Redirect to the latest conversation if one exists.
+     */
+    private function redirectToLatestIfExists(): void
+    {
+        $user = Auth::user();
+
+        $latestConversation = Conversation::query()->latestFor($user)->first();
+        if ($latestConversation) {
+            $this->redirectToConversation($latestConversation->hash_id);
+        }
+    }
+
+    /**
+     * Get all visible conversations for the authenticated user.
+     *
+     * @return Collection<int, Conversation>
+     */
+    private function fetchConversations(): Collection
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return new Collection;
+        }
+
+        return Conversation::query()
+            ->visibleTo($user)
+            ->notArchivedBy($user)
+            ->withUserContext($user)
+            ->withUnreadCount($user)
+            ->with(['user1', 'user2', 'lastMessage'])
+            ->orderBy('last_message_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get all messages for the selected conversation.
+     *
+     * @return Collection<int, Message>
+     **/
+    private function fetchMessages(): Collection
+    {
+        if ($this->selectedConversation === null) {
+            return new Collection;
+        }
+
+        $user = Auth::user();
+
+        if (! $user) {
+            return new Collection;
+        }
+
+        // Reload the conversation with user context for accessors
+        $conversation = Conversation::query()
+            ->withUserContext($user)
+            ->with(['user1', 'user2'])
+            ->find($this->selectedConversation->id);
+
+        if ($conversation) {
+            $this->selectedConversation = $conversation;
+        }
+
+        // Get a total count to determine if there are more messages
+        $totalMessages = Message::query()
+            ->where('conversation_id', $this->selectedConversation->id)
+            ->count();
+
+        $messagesPerPage = $this->perPage * $this->pagesLoaded;
+        $this->hasMoreMessages = $totalMessages > $messagesPerPage;
+
+        // Fetch messages with pagination.
+        return Message::query()
+            ->where('conversation_id', $this->selectedConversation->id)
+            ->withUserContext($user)
+            ->with(['user', 'reads'])
+            ->orderBy('created_at', 'desc')
+            ->limit($messagesPerPage)
+            ->get()
+            ->reverse()
+            ->values();
+    }
+
+    /**
+     * Get search results for finding users to start conversations with.
+     *
+     * @return Collection<int, User>
+     */
+    private function fetchSearchResults(): Collection
+    {
+        if (empty($this->searchUser)) {
+            return new Collection;
+        }
+
+        return User::query()->conversationSearch(Auth::user(), $this->searchUser)->get();
     }
 }

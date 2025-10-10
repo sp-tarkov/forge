@@ -252,25 +252,6 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
-     * Check if a mod has publicly visible versions that are compatible with active SPT releases.
-     * Used for search indexing to ensure only relevant mods appear in search results.
-     */
-    private function hasActiveSptCompatibility(): bool
-    {
-        // Get active SPT versions (last three minor versions) for search
-        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
-        $activeSptVersionIds = $activeSptVersions->pluck('version')->toArray();
-
-        // Use the scope to filter and then check for active SPT versions
-        return $this->versions()
-            ->publiclyVisible()
-            ->whereHas('latestSptVersion', function (Builder $query) use ($activeSptVersionIds): void {
-                $query->whereIn('version', $activeSptVersionIds);
-            })
-            ->exists();
-    }
-
-    /**
      * The relationship between a mod and its latest version.
      *
      * @return HasOne<ModVersion, $this>
@@ -285,79 +266,6 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels');
-    }
-
-    /**
-     * Build the URL to the mod's thumbnail.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function thumbnailUrl(): Attribute
-    {
-        $disk = config('filesystems.asset_upload', 'public');
-
-        return Attribute::get(fn (): string => $this->thumbnail
-            ? Storage::disk($disk)->url($this->thumbnail)
-            : '');
-    }
-
-    /**
-     * Get the URL to the mod's detail page.
-     *
-     * @return Attribute<string, string>
-     */
-    protected function detailUrl(): Attribute
-    {
-        return Attribute::get(fn (): string => route('mod.show', [$this->id, $this->slug]));
-    }
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'owner_id' => 'integer',
-            'category_id' => 'integer',
-            'featured' => 'boolean',
-            'contains_ai_content' => 'boolean',
-            'contains_ads' => 'boolean',
-            'disabled' => 'boolean',
-            'comments_disabled' => 'boolean',
-            'discord_notification_sent' => 'boolean',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-            'published_at' => 'datetime',
-        ];
-    }
-
-    /**
-     * Mutate the slug attribute to always be lower case on get and slugified on set.
-     *
-     * @return Attribute<string, string>
-     */
-    protected function slug(): Attribute
-    {
-        return Attribute::make(
-            get: fn (?string $value) => $value ? Str::lower($value) : '',
-            set: fn (?string $value) => $value ? Str::slug($value) : '',
-        );
-    }
-
-    /**
-     * Generate the cleaned version of the HTML description.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function descriptionHtml(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => Purify::config('description')->clean(
-                Markdown::convert($this->description)->getContent()
-            )
-        )->shouldCache();
     }
 
     /**
@@ -503,5 +411,97 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'url' => $url,
             'label' => $label,
         ]);
+    }
+
+    /**
+     * Build the URL to the mod's thumbnail.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function thumbnailUrl(): Attribute
+    {
+        $disk = config('filesystems.asset_upload', 'public');
+
+        return Attribute::get(fn (): string => $this->thumbnail
+            ? Storage::disk($disk)->url($this->thumbnail)
+            : '');
+    }
+
+    /**
+     * Get the URL to the mod's detail page.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function detailUrl(): Attribute
+    {
+        return Attribute::get(fn (): string => route('mod.show', [$this->id, $this->slug]));
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'owner_id' => 'integer',
+            'category_id' => 'integer',
+            'featured' => 'boolean',
+            'contains_ai_content' => 'boolean',
+            'contains_ads' => 'boolean',
+            'disabled' => 'boolean',
+            'comments_disabled' => 'boolean',
+            'discord_notification_sent' => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'published_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * Mutate the slug attribute to always be lower case on get and slugified on set.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function slug(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value ? Str::lower($value) : '',
+            set: fn (?string $value) => $value ? Str::slug($value) : '',
+        );
+    }
+
+    /**
+     * Generate the cleaned version of the HTML description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Purify::config('description')->clean(
+                Markdown::convert($this->description)->getContent()
+            )
+        )->shouldCache();
+    }
+
+    /**
+     * Check if a mod has publicly visible versions that are compatible with active SPT releases.
+     * Used for search indexing to ensure only relevant mods appear in search results.
+     */
+    private function hasActiveSptCompatibility(): bool
+    {
+        // Get active SPT versions (last three minor versions) for search
+        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
+        $activeSptVersionIds = $activeSptVersions->pluck('version')->toArray();
+
+        // Use the scope to filter and then check for active SPT versions
+        return $this->versions()
+            ->publiclyVisible()
+            ->whereHas('latestSptVersion', function (Builder $query) use ($activeSptVersionIds): void {
+                $query->whereIn('version', $activeSptVersionIds);
+            })
+            ->exists();
     }
 }

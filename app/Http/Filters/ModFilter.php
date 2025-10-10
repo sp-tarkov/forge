@@ -35,6 +35,27 @@ class ModFilter
     }
 
     /**
+     * Apply the filters to the query.
+     *
+     * @return Builder<Mod>
+     */
+    public function apply(): Builder
+    {
+        if (! $this->hasVersionFilter()) {
+            // Only call if we're not applying a specific version filter
+            $this->addBaseExistsClause();
+        }
+
+        foreach ($this->filters as $method => $value) {
+            if (method_exists($this, $method) && ! empty($value)) {
+                $this->$method($value);
+            }
+        }
+
+        return $this->builder;
+    }
+
+    /**
      * The base query for the mod listing.
      *
      * @return Builder<Mod>
@@ -70,27 +91,6 @@ class ModFilter
         }
 
         return $this->builder->whereLike('mods.name', sprintf('%%%s%%', $term));
-    }
-
-    /**
-     * Apply the filters to the query.
-     *
-     * @return Builder<Mod>
-     */
-    public function apply(): Builder
-    {
-        if (! $this->hasVersionFilter()) {
-            // Only call if we're not applying a specific version filter
-            $this->addBaseExistsClause();
-        }
-
-        foreach ($this->filters as $method => $value) {
-            if (method_exists($this, $method) && ! empty($value)) {
-                $this->$method($value);
-            }
-        }
-
-        return $this->builder;
     }
 
     /**
@@ -144,14 +144,14 @@ class ModFilter
                 $join->on('latest_versions.mod_id', '=', 'mods.id')
                     ->whereNotNull('latest_versions.published_at')
                     ->where('latest_versions.disabled', false)
-                    ->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($showDisabled): void {
+                    ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
                         $query->select(DB::raw(1))
                             ->from('mod_version_spt_version')
                             ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                             ->whereColumn('mod_version_spt_version.mod_version_id', 'latest_versions.id')
-                            ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $q) => $q->where('spt_versions.version', '!=', '0.0.0'));
+                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->where('spt_versions.version', '!=', '0.0.0'));
                     })
-                    ->where('latest_versions.created_at', '=', function (\Illuminate\Database\Query\Builder $query): void {
+                    ->where('latest_versions.created_at', '=', function (QueryBuilder $query): void {
                         $query->select(DB::raw('MAX(mv2.created_at)'))
                             ->from('mod_versions as mv2')
                             ->whereColumn('mv2.mod_id', 'mods.id')

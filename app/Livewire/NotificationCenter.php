@@ -53,14 +53,6 @@ class NotificationCenter extends Component
     }
 
     /**
-     * Updates the unread notification count.
-     */
-    private function loadUnreadCount(): void
-    {
-        $this->unreadCount = Auth::user()->unreadNotifications()->count();
-    }
-
-    /**
      * Mark a specific notification as read.
      */
     public function markAsRead(string $notificationId): void
@@ -114,5 +106,13 @@ class NotificationCenter extends Component
         return view('livewire.notification-center', [
             'notifications' => $notifications,
         ]);
+    }
+
+    /**
+     * Updates the unread notification count.
+     */
+    private function loadUnreadCount(): void
+    {
+        $this->unreadCount = Auth::user()->unreadNotifications()->count();
     }
 }

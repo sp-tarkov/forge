@@ -64,11 +64,6 @@ class Edit extends Component
     public string $link = '';
 
     /**
-     * The DirectDownloadLink rule instance (for content length extraction).
-     */
-    private ?DirectDownloadLink $downloadLinkRule = null;
-
-    /**
      * The SPT version constraint.
      */
     #[Validate(['required', 'string', 'max:75', new SemverConstraintRule])]
@@ -121,6 +116,11 @@ class Edit extends Component
      * Whether the GUID has been successfully saved.
      */
     public bool $guidSaved = false;
+
+    /**
+     * The DirectDownloadLink rule instance (for content length extraction).
+     */
+    private ?DirectDownloadLink $downloadLinkRule = null;
 
     /**
      * Mount the component.
@@ -205,79 +205,6 @@ class Edit extends Component
     }
 
     /**
-     * Load existing dependencies from the database.
-     */
-    private function loadExistingDependencies(): void
-    {
-        $this->dependencies = [];
-        $this->matchingDependencyVersions = [];
-
-        foreach ($this->modVersion->dependencies as $index => $dependency) {
-            $this->dependencies[] = [
-                'id' => uniqid(),
-                'modId' => (string) $dependency->dependent_mod_id,
-                'constraint' => $dependency->constraint,
-            ];
-            $this->updateMatchingDependencyVersions($index);
-        }
-    }
-
-    /**
-     * Get custom validation rules for dependencies.
-     *
-     * @return array<string, mixed>
-     */
-    protected function rules(): array
-    {
-        $rules = [];
-
-        // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
-        if ($this->modGuidRequired && empty($this->modGuid) && ! $this->guidSaved) {
-            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'];
-        }
-
-        foreach ($this->dependencies as $index => $dependency) {
-            // If either field is filled, both are required
-            if (! empty($dependency['modId']) || ! empty($dependency['constraint'])) {
-                $rules[sprintf('dependencies.%d.modId', $index)] = 'required|exists:mods,id';
-                $rules[sprintf('dependencies.%d.constraint', $index)] = ['required', 'string', new SemverConstraintRule];
-            } else {
-                $rules[sprintf('dependencies.%d.modId', $index)] = 'nullable|exists:mods,id';
-                $rules[sprintf('dependencies.%d.constraint', $index)] = ['nullable', 'string', new SemverConstraintRule];
-            }
-        }
-
-        // Download link validation
-        $this->downloadLinkRule = new DirectDownloadLink;
-        $rules['link'] = ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule];
-
-        return $rules;
-    }
-
-    /**
-     * Get custom validation messages.
-     *
-     * @return array<string, string>
-     */
-    protected function messages(): array
-    {
-        $messages = [
-            'newModGuid.required' => 'A mod GUID is required for versions compatible with SPT 4.0.0 or above.',
-            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
-            'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
-        ];
-
-        foreach ($this->dependencies as $index => $dependency) {
-            $messages[sprintf('dependencies.%d.modId.required', $index)] = 'Please select a mod.';
-            $messages[sprintf('dependencies.%d.modId.exists', $index)] = 'The selected mod does not exist.';
-            $messages[sprintf('dependencies.%d.constraint.required', $index)] = 'Please specify a version constraint.';
-            $messages[sprintf('dependencies.%d.constraint.string', $index)] = 'This version constraint is invalid.';
-        }
-
-        return $messages;
-    }
-
-    /**
      * Add a new dependency.
      */
     public function addDependency(): void
@@ -343,49 +270,6 @@ class Edit extends Component
     }
 
     /**
-     * Update the matching mod versions for a specific dependency.
-     */
-    private function updateMatchingDependencyVersions(int $index): void
-    {
-        if (! isset($this->dependencies[$index])) {
-            return;
-        }
-
-        $dependency = $this->dependencies[$index];
-
-        if (empty($dependency['modId']) || empty($dependency['constraint'])) {
-            $this->matchingDependencyVersions[$index] = [];
-
-            return;
-        }
-
-        try {
-            $mod = Mod::query()->find($dependency['modId']);
-            if (! $mod) {
-                $this->matchingDependencyVersions[$index] = [];
-
-                return;
-            }
-
-            $versions = $mod->versions()
-                ->withoutGlobalScope(PublishedScope::class)
-                ->get()
-                ->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
-                ->map(fn (ModVersion $version): array => [
-                    'id' => $version->id,
-                    'mod_name' => $mod->name,
-                    'version' => $version->version,
-                ])
-                ->values()
-                ->all();
-
-            $this->matchingDependencyVersions[$index] = $versions;
-        } catch (Exception) {
-            $this->matchingDependencyVersions[$index] = [];
-        }
-    }
-
-    /**
      * Update the matching SPT versions when the constraint changes.
      */
     public function updatedSptVersionConstraint(): void
@@ -419,31 +303,6 @@ class Edit extends Component
         } catch (Exception) {
             $this->matchingSptVersions = [];
         }
-    }
-
-    /**
-     * Validate dependencies have matching versions.
-     */
-    protected function validateDependenciesHaveMatchingVersions(): bool
-    {
-        $hasErrors = false;
-
-        foreach ($this->dependencies as $index => $dependency) {
-            // Skip if both fields are empty (optional dependency)
-            if (empty($dependency['modId']) && empty($dependency['constraint'])) {
-                continue;
-            }
-
-            // Check if there are matching versions
-            if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
-                if (! isset($this->matchingDependencyVersions[$index]) || count($this->matchingDependencyVersions[$index]) === 0) {
-                    $this->addError(sprintf('dependencies.%d.constraint', $index), 'No matching versions found. Please adjust the version constraint.');
-                    $hasErrors = true;
-                }
-            }
-        }
-
-        return ! $hasErrors;
     }
 
     /**
@@ -501,7 +360,7 @@ class Edit extends Component
             foreach ($this->dependencies as $dependency) {
                 if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
                     // Skip self-dependencies
-                    if ($dependency['modId'] == $this->mod->id) {
+                    if ((int) $dependency['modId'] === $this->mod->id) {
                         continue;
                     }
 
@@ -527,5 +386,146 @@ class Edit extends Component
     public function render(): View
     {
         return view('livewire.page.mod-version.edit');
+    }
+
+    /**
+     * Get custom validation rules for dependencies.
+     *
+     * @return array<string, mixed>
+     */
+    protected function rules(): array
+    {
+        $rules = [];
+
+        // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
+        if ($this->modGuidRequired && empty($this->modGuid) && ! $this->guidSaved) {
+            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'];
+        }
+
+        foreach ($this->dependencies as $index => $dependency) {
+            // If either field is filled, both are required
+            if (! empty($dependency['modId']) || ! empty($dependency['constraint'])) {
+                $rules[sprintf('dependencies.%d.modId', $index)] = 'required|exists:mods,id';
+                $rules[sprintf('dependencies.%d.constraint', $index)] = ['required', 'string', new SemverConstraintRule];
+            } else {
+                $rules[sprintf('dependencies.%d.modId', $index)] = 'nullable|exists:mods,id';
+                $rules[sprintf('dependencies.%d.constraint', $index)] = ['nullable', 'string', new SemverConstraintRule];
+            }
+        }
+
+        // Download link validation
+        $this->downloadLinkRule = new DirectDownloadLink;
+        $rules['link'] = ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule];
+
+        return $rules;
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        $messages = [
+            'newModGuid.required' => 'A mod GUID is required for versions compatible with SPT 4.0.0 or above.',
+            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
+            'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+        ];
+
+        foreach ($this->dependencies as $index => $dependency) {
+            $messages[sprintf('dependencies.%d.modId.required', $index)] = 'Please select a mod.';
+            $messages[sprintf('dependencies.%d.modId.exists', $index)] = 'The selected mod does not exist.';
+            $messages[sprintf('dependencies.%d.constraint.required', $index)] = 'Please specify a version constraint.';
+            $messages[sprintf('dependencies.%d.constraint.string', $index)] = 'This version constraint is invalid.';
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Validate dependencies have matching versions.
+     */
+    protected function validateDependenciesHaveMatchingVersions(): bool
+    {
+        $hasErrors = false;
+
+        foreach ($this->dependencies as $index => $dependency) {
+            // Skip if both fields are empty (optional dependency)
+            if (empty($dependency['modId']) && empty($dependency['constraint'])) {
+                continue;
+            }
+
+            // Check if there are matching versions
+            if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
+                if (! isset($this->matchingDependencyVersions[$index]) || count($this->matchingDependencyVersions[$index]) === 0) {
+                    $this->addError(sprintf('dependencies.%d.constraint', $index), 'No matching versions found. Please adjust the version constraint.');
+                    $hasErrors = true;
+                }
+            }
+        }
+
+        return ! $hasErrors;
+    }
+
+    /**
+     * Load existing dependencies from the database.
+     */
+    private function loadExistingDependencies(): void
+    {
+        $this->dependencies = [];
+        $this->matchingDependencyVersions = [];
+
+        foreach ($this->modVersion->dependencies as $index => $dependency) {
+            $this->dependencies[] = [
+                'id' => uniqid(),
+                'modId' => (string) $dependency->dependent_mod_id,
+                'constraint' => $dependency->constraint,
+            ];
+            $this->updateMatchingDependencyVersions($index);
+        }
+    }
+
+    /**
+     * Update the matching mod versions for a specific dependency.
+     */
+    private function updateMatchingDependencyVersions(int $index): void
+    {
+        if (! isset($this->dependencies[$index])) {
+            return;
+        }
+
+        $dependency = $this->dependencies[$index];
+
+        if (empty($dependency['modId']) || empty($dependency['constraint'])) {
+            $this->matchingDependencyVersions[$index] = [];
+
+            return;
+        }
+
+        try {
+            $mod = Mod::query()->find($dependency['modId']);
+            if (! $mod) {
+                $this->matchingDependencyVersions[$index] = [];
+
+                return;
+            }
+
+            $versions = $mod->versions()
+                ->withoutGlobalScope(PublishedScope::class)
+                ->get()
+                ->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
+                ->map(fn (ModVersion $version): array => [
+                    'id' => $version->id,
+                    'mod_name' => $mod->name,
+                    'version' => $version->version,
+                ])
+                ->values()
+                ->all();
+
+            $this->matchingDependencyVersions[$index] = $versions;
+        } catch (Exception) {
+            $this->matchingDependencyVersions[$index] = [];
+        }
     }
 }

@@ -8,6 +8,7 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\UpdateGitHubSptVersionsJob;
 use App\Models\SptVersion;
 use App\Support\Version;
+use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -152,7 +153,7 @@ class SptVersionManagement extends Component
                 'required',
                 'string',
                 'max:50',
-                function (string $attribute, mixed $value, $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     try {
                         new Version((string) $value);
                     } catch (InvalidVersionNumberException) {
@@ -250,22 +251,6 @@ class SptVersionManagement extends Component
     }
 
     /**
-     * Apply all active filters to the given query.
-     *
-     * @param  Builder<SptVersion>  $query
-     */
-    private function applyFilters(Builder $query): void
-    {
-        if (! empty($this->search)) {
-            $query->where('version', 'like', '%'.$this->search.'%');
-        }
-
-        if (! empty($this->colorFilter)) {
-            $query->where('color_class', $this->colorFilter);
-        }
-    }
-
-    /**
      * Get the selected version for modals.
      */
     public function getSelectedVersionProperty(): ?SptVersion
@@ -282,5 +267,21 @@ class SptVersionManagement extends Component
             'title' => 'SPT Version Management - The Forge',
             'description' => 'Manage SPT versions and sync from GitHub.',
         ]);
+    }
+
+    /**
+     * Apply all active filters to the given query.
+     *
+     * @param  Builder<SptVersion>  $query
+     */
+    private function applyFilters(Builder $query): void
+    {
+        if (! empty($this->search)) {
+            $query->where('version', 'like', '%'.$this->search.'%');
+        }
+
+        if (! empty($this->colorFilter)) {
+            $query->where('color_class', $this->colorFilter);
+        }
     }
 }

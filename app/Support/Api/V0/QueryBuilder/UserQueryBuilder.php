@@ -14,22 +14,6 @@ use Override;
 class UserQueryBuilder extends AbstractQueryBuilder
 {
     /**
-     * @return Builder<User>
-     */
-    protected function getBaseQuery(): Builder
-    {
-        return User::query()->select('users.*');
-    }
-
-    /**
-     * @return class-string<User>
-     */
-    protected function getModelClass(): string
-    {
-        return User::class;
-    }
-
-    /**
      * @return array<string, string>
      */
     public static function getAllowedFilters(): array
@@ -87,14 +71,6 @@ class UserQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * @param  Builder<User>  $query
-     */
-    protected function filterById(Builder $query, mixed $value): void
-    {
-        $query->where('id', $value);
-    }
-
-    /**
      * @return array<string, array<string>>
      */
     #[Override]
@@ -104,5 +80,29 @@ class UserQueryBuilder extends AbstractQueryBuilder
             'profile_photo_url' => ['profile_photo_path'],
             'cover_photo_url' => ['cover_photo_path'],
         ];
+    }
+
+    /**
+     * @return Builder<User>
+     */
+    protected function getBaseQuery(): Builder
+    {
+        return User::query()->select('users.*');
+    }
+
+    /**
+     * @return class-string<User>
+     */
+    protected function getModelClass(): string
+    {
+        return User::class;
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     */
+    protected function filterById(Builder $query, mixed $value): void
+    {
+        $query->where('id', $value);
     }
 }

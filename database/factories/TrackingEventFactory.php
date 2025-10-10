@@ -90,55 +90,6 @@ class TrackingEventFactory extends Factory
     }
 
     /**
-     * Create a trackable model instance based on the event type.
-     */
-    private function createTrackableModel(TrackingEventType $eventType): ?Model
-    {
-        return match ($eventType) {
-            TrackingEventType::MOD_CREATE,
-            TrackingEventType::MOD_EDIT,
-            TrackingEventType::MOD_DELETE,
-            TrackingEventType::MOD_REPORT => Mod::factory()->create(),
-
-            TrackingEventType::MOD_DOWNLOAD,
-            TrackingEventType::VERSION_CREATE,
-            TrackingEventType::VERSION_EDIT,
-            TrackingEventType::VERSION_DELETE => ModVersion::factory()->create(),
-
-            TrackingEventType::COMMENT_CREATE,
-            TrackingEventType::COMMENT_EDIT,
-            TrackingEventType::COMMENT_DELETE,
-            TrackingEventType::COMMENT_LIKE,
-            TrackingEventType::COMMENT_UNLIKE,
-            TrackingEventType::COMMENT_REPORT => Comment::factory()->create(),
-
-            default => null,
-        };
-    }
-
-    /**
-     * Generate event data using trackable model trait methods.
-     *
-     * @return array<string, mixed>
-     */
-    private function generateEventDataFromTrackable(TrackingEventType $eventType, Trackable $trackable): array
-    {
-        $eventData = [];
-
-        // Use interface methods to get snapshot data and URL
-        $eventData['snapshot'] = $trackable->getTrackingSnapshot();
-        $eventData['url'] = $trackable->getTrackingUrl();
-
-        // Add event-specific data for downloads
-        if ($eventType === TrackingEventType::MOD_DOWNLOAD) {
-            $eventData['download_size'] = $this->faker->numberBetween(1024, 104857600);
-            $eventData['download_method'] = $this->faker->randomElement(['direct', 'api']);
-        }
-
-        return $eventData;
-    }
-
-    /**
      * State for creating anonymous visitor events.
      */
     public function anonymous(): static
@@ -200,5 +151,54 @@ class TrackingEventFactory extends Factory
                 'created_at' => $this->faker->dateTimeBetween('-30 days', 'now'),
             ];
         });
+    }
+
+    /**
+     * Create a trackable model instance based on the event type.
+     */
+    private function createTrackableModel(TrackingEventType $eventType): ?Model
+    {
+        return match ($eventType) {
+            TrackingEventType::MOD_CREATE,
+            TrackingEventType::MOD_EDIT,
+            TrackingEventType::MOD_DELETE,
+            TrackingEventType::MOD_REPORT => Mod::factory()->create(),
+
+            TrackingEventType::MOD_DOWNLOAD,
+            TrackingEventType::VERSION_CREATE,
+            TrackingEventType::VERSION_EDIT,
+            TrackingEventType::VERSION_DELETE => ModVersion::factory()->create(),
+
+            TrackingEventType::COMMENT_CREATE,
+            TrackingEventType::COMMENT_EDIT,
+            TrackingEventType::COMMENT_DELETE,
+            TrackingEventType::COMMENT_LIKE,
+            TrackingEventType::COMMENT_UNLIKE,
+            TrackingEventType::COMMENT_REPORT => Comment::factory()->create(),
+
+            default => null,
+        };
+    }
+
+    /**
+     * Generate event data using trackable model trait methods.
+     *
+     * @return array<string, mixed>
+     */
+    private function generateEventDataFromTrackable(TrackingEventType $eventType, Trackable $trackable): array
+    {
+        $eventData = [];
+
+        // Use interface methods to get snapshot data and URL
+        $eventData['snapshot'] = $trackable->getTrackingSnapshot();
+        $eventData['url'] = $trackable->getTrackingUrl();
+
+        // Add event-specific data for downloads
+        if ($eventType === TrackingEventType::MOD_DOWNLOAD) {
+            $eventData['download_size'] = $this->faker->numberBetween(1024, 104857600);
+            $eventData['download_method'] = $this->faker->randomElement(['direct', 'api']);
+        }
+
+        return $eventData;
     }
 }

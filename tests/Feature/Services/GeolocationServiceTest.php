@@ -150,7 +150,7 @@ describe('GeolocationService', function (): void {
             // The current implementation converts any 2-char string to regional indicators
             // This documents the current behavior rather than desired behavior
             $flag = GeolocationService::getCountryFlag($code);
-            expect(strlen($flag))->toBeGreaterThan(0);
+            expect(mb_strlen($flag))->toBeGreaterThan(0);
             expect($flag)->not->toBe('🏳️'); // These get converted, not defaulted
         })->with([
             'numeric' => ['12'],

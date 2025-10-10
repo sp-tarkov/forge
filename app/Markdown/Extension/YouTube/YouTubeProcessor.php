@@ -67,7 +67,7 @@ class YouTubeProcessor
                 return null;
             }
 
-            return ltrim($path, '/');
+            return mb_ltrim($path, '/');
         }
 
         // For full `youtube.com` links, extract the v parameter

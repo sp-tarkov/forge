@@ -146,53 +146,6 @@ class Create extends Component
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
-    protected function rules(): array
-    {
-        return [
-            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'name' => 'required|string|max:75',
-            'guid' => 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid',
-            'teaser' => 'required|string|max:255',
-            'description' => 'required|string',
-            'license' => 'required|exists:licenses,id',
-            'category' => 'required|exists:mod_categories,id',
-            'sourceCodeLinks' => 'required|array|min:1|max:4',
-            'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
-            'sourceCodeLinks.*.label' => 'string|max:50',
-            'publishedAt' => 'nullable|date',
-            'containsAiContent' => 'boolean',
-            'containsAds' => 'boolean',
-            'commentsDisabled' => 'boolean',
-            'subscribeToComments' => 'boolean',
-            'authorIds' => 'array|max:10',
-            'authorIds.*' => 'exists:users,id|distinct',
-            'disableProfileBindingNotice' => 'boolean',
-        ];
-    }
-
-    /**
-     * Get custom validation messages.
-     *
-     * @return array<string, string>
-     */
-    protected function messages(): array
-    {
-        return [
-            'sourceCodeLinks.required' => 'At least one source code link is required.',
-            'sourceCodeLinks.min' => 'At least one source code link is required.',
-            'sourceCodeLinks.max' => 'You can add a maximum of 4 source code links.',
-            'sourceCodeLinks.*.url.required' => 'Please enter a valid URL for the source code.',
-            'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
-            'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
-            'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
-        ];
-    }
-
-    /**
      * Save the mod.
      */
     public function save(): void
@@ -312,5 +265,52 @@ class Create extends Component
     public function render(): View
     {
         return view('livewire.page.mod.create');
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    protected function rules(): array
+    {
+        return [
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'name' => 'required|string|max:75',
+            'guid' => 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid',
+            'teaser' => 'required|string|max:255',
+            'description' => 'required|string',
+            'license' => 'required|exists:licenses,id',
+            'category' => 'required|exists:mod_categories,id',
+            'sourceCodeLinks' => 'required|array|min:1|max:4',
+            'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
+            'sourceCodeLinks.*.label' => 'string|max:50',
+            'publishedAt' => 'nullable|date',
+            'containsAiContent' => 'boolean',
+            'containsAds' => 'boolean',
+            'commentsDisabled' => 'boolean',
+            'subscribeToComments' => 'boolean',
+            'authorIds' => 'array|max:10',
+            'authorIds.*' => 'exists:users,id|distinct',
+            'disableProfileBindingNotice' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'sourceCodeLinks.required' => 'At least one source code link is required.',
+            'sourceCodeLinks.min' => 'At least one source code link is required.',
+            'sourceCodeLinks.max' => 'You can add a maximum of 4 source code links.',
+            'sourceCodeLinks.*.url.required' => 'Please enter a valid URL for the source code.',
+            'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
+            'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
+            'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
+        ];
     }
 }

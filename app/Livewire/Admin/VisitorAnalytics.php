@@ -352,6 +352,73 @@ class VisitorAnalytics extends Component
     }
 
     /**
+     * Get the display text for an event based on its type and data.
+     */
+    public function getEventDisplayText(TrackingEvent $event): ?string
+    {
+        $eventType = TrackingEventType::from($event->event_name);
+
+        if (! $eventType->shouldShowContext()) {
+            return null;
+        }
+
+        return $event->event_context;
+    }
+
+    /**
+     * Get the user model associated with an event for display purposes.
+     */
+    public function getEventDisplayUser(TrackingEvent $event): ?User
+    {
+        // Simply check if we have a user from visitor_id
+        if ($event->visitor_id && $event->user) {
+            return $event->user;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the user ID associated with an event for display purposes.
+     */
+    public function getEventUserId(TrackingEvent $event): ?int
+    {
+        // Simply return the visitor_id
+        return $event->visitor_id;
+    }
+
+    /**
+     * Get the URL for an event if it should be displayed as a link.
+     */
+    public function getEventUrl(TrackingEvent $event): ?string
+    {
+        $eventType = TrackingEventType::from($event->event_name);
+
+        // Only show URL if the event type allows it
+        if (! $eventType->shouldShowUrl()) {
+            return null;
+        }
+
+        return $event->event_url;
+    }
+
+    /**
+     * Livewire lifecycle method: Render the component view.
+     *
+     * This magic method is automatically called by Livewire to generate the component's
+     * HTML output. It's called on initial load and after any property updates or actions.
+     */
+    public function render(): View
+    {
+        return view('livewire.admin.visitor-analytics', [
+            'stats' => $this->getStats(),
+        ])->layout('components.layouts.base', [
+            'title' => 'Event Analytics - The Forge',
+            'description' => 'View detailed event analytics and user activity statistics.',
+        ]);
+    }
+
+    /**
      * Apply all active filters to the given query.
      *
      * @param  Builder<TrackingEvent>  $query
@@ -544,72 +611,5 @@ class VisitorAnalytics extends Component
             ->orderByDesc('count')
             ->limit(10)
             ->get();
-    }
-
-    /**
-     * Get the display text for an event based on its type and data.
-     */
-    public function getEventDisplayText(TrackingEvent $event): ?string
-    {
-        $eventType = TrackingEventType::from($event->event_name);
-
-        if (! $eventType->shouldShowContext()) {
-            return null;
-        }
-
-        return $event->event_context;
-    }
-
-    /**
-     * Get the user model associated with an event for display purposes.
-     */
-    public function getEventDisplayUser(TrackingEvent $event): ?User
-    {
-        // Simply check if we have a user from visitor_id
-        if ($event->visitor_id && $event->user) {
-            return $event->user;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the user ID associated with an event for display purposes.
-     */
-    public function getEventUserId(TrackingEvent $event): ?int
-    {
-        // Simply return the visitor_id
-        return $event->visitor_id;
-    }
-
-    /**
-     * Get the URL for an event if it should be displayed as a link.
-     */
-    public function getEventUrl(TrackingEvent $event): ?string
-    {
-        $eventType = TrackingEventType::from($event->event_name);
-
-        // Only show URL if the event type allows it
-        if (! $eventType->shouldShowUrl()) {
-            return null;
-        }
-
-        return $event->event_url;
-    }
-
-    /**
-     * Livewire lifecycle method: Render the component view.
-     *
-     * This magic method is automatically called by Livewire to generate the component's
-     * HTML output. It's called on initial load and after any property updates or actions.
-     */
-    public function render(): View
-    {
-        return view('livewire.admin.visitor-analytics', [
-            'stats' => $this->getStats(),
-        ])->layout('components.layouts.base', [
-            'title' => 'Event Analytics - The Forge',
-            'description' => 'View detailed event analytics and user activity statistics.',
-        ]);
     }
 }

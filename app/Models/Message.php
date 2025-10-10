@@ -112,6 +112,30 @@ class Message extends Model
     }
 
     /**
+     * Boot the model.
+     */
+    #[Override]
+    protected static function booted(): void
+    {
+        // Update the conversation's last message fields when a message is created
+        static::created(function (Message $message): void {
+            $conversation = $message->conversation;
+            if ($conversation->exists()) {
+                $conversation->update([
+                    'last_message_id' => $message->id,
+                    'last_message_at' => $message->created_at,
+                ]);
+
+                // Unarchive conversation for both users when a new message is sent
+                $conversation->unarchiveForAllUsers();
+
+                // Dispatch notification job for the recipient
+                ProcessChatMessageNotification::dispatch($message);
+            }
+        });
+    }
+
+    /**
      * Scope to get unread messages for a specific user.
      *
      * @param  Builder<self>  $query
@@ -147,30 +171,6 @@ class Message extends Model
     protected function notFromUser(Builder $query, User $user): Builder
     {
         return $query->where('user_id', '!=', $user->id);
-    }
-
-    /**
-     * Boot the model.
-     */
-    #[Override]
-    protected static function booted(): void
-    {
-        // Update the conversation's last message fields when a message is created
-        static::created(function (Message $message): void {
-            $conversation = $message->conversation;
-            if ($conversation->exists()) {
-                $conversation->update([
-                    'last_message_id' => $message->id,
-                    'last_message_at' => $message->created_at,
-                ]);
-
-                // Unarchive conversation for both users when a new message is sent
-                $conversation->unarchiveForAllUsers();
-
-                // Dispatch notification job for the recipient
-                ProcessChatMessageNotification::dispatch($message);
-            }
-        });
     }
 
     /**

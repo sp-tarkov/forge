@@ -154,65 +154,6 @@ class Index extends Component
     }
 
     /**
-     * Toggle "All Versions" on or off.
-     */
-    private function toggleAllVersions(): void
-    {
-        $this->sptVersions = ($this->sptVersions === 'all')
-            ? $this->defaultSptVersions()
-            : 'all';
-    }
-
-    /**
-     * Toggle an individual version on or off.
-     */
-    private function toggleIndividualVersion(string $version): void
-    {
-        if ($this->sptVersions === 'all') {
-            $this->sptVersions = [$version];
-
-            return;
-        }
-
-        $currentVersions = $this->ensureVersionsArray();
-        $this->sptVersions = $this->toggleVersionInArray($version, $currentVersions);
-
-        // If no versions are selected after toggling, switch to "all"
-        if (empty($this->sptVersions)) {
-            $this->sptVersions = 'all';
-        }
-    }
-
-    /**
-     * Ensure sptVersions is treated as an array.
-     *
-     * @return array<int, string>
-     */
-    private function ensureVersionsArray(): array
-    {
-        return is_array($this->sptVersions) ? $this->sptVersions : [$this->sptVersions];
-    }
-
-    /**
-     * Toggle a version in the given array and return the result.
-     *
-     * @param  array<int, string>  $versions
-     * @return array<int, string>
-     */
-    private function toggleVersionInArray(string $version, array $versions): array
-    {
-        $key = array_search($version, $versions);
-
-        if ($key !== false) {
-            unset($versions[$key]);
-
-            return array_values($versions);
-        }
-
-        return [...$versions, $version];
-    }
-
-    /**
      * Validate that the selected perPage value is an allowed option, resetting to the closest valid option.
      */
     public function updatedPerPage(int $value): void
@@ -234,18 +175,6 @@ class Index extends Component
     {
         if (! in_array($value, ['created', 'updated', 'downloaded'])) {
             $this->order = 'created';
-        }
-    }
-
-    /**
-     * Check if the current page is greater than the last page. Redirect if it is.
-     *
-     * @param  LengthAwarePaginator<int, Mod>  $paginatedMods
-     */
-    private function redirectOutOfBoundsPage(LengthAwarePaginator $paginatedMods): void
-    {
-        if ($paginatedMods->currentPage() > $paginatedMods->lastPage()) {
-            $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
         }
     }
 
@@ -315,5 +244,76 @@ class Index extends Component
         $this->redirectOutOfBoundsPage($paginatedMods);
 
         return view('livewire.page.mod.index', ['mods' => $paginatedMods]);
+    }
+
+    /**
+     * Toggle "All Versions" on or off.
+     */
+    private function toggleAllVersions(): void
+    {
+        $this->sptVersions = ($this->sptVersions === 'all')
+            ? $this->defaultSptVersions()
+            : 'all';
+    }
+
+    /**
+     * Toggle an individual version on or off.
+     */
+    private function toggleIndividualVersion(string $version): void
+    {
+        if ($this->sptVersions === 'all') {
+            $this->sptVersions = [$version];
+
+            return;
+        }
+
+        $currentVersions = $this->ensureVersionsArray();
+        $this->sptVersions = $this->toggleVersionInArray($version, $currentVersions);
+
+        // If no versions are selected after toggling, switch to "all"
+        if (empty($this->sptVersions)) {
+            $this->sptVersions = 'all';
+        }
+    }
+
+    /**
+     * Ensure sptVersions is treated as an array.
+     *
+     * @return array<int, string>
+     */
+    private function ensureVersionsArray(): array
+    {
+        return is_array($this->sptVersions) ? $this->sptVersions : [$this->sptVersions];
+    }
+
+    /**
+     * Toggle a version in the given array and return the result.
+     *
+     * @param  array<int, string>  $versions
+     * @return array<int, string>
+     */
+    private function toggleVersionInArray(string $version, array $versions): array
+    {
+        $key = array_search($version, $versions);
+
+        if ($key !== false) {
+            unset($versions[$key]);
+
+            return array_values($versions);
+        }
+
+        return [...$versions, $version];
+    }
+
+    /**
+     * Check if the current page is greater than the last page. Redirect if it is.
+     *
+     * @param  LengthAwarePaginator<int, Mod>  $paginatedMods
+     */
+    private function redirectOutOfBoundsPage(LengthAwarePaginator $paginatedMods): void
+    {
+        if ($paginatedMods->currentPage() > $paginatedMods->lastPage()) {
+            $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
+        }
     }
 }

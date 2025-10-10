@@ -51,21 +51,6 @@ class TrackingEvent extends Model
     use HasFactory;
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'event_data' => 'array',
-            'languages' => 'array',
-            'latitude' => 'decimal:8',
-            'longitude' => 'decimal:8',
-        ];
-    }
-
-    /**
      * Get the authenticated user who performed this action.
      *
      * @return BelongsTo<User, $this>
@@ -92,6 +77,21 @@ class TrackingEvent extends Model
     public function getEventType(): ?TrackingEventType
     {
         return $this->event_name ? TrackingEventType::tryFrom($this->event_name) : null;
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'event_data' => 'array',
+            'languages' => 'array',
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
+        ];
     }
 
     /**

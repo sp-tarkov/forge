@@ -66,65 +66,6 @@ class NavigationChat extends Component
     }
 
     /**
-     * Load all conversation hash IDs for the authenticated user.
-     */
-    private function loadUserConversationHashes(): void
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return;
-        }
-
-        // Load ALL conversations the user is part of (including archived ones)
-        // We need this for typing indicators to work properly
-        $this->conversationHashes = Conversation::query()
-            ->forUser($user)
-            ->pluck('hash_id')
-            ->toArray();
-    }
-
-    /**
-     * Fetch recent conversations for the authenticated user.
-     *
-     * @return Collection<int, Conversation>
-     */
-    private function fetchConversations(): Collection
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return new Collection;
-        }
-
-        return Conversation::query()
-            ->visibleTo($user)
-            ->notArchivedBy($user)
-            ->withUserContext($user)
-            ->withUnreadCount($user)
-            ->with(['user1', 'user2', 'lastMessage'])
-            ->orderBy('last_message_at', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-    }
-
-    /**
-     * Get the count of unread conversations for the authenticated user.
-     */
-    private function fetchUnreadCount(): int
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return 0;
-        }
-
-        return Conversation::query()
-            ->visibleTo($user)
-            ->notArchivedBy($user)
-            ->withUnreadMessages($user)
-            ->count();
-    }
-
-    /**
      * Mark a conversation as read for the authenticated user.
      */
     public function markAsRead(int $conversationId): void
@@ -395,20 +336,6 @@ class NavigationChat extends Component
     }
 
     /**
-     * Get search results for finding users to start conversations with.
-     *
-     * @return Collection<int, User>
-     */
-    private function fetchSearchResults(): Collection
-    {
-        if (empty($this->searchUser)) {
-            return new Collection;
-        }
-
-        return User::query()->conversationSearch(Auth::user(), $this->searchUser)->get();
-    }
-
-    /**
      * Handle typing started event from any conversation.
      *
      * @param  array{user_id: int, user_name: string, conversation_hash: string}  $event
@@ -459,5 +386,78 @@ class NavigationChat extends Component
             'unreadCount' => $this->fetchUnreadCount(),
             'searchResults' => $this->fetchSearchResults(),
         ]);
+    }
+
+    /**
+     * Load all conversation hash IDs for the authenticated user.
+     */
+    private function loadUserConversationHashes(): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        // Load ALL conversations the user is part of (including archived ones)
+        // We need this for typing indicators to work properly
+        $this->conversationHashes = Conversation::query()
+            ->forUser($user)
+            ->pluck('hash_id')
+            ->toArray();
+    }
+
+    /**
+     * Fetch recent conversations for the authenticated user.
+     *
+     * @return Collection<int, Conversation>
+     */
+    private function fetchConversations(): Collection
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return new Collection;
+        }
+
+        return Conversation::query()
+            ->visibleTo($user)
+            ->notArchivedBy($user)
+            ->withUserContext($user)
+            ->withUnreadCount($user)
+            ->with(['user1', 'user2', 'lastMessage'])
+            ->orderBy('last_message_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+    }
+
+    /**
+     * Get the count of unread conversations for the authenticated user.
+     */
+    private function fetchUnreadCount(): int
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return 0;
+        }
+
+        return Conversation::query()
+            ->visibleTo($user)
+            ->notArchivedBy($user)
+            ->withUnreadMessages($user)
+            ->count();
+    }
+
+    /**
+     * Get search results for finding users to start conversations with.
+     *
+     * @return Collection<int, User>
+     */
+    private function fetchSearchResults(): Collection
+    {
+        if (empty($this->searchUser)) {
+            return new Collection;
+        }
+
+        return User::query()->conversationSearch(Auth::user(), $this->searchUser)->get();
     }
 }

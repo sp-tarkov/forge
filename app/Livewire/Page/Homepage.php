@@ -32,6 +32,19 @@ class Homepage extends Component
     }
 
     /**
+     * Render the component.
+     */
+    #[Layout('components.layouts.base')]
+    public function render(): View
+    {
+        return view('livewire.page.homepage', [
+            'featured' => $this->featured(),
+            'newest' => $this->newest(),
+            'updated' => $this->updated(),
+        ]);
+    }
+
+    /**
      * Featured mods for the homepage listing.
      *
      * @return Collection<int, Mod>
@@ -131,18 +144,5 @@ class Homepage extends Component
         $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->where('mods.disabled', false));
 
         return $query->get();
-    }
-
-    /**
-     * Render the component.
-     */
-    #[Layout('components.layouts.base')]
-    public function render(): View
-    {
-        return view('livewire.page.homepage', [
-            'featured' => $this->featured(),
-            'newest' => $this->newest(),
-            'updated' => $this->updated(),
-        ]);
     }
 }

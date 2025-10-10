@@ -46,6 +46,37 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * Determine the color for the SPT version.
+     *
+     * @throws InvalidVersionNumberException
+     */
+    private static function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
+    {
+        if ($rawVersion === '0.0.0' || $rawLatestVersion === false) {
+            return 'gray';
+        }
+
+        $version = new Version($rawVersion);
+        $currentMajor = $version->getMajor();
+        $currentMinor = $version->getMinor();
+
+        $latestVersion = new Version($rawLatestVersion);
+        $latestMajor = $latestVersion->getMajor();
+        $latestMinor = $latestVersion->getMinor();
+
+        if ($currentMajor !== $latestMajor) {
+            return 'red';
+        }
+
+        $minorDifference = $latestMinor - $currentMinor;
+
+        return match ($minorDifference) {
+            0 => 'green',
+            default => 'red',
+        };
+    }
+
+    /**
      * Fetch SPT versions from GitHub releases.
      *
      * @throws ConnectionException|RequestException
@@ -162,36 +193,5 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
                 ]);
             }
         });
-    }
-
-    /**
-     * Determine the color for the SPT version.
-     *
-     * @throws InvalidVersionNumberException
-     */
-    private static function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
-    {
-        if ($rawVersion === '0.0.0' || $rawLatestVersion === false) {
-            return 'gray';
-        }
-
-        $version = new Version($rawVersion);
-        $currentMajor = $version->getMajor();
-        $currentMinor = $version->getMinor();
-
-        $latestVersion = new Version($rawLatestVersion);
-        $latestMajor = $latestVersion->getMajor();
-        $latestMinor = $latestVersion->getMinor();
-
-        if ($currentMajor !== $latestMajor) {
-            return 'red';
-        }
-
-        $minorDifference = $latestMinor - $currentMinor;
-
-        return match ($minorDifference) {
-            0 => 'green',
-            default => 'red',
-        };
     }
 }

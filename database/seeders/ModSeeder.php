@@ -59,6 +59,26 @@ class ModSeeder extends Seeder
     }
 
     /**
+     * Get the created mods.
+     *
+     * @return Collection<int, Mod>
+     */
+    public function getMods(): Collection
+    {
+        return $this->mods;
+    }
+
+    /**
+     * Get the created mod versions.
+     *
+     * @return Collection<int, ModVersion>
+     */
+    public function getModVersions(): Collection
+    {
+        return $this->modVersions;
+    }
+
+    /**
      * Seed mods.
      *
      * @param  array<string, mixed>  $counts
@@ -163,25 +183,5 @@ class ModSeeder extends Seeder
                 'description' => file_get_contents($markdownPath),
             ]);
         }
-    }
-
-    /**
-     * Get the created mods.
-     *
-     * @return Collection<int, Mod>
-     */
-    public function getMods(): Collection
-    {
-        return $this->mods;
-    }
-
-    /**
-     * Get the created mod versions.
-     *
-     * @return Collection<int, ModVersion>
-     */
-    public function getModVersions(): Collection
-    {
-        return $this->modVersions;
     }
 }

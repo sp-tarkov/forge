@@ -424,6 +424,55 @@ class UserManagement extends Component
     }
 
     /**
+     * Get the selected user for modals.
+     */
+    public function getSelectedUserProperty(): ?User
+    {
+        return $this->selectedUserId ? User::with(['role', 'bans'])->find($this->selectedUserId) : null;
+    }
+
+    /**
+     * Get the available ban duration options for the modal.
+     *
+     * @return array<string, string> Array of duration keys and display labels
+     */
+    public function getDurationOptions(): array
+    {
+        return [
+            '1_hour' => '1 Hour',
+            '24_hours' => '24 Hours',
+            '7_days' => '7 Days',
+            '30_days' => '30 Days',
+            'permanent' => 'Permanent',
+        ];
+    }
+
+    /**
+     * Render the component.
+     */
+    public function render(): View
+    {
+        return view('livewire.admin.user-management')->layout('components.layouts.base', [
+            'title' => 'User Management - The Forge',
+            'description' => 'Comprehensive user management interface for administrators.',
+        ]);
+    }
+
+    /**
+     * Calculate the expiration date based on the selected duration.
+     */
+    protected function getExpirationDate(): Carbon
+    {
+        return match ($this->banDuration) {
+            '1_hour' => now()->addHour(),
+            '24_hours' => now()->addDay(),
+            '7_days' => now()->addWeek(),
+            '30_days' => now()->addMonth(),
+            default => now()->addHour(),
+        };
+    }
+
+    /**
      * Apply all active filters to the given query.
      *
      * @param  Builder<User>  $query
@@ -471,54 +520,5 @@ class UserManagement extends Component
         if ($this->joinedTo) {
             $query->where('created_at', '<=', $this->joinedTo.' 23:59:59');
         }
-    }
-
-    /**
-     * Get the selected user for modals.
-     */
-    public function getSelectedUserProperty(): ?User
-    {
-        return $this->selectedUserId ? User::with(['role', 'bans'])->find($this->selectedUserId) : null;
-    }
-
-    /**
-     * Calculate the expiration date based on the selected duration.
-     */
-    protected function getExpirationDate(): Carbon
-    {
-        return match ($this->banDuration) {
-            '1_hour' => now()->addHour(),
-            '24_hours' => now()->addDay(),
-            '7_days' => now()->addWeek(),
-            '30_days' => now()->addMonth(),
-            default => now()->addHour(),
-        };
-    }
-
-    /**
-     * Get the available ban duration options for the modal.
-     *
-     * @return array<string, string> Array of duration keys and display labels
-     */
-    public function getDurationOptions(): array
-    {
-        return [
-            '1_hour' => '1 Hour',
-            '24_hours' => '24 Hours',
-            '7_days' => '7 Days',
-            '30_days' => '30 Days',
-            'permanent' => 'Permanent',
-        ];
-    }
-
-    /**
-     * Render the component.
-     */
-    public function render(): View
-    {
-        return view('livewire.admin.user-management')->layout('components.layouts.base', [
-            'title' => 'User Management - The Forge',
-            'description' => 'Comprehensive user management interface for administrators.',
-        ]);
     }
 }

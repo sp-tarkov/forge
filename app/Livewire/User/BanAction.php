@@ -90,22 +90,6 @@ class BanAction extends Component
     }
 
     /**
-     * Calculate the expiration date based on the selected duration.
-     *
-     * @return Carbon The calculated expiration date
-     */
-    protected function getExpirationDate(): Carbon
-    {
-        return match ($this->duration) {
-            '1_hour' => now()->addHour(),
-            '24_hours' => now()->addDay(),
-            '7_days' => now()->addWeek(),
-            '30_days' => now()->addMonth(),
-            default => now()->addHour(),
-        };
-    }
-
-    /**
      * Get the available ban duration options for the modal.
      *
      * @return array<string, string> Array of duration keys and display labels
@@ -127,5 +111,21 @@ class BanAction extends Component
     public function render(): View
     {
         return view('livewire.user.ban-action');
+    }
+
+    /**
+     * Calculate the expiration date based on the selected duration.
+     *
+     * @return Carbon The calculated expiration date
+     */
+    protected function getExpirationDate(): Carbon
+    {
+        return match ($this->duration) {
+            '1_hour' => now()->addHour(),
+            '24_hours' => now()->addDay(),
+            '7_days' => now()->addWeek(),
+            '30_days' => now()->addMonth(),
+            default => now()->addHour(),
+        };
     }
 }

@@ -55,6 +55,17 @@ class TimezoneWarning extends Component
         $this->detectedTimezone = $timezone;
     }
 
+    #[Computed]
+    public function shouldShowWarning(): bool
+    {
+        return Auth::check() && Auth::user()->timezone === null;
+    }
+
+    public function render(): View
+    {
+        return view('livewire.timezone-warning');
+    }
+
     private function loadFallbackTimezone(): void
     {
         $user = Auth::user();
@@ -70,16 +81,5 @@ class TimezoneWarning extends Component
             ->first();
 
         $this->fallbackTimezone = $latestEvent?->timezone ?: 'UTC';
-    }
-
-    #[Computed]
-    public function shouldShowWarning(): bool
-    {
-        return Auth::check() && Auth::user()->timezone === null;
-    }
-
-    public function render(): View
-    {
-        return view('livewire.timezone-warning');
     }
 }

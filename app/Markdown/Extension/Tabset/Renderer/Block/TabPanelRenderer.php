@@ -36,7 +36,7 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
         // Add the "tab-panel" class by merging with existing classes.
         $existingClasses = $attrs['class'] ?? '';
         $separator = ! empty($existingClasses) ? ' ' : '';
-        $attrs['class'] = trim($existingClasses.$separator.'tab-panel');
+        $attrs['class'] = mb_trim($existingClasses.$separator.'tab-panel');
         if (empty($attrs['class'])) {
             unset($attrs['class']);
         }
@@ -51,7 +51,7 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
         $titleElement = new HtmlElement('div', ['class' => 'tab-title'], $displayTitle);
         $contentInnerHtml = $childRenderer->renderNodes($node->contentNodes);
         $contentWrapperHtml = '';
-        if (trim($contentInnerHtml) !== '') {
+        if (mb_trim($contentInnerHtml) !== '') {
             $contentWrapperHtml = (string) new HtmlElement('div', ['class' => 'tab-content'], $contentInnerHtml);
         }
 

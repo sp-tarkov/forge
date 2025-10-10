@@ -17,6 +17,123 @@ use Override;
 class ModQueryBuilder extends AbstractQueryBuilder
 {
     /**
+     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
+     * methods that apply the filter to the builder.
+     *
+     * @return array<string, string>
+     */
+    public static function getAllowedFilters(): array
+    {
+        return [
+            'id' => 'filterById',
+            'hub_id' => 'filterByHubId',
+            'name' => 'filterByName',
+            'slug' => 'filterBySlug',
+            'guid' => 'filterByGuid',
+            'teaser' => 'filterByTeaser',
+            'featured' => 'filterByFeatured',
+            'contains_ads' => 'filterByContainsAds',
+            'contains_ai_content' => 'filterByContainsAiContent',
+            'category_id' => 'filterByCategoryId',
+            'category_slug' => 'filterByCategorySlug',
+            'created_between' => 'filterByCreatedBetween',
+            'updated_between' => 'filterByUpdatedBetween',
+            'published_between' => 'filterByPublishedBetween',
+            'spt_version' => 'filterBySptVersion',
+        ];
+    }
+
+    /**
+     * Get the allowed relationships that can be included.
+     *
+     * @return array<string, string>
+     */
+    public static function getAllowedIncludes(): array
+    {
+        return [
+            'owner' => 'owner',
+            'authors' => 'authors',
+            'versions' => 'versions',
+            'license' => 'license',
+            'category' => 'category',
+            'source_code_links' => 'sourceCodeLinks',
+        ];
+    }
+
+    /**
+     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
+     * white-listing and will be automatically included when needed.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'owner_id',
+            'license_id',
+            'category_id',
+        ];
+    }
+
+    /**
+     * Get the allowed fields for this query builder.
+     *
+     * @return array<string>
+     */
+    public static function getAllowedFields(): array
+    {
+        return [
+            'hub_id',
+            'guid',
+            'name',
+            'slug',
+            'teaser',
+            'description',
+            'thumbnail',
+            'downloads',
+            'featured',
+            'contains_ai_content',
+            'contains_ads',
+            'category_id',
+            'published_at',
+            'created_at',
+            'updated_at',
+        ];
+    }
+
+    /**
+     * Get the allowed sorts for this query builder.
+     *
+     * @return array<string>
+     */
+    public static function getAllowedSorts(): array
+    {
+        return [
+            'name',
+            'downloads',
+            'featured',
+            'created_at',
+            'updated_at',
+            'published_at',
+        ];
+    }
+
+    /**
+     * Get the dynamic attributes that can be included in the response. The keys are the attribute names, and the values
+     * are arrays of required database fields.
+     *
+     * @return array<string, array<string>>
+     */
+    #[Override]
+    protected static function getDynamicAttributes(): array
+    {
+        return [
+            'detail_url' => ['slug'],
+        ];
+    }
+
+    /**
      * Get the base query for the model.
      *
      * @return Builder<Mod>
@@ -73,33 +190,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
     protected function getModelClass(): string
     {
         return Mod::class;
-    }
-
-    /**
-     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
-     * methods that apply the filter to the builder.
-     *
-     * @return array<string, string>
-     */
-    public static function getAllowedFilters(): array
-    {
-        return [
-            'id' => 'filterById',
-            'hub_id' => 'filterByHubId',
-            'name' => 'filterByName',
-            'slug' => 'filterBySlug',
-            'guid' => 'filterByGuid',
-            'teaser' => 'filterByTeaser',
-            'featured' => 'filterByFeatured',
-            'contains_ads' => 'filterByContainsAds',
-            'contains_ai_content' => 'filterByContainsAiContent',
-            'category_id' => 'filterByCategoryId',
-            'category_slug' => 'filterByCategorySlug',
-            'created_between' => 'filterByCreatedBetween',
-            'updated_between' => 'filterByUpdatedBetween',
-            'published_between' => 'filterByPublishedBetween',
-            'spt_version' => 'filterBySptVersion',
-        ];
     }
 
     /**
@@ -318,95 +408,5 @@ class ModQueryBuilder extends AbstractQueryBuilder
         $validSptVersions = SptVersion::allValidVersions();
         $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
         $this->applySptVersionCondition($query, $compatibleSptVersions);
-    }
-
-    /**
-     * Get the allowed relationships that can be included.
-     *
-     * @return array<string, string>
-     */
-    public static function getAllowedIncludes(): array
-    {
-        return [
-            'owner' => 'owner',
-            'authors' => 'authors',
-            'versions' => 'versions',
-            'license' => 'license',
-            'category' => 'category',
-            'source_code_links' => 'sourceCodeLinks',
-        ];
-    }
-
-    /**
-     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
-     * white-listing and will be automatically included when needed.
-     *
-     * @return array<string>
-     */
-    public static function getRequiredFields(): array
-    {
-        return [
-            'id',
-            'owner_id',
-            'license_id',
-            'category_id',
-        ];
-    }
-
-    /**
-     * Get the allowed fields for this query builder.
-     *
-     * @return array<string>
-     */
-    public static function getAllowedFields(): array
-    {
-        return [
-            'hub_id',
-            'guid',
-            'name',
-            'slug',
-            'teaser',
-            'description',
-            'thumbnail',
-            'downloads',
-            'featured',
-            'contains_ai_content',
-            'contains_ads',
-            'category_id',
-            'published_at',
-            'created_at',
-            'updated_at',
-        ];
-    }
-
-    /**
-     * Get the allowed sorts for this query builder.
-     *
-     * @return array<string>
-     */
-    public static function getAllowedSorts(): array
-    {
-        return [
-            'name',
-            'downloads',
-            'featured',
-            'created_at',
-            'updated_at',
-            'published_at',
-        ];
-    }
-
-    /**
-     * Get the dynamic attributes that can be included in the response. The keys are the attribute names, and the values
-     * are arrays of required database fields.
-     *
-     * @return array<string, array<string>>
-     */
-    #[Override]
-    protected static function getDynamicAttributes(): array
-    {
-        return [
-            'detail_url' => ['slug'],
-        ];
     }
 }

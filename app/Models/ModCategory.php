@@ -29,6 +29,16 @@ class ModCategory extends Model
     use HasFactory;
 
     /**
+     * The mods in this category.
+     *
+     * @return HasMany<Mod, $this>
+     */
+    public function mods(): HasMany
+    {
+        return $this->hasMany(Mod::class, 'category_id');
+    }
+
+    /**
      * Boot the model.
      */
     #[Override]
@@ -47,16 +57,6 @@ class ModCategory extends Model
                 $modCategory->slug = Str::slug($modCategory->title);
             }
         });
-    }
-
-    /**
-     * The mods in this category.
-     *
-     * @return HasMany<Mod, $this>
-     */
-    public function mods(): HasMany
-    {
-        return $this->hasMany(Mod::class, 'category_id');
     }
 
     /**

@@ -34,26 +34,6 @@ class CommentSubscription extends Model
     ];
 
     /**
-     * Get the user that owns the subscription.
-     *
-     * @return BelongsTo<User, $this>
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    /**
-     * Get the commentable model (Mod or User).
-     *
-     * @return MorphTo<Model, $this>
-     */
-    public function commentable(): MorphTo
-    {
-        return $this->morphTo();
-    }
-
-    /**
      * Create a subscription for a user to a commentable.
      *
      * @template T of Model
@@ -99,5 +79,25 @@ class CommentSubscription extends Model
             'commentable_type' => $commentable::class,
             'commentable_id' => $commentable->getAttribute('id'),
         ])->exists();
+    }
+
+    /**
+     * Get the user that owns the subscription.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the commentable model (Mod or User).
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function commentable(): MorphTo
+    {
+        return $this->morphTo();
     }
 }

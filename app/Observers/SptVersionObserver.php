@@ -20,6 +20,14 @@ class SptVersionObserver
     }
 
     /**
+     * Handle the SptVersion "deleted" event.
+     */
+    public function deleted(): void
+    {
+        defer(fn () => $this->resolveSptVersion());
+    }
+
+    /**
      * Resolve the SptVersion's dependencies.
      */
     private function resolveSptVersion(): void
@@ -29,13 +37,5 @@ class SptVersionObserver
         foreach ($modVersions as $modVersion) {
             $this->sptVersionService->resolve($modVersion);
         }
-    }
-
-    /**
-     * Handle the SptVersion "deleted" event.
-     */
-    public function deleted(): void
-    {
-        defer(fn () => $this->resolveSptVersion());
     }
 }

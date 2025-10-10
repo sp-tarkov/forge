@@ -31,6 +31,99 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
+     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
+     * methods that apply the filter to the builder.
+     *
+     * @return array<string, string>
+     */
+    public static function getAllowedFilters(): array
+    {
+        return [
+            'id' => 'filterById',
+            'hub_id' => 'filterByHubId',
+            'version' => 'filterByVersion',
+            'description' => 'filterByDescription',
+            'link' => 'filterByLink',
+            'virus_total_link' => 'filterByVirusTotalLink',
+            'published_between' => 'filterByPublishedBetween',
+            'created_between' => 'filterByCreatedBetween',
+            'updated_between' => 'filterByUpdatedBetween',
+            'spt_version' => 'filterBySptVersion',
+        ];
+    }
+
+    /**
+     * Get a map of API include names to model relationship names.
+     *
+     * @return array<string, string|array<string>>
+     */
+    public static function getAllowedIncludes(): array
+    {
+        return [
+            'dependencies' => [
+                'resolvedDependencies',
+                'resolvedDependencies.mod',
+            ],
+        ];
+    }
+
+    /**
+     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
+     * white-listing and will be automatically included when needed.
+     *
+     * @return array<string>
+     */
+    public static function getRequiredFields(): array
+    {
+        return [
+            'id',
+            'mod_id',
+            'version',
+        ];
+    }
+
+    /**
+     * Get the allowed fields for this query builder.
+     *
+     * @return array<string>
+     */
+    public static function getAllowedFields(): array
+    {
+        return [
+            'id',
+            'hub_id',
+            'version',
+            'description',
+            'link',
+            'content_length',
+            'spt_version_constraint',
+            'virus_total_link',
+            'downloads',
+            'published_at',
+            'created_at',
+            'updated_at',
+        ];
+    }
+
+    /**
+     * Get the allowed sorts for this query builder.
+     *
+     * @return array<string>
+     */
+    public static function getAllowedSorts(): array
+    {
+        return [
+            'id',
+            'hub_id',
+            'version',
+            'downloads',
+            'published_at',
+            'created_at',
+            'updated_at',
+        ];
+    }
+
+    /**
      * Get the base query for the model.
      *
      * @return Builder<ModVersion>
@@ -80,28 +173,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     protected function getModelClass(): string
     {
         return ModVersion::class;
-    }
-
-    /**
-     * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
-     * methods that apply the filter to the builder.
-     *
-     * @return array<string, string>
-     */
-    public static function getAllowedFilters(): array
-    {
-        return [
-            'id' => 'filterById',
-            'hub_id' => 'filterByHubId',
-            'version' => 'filterByVersion',
-            'description' => 'filterByDescription',
-            'link' => 'filterByLink',
-            'virus_total_link' => 'filterByVirusTotalLink',
-            'published_between' => 'filterByPublishedBetween',
-            'created_between' => 'filterByCreatedBetween',
-            'updated_between' => 'filterByUpdatedBetween',
-            'spt_version' => 'filterBySptVersion',
-        ];
     }
 
     /**
@@ -250,77 +321,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
 
         $this->applySptVersionCondition($query, $compatibleSptVersions);
-    }
-
-    /**
-     * Get a map of API include names to model relationship names.
-     *
-     * @return array<string, string|array<string>>
-     */
-    public static function getAllowedIncludes(): array
-    {
-        return [
-            'dependencies' => [
-                'resolvedDependencies',
-                'resolvedDependencies.mod',
-            ],
-        ];
-    }
-
-    /**
-     * Get the required fields that should always be loaded for relationships. These fields are not subject to field
-     * white-listing and will be automatically included when needed.
-     *
-     * @return array<string>
-     */
-    public static function getRequiredFields(): array
-    {
-        return [
-            'id',
-            'mod_id',
-            'version',
-        ];
-    }
-
-    /**
-     * Get the allowed fields for this query builder.
-     *
-     * @return array<string>
-     */
-    public static function getAllowedFields(): array
-    {
-        return [
-            'id',
-            'hub_id',
-            'version',
-            'description',
-            'link',
-            'content_length',
-            'spt_version_constraint',
-            'virus_total_link',
-            'downloads',
-            'published_at',
-            'created_at',
-            'updated_at',
-        ];
-    }
-
-    /**
-     * Get the allowed sorts for this query builder.
-     *
-     * @return array<string>
-     */
-    public static function getAllowedSorts(): array
-    {
-        return [
-            'id',
-            'hub_id',
-            'version',
-            'downloads',
-            'published_at',
-            'created_at',
-            'updated_at',
-        ];
     }
 
     /**

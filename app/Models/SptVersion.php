@@ -129,88 +129,9 @@ class SptVersion extends Model
     }
 
     /**
-     * Called when the model is booted.
-     */
-    #[Override]
-    protected static function booted(): void
-    {
-        static::saving(function (SptVersion $sptVersion): void {
-            // Extract the version sections from the version string.
-            try {
-                $version = new Version($sptVersion->version);
-
-                $sptVersion->version_major = $version->getMajor();
-                $sptVersion->version_minor = $version->getMinor();
-                $sptVersion->version_patch = $version->getPatch();
-                $sptVersion->version_labels = $version->getLabels();
-            } catch (InvalidVersionNumberException $invalidVersionNumberException) {
-                Log::warning('Invalid SPT version number: '.$invalidVersionNumberException->getMessage());
-
-                $sptVersion->version_major = 0;
-                $sptVersion->version_minor = 0;
-                $sptVersion->version_patch = 0;
-                $sptVersion->version_labels = '';
-            }
-        });
-    }
-
-    /**
-     * Update the mod count for this SptVersion.
-     */
-    public function updateModCount(): void
-    {
-        DB::table('spt_versions')
-            ->where('id', $this->id)
-            ->update([
-                'mod_count' => $this->modVersions()
-                    ->distinct('mod_id')
-                    ->count('mod_id'),
-            ]);
-    }
-
-    /**
-     * The relationship between an SPT version and mod version.
-     *
-     * @return BelongsToMany<ModVersion, $this>
-     */
-    public function modVersions(): BelongsToMany
-    {
-        return $this->belongsToMany(ModVersion::class)
-            ->using(ModVersionSptVersion::class);
-    }
-
-    /**
-     * Get the version with "SPT " prepended.
-     *
-     * @return Attribute<string, string>
-     */
-    protected function versionFormatted(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => 'SPT '.$this->version,
-            set: fn (string $value): string => Str::after($value, 'SPT '),
-        );
-    }
-
-    /**
-     * Determine if the version is part of the latest version's minor releases. For example, if the latest version is
-     * 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
-     */
-    public function isLatestMinor(): bool
-    {
-        $latestVersion = self::getLatest();
-
-        if (! $latestVersion instanceof \App\Models\SptVersion) {
-            return false;
-        }
-
-        return $this->version_major == $latestVersion->version_major && $this->version_minor == $latestVersion->version_minor;
-    }
-
-    /**
      * Get the latest SPT version.
      */
-    public static function getLatest(): ?SptVersion
+    public static function getLatest(): ?self
     {
         return self::query()
             ->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_labels'])
@@ -265,6 +186,85 @@ class SptVersion extends Model
             ->orderBy('version_labels')
             ->pluck('version')
             ->all());
+    }
+
+    /**
+     * Update the mod count for this SptVersion.
+     */
+    public function updateModCount(): void
+    {
+        DB::table('spt_versions')
+            ->where('id', $this->id)
+            ->update([
+                'mod_count' => $this->modVersions()
+                    ->distinct('mod_id')
+                    ->count('mod_id'),
+            ]);
+    }
+
+    /**
+     * The relationship between an SPT version and mod version.
+     *
+     * @return BelongsToMany<ModVersion, $this>
+     */
+    public function modVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(ModVersion::class)
+            ->using(ModVersionSptVersion::class);
+    }
+
+    /**
+     * Determine if the version is part of the latest version's minor releases. For example, if the latest version is
+     * 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
+     */
+    public function isLatestMinor(): bool
+    {
+        $latestVersion = self::getLatest();
+
+        if (! $latestVersion instanceof self) {
+            return false;
+        }
+
+        return $this->version_major === $latestVersion->version_major && $this->version_minor === $latestVersion->version_minor;
+    }
+
+    /**
+     * Called when the model is booted.
+     */
+    #[Override]
+    protected static function booted(): void
+    {
+        static::saving(function (SptVersion $sptVersion): void {
+            // Extract the version sections from the version string.
+            try {
+                $version = new Version($sptVersion->version);
+
+                $sptVersion->version_major = $version->getMajor();
+                $sptVersion->version_minor = $version->getMinor();
+                $sptVersion->version_patch = $version->getPatch();
+                $sptVersion->version_labels = $version->getLabels();
+            } catch (InvalidVersionNumberException $invalidVersionNumberException) {
+                Log::warning('Invalid SPT version number: '.$invalidVersionNumberException->getMessage());
+
+                $sptVersion->version_major = 0;
+                $sptVersion->version_minor = 0;
+                $sptVersion->version_patch = 0;
+                $sptVersion->version_labels = '';
+            }
+        });
+    }
+
+    /**
+     * Get the version with "SPT " prepended.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function versionFormatted(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => 'SPT '.$this->version,
+            set: fn (string $value): string => Str::after($value, 'SPT '),
+        );
     }
 
     /**

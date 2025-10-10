@@ -26,6 +26,17 @@ class ModVersionObserver
     }
 
     /**
+     * Handle the ModVersion "deleted" event.
+     */
+    public function deleted(ModVersion $modVersion): void
+    {
+        $this->dependencyVersionService->resolve($modVersion);
+
+        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
+        $this->updateRelatedMod($modVersion);
+    }
+
+    /**
      * Update properties on related SptVersions.
      */
     protected function updateRelatedSptVersions(ModVersion $modVersion): void
@@ -46,16 +57,5 @@ class ModVersionObserver
             $mod = $modVersion->mod;
             $mod->calculateDownloads();
         }
-    }
-
-    /**
-     * Handle the ModVersion "deleted" event.
-     */
-    public function deleted(ModVersion $modVersion): void
-    {
-        $this->dependencyVersionService->resolve($modVersion);
-
-        $this->updateRelatedSptVersions($modVersion); // After resolving SPT versions.
-        $this->updateRelatedMod($modVersion);
     }
 }
