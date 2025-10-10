@@ -48,6 +48,8 @@ class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererI
 
     /**
      * Returns an array of XML attributes for the TabSetContainerNode.
+     *
+     * @return array{}
      */
     public function getXmlAttributes(Node $node): array
     {

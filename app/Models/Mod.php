@@ -313,6 +313,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
 
     /**
      * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
      */
     protected function casts(): array
     {

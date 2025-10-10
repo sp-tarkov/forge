@@ -51,6 +51,11 @@ class ConversationArchive extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

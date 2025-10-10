@@ -15,7 +15,11 @@ beforeEach(function (): void {
     $this->mod = Mod::factory()->create();
 });
 
-// Helper function to create component props
+/**
+ * Helper function to create component props
+ *
+ * @return array<string, mixed>
+ */
 function getModRibbonProps(Mod $mod, bool $homepageFeatured = false): array
 {
     return [
