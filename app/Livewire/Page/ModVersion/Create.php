@@ -9,6 +9,7 @@ use App\Facades\Track;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
+use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
@@ -81,9 +82,14 @@ class Create extends Component
     /**
      * The matching SPT versions for the current constraint.
      *
-     * @var array<int, array{version: string, color_class: string}>
+     * @var array<int, array{version: string, color_class: string, is_published: bool, publish_date: ?string}>
      */
     public array $matchingSptVersions = [];
+
+    /**
+     * Whether to pin the mod version to unpublished SPT versions.
+     */
+    public bool $pinToSptVersions = false;
 
     /**
      * The mod dependencies to be created.
@@ -129,7 +135,7 @@ class Create extends Component
         }
 
         try {
-            $validSptVersions = SptVersion::allValidVersions();
+            $validSptVersions = SptVersion::allValidVersions(includeUnpublished: true);
             $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
 
             // Check if any compatible version is >= 4.0.0
@@ -161,12 +167,14 @@ class Create extends Component
         }
 
         try {
-            $validSptVersions = SptVersion::allValidVersions();
+            $validSptVersions = SptVersion::allValidVersions(includeUnpublished: true);
             $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
 
+            // Get the matching versions
             $this->matchingSptVersions = SptVersion::query()
+                ->withoutGlobalScope(PublishedSptVersionScope::class)
                 ->whereIn('version', $compatibleSptVersions)
-                ->select(['version', 'color_class'])
+                ->select(['version', 'color_class', 'publish_date'])
                 ->orderByDesc('version_major')
                 ->orderByDesc('version_minor')
                 ->orderByDesc('version_patch')
@@ -175,11 +183,21 @@ class Create extends Component
                 ->map(fn (SptVersion $version): array => [
                     'version' => $version->version,
                     'color_class' => $version->color_class,
+                    'is_published' => ! is_null($version->publish_date) && $version->publish_date->lte(now()),
+                    'publish_date' => $version->publish_date?->format('Y-m-d H:i:s'),
                 ])
                 ->toArray();
         } catch (Exception) {
             $this->matchingSptVersions = [];
         }
+    }
+
+    /**
+     * Check if there are any unpublished SPT versions in the matching list.
+     */
+    public function hasUnpublishedSptVersions(): bool
+    {
+        return array_any($this->matchingSptVersions, fn ($version): bool => ! $version['is_published']);
     }
 
     /**
@@ -336,6 +354,27 @@ class Create extends Component
                 'virus_total_link' => $validated['virusTotalLink'],
                 'published_at' => $this->publishedAt,
             ]);
+
+            // Attach SPT versions with pinning information
+            if (! empty($this->matchingSptVersions)) {
+                $sptVersions = SptVersion::query()
+                    ->withoutGlobalScope(PublishedSptVersionScope::class)
+                    ->whereIn('version', array_column($this->matchingSptVersions, 'version'))
+                    ->get();
+
+                foreach ($sptVersions as $sptVersion) {
+                    $isPinned = false;
+
+                    // Only pin if the user opted in AND the SPT version is unpublished
+                    if ($this->pinToSptVersions && ! $sptVersion->is_published) {
+                        $isPinned = true;
+                    }
+
+                    $modVersion->sptVersions()->attach($sptVersion->id, [
+                        'pinned_to_spt_publish' => $isPinned,
+                    ]);
+                }
+            }
 
             // Create dependencies if any were specified
             foreach ($this->dependencies as $dependency) {

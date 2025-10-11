@@ -95,17 +95,12 @@ class Index extends Component
      */
     public function mount(): void
     {
-        // Fetch all versions in the last three minor versions
-        $this->availableSptVersions ??= Cache::remember(
-            'active-spt-versions',
-            600,
-            fn (): Collection => SptVersion::getVersionsForLastThreeMinors()
-        );
+        $this->loadAvailableSptVersions();
 
         // Fetch all mod categories
-        $this->availableCategories = Cache::remember(
+        $this->availableCategories = Cache::flexible(
             'mod-categories',
-            600,
+            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
             fn (): Collection => ModCategory::query()->orderBy('title')->get()
         );
 
@@ -120,6 +115,8 @@ class Index extends Component
      */
     public function resetFilters(): void
     {
+        $this->loadAvailableSptVersions();
+
         $this->query = '';
         $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
@@ -230,6 +227,9 @@ class Index extends Component
     #[Layout('components.layouts.base')]
     public function render(): View
     {
+        // Ensure SPT versions are up to date for current auth state
+        $this->loadAvailableSptVersions();
+
         // Fetch the mods using the filters saved to the component properties.
         $filters = new ModFilter([
             'query' => $this->query,
@@ -244,6 +244,25 @@ class Index extends Component
         $this->redirectOutOfBoundsPage($paginatedMods);
 
         return view('livewire.page.mod.index', ['mods' => $paginatedMods]);
+    }
+
+    /**
+     * Load available SPT versions based on current user role.
+     */
+    private function loadAvailableSptVersions(): void
+    {
+        // Fetch all versions in the last three minor versions
+        $isAdmin = auth()->user()?->isModOrAdmin() ?? false;
+        $cacheKey = $isAdmin ? 'spt-versions:filter-list:admin' : 'spt-versions:filter-list:user';
+
+        $this->availableSptVersions = Cache::flexible(
+            $cacheKey,
+            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
+            fn (): Collection => SptVersion::getVersionsForLastThreeMinors($isAdmin)
+        );
+
+        // Clear the computed property cache
+        unset($this->splitSptVersions);
     }
 
     /**

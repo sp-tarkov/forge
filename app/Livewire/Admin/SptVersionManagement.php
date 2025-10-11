@@ -6,8 +6,10 @@ namespace App\Livewire\Admin;
 
 use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\UpdateGitHubSptVersionsJob;
+use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use App\Support\Version;
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -52,6 +54,8 @@ class SptVersionManagement extends Component
 
     public string $formColorClass = '';
 
+    public ?string $formPublishDate = null;
+
     /**
      * Initialize the component and set default values.
      */
@@ -69,6 +73,7 @@ class SptVersionManagement extends Component
     public function versions(): LengthAwarePaginator
     {
         $query = SptVersion::query()
+            ->withoutGlobalScope(PublishedSptVersionScope::class)
             ->where('version', '!=', '0.0.0');
 
         $this->applyFilters($query);
@@ -122,12 +127,17 @@ class SptVersionManagement extends Component
      */
     public function showEditVersion(int $versionId): void
     {
-        $version = SptVersion::query()->findOrFail($versionId);
+        $version = SptVersion::query()
+            ->withoutGlobalScope(PublishedSptVersionScope::class)
+            ->findOrFail($versionId);
 
         $this->selectedVersionId = $versionId;
         $this->formVersion = $version->version;
         $this->formLink = $version->link;
         $this->formColorClass = $version->color_class;
+        $this->formPublishDate = $version->publish_date ? Carbon::parse($version->publish_date)
+            ->setTimezone(auth()->user()->timezone ?? 'UTC')
+            ->format('Y-m-d\TH:i') : null;
         $this->showEditModal = true;
     }
 
@@ -140,6 +150,7 @@ class SptVersionManagement extends Component
         $this->formVersion = '';
         $this->formLink = '';
         $this->formColorClass = 'green';
+        $this->formPublishDate = null;
         $this->showCreateModal = true;
     }
 
@@ -161,7 +172,8 @@ class SptVersionManagement extends Component
                     }
 
                     // Check uniqueness
-                    $query = SptVersion::query()->where('version', $value);
+                    $query = SptVersion::query()->withoutGlobalScope(PublishedSptVersionScope::class)
+                        ->where('version', $value);
                     if ($this->selectedVersionId) {
                         $query->where('id', '!=', $this->selectedVersionId);
                     }
@@ -173,14 +185,25 @@ class SptVersionManagement extends Component
             ],
             'formLink' => 'nullable|url|max:500',
             'formColorClass' => 'required|string|in:red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone',
+            'formPublishDate' => 'nullable|date',
         ]);
 
+        $publishDate = null;
+        if ($this->formPublishDate) {
+            $userTimezone = auth()->user()->timezone ?? 'UTC';
+            $publishDate = Carbon::parse($this->formPublishDate, $userTimezone)
+                ->setTimezone('UTC')
+                ->second(0);
+        }
+
         if ($this->selectedVersionId) {
-            $version = SptVersion::query()->findOrFail($this->selectedVersionId);
+            $version = SptVersion::query()->withoutGlobalScope(PublishedSptVersionScope::class)
+                ->findOrFail($this->selectedVersionId);
             $version->update([
                 'version' => $this->formVersion,
                 'link' => $this->formLink,
                 'color_class' => $this->formColorClass,
+                'publish_date' => $publishDate,
             ]);
             flash()->success('SPT version updated successfully.');
         } else {
@@ -188,6 +211,7 @@ class SptVersionManagement extends Component
                 'version' => $this->formVersion,
                 'link' => $this->formLink,
                 'color_class' => $this->formColorClass,
+                'publish_date' => $publishDate,
             ]);
             flash()->success('SPT version created successfully.');
         }
@@ -235,6 +259,7 @@ class SptVersionManagement extends Component
         $this->formVersion = '';
         $this->formLink = '';
         $this->formColorClass = '';
+        $this->formPublishDate = null;
     }
 
     /**
@@ -255,7 +280,9 @@ class SptVersionManagement extends Component
      */
     public function getSelectedVersionProperty(): ?SptVersion
     {
-        return $this->selectedVersionId ? SptVersion::query()->find($this->selectedVersionId) : null;
+        return $this->selectedVersionId ? SptVersion::query()
+            ->withoutGlobalScope(PublishedSptVersionScope::class)
+            ->find($this->selectedVersionId) : null;
     }
 
     /**

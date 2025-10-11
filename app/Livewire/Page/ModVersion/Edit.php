@@ -9,6 +9,7 @@ use App\Facades\Track;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
+use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
@@ -84,9 +85,14 @@ class Edit extends Component
     /**
      * The matching SPT versions for the current constraint.
      *
-     * @var array<int, array{version: string, color_class: string}>
+     * @var array<int, array{version: string, color_class: string, is_published: bool, publish_date: ?string}>
      */
     public array $matchingSptVersions = [];
+
+    /**
+     * Whether to pin the mod version to unpublished SPT versions.
+     */
+    public bool $pinToSptVersions = false;
 
     /**
      * The mod dependencies to be created.
@@ -135,7 +141,6 @@ class Edit extends Component
 
         $this->authorize('update', [$this->modVersion, $this->mod]);
 
-        // Prefill fields from the mod version
         $this->version = $modVersion->version;
         $this->description = $modVersion->description;
         $this->link = $modVersion->link;
@@ -143,8 +148,9 @@ class Edit extends Component
         $this->virusTotalLink = $modVersion->virus_total_link;
         $this->publishedAt = $modVersion->published_at ? Carbon::parse($modVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
 
-        // Load existing dependencies
         $this->loadExistingDependencies();
+
+        $this->loadExistingPinning();
 
         $this->updatedSptVersionConstraint();
     }
@@ -284,12 +290,14 @@ class Edit extends Component
         }
 
         try {
-            $validSptVersions = SptVersion::allValidVersions();
+            // For authors, we want to see all versions including unpublished
+            $validSptVersions = SptVersion::allValidVersions(includeUnpublished: true);
             $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
 
             $this->matchingSptVersions = SptVersion::query()
+                ->withoutGlobalScope(PublishedSptVersionScope::class)
                 ->whereIn('version', $compatibleSptVersions)
-                ->select(['version', 'color_class'])
+                ->select(['version', 'color_class', 'publish_date'])
                 ->orderByDesc('version_major')
                 ->orderByDesc('version_minor')
                 ->orderByDesc('version_patch')
@@ -298,11 +306,21 @@ class Edit extends Component
                 ->map(fn (SptVersion $version): array => [
                     'version' => $version->version,
                     'color_class' => $version->color_class,
+                    'is_published' => ! is_null($version->publish_date) && $version->publish_date->lte(now()),
+                    'publish_date' => $version->publish_date?->format('Y-m-d H:i:s'),
                 ])
                 ->all();
         } catch (Exception) {
             $this->matchingSptVersions = [];
         }
+    }
+
+    /**
+     * Check if there are any unpublished SPT versions in the matching list.
+     */
+    public function hasUnpublishedSptVersions(): bool
+    {
+        return array_any($this->matchingSptVersions, fn ($version): bool => ! $version['is_published']);
     }
 
     /**
@@ -352,11 +370,31 @@ class Edit extends Component
 
             $this->modVersion->save();
 
-            // Update dependencies
-            // First, remove all existing dependencies
-            $this->modVersion->dependencies()->delete();
+            // Update SPT versions with pinning information
+            if (! empty($this->matchingSptVersions)) {
+                $this->modVersion->sptVersions()->detach();
 
-            // Then create new dependencies
+                $sptVersions = SptVersion::query()
+                    ->withoutGlobalScope(PublishedSptVersionScope::class)
+                    ->whereIn('version', array_column($this->matchingSptVersions, 'version'))
+                    ->get();
+
+                foreach ($sptVersions as $sptVersion) {
+                    $isPinned = false;
+
+                    // Only pin if the user opted in AND the SPT version is unpublished
+                    if ($this->pinToSptVersions && ! $sptVersion->is_published) {
+                        $isPinned = true;
+                    }
+
+                    $this->modVersion->sptVersions()->attach($sptVersion->id, [
+                        'pinned_to_spt_publish' => $isPinned,
+                    ]);
+                }
+            }
+
+            // Update dependencies
+            $this->modVersion->dependencies()->delete();
             foreach ($this->dependencies as $dependency) {
                 if (! empty($dependency['modId']) && ! empty($dependency['constraint'])) {
                     // Skip self-dependencies
@@ -484,6 +522,16 @@ class Edit extends Component
             ];
             $this->updateMatchingDependencyVersions($index);
         }
+    }
+
+    /**
+     * Load existing pinning state from the database.
+     */
+    private function loadExistingPinning(): void
+    {
+        $this->pinToSptVersions = $this->modVersion->sptVersions()
+            ->wherePivot('pinned_to_spt_publish', true)
+            ->exists();
     }
 
     /**

@@ -102,6 +102,14 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Link
                                 </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" wire:click="sortByColumn('publish_date')">
+                                    <div class="flex items-center gap-2">
+                                        Publish Date
+                                        @if($sortBy === 'publish_date')
+                                            <flux:icon.chevron-down class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}" />
+                                        @endif
+                                    </div>
+                                </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" wire:click="sortByColumn('created_at')">
                                     <div class="flex items-center gap-2">
                                         Created
@@ -139,6 +147,28 @@
                                             <span class="text-gray-400 dark:text-gray-600">—</span>
                                         @endif
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @if($version->publish_date)
+                                            @php
+                                                $userTimezone = auth()->user()->timezone ?? 'UTC';
+                                                $publishDateInUserTz = $version->publish_date->setTimezone($userTimezone);
+                                            @endphp
+                                            @if($version->publish_date->isFuture())
+                                                <div class="flex items-center gap-1">
+                                                    <flux:icon.clock variant="micro" class="text-amber-500" />
+                                                    <span class="text-amber-600 dark:text-amber-400" title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}">
+                                                        {{ $publishDateInUserTz->format('M j, Y H:i') }}
+                                                    </span>
+                                                </div>
+                                            @else
+                                                <span class="text-green-600 dark:text-green-400" title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}">
+                                                    {{ $publishDateInUserTz->format('M j, Y') }}
+                                                </span>
+                                            @endif
+                                        @else
+                                            <flux:badge color="gray" size="sm">Unpublished</flux:badge>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                                         {{ $version->created_at->format('M j, Y') }}
                                     </td>
@@ -164,7 +194,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center">
+                                    <td colspan="7" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center justify-center gap-2">
                                             <flux:icon.inbox class="w-12 h-12 text-gray-400 dark:text-gray-600" />
                                             <p class="text-gray-500 dark:text-gray-400">No SPT versions found</p>
@@ -253,6 +283,18 @@
                         </flux:select>
                         <flux:error name="formColorClass" />
                     </flux:field>
+
+                    {{-- Publish Date Input --}}
+                    <flux:field>
+                        <flux:label for="formPublishDate" badge="Optional">Publish Date</flux:label>
+                        <flux:input
+                            type="datetime-local"
+                            wire:model.defer="formPublishDate"
+                            id="formPublishDate"
+                        />
+                        <flux:error name="formPublishDate" />
+                        <flux:description>Leave empty to keep unpublished. Set a past date to publish immediately, or future date to schedule. Time is in your local timezone ({{ auth()->user()->timezone ?? 'UTC' }}).</flux:description>
+                    </flux:field>
                 </div>
 
                 <flux:separator />
@@ -334,6 +376,18 @@
                             <flux:select.option value="stone">Stone</flux:select.option>
                         </flux:select>
                         <flux:error name="formColorClass" />
+                    </flux:field>
+
+                    {{-- Publish Date Input --}}
+                    <flux:field>
+                        <flux:label for="formPublishDateEdit" badge="Optional">Publish Date</flux:label>
+                        <flux:input
+                            type="datetime-local"
+                            wire:model.defer="formPublishDate"
+                            id="formPublishDateEdit"
+                        />
+                        <flux:error name="formPublishDate" />
+                        <flux:description>Leave empty to keep unpublished. Set a past date to publish immediately, or future date to schedule. Time is in your local timezone ({{ auth()->user()->timezone ?? 'UTC' }}).</flux:description>
                     </flux:field>
                 </div>
 

@@ -9,6 +9,7 @@ use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ModFilter
@@ -108,7 +109,9 @@ class ModFilter
                 ->whereColumn('mod_versions.mod_id', 'mods.id')
                 ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('spt_versions.version', '!=', '0.0.0'))
                 ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
-                ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
+                ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))
+                ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')
+                    ->where('spt_versions.publish_date', '<=', now()));
         });
     }
 
@@ -149,7 +152,9 @@ class ModFilter
                             ->from('mod_version_spt_version')
                             ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                             ->whereColumn('mod_version_spt_version.mod_version_id', 'latest_versions.id')
-                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->where('spt_versions.version', '!=', '0.0.0'));
+                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->where('spt_versions.version', '!=', '0.0.0'))
+                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
+                                ->where('spt_versions.publish_date', '<=', now()));
                     })
                     ->where('latest_versions.created_at', '=', function (QueryBuilder $query): void {
                         $query->select(DB::raw('MAX(mv2.created_at)'))
@@ -236,14 +241,18 @@ class ModFilter
                     ->where(function (QueryBuilder $query) use ($normalVersions, $showDisabled): void {
                         // Include normal versions
                         $query->whereIn('spt_versions.version', $normalVersions)
-                            ->where('spt_versions.version', '!=', '0.0.0');
+                            ->where('spt_versions.version', '!=', '0.0.0')
+                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
+                                ->where('spt_versions.publish_date', '<=', now()));
 
                         // Include legacy versions
-                        $activeSptVersions = SptVersion::getVersionsForLastThreeMinors()->pluck('version')->toArray();
+                        $activeSptVersions = $this->getActiveSptVersions($showDisabled);
                         $query->orWhere(function (QueryBuilder $q) use ($activeSptVersions, $showDisabled): void {
                             $q->whereNotIn('spt_versions.version', $activeSptVersions);
                             if (! $showDisabled) {
-                                $q->where('spt_versions.version', '!=', '0.0.0');
+                                $q->where('spt_versions.version', '!=', '0.0.0')
+                                    ->whereNotNull('spt_versions.publish_date')
+                                    ->where('spt_versions.publish_date', '<=', now());
                             }
                         });
                     });
@@ -268,7 +277,9 @@ class ModFilter
                     ->whereIn('spt_versions.version', $normalVersions)
                     ->where('spt_versions.version', '!=', '0.0.0')
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
-                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))
+                    ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')
+                        ->where('spt_versions.publish_date', '<=', now()));
             });
         }
 
@@ -299,7 +310,7 @@ class ModFilter
     private function legacyVersions(QueryBuilder $query, bool $showDisabled): void
     {
         // Get the active SPT versions that are shown in the filter
-        $activeSptVersions = SptVersion::getVersionsForLastThreeMinors()->pluck('version')->toArray();
+        $activeSptVersions = $this->getActiveSptVersions($showDisabled);
 
         $query->select(DB::raw(1))
             ->from('mod_versions')
@@ -311,10 +322,28 @@ class ModFilter
                 $showDisabled,
                 // Admin can see 0.0.0 versions in legacy filter
                 fn (QueryBuilder $query): QueryBuilder => $query,
-                // Regular users cannot see 0.0.0 versions
+                // Regular users cannot see 0.0.0 versions and unpublished SPT versions
                 fn (QueryBuilder $query) => $query->where('spt_versions.version', '!=', '0.0.0')
+                    ->whereNotNull('spt_versions.publish_date')
+                    ->where('spt_versions.publish_date', '<=', now())
             )
             ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
             ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
+    }
+
+    /**
+     * Get the active SPT versions with role-based caching.
+     *
+     * @return array<int, string>
+     */
+    private function getActiveSptVersions(bool $isAdmin): array
+    {
+        $cacheKey = $isAdmin ? 'spt-versions:active:admin' : 'spt-versions:active:user';
+
+        return Cache::flexible(
+            $cacheKey,
+            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
+            fn (): array => SptVersion::getVersionsForLastThreeMinors($isAdmin)->pluck('version')->toArray()
+        );
     }
 }
