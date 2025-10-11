@@ -46,6 +46,39 @@ class Show extends Component
     }
 
     /**
+     * Get the total mod count visible to the current user.
+     */
+    public function getModCount(): int
+    {
+        $query = $this->user->mods();
+
+        $query->unless(
+            request()->user()?->can('viewDisabledUserMods', $this->user),
+            fn (Builder $q): Builder => $q
+                ->whereDisabled(false)
+                ->whereHas('versions', function (Builder $versionQuery): void {
+                    $versionQuery->where('disabled', false)->whereNotNull('published_at');
+                })
+        );
+
+        return $query->count();
+    }
+
+    /**
+     * Render the user profile view.
+     */
+    #[Layout('components.layouts.base')]
+    public function render(): View
+    {
+        return view('livewire.page.user.show', [
+            'user' => $this->user,
+            'mods' => $this->getUserMods(),
+            'openGraphImage' => $this->user->profile_photo_path,
+            'modCount' => $this->getModCount(),
+        ]);
+    }
+
+    /**
      * Get the mods for the user.
      *
      * @return LengthAwarePaginator<int, Mod>
@@ -75,25 +108,6 @@ class Show extends Component
     }
 
     /**
-     * Get the total mod count visible to the current user.
-     */
-    public function getModCount(): int
-    {
-        $query = $this->user->mods();
-
-        $query->unless(
-            request()->user()?->can('viewDisabledUserMods', $this->user),
-            fn (Builder $q): Builder => $q
-                ->whereDisabled(false)
-                ->whereHas('versions', function (Builder $versionQuery): void {
-                    $versionQuery->where('disabled', false)->whereNotNull('published_at');
-                })
-        );
-
-        return $query->count();
-    }
-
-    /**
      * Redirect to the canonical slug route if the given slug is incorrect.
      */
     protected function enforceCanonicalSlug(User $user, string $slug): void
@@ -104,19 +118,5 @@ class Show extends Component
                 'slug' => $user->slug,
             ]);
         }
-    }
-
-    /**
-     * Render the user profile view.
-     */
-    #[Layout('components.layouts.base')]
-    public function render(): View
-    {
-        return view('livewire.page.user.show', [
-            'user' => $this->user,
-            'mods' => $this->getUserMods(),
-            'openGraphImage' => $this->user->profile_photo_path,
-            'modCount' => $this->getModCount(),
-        ]);
     }
 }

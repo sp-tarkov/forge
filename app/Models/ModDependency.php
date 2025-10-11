@@ -63,6 +63,8 @@ class ModDependency extends Model
 
     /**
      * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
      */
     protected function casts(): array
     {

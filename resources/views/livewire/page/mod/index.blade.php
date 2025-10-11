@@ -266,7 +266,16 @@
                                             class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
                                             wire:loading.attr="disabled"
                                         >
-                                        <label for="sptVersions-{{ $version->version }}" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ $version->version }}</label>
+                                        <label for="sptVersions-{{ $version->version }}"
+                                            @if(auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture()))
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
+                                                title="Unpublished - Not publicly visible"
+                                            @else
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                            @endif
+                                            wire:loading.class="opacity-50">
+                                            {{ $version->version }}
+                                        </label>
                                     </div>
                                 @endforeach
                             </div>
@@ -286,7 +295,16 @@
                                             class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
                                             wire:loading.attr="disabled"
                                         >
-                                        <label for="sptVersions-{{ $version->version }}" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ $version->version }}</label>
+                                        <label for="sptVersions-{{ $version->version }}"
+                                            @if(auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture()))
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
+                                                title="Unpublished - Not publicly visible"
+                                            @else
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                            @endif
+                                            wire:loading.class="opacity-50">
+                                            {{ $version->version }}
+                                        </label>
                                     </div>
                                 @endforeach
                             </div>

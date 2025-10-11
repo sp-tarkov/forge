@@ -12,6 +12,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    $this->withoutDefer();
+});
+
 describe('Mod Version Dependencies', function (): void {
 
     describe('Dependency Resolution', function (): void {

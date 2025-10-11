@@ -7,8 +7,10 @@ namespace App\Models;
 use App\Contracts\Trackable;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
+use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
+use Carbon\Carbon;
 use Database\Factories\ModVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -24,7 +26,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Override;
@@ -75,27 +76,25 @@ class ModVersion extends Model implements Trackable
     protected $touches = ['mod'];
 
     /**
-     * Post-boot method to configure the model.
+     * Get all the version numbers for a mod.
+     *
+     * @cached 2h
+     *
+     * @return array<int, string>
      */
-    #[Override]
-    protected static function booted(): void
+    public static function versionNumbers(int $modId): array
     {
-        static::saving(function (ModVersion $modVersion): void {
-            // Extract the version sections from the version string.
-            try {
-                $version = new Version($modVersion->version);
-
-                $modVersion->version_major = $version->getMajor();
-                $modVersion->version_minor = $version->getMinor();
-                $modVersion->version_patch = $version->getPatch();
-                $modVersion->version_labels = $version->getLabels();
-            } catch (InvalidVersionNumberException) {
-                $modVersion->version_major = 0;
-                $modVersion->version_minor = 0;
-                $modVersion->version_patch = 0;
-                $modVersion->version_labels = '';
-            }
-        });
+        return Cache::flexible('mod_version_numbers_'.$modId, [5 * 60, 10 * 60], fn () => self::query()
+            ->where('mod_id', $modId)
+            ->where('version', '!=', '0.0.0')
+            ->whereNotNull('version')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->pluck('version')
+            ->all());
     }
 
     /**
@@ -125,7 +124,7 @@ class ModVersion extends Model implements Trackable
      */
     public function resolvedDependencies(): BelongsToMany
     {
-        return $this->belongsToMany(ModVersion::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
+        return $this->belongsToMany(self::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
             ->withPivot('dependency_id')
             ->withTimestamps();
     }
@@ -137,7 +136,7 @@ class ModVersion extends Model implements Trackable
      */
     public function latestResolvedDependencies(): BelongsToMany
     {
-        return $this->belongsToMany(ModVersion::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
+        return $this->belongsToMany(self::class, 'mod_resolved_dependencies', 'mod_version_id', 'resolved_mod_version_id')
             ->withPivot('dependency_id')
             ->join('mod_versions as latest_versions', function (JoinClause $join): void {
                 $join->on('latest_versions.id', '=', 'mod_versions.id')
@@ -172,6 +171,9 @@ class ModVersion extends Model implements Trackable
     {
         return $this->belongsToMany(SptVersion::class)
             ->using(ModVersionSptVersion::class)
+            ->withoutGlobalScope(PublishedSptVersionScope::class)
+            ->withPivot('pinned_to_spt_publish')
+            ->withTimestamps()
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
@@ -198,66 +200,9 @@ class ModVersion extends Model implements Trackable
 
         $this->refresh();
 
-        // Recalculate the total download count for this mod.
         $this->mod->calculateDownloads();
 
         return $this->downloads;
-    }
-
-    /**
-     * The attributes that should be cast to native types.
-     */
-    protected function casts(): array
-    {
-        return [
-            'hub_id' => 'integer',
-            'version_major' => 'integer',
-            'version_minor' => 'integer',
-            'version_patch' => 'integer',
-            'downloads' => 'integer',
-            'disabled' => 'boolean',
-            'discord_notification_sent' => 'boolean',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-            'deleted_at' => 'datetime',
-            'published_at' => 'datetime',
-        ];
-    }
-
-    /**
-     * Get all the version numbers for a mod.
-     *
-     * @cached 2h
-     *
-     * @return array<int, string>
-     */
-    public static function versionNumbers(int $modId): array
-    {
-        return Cache::remember('mod_version_numbers_'.$modId, now()->addHour(), fn () => self::query()
-            ->where('mod_id', $modId)
-            ->where('version', '!=', '0.0.0')
-            ->whereNotNull('version')
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->pluck('version')
-            ->all());
-    }
-
-    /**
-     * Generate the cleaned version of the HTML description.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function descriptionHtml(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => Purify::config('description')->clean(
-                Markdown::convert($this->description)->getContent()
-            )
-        )->shouldCache();
     }
 
     /**
@@ -299,6 +244,128 @@ class ModVersion extends Model implements Trackable
     }
 
     /**
+     * Check if this mod version is publicly visible.
+     *
+     * A version is considered publicly visible if it's published, enabled, and has SPT compatibility tags. If the
+     * version is pinned to an SPT version's publish date, it waits for that SPT version to be published.
+     */
+    public function isPubliclyVisible(): bool
+    {
+        if (is_null($this->published_at) || $this->disabled || is_null($this->latestSptVersion)) {
+            return false;
+        }
+
+        if ($this->isPinnedToUnpublishedSptVersion()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if this mod version is pinned to an unpublished SPT version.
+     */
+    public function isPinnedToUnpublishedSptVersion(): bool
+    {
+        $this->loadMissing('sptVersions');
+
+        foreach ($this->sptVersions as $sptVersion) {
+            /** @phpstan-ignore property.notFound */
+            $pivot = $sptVersion->pivot;
+            if ($pivot->pinned_to_spt_publish) {
+                if (! $sptVersion->is_published) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the latest unpublished SPT version publish date this mod is pinned to.
+     * Returns the furthest date in the future to ensure the mod waits for ALL pinned SPT versions.
+     */
+    public function getLatestPinnedSptPublishDate(): ?Carbon
+    {
+        $this->loadMissing('sptVersions');
+
+        $latestDate = null;
+
+        foreach ($this->sptVersions as $sptVersion) {
+            /** @phpstan-ignore property.notFound */
+            $pivot = $sptVersion->pivot;
+            if ($pivot->pinned_to_spt_publish && ! $sptVersion->is_published) {
+                if (is_null($latestDate) || $sptVersion->publish_date > $latestDate) {
+                    $latestDate = $sptVersion->publish_date;
+                }
+            }
+        }
+
+        return $latestDate;
+    }
+
+    /**
+     * Post-boot method to configure the model.
+     */
+    #[Override]
+    protected static function booted(): void
+    {
+        static::saving(function (ModVersion $modVersion): void {
+            // Extract the version sections from the version string.
+            try {
+                $version = new Version($modVersion->version);
+
+                $modVersion->version_major = $version->getMajor();
+                $modVersion->version_minor = $version->getMinor();
+                $modVersion->version_patch = $version->getPatch();
+                $modVersion->version_labels = $version->getLabels();
+            } catch (InvalidVersionNumberException) {
+                $modVersion->version_major = 0;
+                $modVersion->version_minor = 0;
+                $modVersion->version_patch = 0;
+                $modVersion->version_labels = '';
+            }
+        });
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'hub_id' => 'integer',
+            'version_major' => 'integer',
+            'version_minor' => 'integer',
+            'version_patch' => 'integer',
+            'downloads' => 'integer',
+            'disabled' => 'boolean',
+            'discord_notification_sent' => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
+            'published_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * Generate the cleaned version of the HTML description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Purify::config('description')->clean(
+                Markdown::convert($this->description)->getContent()
+            )
+        )->shouldCache();
+    }
+
+    /**
      * Get the formatted file size in MB.
      *
      * @return Attribute<string|null, never>
@@ -325,16 +392,5 @@ class ModVersion extends Model implements Trackable
         return $query->whereNotNull('published_at')
             ->where('disabled', false)
             ->whereHas('latestSptVersion');
-    }
-
-    /**
-     * Check if this mod version is publicly visible.
-     * A version is considered publicly visible if it's published, enabled, and has SPT compatibility tags.
-     */
-    public function isPubliclyVisible(): bool
-    {
-        return ! is_null($this->published_at)
-            && ! $this->disabled
-            && ! is_null($this->latestSptVersion);
     }
 }

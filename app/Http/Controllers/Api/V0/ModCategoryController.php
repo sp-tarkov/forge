@@ -126,7 +126,7 @@ class ModCategoryController extends Controller
         } else {
             foreach ($sorts as $sort) {
                 $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
-                $field = ltrim($sort, '-');
+                $field = mb_ltrim($sort, '-');
 
                 if (in_array($field, ['id', 'title', 'slug'])) {
                     $query->orderBy($field, $direction);

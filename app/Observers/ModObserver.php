@@ -27,19 +27,6 @@ class ModObserver
     }
 
     /**
-     * Update properties on related SptVersions.
-     */
-    protected function updateRelatedSptVersions(Mod $mod): void
-    {
-        /** @var Collection<int, SptVersion> $sptVersions */
-        $sptVersions = $mod->versions->flatMap->sptVersions->unique();
-
-        foreach ($sptVersions as $sptVersion) {
-            $sptVersion->updateModCount();
-        }
-    }
-
-    /**
      * Handle the Mod "deleted" event.
      */
     public function deleted(Mod $mod): void
@@ -58,6 +45,19 @@ class ModObserver
             if (Storage::disk($disk)->exists($mod->thumbnail)) {
                 Storage::disk($disk)->delete($mod->thumbnail);
             }
+        }
+    }
+
+    /**
+     * Update properties on related SptVersions.
+     */
+    protected function updateRelatedSptVersions(Mod $mod): void
+    {
+        /** @var Collection<int, SptVersion> $sptVersions */
+        $sptVersions = $mod->versions->flatMap->sptVersions->unique();
+
+        foreach ($sptVersions as $sptVersion) {
+            $sptVersion->updateModCount();
         }
     }
 }

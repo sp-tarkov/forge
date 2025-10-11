@@ -243,32 +243,6 @@ class Comment extends Model implements Reportable, Trackable
     }
 
     /**
-     * Get the comment body processed as HTML with light markdown formatting.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function bodyHtml(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => Purify::config('comments')->clean(
-                Markdown::convert($this->body)->getContent()
-            )
-        )->shouldCache();
-    }
-
-    /**
-     * Mutator for the body attribute - automatically trims whitespace.
-     *
-     * @return Attribute<string, string>
-     */
-    protected function body(): Attribute
-    {
-        return Attribute::make(
-            set: fn (string $value): string => trim($value),
-        );
-    }
-
-    /**
      * Update the root_id of this comment
      */
     public function updateRootId(): void
@@ -280,18 +254,6 @@ class Comment extends Model implements Reportable, Trackable
         }
 
         $this->saveQuietly();
-    }
-
-    /**
-     * A recursive method to resolve the root_id of this comment by traversing the parent_id chain.
-     */
-    private function resolveRootId(): ?int
-    {
-        if ($this->isRoot()) {
-            return $this->id;
-        }
-
-        return $this->parent->resolveRootId();
     }
 
     /**
@@ -413,6 +375,64 @@ class Comment extends Model implements Reportable, Trackable
     }
 
     /**
+     * Get a human-readable display name for the reportable model.
+     */
+    public function getReportableDisplayName(): string
+    {
+        return 'comment';
+    }
+
+    /**
+     * Get the title of the reportable model.
+     */
+    public function getReportableTitle(): string
+    {
+        return 'comment #'.$this->id;
+    }
+
+    /**
+     * Get an excerpt of the reportable content for display in notifications.
+     */
+    public function getReportableExcerpt(): ?string
+    {
+        return $this->body ? Str::words($this->body, 15, '...') : null;
+    }
+
+    /**
+     * Get the URL to view the reportable content.
+     */
+    public function getReportableUrl(): string
+    {
+        return $this->getUrl();
+    }
+
+    /**
+     * Get the comment body processed as HTML with light markdown formatting.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function bodyHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Purify::config('comments')->clean(
+                Markdown::convert($this->body)->getContent()
+            )
+        )->shouldCache();
+    }
+
+    /**
+     * Mutator for the body attribute - automatically trims whitespace.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function body(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value): string => mb_trim($value),
+        );
+    }
+
+    /**
      * Scope a query to only include clean (non-spam) comments.
      *
      * @param  Builder<Comment>  $query
@@ -472,38 +492,6 @@ class Comment extends Model implements Reportable, Trackable
     }
 
     /**
-     * Get a human-readable display name for the reportable model.
-     */
-    public function getReportableDisplayName(): string
-    {
-        return 'comment';
-    }
-
-    /**
-     * Get the title of the reportable model.
-     */
-    public function getReportableTitle(): string
-    {
-        return 'comment #'.$this->id;
-    }
-
-    /**
-     * Get an excerpt of the reportable content for display in notifications.
-     */
-    public function getReportableExcerpt(): ?string
-    {
-        return $this->body ? Str::words($this->body, 15, '...') : null;
-    }
-
-    /**
-     * Get the URL to view the reportable content.
-     */
-    public function getReportableUrl(): string
-    {
-        return $this->getUrl();
-    }
-
-    /**
      * The attributes that should be cast to native types.
      */
     protected function casts(): array
@@ -518,5 +506,17 @@ class Comment extends Model implements Reportable, Trackable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * A recursive method to resolve the root_id of this comment by traversing the parent_id chain.
+     */
+    private function resolveRootId(): ?int
+    {
+        if ($this->isRoot()) {
+            return $this->id;
+        }
+
+        return $this->parent->resolveRootId();
     }
 }

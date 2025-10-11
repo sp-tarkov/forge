@@ -29,26 +29,6 @@ class NotificationLog extends Model
     use HasFactory;
 
     /**
-     * Get the notifiable model (e.g., Comment, Post, etc.).
-     *
-     * @return MorphTo<Model, $this>
-     */
-    public function notifiable(): MorphTo
-    {
-        return $this->morphTo();
-    }
-
-    /**
-     * Get the user that this notification was sent to.
-     *
-     * @return BelongsTo<User, $this>
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    /**
      * Check if a notification has already been sent for a notifiable/user combination.
      */
     public static function hasBeenSent(
@@ -79,6 +59,26 @@ class NotificationLog extends Model
             'notification_class' => $notificationClass,
             'notification_type' => $notificationType,
         ]);
+    }
+
+    /**
+     * Get the notifiable model (e.g., Comment, Post, etc.).
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function notifiable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * Get the user that this notification was sent to.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

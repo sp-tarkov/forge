@@ -17,7 +17,11 @@ beforeEach(function (): void {
     $this->modVersion = ModVersion::factory()->for($this->mod)->create();
 });
 
-// Helper function to create component props
+/**
+ * Helper function to create component props
+ *
+ * @return array<string, mixed>
+ */
 function getModVersionRibbonProps(ModVersion $version): array
 {
     return [

@@ -73,7 +73,7 @@ class TabsetProcessor
         $lastInline = $heading->lastChild();
         if ($lastInline instanceof Text) {
             // Check if the literal text *ends* with the marker
-            return str_ends_with(rtrim($lastInline->getLiteral()), self::TABSET_MARKER);
+            return str_ends_with(mb_rtrim($lastInline->getLiteral()), self::TABSET_MARKER);
         }
 
         return false;
@@ -165,7 +165,7 @@ class TabsetProcessor
             $nextSibling = $sibling->next(); // Store reference to the next sibling.
 
             // Check for explicit end marker.
-            if ($sibling instanceof Paragraph && trim($this->getParagraphTextContent($sibling)) === self::END_TABSET_MARKER) {
+            if ($sibling instanceof Paragraph && mb_trim($this->getParagraphTextContent($sibling)) === self::END_TABSET_MARKER) {
                 $nodesToRemove[] = $sibling;
                 $endMarkerFound = true;
                 break;
@@ -282,15 +282,15 @@ class TabsetProcessor
         }
 
         // Remove the marker if it's at the very end after trimming.
-        if (str_ends_with(rtrim($content), self::TABSET_MARKER)) {
-            $markerPos = strrpos(rtrim($content), self::TABSET_MARKER);
+        if (str_ends_with(mb_rtrim($content), self::TABSET_MARKER)) {
+            $markerPos = mb_strrpos(mb_rtrim($content), self::TABSET_MARKER);
             if ($markerPos !== false) {
                 // Get substring before the marker.
-                $content = substr(rtrim($content), 0, $markerPos);
+                $content = mb_substr(mb_rtrim($content), 0, $markerPos);
             }
         }
 
-        return trim($content);
+        return mb_trim($content);
     }
 
     /**

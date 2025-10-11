@@ -118,17 +118,6 @@ abstract class AbstractQueryBuilder
     abstract public static function getRequiredFields(): array;
 
     /**
-     * Get the dynamic attributes that can be included in the response. The keys are the attribute names, and the values
-     * are arrays of required database fields.
-     *
-     * @return array<string, array<string>>
-     */
-    protected static function getDynamicAttributes(): array
-    {
-        return [];
-    }
-
-    /**
      * Get all allowed fields (database columns and dynamic attributes).
      *
      * @return array<string>
@@ -155,6 +144,155 @@ abstract class AbstractQueryBuilder
         $this->applySearch();
 
         return $this->builder;
+    }
+
+    /**
+     * Set the filters for the query.
+     *
+     * @param  array<string, mixed>|null  $filters
+     * @return self<TModel>
+     */
+    public function withFilters(?array $filters): self
+    {
+        if ($filters !== null) {
+            $this->filters = $filters;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the includes for the query.
+     *
+     * @param  array<string>|null  $includes
+     * @return self<TModel>
+     */
+    public function withIncludes(?array $includes): self
+    {
+        if ($includes !== null) {
+            $this->includes = $includes;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the fields for the query.
+     *
+     * @param  array<string>|null  $fields
+     * @return self<TModel>
+     */
+    public function withFields(?array $fields): self
+    {
+        if ($fields !== null) {
+            $this->fields = $fields;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the sorts for the query.
+     *
+     * @param  array<string>|null  $sorts
+     * @return self<TModel>
+     */
+    public function withSorts(?array $sorts): self
+    {
+        if ($sorts !== null) {
+            $this->sorts = $sorts;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the search query for the query.
+     *
+     * @return self<TModel>
+     */
+    public function withSearch(?string $query): self
+    {
+        if ($query !== null) {
+            $this->searchQuery = $query;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the results of the query.
+     *
+     * @return Collection<int, TModel>
+     */
+    public function get(): Collection
+    {
+        /** @var Collection<int, TModel> */
+        return $this->apply()->get();
+    }
+
+    /**
+     * Get the paginated results of the query.
+     *
+     * @return LengthAwarePaginator<int, TModel>
+     */
+    public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
+    {
+        $perPage = min($perPage, $allowed_max);
+
+        return $this->apply()->paginate($perPage);
+    }
+
+    /**
+     * Find a model by its primary key or throw an exception.
+     *
+     * @return TModel
+     *
+     * @throws ModelNotFoundException
+     */
+    public function findOrFail(int $id): Model
+    {
+        return $this->apply()->findOrFail($id);
+    }
+
+    /**
+     * Get the dynamic attributes that can be included in the response. The keys are the attribute names, and the values
+     * are arrays of required database fields.
+     *
+     * @return array<string, array<string>>
+     */
+    protected static function getDynamicAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * Parse a boolean input value.
+     */
+    protected static function parseBooleanInput(string $value): bool
+    {
+        return in_array(mb_strtolower($value), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    /**
+     * Parse a comma-separated input value.
+     *
+     * @return array<mixed>
+     */
+    protected static function parseCommaSeparatedInput(string $value, ?string $castReturn = null): array
+    {
+        $values = array_filter(explode(',', $value), fn (string $value): bool => ! empty($value));
+
+        if ($castReturn === null) {
+            return $values;
+        }
+
+        return array_map(fn (string $value): mixed => match ($castReturn) {
+            'integer' => (int) $value,
+            'float' => (float) $value,
+            'boolean' => self::parseBooleanInput($value),
+            default => $value,
+        }, $values);
     }
 
     /**
@@ -390,143 +528,5 @@ abstract class AbstractQueryBuilder
                 $this->builder->orderBy($column, $isReverse ? 'desc' : 'asc');
             }
         }
-    }
-
-    /**
-     * Set the filters for the query.
-     *
-     * @param  array<string, mixed>|null  $filters
-     * @return self<TModel>
-     */
-    public function withFilters(?array $filters): self
-    {
-        if ($filters !== null) {
-            $this->filters = $filters;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set the includes for the query.
-     *
-     * @param  array<string>|null  $includes
-     * @return self<TModel>
-     */
-    public function withIncludes(?array $includes): self
-    {
-        if ($includes !== null) {
-            $this->includes = $includes;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set the fields for the query.
-     *
-     * @param  array<string>|null  $fields
-     * @return self<TModel>
-     */
-    public function withFields(?array $fields): self
-    {
-        if ($fields !== null) {
-            $this->fields = $fields;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set the sorts for the query.
-     *
-     * @param  array<string>|null  $sorts
-     * @return self<TModel>
-     */
-    public function withSorts(?array $sorts): self
-    {
-        if ($sorts !== null) {
-            $this->sorts = $sorts;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set the search query for the query.
-     *
-     * @return self<TModel>
-     */
-    public function withSearch(?string $query): self
-    {
-        if ($query !== null) {
-            $this->searchQuery = $query;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get the results of the query.
-     *
-     * @return Collection<int, TModel>
-     */
-    public function get(): Collection
-    {
-        /** @var Collection<int, TModel> */
-        return $this->apply()->get();
-    }
-
-    /**
-     * Get the paginated results of the query.
-     *
-     * @return LengthAwarePaginator<int, TModel>
-     */
-    public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
-    {
-        $perPage = min($perPage, $allowed_max);
-
-        return $this->apply()->paginate($perPage);
-    }
-
-    /**
-     * Find a model by its primary key or throw an exception.
-     *
-     * @return TModel
-     *
-     * @throws ModelNotFoundException
-     */
-    public function findOrFail(int $id): Model
-    {
-        return $this->apply()->findOrFail($id);
-    }
-
-    /**
-     * Parse a boolean input value.
-     */
-    protected static function parseBooleanInput(string $value): bool
-    {
-        return in_array(strtolower($value), ['1', 'true', 'yes', 'on'], true);
-    }
-
-    /**
-     * Parse a comma-separated input value.
-     *
-     * @return array<mixed>
-     */
-    protected static function parseCommaSeparatedInput(string $value, ?string $castReturn = null): array
-    {
-        $values = array_filter(explode(',', $value), fn (string $value): bool => ! empty($value));
-
-        if ($castReturn === null) {
-            return $values;
-        }
-
-        return array_map(fn (string $value): mixed => match ($castReturn) {
-            'integer' => (int) $value,
-            'float' => (float) $value,
-            'boolean' => self::parseBooleanInput($value),
-            default => $value,
-        }, $values);
     }
 }

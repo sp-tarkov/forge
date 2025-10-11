@@ -52,19 +52,6 @@ class Conversation extends Model
     protected $appends = ['other_user', 'unread_count'];
 
     /**
-     * The "booted" method of the model.
-     */
-    #[Override]
-    protected static function booted(): void
-    {
-        static::created(function (Conversation $conversation): void {
-            // Generate and save the hash ID after the conversation is created
-            $conversation->hash_id = static::generateHashId($conversation->id);
-            $conversation->saveQuietly();
-        });
-    }
-
-    /**
      * Generate a hash ID for the given numeric ID.
      */
     public static function generateHashId(int $id): string
@@ -88,6 +75,23 @@ class Conversation extends Model
     public static function findByHashId(string $hashId): ?self
     {
         return static::query()->where('hash_id', $hashId)->first();
+    }
+
+    /**
+     * Find or create a conversation between two users.
+     */
+    public static function findOrCreateBetween(User $user1, User $user2, ?User $creator = null): self
+    {
+        // Ensure consistent ordering
+        $userId1 = min($user1->id, $user2->id);
+        $userId2 = max($user1->id, $user2->id);
+
+        return static::query()->firstOrCreate([
+            'user1_id' => $userId1,
+            'user2_id' => $userId2,
+        ], [
+            'created_by' => $creator ? $creator->id : $user1->id,
+        ]);
     }
 
     /**
@@ -174,55 +178,6 @@ class Conversation extends Model
     }
 
     /**
-     * Find or create a conversation between two users.
-     */
-    public static function findOrCreateBetween(User $user1, User $user2, ?User $creator = null): self
-    {
-        // Ensure consistent ordering
-        $userId1 = min($user1->id, $user2->id);
-        $userId2 = max($user1->id, $user2->id);
-
-        return static::query()->firstOrCreate([
-            'user1_id' => $userId1,
-            'user2_id' => $userId2,
-        ], [
-            'created_by' => $creator ? $creator->id : $user1->id,
-        ]);
-    }
-
-    /**
-     * Scope to get conversations for a specific user.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    #[Scope]
-    protected function forUser(Builder $query, User $user): Builder
-    {
-        return $query->where(function (Builder $q) use ($user): void {
-            $q->where('user1_id', $user->id)
-                ->orWhere('user2_id', $user->id);
-        });
-    }
-
-    /**
-     * Scope to get conversations with unread messages for a user.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    #[Scope]
-    protected function withUnreadMessages(Builder $query, User $user): Builder
-    {
-        return $query->whereHas('messages', function (Builder $q) use ($user): void {
-            $q->where('user_id', '!=', $user->id)
-                ->whereDoesntHave('reads', function (Builder $readQuery) use ($user): void {
-                    $readQuery->where('user_id', $user->id);
-                });
-        });
-    }
-
-    /**
      * Get the count of unread messages for a specific user.
      */
     public function getUnreadCountForUser(User $user): int
@@ -270,6 +225,153 @@ class Conversation extends Model
         return $this->archives()
             ->where('user_id', $user->id)
             ->exists();
+    }
+
+    /**
+     * Get archive records for this conversation.
+     *
+     * @return HasMany<ConversationArchive, $this>
+     */
+    public function archives(): HasMany
+    {
+        return $this->hasMany(ConversationArchive::class);
+    }
+
+    /**
+     * Check if the conversation is archived by a specific user.
+     */
+    public function isArchivedBy(User $user): bool
+    {
+        return $this->archives()
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    /**
+     * Archive the conversation for a specific user.
+     */
+    public function archiveFor(User $user): void
+    {
+        // Use updateOrCreate to handle re-archiving
+        ConversationArchive::query()->updateOrCreate([
+            'conversation_id' => $this->id,
+            'user_id' => $user->id,
+        ], [
+            'archived_at' => now(),
+        ]);
+    }
+
+    /**
+     * Unarchive the conversation for a specific user.
+     */
+    public function unarchiveFor(User $user): void
+    {
+        $this->archives()
+            ->where('user_id', $user->id)
+            ->delete();
+    }
+
+    /**
+     * Automatically unarchive the conversation when a new message is sent.
+     * Should be called after a new message is created.
+     */
+    public function unarchiveForAllUsers(): void
+    {
+        $this->archives()->delete();
+    }
+
+    /**
+     * Get subscriptions for this conversation.
+     *
+     * @return HasMany<ConversationSubscription, $this>
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(ConversationSubscription::class);
+    }
+
+    /**
+     * Check if notifications are enabled for a specific user in this conversation.
+     */
+    public function isNotificationEnabledForUser(User $user): bool
+    {
+        $subscription = $this->subscriptions()
+            ->where('user_id', $user->id)
+            ->first();
+
+        // If no subscription exists, default to user's global chat notification setting
+        return $subscription ? $subscription->notifications_enabled : (bool) $user->email_chat_notifications_enabled;
+    }
+
+    /**
+     * Toggle notification subscription for a user in this conversation.
+     */
+    public function toggleNotificationForUser(User $user): bool
+    {
+        /** @var ConversationSubscription|null $subscription */
+        $subscription = $this->subscriptions()
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (! $subscription) {
+            // Create new subscription with opposite of current state
+            $currentState = $this->isNotificationEnabledForUser($user);
+            $subscription = $this->subscriptions()->create([
+                'user_id' => $user->id,
+                'notifications_enabled' => ! $currentState,
+            ]);
+        } else {
+            // Toggle existing subscription
+            $subscription->notifications_enabled = ! $subscription->notifications_enabled;
+            $subscription->save();
+        }
+
+        return $subscription->notifications_enabled;
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    #[Override]
+    protected static function booted(): void
+    {
+        static::created(function (Conversation $conversation): void {
+            // Generate and save the hash ID after the conversation is created
+            $conversation->hash_id = static::generateHashId($conversation->id);
+            $conversation->saveQuietly();
+        });
+    }
+
+    /**
+     * Scope to get conversations for a specific user.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function forUser(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $q) use ($user): void {
+            $q->where('user1_id', $user->id)
+                ->orWhere('user2_id', $user->id);
+        });
+    }
+
+    /**
+     * Scope to get conversations with unread messages for a user.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    #[Scope]
+    protected function withUnreadMessages(Builder $query, User $user): Builder
+    {
+        return $query->whereHas('messages', function (Builder $q) use ($user): void {
+            $q->where('user_id', '!=', $user->id)
+                ->whereDoesntHave('reads', function (Builder $readQuery) use ($user): void {
+                    $readQuery->where('user_id', $user->id);
+                });
+        });
     }
 
     /**
@@ -402,50 +504,6 @@ class Conversation extends Model
     }
 
     /**
-     * Get archive records for this conversation.
-     *
-     * @return HasMany<ConversationArchive, $this>
-     */
-    public function archives(): HasMany
-    {
-        return $this->hasMany(ConversationArchive::class);
-    }
-
-    /**
-     * Check if the conversation is archived by a specific user.
-     */
-    public function isArchivedBy(User $user): bool
-    {
-        return $this->archives()
-            ->where('user_id', $user->id)
-            ->exists();
-    }
-
-    /**
-     * Archive the conversation for a specific user.
-     */
-    public function archiveFor(User $user): void
-    {
-        // Use updateOrCreate to handle re-archiving
-        ConversationArchive::query()->updateOrCreate([
-            'conversation_id' => $this->id,
-            'user_id' => $user->id,
-        ], [
-            'archived_at' => now(),
-        ]);
-    }
-
-    /**
-     * Unarchive the conversation for a specific user.
-     */
-    public function unarchiveFor(User $user): void
-    {
-        $this->archives()
-            ->where('user_id', $user->id)
-            ->delete();
-    }
-
-    /**
      * Scope to exclude archived conversations for a user.
      *
      * @param  Builder<self>  $query
@@ -471,64 +529,6 @@ class Conversation extends Model
         return $query->whereHas('archives', function (Builder $q) use ($user): void {
             $q->where('user_id', $user->id);
         });
-    }
-
-    /**
-     * Automatically unarchive the conversation when a new message is sent.
-     * Should be called after a new message is created.
-     */
-    public function unarchiveForAllUsers(): void
-    {
-        $this->archives()->delete();
-    }
-
-    /**
-     * Get subscriptions for this conversation.
-     *
-     * @return HasMany<ConversationSubscription, $this>
-     */
-    public function subscriptions(): HasMany
-    {
-        return $this->hasMany(ConversationSubscription::class);
-    }
-
-    /**
-     * Check if notifications are enabled for a specific user in this conversation.
-     */
-    public function isNotificationEnabledForUser(User $user): bool
-    {
-        $subscription = $this->subscriptions()
-            ->where('user_id', $user->id)
-            ->first();
-
-        // If no subscription exists, default to user's global chat notification setting
-        return $subscription ? $subscription->notifications_enabled : (bool) $user->email_chat_notifications_enabled;
-    }
-
-    /**
-     * Toggle notification subscription for a user in this conversation.
-     */
-    public function toggleNotificationForUser(User $user): bool
-    {
-        /** @var ConversationSubscription|null $subscription */
-        $subscription = $this->subscriptions()
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (! $subscription) {
-            // Create new subscription with opposite of current state
-            $currentState = $this->isNotificationEnabledForUser($user);
-            $subscription = $this->subscriptions()->create([
-                'user_id' => $user->id,
-                'notifications_enabled' => ! $currentState,
-            ]);
-        } else {
-            // Toggle existing subscription
-            $subscription->notifications_enabled = ! $subscription->notifications_enabled;
-            $subscription->save();
-        }
-
-        return $subscription->notifications_enabled;
     }
 
     /**

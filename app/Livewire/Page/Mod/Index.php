@@ -95,17 +95,12 @@ class Index extends Component
      */
     public function mount(): void
     {
-        // Fetch all versions in the last three minor versions
-        $this->availableSptVersions ??= Cache::remember(
-            'active-spt-versions',
-            600,
-            fn (): Collection => SptVersion::getVersionsForLastThreeMinors()
-        );
+        $this->loadAvailableSptVersions();
 
         // Fetch all mod categories
-        $this->availableCategories = Cache::remember(
+        $this->availableCategories = Cache::flexible(
             'mod-categories',
-            600,
+            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
             fn (): Collection => ModCategory::query()->orderBy('title')->get()
         );
 
@@ -120,6 +115,8 @@ class Index extends Component
      */
     public function resetFilters(): void
     {
+        $this->loadAvailableSptVersions();
+
         $this->query = '';
         $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
@@ -151,6 +148,121 @@ class Index extends Component
 
         $this->resetPage();
         unset($this->splitSptVersions); // Clear cached computed property
+    }
+
+    /**
+     * Validate that the selected perPage value is an allowed option, resetting to the closest valid option.
+     */
+    public function updatedPerPage(int $value): void
+    {
+        $allowed = collect($this->perPageOptions)->sort()->values();
+
+        if ($allowed->contains($value)) {
+            return; // The value is allowed.
+        }
+
+        // Find the closest allowed value.
+        $this->perPage = $allowed->sortBy(fn (int $item): int => abs($item - $value))->first();
+    }
+
+    /**
+     * Validate the order value.
+     */
+    public function updatedOrder(string $value): void
+    {
+        if (! in_array($value, ['created', 'updated', 'downloaded'])) {
+            $this->order = 'created';
+        }
+    }
+
+    /**
+     * Compute the split of the active SPT versions.
+     *
+     * @return array<int, Collection<int, SptVersion>>
+     */
+    #[Computed(cache: true)]
+    public function splitSptVersions(): array
+    {
+        $versions = $this->availableSptVersions;
+        $half = (int) ceil($versions->count() / 2);
+
+        return [
+            $versions->take($half),
+            $versions->slice($half),
+        ];
+    }
+
+    /**
+     * Compute the count of active filters.
+     */
+    #[Computed]
+    public function filterCount(): int
+    {
+        $count = 0;
+        if ($this->query !== '') {
+            $count++;
+        }
+
+        if ($this->featured !== 'include') {
+            $count++;
+        }
+
+        if ($this->category !== '') {
+            $count++;
+        }
+
+        // Count sptVersions filter if it's not 'all' and not empty
+        if (is_array($this->sptVersions)) {
+            $count += count($this->sptVersions);
+        } elseif ($this->sptVersions !== 'all' && ! empty($this->sptVersions)) {
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Render the component.
+     */
+    #[Layout('components.layouts.base')]
+    public function render(): View
+    {
+        // Ensure SPT versions are up to date for current auth state
+        $this->loadAvailableSptVersions();
+
+        // Fetch the mods using the filters saved to the component properties.
+        $filters = new ModFilter([
+            'query' => $this->query,
+            'featured' => $this->featured,
+            'order' => $this->order,
+            'sptVersions' => $this->sptVersions,
+            'category' => $this->category,
+        ]);
+
+        $paginatedMods = $filters->apply()->paginate($this->perPage);
+
+        $this->redirectOutOfBoundsPage($paginatedMods);
+
+        return view('livewire.page.mod.index', ['mods' => $paginatedMods]);
+    }
+
+    /**
+     * Load available SPT versions based on current user role.
+     */
+    private function loadAvailableSptVersions(): void
+    {
+        // Fetch all versions in the last three minor versions
+        $isAdmin = auth()->user()?->isModOrAdmin() ?? false;
+        $cacheKey = $isAdmin ? 'spt-versions:filter-list:admin' : 'spt-versions:filter-list:user';
+
+        $this->availableSptVersions = Cache::flexible(
+            $cacheKey,
+            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
+            fn (): Collection => SptVersion::getVersionsForLastThreeMinors($isAdmin)
+        );
+
+        // Clear the computed property cache
+        unset($this->splitSptVersions);
     }
 
     /**
@@ -213,31 +325,6 @@ class Index extends Component
     }
 
     /**
-     * Validate that the selected perPage value is an allowed option, resetting to the closest valid option.
-     */
-    public function updatedPerPage(int $value): void
-    {
-        $allowed = collect($this->perPageOptions)->sort()->values();
-
-        if ($allowed->contains($value)) {
-            return; // The value is allowed.
-        }
-
-        // Find the closest allowed value.
-        $this->perPage = $allowed->sortBy(fn (int $item): int => abs($item - $value))->first();
-    }
-
-    /**
-     * Validate the order value.
-     */
-    public function updatedOrder(string $value): void
-    {
-        if (! in_array($value, ['created', 'updated', 'downloaded'])) {
-            $this->order = 'created';
-        }
-    }
-
-    /**
      * Check if the current page is greater than the last page. Redirect if it is.
      *
      * @param  LengthAwarePaginator<int, Mod>  $paginatedMods
@@ -247,73 +334,5 @@ class Index extends Component
         if ($paginatedMods->currentPage() > $paginatedMods->lastPage()) {
             $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
         }
-    }
-
-    /**
-     * Compute the split of the active SPT versions.
-     *
-     * @return array<int, Collection<int, SptVersion>>
-     */
-    #[Computed(cache: true)]
-    public function splitSptVersions(): array
-    {
-        $versions = $this->availableSptVersions;
-        $half = (int) ceil($versions->count() / 2);
-
-        return [
-            $versions->take($half),
-            $versions->slice($half),
-        ];
-    }
-
-    /**
-     * Compute the count of active filters.
-     */
-    #[Computed]
-    public function filterCount(): int
-    {
-        $count = 0;
-        if ($this->query !== '') {
-            $count++;
-        }
-
-        if ($this->featured !== 'include') {
-            $count++;
-        }
-
-        if ($this->category !== '') {
-            $count++;
-        }
-
-        // Count sptVersions filter if it's not 'all' and not empty
-        if (is_array($this->sptVersions)) {
-            $count += count($this->sptVersions);
-        } elseif ($this->sptVersions !== 'all' && ! empty($this->sptVersions)) {
-            $count++;
-        }
-
-        return $count;
-    }
-
-    /**
-     * Render the component.
-     */
-    #[Layout('components.layouts.base')]
-    public function render(): View
-    {
-        // Fetch the mods using the filters saved to the component properties.
-        $filters = new ModFilter([
-            'query' => $this->query,
-            'featured' => $this->featured,
-            'order' => $this->order,
-            'sptVersions' => $this->sptVersions,
-            'category' => $this->category,
-        ]);
-
-        $paginatedMods = $filters->apply()->paginate($this->perPage);
-
-        $this->redirectOutOfBoundsPage($paginatedMods);
-
-        return view('livewire.page.mod.index', ['mods' => $paginatedMods]);
     }
 }

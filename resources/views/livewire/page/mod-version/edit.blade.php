@@ -1,16 +1,16 @@
 <x-slot:title>
     {!! __('Edit Mod Version - The Forge') !!}
-</x-slot>
+</x-slot:title>
 
 <x-slot:description>
     {!! __('Edit the details of your mod version.') !!}
-</x-slot>
+</x-slot:description>
 
 <x-slot:header>
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
         {{ __('Edit Mod Version') }}
     </h2>
-</x-slot>
+</x-slot:header>
 
 <div>
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
@@ -72,6 +72,50 @@
                                     </div>
                                 @endif
                             </flux:field>
+
+
+                            @if ($this->modGuidRequired && empty($modGuid))
+                                <div class="col-span-6">
+                                    <flux:callout icon="information-circle" color="amber">
+                                        <flux:callout.text>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <strong>{{ __('Mod GUID Required') }}</strong>
+                                                    <p class="mt-1 text-sm">
+                                                        {{ __('This mod version targets SPT 4.0.0 or above, which requires a mod GUID. Enter a unique identifier for your mod in reverse domain notation. This GUID will be saved to the mod and should match the one in your mod files.') }}
+                                                        {!! __('Please see the <a href=":url" target="_blank" class="underline hover:no-underline">Content Guidelines</a> for more information.', ['url' => route('static.content-guidelines') . '#mod-types-requirements']) !!}
+                                                    </p>
+                                                </div>
+                                                <div class="flex gap-3 items-start" x-data="{ count: 0, text: '' }">
+                                                    <div class="flex-1">
+                                                        <flux:input
+                                                            type="text"
+                                                            wire:model.live="newModGuid"
+                                                            maxlength="255"
+                                                            x-model="text"
+                                                            @input="count = text.length"
+                                                            placeholder="com.username.modname"
+                                                        />
+                                                        <div class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-text="`Max Length: ${count}/255`"></div>
+                                                    </div>
+                                                    <flux:button
+                                                        variant="primary"
+                                                        size="sm"
+                                                        wire:click="saveGuid"
+                                                        wire:loading.attr="disabled"
+                                                        type="button"
+                                                        class="mt-1"
+                                                    >
+                                                        <span wire:loading.remove wire:target="saveGuid">{{ __('Save GUID') }}</span>
+                                                        <span wire:loading wire:target="saveGuid">{{ __('Saving...') }}</span>
+                                                    </flux:button>
+                                                </div>
+                                                <flux:error name="newModGuid" />
+                                            </div>
+                                        </flux:callout.text>
+                                    </flux:callout>
+                                </div>
+                            @endif
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('VirusTotal Link') }}</flux:label>
@@ -150,30 +194,88 @@
                                     const pad = n => n.toString().padStart(2, '0');
                                     const d = new Date();
                                     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-                                }
+                                },
+                                get pinToSpt() {
+                                    return $wire.pinToSptVersions;
+                                },
+                                hasUnpublished: {{ $this->hasUnpublishedSptVersions() ? 'true' : 'false' }}
                             }">
                                 <flux:label>{{ __('Publish Date') }}</flux:label>
                                 <flux:description>
-                                    {!! __('Select the date and time the mod will be published. If the mod is not published, it will not be discoverable by other users. Leave blank to keep the mod unpublished.') !!}
-                                    @if (auth()->user()->timezone === null)
-                                        <flux:callout icon="exclamation-triangle" color="orange" inline="inline" class="my-2">
-                                            <flux:callout.text>
-                                                You have not selected a timezone for your account. You may continue, but the published date will be interpreted as a UTC date. Alternatively, you can <a href="/user/profile" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">edit your profile</a> to set a specific timezone.
-                                            </flux:callout.text>
-                                        </flux:callout>
-                                    @else
-                                        {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
-                                    @endif
+                                    {!! __('Choose when to publish this mod version. You can either set a specific date or pin it to automatically publish when all of the unpublished SPT versions it supports are released.') !!}
                                 </flux:description>
-                                <div class="flex gap-2 items-center">
-                                    <flux:input
-                                        type="datetime-local"
-                                        wire:model.defer="publishedAt"
-                                    />
-                                    @if (Auth::user()?->timezone !== null)
-                                        <flux:button size="sm" variant="outline" @click="$wire.set('publishedAt', now())">Now</flux:button>
-                                    @endif
+
+                                {{-- Pin to SPT version option (first) --}}
+                                @if ($this->hasUnpublishedSptVersions())
+                                    <div class="space-y-3">
+                                        <label class="flex items-start gap-3">
+                                            <flux:checkbox
+                                                wire:model.live="pinToSptVersions"
+                                                @change="if($event.target.checked) { $wire.set('publishedAt', null) }"
+                                                class="mt-0.5"
+                                            />
+                                            <div class="flex-1">
+                                                <div class="flex items-center flex-wrap gap-x-2 gap-y-1">
+                                                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {{ __('Pin to unpublished SPT version publish dates:') }}
+                                                    </span>
+
+                                                    {{-- Show unpublished SPT versions inline --}}
+                                                    @php
+                                                        $unpublishedVersions = collect($matchingSptVersions)->filter(function($version) {
+                                                            return !$version['is_published'];
+                                                        });
+                                                    @endphp
+
+                                                    @if ($unpublishedVersions->count() > 0)
+                                                        @foreach ($unpublishedVersions as $version)
+                                                            <span class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium text-nowrap">
+                                                                {{ $version['version'] }}
+                                                            </span>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
+                                                <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    {{ __('When enabled, this mod version will automatically publish when the unpublished SPT versions it supports are released.') }}
+                                                    <span class="text-orange-600 dark:text-amber-400 font-medium">{{ __('Note: SPT versions can be released at any time, so only use this option if your mod version is fully ready for release.') }}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {{-- Separator (also hidden when pin is checked) --}}
+                                    <div x-show="!pinToSpt" x-transition>
+                                        <flux:separator text="or" class="my-4" />
+                                    </div>
+                                @endif
+
+                                {{-- Manual publish date option (hidden when pin is checked) --}}
+                                <div x-show="!pinToSpt" x-transition>
+                                    <div class="space-y-3">
+                                        @if (auth()->user()->timezone === null)
+                                            <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                                                <flux:callout.text>
+                                                    You have not selected a timezone for your account. You may continue, but the published date will be interpreted as a UTC date. Alternatively, you can <a href="/user/profile" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">edit your profile</a> to set a specific timezone.
+                                                </flux:callout.text>
+                                            </flux:callout>
+                                        @else
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
+                                            </p>
+                                        @endif
+                                        <div class="flex gap-2 items-center">
+                                            <flux:input
+                                                type="datetime-local"
+                                                wire:model.defer="publishedAt"
+                                                placeholder="Leave blank to keep unpublished"
+                                            />
+                                            @if (auth()->user()->timezone !== null)
+                                                <flux:button size="sm" variant="outline" @click="$wire.set('publishedAt', now())">Now</flux:button>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
+
                                 <flux:error name="publishedAt" />
                             </flux:field>
 

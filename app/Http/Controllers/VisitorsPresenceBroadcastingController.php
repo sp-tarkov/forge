@@ -63,7 +63,7 @@ class VisitorsPresenceBroadcastingController extends BroadcastController
 
             // Hash the session ID to prevent leaking the actual session ID
             // Using a deterministic hash so the same session always gets the same ID
-            $maskedSessionId = substr(hash('sha256', $sessionId.config('app.key')), 0, 16);
+            $maskedSessionId = mb_substr(hash('sha256', $sessionId.config('app.key')), 0, 16);
             $guestUser = new Guest($maskedSessionId);
 
             // Set this as the user for the request

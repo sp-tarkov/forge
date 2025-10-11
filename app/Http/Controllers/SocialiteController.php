@@ -147,6 +147,17 @@ class SocialiteController extends Controller
         });
     }
 
+    /**
+     * Get the MFA status from the provider user based on the provider.
+     */
+    protected function getMfaStatus(string $provider, ProviderUser $providerUser): ?bool
+    {
+        return match ($provider) {
+            'discord' => $providerUser->user['mfa_enabled'] ?? null,
+            default => null,
+        };
+    }
+
     private function updateAvatar(User $user, string $avatarUrl): void
     {
         // Determine the disk to use based on the environment.
@@ -186,16 +197,5 @@ class SocialiteController extends Controller
         $user->forceFill([
             'profile_photo_path' => $relativePath,
         ])->save();
-    }
-
-    /**
-     * Get the MFA status from the provider user based on the provider.
-     */
-    protected function getMfaStatus(string $provider, ProviderUser $providerUser): ?bool
-    {
-        return match ($provider) {
-            'discord' => $providerUser->user['mfa_enabled'] ?? null,
-            default => null,
-        };
     }
 }

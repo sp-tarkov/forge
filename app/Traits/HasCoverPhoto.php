@@ -29,14 +29,6 @@ trait HasCoverPhoto
     }
 
     /**
-     * Get the disk that cover photos should be stored on.
-     */
-    protected function coverPhotoDisk(): string
-    {
-        return config('filesystems.asset_upload', 'public');
-    }
-
-    /**
      * Delete the user's cover photo.
      */
     public function deleteCoverPhoto(): void
@@ -50,6 +42,14 @@ trait HasCoverPhoto
         $this->forceFill([
             'cover_photo_path' => null,
         ])->save();
+    }
+
+    /**
+     * Get the disk that cover photos should be stored on.
+     */
+    protected function coverPhotoDisk(): string
+    {
+        return config('filesystems.asset_upload', 'public');
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Http\Controllers\FileRedirectController;
 use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
+use App\Livewire\Admin\SptVersionManagement;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
 use App\Livewire\Page\Chat;
@@ -103,6 +104,7 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::middleware('can:admin')->group(function (): void {
             Route::get('/admin/visitor-analytics', VisitorAnalytics::class)->name('admin.visitor-analytics');
             Route::get('/admin/user-management', UserManagement::class)->name('admin.user-management');
+            Route::get('/admin/spt-versions', SptVersionManagement::class)->name('admin.spt-versions');
         });
     });
 

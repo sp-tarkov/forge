@@ -151,6 +151,14 @@ class ReportComponent extends Component
     }
 
     /**
+     * Render the report button component.
+     */
+    public function render(): View
+    {
+        return view('livewire.report-component');
+    }
+
+    /**
      * Get a cached list of moderator and admin user IDs.
      *
      * @return array<int>
@@ -167,13 +175,5 @@ class ReportComponent extends Component
                 ->pluck('id')
                 ->toArray()
         );
-    }
-
-    /**
-     * Render the report button component.
-     */
-    public function render(): View
-    {
-        return view('livewire.report-component');
     }
 }

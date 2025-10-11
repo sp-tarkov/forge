@@ -32,7 +32,7 @@ describe('comment display', function (): void {
 
         $test->assertViewHas('rootComments', fn ($paginator): bool => $paginator->total() === 15);
 
-        $this->assertEquals(2, substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
+        $this->assertEquals(2, mb_substr_count((string) $test->html(), '<nav role="navigation" aria-label="Pagination Navigation"'));
     });
 
     it('should display correct commentable display name for user profiles', function (): void {
@@ -53,8 +53,8 @@ describe('comment display', function (): void {
         $html = $response->html();
 
         // Find positions of key elements
-        $noCommentsPos = strpos($html, 'No comments yet');
-        $formPos = strpos($html, 'Post Comment');
+        $noCommentsPos = mb_strpos($html, 'No comments yet');
+        $formPos = mb_strpos($html, 'Post Comment');
 
         // Assert that "No comments yet" appears before the form
         expect($noCommentsPos)->toBeLessThan($formPos);

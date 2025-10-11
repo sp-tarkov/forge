@@ -29,7 +29,7 @@ class NotDisposableEmail implements ValidationRule
             return;
         }
 
-        $domain = strtolower($parts[1]);
+        $domain = mb_strtolower($parts[1]);
 
         if (DisposableEmailBlocklist::isDisposable($domain)) {
             $fail('This email address has been detected as disposable and is not supported.');

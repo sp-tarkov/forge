@@ -24,6 +24,26 @@ class Guest implements Authenticatable
     public function __construct(public string $id) {}
 
     /**
+     * Dynamically access guest properties.
+     */
+    public function __get(string $key): mixed
+    {
+        return match ($key) {
+            'id' => $this->id,
+            'is_guest' => true,
+            default => null,
+        };
+    }
+
+    /**
+     * Determine if a property exists on the guest.
+     */
+    public function __isset(string $key): bool
+    {
+        return in_array($key, ['id', 'name', 'is_guest']);
+    }
+
+    /**
      * Get the name of the unique identifier for the user.
      */
     public function getAuthIdentifierName(): string
@@ -87,25 +107,5 @@ class Guest implements Authenticatable
     public function getRememberTokenName(): string
     {
         return '';
-    }
-
-    /**
-     * Dynamically access guest properties.
-     */
-    public function __get(string $key): mixed
-    {
-        return match ($key) {
-            'id' => $this->id,
-            'is_guest' => true,
-            default => null,
-        };
-    }
-
-    /**
-     * Determine if a property exists on the guest.
-     */
-    public function __isset(string $key): bool
-    {
-        return in_array($key, ['id', 'name', 'is_guest']);
     }
 }

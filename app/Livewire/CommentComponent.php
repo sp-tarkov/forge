@@ -149,6 +149,13 @@ class CommentComponent extends Component
     public ?int $restoringCommentId = null;
 
     /**
+     * Spam check tracking state.
+     *
+     * @var array<int, array{inProgress: bool, startedAt: string|null}>
+     */
+    public array $spamCheckStates = [];
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -723,13 +730,6 @@ class CommentComponent extends Component
     }
 
     /**
-     * Spam check tracking state.
-     *
-     * @var array<int, array{inProgress: bool, startedAt: string|null}>
-     */
-    public array $spamCheckStates = [];
-
-    /**
      * Show check for spam confirmation modal.
      */
     public function confirmCheckForSpam(int $commentId): void
@@ -995,26 +995,6 @@ class CommentComponent extends Component
     }
 
     /**
-     * Initialize subscription status.
-     */
-    protected function initializeSubscriptionStatus(): void
-    {
-        if (Auth::check()) {
-            /** @var User $user */
-            $user = Auth::user();
-            $this->isSubscribed = $this->commentable->isUserSubscribed($user);
-        }
-    }
-
-    /**
-     * Initialize descendant counts for root comments.
-     */
-    protected function initializeDescendantCounts(): void
-    {
-        $this->descendantCounts = $this->commentable->getDescendantCounts();
-    }
-
-    /**
      * Handle a deep link to a specific comment.
      */
     public function handleDeepLink(int $commentId): void
@@ -1036,6 +1016,46 @@ class CommentComponent extends Component
 
         // Dispatch event to scroll to the comment after render. This is caught with AlpineJS.
         $this->dispatch('scroll-to-comment', commentId: $commentId);
+    }
+
+    /**
+     * Render the component.
+     */
+    public function render(): View
+    {
+        $user = Auth::user();
+
+        // Select the root comments based on the user using the visibility scope.
+        $rootComments = $this->commentable->rootComments()
+            ->visibleToUser($user)
+            ->paginate(perPage: 10, pageName: 'commentPage');
+
+        $visibleRootComments = $rootComments->getCollection();
+
+        return view('livewire.comment-component', [
+            'rootComments' => $rootComments,
+            'visibleRootComments' => $visibleRootComments,
+        ]);
+    }
+
+    /**
+     * Initialize subscription status.
+     */
+    protected function initializeSubscriptionStatus(): void
+    {
+        if (Auth::check()) {
+            /** @var User $user */
+            $user = Auth::user();
+            $this->isSubscribed = $this->commentable->isUserSubscribed($user);
+        }
+    }
+
+    /**
+     * Initialize descendant counts for root comments.
+     */
+    protected function initializeDescendantCounts(): void
+    {
+        $this->descendantCounts = $this->commentable->getDescendantCounts();
     }
 
     /**
@@ -1232,25 +1252,5 @@ class CommentComponent extends Component
         $model = $this->commentable;
 
         return $model->getKey();
-    }
-
-    /**
-     * Render the component.
-     */
-    public function render(): View
-    {
-        $user = Auth::user();
-
-        // Select the root comments based on the user using the visibility scope.
-        $rootComments = $this->commentable->rootComments()
-            ->visibleToUser($user)
-            ->paginate(perPage: 10, pageName: 'commentPage');
-
-        $visibleRootComments = $rootComments->getCollection();
-
-        return view('livewire.comment-component', [
-            'rootComments' => $rootComments,
-            'visibleRootComments' => $visibleRootComments,
-        ]);
     }
 }

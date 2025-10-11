@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Exceptions\InvalidVersionNumberException;
+use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\SptVersionObserver;
 use App\Support\Version;
 use Carbon\Carbon;
 use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,7 +19,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Override;
@@ -33,11 +34,14 @@ use Throwable;
  * @property int $mod_count
  * @property string $link
  * @property string $color_class
+ * @property Carbon|null $publish_date
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, ModVersion> $modVersions
  * @property-read string $version_formatted
+ * @property-read bool $is_published
  */
+#[ScopedBy([PublishedSptVersionScope::class])]
 #[ObservedBy([SptVersionObserver::class])]
 class SptVersion extends Model
 {
@@ -47,33 +51,30 @@ class SptVersion extends Model
     /**
      * Get all versions for the last three minor versions.
      *
-     * @return Collection<int, static>
+     * @param  bool|null  $includeUnpublished  If true, includes unpublished versions. If null, checks current user's permissions.
+     * @return Collection<int, self>
      */
-    public static function getVersionsForLastThreeMinors(): Collection
+    public static function getVersionsForLastThreeMinors(?bool $includeUnpublished = null): Collection
     {
-        $lastThreeMinorVersions = self::getLastThreeMinorVersions();
+        $includeUnpublished ??= auth()->user()?->isModOrAdmin() ?? false;
 
-        // Extract major and minor arrays.
-        $majorVersions = array_column($lastThreeMinorVersions, 'major');
-        $minorVersions = array_column($lastThreeMinorVersions, 'minor');
+        // Get the last three minor versions
+        $lastThreeMinorVersions = self::getLastThreeMinorVersions($includeUnpublished);
 
-        // Fetch all versions for the last three minor versions.
-        $query = self::query()
-            ->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count'])
-            ->where('spt_versions.version', '!=', '0.0.0');
-
-        // Add WHERE conditions for each major.minor pair
-        $query->where(function (Builder $query) use ($lastThreeMinorVersions): void {
-            foreach ($lastThreeMinorVersions as $minorVersion) {
-                $query->orWhere(function (Builder $subQuery) use ($minorVersion): void {
-                    $subQuery->where('spt_versions.version_major', $minorVersion['major'])
-                        ->where('spt_versions.version_minor', $minorVersion['minor']);
-                });
-            }
-        });
-
-        /** @var Collection<int, static> */
-        return $query->groupBy('spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count')
+        // Build the query
+        return self::query()
+            ->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count', 'spt_versions.publish_date'])
+            ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
+            ->where('spt_versions.version', '!=', '0.0.0')
+            ->where(function (Builder $query) use ($lastThreeMinorVersions): void {
+                foreach ($lastThreeMinorVersions as $minorVersion) {
+                    $query->orWhere(function (Builder $subQuery) use ($minorVersion): void {
+                        $subQuery->where('spt_versions.version_major', $minorVersion['major'])
+                            ->where('spt_versions.version_minor', $minorVersion['minor']);
+                    });
+                }
+            })
+            ->groupBy('spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count', 'spt_versions.publish_date')
             ->orderBy('spt_versions.version_major', 'DESC')
             ->orderBy('spt_versions.version_minor', 'DESC')
             ->orderBy('spt_versions.version_patch', 'DESC')
@@ -85,12 +86,17 @@ class SptVersion extends Model
     /**
      * Get the last three minor versions (major.minor format).
      *
+     * @param  bool|null  $includeUnpublished  If true, includes unpublished versions. If null, checks current user's permissions.
      * @return array<int, array{major: int, minor: int}>
      */
-    public static function getLastThreeMinorVersions(): array
+    public static function getLastThreeMinorVersions(?bool $includeUnpublished = null): array
     {
+        // Determine whether to include unpublished versions
+        $includeUnpublished ??= auth()->user()?->isModOrAdmin() ?? false;
+
         return self::query()
             ->selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
+            ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
             ->where('version', '!=', '0.0.0')
             ->groupBy('version_major', 'version_minor')
             ->orderByDesc('version_major')
@@ -129,6 +135,115 @@ class SptVersion extends Model
     }
 
     /**
+     * Get the latest SPT version.
+     */
+    public static function getLatest(): ?self
+    {
+        return self::query()
+            ->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_labels'])
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->first();
+    }
+
+    /**
+     * Get all the minor/patch versions of the latest minor release.
+     *
+     * @param  bool|null  $includeUnpublished  If true, includes unpublished versions. If null, checks current user's permissions.
+     * @return Collection<int, self>
+     */
+    public static function getLatestMinorVersions(?bool $includeUnpublished = null): Collection
+    {
+        // Determine whether to include unpublished versions
+        $includeUnpublished ??= auth()->user()?->isModOrAdmin() ?? false;
+
+        // Get the absolute latest version to determine the latest minor release
+        $latestVersion = self::getLatest();
+        if ($latestVersion === null) {
+            return new Collection;
+        }
+
+        // Build the query
+        return self::query()
+            ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
+            ->where('version_major', $latestVersion->version_major)
+            ->where('version_minor', $latestVersion->version_minor)
+            ->where('version', '!=', '0.0.0')
+            ->orderBy('version_patch', 'desc')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->get();
+    }
+
+    /**
+     * Get all the valid SPT versions.
+     *
+     * @cached 1h with 5min grace period
+     *
+     * @param  bool  $includeUnpublished  If true, includes unpublished versions (bypasses global scope).
+     * @return array<int, string>
+     */
+    public static function allValidVersions(bool $includeUnpublished = false): array
+    {
+        $cacheKey = $includeUnpublished ? 'spt-versions:all:authors' : 'spt-versions:all:user';
+
+        return Cache::flexible($cacheKey, [5 * 60, 60 * 60], fn () => self::query()
+            ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
+            ->where('version', '!=', '0.0.0')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->pluck('version')
+            ->all());
+    }
+
+    /**
+     * Update the mod count for this SptVersion.
+     */
+    public function updateModCount(): void
+    {
+        self::query()
+            ->withoutGlobalScope(PublishedSptVersionScope::class)
+            ->where('id', $this->id)
+            ->update([
+                'mod_count' => $this->modVersions()
+                    ->distinct('mod_id')
+                    ->count('mod_id'),
+            ]);
+    }
+
+    /**
+     * The relationship between an SPT version and mod version.
+     *
+     * @return BelongsToMany<ModVersion, $this>
+     */
+    public function modVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(ModVersion::class)
+            ->using(ModVersionSptVersion::class);
+    }
+
+    /**
+     * Determine if the version is part of the latest version's minor releases. For example, if the latest version is
+     * 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
+     */
+    public function isLatestMinor(): bool
+    {
+        $latestVersion = self::getLatest();
+
+        if (! $latestVersion instanceof self) {
+            return false;
+        }
+
+        return $this->version_major === $latestVersion->version_major && $this->version_minor === $latestVersion->version_minor;
+    }
+
+    /**
      * Called when the model is booted.
      */
     #[Override]
@@ -155,31 +270,6 @@ class SptVersion extends Model
     }
 
     /**
-     * Update the mod count for this SptVersion.
-     */
-    public function updateModCount(): void
-    {
-        DB::table('spt_versions')
-            ->where('id', $this->id)
-            ->update([
-                'mod_count' => $this->modVersions()
-                    ->distinct('mod_id')
-                    ->count('mod_id'),
-            ]);
-    }
-
-    /**
-     * The relationship between an SPT version and mod version.
-     *
-     * @return BelongsToMany<ModVersion, $this>
-     */
-    public function modVersions(): BelongsToMany
-    {
-        return $this->belongsToMany(ModVersion::class)
-            ->using(ModVersionSptVersion::class);
-    }
-
-    /**
      * Get the version with "SPT " prepended.
      *
      * @return Attribute<string, string>
@@ -193,82 +283,21 @@ class SptVersion extends Model
     }
 
     /**
-     * Determine if the version is part of the latest version's minor releases. For example, if the latest version is
-     * 1.2.0, this method will return true for 1.2.0, 1.2.1, 1.2.2, etc.
-     */
-    public function isLatestMinor(): bool
-    {
-        $latestVersion = self::getLatest();
-
-        if (! $latestVersion instanceof \App\Models\SptVersion) {
-            return false;
-        }
-
-        return $this->version_major == $latestVersion->version_major && $this->version_minor == $latestVersion->version_minor;
-    }
-
-    /**
-     * Get the latest SPT version.
-     */
-    public static function getLatest(): ?SptVersion
-    {
-        return self::query()
-            ->select(['version', 'version_major', 'version_minor', 'version_patch', 'version_labels'])
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->first();
-    }
-
-    /**
-     * Get all the minor/patch versions of the latest minor release.
+     * Get whether the SPT version is published.
      *
-     * @return Collection<int, static>
+     * @return Attribute<bool, never>
      */
-    public static function getLatestMinorVersions(): Collection
+    protected function isPublished(): Attribute
     {
-        // Get the absolute latest version to determine the latest minor release
-        $latestVersion = self::getLatest();
-        if ($latestVersion === null) {
-            return new Collection;
-        }
-
-        // Get all patch versions for this major.minor combination
-        /** @var Collection<int, static> */
-        return self::query()
-            ->where('version_major', $latestVersion->version_major)
-            ->where('version_minor', $latestVersion->version_minor)
-            ->where('version', '!=', '0.0.0')
-            ->orderBy('version_patch', 'desc')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->get();
-    }
-
-    /**
-     * Get all the valid SPT versions.
-     *
-     * @cached 1h
-     *
-     * @return array<int, string>
-     */
-    public static function allValidVersions(): array
-    {
-        return Cache::remember('all_spt_versions_list', now()->addHour(), fn () => self::query()
-            ->where('version', '!=', '0.0.0')
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->pluck('version')
-            ->all());
+        return Attribute::make(
+            get: fn (): bool => ! is_null($this->publish_date) && $this->publish_date->lte(now()),
+        );
     }
 
     /**
      * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
      */
     protected function casts(): array
     {
@@ -278,6 +307,7 @@ class SptVersion extends Model
             'version_minor' => 'integer',
             'version_patch' => 'integer',
             'mod_count' => 'integer',
+            'publish_date' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

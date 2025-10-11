@@ -8,6 +8,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModeratesMod;
 use App\Traits\Livewire\ModeratesModVersion;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -43,39 +44,6 @@ class Show extends Component
         Gate::authorize('view', $this->mod);
 
         $this->openGraphImage = $this->mod->thumbnail;
-    }
-
-    /**
-     * Get the mod by ID.
-     */
-    protected function getMod(int $modId): Mod
-    {
-        return Mod::query()->with(['sourceCodeLinks', 'category'])->findOrFail($modId);
-    }
-
-    /**
-     * The mod's versions.
-     *
-     * @return LengthAwarePaginator<int, ModVersion>
-     */
-    protected function versions(): LengthAwarePaginator
-    {
-        return $this->mod->versions()
-            ->paginate(perPage: 6, pageName: 'versionPage')
-            ->fragment('versions');
-    }
-
-    /**
-     * Redirect to the canonical slug route if the given slug is incorrect.
-     */
-    protected function enforceCanonicalSlug(Mod $mod, string $slug): void
-    {
-        if ($mod->slug !== $slug) {
-            $this->redirectRoute('mod.show', [
-                'modId' => $mod->id,
-                'slug' => $mod->slug,
-            ]);
-        }
     }
 
     /**
@@ -143,22 +111,12 @@ class Show extends Component
     }
 
     /**
-     * Check if a mod has versions which are publicly visible versions. This determines if the mod should show warnings
-     * to privileged users about regular user visibility.
-     */
-    private function hasPublicVersions(): bool
-    {
-        // Use the scope to check for publicly visible versions
-        return $this->mod->versions()->publiclyVisible()->exists();
-    }
-
-    /**
      * Get the total version count visible to the current user.
      */
     public function getVersionCount(): int
     {
         return $this->mod->versions()
-            ->when(! auth()->user()?->can('viewAny', [ModVersion::class, $this->mod]), function ($query): void {
+            ->when(! auth()->user()?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {
                 $query->publiclyVisible();
             })
             ->count();
@@ -205,5 +163,48 @@ class Show extends Component
             'versionCount' => $this->getVersionCount(),
             'commentCount' => $this->getCommentCount(),
         ]);
+    }
+
+    /**
+     * Get the mod by ID.
+     */
+    protected function getMod(int $modId): Mod
+    {
+        return Mod::query()->with(['sourceCodeLinks', 'category'])->findOrFail($modId);
+    }
+
+    /**
+     * The mod's versions.
+     *
+     * @return LengthAwarePaginator<int, ModVersion>
+     */
+    protected function versions(): LengthAwarePaginator
+    {
+        return $this->mod->versions()
+            ->paginate(perPage: 6, pageName: 'versionPage')
+            ->fragment('versions');
+    }
+
+    /**
+     * Redirect to the canonical slug route if the given slug is incorrect.
+     */
+    protected function enforceCanonicalSlug(Mod $mod, string $slug): void
+    {
+        if ($mod->slug !== $slug) {
+            $this->redirectRoute('mod.show', [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ]);
+        }
+    }
+
+    /**
+     * Check if a mod has versions which are publicly visible versions. This determines if the mod should show warnings
+     * to privileged users about regular user visibility.
+     */
+    private function hasPublicVersions(): bool
+    {
+        // Use the scope to check for publicly visible versions
+        return $this->mod->versions()->publiclyVisible()->exists();
     }
 }

@@ -93,42 +93,6 @@ class FollowCard extends Component
     }
 
     /**
-     * Set the title of the card based on the relationship.
-     */
-    private function setTitle(): void
-    {
-        $this->title = match ($this->relationship) {
-            'followers' => __('Followers'),
-            'following' => __('Following'),
-            default => __('Users'),
-        };
-    }
-
-    /**
-     * Set the empty message based on the relationship.
-     */
-    private function setEmptyMessage(): void
-    {
-        $this->emptyMessage = match ($this->relationship) {
-            'followers' => __('No followers yet.'),
-            'following' => __('Not yet following anyone.'),
-            default => __('No users found.'),
-        };
-    }
-
-    /**
-     * Set the dialog title based on the relationship.
-     */
-    private function setDialogTitle(): void
-    {
-        $this->dialogTitle = match ($this->relationship) {
-            'followers' => 'User :name has these followers:',
-            'following' => 'User :name is following:',
-            default => 'Users:',
-        };
-    }
-
-    /**
      * Render the component.
      */
     public function render(): View
@@ -171,5 +135,41 @@ class FollowCard extends Component
         $this->authFollowIds = $this->authFollowIds->reject(fn (int $id): bool => $id === $userId);
 
         $this->dispatch('user-follow-change');
+    }
+
+    /**
+     * Set the title of the card based on the relationship.
+     */
+    private function setTitle(): void
+    {
+        $this->title = match ($this->relationship) {
+            'followers' => __('Followers'),
+            'following' => __('Following'),
+            default => __('Users'),
+        };
+    }
+
+    /**
+     * Set the empty message based on the relationship.
+     */
+    private function setEmptyMessage(): void
+    {
+        $this->emptyMessage = match ($this->relationship) {
+            'followers' => __('No followers yet.'),
+            'following' => __('Not yet following anyone.'),
+            default => __('No users found.'),
+        };
+    }
+
+    /**
+     * Set the dialog title based on the relationship.
+     */
+    private function setDialogTitle(): void
+    {
+        $this->dialogTitle = match ($this->relationship) {
+            'followers' => 'User :name has these followers:',
+            'following' => 'User :name is following:',
+            default => 'Users:',
+        };
     }
 }

@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
+use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
@@ -165,6 +169,154 @@ describe('Mod Version Edit Form', function (): void {
             // Verify resolved dependencies were updated
             expect($modVersion->resolvedDependencies)->toHaveCount(1);
             expect($modVersion->resolvedDependencies->first()->mod_id)->toBe($dependencyMod2->id);
+        });
+    });
+
+    describe('GUID Requirements', function (): void {
+        beforeEach(function (): void {
+            // Create required data
+            $this->user = User::factory()->withMfa()->create();
+            $this->license = License::factory()->create();
+            $this->category = ModCategory::factory()->create();
+
+            // Create SPT versions for testing
+            SptVersion::factory()->create(['version' => '3.9.0']);
+            SptVersion::factory()->create(['version' => '3.10.0']);
+            SptVersion::factory()->create(['version' => '4.0.0']);
+            SptVersion::factory()->create(['version' => '4.1.0']);
+        });
+
+        uses(RefreshDatabase::class);
+
+        it('allows editing mod version with inline GUID save', function (): void {
+            $this->actingAs($this->user);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '', // No GUID initially
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'spt_version_constraint' => '~3.9.0', // Initially targeting SPT 3.x
+            ]);
+
+            $component = Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp));
+
+            // Initially no GUID required
+            expect($component->get('modGuidRequired'))->toBeFalse();
+
+            // Change to target SPT 4.x
+            $component->set('sptVersionConstraint', '>=4.0.0');
+            expect($component->get('modGuidRequired'))->toBeTrue();
+
+            // Save GUID inline
+            $component->set('newModGuid', 'com.test.editguid')
+                ->call('saveGuid')
+                ->assertHasNoErrors();
+
+            expect($component->get('guidSaved'))->toBeTrue();
+            expect($component->get('modGuid'))->toBe('com.test.editguid');
+
+            // Verify the mod was updated
+            $mod->refresh();
+            expect($mod->guid)->toBe('com.test.editguid');
+        });
+
+        it('validates GUID when editing mod version', function (): void {
+            $this->actingAs($this->user);
+
+            // Create a mod with an existing GUID for uniqueness test
+            Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => 'com.existing.mod',
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '',
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'spt_version_constraint' => '>=4.0.0',
+            ]);
+
+            $component = Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp));
+
+            // Test invalid format
+            $component->set('newModGuid', 'Invalid GUID Format')
+                ->call('saveGuid')
+                ->assertHasErrors(['newModGuid' => 'regex']);
+
+            // Test duplicate GUID
+            $component->set('newModGuid', 'com.existing.mod')
+                ->call('saveGuid')
+                ->assertHasErrors(['newModGuid' => 'unique']);
+        });
+
+        it('does not require GUID when editing version if already saved inline', function (): void {
+            $this->actingAs($this->user);
+
+            // Mock HTTP responses for download link validation
+            Http::fake([
+                'https://example.com/mod.zip' => Http::response('', 200, [
+                    'content-type' => 'application/octet-stream',
+                    'content-disposition' => 'attachment; filename="mod.zip"',
+                    'content-length' => '1048576',
+                ]),
+            ]);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '',
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'spt_version_constraint' => '>=4.0.0',
+            ]);
+
+            $component = Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('sptVersionConstraint', '>=4.0.0')
+                ->set('newModGuid', 'com.test.editsave');
+
+            // Save GUID inline first
+            $component->call('saveGuid')
+                ->assertHasNoErrors();
+
+            expect($component->get('guidSaved'))->toBeTrue();
+
+            // Now save the version without needing GUID validation
+            $component->set('version', '2.0.0')
+                ->set('description', 'Updated version')
+                ->set('link', 'https://example.com/mod.zip')
+                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test')
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            // Verify version was updated
+            $modVersion->refresh();
+            expect($modVersion->version)->toBe('2.0.0');
         });
     });
 });

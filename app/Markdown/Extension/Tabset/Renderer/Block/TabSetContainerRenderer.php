@@ -30,7 +30,7 @@ class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererI
         // Add the 'tabset' class by merging with existing classes.
         $existingClasses = $attrs['class'] ?? '';
         $separator = ! empty($existingClasses) ? ' ' : '';
-        $attrs['class'] = trim($existingClasses.$separator.'tabset');
+        $attrs['class'] = mb_trim($existingClasses.$separator.'tabset');
         if (empty($attrs['class'])) {
             unset($attrs['class']);
         }
@@ -48,6 +48,8 @@ class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererI
 
     /**
      * Returns an array of XML attributes for the TabSetContainerNode.
+     *
+     * @return array{}
      */
     public function getXmlAttributes(Node $node): array
     {

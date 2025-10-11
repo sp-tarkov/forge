@@ -17,9 +17,8 @@ class VerifyEmailResponse implements VerifyEmailResponseContract
      * Create an HTTP response that represents the object.
      *
      * @param  Request  $request
-     * @return Response
      */
-    public function toResponse($request)
+    public function toResponse(mixed $request): Response
     {
         // For API requests
         if ($request->wantsJson()) {

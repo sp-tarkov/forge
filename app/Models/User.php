@@ -125,7 +125,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             return false;
         }
 
-        $domain = strtolower($parts[1]);
+        $domain = mb_strtolower($parts[1]);
 
         return DisposableEmailBlocklist::isDisposable($domain);
     }
@@ -178,16 +178,16 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function followers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_follows', 'following_id', 'follower_id')
+        return $this->belongsToMany(self::class, 'user_follows', 'following_id', 'follower_id')
             ->withTimestamps();
     }
 
     /**
      * Follow another user.
      */
-    public function follow(User|int $user): void
+    public function follow(self|int $user): void
     {
-        $userId = $user instanceof User ? $user->id : $user;
+        $userId = $user instanceof self ? $user->id : $user;
 
         if ($this->id === $userId) {
             // Don't allow following yourself.
@@ -195,7 +195,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         }
 
         // Don't allow following if there's a blocking relationship
-        $targetUser = $user instanceof User ? $user : \App\Models\User::query()->find($userId);
+        $targetUser = $user instanceof self ? $user : self::query()->find($userId);
         if ($targetUser && $this->isBlockedMutually($targetUser)) {
             return;
         }
@@ -210,7 +210,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function following(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_follows', 'follower_id', 'following_id')
+        return $this->belongsToMany(self::class, 'user_follows', 'follower_id', 'following_id')
             ->withTimestamps();
     }
 
@@ -237,9 +237,9 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Unfollow another user.
      */
-    public function unfollow(User|int $user): void
+    public function unfollow(self|int $user): void
     {
-        $userId = $user instanceof User ? $user->id : $user;
+        $userId = $user instanceof self ? $user->id : $user;
 
         if ($this->isFollowing($userId)) {
             $this->following()->detach($userId);
@@ -249,9 +249,9 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Check if the user is following another user.
      */
-    public function isFollowing(User|int $user): bool
+    public function isFollowing(self|int $user): bool
     {
-        $userId = $user instanceof User ? $user->id : $user;
+        $userId = $user instanceof self ? $user->id : $user;
 
         return $this->following()->where('following_id', $userId)->exists();
     }
@@ -259,7 +259,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Block a user.
      */
-    public function block(User $user, ?string $reason = null): UserBlock
+    public function block(self $user, ?string $reason = null): UserBlock
     {
         // Remove any existing follow relationships
         $this->unfollow($user);
@@ -275,7 +275,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Unblock a user.
      */
-    public function unblock(User $user): bool
+    public function unblock(self $user): bool
     {
         return $this->blocking()->where('blocked_id', $user->id)->delete() > 0;
     }
@@ -283,9 +283,9 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Check if this user has blocked another user.
      */
-    public function hasBlocked(User|int $user): bool
+    public function hasBlocked(self|int $user): bool
     {
-        $userId = $user instanceof User ? $user->id : $user;
+        $userId = $user instanceof self ? $user->id : $user;
 
         return $this->blocking()->where('blocked_id', $userId)->exists();
     }
@@ -293,9 +293,9 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Check if this user is blocked by another user.
      */
-    public function isBlockedBy(User|int $user): bool
+    public function isBlockedBy(self|int $user): bool
     {
-        $userId = $user instanceof User ? $user->id : $user;
+        $userId = $user instanceof self ? $user->id : $user;
 
         return $this->blockedBy()->where('blocker_id', $userId)->exists();
     }
@@ -303,7 +303,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Check if there is mutual blocking between users.
      */
-    public function isBlockedMutually(User $user): bool
+    public function isBlockedMutually(self $user): bool
     {
         return $this->hasBlocked($user) || $this->isBlockedBy($user);
     }
@@ -370,18 +370,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
-     * Get and cache the user's role name.
-     */
-    protected function rememberRoleName(): ?string
-    {
-        return Cache::remember(sprintf('user_%d_role_name', $this->id), now()->addHour(), function () {
-            $this->loadMissing('role');
-
-            return $this->role ? Str::lower($this->role->name) : null;
-        });
-    }
-
-    /**
      * Overwritten to instead use the queued version of the VerifyEmail notification.
      */
     public function sendEmailVerificationNotification(): void
@@ -395,33 +383,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function sendPasswordResetNotification(#[SensitiveParameter] $token): void
     {
         $this->notify(new ResetPassword($token));
-    }
-
-    /**
-     * The link to the user's profile page.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function profileUrl(): Attribute
-    {
-        return Attribute::make(
-            get: fn (mixed $value, array $attributes): string => route('user.show', [
-                'userId' => $attributes['id'],
-                'slug' => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
-            ]),
-        )->shouldCache();
-    }
-
-    /**
-     * Get the slug of the user's name.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function slug(): Attribute
-    {
-        return Attribute::make(
-            get: fn (mixed $value, array $attributes): string => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
-        )->shouldCache();
     }
 
     /**
@@ -476,48 +437,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function oAuthConnections(): HasMany
     {
         return $this->hasMany(OAuthConnection::class);
-    }
-
-    /**
-     * Handle the about default value if empty. Ensures an empty string is retrieved if the DB value is NULL, and an
-     * empty string is saved if the input is NULL or empty.
-     *
-     * @return Attribute<string, string>
-     */
-    protected function about(): Attribute
-    {
-        return Attribute::make(
-            get: fn (?string $value): string => $value ?? '', // If DB value is NULL, return ''
-            set: fn (?string $value): string => $value ?? '', // If input value is NULL, set as ''
-        );
-    }
-
-    /**
-     * Get the disk that profile photos should be stored on.
-     */
-    protected function profilePhotoDisk(): string
-    {
-        return config('filesystems.asset_upload', config('jetstream.profile_photo_disk', 'public'));
-    }
-
-    /**
-     * The attributes that should be cast to native types.
-     */
-    protected function casts(): array
-    {
-        return [
-            'id' => 'integer',
-            'hub_id' => 'integer',
-            'discord_id' => 'integer',
-            'user_role_id' => 'integer',
-            'email_verified_at' => 'datetime',
-            'last_seen_at' => 'datetime',
-            'password' => 'hashed',
-            'email_comment_notifications_enabled' => 'boolean',
-            'email_chat_notifications_enabled' => 'boolean',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
     }
 
     /**
@@ -682,6 +601,89 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
+     * Get and cache the user's role name.
+     */
+    protected function rememberRoleName(): ?string
+    {
+        return Cache::remember(sprintf('user_%d_role_name', $this->id), now()->addHour(), function () {
+            $this->loadMissing('role');
+
+            return $this->role ? Str::lower($this->role->name) : null;
+        });
+    }
+
+    /**
+     * The link to the user's profile page.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function profileUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): string => route('user.show', [
+                'userId' => $attributes['id'],
+                'slug' => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
+            ]),
+        )->shouldCache();
+    }
+
+    /**
+     * Get the slug of the user's name.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function slug(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): string => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
+        )->shouldCache();
+    }
+
+    /**
+     * Handle the about default value if empty. Ensures an empty string is retrieved if the DB value is NULL, and an
+     * empty string is saved if the input is NULL or empty.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function about(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value): string => $value ?? '', // If DB value is NULL, return ''
+            set: fn (?string $value): string => $value ?? '', // If input value is NULL, set as ''
+        );
+    }
+
+    /**
+     * Get the disk that profile photos should be stored on.
+     */
+    protected function profilePhotoDisk(): string
+    {
+        return config('filesystems.asset_upload', config('jetstream.profile_photo_disk', 'public'));
+    }
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'id' => 'integer',
+            'hub_id' => 'integer',
+            'discord_id' => 'integer',
+            'user_role_id' => 'integer',
+            'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime',
+            'password' => 'hashed',
+            'email_comment_notifications_enabled' => 'boolean',
+            'email_chat_notifications_enabled' => 'boolean',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
+
+    /**
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
@@ -692,7 +694,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      * @return Builder<self>
      */
     #[Scope]
-    protected function whereNotBlockedBy(Builder $query, User $user): Builder
+    protected function whereNotBlockedBy(Builder $query, self $user): Builder
     {
         return $query->whereDoesntHave('blockedBy', function (Builder $q) use ($user): void {
             $q->where('blocker_id', $user->id);
@@ -706,7 +708,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      * @return Builder<self>
      */
     #[Scope]
-    protected function whereNotBlocking(Builder $query, User $user): Builder
+    protected function whereNotBlocking(Builder $query, self $user): Builder
     {
         return $query->whereDoesntHave('blocking', function (Builder $q) use ($user): void {
             $q->where('blocked_id', $user->id);
@@ -720,7 +722,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      * @return Builder<self>
      */
     #[Scope]
-    protected function withoutBlocked(Builder $query, User $user): Builder
+    protected function withoutBlocked(Builder $query, self $user): Builder
     {
         return $query->whereNotBlockedBy($user)
             ->whereNotBlocking($user);
@@ -731,7 +733,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      * @return Builder<self>
      */
     #[Scope]
-    protected function conversationSearch(Builder $query, User $user, string $search): Builder
+    protected function conversationSearch(Builder $query, self $user, string $search): Builder
     {
         return $query
             ->where('id', '!=', $user->id)

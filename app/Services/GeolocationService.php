@@ -31,6 +31,26 @@ class GeolocationService
     }
 
     /**
+     * Get country flag emoji from country code.
+     */
+    public static function getCountryFlag(string $countryCode): string
+    {
+        if (mb_strlen($countryCode) !== 2) {
+            return '🏳️';
+        }
+
+        $countryCode = mb_strtoupper($countryCode);
+
+        // Convert country code to flag emoji using regional indicator symbols
+        $flag = '';
+        for ($i = 0; $i < 2; $i++) {
+            $flag .= mb_chr(ord($countryCode[$i]) - ord('A') + 0x1F1E6);
+        }
+
+        return $flag;
+    }
+
+    /**
      * Get location data from an IP address.
      *
      * @return array<string, mixed>
@@ -136,25 +156,5 @@ class GeolocationService
             'longitude' => null,
             'timezone' => null,
         ];
-    }
-
-    /**
-     * Get country flag emoji from country code.
-     */
-    public static function getCountryFlag(string $countryCode): string
-    {
-        if (strlen($countryCode) !== 2) {
-            return '🏳️';
-        }
-
-        $countryCode = strtoupper($countryCode);
-
-        // Convert country code to flag emoji using regional indicator symbols
-        $flag = '';
-        for ($i = 0; $i < 2; $i++) {
-            $flag .= mb_chr(ord($countryCode[$i]) - ord('A') + 0x1F1E6);
-        }
-
-        return $flag;
     }
 }

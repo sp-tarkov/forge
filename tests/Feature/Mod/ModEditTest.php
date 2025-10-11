@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Livewire\Page\Mod\Edit;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -29,7 +32,7 @@ describe('Mod Edit Form', function (): void {
                 ->set('description', '')
                 ->set('license', '')
                 ->call('save')
-                ->assertHasErrors(['name', 'guid', 'teaser', 'description', 'license']);
+                ->assertHasErrors(['name', 'teaser', 'description', 'license']);
         });
 
         it('validates GUID format when editing', function (): void {
@@ -361,5 +364,109 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $mod->refresh();
         expect($mod->name)->toBe('Successfully Updated Mod');
         expect($mod->guid)->toBe('com.success.updated');
+    });
+});
+
+describe('GUID Requirements for Mod Editing', function (): void {
+
+    beforeEach(function (): void {
+        // Disable honeypot for testing
+        config()->set('honeypot.enabled', false);
+
+        // Create required data
+        $this->user = User::factory()->withMfa()->create();
+        $this->license = License::factory()->create();
+        $this->category = ModCategory::factory()->create();
+
+        // Create SPT versions for testing
+        SptVersion::factory()->create(['version' => '3.9.0']);
+        SptVersion::factory()->create(['version' => '3.10.0']);
+        SptVersion::factory()->create(['version' => '4.0.0']);
+        SptVersion::factory()->create(['version' => '4.1.0']);
+    });
+
+    uses(RefreshDatabase::class);
+
+    it('allows editing a mod without GUID when no versions target SPT 4.0.0+', function (): void {
+        $this->actingAs($this->user);
+
+        $mod = Mod::factory()->create([
+            'owner_id' => $this->user->id,
+            'guid' => '',
+            'license_id' => $this->license->id,
+            'category_id' => $this->category->id,
+        ]);
+
+        // Create a version targeting SPT 3.x
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '~3.9.0',
+        ]);
+
+        Livewire::test(Edit::class, ['modId' => $mod->id])
+            ->set('guid', '') // Empty GUID
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        // Verify the mod still has empty GUID
+        $mod->refresh();
+        expect($mod->guid)->toBe('');
+    });
+
+    it('requires GUID when editing a mod with versions targeting SPT 4.0.0+', function (): void {
+        $this->actingAs($this->user);
+
+        $mod = Mod::factory()->create([
+            'owner_id' => $this->user->id,
+            'guid' => '',
+            'license_id' => $this->license->id,
+            'category_id' => $this->category->id,
+        ]);
+
+        // Create a version targeting SPT 4.x
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '>=4.0.0',
+        ]);
+
+        Livewire::test(Edit::class, ['modId' => $mod->id])
+            ->set('guid', '') // Try to save with empty GUID
+            ->call('save')
+            ->assertHasErrors(['guid' => 'required']);
+    });
+
+    it('shows appropriate badge in edit form based on GUID requirement', function (): void {
+        $this->actingAs($this->user);
+
+        // Mod without versions targeting SPT 4.x
+        $modWithoutSpt4 = Mod::factory()->create([
+            'owner_id' => $this->user->id,
+            'guid' => '',
+            'license_id' => $this->license->id,
+            'category_id' => $this->category->id,
+        ]);
+        ModVersion::factory()->create([
+            'mod_id' => $modWithoutSpt4->id,
+            'spt_version_constraint' => '~3.9.0',
+        ]);
+
+        $component = Livewire::test(Edit::class, ['modId' => $modWithoutSpt4->id]);
+        expect($component->get('isGuidRequired'))->toBeFalse();
+
+        // Mod with versions targeting SPT 4.x
+        $modWithSpt4 = Mod::factory()->create([
+            'owner_id' => $this->user->id,
+            'guid' => '',
+            'license_id' => $this->license->id,
+            'category_id' => $this->category->id,
+        ]);
+        ModVersion::factory()->create([
+            'mod_id' => $modWithSpt4->id,
+            'spt_version_constraint' => '>=4.0.0',
+        ]);
+
+        $component = Livewire::test(Edit::class, ['modId' => $modWithSpt4->id]);
+        expect($component->get('isGuidRequired'))->toBeTrue();
     });
 });

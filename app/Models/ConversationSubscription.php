@@ -21,18 +21,6 @@ use Illuminate\Support\Carbon;
 class ConversationSubscription extends Model
 {
     /**
-     * The attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'notifications_enabled' => 'boolean',
-        ];
-    }
-
-    /**
      * Get the conversation this subscription belongs to.
      *
      * @return BelongsTo<Conversation, $this>
@@ -50,5 +38,17 @@ class ConversationSubscription extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'notifications_enabled' => 'boolean',
+        ];
     }
 }

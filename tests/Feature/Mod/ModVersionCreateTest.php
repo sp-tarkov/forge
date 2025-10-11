@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
+use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
@@ -14,6 +17,9 @@ describe('Mod Version Create Form', function (): void {
     beforeEach(function (): void {
         // Disable honeypot for testing
         config()->set('honeypot.enabled', false);
+
+        // Disable deferred execution for observer tests
+        $this->withoutDefer();
 
         // Mock HTTP responses for download link validation
         Http::fake([
@@ -772,6 +778,368 @@ describe('Mod Version Create Form', function (): void {
             expect($resolvedVersionIds)->toContain($version1->id);
             expect($resolvedVersionIds)->not->toContain($version2->id);
             expect($resolvedVersionIds)->not->toContain($version3->id);
+        });
+    });
+
+    describe('GUID Requirements', function (): void {
+        beforeEach(function (): void {
+            // Create required data
+            $this->user = User::factory()->withMfa()->create();
+            $this->license = License::factory()->create();
+            $this->category = ModCategory::factory()->create();
+
+            // Create SPT versions for testing
+            SptVersion::factory()->create(['version' => '3.9.0']);
+            SptVersion::factory()->create(['version' => '3.10.0']);
+            SptVersion::factory()->create(['version' => '4.0.0']);
+            SptVersion::factory()->create(['version' => '4.1.0']);
+        });
+
+        it('requires GUID input when creating mod version for SPT 4.0.0+ and parent mod has no GUID', function (): void {
+            $this->actingAs($this->user);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '', // No GUID
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test version')
+                ->set('link', 'https://example.com/mod.zip')
+                ->set('sptVersionConstraint', '>=4.0.0') // Targeting SPT 4.0.0+
+                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+
+            // Component should detect GUID is required
+            expect($component->get('modGuidRequired'))->toBeTrue();
+            expect($component->get('modGuid'))->toBe('');
+
+            // Should show error when trying to save without GUID
+            $component->call('save')
+                ->assertHasErrors(['newModGuid' => 'required']);
+        });
+
+        it('allows creating mod version for SPT 4.0.0+ when parent mod has GUID', function (): void {
+            $this->actingAs($this->user);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => 'com.test.mod', // Has GUID
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test version')
+                ->set('link', 'https://example.com/mod.zip')
+                ->set('sptVersionConstraint', '>=4.0.0') // Targeting SPT 4.0.0+
+                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+
+            // Component should detect GUID exists
+            expect($component->get('modGuidRequired'))->toBeTrue();
+            expect($component->get('modGuid'))->toBe('com.test.mod');
+
+            // Should not have GUID-related errors
+            $component->assertHasNoErrors('modGuid');
+        });
+
+        it('allows creating mod version for SPT 3.x when parent mod has no GUID', function (): void {
+            $this->actingAs($this->user);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '', // No GUID
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test version')
+                ->set('link', 'https://example.com/mod.zip')
+                ->set('sptVersionConstraint', '~3.9.0') // Targeting SPT 3.x
+                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+
+            // Component should not require GUID for SPT 3.x
+            expect($component->get('modGuidRequired'))->toBeFalse();
+
+            // Should not have GUID-related errors
+            $component->assertHasNoErrors('modGuid');
+        });
+
+        it('dynamically updates GUID requirement when SPT version constraint changes', function (): void {
+            $this->actingAs($this->user);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '', // No GUID
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp));
+
+            // Initially no constraint, no requirement
+            expect($component->get('modGuidRequired'))->toBeFalse();
+
+            // Set to SPT 3.x - should not require GUID
+            $component->set('sptVersionConstraint', '~3.9.0');
+            expect($component->get('modGuidRequired'))->toBeFalse();
+
+            // Change to SPT 4.x - should require GUID
+            $component->set('sptVersionConstraint', '>=4.0.0');
+            expect($component->get('modGuidRequired'))->toBeTrue();
+
+            // Change to a range that includes both 3.x and 4.x - should require GUID
+            $component->set('sptVersionConstraint', '>=3.9.0');
+            expect($component->get('modGuidRequired'))->toBeTrue();
+
+            // Change back to only 3.x - should not require GUID
+            $component->set('sptVersionConstraint', '<4.0.0');
+            expect($component->get('modGuidRequired'))->toBeFalse();
+        });
+
+        it('saves GUID inline via saveGuid method', function (): void {
+            $this->actingAs($this->user);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '', // No GUID initially
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('sptVersionConstraint', '>=4.0.0') // Targeting SPT 4.0.0+
+                ->set('newModGuid', 'com.test.savedguid');
+
+            // Component should detect GUID is required
+            expect($component->get('modGuidRequired'))->toBeTrue();
+            expect($component->get('modGuid'))->toBe('');
+            expect($component->get('guidSaved'))->toBeFalse();
+
+            // Save GUID inline
+            $component->call('saveGuid')
+                ->assertHasNoErrors();
+
+            // Check that GUID was saved
+            expect($component->get('guidSaved'))->toBeTrue();
+            expect($component->get('modGuid'))->toBe('com.test.savedguid');
+
+            // Verify the mod was updated with the new GUID
+            $mod->refresh();
+            expect($mod->guid)->toBe('com.test.savedguid');
+        });
+
+        it('validates GUID format when saving inline', function (): void {
+            $this->actingAs($this->user);
+
+            // Create a mod with an existing GUID for uniqueness test
+            Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => 'com.existing.mod',
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '',
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('sptVersionConstraint', '>=4.0.0');
+
+            // Test invalid format
+            $component->set('newModGuid', 'Invalid GUID Format')
+                ->call('saveGuid')
+                ->assertHasErrors(['newModGuid' => 'regex']);
+
+            // Test duplicate GUID
+            $component->set('newModGuid', 'com.existing.mod')
+                ->call('saveGuid')
+                ->assertHasErrors(['newModGuid' => 'unique']);
+
+            // Test empty GUID
+            $component->set('newModGuid', '')
+                ->call('saveGuid')
+                ->assertHasErrors(['newModGuid' => 'required']);
+        });
+
+        it('saves GUID to mod when creating version for SPT 4.0.0+ with inline GUID field', function (): void {
+            $this->actingAs($this->user);
+
+            // Mock HTTP responses for download link validation
+            Http::fake([
+                'https://example.com/mod.zip' => Http::response('', 200, [
+                    'content-type' => 'application/octet-stream',
+                    'content-disposition' => 'attachment; filename="mod.zip"',
+                    'content-length' => '1048576',
+                ]),
+            ]);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '', // No GUID initially
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test version with GUID')
+                ->set('link', 'https://example.com/mod.zip')
+                ->set('sptVersionConstraint', '>=4.0.0') // Targeting SPT 4.0.0+
+                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test')
+                ->set('newModGuid', 'com.test.newmod'); // Provide the new GUID
+
+            // Component should detect GUID is required
+            expect($component->get('modGuidRequired'))->toBeTrue();
+            expect($component->get('modGuid'))->toBe('');
+
+            // Save should succeed
+            $component->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            // Verify the mod was updated with the new GUID
+            $mod->refresh();
+            expect($mod->guid)->toBe('com.test.newmod');
+
+            // Verify the version was created
+            expect($mod->versions()->count())->toBe(1);
+            $version = $mod->versions()->first();
+            expect($version->version)->toBe('1.0.0');
+            expect($version->spt_version_constraint)->toBe('>=4.0.0');
+        });
+
+        it('validates GUID format and uniqueness when provided inline', function (): void {
+            $this->actingAs($this->user);
+
+            // Mock HTTP responses for download link validation
+            Http::fake([
+                'https://example.com/mod.zip' => Http::response('', 200, [
+                    'content-type' => 'application/octet-stream',
+                    'content-disposition' => 'attachment; filename="mod.zip"',
+                    'content-length' => '1048576',
+                ]),
+            ]);
+
+            // Create a mod with an existing GUID
+            $existingMod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => 'com.existing.mod',
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '', // No GUID
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test version')
+                ->set('link', 'https://example.com/mod.zip')
+                ->set('sptVersionConstraint', '>=4.0.0')
+                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+
+            // Test invalid format
+            $component->set('newModGuid', 'Invalid GUID Format')
+                ->call('save')
+                ->assertHasErrors(['newModGuid' => 'regex']);
+
+            // Test duplicate GUID
+            $component->set('newModGuid', 'com.existing.mod')
+                ->call('save')
+                ->assertHasErrors(['newModGuid' => 'unique']);
+
+            // Test valid unique GUID
+            $component->set('newModGuid', 'com.unique.mod')
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            // Verify the mod was updated
+            $mod->refresh();
+            expect($mod->guid)->toBe('com.unique.mod');
+        });
+
+        it('does not require GUID in version form after inline save', function (): void {
+            $this->actingAs($this->user);
+
+            // Mock HTTP responses for download link validation
+            Http::fake([
+                'https://example.com/mod.zip' => Http::response('', 200, [
+                    'content-type' => 'application/octet-stream',
+                    'content-disposition' => 'attachment; filename="mod.zip"',
+                    'content-length' => '1048576',
+                ]),
+            ]);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $this->user->id,
+                'guid' => '',
+                'license_id' => $this->license->id,
+                'category_id' => $this->category->id,
+            ]);
+
+            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('sptVersionConstraint', '>=4.0.0')
+                ->set('newModGuid', 'com.test.inlinesave');
+
+            // Save GUID inline first
+            $component->call('saveGuid')
+                ->assertHasNoErrors();
+
+            expect($component->get('guidSaved'))->toBeTrue();
+
+            // Now complete the form and save without needing GUID validation
+            $component->set('version', '1.0.0')
+                ->set('description', 'Test version after inline save')
+                ->set('link', 'https://example.com/mod.zip')
+                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test')
+                ->call('save')
+                ->assertHasNoErrors() // Should not have GUID errors
+                ->assertRedirect();
+
+            // Verify version was created
+            expect($mod->versions()->count())->toBe(1);
         });
     });
 });

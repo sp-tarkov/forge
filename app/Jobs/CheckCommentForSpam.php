@@ -27,14 +27,6 @@ class CheckCommentForSpam implements ShouldQueue
     use SerializesModels;
 
     /**
-     * Maximum number of recheck attempts allowed.
-     */
-    private function getMaxRecheckAttempts(): int
-    {
-        return config('comments.spam.max_recheck_attempts', 3);
-    }
-
-    /**
      * Create a new job instance.
      */
     public function __construct(
@@ -99,6 +91,14 @@ class CheckCommentForSpam implements ShouldQueue
 
         // Schedule recheck if Akismet recommends it and we haven't exceeded max attempts
         $this->scheduleRecheckIfNeeded($result);
+    }
+
+    /**
+     * Maximum number of recheck attempts allowed.
+     */
+    private function getMaxRecheckAttempts(): int
+    {
+        return config('comments.spam.max_recheck_attempts', 3);
     }
 
     /**

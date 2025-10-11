@@ -50,4 +50,5 @@ return RectorConfig::configure()
     ->withCodeQualityLevel(10)
     ->withCodingStyleLevel(10)
     ->withImportNames(removeUnusedImports: true)
-    ->withAttributesSets();
+    ->withAttributesSets()
+    ->withTypeCoverageDocblockLevel(10);

@@ -29,6 +29,16 @@ class ModCategory extends Model
     use HasFactory;
 
     /**
+     * The mods in this category.
+     *
+     * @return HasMany<Mod, $this>
+     */
+    public function mods(): HasMany
+    {
+        return $this->hasMany(Mod::class, 'category_id');
+    }
+
+    /**
      * Boot the model.
      */
     #[Override]
@@ -50,17 +60,9 @@ class ModCategory extends Model
     }
 
     /**
-     * The mods in this category.
-     *
-     * @return HasMany<Mod, $this>
-     */
-    public function mods(): HasMany
-    {
-        return $this->hasMany(Mod::class, 'category_id');
-    }
-
-    /**
      * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
      */
     protected function casts(): array
     {
