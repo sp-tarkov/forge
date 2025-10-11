@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.356.36",
+            "version": "3.356.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "20facd00fe1a8f733c3275918bf533d2330af53d"
+                "reference": "855bcaaa4c486fc67447bf17cfbff9ff75341ad7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/20facd00fe1a8f733c3275918bf533d2330af53d",
-                "reference": "20facd00fe1a8f733c3275918bf533d2330af53d",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/855bcaaa4c486fc67447bf17cfbff9ff75341ad7",
+                "reference": "855bcaaa4c486fc67447bf17cfbff9ff75341ad7",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.356.36"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.356.37"
             },
-            "time": "2025-10-09T18:07:17+00:00"
+            "time": "2025-10-10T18:50:12+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -7942,16 +7942,16 @@
         },
         {
             "name": "spatie/flare-client-php",
-            "version": "2.3.0",
+            "version": "2.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/flare-client-php.git",
-                "reference": "ea96d50e55da4699465dd1fe34b0a219b9844ce5"
+                "reference": "699c929d6baef4945e8e34985356ebbccdc4be4c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/ea96d50e55da4699465dd1fe34b0a219b9844ce5",
-                "reference": "ea96d50e55da4699465dd1fe34b0a219b9844ce5",
+                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/699c929d6baef4945e8e34985356ebbccdc4be4c",
+                "reference": "699c929d6baef4945e8e34985356ebbccdc4be4c",
                 "shasum": ""
             },
             "require": {
@@ -8001,7 +8001,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/flare-client-php/issues",
-                "source": "https://github.com/spatie/flare-client-php/tree/2.3.0"
+                "source": "https://github.com/spatie/flare-client-php/tree/2.3.1"
             },
             "funding": [
                 {
@@ -8009,7 +8009,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-08T14:39:23+00:00"
+            "time": "2025-10-10T10:20:30+00:00"
         },
         {
             "name": "spatie/laravel-discord-alerts",
@@ -15278,11 +15278,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.30",
+            "version": "2.1.31",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a4a7f159927983dd4f7c8020ed227d80b7f39d7d",
-                "reference": "a4a7f159927983dd4f7c8020ed227d80b7f39d7d",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ead89849d879fe203ce9292c6ef5e7e76f867b96",
+                "reference": "ead89849d879fe203ce9292c6ef5e7e76f867b96",
                 "shasum": ""
             },
             "require": {
@@ -15327,7 +15327,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-02T16:07:52+00:00"
+            "time": "2025-10-10T14:14:11+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
