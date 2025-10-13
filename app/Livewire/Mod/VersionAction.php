@@ -6,8 +6,8 @@ namespace App\Livewire\Mod;
 
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModerationActionMenu;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -153,7 +153,7 @@ class VersionAction extends Component
     {
         $this->authorize('publish', $this->version);
 
-        $publishedDate = $this->publishedAt ? Carbon::parse($this->publishedAt) : now();
+        $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
 
         ModVersion::query()->where('id', $this->versionId)->update(['published_at' => $publishedDate]);
 

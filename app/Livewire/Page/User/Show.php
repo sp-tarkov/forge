@@ -91,8 +91,7 @@ class Show extends Component
                 'authors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
-            ])
-            ->orderByDesc('created_at');
+            ])->latest();
 
         $query->unless(
             request()->user()?->can('viewDisabledUserMods', $this->user),

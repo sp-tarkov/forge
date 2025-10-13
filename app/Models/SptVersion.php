@@ -124,7 +124,7 @@ class SptVersion extends Model
         // Perform the regex match to capture the version sections, including the possible preRelease section.
         preg_match('/^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([a-zA-Z0-9]+))?$/', $version, $matches);
 
-        throw_if($matches === [], new InvalidVersionNumberException('Invalid SPT version number: '.$version));
+        throw_if($matches === [], InvalidVersionNumberException::class, 'Invalid SPT version number: '.$version);
 
         return [
             'major' => $matches[1] ?? 0,

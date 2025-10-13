@@ -26,10 +26,10 @@ class CommentObserver
         $commentable->subscribeUser($comment->user);
 
         // Dispatch the spam check job.
-        CheckCommentForSpam::dispatch($comment);
+        dispatch(new CheckCommentForSpam($comment));
 
         // Dispatch the comment notification job.
-        ProcessCommentNotification::dispatch($comment);
+        dispatch(new ProcessCommentNotification($comment));
     }
 
     /**

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Database\Factories\VisitorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Date;
 
 /**
  * Model for tracking peak visitor statistics.
@@ -44,12 +45,12 @@ class Visitor extends Model
         if ($peak) {
             $peak->update([
                 'peak_count' => $count,
-                'peak_date' => Carbon::now(),
+                'peak_date' => Date::now(),
             ]);
         } else {
             static::query()->create([
                 'peak_count' => $count,
-                'peak_date' => Carbon::now(),
+                'peak_date' => Date::now(),
             ]);
         }
     }

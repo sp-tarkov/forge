@@ -15,7 +15,7 @@ class UpdateModDownloadsCommand extends Command
 
     public function handle(): void
     {
-        UpdateModDownloadsJob::dispatch()->onQueue('default');
+        dispatch(new UpdateModDownloadsJob())->onQueue('default');
 
         $this->info('UpdateModDownloadsJob added to the queue');
     }

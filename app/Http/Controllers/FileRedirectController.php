@@ -20,7 +20,7 @@ class FileRedirectController extends Controller
             $mod = Mod::query()->where('hub_id', $hubId)->firstOrFail();
         }
 
-        return redirect()->route('mod.show', [
+        return to_route('mod.show', [
             'modId' => $mod->id,
             'slug' => $mod->slug,
         ]);

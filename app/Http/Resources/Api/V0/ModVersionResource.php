@@ -41,7 +41,7 @@ class ModVersionResource extends JsonResource
             ->explode(',')
             ->map(fn (string $field): string => mb_trim($field))
             ->filter()
-            ->toArray();
+            ->all();
 
         $this->showAllFields = empty($this->requestedFields);
 

@@ -149,7 +149,7 @@ describe('comment observer behavior', function (): void {
 
         // Process jobs synchronously for testing
         Queue::fake();
-        CheckCommentForSpam::dispatchSync($comment);
+        dispatch_sync(new CheckCommentForSpam($comment));
 
         // Refresh comment from database
         $comment->refresh();

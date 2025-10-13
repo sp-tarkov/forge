@@ -13,7 +13,7 @@ use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -139,14 +139,14 @@ class Edit extends Component
         $this->sourceCodeLinks = $this->mod->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
             'url' => $link->url,
             'label' => $link->label,
-        ])->toArray();
+        ])->all();
 
         // Ensure at least one empty link input if no links exist
         if (empty($this->sourceCodeLinks)) {
             $this->sourceCodeLinks[] = ['url' => '', 'label' => ''];
         }
 
-        $this->publishedAt = $this->mod->published_at ? Carbon::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
+        $this->publishedAt = $this->mod->published_at ? Date::parse($this->mod->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
         $this->commentsDisabled = (bool) $this->mod->comments_disabled;
@@ -217,7 +217,7 @@ class Edit extends Component
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
         if ($this->publishedAt !== null) {
-            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
+            $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         // Update mod fields

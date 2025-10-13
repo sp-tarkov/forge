@@ -129,7 +129,7 @@ class ModFilter
         return match ($type) {
             'updated' => $this->orderByLatestVersionCreatedAt(),
             'downloaded' => $this->builder->orderByDesc('mods.downloads'),
-            default => $this->builder->orderByDesc('mods.created_at'),
+            default => $this->builder->latest('mods.created_at'),
         };
     }
 
@@ -164,7 +164,7 @@ class ModFilter
                             ->where('mv2.disabled', false);
                     });
             })
-            ->orderByDesc('latest_versions.created_at');
+            ->latest('latest_versions.created_at');
     }
 
     /**

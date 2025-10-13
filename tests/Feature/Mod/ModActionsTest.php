@@ -14,8 +14,8 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Policies\ModVersionPolicy;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -213,7 +213,7 @@ describe('mod publishing functionality', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
 
-        $publishDate = Carbon::now()->addHour()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
             ->test(Action::class, [
@@ -229,12 +229,12 @@ describe('mod publishing functionality', function (): void {
 
         $mod->refresh();
         expect($mod->published_at)->not->toBeNull();
-        expect($mod->published_at->format('Y-m-d H:i:s'))->toBe(Carbon::parse($publishDate)->format('Y-m-d H:i:s'));
+        expect($mod->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate)->format('Y-m-d H:i:s'));
     });
 
     it('allows mod owners to unpublish a mod', function (): void {
         $owner = User::factory()->create();
-        $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => Carbon::now()]);
+        $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => Date::now()]);
 
         Livewire::actingAs($owner)
             ->test(Action::class, [
@@ -256,7 +256,7 @@ describe('mod publishing functionality', function (): void {
         $otherUser = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
 
-        $publishDate = Carbon::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
@@ -290,7 +290,7 @@ describe('mod publishing functionality', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
         $mod->authors()->attach($author);
 
-        $publishDate = Carbon::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         // Test author can publish
         Livewire::actingAs($author)
@@ -325,13 +325,108 @@ describe('mod publishing functionality', function (): void {
     });
 });
 
+describe('mod featuring functionality', function (): void {
+    it('allows administrators to feature mods without AI content', function (): void {
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => false]);
+
+        Livewire::actingAs($user)
+            ->test(Action::class, [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => false,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('feature')
+            ->assertSet('modFeatured', true);
+
+        $mod->refresh();
+        expect($mod->featured)->toBeTrue();
+    });
+
+    it('prevents administrators from featuring mods with AI content', function (): void {
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => true]);
+
+        Livewire::actingAs($user)
+            ->test(Action::class, [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => false,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('feature')
+            ->assertForbidden();
+
+        $mod->refresh();
+        expect($mod->featured)->toBeFalse();
+    });
+
+    it('allows administrators to unfeature mods with AI content', function (): void {
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $mod = Mod::factory()->create(['featured' => true, 'contains_ai_content' => true]);
+
+        Livewire::actingAs($user)
+            ->test(Action::class, [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => true,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('unfeature')
+            ->assertSet('modFeatured', false);
+
+        $mod->refresh();
+        expect($mod->featured)->toBeFalse();
+    });
+
+    it('hides feature option for mods with AI content in permissions', function (): void {
+        $userRole = UserRole::factory()->administrator()->create();
+        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => true]);
+
+        Livewire::actingAs($user)
+            ->test(Action::class, [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => false,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertSet('permissions.feature', false);
+    });
+
+    it('prevents normal users from featuring mods', function (): void {
+        $user = User::factory()->create(['user_role_id' => null]);
+        $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => false]);
+
+        Livewire::actingAs($user)
+            ->test(Action::class, [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => false,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('feature')
+            ->assertForbidden();
+    });
+});
+
 describe('mod version publishing functionality', function (): void {
     it('allows mod owners to publish a version with specified date', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => null]);
 
-        $publishDate = Carbon::now()->addHour()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
             ->test(VersionAction::class, [
@@ -347,13 +442,13 @@ describe('mod version publishing functionality', function (): void {
 
         $version->refresh();
         expect($version->published_at)->not->toBeNull();
-        expect($version->published_at->format('Y-m-d H:i:s'))->toBe(Carbon::parse($publishDate)->format('Y-m-d H:i:s'));
+        expect($version->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate)->format('Y-m-d H:i:s'));
     });
 
     it('allows mod owners to unpublish a version', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
-        $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => Carbon::now()]);
+        $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => Date::now()]);
 
         // Test policy directly first
         $policy = new ModVersionPolicy;
@@ -383,7 +478,7 @@ describe('mod version publishing functionality', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $publishDate = Carbon::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
@@ -418,7 +513,7 @@ describe('mod version publishing functionality', function (): void {
         $mod->authors()->attach($author);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => null]);
 
-        $publishDate = Carbon::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         // Test author can publish
         Livewire::actingAs($author)

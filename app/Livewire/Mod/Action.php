@@ -8,8 +8,8 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
 use App\Traits\Livewire\ModerationActionMenu;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -91,7 +91,7 @@ class Action extends Component
     #[Computed(persist: true)]
     public function mod(): Mod
     {
-        return Mod::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'featured', 'disabled', 'published_at', 'owner_id'])
+        return Mod::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'featured', 'disabled', 'published_at', 'owner_id', 'contains_ai_content'])
             ->with('owner:id,name')
             ->findOrFail($this->modId);
     }
@@ -223,7 +223,7 @@ class Action extends Component
     {
         $this->authorize('publish', $this->mod);
 
-        $publishedDate = $this->publishedAt ? Carbon::parse($this->publishedAt) : now();
+        $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
 
         Mod::query()->where('id', $this->modId)->update(['published_at' => $publishedDate]);
 

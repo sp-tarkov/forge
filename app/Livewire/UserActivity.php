@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Enums\TrackingEventType;
+use App\Models\Mod;
+use App\Models\ModVersion;
 use App\Models\TrackingEvent;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -41,24 +43,22 @@ class UserActivity extends Component
         $events = TrackingEvent::query()
             // Get all events where the user is the visitor (simplified since logout now has visitor_id)
             ->where('visitor_id', $this->user->id)
-            ->with(['visitable'])
-            ->orderBy('created_at', 'desc')
+            ->with('visitable')
+            ->latest()
             ->limit(15)
             ->get();
+
+        // Eagerly load the mod relationship without global scopes for ModVersion visitables only
+        $events->each(function (TrackingEvent $event): void {
+            if ($event->visitable instanceof ModVersion && ! $event->visitable->relationLoaded('mod')) {
+                $event->visitable->loadMissing(['mod' => fn ($query) => $query->withoutGlobalScopes()]);
+            }
+        });
 
         // If not authenticated or not viewing own profile and not a moderator/admin, filter private events
         if (! auth()->check() ||
             (auth()->id() !== $this->user->id && ! auth()->user()->isModOrAdmin())) {
-            return $events->filter(function (TrackingEvent $event) {
-                // Skip events with null event names (they're considered public)
-                if (! $event->event_name) {
-                    return true;
-                }
-
-                $eventType = TrackingEventType::tryFrom($event->event_name);
-
-                return ! ($eventType && $eventType->isPrivate());
-            });
+            return $events->reject(fn (TrackingEvent $event): bool => $this->shouldEventBePrivate($event));
         }
 
         return $events;
@@ -118,5 +118,38 @@ class UserActivity extends Component
     public function render(): View
     {
         return view('livewire.user-activity');
+    }
+
+    /**
+     * Determine if an event should be treated as private based on event type or related models.
+     * This is used to filter events for non-owners/non-admins.
+     */
+    private function shouldEventBePrivate(TrackingEvent $event): bool
+    {
+        // Check if the event type itself is private
+        if (! $event->event_name) {
+            return false;
+        }
+
+        $eventType = TrackingEventType::tryFrom($event->event_name);
+        if ($eventType && $eventType->isPrivate()) {
+            return true;
+        }
+
+        // For mod-related events, check if the mod is unpublished
+        if ($event->visitable instanceof ModVersion) {
+            $mod = $event->visitable->mod;
+            if (is_null($mod->published_at) || $mod->published_at > now()) {
+                return true;
+            }
+        }
+
+        if ($event->visitable instanceof Mod) {
+            if (is_null($event->visitable->published_at) || $event->visitable->published_at > now()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

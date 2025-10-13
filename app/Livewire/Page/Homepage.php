@@ -94,8 +94,7 @@ class Homepage extends Component
                 'owner:id,name',
                 'authors:id,name',
                 'license:id,name,link',
-            ])
-            ->orderByDesc('created_at')
+            ])->latest()
             ->limit(6);
 
         $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->where('mods.disabled', false));

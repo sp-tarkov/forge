@@ -16,7 +16,7 @@ use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
 use Composer\Semver\Semver;
 use Exception;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -146,7 +146,7 @@ class Edit extends Component
         $this->link = $modVersion->link;
         $this->sptVersionConstraint = $modVersion->spt_version_constraint;
         $this->virusTotalLink = $modVersion->virus_total_link;
-        $this->publishedAt = $modVersion->published_at ? Carbon::parse($modVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
+        $this->publishedAt = $modVersion->published_at ? Date::parse($modVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
 
         $this->loadExistingDependencies();
 
@@ -348,7 +348,7 @@ class Edit extends Component
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
         if ($this->publishedAt !== null) {
-            $publishedAtCarbon = Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
+            $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         // Use a transaction to ensure both mod GUID and version are saved atomically

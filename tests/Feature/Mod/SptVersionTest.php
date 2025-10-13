@@ -8,9 +8,9 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 
 uses(RefreshDatabase::class);
 
@@ -184,7 +184,7 @@ describe('SPT version publish date visibility', function (): void {
         $published = SptVersion::factory()->create();
         $unpublished = SptVersion::factory()->unpublished()->create();
         $scheduledFuture = SptVersion::factory()->scheduled()->create();
-        $scheduledPast = SptVersion::factory()->publishedAt(Carbon::now()->subHour())->create();
+        $scheduledPast = SptVersion::factory()->publishedAt(Date::now()->subHour())->create();
 
         expect($published->is_published)->toBeTrue();
         expect($unpublished->is_published)->toBeFalse();
@@ -256,8 +256,8 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create();
 
         // Attach with pinning
-        $modVersion->sptVersions()->attach($unpublishedSpt->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $unpublishedSpt->id => ['pinned_to_spt_publish' => true],
         ]);
 
         expect($modVersion->isPinnedToUnpublishedSptVersion())->toBeTrue();
@@ -269,15 +269,15 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $sptVersion = SptVersion::factory()->unpublished()->create();
 
         // Attach with pinning
-        $modVersion->sptVersions()->attach($sptVersion->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $sptVersion->id => ['pinned_to_spt_publish' => true],
         ]);
 
         // Initially should be pinned to unpublished
         expect($modVersion->isPinnedToUnpublishedSptVersion())->toBeTrue();
 
         // Publish the SPT version
-        $sptVersion->publish_date = Carbon::now()->subHour();
+        $sptVersion->publish_date = Date::now()->subHour();
         $sptVersion->save();
 
         // Refresh and check again
@@ -291,8 +291,8 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create();
 
         // Attach without pinning
-        $modVersion->sptVersions()->attach($unpublishedSpt->id, [
-            'pinned_to_spt_publish' => false,
+        $modVersion->sptVersions()->sync([
+            $unpublishedSpt->id => ['pinned_to_spt_publish' => false],
         ]);
 
         expect($modVersion->isPinnedToUnpublishedSptVersion())->toBeFalse();
@@ -302,20 +302,22 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $mod = Mod::factory()->create();
         $modVersion = ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $spt1 = SptVersion::factory()->scheduled(Carbon::now()->addDays(5))->create(['version' => '4.0.1']);
-        $spt2 = SptVersion::factory()->scheduled(Carbon::now()->addDays(3))->create(['version' => '4.0.0']);
+        $spt1 = SptVersion::factory()->scheduled(Date::now()->addDays(5))->create(['version' => '4.0.1']);
+        $spt2 = SptVersion::factory()->scheduled(Date::now()->addDays(3))->create(['version' => '4.0.0']);
         $spt3 = SptVersion::factory()->create(['version' => '3.9.0']); // Published
 
         // Attach with different pinning states
-        $modVersion->sptVersions()->attach($spt1->id, ['pinned_to_spt_publish' => true]);
-        $modVersion->sptVersions()->attach($spt2->id, ['pinned_to_spt_publish' => true]);
-        $modVersion->sptVersions()->attach($spt3->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([
+            $spt1->id => ['pinned_to_spt_publish' => true],
+            $spt2->id => ['pinned_to_spt_publish' => true],
+            $spt3->id => ['pinned_to_spt_publish' => true],
+        ]);
 
         $latestDate = $modVersion->getLatestPinnedSptPublishDate();
 
         // Should return the latest date (5 days) to ensure mod waits for ALL unpublished versions
         expect($latestDate)->not->toBeNull();
-        expect($latestDate->toDateString())->toBe(Carbon::now()->addDays(5)->toDateString());
+        expect($latestDate->toDateString())->toBe(Date::now()->addDays(5)->toDateString());
     });
 
     it('returns null when no unpublished pinned SPT versions', function (): void {
@@ -325,7 +327,7 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $publishedSpt = SptVersion::factory()->create();
 
         // Attach published version with pinning
-        $modVersion->sptVersions()->attach($publishedSpt->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([$publishedSpt->id => ['pinned_to_spt_publish' => true]]);
 
         $latestDate = $modVersion->getLatestPinnedSptPublishDate();
 
@@ -336,7 +338,7 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $mod = Mod::factory()->create();
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
             'disabled' => false,
         ]);
 
@@ -344,8 +346,10 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create();
 
         // Attach both versions, but only pin to unpublished
-        $modVersion->sptVersions()->attach($publishedSpt->id, ['pinned_to_spt_publish' => false]);
-        $modVersion->sptVersions()->attach($unpublishedSpt->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([
+            $publishedSpt->id => ['pinned_to_spt_publish' => false],
+            $unpublishedSpt->id => ['pinned_to_spt_publish' => true],
+        ]);
 
         expect($modVersion->isPubliclyVisible())->toBeFalse();
     });
@@ -354,24 +358,26 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $mod = Mod::factory()->create();
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
             'disabled' => false,
         ]);
 
         // Create two unpublished SPT versions with different release dates
-        $sptTomorrow = SptVersion::factory()->scheduled(Carbon::now()->addDay())->create(['version' => '4.0.0']);
-        $sptInTwoDays = SptVersion::factory()->scheduled(Carbon::now()->addDays(2))->create(['version' => '4.0.1']);
+        $sptTomorrow = SptVersion::factory()->scheduled(Date::now()->addDay())->create(['version' => '4.0.0']);
+        $sptInTwoDays = SptVersion::factory()->scheduled(Date::now()->addDays(2))->create(['version' => '4.0.1']);
 
         // Pin the mod version to both unpublished SPT versions
-        $modVersion->sptVersions()->attach($sptTomorrow->id, ['pinned_to_spt_publish' => true]);
-        $modVersion->sptVersions()->attach($sptInTwoDays->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([
+            $sptTomorrow->id => ['pinned_to_spt_publish' => true],
+            $sptInTwoDays->id => ['pinned_to_spt_publish' => true],
+        ]);
 
         // Initially not visible (waiting for both)
         expect($modVersion->isPinnedToUnpublishedSptVersion())->toBeTrue();
         expect($modVersion->isPubliclyVisible())->toBeFalse();
 
         // Publish only the first SPT version (4.0.0)
-        $sptTomorrow->publish_date = Carbon::now()->subHour();
+        $sptTomorrow->publish_date = Date::now()->subHour();
         $sptTomorrow->save();
         $modVersion->refresh();
 
@@ -380,7 +386,7 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         expect($modVersion->isPubliclyVisible())->toBeFalse();
 
         // Now publish the second SPT version (4.0.1)
-        $sptInTwoDays->publish_date = Carbon::now()->subHour();
+        $sptInTwoDays->publish_date = Date::now()->subHour();
         $sptInTwoDays->save();
         $modVersion->refresh();
 
@@ -393,20 +399,20 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $mod = Mod::factory()->create();
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
             'disabled' => false,
         ]);
 
         $sptVersion = SptVersion::factory()->unpublished()->create();
 
         // Attach with pinning
-        $modVersion->sptVersions()->attach($sptVersion->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([$sptVersion->id => ['pinned_to_spt_publish' => true]]);
 
         // Initially not visible
         expect($modVersion->isPubliclyVisible())->toBeFalse();
 
         // Publish the SPT version
-        $sptVersion->publish_date = Carbon::now()->subHour();
+        $sptVersion->publish_date = Date::now()->subHour();
         $sptVersion->save();
 
         // Should now be visible
@@ -440,7 +446,7 @@ describe('SPT version cache management', function (): void {
         expect($versions)->not->toContain('88.88.88');
 
         // Publish the version
-        $version->publish_date = Carbon::now()->subHour();
+        $version->publish_date = Date::now()->subHour();
         $version->save();
 
         // Cache should be rebuilt
@@ -493,14 +499,14 @@ describe('Mod filtering with SPT version caching', function (): void {
             'published_at' => now()->subDay(),
             'spt_version_constraint' => '', // Empty constraint to prevent auto-sync
         ]));
-        $modVersion1->sptVersions()->attach($publishedSpt);
+        $modVersion1->sptVersions()->sync($publishedSpt);
 
         $mod2 = Mod::factory()->create(['name' => 'Test Mod Cache 2']);
         $modVersion2 = ModVersion::withoutEvents(fn () => ModVersion::factory()->for($mod2)->create([
             'published_at' => now()->subDay(),
             'spt_version_constraint' => '', // Empty constraint to prevent auto-sync
         ]));
-        $modVersion2->sptVersions()->attach($futurePublishedSpt);
+        $modVersion2->sptVersions()->sync($futurePublishedSpt);
 
         // Test as guest user with legacy filter to trigger caching
         $guestFilter = new ModFilter([
@@ -605,7 +611,7 @@ describe('Mod filtering with SPT version caching', function (): void {
             'version_major' => 1,
             'version_minor' => 1,
             'version_patch' => 0,
-            'publish_date' => now()->startOfDay(),
+            'publish_date' => today(),
         ]);
 
         $futureSpt = SptVersion::factory()->create([
@@ -641,7 +647,7 @@ describe('Mod filtering with SPT version caching', function (): void {
                 'published_at' => now()->subDay(),
                 'spt_version_constraint' => '',
             ]));
-            $modVersion->sptVersions()->attach($spt);
+            $modVersion->sptVersions()->sync($spt);
             $mods[$spt->version] = $mod;
         }
 

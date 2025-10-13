@@ -178,6 +178,11 @@ class ModPolicy
             return false;
         }
 
+        // Cannot feature mods that contain AI content
+        if ($mod->contains_ai_content) {
+            return false;
+        }
+
         return $user->isAdmin();
     }
 

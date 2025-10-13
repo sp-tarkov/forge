@@ -8,8 +8,8 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
 use App\Models\ModCategory;
-use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -165,7 +165,7 @@ class Create extends Component
         // convert it to UTC for DB storage. Zero out seconds for consistency with datetime-local input format.
         if ($this->publishedAt !== null) {
             $userTimezone = auth()->user()->timezone ?? 'UTC';
-            $this->publishedAt = Carbon::parse($this->publishedAt, $userTimezone)
+            $this->publishedAt = Date::parse($this->publishedAt, $userTimezone)
                 ->setTimezone('UTC')
                 ->second(0)
                 ->toDateTimeString();

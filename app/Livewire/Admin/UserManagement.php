@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -395,14 +396,14 @@ class UserManagement extends Component
 
         // Date range filters
         if ($this->joinedFrom && $this->joinedTo) {
-            $fromDate = Carbon::parse($this->joinedFrom)->format('M j, Y');
-            $toDate = Carbon::parse($this->joinedTo)->format('M j, Y');
+            $fromDate = Date::parse($this->joinedFrom)->format('M j, Y');
+            $toDate = Date::parse($this->joinedTo)->format('M j, Y');
             $filters[] = sprintf('Joined: %s - %s', $fromDate, $toDate);
         } elseif ($this->joinedFrom) {
-            $fromDate = Carbon::parse($this->joinedFrom)->format('M j, Y');
+            $fromDate = Date::parse($this->joinedFrom)->format('M j, Y');
             $filters[] = sprintf('Joined after: %s', $fromDate);
         } elseif ($this->joinedTo) {
-            $toDate = Carbon::parse($this->joinedTo)->format('M j, Y');
+            $toDate = Date::parse($this->joinedTo)->format('M j, Y');
             $filters[] = sprintf('Joined before: %s', $toDate);
         }
 

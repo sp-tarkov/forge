@@ -19,7 +19,7 @@ beforeEach(function (): void {
 
 it('returns rss feed with correct content type', function (): void {
     $modVersion = ModVersion::factory()->create(['published_at' => now()]);
-    $modVersion->sptVersions()->attach($this->sptVersion->id);
+    $modVersion->sptVersions()->sync($this->sptVersion->id);
     $mod = $modVersion->mod;
     $mod->update(['published_at' => now()]);
 
@@ -37,7 +37,7 @@ it('generates valid rss xml structure', function (): void {
         'published_at' => now(),
     ]);
     $modVersion = ModVersion::factory()->create(['mod_id' => $mod->id]);
-    $modVersion->sptVersions()->attach($this->sptVersion->id);
+    $modVersion->sptVersions()->sync($this->sptVersion->id);
 
     $response = $this->get(route('mods.rss'));
 
@@ -61,7 +61,7 @@ it('includes mods in rss items', function (): void {
 
     foreach ($mods as $mod) {
         $modVersion = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => now()]);
-        $modVersion->sptVersions()->attach($this->sptVersion->id);
+        $modVersion->sptVersions()->sync($this->sptVersion->id);
     }
 
     $response = $this->get(route('mods.rss'));
@@ -87,11 +87,11 @@ it('includes mods in rss items', function (): void {
 it('filters mods by search query', function (): void {
     $mod1 = Mod::factory()->create(['name' => 'Weapon Pack', 'featured' => false, 'published_at' => now()]);
     $modVersion1 = ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now()]);
-    $modVersion1->sptVersions()->attach($this->sptVersion->id);
+    $modVersion1->sptVersions()->sync($this->sptVersion->id);
 
     $mod2 = Mod::factory()->create(['name' => 'Armor Set', 'featured' => false, 'published_at' => now()]);
     $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id, 'published_at' => now()]);
-    $modVersion2->sptVersions()->attach($this->sptVersion->id);
+    $modVersion2->sptVersions()->sync($this->sptVersion->id);
 
     $response = $this->get(route('mods.rss', ['query' => 'Weapon']));
 
@@ -107,11 +107,11 @@ it('filters mods by search query', function (): void {
 it('filters mods by featured status', function (): void {
     $mod1 = Mod::factory()->create(['name' => 'Featured Mod', 'featured' => true, 'published_at' => now()]);
     $modVersion1 = ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now()]);
-    $modVersion1->sptVersions()->attach($this->sptVersion->id);
+    $modVersion1->sptVersions()->sync($this->sptVersion->id);
 
     $mod2 = Mod::factory()->create(['name' => 'Regular Mod', 'featured' => false, 'published_at' => now()]);
     $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id, 'published_at' => now()]);
-    $modVersion2->sptVersions()->attach($this->sptVersion->id);
+    $modVersion2->sptVersions()->sync($this->sptVersion->id);
 
     $response = $this->get(route('mods.rss', ['featured' => 'only']));
 
@@ -127,11 +127,11 @@ it('filters mods by featured status', function (): void {
 it('filters mods by category', function (): void {
     $mod1 = Mod::factory()->create(['name' => 'Weapon Mod', 'category_id' => $this->category->id, 'featured' => false, 'published_at' => now()]);
     $modVersion1 = ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now()]);
-    $modVersion1->sptVersions()->attach($this->sptVersion->id);
+    $modVersion1->sptVersions()->sync($this->sptVersion->id);
 
     $mod2 = Mod::factory()->create(['name' => 'Other Mod', 'category_id' => null, 'featured' => false, 'published_at' => now()]);
     $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id, 'published_at' => now()]);
-    $modVersion2->sptVersions()->attach($this->sptVersion->id);
+    $modVersion2->sptVersions()->sync($this->sptVersion->id);
 
     $response = $this->get(route('mods.rss', ['category' => 'weapons']));
 
@@ -156,7 +156,7 @@ it('sorts mods by downloads when specified', function (): void {
         'published_at' => now(),
         'downloads' => 10000, // High downloads on the version
     ]);
-    $modVersion1->sptVersions()->attach($this->sptVersion->id);
+    $modVersion1->sptVersions()->sync($this->sptVersion->id);
 
     // Create second mod with low downloads on its version
     $unpopularMod = Mod::factory()->create([
@@ -169,7 +169,7 @@ it('sorts mods by downloads when specified', function (): void {
         'published_at' => now(),
         'downloads' => 10, // Low downloads on the version
     ]);
-    $modVersion2->sptVersions()->attach($this->sptVersion->id);
+    $modVersion2->sptVersions()->sync($this->sptVersion->id);
 
     // Run the job to update mod download counts from their versions
     (new UpdateModDownloadsJob)->handle();
@@ -308,11 +308,11 @@ it('shows all versions when versions parameter is all', function (): void {
 
     $mod1 = Mod::factory()->create(['name' => 'Mod for 3.9.3', 'featured' => false, 'published_at' => now()]);
     $modVersion1 = ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now()]);
-    $modVersion1->sptVersions()->attach($version393->id);
+    $modVersion1->sptVersions()->sync($version393->id);
 
     $mod2 = Mod::factory()->create(['name' => 'Mod for 3.8.3', 'featured' => false, 'published_at' => now()]);
     $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id, 'published_at' => now()]);
-    $modVersion2->sptVersions()->attach($version383->id);
+    $modVersion2->sptVersions()->sync($version383->id);
 
     $response = $this->get(route('mods.rss', ['versions' => 'all']));
 
@@ -327,7 +327,7 @@ it('shows all versions when versions parameter is all', function (): void {
 it('updates feed description based on filters', function (): void {
     $mod = Mod::factory()->create(['name' => 'Test Mod', 'featured' => true, 'published_at' => now()]);
     $modVersion = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => now()]);
-    $modVersion->sptVersions()->attach($this->sptVersion->id);
+    $modVersion->sptVersions()->sync($this->sptVersion->id);
 
     $response = $this->get(route('mods.rss', [
         'query' => 'test',
@@ -349,11 +349,11 @@ it('respects mod access permissions', function (): void {
     // Test that disabled mods are not shown to regular users
     $mod1 = Mod::factory()->create(['name' => 'Enabled Mod', 'disabled' => false, 'featured' => false, 'published_at' => now()]);
     $modVersion1 = ModVersion::factory()->create(['mod_id' => $mod1->id, 'published_at' => now()]);
-    $modVersion1->sptVersions()->attach($this->sptVersion->id);
+    $modVersion1->sptVersions()->sync($this->sptVersion->id);
 
     $mod2 = Mod::factory()->create(['name' => 'Disabled Mod', 'disabled' => true, 'featured' => false, 'published_at' => now()]);
     $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod2->id, 'published_at' => now()]);
-    $modVersion2->sptVersions()->attach($this->sptVersion->id);
+    $modVersion2->sptVersions()->sync($this->sptVersion->id);
 
     $response = $this->get(route('mods.rss'));
 

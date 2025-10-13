@@ -9,8 +9,8 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -115,10 +115,10 @@ describe('SPT version resolution', function (): void {
 describe('mod version publishing', function (): void {
     it('includes only published mod versions', function (): void {
         $publishedMod = ModVersion::factory()->create([
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
         $unpublishedMod = ModVersion::factory()->create([
-            'published_at' => Carbon::now()->addDay(),
+            'published_at' => Date::now()->addDay(),
         ]);
         $noPublishedDateMod = ModVersion::factory()->create([
             'published_at' => null,
@@ -267,7 +267,7 @@ describe('Published Version Visibility', function (): void {
         ]);
 
         // Sync the version with an SPT version
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Create another mod with a published version for comparison
         $validMod = Mod::factory()->create([
@@ -281,7 +281,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $publishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $publishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Test API endpoint - should only return the mod with a published version
         $response = $this->withToken($this->token)->getJson('/api/v0/mods');
@@ -310,7 +310,7 @@ describe('Published Version Visibility', function (): void {
         ]);
 
         // Sync the version with an SPT version
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Create another mod with a published version for comparison
         $validMod = Mod::factory()->create([
@@ -324,7 +324,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $publishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $publishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Test Livewire filter - should only return the mod with a published version
         $filters = new ModFilter([
@@ -364,8 +364,8 @@ describe('Published Version Visibility', function (): void {
         ]);
 
         // Sync both versions with an SPT version
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
-        $publishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
+        $publishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Should return the mod because it has at least one published version
         $response = $this->withToken($this->token)->getJson('/api/v0/mods');
@@ -388,7 +388,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $disabledVersion->sptVersions()->attach($this->sptVersion->id);
+        $disabledVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Regular user should not see the mod
         $response = $this->withToken($this->token)->getJson('/api/v0/mods');
@@ -410,7 +410,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Regular user should be denied access to the mod detail page
         $this->actingAs($this->user)
@@ -431,7 +431,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $publishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $publishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Regular user should have access to the mod detail page
         $this->actingAs($this->user)
@@ -459,7 +459,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Moderator should have access to the mod detail page
         $this->actingAs($moderator)
@@ -481,7 +481,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Visit the homepage and check it's not in featured mods
         $this->actingAs($this->user)
@@ -504,7 +504,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Visit the user profile and check mod is not listed
         $this->actingAs($this->user)
@@ -543,7 +543,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Mod owner should see a warning about unpublished versions
         $this->actingAs($user)
@@ -565,7 +565,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $publishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $publishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Regular user should not see any warnings
         $this->actingAs($this->user)
@@ -610,7 +610,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $disabledVersion->sptVersions()->attach($this->sptVersion->id);
+        $disabledVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Regular user should be denied access to the mod detail page
         $this->actingAs($this->user)
@@ -633,7 +633,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $disabledVersion->sptVersions()->attach($this->sptVersion->id);
+        $disabledVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Mod owner should see a warning about disabled versions
         $this->actingAs($user)
@@ -655,7 +655,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '3.8.0',
         ]);
-        $unpublishedVersionWithSpt->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
         // Version 2: Published but has no SPT tags
         $publishedVersionNoSpt = ModVersion::factory()->create([
@@ -672,7 +672,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => true, // Disabled
             'spt_version_constraint' => '3.8.0',
         ]);
-        $disabledVersionWithSpt->sptVersions()->attach($this->sptVersion->id);
+        $disabledVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
         // Create a valid mod for comparison
         $validMod = Mod::factory()->create([
@@ -685,7 +685,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '3.8.0',
         ]);
-        $validVersion->sptVersions()->attach($this->sptVersion->id);
+        $validVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Test API endpoint - should only return the valid mod
         $response = $this->withToken($this->token)->getJson('/api/v0/mods');
@@ -712,7 +712,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '3.8.0',
         ]);
-        $unpublishedVersionWithSpt->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
         // Published version with no SPT tags
         $publishedVersionNoSpt = ModVersion::factory()->create([
@@ -743,7 +743,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '3.8.0',
         ]);
-        $unpublishedVersionWithSpt->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
         // Published version with no SPT tags
         $publishedVersionNoSpt = ModVersion::factory()->create([
@@ -779,7 +779,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '3.8.0',
         ]);
-        $unpublishedVersionWithSpt->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
         // Published version with no SPT tags (regular users only see this)
         $publishedVersionNoSpt = ModVersion::factory()->create([
@@ -815,7 +815,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '4.0.0',
         ]);
-        $unpublishedVersionWithSpt->sptVersions()->attach($sptVersion->id);
+        $unpublishedVersionWithSpt->sptVersions()->sync($sptVersion->id);
 
         // Published version with no SPT tags
         $publishedVersionNoSpt = ModVersion::factory()->create([
@@ -836,7 +836,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '4.0.0',
         ]);
-        $validVersion->sptVersions()->attach($sptVersion->id);
+        $validVersion->sptVersions()->sync($sptVersion->id);
 
         // Clear cache to ensure our new SPT version is included
         Cache::forget('active_spt_versions_for_search');
@@ -858,7 +858,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '3.8.0',
         ]);
-        $validVersion->sptVersions()->attach($this->sptVersion->id);
+        $validVersion->sptVersions()->sync($this->sptVersion->id);
 
         $unpublishedVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
@@ -866,7 +866,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => false,
             'spt_version_constraint' => '3.8.0',
         ]);
-        $unpublishedVersion->sptVersions()->attach($this->sptVersion->id);
+        $unpublishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         $disabledVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
@@ -874,7 +874,7 @@ describe('Published Version Visibility', function (): void {
             'disabled' => true, // Disabled
             'spt_version_constraint' => '3.8.0',
         ]);
-        $disabledVersion->sptVersions()->attach($this->sptVersion->id);
+        $disabledVersion->sptVersions()->sync($this->sptVersion->id);
 
         $versionWithoutSpt = ModVersion::factory()->create([
             'mod_id' => $mod->id,

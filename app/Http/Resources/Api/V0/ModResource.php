@@ -43,7 +43,7 @@ class ModResource extends JsonResource
             ->explode(',')
             ->map(fn (string $field): string => mb_trim($field))
             ->filter()
-            ->toArray();
+            ->all();
 
         $this->showAllFields = empty($this->requestedFields);
 
@@ -130,7 +130,7 @@ class ModResource extends JsonResource
         $data['source_code_links'] = $this->whenLoaded('sourceCodeLinks', fn (): array => $this->resource->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
             'url' => $link->url,
             'label' => $link->label,
-        ])->toArray());
+        ])->all());
 
         return $data;
     }

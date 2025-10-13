@@ -129,7 +129,7 @@ class CheckCommentForSpam implements ShouldQueue
             $recheckAt = now()->addSeconds($recheckDelaySeconds);
 
             // Schedule the delayed recheck job
-            self::dispatch($this->comment, isRecheck: true)
+            dispatch(new self($this->comment, isRecheck: true))
                 ->delay($recheckAt);
 
             Log::info('Scheduled spam recheck', [
