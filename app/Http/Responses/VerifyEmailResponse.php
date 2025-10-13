@@ -31,7 +31,7 @@ class VerifyEmailResponse implements VerifyEmailResponseContract
                 ? 'Your email address has been successfully verified. Please log in below to continue.'
                 : 'Your email address has already been verified. Please log in to continue.';
 
-            return redirect()->route('login')->with('status', $message);
+            return to_route('login')->with('status', $message);
         }
 
         // If authenticated, always redirect to dashboard with success message

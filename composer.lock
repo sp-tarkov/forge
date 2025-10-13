@@ -13153,16 +13153,16 @@
         },
         {
             "name": "driftingly/rector-laravel",
-            "version": "2.0.7",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/driftingly/rector-laravel.git",
-                "reference": "625dc02cee08d47ecf0ac86de2f02a55026cf34e"
+                "reference": "efb636a08dfddfa2a3f4527b1dd970a898a075a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/driftingly/rector-laravel/zipball/625dc02cee08d47ecf0ac86de2f02a55026cf34e",
-                "reference": "625dc02cee08d47ecf0ac86de2f02a55026cf34e",
+                "url": "https://api.github.com/repos/driftingly/rector-laravel/zipball/efb636a08dfddfa2a3f4527b1dd970a898a075a4",
+                "reference": "efb636a08dfddfa2a3f4527b1dd970a898a075a4",
                 "shasum": ""
             },
             "require": {
@@ -13182,9 +13182,9 @@
             "description": "Rector upgrades rules for Laravel Framework",
             "support": {
                 "issues": "https://github.com/driftingly/rector-laravel/issues",
-                "source": "https://github.com/driftingly/rector-laravel/tree/2.0.7"
+                "source": "https://github.com/driftingly/rector-laravel/tree/2.1.0"
             },
-            "time": "2025-08-19T20:49:47+00:00"
+            "time": "2025-10-12T21:51:39+00:00"
         },
         {
             "name": "fidry/cpu-core-counter",
@@ -13548,16 +13548,16 @@
         },
         {
             "name": "laravel/boost",
-            "version": "v1.3.0",
+            "version": "v1.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/boost.git",
-                "reference": "ef8800843efc581965c38393adb63ba336dc3979"
+                "reference": "b286bfaa1aac723c7e5589d0ffa6561c097def28"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/boost/zipball/ef8800843efc581965c38393adb63ba336dc3979",
-                "reference": "ef8800843efc581965c38393adb63ba336dc3979",
+                "url": "https://api.github.com/repos/laravel/boost/zipball/b286bfaa1aac723c7e5589d0ffa6561c097def28",
+                "reference": "b286bfaa1aac723c7e5589d0ffa6561c097def28",
                 "shasum": ""
             },
             "require": {
@@ -13566,7 +13566,7 @@
                 "illuminate/contracts": "^10.49.0|^11.45.3|^12.28.1",
                 "illuminate/routing": "^10.49.0|^11.45.3|^12.28.1",
                 "illuminate/support": "^10.49.0|^11.45.3|^12.28.1",
-                "laravel/mcp": "^0.2.0",
+                "laravel/mcp": "^0.2.0|^0.3.0",
                 "laravel/prompts": "0.1.25|^0.3.6",
                 "laravel/roster": "^0.2.8",
                 "php": "^8.1"
@@ -13610,20 +13610,20 @@
                 "issues": "https://github.com/laravel/boost/issues",
                 "source": "https://github.com/laravel/boost"
             },
-            "time": "2025-09-30T09:34:43+00:00"
+            "time": "2025-10-13T10:14:41+00:00"
         },
         {
             "name": "laravel/mcp",
-            "version": "v0.2.1",
+            "version": "v0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/mcp.git",
-                "reference": "0ecf0c04b20e5946ae080e8d67984d5c555174b0"
+                "reference": "4e1389eedb4741a624e26cc3660b31bae04c4342"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/mcp/zipball/0ecf0c04b20e5946ae080e8d67984d5c555174b0",
-                "reference": "0ecf0c04b20e5946ae080e8d67984d5c555174b0",
+                "url": "https://api.github.com/repos/laravel/mcp/zipball/4e1389eedb4741a624e26cc3660b31bae04c4342",
+                "reference": "4e1389eedb4741a624e26cc3660b31bae04c4342",
                 "shasum": ""
             },
             "require": {
@@ -13683,7 +13683,7 @@
                 "issues": "https://github.com/laravel/mcp/issues",
                 "source": "https://github.com/laravel/mcp"
             },
-            "time": "2025-09-24T15:48:16+00:00"
+            "time": "2025-10-07T14:28:56+00:00"
         },
         {
             "name": "laravel/pail",
@@ -15770,16 +15770,16 @@
         },
         {
             "name": "rector/rector",
-            "version": "2.2.2",
+            "version": "2.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "5b353f7457b9a0c63fc91ef340f5d119a40991ed"
+                "reference": "d27f976a332a87b5d03553c2e6f04adbe5da034f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/5b353f7457b9a0c63fc91ef340f5d119a40991ed",
-                "reference": "5b353f7457b9a0c63fc91ef340f5d119a40991ed",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/d27f976a332a87b5d03553c2e6f04adbe5da034f",
+                "reference": "d27f976a332a87b5d03553c2e6f04adbe5da034f",
                 "shasum": ""
             },
             "require": {
@@ -15818,7 +15818,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.2.2"
+                "source": "https://github.com/rectorphp/rector/tree/2.2.3"
             },
             "funding": [
                 {
@@ -15826,7 +15826,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-09T19:50:20+00:00"
+            "time": "2025-10-11T21:50:23+00:00"
         },
         {
             "name": "revolt/event-loop",

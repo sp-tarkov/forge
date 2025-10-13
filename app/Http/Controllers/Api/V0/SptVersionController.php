@@ -110,8 +110,8 @@ class SptVersionController extends Controller
     {
         $queryBuilder = (new SptVersionQueryBuilder)
             ->withFilters($request->input('filter'))
-            ->withFields($request->string('fields')->explode(',')->toArray())
-            ->withSorts($request->string('sort')->explode(',')->toArray());
+            ->withFields($request->string('fields')->explode(',')->all())
+            ->withSorts($request->string('sort')->explode(',')->all());
 
         $sptVersions = $queryBuilder->paginate($request->integer('per_page', 12));
 

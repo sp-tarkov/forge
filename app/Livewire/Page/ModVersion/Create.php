@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\ModVersion;
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -15,7 +16,6 @@ use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
 use App\Support\Version;
-use Carbon\Carbon;
 use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -186,7 +186,7 @@ class Create extends Component
                     'is_published' => ! is_null($version->publish_date) && $version->publish_date->lte(now()),
                     'publish_date' => $version->publish_date?->format('Y-m-d H:i:s'),
                 ])
-                ->toArray();
+                ->all();
         } catch (Exception) {
             $this->matchingSptVersions = [];
         }
@@ -330,7 +330,7 @@ class Create extends Component
         // convert it to UTC for DB storage. Zero out seconds for consistency with datetime-local input format.
         if ($this->publishedAt !== null) {
             $userTimezone = auth()->user()->timezone ?? 'UTC';
-            $this->publishedAt = Carbon::parse($this->publishedAt, $userTimezone)
+            $this->publishedAt = Date::parse($this->publishedAt, $userTimezone)
                 ->setTimezone('UTC')
                 ->second(0)
                 ->toDateTimeString();
@@ -526,7 +526,7 @@ class Create extends Component
                     'version' => $version->version,
                 ])
                 ->values()
-                ->toArray();
+                ->all();
 
             $this->matchingDependencyVersions[$index] = $versions;
         } catch (Exception) {

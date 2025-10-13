@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use Illuminate\Support\Facades\Date;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\SptVersion;
 use App\Support\DataTransferObjects\GitHubSptVersion;
@@ -17,7 +18,6 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -125,7 +125,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
         // Sort the releases by the tag_name using Semver::sort
         $sortedVersions = Semver::sort($releases->pluck('tag_name')->toArray());
         $latestVersion = end($sortedVersions);
-        $now = Carbon::now('UTC')->toDateTimeString();
+        $now = Date::now('UTC')->toDateTimeString();
 
         // Ensure a "dummy" version exists so we can resolve outdated mods to it.
         $versionData[] = [
@@ -143,7 +143,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
         $releases->each(function (GitHubSptVersion $release) use ($latestVersion, &$versionData): void {
             try {
                 $version = new Version($release->tag_name);
-                $publishedAt = Carbon::parse($release->published_at, 'UTC')->toDateTimeString();
+                $publishedAt = Date::parse($release->published_at, 'UTC')->toDateTimeString();
                 $versionData[] = [
                     'version' => $version->getVersion(),
                     'version_major' => $version->getMajor(),

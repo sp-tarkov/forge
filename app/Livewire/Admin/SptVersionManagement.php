@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use Illuminate\Support\Facades\Date;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\UpdateGitHubSptVersionsJob;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use App\Support\Version;
-use Carbon\Carbon;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -135,7 +135,7 @@ class SptVersionManagement extends Component
         $this->formVersion = $version->version;
         $this->formLink = $version->link;
         $this->formColorClass = $version->color_class;
-        $this->formPublishDate = $version->publish_date ? Carbon::parse($version->publish_date)
+        $this->formPublishDate = $version->publish_date ? Date::parse($version->publish_date)
             ->setTimezone(auth()->user()->timezone ?? 'UTC')
             ->format('Y-m-d\TH:i') : null;
         $this->showEditModal = true;
@@ -191,7 +191,7 @@ class SptVersionManagement extends Component
         $publishDate = null;
         if ($this->formPublishDate) {
             $userTimezone = auth()->user()->timezone ?? 'UTC';
-            $publishDate = Carbon::parse($this->formPublishDate, $userTimezone)
+            $publishDate = Date::parse($this->formPublishDate, $userTimezone)
                 ->setTimezone('UTC')
                 ->second(0);
         }
@@ -244,7 +244,7 @@ class SptVersionManagement extends Component
      */
     public function syncFromGitHub(): void
     {
-        UpdateGitHubSptVersionsJob::dispatch();
+        dispatch(new UpdateGitHubSptVersionsJob());
         flash()->success('GitHub sync job has been queued. Version data will be updated shortly.');
     }
 

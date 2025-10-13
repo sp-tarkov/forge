@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Mod;
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
 use App\Traits\Livewire\ModerationActionMenu;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -223,7 +223,7 @@ class Action extends Component
     {
         $this->authorize('publish', $this->mod);
 
-        $publishedDate = $this->publishedAt ? Carbon::parse($this->publishedAt) : now();
+        $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
 
         Mod::query()->where('id', $this->modId)->update(['published_at' => $publishedDate]);
 

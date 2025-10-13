@@ -16,8 +16,8 @@ class ResolveVersionsCommand extends Command
 
     public function handle(): void
     {
-        ResolveSptVersionsJob::dispatch()->onQueue('default');
-        ResolveDependenciesJob::dispatch()->onQueue('default');
+        dispatch(new ResolveSptVersionsJob())->onQueue('default');
+        dispatch(new ResolveDependenciesJob())->onQueue('default');
 
         $this->info('ResolveSptVersionsJob and ResolveDependenciesJob have been added to the queue');
     }

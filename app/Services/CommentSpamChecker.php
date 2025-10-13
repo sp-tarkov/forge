@@ -282,10 +282,10 @@ class CommentSpamChecker
             }
 
             // Check for rate limiting
-            throw_if($response->status() === 429, new Exception('Akismet API rate limit exceeded'));
+            throw_if($response->status() === 429, Exception::class, 'Akismet API rate limit exceeded');
 
             // Check for other HTTP errors
-            throw_unless($response->successful(), new Exception('Akismet API error: HTTP '.$response->status()));
+            throw_unless($response->successful(), Exception::class, 'Akismet API error: HTTP '.$response->status());
         } catch (Throwable $throwable) {
             Log::error('Akismet HTTP request failed', [
                 'method' => $method,

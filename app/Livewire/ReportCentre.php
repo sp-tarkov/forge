@@ -34,8 +34,7 @@ class ReportCentre extends Component
     #[Computed]
     public function reports(): BaseLengthAwarePaginator
     {
-        return Report::with(['reporter', 'reportable'])
-            ->orderBy('created_at', 'desc')
+        return Report::with(['reporter', 'reportable'])->latest()
             ->paginate(10, pageName: 'reports-page');
     }
 

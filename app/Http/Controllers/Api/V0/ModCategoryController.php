@@ -139,7 +139,7 @@ class ModCategoryController extends Controller
         if ($fields->isNotEmpty()) {
             // Always include id for proper resource identification
             $fields->push('id');
-            $query->select($fields->unique()->toArray());
+            $query->select($fields->unique()->all());
         }
 
         // Paginate results
@@ -189,7 +189,7 @@ class ModCategoryController extends Controller
         if ($fields->isNotEmpty()) {
             // Always include id for proper resource identification
             $fields->push('id');
-            $query->select($fields->unique()->toArray());
+            $query->select($fields->unique()->all());
         }
 
         $category = $query->first();

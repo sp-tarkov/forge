@@ -56,7 +56,7 @@ class UpdateProfileForm extends UpdateProfileInformationForm
         );
 
         if ($this->photo !== null || $this->cover !== null) {
-            return redirect()->route('profile.show');
+            return to_route('profile.show');
         }
 
         $this->dispatch('saved');

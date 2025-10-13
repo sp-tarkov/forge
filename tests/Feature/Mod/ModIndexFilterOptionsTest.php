@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Date;
 use App\Livewire\Page\Mod\Index;
 use App\Models\ModCategory;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
@@ -73,7 +73,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
 
     it('shows scheduled SPT versions after publish date', function (): void {
         // Create a version that was scheduled but is now published (yesterday)
-        SptVersion::factory()->publishedAt(Carbon::now()->subDay())->create(['version' => '4.0.0']);
+        SptVersion::factory()->publishedAt(Date::now()->subDay())->create(['version' => '4.0.0']);
 
         // Create category needed for the component
         ModCategory::factory()->create();
@@ -91,7 +91,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
 
     it('hides scheduled SPT versions before publish date', function (): void {
         // Create a version scheduled for tomorrow
-        SptVersion::factory()->scheduled(Carbon::now()->addDay())->create(['version' => '4.0.0']);
+        SptVersion::factory()->scheduled(Date::now()->addDay())->create(['version' => '4.0.0']);
 
         // Create category needed for the component
         ModCategory::factory()->create();
@@ -109,7 +109,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
 
     it('respects cache clearing when SPT version publish status changes', function (): void {
         // Create a future scheduled version
-        $version = SptVersion::factory()->scheduled(Carbon::now()->addDay())->create(['version' => '4.0.0']);
+        $version = SptVersion::factory()->scheduled(Date::now()->addDay())->create(['version' => '4.0.0']);
 
         // Create category
         ModCategory::factory()->create();
@@ -120,7 +120,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         expect($versions1)->not->toContain('4.0.0');
 
         // Now publish the version
-        $version->publish_date = Carbon::now()->subHour();
+        $version->publish_date = Date::now()->subHour();
         $version->save();
 
         // Clear cache (this should happen automatically via observer)

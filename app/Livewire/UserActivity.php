@@ -41,8 +41,7 @@ class UserActivity extends Component
         $events = TrackingEvent::query()
             // Get all events where the user is the visitor (simplified since logout now has visitor_id)
             ->where('visitor_id', $this->user->id)
-            ->with(['visitable'])
-            ->orderBy('created_at', 'desc')
+            ->with(['visitable'])->latest()
             ->limit(15)
             ->get();
 
