@@ -6,6 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Livewire\UserActivity;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModVersion;
 use App\Models\TrackingEvent;
 use App\Models\User;
 use App\Models\UserRole;
@@ -886,6 +887,200 @@ describe('UserActivity Component', function (): void {
 
             expect($modEvents)->toHaveCount(1);
             expect($commentEvents)->toHaveCount(1);
+        });
+    });
+
+    describe('unpublished mod activity privacy', function (): void {
+        it('loads mod relationship without scope to prevent null errors', function (): void {
+            $testUser = User::factory()->create();
+            $admin = User::factory()->admin()->create();
+
+            // Create an unpublished mod
+            $unpublishedMod = Mod::factory()->create([
+                'published_at' => null,
+                'owner_id' => $testUser->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $unpublishedMod->id,
+                'published_at' => now(),
+            ]);
+
+            // Create a download event for the unpublished mod's version
+            $event = TrackingEvent::factory()->create([
+                'visitor_id' => $testUser->id,
+                'visitable_type' => ModVersion::class,
+                'visitable_id' => $modVersion->id,
+                'event_name' => TrackingEventType::MOD_DOWNLOAD->value,
+            ]);
+
+            // Admin should be able to see this event without errors
+            $component = Livewire::actingAs($admin)
+                ->test(UserActivity::class, ['user' => $testUser]);
+
+            $recentActivity = $component->get('recentActivity');
+
+            // Should not throw an error accessing event_context
+            expect($recentActivity->first()->event_context)->not->toBeNull();
+        });
+
+        it('hides unpublished mod activities from non-owners', function (): void {
+            $modOwner = User::factory()->create();
+            $otherUser = User::factory()->create();
+
+            // Create an unpublished mod owned by modOwner
+            $unpublishedMod = Mod::factory()->create([
+                'published_at' => null,
+                'owner_id' => $modOwner->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $unpublishedMod->id,
+                'published_at' => now(),
+            ]);
+
+            // Create a download event
+            TrackingEvent::factory()->create([
+                'visitor_id' => $modOwner->id,
+                'visitable_type' => ModVersion::class,
+                'visitable_id' => $modVersion->id,
+                'event_name' => TrackingEventType::MOD_DOWNLOAD->value,
+            ]);
+
+            // Other user should not see this activity
+            $component = Livewire::actingAs($otherUser)
+                ->test(UserActivity::class, ['user' => $modOwner]);
+
+            $recentActivity = $component->get('recentActivity');
+
+            expect($recentActivity)->toHaveCount(0);
+        });
+
+        it('shows unpublished mod activities to the mod owner', function (): void {
+            $modOwner = User::factory()->create();
+
+            // Create an unpublished mod
+            $unpublishedMod = Mod::factory()->create([
+                'published_at' => null,
+                'owner_id' => $modOwner->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $unpublishedMod->id,
+                'published_at' => now(),
+            ]);
+
+            // Create a download event
+            TrackingEvent::factory()->create([
+                'visitor_id' => $modOwner->id,
+                'visitable_type' => ModVersion::class,
+                'visitable_id' => $modVersion->id,
+                'event_name' => TrackingEventType::MOD_DOWNLOAD->value,
+            ]);
+
+            // Owner should see their own activity
+            $component = Livewire::actingAs($modOwner)
+                ->test(UserActivity::class, ['user' => $modOwner]);
+
+            $recentActivity = $component->get('recentActivity');
+
+            expect($recentActivity)->toHaveCount(1);
+        });
+
+        it('shows unpublished mod activities to administrators', function (): void {
+            $modOwner = User::factory()->create();
+            $admin = User::factory()->admin()->create();
+
+            // Create an unpublished mod
+            $unpublishedMod = Mod::factory()->create([
+                'published_at' => null,
+                'owner_id' => $modOwner->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $unpublishedMod->id,
+                'published_at' => now(),
+            ]);
+
+            // Create a download event
+            TrackingEvent::factory()->create([
+                'visitor_id' => $modOwner->id,
+                'visitable_type' => ModVersion::class,
+                'visitable_id' => $modVersion->id,
+                'event_name' => TrackingEventType::MOD_DOWNLOAD->value,
+            ]);
+
+            // Admin should see the activity
+            $component = Livewire::actingAs($admin)
+                ->test(UserActivity::class, ['user' => $modOwner]);
+
+            $recentActivity = $component->get('recentActivity');
+
+            expect($recentActivity)->toHaveCount(1);
+        });
+
+        it('shows unpublished mod activities to moderators', function (): void {
+            $modOwner = User::factory()->create();
+            $moderator = User::factory()->moderator()->create();
+
+            // Create an unpublished mod
+            $unpublishedMod = Mod::factory()->create([
+                'published_at' => null,
+                'owner_id' => $modOwner->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $unpublishedMod->id,
+                'published_at' => now(),
+            ]);
+
+            // Create a download event
+            TrackingEvent::factory()->create([
+                'visitor_id' => $modOwner->id,
+                'visitable_type' => ModVersion::class,
+                'visitable_id' => $modVersion->id,
+                'event_name' => TrackingEventType::MOD_DOWNLOAD->value,
+            ]);
+
+            // Moderator should see the activity
+            $component = Livewire::actingAs($moderator)
+                ->test(UserActivity::class, ['user' => $modOwner]);
+
+            $recentActivity = $component->get('recentActivity');
+
+            expect($recentActivity)->toHaveCount(1);
+        });
+
+        it('hides future-scheduled mod activities from non-owners', function (): void {
+            $modOwner = User::factory()->create();
+            $otherUser = User::factory()->create();
+
+            // Create a future-scheduled mod
+            $futureScheduledMod = Mod::factory()->create([
+                'published_at' => now()->addDays(7),
+                'owner_id' => $modOwner->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $futureScheduledMod->id,
+                'published_at' => now(),
+            ]);
+
+            // Create a download event
+            TrackingEvent::factory()->create([
+                'visitor_id' => $modOwner->id,
+                'visitable_type' => ModVersion::class,
+                'visitable_id' => $modVersion->id,
+                'event_name' => TrackingEventType::MOD_DOWNLOAD->value,
+            ]);
+
+            // Other user should not see this activity
+            $component = Livewire::actingAs($otherUser)
+                ->test(UserActivity::class, ['user' => $modOwner]);
+
+            $recentActivity = $component->get('recentActivity');
+
+            expect($recentActivity)->toHaveCount(0);
         });
     });
 });
