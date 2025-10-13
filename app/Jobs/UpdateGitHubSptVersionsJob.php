@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use Illuminate\Support\Facades\Date;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\SptVersion;
 use App\Support\DataTransferObjects\GitHubSptVersion;
@@ -19,6 +18,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;

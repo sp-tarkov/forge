@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Ribbon;
 
-use Illuminate\Support\Facades\Date;
 use App\Models\Mod as ModModel;
+use Illuminate\Support\Facades\Date;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;

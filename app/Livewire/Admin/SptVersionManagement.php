@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use Illuminate\Support\Facades\Date;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\UpdateGitHubSptVersionsJob;
 use App\Models\Scopes\PublishedSptVersionScope;
@@ -14,6 +13,7 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Date;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;

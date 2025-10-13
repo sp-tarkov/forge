@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Date;
 use App\Livewire\Mod\Action;
 use App\Livewire\Mod\VersionAction;
 use App\Livewire\Page\Homepage;
@@ -16,6 +15,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Policies\ModVersionPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);

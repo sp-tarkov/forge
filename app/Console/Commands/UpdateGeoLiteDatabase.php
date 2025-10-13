@@ -74,12 +74,12 @@ class UpdateGeoLiteDatabase extends Command
                 ->get($downloadUrl);
 
             throw_unless($response->successful(),
-            Exception::class,
-            sprintf(
-                'Failed to download database: HTTP %d - %s',
-                $response->status(),
-                $response->body()
-            ));
+                Exception::class,
+                sprintf(
+                    'Failed to download database: HTTP %d - %s',
+                    $response->status(),
+                    $response->body()
+                ));
 
             $downloadSize = mb_strlen($response->body());
             $this->info(sprintf('Downloaded %s bytes', number_format($downloadSize)));
@@ -270,12 +270,12 @@ class UpdateGeoLiteDatabase extends Command
                 ->head($url);
 
             throw_unless($response->successful(),
-            Exception::class,
-            sprintf(
-                'Network connectivity test failed: HTTP %d - %s',
-                $response->status(),
-                $response->body()
-            ));
+                Exception::class,
+                sprintf(
+                    'Network connectivity test failed: HTTP %d - %s',
+                    $response->status(),
+                    $response->body()
+                ));
 
             $this->info('✓ Network connectivity test passed');
         } catch (Exception $exception) {

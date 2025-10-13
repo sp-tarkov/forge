@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\ModVersion;
 
-use Illuminate\Support\Facades\Date;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -17,6 +16,7 @@ use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
 use Composer\Semver\Semver;
 use Exception;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;

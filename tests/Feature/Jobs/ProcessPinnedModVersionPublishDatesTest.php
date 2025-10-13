@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Date;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 
 uses(RefreshDatabase::class);
 

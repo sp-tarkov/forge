@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use Illuminate\Support\Facades\Date;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\User;
@@ -14,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
