@@ -52,6 +52,13 @@ class SendModDiscordNotifications implements ShouldQueue
                 $mod->discord_notification_sent = true;
                 $mod->save();
 
+                // Mark all published versions of this mod as sent to prevent duplicate version notifications
+                ModVersion::query()
+                    ->where('mod_id', $mod->id)
+                    ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->update(['discord_notification_sent' => true]);
+
                 $notifiedModIds[] = $mod->id;
 
                 Log::info('Discord notification sent for mod', ['mod_id' => $mod->id, 'mod_name' => $mod->name]);

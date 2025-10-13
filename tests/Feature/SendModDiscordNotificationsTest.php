@@ -289,7 +289,7 @@ it('sends single notification for multiple new versions of same mod', function (
     expect($version2->discord_notification_sent)->toBeTrue();
 });
 
-it('does not send version notification if mod not yet notified', function (): void {
+it('marks versions as notified when new mod notification is sent', function (): void {
     // Create SPT version
     $sptVersion = SptVersion::factory()->create();
 
@@ -320,10 +320,9 @@ it('does not send version notification if mod not yet notified', function (): vo
     $mod->refresh();
     expect($mod->discord_notification_sent)->toBeTrue();
 
-    // Assert version was NOT marked as notified separately
-    // (because it's part of the initial mod notification)
+    // Assert version was marked as notified to prevent duplicate notifications
     $version->refresh();
-    expect($version->discord_notification_sent)->toBeFalse();
+    expect($version->discord_notification_sent)->toBeTrue();
 });
 
 it('does not send version notification for disabled versions', function (): void {
@@ -460,6 +459,76 @@ it('does not duplicate spt versions in new mod notification', function (): void 
 
         // Check for duplicates
         return count($versions) === count(array_unique($versions));
+    });
+});
+
+it('does not send version update notification when new mod is created', function (): void {
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create(['version' => '3.10.0']);
+
+    // Create category
+    $category = ModCategory::factory()->create();
+
+    // Create a new mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'category_id' => $category->id,
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    // Create multiple versions for the new mod
+    $version1 = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '1.0.0',
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+    $version1->sptVersions()->sync($sptVersion);
+
+    $version2 = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '1.1.0',
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+    $version2->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests to verify only one notification is sent
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendModDiscordNotifications;
+    $job->handle();
+
+    // Assert mod was marked as notified
+    $mod->refresh();
+    expect($mod->discord_notification_sent)->toBeTrue();
+
+    // Assert both versions were marked as notified
+    $version1->refresh();
+    $version2->refresh();
+    expect($version1->discord_notification_sent)->toBeTrue();
+    expect($version2->discord_notification_sent)->toBeTrue();
+
+    // Verify only ONE Discord notification was sent (for the new mod, not for version updates)
+    Http::assertSentCount(1);
+
+    // Verify it's a new mod notification, not a version update notification
+    Http::assertSent(function ($request) {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        // Should say "new mod" not "mod has been updated"
+        return str_contains($content, 'A new mod has been posted');
     });
 });
 

@@ -11,13 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 it('prevents duplicate pivot entries after migration', function (): void {
     // Create test data
-    $sptVersion = SptVersion::factory()->create();
+    $sptVersion = SptVersion::factory()->create(['version' => '3.10.0']);
     $mod = Mod::factory()
         ->for(User::factory()->create(), 'owner')
         ->create();
+
+    // Create a mod version without a matching constraint so observer doesn't auto-sync
     $modVersion = ModVersion::factory()
         ->for($mod)
-        ->create();
+        ->create(['spt_version_constraint' => '>=99.0.0']); // Won't match our 3.10.0 version
 
     // Attach SPT version once
     $modVersion->sptVersions()->attach($sptVersion->id);
@@ -35,6 +37,8 @@ it('prevents duplicate pivot entries after migration', function (): void {
         DB::table('mod_version_spt_version')->insert([
             'mod_version_id' => $modVersion->id,
             'spt_version_id' => $sptVersion->id,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         // If we get here, the unique constraint doesn't exist
         throw new Exception('Unique constraint did not prevent duplicate entry');
@@ -74,6 +78,8 @@ it('cleans up existing duplicates during migration', function (): void {
         DB::table('mod_version_spt_version')->insert([
             'mod_version_id' => $modVersion->id,
             'spt_version_id' => $sptVersion->id,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         throw new Exception('Unique constraint did not prevent duplicate entry');
     } catch (QueryException $queryException) {
