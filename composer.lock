@@ -7942,16 +7942,16 @@
         },
         {
             "name": "spatie/flare-client-php",
-            "version": "2.3.1",
+            "version": "2.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/flare-client-php.git",
-                "reference": "699c929d6baef4945e8e34985356ebbccdc4be4c"
+                "reference": "d0ba76394928a34fe74958d62264a59bc2360e04"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/699c929d6baef4945e8e34985356ebbccdc4be4c",
-                "reference": "699c929d6baef4945e8e34985356ebbccdc4be4c",
+                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/d0ba76394928a34fe74958d62264a59bc2360e04",
+                "reference": "d0ba76394928a34fe74958d62264a59bc2360e04",
                 "shasum": ""
             },
             "require": {
@@ -8001,7 +8001,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/flare-client-php/issues",
-                "source": "https://github.com/spatie/flare-client-php/tree/2.3.1"
+                "source": "https://github.com/spatie/flare-client-php/tree/2.3.2"
             },
             "funding": [
                 {
@@ -8009,7 +8009,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-10T10:20:30+00:00"
+            "time": "2025-10-13T13:56:41+00:00"
         },
         {
             "name": "spatie/laravel-discord-alerts",
@@ -8179,16 +8179,16 @@
         },
         {
             "name": "spatie/laravel-flare",
-            "version": "2.3.0",
+            "version": "2.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-flare.git",
-                "reference": "68a9ae9e8850af1c7c3182399906b6c3cbec31e6"
+                "reference": "5f1a3ea474815586791a89ab2a27627ff7ca45dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/68a9ae9e8850af1c7c3182399906b6c3cbec31e6",
-                "reference": "68a9ae9e8850af1c7c3182399906b6c3cbec31e6",
+                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/5f1a3ea474815586791a89ab2a27627ff7ca45dc",
+                "reference": "5f1a3ea474815586791a89ab2a27627ff7ca45dc",
                 "shasum": ""
             },
             "require": {
@@ -8266,7 +8266,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-08T14:57:15+00:00"
+            "time": "2025-10-13T13:32:25+00:00"
         },
         {
             "name": "spatie/laravel-honeypot",
