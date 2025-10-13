@@ -74,7 +74,7 @@ jobs:
       - name: Run Pint
         run: pint
 
-      - uses: stefanzweifel/git-auto-commit-action@v6
+      - uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "style: automatic fixes"
           commit_user_name: Refringe
@@ -110,7 +110,7 @@ jobs:
       - name: Execute Rector Analysis
         run: php vendor/bin/rector process --config=rector.php
 
-      - uses: stefanzweifel/git-auto-commit-action@v6
+      - uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "refactor: automatic fixes"
           commit_user_name: Refringe
