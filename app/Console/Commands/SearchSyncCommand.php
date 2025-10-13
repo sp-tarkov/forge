@@ -15,7 +15,7 @@ class SearchSyncCommand extends Command
 
     public function handle(): void
     {
-        SearchSyncJob::dispatch()->onQueue('default');
+        dispatch(new SearchSyncJob())->onQueue('default');
 
         $this->info('The search synchronization job has been added to the queue');
     }

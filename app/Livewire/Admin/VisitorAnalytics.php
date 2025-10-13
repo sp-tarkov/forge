@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -104,7 +104,7 @@ class VisitorAnalytics extends Component
     #[Computed]
     public function events(): LengthAwarePaginator
     {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->toArray();
+        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
         $query = TrackingEvent::query()
             ->with(['user', 'visitable'])
@@ -149,8 +149,8 @@ class VisitorAnalytics extends Component
 
         // Date range
         if ($this->dateFrom && $this->dateTo) {
-            $fromDate = Carbon::parse($this->dateFrom)->format('M j, Y');
-            $toDate = Carbon::parse($this->dateTo)->format('M j, Y');
+            $fromDate = Date::parse($this->dateFrom)->format('M j, Y');
+            $toDate = Date::parse($this->dateTo)->format('M j, Y');
             $filters[] = sprintf('%s - %s', $fromDate, $toDate);
         }
 
@@ -551,7 +551,7 @@ class VisitorAnalytics extends Component
      */
     private function getTopEvents(Builder $query): Collection
     {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->toArray();
+        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
         return $query
             ->select('event_name', DB::raw('COUNT(*) as count'))

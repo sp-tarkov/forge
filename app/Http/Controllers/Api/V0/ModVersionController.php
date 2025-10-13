@@ -162,9 +162,9 @@ class ModVersionController extends Controller
     {
         $queryBuilder = new ModVersionQueryBuilder($modId)
             ->withFilters($request->input('filter'))
-            ->withIncludes($request->string('include')->explode(',')->toArray())
-            ->withFields($request->string('fields')->explode(',')->toArray())
-            ->withSorts($request->string('sort')->explode(',')->toArray());
+            ->withIncludes($request->string('include')->explode(',')->all())
+            ->withFields($request->string('fields')->explode(',')->all())
+            ->withSorts($request->string('sort')->explode(',')->all());
 
         $modVersions = $queryBuilder->paginate($request->integer('per_page', 12));
 

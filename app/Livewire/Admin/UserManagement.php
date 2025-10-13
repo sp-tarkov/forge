@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\User;
@@ -395,14 +396,14 @@ class UserManagement extends Component
 
         // Date range filters
         if ($this->joinedFrom && $this->joinedTo) {
-            $fromDate = Carbon::parse($this->joinedFrom)->format('M j, Y');
-            $toDate = Carbon::parse($this->joinedTo)->format('M j, Y');
+            $fromDate = Date::parse($this->joinedFrom)->format('M j, Y');
+            $toDate = Date::parse($this->joinedTo)->format('M j, Y');
             $filters[] = sprintf('Joined: %s - %s', $fromDate, $toDate);
         } elseif ($this->joinedFrom) {
-            $fromDate = Carbon::parse($this->joinedFrom)->format('M j, Y');
+            $fromDate = Date::parse($this->joinedFrom)->format('M j, Y');
             $filters[] = sprintf('Joined after: %s', $fromDate);
         } elseif ($this->joinedTo) {
-            $toDate = Carbon::parse($this->joinedTo)->format('M j, Y');
+            $toDate = Date::parse($this->joinedTo)->format('M j, Y');
             $filters[] = sprintf('Joined before: %s', $toDate);
         }
 

@@ -73,11 +73,13 @@ class UpdateGeoLiteDatabase extends Command
                 ->timeout(300)
                 ->get($downloadUrl);
 
-            throw_unless($response->successful(), new Exception(sprintf(
+            throw_unless($response->successful(),
+            Exception::class,
+            sprintf(
                 'Failed to download database: HTTP %d - %s',
                 $response->status(),
                 $response->body()
-            )));
+            ));
 
             $downloadSize = mb_strlen($response->body());
             $this->info(sprintf('Downloaded %s bytes', number_format($downloadSize)));
@@ -246,7 +248,7 @@ class UpdateGeoLiteDatabase extends Command
             try {
                 File::ensureDirectoryExists($dir);
 
-                throw_unless(is_writable($dir), new Exception(sprintf('%s directory is not writable: %s', $name, $dir)));
+                throw_unless(is_writable($dir), Exception::class, sprintf('%s directory is not writable: %s', $name, $dir));
 
                 $this->info(sprintf('✓ %s directory ready: %s', $name, $dir));
             } catch (Exception $e) {
@@ -267,11 +269,13 @@ class UpdateGeoLiteDatabase extends Command
                 ->timeout(30)
                 ->head($url);
 
-            throw_unless($response->successful(), new Exception(sprintf(
+            throw_unless($response->successful(),
+            Exception::class,
+            sprintf(
                 'Network connectivity test failed: HTTP %d - %s',
                 $response->status(),
                 $response->body()
-            )));
+            ));
 
             $this->info('✓ Network connectivity test passed');
         } catch (Exception $exception) {

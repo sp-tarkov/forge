@@ -146,9 +146,9 @@ class ModController extends Controller
     {
         $queryBuilder = (new ModQueryBuilder)
             ->withFilters($request->input('filter'))
-            ->withIncludes($request->string('include')->explode(',')->toArray())
-            ->withFields($request->string('fields')->explode(',')->toArray())
-            ->withSorts($request->string('sort')->explode(',')->toArray())
+            ->withIncludes($request->string('include')->explode(',')->all())
+            ->withFields($request->string('fields')->explode(',')->all())
+            ->withSorts($request->string('sort')->explode(',')->all())
             ->withSearch($request->string('query')->toString());
 
         $mods = $queryBuilder->paginate($request->integer('per_page', 12));
@@ -207,8 +207,8 @@ class ModController extends Controller
     public function show(Request $request, int $modId): JsonResponse
     {
         $queryBuilder = (new ModQueryBuilder)
-            ->withIncludes($request->string('include')->explode(',')->toArray())
-            ->withFields($request->string('fields')->explode(',')->toArray());
+            ->withIncludes($request->string('include')->explode(',')->all())
+            ->withFields($request->string('fields')->explode(',')->all());
 
         $mod = $queryBuilder->findOrFail($modId);
 

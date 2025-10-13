@@ -227,7 +227,7 @@ class AuthController extends Controller
     {
         $queryBuilder = (new UserQueryBuilder)
             ->withFilters(['id' => $request->user()->id])
-            ->withIncludes($request->string('include')->explode(',')->toArray());
+            ->withIncludes($request->string('include')->explode(',')->all());
 
         $user = $queryBuilder->findOrFail($request->user()->id);
 

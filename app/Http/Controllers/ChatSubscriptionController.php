@@ -23,13 +23,13 @@ class ChatSubscriptionController extends Controller
         $conversation = Conversation::findByHashId($conversationHashId);
 
         if ($conversation === null) {
-            return redirect()->route('home')
+            return to_route('home')
                 ->with('error', 'Conversation not found.');
         }
 
         // Verify the user is part of this conversation
         if (! $conversation->hasUser($user)) {
-            return redirect()->route('home')
+            return to_route('home')
                 ->with('error', 'You are not a participant in this conversation.');
         }
 
@@ -39,7 +39,7 @@ class ChatSubscriptionController extends Controller
             ['notifications_enabled' => false]
         );
 
-        return redirect()->route('chat', $conversation->hash_id)
+        return to_route('chat', $conversation->hash_id)
             ->with('success', 'You have been unsubscribed from notifications for this conversation.');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Date;
 use Carbon\Carbon;
 use Database\Factories\VisitorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,12 +45,12 @@ class Visitor extends Model
         if ($peak) {
             $peak->update([
                 'peak_count' => $count,
-                'peak_date' => Carbon::now(),
+                'peak_date' => Date::now(),
             ]);
         } else {
             static::query()->create([
                 'peak_count' => $count,
-                'peak_date' => Carbon::now(),
+                'peak_date' => Date::now(),
             ]);
         }
     }

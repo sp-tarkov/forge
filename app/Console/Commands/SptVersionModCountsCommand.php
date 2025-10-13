@@ -15,7 +15,7 @@ class SptVersionModCountsCommand extends Command
 
     public function handle(): void
     {
-        SptVersionModCountsJob::dispatch()->onQueue('default');
+        dispatch(new SptVersionModCountsJob())->onQueue('default');
 
         $this->info('SptVersionModCountsJob has been added to the queue');
     }

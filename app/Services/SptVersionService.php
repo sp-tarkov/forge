@@ -55,7 +55,7 @@ class SptVersionService
     private function resolveSemverConstraint(string $constraint): array
     {
         $availableVersions = $this->getAvailableVersions();
-        $satisfyingVersions = Semver::satisfiedBy($availableVersions->keys()->toArray(), $constraint);
+        $satisfyingVersions = Semver::satisfiedBy($availableVersions->keys()->all(), $constraint);
 
         return collect($satisfyingVersions)
             ->whenEmpty(fn (Collection $collection): Collection => $this->handleLegacyFallback($availableVersions))

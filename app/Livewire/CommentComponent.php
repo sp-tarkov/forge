@@ -762,7 +762,7 @@ class CommentComponent extends Component
             'startedAt' => $comment->spam_checked_at?->toISOString(),
         ];
 
-        CheckCommentForSpam::dispatch($comment, isRecheck: true);
+        dispatch(new CheckCommentForSpam($comment, isRecheck: true));
 
         // Start polling for results
         $this->dispatch('start-spam-check-polling', $commentId);

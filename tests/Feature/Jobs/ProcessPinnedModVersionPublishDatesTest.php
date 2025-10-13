@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Date;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -23,7 +23,7 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         // Create an SPT version that just published
         $sptVersion = SptVersion::factory()->create([
             'version' => '4.0.0',
-            'publish_date' => Carbon::now()->subMinute(),
+            'publish_date' => Date::now()->subMinute(),
         ]);
 
         // Pin the mod version to the SPT version
@@ -40,7 +40,7 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
 
         // Assert the mod version is now published
         expect($modVersion->published_at)->not->toBeNull();
-        expect($modVersion->published_at->toDateString())->toBe(Carbon::now()->toDateString());
+        expect($modVersion->published_at->toDateString())->toBe(Date::now()->toDateString());
 
         // Assert the pinning has been cleared
         // After processing, the relationship may exist with pinned=false, or may be removed entirely
@@ -70,12 +70,12 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         // Create one published and one unpublished SPT version
         $publishedSpt = SptVersion::factory()->create([
             'version' => '4.0.0',
-            'publish_date' => Carbon::now()->subMinute(),
+            'publish_date' => Date::now()->subMinute(),
         ]);
 
         $unpublishedSpt = SptVersion::factory()->create([
             'version' => '4.0.1',
-            'publish_date' => Carbon::now()->addDays(2),
+            'publish_date' => Date::now()->addDays(2),
         ]);
 
         // Pin the mod version to both SPT versions
@@ -119,13 +119,13 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         $mod = Mod::factory()->create();
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDays(5),
+            'published_at' => Date::now()->subDays(5),
         ]);
 
         // Create an SPT version that just published
         $sptVersion = SptVersion::factory()->create([
             'version' => '4.0.0',
-            'publish_date' => Carbon::now()->subMinute(),
+            'publish_date' => Date::now()->subMinute(),
         ]);
 
         // Pin the mod version to the SPT version
@@ -159,7 +159,7 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         // Create an SPT version that is published but has no pinned mod versions
         $sptWithoutPins = SptVersion::factory()->create([
             'version' => '3.9.0',
-            'publish_date' => Carbon::now()->subMinute(),
+            'publish_date' => Date::now()->subMinute(),
         ]);
 
         // Create a mod version attached to it but NOT pinned
@@ -196,7 +196,7 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         // Create an SPT version that just published (use unique version number)
         $sptVersion = SptVersion::factory()->create([
             'version' => '14.0.0',
-            'publish_date' => Carbon::now()->subMinute(),
+            'publish_date' => Date::now()->subMinute(),
         ]);
 
         // Create multiple mod versions pinned to it
@@ -250,12 +250,12 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         // Create two SPT versions - first one published, second one will publish later
         $spt1 = SptVersion::factory()->create([
             'version' => '24.0.0',
-            'publish_date' => Carbon::now()->subMinute(),
+            'publish_date' => Date::now()->subMinute(),
         ]);
 
         $spt2 = SptVersion::factory()->create([
             'version' => '24.0.1',
-            'publish_date' => Carbon::now()->addMinute(),
+            'publish_date' => Date::now()->addMinute(),
         ]);
 
         // Pin the mod version to both
@@ -294,7 +294,7 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         expect($pivot2->pinned_to_spt_publish)->toBeTrue();
 
         // Now simulate the second SPT version publishing
-        $spt2->publish_date = Carbon::now()->subMinute();
+        $spt2->publish_date = Date::now()->subMinute();
         $spt2->save();
 
         // Run the job again

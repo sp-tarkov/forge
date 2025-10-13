@@ -20,7 +20,7 @@ describe('API Exception Handler', function (): void {
 
     it('returns correct json for validation exception', function (): void {
         Route::post('/api/v0/test-validation', function (): void {
-            request()->validate(['name' => 'required']);
+            request()->validate(['name' => ['required']]);
         });
 
         $response = $this->postJson('/api/v0/test-validation', []); // Empty data

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Ribbon;
 
+use Illuminate\Support\Facades\Date;
 use App\Models\ModVersion as ModVersionModel;
-use Carbon\Carbon;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -80,7 +80,7 @@ class ModVersion extends Component
             return ['color' => 'amber', 'label' => __('Unpublished')];
         }
 
-        $publishedAt = Carbon::parse($this->publishedAt);
+        $publishedAt = Date::parse($this->publishedAt);
         if ($publishedAt->isFuture()) {
             return ['color' => 'emerald', 'label' => __('Scheduled')];
         }

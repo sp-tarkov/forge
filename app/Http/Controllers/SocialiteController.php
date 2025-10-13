@@ -32,7 +32,7 @@ class SocialiteController extends Controller
     public function redirect(string $provider): SymfonyRedirectResponse
     {
         if (! in_array($provider, $this->providers)) {
-            return redirect()->route('login')->withErrors(__('Unsupported OAuth provider.'));
+            return to_route('login')->withErrors(__('Unsupported OAuth provider.'));
         }
 
         $socialiteProvider = Socialite::driver($provider);
@@ -50,25 +50,24 @@ class SocialiteController extends Controller
     public function callback(string $provider): RedirectResponse
     {
         if (! in_array($provider, $this->providers)) {
-            return redirect()->route('login')->withErrors(__('Unsupported OAuth provider.'));
+            return to_route('login')->withErrors(__('Unsupported OAuth provider.'));
         }
 
         try {
             $providerUser = Socialite::driver($provider)->user();
         } catch (Exception) {
-            return redirect()->route('login')->withErrors('Unable to login using '.$provider.'. Please try again.');
+            return to_route('login')->withErrors('Unable to login using '.$provider.'. Please try again.');
         }
 
         $user = $this->findOrCreateUser($provider, $providerUser);
         if ($user === null) {
-            return redirect()
-                ->route('login')
+            return to_route('login')
                 ->withErrors('Unable to retrieve email from Discord. Please ensure your Discord account has a verified email address and you have granted email access permission.');
         }
 
         Auth::login($user, remember: true);
 
-        return redirect()->route('dashboard');
+        return to_route('dashboard');
     }
 
     protected function findOrCreateUser(string $provider, ProviderUser $providerUser): ?User

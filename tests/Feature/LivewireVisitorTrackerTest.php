@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Date;
 use App\Events\PeakVisitorUpdated;
 use App\Livewire\VisitorTracker;
 use App\Models\Visitor;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -21,7 +21,7 @@ it('initializes with current peak data', function (): void {
     // Create a peak record
     Visitor::query()->create([
         'peak_count' => 100,
-        'peak_date' => Carbon::parse('2025-01-01'),
+        'peak_date' => Date::parse('2025-01-01'),
     ]);
 
     Livewire::test(VisitorTracker::class)
@@ -41,7 +41,7 @@ it('updates peak when new count is higher', function (): void {
     // Create initial peak
     Visitor::query()->create([
         'peak_count' => 50,
-        'peak_date' => Carbon::yesterday(),
+        'peak_date' => Date::yesterday(),
     ]);
 
     $component = Livewire::test(VisitorTracker::class);
@@ -69,7 +69,7 @@ it('does not update peak when new count is lower', function (): void {
     Event::fake([PeakVisitorUpdated::class]);
 
     // Create initial peak
-    $peakDate = Carbon::yesterday();
+    $peakDate = Date::yesterday();
     Visitor::query()->create([
         'peak_count' => 100,
         'peak_date' => $peakDate,
@@ -99,7 +99,7 @@ it('handles concurrent peak updates with mutex lock', function (): void {
     // Create initial peak
     Visitor::query()->create([
         'peak_count' => 50,
-        'peak_date' => Carbon::yesterday(),
+        'peak_date' => Date::yesterday(),
     ]);
 
     // Simulate concurrent updates
@@ -147,7 +147,7 @@ it('uses cache for initial peak data', function (): void {
     // Create a peak record
     Visitor::query()->create([
         'peak_count' => 100,
-        'peak_date' => Carbon::parse('2025-01-01'),
+        'peak_date' => Date::parse('2025-01-01'),
     ]);
 
     // First component load should cache the data

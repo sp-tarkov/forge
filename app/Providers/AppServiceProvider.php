@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Date;
 use App\Enums\TrackingEventType;
 use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\Track;
@@ -12,7 +13,6 @@ use App\Livewire\Profile\UpdatePasswordForm;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
-use Carbon\Carbon;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -155,7 +155,7 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerMixins(): void
     {
-        Carbon::mixin(new CarbonMixin);
+        Date::mixin(new CarbonMixin);
     }
 
     /**

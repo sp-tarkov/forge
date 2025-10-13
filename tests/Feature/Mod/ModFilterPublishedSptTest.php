@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Date;
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\ModCategory;
@@ -9,7 +10,6 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -20,7 +20,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $mod = Mod::factory()->create(['category_id' => $category->id]);
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create published and unpublished SPT versions
@@ -45,7 +45,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $mod = Mod::factory()->create(['category_id' => $category->id]);
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create unpublished SPT version
@@ -70,11 +70,11 @@ describe('ModFilter with SPT version publish dates', function (): void {
 
         $modVersion1 = ModVersion::factory()->create([
             'mod_id' => $mod1->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
         $modVersion2 = ModVersion::factory()->create([
             'mod_id' => $mod2->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create published and unpublished SPT versions
@@ -100,7 +100,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $mod = Mod::factory()->create(['category_id' => $category->id]);
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create unpublished SPT version
@@ -119,11 +119,11 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $mod = Mod::factory()->create(['category_id' => $category->id]);
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create a scheduled SPT version that was published yesterday
-        $scheduledSpt = SptVersion::factory()->publishedAt(Carbon::now()->subDay())->create(['version' => '3.11.0']);
+        $scheduledSpt = SptVersion::factory()->publishedAt(Date::now()->subDay())->create(['version' => '3.11.0']);
         $modVersion->sptVersions()->attach($scheduledSpt->id);
 
         // Should be visible as it's past the publish date
@@ -138,11 +138,11 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $mod = Mod::factory()->create(['category_id' => $category->id]);
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create a scheduled SPT version for tomorrow
-        $futureSpt = SptVersion::factory()->scheduled(Carbon::now()->addDay())->create(['version' => '3.11.0']);
+        $futureSpt = SptVersion::factory()->scheduled(Date::now()->addDay())->create(['version' => '3.11.0']);
         $modVersion->sptVersions()->attach($futureSpt->id);
 
         // Should not be visible as it's before the publish date
@@ -162,7 +162,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $mod = Mod::factory()->create(['category_id' => $category->id]);
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create an old published version not in the last 3 minors
@@ -186,7 +186,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $mod = Mod::factory()->create(['category_id' => $category->id]);
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
 
         // Create an old unpublished version

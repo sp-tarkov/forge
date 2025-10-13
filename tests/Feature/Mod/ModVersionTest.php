@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Date;
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -9,7 +10,6 @@ use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -115,10 +115,10 @@ describe('SPT version resolution', function (): void {
 describe('mod version publishing', function (): void {
     it('includes only published mod versions', function (): void {
         $publishedMod = ModVersion::factory()->create([
-            'published_at' => Carbon::now()->subDay(),
+            'published_at' => Date::now()->subDay(),
         ]);
         $unpublishedMod = ModVersion::factory()->create([
-            'published_at' => Carbon::now()->addDay(),
+            'published_at' => Date::now()->addDay(),
         ]);
         $noPublishedDateMod = ModVersion::factory()->create([
             'published_at' => null,

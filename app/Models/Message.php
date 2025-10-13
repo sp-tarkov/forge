@@ -130,7 +130,7 @@ class Message extends Model
                 $conversation->unarchiveForAllUsers();
 
                 // Dispatch notification job for the recipient
-                ProcessChatMessageNotification::dispatch($message);
+                dispatch(new ProcessChatMessageNotification($message));
             }
         });
     }
