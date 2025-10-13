@@ -60,13 +60,13 @@
                                 </p>
 
                                 @if($notification->data['reportable_excerpt'])
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 break-words">
                                         {{ $notification->data['reportable_excerpt'] }}
                                     </p>
                                 @endif
 
                                 @if($notification->data['context'])
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 italic">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 italic break-words">
                                         "{{ Str::words($notification->data['context'], 15, '...') }}"
                                     </p>
                                 @endif
@@ -109,7 +109,7 @@
                                 </p>
 
                                 @if($notification->data['latest_message_preview'])
-                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 italic">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 italic break-words">
                                         "{{ $notification->data['latest_message_preview'] }}"
                                     </p>
                                 @endif
@@ -147,7 +147,7 @@
                                     {{ __('commented on') }} {{ $notification->data['commentable_title'] ?? 'your content' }}
                                 </p>
 
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 break-words">
                                     {{ Str::words($notification->data['comment_body'] ?? '', 15, '...') }}
                                 </p>
 
