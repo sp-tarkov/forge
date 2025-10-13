@@ -91,7 +91,7 @@ class Action extends Component
     #[Computed(persist: true)]
     public function mod(): Mod
     {
-        return Mod::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'featured', 'disabled', 'published_at', 'owner_id'])
+        return Mod::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'featured', 'disabled', 'published_at', 'owner_id', 'contains_ai_content'])
             ->with('owner:id,name')
             ->findOrFail($this->modId);
     }
