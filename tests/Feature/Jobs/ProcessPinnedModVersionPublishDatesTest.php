@@ -27,8 +27,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         ]);
 
         // Pin the mod version to the SPT version
-        $modVersion->sptVersions()->attach($sptVersion->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $sptVersion->id => ['pinned_to_spt_publish' => true],
         ]);
 
         // Run the job
@@ -79,11 +79,9 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         ]);
 
         // Pin the mod version to both SPT versions
-        $modVersion->sptVersions()->attach($publishedSpt->id, [
-            'pinned_to_spt_publish' => true,
-        ]);
-        $modVersion->sptVersions()->attach($unpublishedSpt->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $publishedSpt->id => ['pinned_to_spt_publish' => true],
+            $unpublishedSpt->id => ['pinned_to_spt_publish' => true],
         ]);
 
         // Run the job
@@ -129,8 +127,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         ]);
 
         // Pin the mod version to the SPT version
-        $modVersion->sptVersions()->attach($sptVersion->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $sptVersion->id => ['pinned_to_spt_publish' => true],
         ]);
 
         $originalPublishDate = $modVersion->published_at;
@@ -169,8 +167,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
             'published_at' => null,
         ]);
 
-        $modVersion->sptVersions()->attach($sptWithoutPins->id, [
-            'pinned_to_spt_publish' => false,
+        $modVersion->sptVersions()->sync([
+            $sptWithoutPins->id => ['pinned_to_spt_publish' => false],
         ]);
 
         // Run the job
@@ -208,8 +206,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
                 'published_at' => null,
             ]);
 
-            $modVersion->sptVersions()->attach($sptVersion->id, [
-                'pinned_to_spt_publish' => true,
+            $modVersion->sptVersions()->sync([
+                $sptVersion->id => ['pinned_to_spt_publish' => true],
             ]);
 
             $modVersions[] = $modVersion;
@@ -259,11 +257,9 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         ]);
 
         // Pin the mod version to both
-        $modVersion->sptVersions()->attach($spt1->id, [
-            'pinned_to_spt_publish' => true,
-        ]);
-        $modVersion->sptVersions()->attach($spt2->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $spt1->id => ['pinned_to_spt_publish' => true],
+            $spt2->id => ['pinned_to_spt_publish' => true],
         ]);
 
         // Run the job - only spt1 should be processed

@@ -232,6 +232,7 @@ class SendModDiscordNotifications implements ShouldQueue
         // Get SPT versions supported by the latest version
         $sptVersions = $latestVersion->sptVersions
             ->pluck('version')
+            ->unique()
             ->filter()
             ->values();
 

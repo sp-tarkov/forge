@@ -256,8 +256,8 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create();
 
         // Attach with pinning
-        $modVersion->sptVersions()->attach($unpublishedSpt->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $unpublishedSpt->id => ['pinned_to_spt_publish' => true],
         ]);
 
         expect($modVersion->isPinnedToUnpublishedSptVersion())->toBeTrue();
@@ -269,8 +269,8 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $sptVersion = SptVersion::factory()->unpublished()->create();
 
         // Attach with pinning
-        $modVersion->sptVersions()->attach($sptVersion->id, [
-            'pinned_to_spt_publish' => true,
+        $modVersion->sptVersions()->sync([
+            $sptVersion->id => ['pinned_to_spt_publish' => true],
         ]);
 
         // Initially should be pinned to unpublished
@@ -291,8 +291,8 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create();
 
         // Attach without pinning
-        $modVersion->sptVersions()->attach($unpublishedSpt->id, [
-            'pinned_to_spt_publish' => false,
+        $modVersion->sptVersions()->sync([
+            $unpublishedSpt->id => ['pinned_to_spt_publish' => false],
         ]);
 
         expect($modVersion->isPinnedToUnpublishedSptVersion())->toBeFalse();
@@ -307,9 +307,11 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $spt3 = SptVersion::factory()->create(['version' => '3.9.0']); // Published
 
         // Attach with different pinning states
-        $modVersion->sptVersions()->attach($spt1->id, ['pinned_to_spt_publish' => true]);
-        $modVersion->sptVersions()->attach($spt2->id, ['pinned_to_spt_publish' => true]);
-        $modVersion->sptVersions()->attach($spt3->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([
+            $spt1->id => ['pinned_to_spt_publish' => true],
+            $spt2->id => ['pinned_to_spt_publish' => true],
+            $spt3->id => ['pinned_to_spt_publish' => true],
+        ]);
 
         $latestDate = $modVersion->getLatestPinnedSptPublishDate();
 
@@ -325,7 +327,7 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $publishedSpt = SptVersion::factory()->create();
 
         // Attach published version with pinning
-        $modVersion->sptVersions()->attach($publishedSpt->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([$publishedSpt->id => ['pinned_to_spt_publish' => true]]);
 
         $latestDate = $modVersion->getLatestPinnedSptPublishDate();
 
@@ -344,8 +346,10 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create();
 
         // Attach both versions, but only pin to unpublished
-        $modVersion->sptVersions()->attach($publishedSpt->id, ['pinned_to_spt_publish' => false]);
-        $modVersion->sptVersions()->attach($unpublishedSpt->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([
+            $publishedSpt->id => ['pinned_to_spt_publish' => false],
+            $unpublishedSpt->id => ['pinned_to_spt_publish' => true],
+        ]);
 
         expect($modVersion->isPubliclyVisible())->toBeFalse();
     });
@@ -363,8 +367,10 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $sptInTwoDays = SptVersion::factory()->scheduled(Date::now()->addDays(2))->create(['version' => '4.0.1']);
 
         // Pin the mod version to both unpublished SPT versions
-        $modVersion->sptVersions()->attach($sptTomorrow->id, ['pinned_to_spt_publish' => true]);
-        $modVersion->sptVersions()->attach($sptInTwoDays->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([
+            $sptTomorrow->id => ['pinned_to_spt_publish' => true],
+            $sptInTwoDays->id => ['pinned_to_spt_publish' => true],
+        ]);
 
         // Initially not visible (waiting for both)
         expect($modVersion->isPinnedToUnpublishedSptVersion())->toBeTrue();
@@ -400,7 +406,7 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         $sptVersion = SptVersion::factory()->unpublished()->create();
 
         // Attach with pinning
-        $modVersion->sptVersions()->attach($sptVersion->id, ['pinned_to_spt_publish' => true]);
+        $modVersion->sptVersions()->sync([$sptVersion->id => ['pinned_to_spt_publish' => true]]);
 
         // Initially not visible
         expect($modVersion->isPubliclyVisible())->toBeFalse();
@@ -493,14 +499,14 @@ describe('Mod filtering with SPT version caching', function (): void {
             'published_at' => now()->subDay(),
             'spt_version_constraint' => '', // Empty constraint to prevent auto-sync
         ]));
-        $modVersion1->sptVersions()->attach($publishedSpt);
+        $modVersion1->sptVersions()->sync($publishedSpt);
 
         $mod2 = Mod::factory()->create(['name' => 'Test Mod Cache 2']);
         $modVersion2 = ModVersion::withoutEvents(fn () => ModVersion::factory()->for($mod2)->create([
             'published_at' => now()->subDay(),
             'spt_version_constraint' => '', // Empty constraint to prevent auto-sync
         ]));
-        $modVersion2->sptVersions()->attach($futurePublishedSpt);
+        $modVersion2->sptVersions()->sync($futurePublishedSpt);
 
         // Test as guest user with legacy filter to trigger caching
         $guestFilter = new ModFilter([
@@ -641,7 +647,7 @@ describe('Mod filtering with SPT version caching', function (): void {
                 'published_at' => now()->subDay(),
                 'spt_version_constraint' => '',
             ]));
-            $modVersion->sptVersions()->attach($spt);
+            $modVersion->sptVersions()->sync($spt);
             $mods[$spt->version] = $mod;
         }
 

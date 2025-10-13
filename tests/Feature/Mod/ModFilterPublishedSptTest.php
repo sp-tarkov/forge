@@ -28,7 +28,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create(['version' => '3.11.0']);
 
         // Mod version only supports unpublished SPT
-        $modVersion->sptVersions()->attach($unpublishedSpt->id);
+        $modVersion->sptVersions()->sync($unpublishedSpt->id);
 
         // Test as guest
         $filter = new ModFilter([]);
@@ -52,7 +52,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create(['version' => '3.11.0']);
 
         // Mod version only supports unpublished SPT
-        $modVersion->sptVersions()->attach($unpublishedSpt->id);
+        $modVersion->sptVersions()->sync($unpublishedSpt->id);
 
         // Test as admin
         auth()->login($admin);
@@ -82,10 +82,10 @@ describe('ModFilter with SPT version publish dates', function (): void {
         $unpublishedSpt = SptVersion::factory()->unpublished()->create(['version' => '3.11.0']);
 
         // First mod supports published SPT
-        $modVersion1->sptVersions()->attach($publishedSpt->id);
+        $modVersion1->sptVersions()->sync($publishedSpt->id);
 
         // Second mod only supports unpublished SPT
-        $modVersion2->sptVersions()->attach($unpublishedSpt->id);
+        $modVersion2->sptVersions()->sync($unpublishedSpt->id);
 
         // Filter by the published SPT version
         $filter = new ModFilter(['sptVersions' => ['3.10.0']]);
@@ -105,7 +105,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
 
         // Create unpublished SPT version
         $unpublishedSpt = SptVersion::factory()->unpublished()->create(['version' => '3.11.0']);
-        $modVersion->sptVersions()->attach($unpublishedSpt->id);
+        $modVersion->sptVersions()->sync($unpublishedSpt->id);
 
         // Try to filter by the unpublished version as guest
         $filter = new ModFilter(['sptVersions' => ['3.11.0']]);
@@ -124,7 +124,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
 
         // Create a scheduled SPT version that was published yesterday
         $scheduledSpt = SptVersion::factory()->publishedAt(Date::now()->subDay())->create(['version' => '3.11.0']);
-        $modVersion->sptVersions()->attach($scheduledSpt->id);
+        $modVersion->sptVersions()->sync($scheduledSpt->id);
 
         // Should be visible as it's past the publish date
         $filter = new ModFilter([]);
@@ -143,7 +143,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
 
         // Create a scheduled SPT version for tomorrow
         $futureSpt = SptVersion::factory()->scheduled(Date::now()->addDay())->create(['version' => '3.11.0']);
-        $modVersion->sptVersions()->attach($futureSpt->id);
+        $modVersion->sptVersions()->sync($futureSpt->id);
 
         // Should not be visible as it's before the publish date
         $filter = new ModFilter([]);
@@ -167,7 +167,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
 
         // Create an old published version not in the last 3 minors
         $legacySpt = SptVersion::factory()->create(['version' => '1.0.0']);
-        $modVersion->sptVersions()->attach($legacySpt->id);
+        $modVersion->sptVersions()->sync($legacySpt->id);
 
         // Debug: check what versions are considered "active"
         $activeSptVersions = SptVersion::getVersionsForLastThreeMinors()->pluck('version')->toArray();
@@ -191,7 +191,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
 
         // Create an old unpublished version
         $legacySpt = SptVersion::factory()->unpublished()->create(['version' => '1.0.0']);
-        $modVersion->sptVersions()->attach($legacySpt->id);
+        $modVersion->sptVersions()->sync($legacySpt->id);
 
         // Apply legacy filter
         $filter = new ModFilter(['sptVersions' => 'legacy']);

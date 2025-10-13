@@ -51,7 +51,7 @@ it('sends discord notification for newly visible mods', function (): void {
         ]);
 
     // Associate SPT version
-    $modVersion->sptVersions()->attach($sptVersion);
+    $modVersion->sptVersions()->sync($sptVersion);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -140,7 +140,7 @@ it('does not send notification for already notified mods', function (): void {
             'published_at' => now(),
         ]);
 
-    $modVersion->sptVersions()->attach($sptVersion);
+    $modVersion->sptVersions()->sync($sptVersion);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -184,7 +184,7 @@ it('includes all mod details in discord embed', function (): void {
             'published_at' => now(),
         ]);
 
-    $modVersion->sptVersions()->attach($sptVersion);
+    $modVersion->sptVersions()->sync($sptVersion);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -218,7 +218,7 @@ it('sends discord notification for new mod versions', function (): void {
             'published_at' => now()->subDay(),
             'discord_notification_sent' => true,
         ]);
-    $oldVersion->sptVersions()->attach($sptVersion1);
+    $oldVersion->sptVersions()->sync($sptVersion1);
 
     // Create new version that needs notification
     $newVersion = ModVersion::factory()
@@ -229,7 +229,7 @@ it('sends discord notification for new mod versions', function (): void {
             'published_at' => now(),
             'discord_notification_sent' => false,
         ]);
-    $newVersion->sptVersions()->attach($sptVersion2);
+    $newVersion->sptVersions()->sync($sptVersion2);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -266,7 +266,7 @@ it('sends single notification for multiple new versions of same mod', function (
             'published_at' => now()->subHour(),
             'discord_notification_sent' => false,
         ]);
-    $version1->sptVersions()->attach($sptVersion);
+    $version1->sptVersions()->sync($sptVersion);
 
     $version2 = ModVersion::factory()
         ->for($mod)
@@ -276,7 +276,7 @@ it('sends single notification for multiple new versions of same mod', function (
             'published_at' => now(),
             'discord_notification_sent' => false,
         ]);
-    $version2->sptVersions()->attach($sptVersion);
+    $version2->sptVersions()->sync($sptVersion);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -310,7 +310,7 @@ it('does not send version notification if mod not yet notified', function (): vo
             'published_at' => now(),
             'discord_notification_sent' => false,
         ]);
-    $version->sptVersions()->attach($sptVersion);
+    $version->sptVersions()->sync($sptVersion);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -347,7 +347,7 @@ it('does not send version notification for disabled versions', function (): void
             'published_at' => now(),
             'discord_notification_sent' => false,
         ]);
-    $version->sptVersions()->attach($sptVersion);
+    $version->sptVersions()->sync($sptVersion);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -379,7 +379,7 @@ it('does not send version notification for unpublished versions', function (): v
             'published_at' => null,
             'discord_notification_sent' => false,
         ]);
-    $version->sptVersions()->attach($sptVersion);
+    $version->sptVersions()->sync($sptVersion);
 
     // Run the job
     $job = new SendModDiscordNotifications;
@@ -388,4 +388,157 @@ it('does not send version notification for unpublished versions', function (): v
     // Assert version was not marked as notified
     $version->refresh();
     expect($version->discord_notification_sent)->toBeFalse();
+});
+
+it('does not duplicate spt versions in new mod notification', function (): void {
+    // Create SPT versions
+    $sptVersion1 = SptVersion::factory()->create(['version' => '3.10.0']);
+    $sptVersion2 = SptVersion::factory()->create(['version' => '3.11.0']);
+
+    // Create category
+    $category = ModCategory::factory()->create();
+
+    // Create a mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'category_id' => $category->id,
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    // Create multiple versions that share SPT versions
+    $modVersion1 = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '1.0.0',
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion1->sptVersions()->sync([$sptVersion1->id, $sptVersion2->id]);
+
+    $modVersion2 = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '1.1.0',
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion2->sptVersions()->sync([$sptVersion1->id, $sptVersion2->id]);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendModDiscordNotifications;
+    $job->handle();
+
+    // Assert mod was marked as notified
+    $mod->refresh();
+    expect($mod->discord_notification_sent)->toBeTrue();
+
+    // Verify HTTP request was made with unique SPT versions only
+    Http::assertSent(function ($request) {
+        $body = json_decode((string) $request->body(), true);
+        $embeds = $body['embeds'] ?? [];
+
+        if (empty($embeds)) {
+            return false;
+        }
+
+        $fields = $embeds[0]['fields'] ?? [];
+        $sptField = collect($fields)->firstWhere('name', 'Supported SPT Versions');
+
+        if (! $sptField) {
+            return false;
+        }
+
+        $versions = explode(', ', (string) $sptField['value']);
+
+        // Check for duplicates
+        return count($versions) === count(array_unique($versions));
+    });
+});
+
+it('does not duplicate spt versions in mod version update notification', function (): void {
+    // Create SPT versions
+    $sptVersion1 = SptVersion::factory()->create(['version' => '3.11.4']);
+    $sptVersion2 = SptVersion::factory()->create(['version' => '4.0.0']);
+
+    // Create a mod that has already sent notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => true,
+        ]);
+
+    // Create first version (already notified)
+    $oldVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '1.0.0',
+            'disabled' => false,
+            'published_at' => now()->subDay(),
+            'discord_notification_sent' => true,
+        ]);
+    $oldVersion->sptVersions()->sync($sptVersion1);
+
+    // Create new version with both SPT versions
+    $newVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '2.0.0',
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    // Sync both SPT versions (the unique() call in the job will handle any theoretical duplicates)
+    $newVersion->sptVersions()->sync([$sptVersion1->id, $sptVersion2->id]);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendModDiscordNotifications;
+    $job->handle();
+
+    // Assert new version was marked as notified
+    $newVersion->refresh();
+    expect($newVersion->discord_notification_sent)->toBeTrue();
+
+    // Verify HTTP request was made with unique SPT versions only
+    Http::assertSent(function ($request) {
+        $body = json_decode((string) $request->body(), true);
+        $embeds = $body['embeds'] ?? [];
+
+        if (empty($embeds)) {
+            return false;
+        }
+
+        // Look for the version update notification (not the new mod notification)
+        $embed = $embeds[0];
+        if (! str_contains($embed['title'] ?? '', 'Version 2.0.0')) {
+            return false;
+        }
+
+        $fields = $embed['fields'] ?? [];
+        $sptField = collect($fields)->firstWhere('name', 'Supported SPT Versions');
+
+        if (! $sptField) {
+            return false;
+        }
+
+        $versions = explode(', ', (string) $sptField['value']);
+
+        // Check for duplicates - should only have 2 unique versions
+        return count($versions) === count(array_unique($versions)) && count($versions) === 2;
+    });
 });

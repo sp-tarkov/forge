@@ -362,6 +362,7 @@ class Create extends Component
                     ->whereIn('version', array_column($this->matchingSptVersions, 'version'))
                     ->get();
 
+                $pivotData = [];
                 foreach ($sptVersions as $sptVersion) {
                     $isPinned = false;
 
@@ -370,10 +371,12 @@ class Create extends Component
                         $isPinned = true;
                     }
 
-                    $modVersion->sptVersions()->attach($sptVersion->id, [
+                    $pivotData[$sptVersion->id] = [
                         'pinned_to_spt_publish' => $isPinned,
-                    ]);
+                    ];
                 }
+
+                $modVersion->sptVersions()->sync($pivotData);
             }
 
             // Create dependencies if any were specified
