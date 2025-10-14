@@ -197,7 +197,7 @@ class Create extends Component
      */
     public function hasUnpublishedSptVersions(): bool
     {
-        return array_any($this->matchingSptVersions, fn ($version): bool => ! $version['is_published']);
+        return array_any($this->matchingSptVersions, fn (array $version): bool => ! $version['is_published']);
     }
 
     /**

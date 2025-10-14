@@ -33,11 +33,11 @@ class ProcessPinnedModVersionPublishDates implements ShouldQueue
             ->withoutGlobalScope(PublishedSptVersionScope::class)
             ->whereNotNull('publish_date')
             ->where('publish_date', '<=', Date::now())
-            ->whereHas('modVersions', function ($query): void {
+            ->whereHas('modVersions', function (mixed $query): void {
                 $query->withoutGlobalScopes()
                     ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
             })
-            ->with(['modVersions' => function ($query): void {
+            ->with(['modVersions' => function (mixed $query): void {
                 $query->withoutGlobalScopes()
                     ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
             }])
