@@ -71,14 +71,6 @@
             </button>
         @endif
 
-        @if (CachedGate::allows('showOwnerPinAction', $comment))
-            <button type="button"
-                    wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"
-                    class="hover:underline cursor-pointer text-xs text-cyan-500">
-                {{ $comment->isPinned() ? __('Unpin') : __('Pin') }}
-            </button>
-        @endif
-
         <livewire:report-component
             wire:key="report-{{ $comment->id }}"
             variant="comment"
@@ -93,6 +85,14 @@
                 </button>
             @endif
         @endverified
+    @endif
+
+    @if (CachedGate::allows('showOwnerPinAction', $comment))
+        <button type="button"
+                wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"
+                class="hover:underline cursor-pointer text-xs text-cyan-500">
+            {{ $comment->isPinned() ? __('Unpin') : __('Pin') }}
+        </button>
     @endif
 
     @if ($showRepliesToggle && $manager->getDescendantCount($comment->id) > 0)

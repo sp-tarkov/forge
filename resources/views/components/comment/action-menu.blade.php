@@ -60,7 +60,7 @@ x-on:beforeunload.window="stopPolling()">
                                 class="action-unpin">
                                 Unpin Comment
                             </flux:menu.item>
-                        @else
+                        @elseif(!$comment->isDeleted())
                             <flux:menu.item
                                 wire:click="confirmPinComment({{ $comment->id }})"
                                 icon:trailing="bookmark"
@@ -69,7 +69,7 @@ x-on:beforeunload.window="stopPolling()">
                             </flux:menu.item>
                         @endif
                     @endif
-                    
+
                     @if ($comment->isDeleted())
                         @if(CachedGate::allows('restore', $comment))
                             <flux:menu.item 
