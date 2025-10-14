@@ -136,6 +136,90 @@ class ModVersionController extends Controller
      *          "total": 5
      *      }
      *  }
+     * @response status=200 scenario="Success (Include Dependencies)"
+     *  {
+     *      "success": true,
+     *      "data": [
+     *          {
+     *              "id": 938,
+     *              "hub_id": null,
+     *              "version": "0.2.9",
+     *              "description": "Magni eius ad temporibus similique accusamus assumenda aliquid. Quisquam placeat in necessitatibus ducimus quasi odit. Autem nulla ea minus itaque.",
+     *              "link": "http://kautzer.com/enim-ut-quis-suscipit-dolores.html",
+     *              "content_length": 52428800,
+     *              "spt_version_constraint": "^1.0.0",
+     *              "virus_total_link": "https://herman.net/accusantium-vitae-et-totam-deleniti-cupiditate-dolorem-non-sit.html",
+     *              "downloads": 8,
+     *              "dependencies": [
+     *                  {
+     *                      "id": 5,
+     *                      "mod_id": 42,
+     *                      "mod_guid": "com.example.core-library",
+     *                      "mod_name": "Core Library",
+     *                      "version_constraint": "^2.0.0",
+     *                      "is_optional": false
+     *                  },
+     *                  {
+     *                      "id": 8,
+     *                      "mod_id": 15,
+     *                      "mod_guid": "com.example.helper-utils",
+     *                      "mod_name": "Helper Utilities",
+     *                      "version_constraint": ">=1.5.0",
+     *                      "is_optional": true
+     *                  }
+     *              ],
+     *              "published_at": "2024-05-09T10:49:41.000000Z",
+     *              "created_at": "2024-12-19T04:49:41.000000Z",
+     *              "updated_at": "2025-02-18T11:49:41.000000Z"
+     *          },
+     *          {
+     *              "id": 660,
+     *              "hub_id": null,
+     *              "version": "8.2.8",
+     *              "description": "Mollitia voluptatem quia et ex aut. Qui libero tempore ut. Suscipit a eius recusandae aut pariatur soluta necessitatibus.",
+     *              "link": "http://lockman.net/",
+     *              "spt_version_constraint": "<4.0.0",
+     *              "virus_total_link": "https://www.blick.com/quis-reprehenderit-quis-quia-nobis-assumenda-eveniet-ipsa-qui",
+     *              "downloads": 3332503,
+     *              "dependencies": [],
+     *              "published_at": "2024-07-03T05:49:25.000000Z",
+     *              "created_at": "2024-10-06T23:49:25.000000Z",
+     *              "updated_at": "2024-10-15T03:49:25.000000Z"
+     *          }
+     *      ],
+     *      "links": {
+     *          "first": "https://forge.sp-tarkov.com/api/v0/mod/1/versions?include=dependencies&page=1",
+     *          "last": "https://forge.sp-tarkov.com/api/v0/mod/1/versions?include=dependencies&page=1",
+     *          "prev": null,
+     *          "next": null
+     *      },
+     *      "meta": {
+     *          "current_page": 1,
+     *          "from": 1,
+     *          "last_page": 1,
+     *          "links": [
+     *              {
+     *                  "url": null,
+     *                  "label": "&laquo; Previous",
+     *                  "active": false
+     *              },
+     *              {
+     *                  "url": "https://forge.sp-tarkov.com/api/v0/mod/1/versions?include=dependencies&page=1",
+     *                  "label": "1",
+     *                  "active": true
+     *              },
+     *              {
+     *                  "url": null,
+     *                  "label": "Next &raquo;",
+     *                  "active": false
+     *              }
+     *          ],
+     *          "path": "https://forge.sp-tarkov.com/api/v0/mod/1/versions",
+     *          "per_page": 12,
+     *          "to": 2,
+     *          "total": 2
+     *      }
+     *  }
      * @response status=401 scenario="Unauthenticated"
      *  {
      *      "success": false,

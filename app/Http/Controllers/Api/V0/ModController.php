@@ -114,6 +114,161 @@ class ModController extends Controller
      *          "total": 2
      *      }
      *  }
+     * @response status=200 scenario="Success (Include Owner and Category)"
+     *  {
+     *      "success": true,
+     *      "data": [
+     *          {
+     *              "id": 1,
+     *              "hub_id": null,
+     *              "guid": "com.oconnell.recusandae-velit-incidunt",
+     *              "name": "Recusandae velit incidunt.",
+     *              "slug": "recusandae-velit-incidunt",
+     *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
+     *              "thumbnail": "",
+     *              "downloads": 55212644,
+     *              "source_code_links": [
+     *                  {
+     *                      "url": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *                      "label": null
+     *                  }
+     *              ],
+     *              "detail_url": "https://forge.sp-tarkov.com/mods/1/recusandae-velit-incidunt",
+     *              "featured": true,
+     *              "contains_ads": true,
+     *              "contains_ai_content": false,
+     *              "owner": {
+     *                  "id": 1,
+     *                  "name": "ModAuthor",
+     *                  "profile_photo_url": "https://example.com/profile.jpg",
+     *                  "cover_photo_url": "https://example.com/cover.jpg"
+     *              },
+     *              "category": {
+     *                  "id": 1,
+     *                  "name": "Gameplay",
+     *                  "slug": "gameplay",
+     *                  "color_class": "blue"
+     *              },
+     *              "published_at": "2025-01-09T17:48:53.000000Z",
+     *              "created_at": "2024-12-11T14:48:53.000000Z",
+     *              "updated_at": "2025-04-10T13:50:00.000000Z"
+     *          }
+     *      ],
+     *      "links": {
+     *          "first": "https://forge.test/api/v0/mods?include=owner,category&page=1",
+     *          "last": "https://forge.test/api/v0/mods?include=owner,category&page=1",
+     *          "prev": null,
+     *          "next": null
+     *      },
+     *      "meta": {
+     *          "current_page": 1,
+     *          "from": 1,
+     *          "last_page": 1,
+     *          "links": [
+     *              {
+     *                  "url": null,
+     *                  "label": "&laquo; Previous",
+     *                  "active": false
+     *              },
+     *              {
+     *                  "url": "https://forge.test/api/v0/mods?include=owner,category&page=1",
+     *                  "label": "1",
+     *                  "active": true
+     *              },
+     *              {
+     *                  "url": null,
+     *                  "label": "Next &raquo;",
+     *                  "active": false
+     *              }
+     *          ],
+     *          "path": "https://forge.test/api/v0/mods",
+     *          "per_page": 12,
+     *          "to": 1,
+     *          "total": 1
+     *      }
+     *  }
+     * @response status=200 scenario="Success (Include Versions and License)"
+     *  {
+     *      "success": true,
+     *      "data": [
+     *          {
+     *              "id": 1,
+     *              "hub_id": null,
+     *              "guid": "com.oconnell.recusandae-velit-incidunt",
+     *              "name": "Recusandae velit incidunt.",
+     *              "slug": "recusandae-velit-incidunt",
+     *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
+     *              "thumbnail": "",
+     *              "downloads": 55212644,
+     *              "source_code_links": [
+     *                  {
+     *                      "url": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *                      "label": null
+     *                  }
+     *              ],
+     *              "detail_url": "https://forge.sp-tarkov.com/mods/1/recusandae-velit-incidunt",
+     *              "featured": true,
+     *              "contains_ads": true,
+     *              "contains_ai_content": false,
+     *              "versions": [
+     *                  {
+     *                      "id": 1,
+     *                      "version": "1.2.3",
+     *                      "spt_version_constraint": "^3.8.0",
+     *                      "downloads": 1523,
+     *                      "published_at": "2025-01-09T17:48:53.000000Z"
+     *                  },
+     *                  {
+     *                      "id": 2,
+     *                      "version": "1.2.2",
+     *                      "spt_version_constraint": "^3.8.0",
+     *                      "downloads": 892,
+     *                      "published_at": "2025-01-05T12:30:00.000000Z"
+     *                  }
+     *              ],
+     *              "license": {
+     *                  "id": 1,
+     *                  "name": "MIT",
+     *                  "short_name": "MIT"
+     *              },
+     *              "published_at": "2025-01-09T17:48:53.000000Z",
+     *              "created_at": "2024-12-11T14:48:53.000000Z",
+     *              "updated_at": "2025-04-10T13:50:00.000000Z"
+     *          }
+     *      ],
+     *      "links": {
+     *          "first": "https://forge.test/api/v0/mods?include=versions,license&page=1",
+     *          "last": "https://forge.test/api/v0/mods?include=versions,license&page=1",
+     *          "prev": null,
+     *          "next": null
+     *      },
+     *      "meta": {
+     *          "current_page": 1,
+     *          "from": 1,
+     *          "last_page": 1,
+     *          "links": [
+     *              {
+     *                  "url": null,
+     *                  "label": "&laquo; Previous",
+     *                  "active": false
+     *              },
+     *              {
+     *                  "url": "https://forge.test/api/v0/mods?include=versions,license&page=1",
+     *                  "label": "1",
+     *                  "active": true
+     *              },
+     *              {
+     *                  "url": null,
+     *                  "label": "Next &raquo;",
+     *                  "active": false
+     *              }
+     *          ],
+     *          "path": "https://forge.test/api/v0/mods",
+     *          "per_page": 12,
+     *          "to": 1,
+     *          "total": 1
+     *      }
+     *  }
      * @response status=401 scenario="Unauthenticated"
      *  {
      *      "success": false,
@@ -190,6 +345,122 @@ class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
+     *          "published_at": "2024-08-30T14:48:53.000000Z",
+     *          "created_at": "2024-06-22T04:48:53.000000Z",
+     *          "updated_at": "2025-04-10T13:50:21.000000Z"
+     *      }
+     *  }
+     * @response status=200 scenario="Success (Include Authors and License)"
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "id": 2,
+     *          "hub_id": null,
+     *          "guid": "com.baumbach.adipisci-iusto-voluptas-nihil",
+     *          "name": "Adipisci iusto voluptas nihil.",
+     *          "slug": "adipisci-iusto-voluptas-nihil",
+     *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
+     *          "thumbnail": "",
+     *          "downloads": 219598104,
+     *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
+     *          "source_code_links": [
+     *              {
+     *                  "url": "http://baumbach.net/",
+     *                  "label": null
+     *              }
+     *          ],
+     *          "detail_url": "https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil",
+     *          "featured": false,
+     *          "contains_ads": true,
+     *          "contains_ai_content": true,
+     *          "authors": [
+     *              {
+     *                  "id": 5,
+     *                  "name": "ContributorOne",
+     *                  "profile_photo_url": "https://example.com/contributor1.jpg",
+     *                  "cover_photo_url": "https://example.com/cover1.jpg"
+     *              },
+     *              {
+     *                  "id": 8,
+     *                  "name": "ContributorTwo",
+     *                  "profile_photo_url": "https://example.com/contributor2.jpg",
+     *                  "cover_photo_url": "https://example.com/cover2.jpg"
+     *              }
+     *          ],
+     *          "license": {
+     *              "id": 2,
+     *              "name": "GNU General Public License v3.0",
+     *              "short_name": "GPL-3.0"
+     *          },
+     *          "published_at": "2024-08-30T14:48:53.000000Z",
+     *          "created_at": "2024-06-22T04:48:53.000000Z",
+     *          "updated_at": "2025-04-10T13:50:21.000000Z"
+     *      }
+     *  }
+     * @response status=200 scenario="Success (Include All Available Relationships)"
+     *  {
+     *      "success": true,
+     *      "data": {
+     *          "id": 2,
+     *          "hub_id": null,
+     *          "guid": "com.baumbach.adipisci-iusto-voluptas-nihil",
+     *          "name": "Adipisci iusto voluptas nihil.",
+     *          "slug": "adipisci-iusto-voluptas-nihil",
+     *          "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
+     *          "thumbnail": "",
+     *          "downloads": 219598104,
+     *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
+     *          "source_code_links": [
+     *              {
+     *                  "url": "http://baumbach.net/",
+     *                  "label": null
+     *              }
+     *          ],
+     *          "detail_url": "https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil",
+     *          "featured": false,
+     *          "contains_ads": true,
+     *          "contains_ai_content": true,
+     *          "owner": {
+     *              "id": 1,
+     *              "name": "ModOwner",
+     *              "profile_photo_url": "https://example.com/owner.jpg",
+     *              "cover_photo_url": "https://example.com/owner-cover.jpg"
+     *          },
+     *          "authors": [
+     *              {
+     *                  "id": 5,
+     *                  "name": "ContributorOne",
+     *                  "profile_photo_url": "https://example.com/contributor1.jpg",
+     *                  "cover_photo_url": "https://example.com/cover1.jpg"
+     *              }
+     *          ],
+     *          "versions": [
+     *              {
+     *                  "id": 45,
+     *                  "version": "2.1.0",
+     *                  "spt_version_constraint": "^3.9.0",
+     *                  "downloads": 5234,
+     *                  "published_at": "2025-02-15T10:30:00.000000Z"
+     *              },
+     *              {
+     *                  "id": 44,
+     *                  "version": "2.0.5",
+     *                  "spt_version_constraint": "^3.8.0",
+     *                  "downloads": 12456,
+     *                  "published_at": "2025-01-20T08:15:00.000000Z"
+     *              }
+     *          ],
+     *          "license": {
+     *              "id": 2,
+     *              "name": "GNU General Public License v3.0",
+     *              "short_name": "GPL-3.0"
+     *          },
+     *          "category": {
+     *              "id": 3,
+     *              "name": "Quality of Life",
+     *              "slug": "quality-of-life",
+     *              "color_class": "purple"
+     *          },
      *          "published_at": "2024-08-30T14:48:53.000000Z",
      *          "created_at": "2024-06-22T04:48:53.000000Z",
      *          "updated_at": "2025-04-10T13:50:21.000000Z"
