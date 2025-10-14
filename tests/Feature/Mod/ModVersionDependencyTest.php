@@ -299,8 +299,19 @@ describe('Mod Version Dependencies', function (): void {
             ModDependency::factory()->recycle([$mainModVersion, $dependentMod1])->create(['constraint' => '>=1.0.0']);
             ModDependency::factory()->recycle([$mainModVersion, $dependentMod2])->create(['constraint' => '>=1.0.0']);
 
-            $mainModVersion->load('latestResolvedDependencies');
+            // Test resolvedDependencies returns all resolved versions
+            $mainModVersion->load('resolvedDependencies');
+            expect($mainModVersion->resolvedDependencies)->toHaveCount(6)
+                ->and($mainModVersion->resolvedDependencies->pluck('version'))
+                ->toContain($dependentMod1Version1->version)
+                ->toContain($dependentMod1Version2->version)
+                ->toContain($dependentMod2Version1->version)
+                ->toContain($dependentMod2Version2->version)
+                ->toContain($dependentMod2Version3->version)
+                ->toContain($dependentMod2Version4->version);
 
+            // Test latestResolvedDependencies returns only the latest version per mod
+            $mainModVersion->load('latestResolvedDependencies');
             expect($mainModVersion->latestResolvedDependencies)->toHaveCount(2)
                 ->and($mainModVersion->latestResolvedDependencies->pluck('version'))
                 ->toContain($dependentMod1Version2->version) // Latest version of dependentMod1
@@ -308,6 +319,7 @@ describe('Mod Version Dependencies', function (): void {
 
             $response = $this->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]));
 
+            // The view shows latestResolvedDependencies, so only the latest versions should appear
             $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod1->name, $dependentMod1Version2->version)));
             $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod2->name, $dependentMod2Version4->version)));
         });

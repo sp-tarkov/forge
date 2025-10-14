@@ -140,7 +140,16 @@ class ModVersion extends Model implements Trackable
             ->withPivot('dependency_id')
             ->join('mod_versions as latest_versions', function (JoinClause $join): void {
                 $join->on('latest_versions.id', '=', 'mod_versions.id')
-                    ->whereRaw('latest_versions.version = (SELECT MAX(mv.version) FROM mod_versions mv WHERE mv.mod_id = mod_versions.mod_id)');
+                    ->whereRaw("
+                        (latest_versions.version_major, latest_versions.version_minor, latest_versions.version_patch, CASE WHEN latest_versions.version_labels = '' THEN 0 ELSE 1 END, latest_versions.version_labels) = (
+                        SELECT mv.version_major, mv.version_minor, mv.version_patch, CASE WHEN mv.version_labels = '' THEN 0 ELSE 1 END, mv.version_labels
+                        FROM mod_resolved_dependencies mrd
+                        JOIN mod_versions mv ON mrd.resolved_mod_version_id = mv.id
+                        WHERE mrd.mod_version_id = mod_resolved_dependencies.mod_version_id
+                        AND mv.mod_id = mod_versions.mod_id
+                        ORDER BY mv.version_major DESC, mv.version_minor DESC, mv.version_patch DESC, CASE WHEN mv.version_labels = '' THEN 0 ELSE 1 END, mv.version_labels
+                        LIMIT 1)
+                    ");
             })
             ->with('mod:id,name,slug')
             ->withTimestamps();
