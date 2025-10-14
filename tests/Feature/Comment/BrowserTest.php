@@ -1118,7 +1118,7 @@ describe('Comment Display and Pagination Tests', function (): void {
         $page = visit($mod->detail_url.'#comments');
 
         $page->assertSee($mod->name)
-            ->assertSee('Show Replies (1)')
+            ->assertSee('Hide Replies (1)')
             ->assertNoJavaScriptErrors();
     });
 
@@ -1149,12 +1149,11 @@ describe('Comment Display and Pagination Tests', function (): void {
         $page = visit($mod->detail_url.'#comments');
 
         $page->assertSee($mod->name)
-            ->assertDontSee($replyText) // Replies hidden by default now
-            ->click('@toggle-replies-'.$rootComment->id)
-            ->assertSee($replyText)
-            ->assertSee($replyText)
+            ->assertSee($replyText) // Replies shown by default now
             ->click('@toggle-replies-'.$rootComment->id)
             ->assertDontSee($replyText)
+            ->click('@toggle-replies-'.$rootComment->id)
+            ->assertSee($replyText)
             ->assertNoJavaScriptErrors();
     });
 
@@ -1195,9 +1194,7 @@ describe('Comment Display and Pagination Tests', function (): void {
 
         $page->assertSee($mod->name)
             ->assertSee('Root comment')
-            ->click('@toggle-replies-'.$rootComment->id) // Load replies first
-            ->assertSee('First reply')
-            ->assertSee('First reply')
+            ->assertSee('First reply') // Replies shown by default now
             ->assertSee('Nested reply to first reply')
             ->assertSee('Replying to @'.$user->name)
             ->assertNoJavaScriptErrors();

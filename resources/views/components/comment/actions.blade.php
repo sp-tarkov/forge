@@ -97,10 +97,10 @@
 
     @if ($showRepliesToggle && $manager->getDescendantCount($comment->id) > 0)
         <button type="button"
-                wire:click="toggleDescendants({{ $comment->id }})"
+                @click="toggleExpanded()"
                 data-test="toggle-replies-{{ $comment->id }}"
                 class="hover:underline cursor-pointer text-xs">
-            {{ ($manager->showDescendants[$comment->id] ?? false) ? 'Hide' : 'Show' }} Replies ({{ $manager->getDescendantCount($comment->id) }})
+            <span x-text="isExpanded ? 'Hide' : 'Show'">Hide</span> Replies ({{ $manager->getDescendantCount($comment->id) }})
         </button>
     @endif
 </div>

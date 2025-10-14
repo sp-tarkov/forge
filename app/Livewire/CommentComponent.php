@@ -1056,6 +1056,12 @@ class CommentComponent extends Component
     protected function initializeDescendantCounts(): void
     {
         $this->descendantCounts = $this->commentable->getDescendantCounts();
+        foreach ($this->descendantCounts as $commentId => $count) {
+            if ($count > 0) {
+                $this->showDescendants[$commentId] = true;
+                $this->loadDescendants($commentId);
+            }
+        }
     }
 
     /**

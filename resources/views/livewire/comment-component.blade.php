@@ -100,6 +100,22 @@
         <div
             wire:key="comment-container-{{ $comment->id }}"
             class="comment-container-{{ $comment->id }} relative mb-4 last:mb-0"
+            x-data="{
+                commentId: {{ $comment->id }},
+                isExpanded: true,
+                init() {
+                    const storageKey = 'comment-expanded-' + this.commentId;
+                    const saved = localStorage.getItem(storageKey);
+                    if (saved !== null) {
+                        this.isExpanded = saved === 'true';
+                    }
+                },
+                toggleExpanded() {
+                    this.isExpanded = !this.isExpanded;
+                    const storageKey = 'comment-expanded-' + this.commentId;
+                    localStorage.setItem(storageKey, this.isExpanded.toString());
+                }
+            }"
         >
             <livewire:ribbon.comment
                 wire:key="ribbon-comment-{{ $comment->id }}"
@@ -117,35 +133,37 @@
                     :commentable="$commentable"
                 />
 
-                @if (($showDescendants[$comment->id] ?? false) && isset($loadedDescendants[$comment->id]))
-                    <div class="mt-4 space-y-4">
-                        @foreach ($loadedDescendants[$comment->id] as $reply)
-                            <div
-                                wire:key="reply-container-{{ $reply->id }}"
-                                class="relative"
-                            >
-                                <livewire:ribbon.comment
-                                    wire:key="ribbon-reply-{{ $reply->id }}"
-                                    :comment-id="$reply->id"
-                                    :spam-status="$reply->spam_status->value"
-                                    :can-see-ribbon="CachedGate::allows('seeRibbon', $reply)"
-                                />
+                <div x-show="isExpanded" x-collapse>
+                    @if (($showDescendants[$comment->id] ?? false) && isset($loadedDescendants[$comment->id]))
+                        <div class="mt-4 space-y-4">
+                            @foreach ($loadedDescendants[$comment->id] as $reply)
                                 <div
-                                    id="reply-container-{{ $reply->id }}"
-                                    wire:key="reply-{{ $reply->id }}"
-                                    class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none"
+                                    wire:key="reply-container-{{ $reply->id }}"
+                                    class="relative"
                                 >
-                                    <x-comment.display
-                                        :comment="$reply"
-                                        :manager="$this"
-                                        :is-reply="true"
-                                        :commentable="$commentable"
+                                    <livewire:ribbon.comment
+                                        wire:key="ribbon-reply-{{ $reply->id }}"
+                                        :comment-id="$reply->id"
+                                        :spam-status="$reply->spam_status->value"
+                                        :can-see-ribbon="CachedGate::allows('seeRibbon', $reply)"
                                     />
+                                    <div
+                                        id="reply-container-{{ $reply->id }}"
+                                        wire:key="reply-{{ $reply->id }}"
+                                        class="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none"
+                                    >
+                                        <x-comment.display
+                                            :comment="$reply"
+                                            :manager="$this"
+                                            :is-reply="true"
+                                            :commentable="$commentable"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     @endforeach
