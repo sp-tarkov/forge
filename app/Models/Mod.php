@@ -224,6 +224,10 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'published_at' => $this->published_at?->timestamp,
             'latestVersion' => $this->latestVersion?->latestSptVersion?->version_formatted,
             'latestVersionColorClass' => $this->latestVersion?->latestSptVersion?->color_class,
+            'latestVersionMajor' => $this->latestVersion?->latestSptVersion ? $this->latestVersion->latestSptVersion->version_major : 0,
+            'latestVersionMinor' => $this->latestVersion?->latestSptVersion ? $this->latestVersion->latestSptVersion->version_minor : 0,
+            'latestVersionPatch' => $this->latestVersion?->latestSptVersion ? $this->latestVersion->latestSptVersion->version_patch : 0,
+            'latestVersionLabel' => $this->latestVersion?->latestSptVersion ? $this->latestVersion->latestSptVersion->version_labels : '',
         ];
     }
 
