@@ -24,7 +24,9 @@
                 </div>
                 <div class="mt-8 sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-4">
                     <div class="min-w-0 flex-1">
-                        <h1 class="truncate text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $user->name }}</h1>
+                        <h1 class="truncate text-2xl font-bold">
+                            <x-user-name :user="$user" />
+                        </h1>
                         <div>
                             {{ __('Member since') }}
                             <x-time :datetime="$user->created_at" />

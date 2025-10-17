@@ -205,9 +205,9 @@ use Illuminate\Support\Str;
                                                 size="sm"
                                             />
                                             <div class="min-w-0">
-                                                <a href="{{ $user->profile_url }}" 
-                                                   class="text-sm font-medium text-gray-900 dark:text-gray-100 underline hover:text-gray-600 dark:hover:text-gray-300 truncate block max-w-32 lg:max-w-48">
-                                                    {{ $user->name }}
+                                                <a href="{{ $user->profile_url }}"
+                                                   class="text-sm font-medium underline hover:text-gray-600 dark:hover:text-gray-300 truncate block max-w-32 lg:max-w-48">
+                                                    <x-user-name :user="$user" />
                                                 </a>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</p>
                                                 <p class="text-xs text-gray-400 dark:text-gray-500">ID: {{ $user->id }}</p>

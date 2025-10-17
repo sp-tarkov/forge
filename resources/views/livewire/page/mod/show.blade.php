@@ -97,7 +97,7 @@
                             </h2>
                         </div>
                         @if ($mod->owner)
-                            <p>{{ __('Created by') }}&nbsp;<a href="{{ $mod->owner->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $mod->owner->name }}</a></p>
+                            <p>{{ __('Created by') }}&nbsp;<a href="{{ $mod->owner->profile_url }}" class="underline hover:text-black dark:hover:text-white"><x-user-name :user="$mod->owner" /></a></p>
                         @endif
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }} {{ __('Downloads') }}</p>
                         @if ($mod->latestVersion?->latestSptVersion)
@@ -292,7 +292,7 @@
                             <h3 class="font-bold">{{ __('Additional Authors') }}</h3>
                             <p class="truncate">
                                 @foreach ($mod->authors->sortDesc() as $user)
-                                    <a href="{{ $user->profile_url }}" class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white">{{ $user->name }}</a>{{ $loop->last ? '' : ',' }}
+                                    <a href="{{ $user->profile_url }}" class="underline hover:text-black dark:hover:text-white"><x-user-name :user="$user" /></a>{{ $loop->last ? '' : ',' }}
                                 @endforeach
                             </p>
                         </li>

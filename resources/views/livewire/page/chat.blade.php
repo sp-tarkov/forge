@@ -55,8 +55,8 @@
                                     <div class="flex-1 min-w-0 text-left">
                                         <div class="flex items-center justify-between gap-2">
                                             <div class="flex items-center gap-2 min-w-0">
-                                                <div class="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                    {{ $conversation->other_user->name }}
+                                                <div class="font-medium truncate">
+                                                    <x-user-name :user="$conversation->other_user" />
                                                 </div>
                                                 @if($selectedConversation?->id !== $conversation->id && $conversation->unread_count > 0)
                                                     <flux:badge color="red" size="sm" class="flex-shrink-0">{{ $conversation->unread_count }}</flux:badge>
@@ -111,7 +111,9 @@
                                 />
                             </div>
                             <div>
-                                <div class="font-medium text-gray-900 dark:text-gray-100">{{ $selectedConversation->other_user->name }}</div>
+                                <div class="font-medium">
+                                    <x-user-name :user="$selectedConversation->other_user" />
+                                </div>
                                 <div class="text-xs">
                                     @if($this->isUserOnline($selectedConversation->other_user->id))
                                         <span class="text-green-500 dark:text-green-400">{{ __('Online') }}</span>

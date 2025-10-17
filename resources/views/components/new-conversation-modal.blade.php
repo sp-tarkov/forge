@@ -60,8 +60,8 @@
                                     color:seed="{{ $user->id }}"
                                 />
                                 <div class="flex-1">
-                                    <div class="font-medium text-gray-900 dark:text-gray-100">
-                                        {{ $user->name }}
+                                    <div class="font-medium">
+                                        <x-user-name :user="$user" />
                                     </div>
                                     <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                                         <span>{{ __('Member since') }} {{ $user->created_at->format('M Y') }}</span>

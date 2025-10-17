@@ -20,6 +20,7 @@ class UserRoleFactory extends Factory
             'short_name' => $this->faker->word(),
             'description' => $this->faker->text(),
             'color_class' => $this->faker->randomElement(['sky', 'red', 'green', 'emerald', 'lime']),
+            'icon' => $this->faker->randomElement(['shield-check', 'star', 'wrench', 'flag']),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];
@@ -34,7 +35,8 @@ class UserRoleFactory extends Factory
             'name' => 'Administrator',
             'short_name' => 'Admin',
             'description' => 'An administrator has full access to the site.',
-            'color_class' => 'sky',
+            'color_class' => 'red',
+            'icon' => 'shield-check',
         ]);
     }
 
@@ -47,7 +49,8 @@ class UserRoleFactory extends Factory
             'name' => 'Moderator',
             'short_name' => 'Mod',
             'description' => 'A moderator has the ability to moderate user content.',
-            'color_class' => 'emerald',
+            'color_class' => 'orange',
+            'icon' => 'wrench',
         ]);
     }
 }

@@ -1167,6 +1167,15 @@ class CommentComponent extends Component
             'referrer' => request()->header('referer') ?? '',
         ]);
 
+        // Load parent relationship for replies to ensure it's available when rendering
+        if ($parentId) {
+            $comment->load([
+                'parent:id,user_id',
+                'parent.user:id,name,user_role_id',
+                'parent.user.role:id,name,color_class,icon',
+            ]);
+        }
+
         // User is automatically subscribed when they create a comment (via Observer).
         $user = Auth::user();
         if ($user) {

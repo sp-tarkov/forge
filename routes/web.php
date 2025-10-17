@@ -16,6 +16,7 @@ use App\Livewire\Page\Chat;
 use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Create as ModCreate;
 use App\Livewire\Page\Mod\Edit as ModEdit;
+use App\Livewire\Page\Mod\GuidelinesAcknowledgment as ModGuidelinesAcknowledgment;
 use App\Livewire\Page\Mod\Index as ModIndex;
 use App\Livewire\Page\Mod\Show as ModShow;
 use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
@@ -80,6 +81,9 @@ Route::middleware('auth.banned')->group(function (): void {
 
         // Authenticated and verified routes
         Route::get('/dashboard', fn (): View|Factory => view('dashboard'))->name('dashboard');
+
+        Route::get('/mod/guidelines', ModGuidelinesAcknowledgment::class)
+            ->name('mod.guidelines');
 
         Route::get('/mod/create', ModCreate::class)
             ->name('mod.create');

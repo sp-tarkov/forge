@@ -16,8 +16,8 @@
         <div class="flex items-center">
             <flux:avatar circle="circle" src="{{ $comment->user->profile_photo_url }}" color="auto" color:seed="{{ $comment->user->id }}" />
             <a href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}"
-               class="ml-2 font-bold text-gray-900 dark:text-white hover:underline">
-                {{ $comment->user->name }}
+               class="ml-2 font-bold hover:underline">
+                <x-user-name :user="$comment->user" />
             </a>
             <span class="ml-2 text-xs text-slate-400 relative top-0.5">
                 <x-time :datetime="$comment->created_at" />
@@ -35,7 +35,7 @@
         <div class="flex items-center">
             @if ($comment->parent_id && $comment->parent)
                 <a href="#{{ $manager->getCommentHashId($comment->parent_id) }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
-                    {{ 'Replying to @' . $comment->parent->user->name }}
+                    {{ __('Replying to') }} @<x-user-name :user="$comment->parent->user" />
                 </a>
             @endif
             @if (CachedGate::allows('viewActions', $comment))

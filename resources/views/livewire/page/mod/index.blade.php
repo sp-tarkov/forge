@@ -17,7 +17,7 @@
         </h2>
         @auth
             @can('create', [App\Models\Mod::class])
-                <flux:button href="{{ route('mod.create') }}" size="sm">{{ __('Create New Mod') }}</flux:button>
+                <flux:button href="{{ route('mod.guidelines') }}" size="sm">{{ __('Create New Mod') }}</flux:button>
             @else
                 <flux:tooltip content="Must enable MFA to create mods.">
                     <div>

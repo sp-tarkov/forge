@@ -60,8 +60,8 @@
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center justify-between gap-2">
                                                 <div class="flex items-center gap-2">
-                                                    <span class="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">
-                                                        {{ $conversation->other_user->name }}
+                                                    <span class="font-medium text-sm truncate">
+                                                        <x-user-name :user="$conversation->other_user" />
                                                     </span>
                                                     @if($conversation->unread_count > 0)
                                                         <flux:badge color="red" size="sm" class="text-[10px] px-1.5 py-0">{{ $conversation->unread_count }}</flux:badge>
