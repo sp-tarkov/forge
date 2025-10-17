@@ -49,7 +49,7 @@ class NewCommentNotification extends Notification
         /** @var Commentable<Model>|null $commentable */
         $commentable = $this->comment->commentable;
 
-        throw_if($commentable === null, new RuntimeException('Cannot send notification for comment without commentable.'));
+        throw_if($commentable === null, RuntimeException::class, 'Cannot send notification for comment without commentable.');
 
         $commentableType = $commentable->getCommentableDisplayName();
         $commentableTitle = $commentable->getTitle();
@@ -85,7 +85,7 @@ class NewCommentNotification extends Notification
         /** @var Commentable<Model>|null $commentable */
         $commentable = $this->comment->commentable;
 
-        throw_if($commentable === null, new RuntimeException('Cannot send notification for comment without commentable.'));
+        throw_if($commentable === null, RuntimeException::class, 'Cannot send notification for comment without commentable.');
 
         return [
             'comment_id' => $this->comment->id,
