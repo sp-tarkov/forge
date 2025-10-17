@@ -107,10 +107,21 @@ class GlobalSearch extends Component
      */
     protected function fetchModResults(string $query): Collection
     {
-        /** @var Collection<int, mixed> $searchHits */
-        $searchHits = Mod::search($query)->raw()['hits'];
+        /** @var array{hits: array<int, mixed>} $rawResults */
+        $rawResults = Mod::search($query)->options(['showRankingScore' => true])->raw();
 
-        return collect($searchHits);
+        /** @var Collection<int, mixed> $searchHits */
+        $searchHits = collect($rawResults['hits'])
+            ->sortBy([
+                ['latestVersionMajor', 'desc'],
+                ['latestVersionMinor', 'desc'],
+                ['latestVersionPatch', 'desc'],
+                ['latestVersionLabel', 'asc'],
+                ['_rankingScore', 'desc'],
+            ])
+            ->values();
+
+        return $searchHits;
     }
 
     /**

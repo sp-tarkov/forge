@@ -51,7 +51,7 @@ class UserActivity extends Component
         // Eagerly load the mod relationship without global scopes for ModVersion visitables only
         $events->each(function (TrackingEvent $event): void {
             if ($event->visitable instanceof ModVersion && ! $event->visitable->relationLoaded('mod')) {
-                $event->visitable->loadMissing(['mod' => fn ($query) => $query->withoutGlobalScopes()]);
+                $event->visitable->loadMissing(['mod' => fn ($query): mixed => $query->withoutGlobalScopes()]);
             }
         });
 

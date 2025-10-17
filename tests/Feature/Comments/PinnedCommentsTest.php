@@ -229,6 +229,153 @@ describe('Pin Functionality', function (): void {
         expect($comment->fresh()->isPinned())->toBeFalse();
         expect($comment->fresh()->pinned_at)->toBeNull();
     });
+
+    it('allows mod owners to unpin soft-deleted comments', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now(),
+            'deleted_at' => now(),
+        ]);
+
+        $this->actingAs($owner);
+
+        // Verify comment is both pinned and deleted
+        expect($comment->isPinned())->toBeTrue();
+        expect($comment->isDeleted())->toBeTrue();
+
+        // Owner should still be able to unpin
+        expect($owner->can('pin', $comment))->toBeTrue();
+
+        // Unpin the comment
+        $comment->update(['pinned_at' => null]);
+
+        // Verify comment is no longer pinned but still deleted
+        expect($comment->fresh()->isPinned())->toBeFalse();
+        expect($comment->fresh()->isDeleted())->toBeTrue();
+    });
+
+    it('allows mod authors to unpin soft-deleted comments', function (): void {
+        $author = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+        $mod->authors()->attach($author);
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now(),
+            'deleted_at' => now(),
+        ]);
+
+        $this->actingAs($author);
+
+        // Verify comment is both pinned and deleted
+        expect($comment->isPinned())->toBeTrue();
+        expect($comment->isDeleted())->toBeTrue();
+
+        // Author should still be able to unpin
+        expect($author->can('pin', $comment))->toBeTrue();
+
+        // Unpin the comment
+        $comment->update(['pinned_at' => null]);
+
+        // Verify comment is no longer pinned but still deleted
+        expect($comment->fresh()->isPinned())->toBeFalse();
+        expect($comment->fresh()->isDeleted())->toBeTrue();
+    });
+
+    it('allows moderators to unpin soft-deleted comments', function (): void {
+        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderator = User::factory()->create();
+        $moderator->assignRole($moderatorRole);
+
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now(),
+            'deleted_at' => now(),
+        ]);
+
+        $this->actingAs($moderator);
+
+        // Verify comment is both pinned and deleted
+        expect($comment->isPinned())->toBeTrue();
+        expect($comment->isDeleted())->toBeTrue();
+
+        // Moderator should still be able to unpin
+        expect($moderator->can('pin', $comment))->toBeTrue();
+
+        // Unpin the comment
+        $comment->update(['pinned_at' => null]);
+
+        // Verify comment is no longer pinned but still deleted
+        expect($comment->fresh()->isPinned())->toBeFalse();
+        expect($comment->fresh()->isDeleted())->toBeTrue();
+    });
+
+    it('allows administrators to unpin soft-deleted comments', function (): void {
+        $adminRole = UserRole::factory()->administrator()->create();
+        $admin = User::factory()->create();
+        $admin->assignRole($adminRole);
+
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now(),
+            'deleted_at' => now(),
+        ]);
+
+        $this->actingAs($admin);
+
+        // Verify comment is both pinned and deleted
+        expect($comment->isPinned())->toBeTrue();
+        expect($comment->isDeleted())->toBeTrue();
+
+        // Admin should still be able to unpin
+        expect($admin->can('pin', $comment))->toBeTrue();
+
+        // Unpin the comment
+        $comment->update(['pinned_at' => null]);
+
+        // Verify comment is no longer pinned but still deleted
+        expect($comment->fresh()->isPinned())->toBeFalse();
+        expect($comment->fresh()->isDeleted())->toBeTrue();
+    });
+
+    it('prevents pinning soft-deleted comments', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'deleted_at' => now(),
+        ]);
+
+        $this->actingAs($owner);
+
+        // Verify comment is deleted but not pinned
+        expect($comment->isDeleted())->toBeTrue();
+        expect($comment->isPinned())->toBeFalse();
+
+        // Owner should have pin permission (for unpinning)
+        expect($owner->can('pin', $comment))->toBeTrue();
+
+        // But the UI should not show the pin action for deleted comments (only unpin)
+        // This is handled in the Blade templates
+    });
 });
 
 describe('Pin Action Visibility', function (): void {

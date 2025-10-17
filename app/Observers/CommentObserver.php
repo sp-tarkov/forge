@@ -10,9 +10,22 @@ use App\Jobs\CheckCommentForSpam;
 use App\Jobs\ProcessCommentNotification;
 use App\Models\Comment;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 class CommentObserver
 {
+    /**
+     * Handle the Comment "saving" event.
+     */
+    public function saving(Comment $comment): void
+    {
+        $maxLength = config('comments.validation.max_length', 10000);
+
+        throw_if(mb_strlen($comment->body) > $maxLength, new InvalidArgumentException(
+            sprintf('Comment body cannot exceed %d characters.', $maxLength)
+        ));
+    }
+
     /**
      * Handle the Comment "created" event.
      */
@@ -21,9 +34,12 @@ class CommentObserver
         $comment->updateRootId();
 
         // Subscribe the commenter to future comments.
-        /** @var Commentable<Model> $commentable */
+        /** @var Commentable<Model>|null $commentable */
         $commentable = $comment->commentable;
-        $commentable->subscribeUser($comment->user);
+
+        if ($commentable !== null) {
+            $commentable->subscribeUser($comment->user);
+        }
 
         // Dispatch the spam check job.
         dispatch(new CheckCommentForSpam($comment));

@@ -52,13 +52,17 @@ class NotificationLog extends Model
         string $notificationClass,
         NotificationType $notificationType = NotificationType::ALL
     ): self {
-        return self::query()->create([
-            'notifiable_type' => $notifiable::class,
-            'notifiable_id' => $notifiable->getKey(),
-            'user_id' => $userId,
-            'notification_class' => $notificationClass,
-            'notification_type' => $notificationType,
-        ]);
+        return self::query()->firstOrCreate(
+            [
+                'notifiable_type' => $notifiable::class,
+                'notifiable_id' => $notifiable->getKey(),
+                'user_id' => $userId,
+                'notification_class' => $notificationClass,
+            ],
+            [
+                'notification_type' => $notificationType,
+            ]
+        );
     }
 
     /**

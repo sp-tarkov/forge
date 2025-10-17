@@ -59,8 +59,13 @@ class ProcessCommentNotification implements ShouldQueue
         }
 
         // Get all subscribers for the commentable
-        /** @var Commentable<Model> $commentable */
+        /** @var Commentable<Model>|null $commentable */
         $commentable = $freshComment->commentable;
+
+        if ($commentable === null) {
+            return;
+        }
+
         $subscribers = $commentable->getSubscribers();
 
         // Filter out the comment author (they shouldn't be notified of their own comment)

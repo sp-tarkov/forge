@@ -71,14 +71,6 @@
             </button>
         @endif
 
-        @if (CachedGate::allows('showOwnerPinAction', $comment))
-            <button type="button"
-                    wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"
-                    class="hover:underline cursor-pointer text-xs text-cyan-500">
-                {{ $comment->isPinned() ? __('Unpin') : __('Pin') }}
-            </button>
-        @endif
-
         <livewire:report-component
             wire:key="report-{{ $comment->id }}"
             variant="comment"
@@ -95,12 +87,20 @@
         @endverified
     @endif
 
+    @if (CachedGate::allows('showOwnerPinAction', $comment))
+        <button type="button"
+                wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"
+                class="hover:underline cursor-pointer text-xs text-cyan-500">
+            {{ $comment->isPinned() ? __('Unpin') : __('Pin') }}
+        </button>
+    @endif
+
     @if ($showRepliesToggle && $manager->getDescendantCount($comment->id) > 0)
         <button type="button"
-                wire:click="toggleDescendants({{ $comment->id }})"
+                @click="toggleExpanded()"
                 data-test="toggle-replies-{{ $comment->id }}"
                 class="hover:underline cursor-pointer text-xs">
-            {{ ($manager->showDescendants[$comment->id] ?? false) ? 'Hide' : 'Show' }} Replies ({{ $manager->getDescendantCount($comment->id) }})
+            <span x-text="isExpanded ? 'Hide' : 'Show'">Hide</span> Replies ({{ $manager->getDescendantCount($comment->id) }})
         </button>
     @endif
 </div>

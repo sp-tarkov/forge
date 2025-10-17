@@ -16,7 +16,8 @@ class ModVersionController extends Controller
 {
     public function show(Request $request, int $modId, string $slug, string $version): RedirectResponse
     {
-        $modVersion = ModVersion::whereModId($modId)
+        $modVersion = ModVersion::with('mod:id,slug')
+            ->whereModId($modId)
             ->whereVersion($version)
             ->firstOrFail();
 

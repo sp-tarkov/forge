@@ -174,10 +174,14 @@ class Comment extends Model implements Reportable, Trackable
     /**
      * Generate the URL to view this specific comment.
      */
-    public function getUrl(): string
+    public function getUrl(): ?string
     {
-        /** @var Commentable<Model> $commentable */
+        /** @var Commentable<Model>|null $commentable */
         $commentable = $this->commentable;
+
+        if ($commentable === null) {
+            return null;
+        }
 
         return $commentable->getCommentableUrl().'#'.$this->getHashId();
     }
@@ -187,9 +191,9 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function getHashId(): string
     {
-        /** @var Commentable<Model> $commentable */
+        /** @var Commentable<Model>|null $commentable */
         $commentable = $this->commentable;
-        $tabHash = $commentable->getCommentTabHash();
+        $tabHash = $commentable?->getCommentTabHash();
 
         return $tabHash ? $tabHash.'-comment-'.$this->id : 'comment-'.$this->id;
     }
@@ -199,7 +203,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function getTrackingUrl(): string
     {
-        return $this->getUrl();
+        return $this->getUrl() ?? '';
     }
 
     /**
@@ -207,8 +211,12 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function getTrackingTitle(): string
     {
-        /** @var Commentable<Model> $commentable */
+        /** @var Commentable<Model>|null $commentable */
         $commentable = $this->commentable;
+
+        if ($commentable === null) {
+            return 'Comment';
+        }
 
         if ($commentable instanceof User) {
             return sprintf("Comment on %s's profile", $commentable->name);

@@ -43,9 +43,9 @@ describe('Chat Browser Tests', function (): void {
 
         $page = visit('/chat')
             ->on()->desktop()
-            ->inDarkMode();
-
-        $page->assertNoJavascriptErrors();
+            ->inDarkMode()
+            ->wait(1)
+            ->assertNoJavascriptErrors();
     });
 
     it('does not show chat button for guest users on mobile', function (): void {

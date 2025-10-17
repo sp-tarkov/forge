@@ -314,9 +314,9 @@ abstract class AbstractQueryBuilder
 
         /** @phpstan-var TModel&Searchable $model */
 
-        // Get the search results with their relevance ordering
+        // Get the search results with their relevance ordering and ranking scores
         /** @phpstan-var array{hits: list<array{id: int|string, ...}>, ...} $searchResults */
-        $searchResults = $model->search($this->searchQuery)->raw();
+        $searchResults = $model->search($this->searchQuery)->options(['showRankingScore' => true])->raw();
 
         if (empty($searchResults['hits'])) {
             // If no search results, force no records to be returned
@@ -325,9 +325,20 @@ abstract class AbstractQueryBuilder
             return;
         }
 
-        // Get the IDs in the order they were returned from Scout
+        // Sort results by version segments first, then by ranking score
+        $sortedHits = collect($searchResults['hits'])
+            ->sortBy([
+                ['latestVersionMajor', 'desc'],
+                ['latestVersionMinor', 'desc'],
+                ['latestVersionPatch', 'desc'],
+                ['latestVersionLabel', 'asc'],
+                ['_rankingScore', 'desc'],
+            ])
+            ->values();
+
+        // Get the IDs in the sorted order
         /** @var list<int|string> $orderedIds */
-        $orderedIds = collect($searchResults['hits'])->pluck('id')->all();
+        $orderedIds = $sortedHits->pluck('id')->all();
 
         // If IDs array is empty after pluck (e.g., all hits lacked 'id'), force no records
         if (empty($orderedIds)) {
