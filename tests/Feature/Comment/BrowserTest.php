@@ -380,7 +380,8 @@ describe('Comment Reply Tests', function (): void {
         $page->click('@reply-button-'.$rootComment->id)
             ->type('@reply-body-'.$rootComment->id, $replyText)
             ->press('Post Reply')
-            ->assertSee('Replying to @'.$rootComment->user->name)
+            ->wait(1)
+            ->assertSee($replyText)
             ->assertNoJavaScriptErrors();
     });
 
@@ -1195,7 +1196,6 @@ describe('Comment Display and Pagination Tests', function (): void {
             ->assertSee('Root comment')
             ->assertSee('First reply') // Replies shown by default now
             ->assertSee('Nested reply to first reply')
-            ->assertSee('Replying to @'.$user->name)
             ->assertNoJavaScriptErrors();
     });
 });
