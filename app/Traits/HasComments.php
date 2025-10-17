@@ -41,10 +41,11 @@ trait HasComments
             ->whereNull(['parent_id', 'root_id'])
             ->with([
                 'user:id,name,email,user_role_id,profile_photo_path,created_at',
-                'user.role:id,name',
+                'user.role:id,name,color_class,icon',
                 'reactions:id,comment_id,user_id',
                 'parent:id,user_id',
-                'parent.user:id,name',
+                'parent.user:id,name,user_role_id',
+                'parent.user.role:id,name,color_class,icon',
             ])
             ->withCount('reactions')
             ->orderByRaw('pinned_at IS NULL, pinned_at DESC')
@@ -116,10 +117,11 @@ trait HasComments
         $query = $comment->descendants()
             ->with([
                 'user:id,name,email,user_role_id,profile_photo_path,created_at',
-                'user.role:id,name',
+                'user.role:id,name,color_class,icon',
                 'reactions:id,comment_id,user_id',
                 'parent:id,user_id',
-                'parent.user:id,name',
+                'parent.user:id,name,user_role_id',
+                'parent.user.role:id,name,color_class,icon',
             ])
             ->withCount('reactions')
             ->visibleToUser($user)

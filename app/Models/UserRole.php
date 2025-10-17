@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $short_name
  * @property string $description
  * @property string $color_class
+ * @property string $icon
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, User> $users

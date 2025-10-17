@@ -17,7 +17,7 @@
                         <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="h-16 w-16 rounded-full" />
                     </a>
                     <div class="absolute bottom-full -ml-3 left-1/2 transform -translate-x-1/2 mb-2 w-max px-2 py-1 text-sm text-white bg-gray-700 rounded-sm shadow-lg opacity-0 group-hover:opacity-100">
-                        {{ $user->name }}
+                        <x-user-name :user="$user" class="text-white" />
                     </div>
                 </div>
             @endforeach
@@ -68,7 +68,9 @@
                                 <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="block w-12 h-12 rounded-full" />
                             </a>
                             <div class="flex flex-col w-full pl-3">
-                                <a href="{{ $user->profile_url }}" class="text-lg group-hover/item:underline group-hover/item:text-white">{{ $user->name }}</a>
+                                <a href="{{ $user->profile_url }}" class="text-lg group-hover/item:underline">
+                                    <x-user-name :user="$user" />
+                                </a>
                                 <span class="text-sm text-gray-600 dark:text-gray-400">
                                     {{ __("Member Since") }}
                                     <x-time :datetime="$user->created_at" />

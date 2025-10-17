@@ -28,6 +28,7 @@ class RoleResource extends JsonResource
             'short_name' => $this->short_name,
             'description' => $this->description,
             'color_class' => $this->color_class,
+            'icon' => $this->icon,
         ];
     }
 }

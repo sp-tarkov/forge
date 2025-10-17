@@ -12,7 +12,9 @@
                     @foreach($this->selected_users as $user)
                         <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-md px-3 py-1.5">
                             <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="h-6 w-6 rounded-full">
-                            <span class="text-sm">{{ $user->name }}</span>
+                            <span class="text-sm">
+                                <x-user-name :user="$user" />
+                            </span>
                             <button
                                 type="button"
                                 wire:click="removeUser({{ $user->id }})"
@@ -48,7 +50,9 @@
                                 >
                                     <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="h-8 w-8 rounded-full">
                                     <div>
-                                        <div class="text-sm font-medium">{{ $user->name }}</div>
+                                        <div class="text-sm font-medium">
+                                            <x-user-name :user="$user" />
+                                        </div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">
                                             {{ $user->mods_count }} {{ Str::plural('mod', $user->mods_count) }} • {{ $user->comments_count }} {{ Str::plural('comment', $user->comments_count) }}
                                         </div>
