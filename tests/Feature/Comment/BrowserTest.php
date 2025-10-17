@@ -39,10 +39,9 @@ describe('Guest User Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
-
-        // Assert content directly without waiting
-        $page->assertSee('No comments yet')
+            ->inDarkMode()
+            ->wait(1)
+            ->assertSee('No comments yet')
             ->assertSee('Login or register to join the discussion')
             ->assertNotPresent('@new-comment-body')
             ->assertNoJavascriptErrors();

@@ -12,6 +12,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class NewCommentNotification extends Notification
 {
@@ -45,8 +46,11 @@ class NewCommentNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        /** @var Commentable<Model> $commentable */
+        /** @var Commentable<Model>|null $commentable */
         $commentable = $this->comment->commentable;
+
+        throw_if($commentable === null, new RuntimeException('Cannot send notification for comment without commentable.'));
+
         $commentableType = $commentable->getCommentableDisplayName();
         $commentableTitle = $commentable->getTitle();
         $commenterName = $this->comment->user->name;
@@ -78,8 +82,10 @@ class NewCommentNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        /** @var Commentable<Model> $commentable */
+        /** @var Commentable<Model>|null $commentable */
         $commentable = $this->comment->commentable;
+
+        throw_if($commentable === null, new RuntimeException('Cannot send notification for comment without commentable.'));
 
         return [
             'comment_id' => $this->comment->id,
