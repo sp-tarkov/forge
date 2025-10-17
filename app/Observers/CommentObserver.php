@@ -21,9 +21,11 @@ class CommentObserver
     {
         $maxLength = config('comments.validation.max_length', 10000);
 
-        throw_if(mb_strlen($comment->body) > $maxLength,
-        InvalidArgumentException::class,
-        sprintf('Comment body cannot exceed %d characters.', $maxLength));
+        throw_if(
+            mb_strlen($comment->body) > $maxLength,
+            InvalidArgumentException::class,
+            sprintf('Comment body cannot exceed %d characters.', $maxLength)
+        );
     }
 
     /**

@@ -170,7 +170,15 @@ class Show extends Component
      */
     protected function getMod(int $modId): Mod
     {
-        return Mod::query()->with(['sourceCodeLinks', 'category'])->findOrFail($modId);
+        return Mod::query()->with([
+            'sourceCodeLinks',
+            'category',
+            'owner',
+            'authors',
+            'license',
+            'latestVersion.latestSptVersion',
+            'latestVersion.dependencies.resolvedVersion.mod:id,name,slug',
+        ])->findOrFail($modId);
     }
 
     /**
@@ -181,6 +189,10 @@ class Show extends Component
     protected function versions(): LengthAwarePaginator
     {
         return $this->mod->versions()
+            ->with([
+                'latestSptVersion',
+                'latestResolvedDependencies.mod:id,name,slug',
+            ])
             ->paginate(perPage: 6, pageName: 'versionPage')
             ->fragment('versions');
     }
