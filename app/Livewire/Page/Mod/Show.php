@@ -177,7 +177,7 @@ class Show extends Component
             'authors',
             'license',
             'latestVersion.latestSptVersion',
-            'latestVersion.dependencies.resolvedVersion.mod:id,name,slug',
+            'latestVersion.latestResolvedDependencies.mod:id,name,slug',
         ])->findOrFail($modId);
     }
 
