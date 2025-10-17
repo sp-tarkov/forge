@@ -108,9 +108,11 @@ class Index extends Component
         if (! is_string($this->query)) {
             $this->query = '';
         }
+
         if (! is_string($this->featured)) {
             $this->featured = 'include';
         }
+
         if (! is_string($this->category)) {
             $this->category = '';
         }
