@@ -244,6 +244,63 @@ describe('URL parameter handling', function (): void {
         expect($versions)->toBeArray();
         expect($versions)->toBe(['3.10.5']);
     });
+
+    it('handles malformed query parameter gracefully', function (): void {
+        // Create SPT versions and a mod
+        SptVersion::factory()->create(['version' => '3.11.4']);
+        $mod = Mod::factory()->create(['name' => 'Test Mod']);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+        // Mount component with an array passed to query parameter (simulating malformed URL)
+        $component = Livewire::withQueryParams([
+            'query' => ['search_targets' => ['foo', 'bar']],
+        ])->test(Index::class);
+
+        // Should normalize the query to empty string and not throw error
+        expect($component->get('query'))->toBe('');
+
+        // Component should still work
+        $component->assertOk();
+        $component->assertSee('Test Mod');
+    });
+
+    it('handles malformed featured parameter gracefully', function (): void {
+        // Create SPT versions and a mod
+        SptVersion::factory()->create(['version' => '3.11.4']);
+        $mod = Mod::factory()->create(['name' => 'Test Mod']);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+        // Mount component with an array passed to featured parameter
+        $component = Livewire::withQueryParams([
+            'featured' => ['invalid' => 'value'],
+        ])->test(Index::class);
+
+        // Should normalize to default value
+        expect($component->get('featured'))->toBe('include');
+
+        // Component should still work
+        $component->assertOk();
+        $component->assertSee('Test Mod');
+    });
+
+    it('handles malformed category parameter gracefully', function (): void {
+        // Create SPT versions and a mod
+        SptVersion::factory()->create(['version' => '3.11.4']);
+        $mod = Mod::factory()->create(['name' => 'Test Mod']);
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.11.4']);
+
+        // Mount component with an array passed to category parameter
+        $component = Livewire::withQueryParams([
+            'category' => ['invalid' => 'value'],
+        ])->test(Index::class);
+
+        // Should normalize to empty string
+        expect($component->get('category'))->toBe('');
+
+        // Component should still work
+        $component->assertOk();
+        $component->assertSee('Test Mod');
+    });
 });
 
 describe('checkbox state validation', function (): void {

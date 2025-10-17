@@ -30,7 +30,7 @@ class Index extends Component
      * The search query value.
      */
     #[Url]
-    public string $query = '';
+    public mixed $query = '';
 
     /**
      * The sort order value.
@@ -68,13 +68,13 @@ class Index extends Component
      */
     #[Session]
     #[Url]
-    public string $featured = 'include';
+    public mixed $featured = 'include';
 
     /**
      * The category filter value.
      */
     #[Url(except: '')]
-    public string $category = '';
+    public mixed $category = '';
 
     /**
      * The available SPT versions.
@@ -103,6 +103,17 @@ class Index extends Component
             [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
             fn (): Collection => ModCategory::query()->orderBy('title')->get()
         );
+
+        // Normalize URL parameters to ensure they're the correct type (handles malformed URLs)
+        if (! is_string($this->query)) {
+            $this->query = '';
+        }
+        if (! is_string($this->featured)) {
+            $this->featured = 'include';
+        }
+        if (! is_string($this->category)) {
+            $this->category = '';
+        }
 
         // Set default versions if none provided via URL
         if (empty($this->sptVersions)) {
