@@ -179,7 +179,7 @@
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">2</span>
-                                    <span class="text-green-800 dark:text-green-200">Place in a new folder. We recommend: <br /><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm whitespace-nowrap">C:\Games\SPT-3.11\</code></span>
+                                    <span class="text-green-800 dark:text-green-200">Place in a new folder. We recommend: <br /><code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm whitespace-nowrap">C:\Games\SPT-4.0\</code></span>
                                 </li>
                                 <li class="flex items-start">
                                     <span class="flex-shrink-0 w-6 h-6 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">3</span>
