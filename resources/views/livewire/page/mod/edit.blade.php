@@ -1,14 +1,14 @@
 <x-slot:title>
-    {!! __('Edit Mod - The Forge') !!}
+    {!! __('Edit :mod - The Forge', ['mod' => $mod->name]) !!}
 </x-slot>
 
 <x-slot:description>
-    {!! __('Edit your mod details below.') !!}
+    {!! __('Edit your :mod details below.', ['mod' => $mod->name]) !!}
 </x-slot>
 
 <x-slot:header>
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Edit Mod') }}
+        {{ __('Edit :mod', ['mod' => $mod->name]) }}
     </h2>
 </x-slot>
 

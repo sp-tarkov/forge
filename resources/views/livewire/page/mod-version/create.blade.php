@@ -1,14 +1,14 @@
 <x-slot:title>
-    {!! __('Create a New Mod Version - The Forge') !!}
+    {!! __('Create a New Version for :mod - The Forge', ['mod' => $mod->name]) !!}
 </x-slot>
 
 <x-slot:description>
-    {!! __('Create a new mod version to share with the community.') !!}
+    {!! __('Create a new version for :mod to share with the community.', ['mod' => $mod->name]) !!}
 </x-slot>
 
 <x-slot:header>
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Create a New Mod Version') }}
+        {{ __('Create a New Version for :mod', ['mod' => $mod->name]) }}
     </h2>
 </x-slot>
 
