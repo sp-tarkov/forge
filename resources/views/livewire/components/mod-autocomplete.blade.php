@@ -9,8 +9,12 @@
     class="relative"
 >
     {{-- Screen reader announcement region --}}
-    <div class="sr-only" aria-live="polite" aria-atomic="true">
-        @if($filteredMods->count() > 0)
+    <div
+        class="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+    >
+        @if ($filteredMods->count() > 0)
             {{ $filteredMods->count() }} {{ Str::plural('result', $filteredMods->count()) }} available.
         @elseif(!empty($search) && $filteredMods->count() === 0)
             No results found.
@@ -19,7 +23,10 @@
 
     {{-- Input field with ARIA attributes --}}
     <div class="relative">
-        <label for="{{ $componentId }}" class="sr-only">{{ $label }}</label>
+        <label
+            for="{{ $componentId }}"
+            class="sr-only"
+        >{{ $label }}</label>
         <input
             type="text"
             id="{{ $componentId }}"
@@ -41,32 +48,38 @@
         />
 
         {{-- Clear button --}}
-        @if(!empty($selectedModId))
+        @if (!empty($selectedModId))
             <button
                 type="button"
                 wire:click="clearSelection"
                 class="absolute inset-y-0 right-0 flex items-center pr-3"
                 aria-label="Clear selection"
             >
-                <flux:icon name="x-circle" class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                <flux:icon
+                    name="x-circle"
+                    class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                />
             </button>
         @endif
     </div>
 
     {{-- Helper text for screen readers --}}
-    <span id="{{ $componentId }}-description" class="sr-only">
+    <span
+        id="{{ $componentId }}-description"
+        class="sr-only"
+    >
         Type to search for mods. Use arrow keys to navigate results and Enter to select.
     </span>
 
     {{-- Dropdown results --}}
-    @if($showDropdown && $filteredMods->count() > 0)
+    @if ($showDropdown && $filteredMods->count() > 0)
         <ul
             id="{{ $componentId }}-dropdown"
             class="absolute z-50 mt-1 w-full shadow-lg max-h-60 rounded-md py-1 text-base border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-700 overflow-auto focus:outline-none sm:text-sm"
             role="listbox"
             aria-label="{{ $label }} options"
         >
-            @foreach($filteredMods as $index => $mod)
+            @foreach ($filteredMods as $index => $mod)
                 <li
                     wire:click="selectMod({{ $mod->id }}, '{{ addslashes($mod->name) }}')"
                     x-on:mouseenter="highlightIndex = {{ $index }}"
@@ -82,9 +95,14 @@
                         </span>
                     </div>
 
-                    @if($selectedModId == $mod->id)
-                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 {{ $highlightIndex === $index ? 'text-white' : 'text-cyan-600' }}">
-                            <flux:icon name="check" class="h-5 w-5" />
+                    @if ($selectedModId == $mod->id)
+                        <span
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 {{ $highlightIndex === $index ? 'text-white' : 'text-cyan-600' }}"
+                        >
+                            <flux:icon
+                                name="check"
+                                class="h-5 w-5"
+                            />
                         </span>
                     @endif
                 </li>

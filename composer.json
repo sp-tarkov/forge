@@ -88,8 +88,12 @@
         "spell": [
             "typos . --config ./typos.toml && echo 'DONE'"
         ],
+        "prettier": [
+            "npm run format"
+        ],
         "sendit": [
             "composer rector-fix",
+            "composer prettier",
             "composer pint",
             "composer phpstan",
             "composer spell",

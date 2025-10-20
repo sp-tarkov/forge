@@ -13,13 +13,14 @@
         <div class="text-red-500 text-xs my-1.5">{{ $message }}</div>
     @enderror
     <div class="flex items-center justify-between mt-2">
-        @if($cancelAction)
+        @if ($cancelAction)
             <div class="flex items-center gap-2">
                 <flux:button
                     variant="primary"
                     size="sm"
                     class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
-                    type="submit">
+                    type="submit"
+                >
                     {{ $submitText }}
                 </flux:button>
                 <flux:button
@@ -27,7 +28,8 @@
                     wire:click="{{ $cancelAction }}"
                     data-test="cancel-{{ $dataTest ?? str_replace('.', '-', $formKey) }}"
                     variant="ghost"
-                    size="sm">
+                    size="sm"
+                >
                     {{ __('Cancel') }}
                 </flux:button>
             </div>
@@ -39,7 +41,8 @@
                 variant="primary"
                 size="sm"
                 class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
-                type="submit">
+                type="submit"
+            >
                 {{ $submitText }}
             </flux:button>
             <div class="text-xs text-slate-400 text-right ml-2">

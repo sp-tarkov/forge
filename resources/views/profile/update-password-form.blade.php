@@ -11,31 +11,71 @@
 
         @if (auth()->user()->password === null)
             <div class="col-span-6 sm:col-span-4 mt-3 max-w-xl text-sm text-gray-600 dark:text-gray-400">
-                <p>{{ __('Your account does not have a password set. We recommend setting a password so that you can recover your account if you need to.') }}</p>
+                <p>{{ __('Your account does not have a password set. We recommend setting a password so that you can recover your account if you need to.') }}
+                </p>
             </div>
         @else
             <div class="col-span-6 sm:col-span-4">
-                <x-label for="current_password" value="{{ __('Current Password') }}" />
-                <x-input id="current_password" type="password" class="mt-1 block w-full" wire:model="state.current_password" autocomplete="off" />
-                <x-input-error for="current_password" class="mt-2" />
+                <x-label
+                    for="current_password"
+                    value="{{ __('Current Password') }}"
+                />
+                <x-input
+                    id="current_password"
+                    type="password"
+                    class="mt-1 block w-full"
+                    wire:model="state.current_password"
+                    autocomplete="off"
+                />
+                <x-input-error
+                    for="current_password"
+                    class="mt-2"
+                />
             </div>
         @endif
 
         <div class="col-span-6 sm:col-span-4">
-            <x-label for="password" value="{{ __('New Password') }}" />
-            <x-input id="password" type="password" class="mt-1 block w-full" wire:model="state.password" autocomplete="off" />
-            <x-input-error for="password" class="mt-2" />
+            <x-label
+                for="password"
+                value="{{ __('New Password') }}"
+            />
+            <x-input
+                id="password"
+                type="password"
+                class="mt-1 block w-full"
+                wire:model="state.password"
+                autocomplete="off"
+            />
+            <x-input-error
+                for="password"
+                class="mt-2"
+            />
         </div>
 
         <div class="col-span-6 sm:col-span-4">
-            <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
-            <x-input id="password_confirmation" type="password" class="mt-1 block w-full" wire:model="state.password_confirmation" autocomplete="off" />
-            <x-input-error for="password_confirmation" class="mt-2" />
+            <x-label
+                for="password_confirmation"
+                value="{{ __('Confirm Password') }}"
+            />
+            <x-input
+                id="password_confirmation"
+                type="password"
+                class="mt-1 block w-full"
+                wire:model="state.password_confirmation"
+                autocomplete="off"
+            />
+            <x-input-error
+                for="password_confirmation"
+                class="mt-2"
+            />
         </div>
     </x-slot>
 
     <x-slot name="actions">
-        <x-action-message class="me-3" on="saved">
+        <x-action-message
+            class="me-3"
+            on="saved"
+        >
             {{ __('Saved.') }}
         </x-action-message>
 

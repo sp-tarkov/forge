@@ -25,8 +25,9 @@
             <div class="flex-1 bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="px-4 py-8 sm:px-6 lg:px-8 prose dark:prose-invert max-w-none static-content">
                     <!-- Page Title in Content -->
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">{{ $pageTitle ?? 'Static Content' }}</h1>
-                    
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+                        {{ $pageTitle ?? 'Static Content' }}</h1>
+
                     <!-- Main Content Slot -->
                     {{ $slot }}
                 </div>
@@ -54,12 +55,14 @@
                 });
 
                 navLinks.forEach(link => {
-                    link.classList.remove('text-cyan-600', 'dark:text-cyan-400', 'bg-cyan-50', 'dark:bg-cyan-900/50');
+                    link.classList.remove('text-cyan-600', 'dark:text-cyan-400', 'bg-cyan-50',
+                        'dark:bg-cyan-900/50');
                     link.classList.add('text-gray-600', 'dark:text-gray-400');
 
                     if (link.getAttribute('href') === '#' + current) {
                         link.classList.remove('text-gray-600', 'dark:text-gray-400');
-                        link.classList.add('text-cyan-600', 'dark:text-cyan-400', 'bg-cyan-50', 'dark:bg-cyan-900/50');
+                        link.classList.add('text-cyan-600', 'dark:text-cyan-400', 'bg-cyan-50',
+                            'dark:bg-cyan-900/50');
                     }
                 });
             }

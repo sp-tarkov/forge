@@ -1,1 +1,5 @@
-{}
+{
+  "plugins": ["@shufo/prettier-plugin-blade", "prettier-plugin-tailwindcss"],
+  "printWidth": 120,
+  "singleAttributePerLine": true
+}

@@ -7,11 +7,11 @@ function initializeTabs(container = document) {
     let tabsets = [];
 
     if (userMarkdownAreas.length > 0) {
-        userMarkdownAreas.forEach(area => {
+        userMarkdownAreas.forEach((area) => {
             const areaTabs = area.querySelectorAll(".tabset:not([data-tabs-initialized])");
             tabsets = [...tabsets, ...areaTabs];
         });
-    } else if (container.classList && container.classList.contains('user-markdown')) {
+    } else if (container.classList && container.classList.contains("user-markdown")) {
         // If the container itself is a user-markdown area
         tabsets = container.querySelectorAll(".tabset:not([data-tabs-initialized])");
     }
@@ -22,7 +22,7 @@ function initializeTabs(container = document) {
 
     tabsets.forEach((tabset) => {
         // Mark this tabset as initialized to prevent duplicate initialization
-        tabset.setAttribute('data-tabs-initialized', 'true');
+        tabset.setAttribute("data-tabs-initialized", "true");
 
         // Generate a unique index for this tabset
         const tabsetIndex = Date.now() + Math.random();
@@ -87,7 +87,7 @@ function initializeTabs(container = document) {
         });
 
         // Mark navigation as initialized
-        navigation.setAttribute('data-tabs-initialized', 'true');
+        navigation.setAttribute("data-tabs-initialized", "true");
 
         // Insert Navigation and Add Event Listener
 
@@ -140,7 +140,7 @@ function initializeTabs(container = document) {
 }
 
 // Initialize tabs on DOMContentLoaded
-if (document.readyState === 'loading') {
+if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
         initializeTabs();
     });
@@ -152,12 +152,12 @@ if (document.readyState === 'loading') {
 // Listen for Livewire events to reinitialize tabs when content is updated
 if (window.Livewire) {
     // Livewire 3 events
-    document.addEventListener('livewire:navigated', () => {
+    document.addEventListener("livewire:navigated", () => {
         initializeTabs();
     });
 
-    document.addEventListener('livewire:init', () => {
-        Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
+    document.addEventListener("livewire:init", () => {
+        Livewire.hook("commit", ({ component, commit, respond, succeed, fail }) => {
             succeed(() => {
                 // After a successful Livewire update, reinitialize tabs
                 requestAnimationFrame(() => {
@@ -169,6 +169,6 @@ if (window.Livewire) {
 }
 
 // Also listen for any custom events that might indicate content has been updated
-document.addEventListener('content-updated', () => {
+document.addEventListener("content-updated", () => {
     initializeTabs();
 });

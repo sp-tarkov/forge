@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+public/build/
+public/hot
+public/vendor/
+bootstrap/cache/
+
+# Storage
+storage/
+
+# Environment
+.env
+
+# Compiled files
+*.min.js
+*.min.css
+
+# Lock files
+package-lock.json
+composer.lock
+
+# Files with complex PHP/JS that cause parser issues
+resources/views/livewire/pagination/tailwind-narrow.blade.php

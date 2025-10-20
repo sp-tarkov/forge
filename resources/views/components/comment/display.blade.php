@@ -1,45 +1,67 @@
 @props(['comment', 'manager', 'isReply' => false, 'commentable' => null])
 
-<div class="relative" x-data="{
-    canEdit: {{ CachedGate::allows('update', $comment) ? 'true' : 'false' }},
-    createdAt: new Date('{{ $comment->created_at->toISOString() }}'),
-    init() {
-        this.updateCanEdit();
-        setInterval(() => { this.updateCanEdit(); }, 30000);
-    },
-    updateCanEdit() {
-        const diffInMinutes = (new Date() - this.createdAt) / (1000 * 60);
-        this.canEdit = diffInMinutes <= 5;
-    }
-}">
-    <div id="{{ $manager->getCommentHashId($comment->id) }}" class="flex items-center justify-between">
+<div
+    class="relative"
+    x-data="{
+        canEdit: {{ CachedGate::allows('update', $comment) ? 'true' : 'false' }},
+        createdAt: new Date('{{ $comment->created_at->toISOString() }}'),
+        init() {
+            this.updateCanEdit();
+            setInterval(() => { this.updateCanEdit(); }, 30000);
+        },
+        updateCanEdit() {
+            const diffInMinutes = (new Date() - this.createdAt) / (1000 * 60);
+            this.canEdit = diffInMinutes <= 5;
+        }
+    }"
+>
+    <div
+        id="{{ $manager->getCommentHashId($comment->id) }}"
+        class="flex items-center justify-between"
+    >
         <div class="flex items-center">
-            <flux:avatar circle="circle" src="{{ $comment->user->profile_photo_url }}" color="auto" color:seed="{{ $comment->user->id }}" />
-            <a href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}"
-               class="ml-2 font-bold hover:underline">
+            <flux:avatar
+                circle="circle"
+                src="{{ $comment->user->profile_photo_url }}"
+                color="auto"
+                color:seed="{{ $comment->user->id }}"
+            />
+            <a
+                href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}"
+                class="ml-2 font-bold hover:underline"
+            >
                 <x-user-name :user="$comment->user" />
             </a>
             <span class="ml-2 text-xs text-slate-400 relative top-0.5">
                 <x-time :datetime="$comment->created_at" />
                 @if ($comment->edited_at)
-                    <span class="text-gray-500 dark:text-gray-400" title="{{ $comment->edited_at->format('Y-m-d H:i:s') }}">*</span>
+                    <span
+                        class="text-gray-500 dark:text-gray-400"
+                        title="{{ $comment->edited_at->format('Y-m-d H:i:s') }}"
+                    >*</span>
                 @endif
             </span>
             @if ($comment->isPinned())
                 <span class="ml-2 inline-flex items-center gap-1 text-xs text-cyan-500 relative top-0.5">
-                    <flux:icon.bookmark variant="micro" class="size-4" />
+                    <flux:icon.bookmark
+                        variant="micro"
+                        class="size-4"
+                    />
                     {{ __('Pinned') }}
                 </span>
             @endif
         </div>
         <div class="flex items-center">
             @if ($comment->parent_id && $comment->parent)
-                <a href="#{{ $manager->getCommentHashId($comment->parent_id) }}" class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400">
+                <a
+                    href="#{{ $manager->getCommentHashId($comment->parent_id) }}"
+                    class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400"
+                >
                     {{ __('Replying to') }} @<x-user-name :user="$comment->parent->user" />
                 </a>
             @endif
             @if (CachedGate::allows('viewActions', $comment))
-                <x-comment.action-menu 
+                <x-comment.action-menu
                     :comment="$comment"
                     :descendants-count="$comment->isRoot() ? $manager->getDescendantCount($comment->id) : null"
                 />
@@ -75,7 +97,9 @@
     />
 
     {{-- Reply Form --}}
-    @if ($manager->isFormVisible('reply', $comment->id) && CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
+    @if (
+        $manager->isFormVisible('reply', $comment->id) &&
+            CachedGate::allows('create', [App\Models\Comment::class, $comment->commentable]))
         <div class="mt-4">
             <flux:separator text="Reply To Comment" />
             <div class="mt-2.5">

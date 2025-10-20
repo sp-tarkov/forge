@@ -5,38 +5,41 @@
         x-on:close-chat-dropdown.window="chatDropdownOpen = false"
         class="relative"
     >
-    <button
-        type="button"
-        x-on:click="chatDropdownOpen = !chatDropdownOpen"
-        class="relative rounded-md p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
-        :aria-expanded="chatDropdownOpen"
-        aria-haspopup="true"
-    >
-        <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
-        @if($unreadCount > 0)
-            <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
-                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-            </span>
-        @endif
-        <span class="sr-only">{{ __('Chat') }}</span>
-    </button>
+        <button
+            type="button"
+            x-on:click="chatDropdownOpen = !chatDropdownOpen"
+            class="relative rounded-md p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
+            :aria-expanded="chatDropdownOpen"
+            aria-haspopup="true"
+        >
+            <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
+            @if ($unreadCount > 0)
+                <span
+                    class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white"
+                >
+                    {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                </span>
+            @endif
+            <span class="sr-only">{{ __('Chat') }}</span>
+        </button>
 
-    <div
-        x-cloak
-        x-show="chatDropdownOpen"
-        x-transition
-        x-on:click.outside="chatDropdownOpen = false"
-        class="absolute top-11 right-0 z-[100] flex w-full min-w-[20rem] flex-col overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
-        role="menu"
-    >
-            @if($conversations->count() > 0)
+        <div
+            x-cloak
+            x-show="chatDropdownOpen"
+            x-transition
+            x-on:click.outside="chatDropdownOpen = false"
+            class="absolute top-11 right-0 z-[100] flex w-full min-w-[20rem] flex-col overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+            role="menu"
+        >
+            @if ($conversations->count() > 0)
                 <div class="flex flex-col divide-y divide-slate-300 dark:divide-gray-700">
                     <div class="flex flex-col py-2">
                         <div class="px-3 pb-2">
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{{ __('Recent Conversations') }}</p>
+                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                {{ __('Recent Conversations') }}</p>
                         </div>
-                        @foreach($conversations as $conversation)
-                            @if($conversation->other_user)
+                        @foreach ($conversations as $conversation)
+                            @if ($conversation->other_user)
                                 <button
                                     type="button"
                                     wire:key="nav-conversation-{{ $conversation->id }}"
@@ -53,8 +56,10 @@
                                                 color="auto"
                                                 color:seed="{{ $conversation->other_user->id }}"
                                             />
-                                            @if(isset($onlineUsers[$conversation->other_user->id]))
-                                                <span class="absolute bottom-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white dark:ring-gray-900 bg-green-400"></span>
+                                            @if (isset($onlineUsers[$conversation->other_user->id]))
+                                                <span
+                                                    class="absolute bottom-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white dark:ring-gray-900 bg-green-400"
+                                                ></span>
                                             @endif
                                         </div>
                                         <div class="flex-1 min-w-0">
@@ -63,17 +68,22 @@
                                                     <span class="font-medium text-sm truncate">
                                                         <x-user-name :user="$conversation->other_user" />
                                                     </span>
-                                                    @if($conversation->unread_count > 0)
-                                                        <flux:badge color="red" size="sm" class="text-[10px] px-1.5 py-0">{{ $conversation->unread_count }}</flux:badge>
+                                                    @if ($conversation->unread_count > 0)
+                                                        <flux:badge
+                                                            color="red"
+                                                            size="sm"
+                                                            class="text-[10px] px-1.5 py-0"
+                                                        >{{ $conversation->unread_count }}</flux:badge>
                                                     @endif
                                                 </div>
-                                                @if($conversation->lastMessage)
-                                                    <div class="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
+                                                @if ($conversation->lastMessage)
+                                                    <div
+                                                        class="text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
                                                         {{ $conversation->lastMessage->created_at->dynamicFormat(includeTime: false) }}
                                                     </div>
                                                 @endif
                                             </div>
-                                            @if($conversation->lastMessage)
+                                            @if ($conversation->lastMessage)
                                                 <div class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 truncate">
                                                     {{ Str::limit($conversation->lastMessage->content ?? '', 40) }}
                                                 </div>
@@ -111,11 +121,18 @@
                 </div>
             @else
                 <div class="px-4 py-8 text-center">
-                    <flux:icon name="chat-bubble-left-right" class="w-12 h-12 mx-auto text-slate-400 dark:text-slate-600 mb-3" />
+                    <flux:icon
+                        name="chat-bubble-left-right"
+                        class="w-12 h-12 mx-auto text-slate-400 dark:text-slate-600 mb-3"
+                    />
                     <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
                         {{ __('No conversations yet') }}
                     </p>
-                    <flux:button x-on:click="$wire.showNewConversation = true; chatDropdownOpen = false" size="sm" variant="primary">
+                    <flux:button
+                        x-on:click="$wire.showNewConversation = true; chatDropdownOpen = false"
+                        size="sm"
+                        variant="primary"
+                    >
                         {{ __('Start a conversation') }}
                     </flux:button>
                 </div>
@@ -127,7 +144,8 @@
     <x-new-conversation-modal
         :show-modal="'showNewConversation'"
         :search-user="$searchUser"
-        :search-results="$searchResults" />
+        :search-results="$searchResults"
+    />
 
     {{-- JavaScript for presence channel --}}
     @script
@@ -172,7 +190,9 @@
             });
 
             // Handle debounced offline check
-            $wire.on('debounce-user-offline', ({ userId }) => {
+            $wire.on('debounce-user-offline', ({
+                userId
+            }) => {
                 // Clear existing timer if any
                 if (offlineTimers.has(userId)) {
                     clearTimeout(offlineTimers.get(userId));
@@ -180,7 +200,9 @@
 
                 // Set new timer
                 const timerId = setTimeout(() => {
-                    $wire.dispatch('check-user-offline', { userId });
+                    $wire.dispatch('check-user-offline', {
+                        userId
+                    });
                     offlineTimers.delete(userId);
                 }, offlineDeboune);
 
@@ -188,7 +210,9 @@
             });
 
             // Set up private channel for user-specific events
-            $wire.on('set-user-id', ({ userId }) => {
+            $wire.on('set-user-id', ({
+                userId
+            }) => {
                 if (!window.Echo || !userId) return;
 
                 // Clean up existing channel

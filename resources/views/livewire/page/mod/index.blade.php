@@ -3,11 +3,18 @@
 </x-slot>
 
 <x-slot:description>
-    {!! __('Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}
+    {!! __(
+        'Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.',
+    ) !!}
 </x-slot>
 
 <x-slot:rssFeeds>
-    <link rel="alternate" type="application/rss+xml" title="The Forge - SPT Mods RSS Feed" href="{{ route('mods.rss') }}" />
+    <link
+        rel="alternate"
+        type="application/rss+xml"
+        title="The Forge - SPT Mods RSS Feed"
+        href="{{ route('mods.rss') }}"
+    />
 </x-slot>
 
 <x-slot:header>
@@ -17,11 +24,17 @@
         </h2>
         @auth
             @can('create', [App\Models\Mod::class])
-                <flux:button href="{{ route('mod.guidelines') }}" size="sm">{{ __('Create New Mod') }}</flux:button>
+                <flux:button
+                    href="{{ route('mod.guidelines') }}"
+                    size="sm"
+                >{{ __('Create New Mod') }}</flux:button>
             @else
                 <flux:tooltip content="Must enable MFA to create mods.">
                     <div>
-                        <flux:button disabled="true" size="sm">{{ __('Create New Mod') }}</flux:button>
+                        <flux:button
+                            disabled="true"
+                            size="sm"
+                        >{{ __('Create New Mod') }}</flux:button>
                     </div>
                 </flux:tooltip>
             @endcan
@@ -30,16 +43,32 @@
 </x-slot>
 
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-    <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
+    <div
+        class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
-        <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __('Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.') !!}</p>
+        <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __(
+            'Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.',
+        ) !!}</p>
         <search class="lg:hidden relative group mt-6">
             <div class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-5 w-5 text-gray-500">
-                    <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    class="h-5 w-5 text-gray-500"
+                >
+                    <path
+                        fill-rule="evenodd"
+                        d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                        clip-rule="evenodd"
+                    />
                 </svg>
             </div>
-            <input wire:model.live.debounce.300ms="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
+            <input
+                wire:model.live.debounce.300ms="query"
+                class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
+                placeholder="{{ __('Search Mods') }}"
+            />
         </search>
 
         <section
@@ -48,11 +77,16 @@
             aria-labelledby="filter-heading"
             class="my-8 grid items-center border-t border-gray-400 dark:border-gray-700"
         >
-            <h2 id="filter-heading" class="sr-only">{{ __('Filters') }}</h2>
+            <h2
+                id="filter-heading"
+                class="sr-only"
+            >{{ __('Filters') }}</h2>
             <div class="relative col-start-1 row-start-1 py-4 border-b border-gray-400 dark:border-gray-700">
-                <div class="mx-auto flex flex-wrap items-center justify-center sm:justify-start gap-2 lg:gap-0 lg:flex-nowrap max-w-7xl text-sm">
+                <div
+                    class="mx-auto flex flex-wrap items-center justify-center sm:justify-start gap-2 lg:gap-0 lg:flex-nowrap max-w-7xl text-sm">
                     {{-- Filters button --}}
-                    <div class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-1 self-stretch">
+                    <div
+                        class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-1 self-stretch">
                         <button
                             type="button"
                             x-on:click="isFilterOpen = !isFilterOpen"
@@ -60,34 +94,59 @@
                             aria-controls="disclosure-1"
                             aria-expanded="false"
                         >
-                        <svg class="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-none text-gray-500 group-hover:text-gray-600 dark:text-gray-600" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="hidden min-[400px]:inline">{{ $this->filterCount }}</span>
+                            <svg
+                                class="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5 flex-none text-gray-500 group-hover:text-gray-600 dark:text-gray-600"
+                                aria-hidden="true"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                            <span class="hidden min-[400px]:inline">{{ $this->filterCount }}</span>
                             <span class="ml-1">{{ __('Filters') }}</span>
                         </button>
                     </div>
 
                     {{-- Search bar (only on large screens and up) --}}
-                    <div class="hidden lg:flex items-center border-r border-gray-400 dark:border-gray-700 flex-1 min-w-[280px] max-w-md order-2 self-stretch">
+                    <div
+                        class="hidden lg:flex items-center border-r border-gray-400 dark:border-gray-700 flex-1 min-w-[280px] max-w-md order-2 self-stretch">
                         <search class="flex relative group px-3 sm:px-4 lg:px-4 xl:px-6 w-full">
-                        <div class="pointer-events-none absolute inset-y-0 left-5 sm:left-6 lg:left-8 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 sm:h-5 sm:w-5 text-gray-500">
-                                <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
-                        </svg>
-                        </div>
-                        <input wire:model.live.debounce.300ms="query" class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-8 sm:pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 text-sm sm:leading-6" placeholder="{{ __('Search Mods') }}" />
+                            <div
+                                class="pointer-events-none absolute inset-y-0 left-5 sm:left-6 lg:left-8 flex items-center">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 16 16"
+                                    fill="currentColor"
+                                    class="h-4 w-4 sm:h-5 sm:w-5 text-gray-500"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                            <input
+                                wire:model.live.debounce.300ms="query"
+                                class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-8 sm:pl-10 pr-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 text-sm sm:leading-6"
+                                placeholder="{{ __('Search Mods') }}"
+                            />
                         </search>
                     </div>
 
                     {{-- Results Per Page Dropdown --}}
-                    <div class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-2 md:order-3 self-stretch">
+                    <div
+                        class="flex items-center border-r border-gray-400 dark:border-gray-700 flex-shrink-0 order-2 md:order-3 self-stretch">
                         <div
                             class="relative inline-block px-3 sm:px-3 lg:px-3 xl:px-4"
                             x-data="{ isResultsPerPageOpen: false }"
                             x-on:click.away="isResultsPerPageOpen = false"
                         >
-                        <div class="flex">
+                            <div class="flex">
                                 <button
                                     type="button"
                                     x-on:click="isResultsPerPageOpen = !isResultsPerPageOpen"
@@ -98,12 +157,21 @@
                                 >
                                     <span class="hidden lg:inline">{{ __('Per Page') }}</span>
                                     <span class="lg:hidden">{{ __(':perPage/p', ['perPage' => $perPage]) }}</span>
-                                    <svg class="-mr-1 ml-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    <svg
+                                        class="-mr-1 ml-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-gray-400 group-hover:text-gray-500"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                            clip-rule="evenodd"
+                                        />
                                     </svg>
                                 </button>
-                        </div>
-                        <div
+                            </div>
+                            <div
                                 x-cloak
                                 x-show="isResultsPerPageOpen"
                                 x-transition:enter="transition ease-out duration-100"
@@ -119,8 +187,12 @@
                                 tabindex="-1"
                             >
                                 <div class="flex flex-col py-1.5">
-                                    @foreach($perPageOptions as $option)
-                                        <x-filter-menu-item filterName="perPage" :filter="$option" :currentFilter="$perPage">{{ $option }}</x-filter-menu-item>
+                                    @foreach ($perPageOptions as $option)
+                                        <x-filter-menu-item
+                                            filterName="perPage"
+                                            :filter="$option"
+                                            :currentFilter="$perPage"
+                                        >{{ $option }}</x-filter-menu-item>
                                     @endforeach
                                 </div>
                             </div>
@@ -134,7 +206,7 @@
                             x-data="{ isSortOpen: false }"
                             x-on:click.away="isSortOpen = false"
                         >
-                        <div class="flex">
+                            <div class="flex">
                                 <button
                                     type="button"
                                     x-on:click="isSortOpen = !isSortOpen"
@@ -144,12 +216,21 @@
                                     aria-haspopup="true"
                                 >
                                     {{ __('Sort') }}
-                                    <svg class="-mr-1 ml-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-gray-400 group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    <svg
+                                        class="-mr-1 ml-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-gray-400 group-hover:text-gray-500"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                            clip-rule="evenodd"
+                                        />
                                     </svg>
                                 </button>
-                        </div>
-                        <div
+                            </div>
+                            <div
                                 x-cloak
                                 x-show="isSortOpen"
                                 x-transition:enter="transition ease-out duration-100"
@@ -165,21 +246,49 @@
                                 tabindex="-1"
                             >
                                 <div class="flex flex-col py-1.5">
-                                    <x-filter-menu-item filterName="order" filter="created" :currentFilter="$order">{{ __('Newest') }}</x-filter-menu-item>
-                                    <x-filter-menu-item filterName="order" filter="updated" :currentFilter="$order">{{ __('Recently Updated') }}</x-filter-menu-item>
-                                    <x-filter-menu-item filterName="order" filter="downloaded" :currentFilter="$order">{{ __('Most Downloaded') }}</x-filter-menu-item>
+                                    <x-filter-menu-item
+                                        filterName="order"
+                                        filter="created"
+                                        :currentFilter="$order"
+                                    >{{ __('Newest') }}</x-filter-menu-item>
+                                    <x-filter-menu-item
+                                        filterName="order"
+                                        filter="updated"
+                                        :currentFilter="$order"
+                                    >{{ __('Recently Updated') }}</x-filter-menu-item>
+                                    <x-filter-menu-item
+                                        filterName="order"
+                                        filter="downloaded"
+                                        :currentFilter="$order"
+                                    >{{ __('Most Downloaded') }}</x-filter-menu-item>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {{-- Loading indicator - displays at all breakpoints with reserved space --}}
-                    <div class="hidden sm:flex items-center flex-shrink-0 order-4 md:order-5 self-stretch" wire:loading.class="!flex border-l border-gray-400 dark:border-gray-700">
+                    <div
+                        class="hidden sm:flex items-center flex-shrink-0 order-4 md:order-5 self-stretch"
+                        wire:loading.class="!flex border-l border-gray-400 dark:border-gray-700"
+                    >
                         <div class="px-3 sm:px-4 lg:px-4 xl:px-6 min-w-[2.5rem] lg:min-w-[5rem] xl:min-w-[7rem]">
-                            <p class="flex items-center font-medium text-gray-800 dark:text-gray-300" wire:loading.flex>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin">
-                                    <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />
-                                    <path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" />
+                            <p
+                                class="flex items-center font-medium text-gray-800 dark:text-gray-300"
+                                wire:loading.flex
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                    class="w-4 h-4 fill-cyan-600 dark:fill-cyan-600 motion-safe:animate-spin"
+                                >
+                                    <path
+                                        d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
+                                        opacity=".25"
+                                    />
+                                    <path
+                                        d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"
+                                    />
                                 </svg>
                                 <span class="pl-1.5 hidden md:inline">{{ __('Loading...') }}</span>
                             </p>
@@ -194,25 +303,43 @@
 
                     {{-- Reset Filters Button --}}
                     <div class="flex items-center flex-shrink-0 order-6 sm:order-6 md:order-7 self-stretch">
-                        <button x-on:click="$wire.call('resetFilters')" type="button" class="px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm">
+                        <button
+                            x-on:click="$wire.call('resetFilters')"
+                            type="button"
+                            class="px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm"
+                        >
                             {{ __('Reset Filters') }}
                         </button>
                     </div>
 
                     {{-- RSS Feed Link --}}
-                    <div class="flex items-center sm:border-l border-gray-400 dark:border-gray-700 flex-shrink-0 order-7 sm:order-7 md:order-8 self-stretch">
-                        <a href="{{ route('mods.rss') }}?{{ http_build_query([
-                            'query' => $query,
-                            'order' => $order,
-                            'versions' => is_array($sptVersions) ? implode(',', $sptVersions) : $sptVersions,
-                            'featured' => $featured,
-                            'category' => $category,
-                        ]) }}"
-                           target="_blank"
-                           class="flex items-center px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm"
-                           title="{{ __('RSS Feed for Current Filters') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-1">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 0 0-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                    <div
+                        class="flex items-center sm:border-l border-gray-400 dark:border-gray-700 flex-shrink-0 order-7 sm:order-7 md:order-8 self-stretch">
+                        <a
+                            href="{{ route('mods.rss') }}?{{ http_build_query([
+                                'query' => $query,
+                                'order' => $order,
+                                'versions' => is_array($sptVersions) ? implode(',', $sptVersions) : $sptVersions,
+                                'featured' => $featured,
+                                'category' => $category,
+                            ]) }}"
+                            target="_blank"
+                            class="flex items-center px-3 sm:px-4 lg:px-4 xl:px-6 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 whitespace-nowrap text-sm"
+                            title="{{ __('RSS Feed for Current Filters') }}"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="w-4 h-4 sm:w-5 sm:h-5 mr-1"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12.75 19.5v-.75a7.5 7.5 0 0 0-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                />
                             </svg>
                             {{ __('RSS') }}
                         </a>
@@ -231,11 +358,14 @@
                 id="disclosure-1"
                 class="py-10 border-b border-gray-400 dark:border-gray-700"
             >
-                <div class="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 sm:gap-y-8 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
-                    <div class="col-span-1 sm:col-span-2 grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 sm:grid-cols-2 sm:gap-x-6">
+                <div
+                    class="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 sm:gap-y-8 px-4 text-sm sm:px-6 md:gap-x-6 lg:px-8">
+                    <div
+                        class="col-span-1 sm:col-span-2 grid auto-rows-min grid-cols-1 gap-y-2 sm:gap-y-0 sm:grid-cols-2 sm:gap-x-6">
                         <!-- SPT Versions fieldset spanning both columns -->
                         <fieldset class="col-span-1 sm:col-span-2">
-                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('SPT Versions') }}</legend>
+                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">
+                                {{ __('SPT Versions') }}</legend>
                             <div class="pt-6 sm:pt-4 pb-2 sm:pb-2 md:pb-1">
                                 <div class="flex items-center text-base sm:text-sm">
                                     <input
@@ -247,7 +377,11 @@
                                         class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
                                         wire:loading.attr="disabled"
                                     >
-                                    <label for="sptVersions-all" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ __('All Versions') }}</label>
+                                    <label
+                                        for="sptVersions-all"
+                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                        wire:loading.class="opacity-50"
+                                    >{{ __('All Versions') }}</label>
                                 </div>
                             </div>
                         </fieldset>
@@ -266,14 +400,14 @@
                                             class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
                                             wire:loading.attr="disabled"
                                         >
-                                        <label for="sptVersions-{{ $version->version }}"
-                                            @if(auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture()))
-                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
+                                        <label
+                                            for="sptVersions-{{ $version->version }}"
+                                            @if (auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture())) class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
                                                 title="Unpublished - Not publicly visible"
                                             @else
-                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
-                                            @endif
-                                            wire:loading.class="opacity-50">
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" @endif
+                                            wire:loading.class="opacity-50"
+                                        >
                                             {{ $version->version }}
                                         </label>
                                     </div>
@@ -295,14 +429,14 @@
                                             class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
                                             wire:loading.attr="disabled"
                                         >
-                                        <label for="sptVersions-{{ $version->version }}"
-                                            @if(auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture()))
-                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
+                                        <label
+                                            for="sptVersions-{{ $version->version }}"
+                                            @if (auth()->user()?->isModOrAdmin() && (!$version->publish_date || $version->publish_date->isFuture())) class="cursor-pointer ml-3 min-w-0 inline-flex text-orange-600 dark:text-orange-400"
                                                 title="Unpublished - Not publicly visible"
                                             @else
-                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
-                                            @endif
-                                            wire:loading.class="opacity-50">
+                                                class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" @endif
+                                            wire:loading.class="opacity-50"
+                                        >
                                             {{ $version->version }}
                                         </label>
                                     </div>
@@ -319,25 +453,45 @@
                                         type="checkbox"
                                         wire:click="toggleVersionFilter('legacy')"
                                         wire:key="legacy-{{ md5(json_encode($sptVersions)) }}"
-                                        @checked($sptVersions !== 'all' && ((is_array($sptVersions) && in_array('legacy', $sptVersions)) || $sptVersions === 'legacy'))
+                                        @checked(
+                                            $sptVersions !== 'all' &&
+                                                ((is_array($sptVersions) && in_array('legacy', $sptVersions)) || $sptVersions === 'legacy'))
                                         class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
                                         wire:loading.attr="disabled"
                                     >
-                                    <label for="sptVersions-legacy" class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300" wire:loading.class="opacity-50">{{ __('Legacy Versions') }}</label>
+                                    <label
+                                        for="sptVersions-legacy"
+                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                        wire:loading.class="opacity-50"
+                                    >{{ __('Legacy Versions') }}</label>
                                 </div>
                             </div>
                         </fieldset>
                     </div>
                     <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
-                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}</legend>
+                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}
+                        </legend>
                         <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                            <x-filter-radio id="featured-0" name="featured" value="include">{{ __('Include') }}</x-filter-radio>
-                            <x-filter-radio id="featured-1" name="featured" value="exclude">{{ __('Exclude') }}</x-filter-radio>
-                            <x-filter-radio id="featured-2" name="featured" value="only">{{ __('Only') }}</x-filter-radio>
+                            <x-filter-radio
+                                id="featured-0"
+                                name="featured"
+                                value="include"
+                            >{{ __('Include') }}</x-filter-radio>
+                            <x-filter-radio
+                                id="featured-1"
+                                name="featured"
+                                value="exclude"
+                            >{{ __('Exclude') }}</x-filter-radio>
+                            <x-filter-radio
+                                id="featured-2"
+                                name="featured"
+                                value="only"
+                            >{{ __('Only') }}</x-filter-radio>
                         </div>
                     </fieldset>
                     <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
-                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Category') }}</legend>
+                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Category') }}
+                        </legend>
                         <div class="pt-6 sm:pt-4">
                             <select
                                 wire:model.live="category"
@@ -362,15 +516,29 @@
             <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 @foreach ($mods as $mod)
                     <div wire:key="mod-index-{{ $mod->id }}">
-                        <x-mod.card :mod="$mod" :version="$mod->latestVersion" />
+                        <x-mod.card
+                            :mod="$mod"
+                            :version="$mod->latestVersion"
+                        />
                     </div>
                 @endforeach
             </div>
         @else
             <div class="text-center text-gray-900 dark:text-gray-300">
                 <p>{{ __('There were no mods found with those filters applied. ') }}</p>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mx-auto">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6 mx-auto"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
+                    />
                 </svg>
             </div>
         @endif

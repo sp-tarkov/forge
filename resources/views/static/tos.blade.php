@@ -4,35 +4,82 @@
     <x-slot name="pageDescription">{{ __('Terms of Service for The Forge') }}</x-slot>
 
     <x-slot name="tableOfContents">
-        <x-table-of-contents-item href="#about-these-terms" title="About These Terms" />
-        <x-table-of-contents-item href="#our-services" title="Our Services" />
-        <x-table-of-contents-item href="#eligibility-account-registration" title="Eligibility and Account Registration">
+        <x-table-of-contents-item
+            href="#about-these-terms"
+            title="About These Terms"
+        />
+        <x-table-of-contents-item
+            href="#our-services"
+            title="Our Services"
+        />
+        <x-table-of-contents-item
+            href="#eligibility-account-registration"
+            title="Eligibility and Account Registration"
+        >
             <x-table-of-contents-subitem href="#age-requirement">Age Requirement</x-table-of-contents-subitem>
             <x-table-of-contents-subitem href="#account-creation">Account Creation</x-table-of-contents-subitem>
-            <x-table-of-contents-subitem href="#account-responsibilities">Account Responsibilities</x-table-of-contents-subitem>
+            <x-table-of-contents-subitem href="#account-responsibilities">Account
+                Responsibilities</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#acceptable-use" title="Acceptable Use">
+        <x-table-of-contents-item
+            href="#acceptable-use"
+            title="Acceptable Use"
+        >
             <x-table-of-contents-subitem href="#what-you-can-do">What You Can Do</x-table-of-contents-subitem>
             <x-table-of-contents-subitem href="#what-you-cannot-do">What You Cannot Do</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#user-generated-content" title="User-Generated Content" />
-        <x-table-of-contents-item href="#intellectual-property" title="Intellectual Property" />
-        <x-table-of-contents-item href="#privacy-data" title="Privacy and Data" />
-        <x-table-of-contents-item href="#community-standards" title="Community Standards" />
-        <x-table-of-contents-item href="#payment-premium-features" title="Payment and Premium Features" />
-        <x-table-of-contents-item href="#service-availability" title="Service Availability" />
-        <x-table-of-contents-item href="#termination" title="Termination" />
-        <x-table-of-contents-item href="#disclaimers-limitations" title="Disclaimers and Limitations" />
-        <x-table-of-contents-item href="#dispute-resolution" title="Dispute Resolution" />
-        <x-table-of-contents-item href="#changes-terms" title="Changes to These Terms" />
-        <x-table-of-contents-item href="#contact-information" title="Contact Information" />
+        <x-table-of-contents-item
+            href="#user-generated-content"
+            title="User-Generated Content"
+        />
+        <x-table-of-contents-item
+            href="#intellectual-property"
+            title="Intellectual Property"
+        />
+        <x-table-of-contents-item
+            href="#privacy-data"
+            title="Privacy and Data"
+        />
+        <x-table-of-contents-item
+            href="#community-standards"
+            title="Community Standards"
+        />
+        <x-table-of-contents-item
+            href="#payment-premium-features"
+            title="Payment and Premium Features"
+        />
+        <x-table-of-contents-item
+            href="#service-availability"
+            title="Service Availability"
+        />
+        <x-table-of-contents-item
+            href="#termination"
+            title="Termination"
+        />
+        <x-table-of-contents-item
+            href="#disclaimers-limitations"
+            title="Disclaimers and Limitations"
+        />
+        <x-table-of-contents-item
+            href="#dispute-resolution"
+            title="Dispute Resolution"
+        />
+        <x-table-of-contents-item
+            href="#changes-terms"
+            title="Changes to These Terms"
+        />
+        <x-table-of-contents-item
+            href="#contact-information"
+            title="Contact Information"
+        />
     </x-slot>
 
     <p><strong>Effective Date:</strong> 2025-08-26<br><strong>Last Updated:</strong> 2025-08-26</p>
 
     <h2 id="about-these-terms">1. About These Terms</h2>
-    
-    <p>Welcome to The Forge, the official platform for Single Player Tarkov (SPT) modifications and community resources. These Terms of Service ("Terms") govern your use of our website, services, and community features.</p>
+
+    <p>Welcome to The Forge, the official platform for Single Player Tarkov (SPT) modifications and community resources.
+        These Terms of Service ("Terms") govern your use of our website, services, and community features.</p>
 
     <p>By using The Forge, you agree to these Terms. If you don't agree, please don't use our services.</p>
 
@@ -45,7 +92,7 @@
     </ul>
 
     <h2 id="our-services">2. Our Services</h2>
-    
+
     <p>The Forge provides:</p>
     <ul>
         <li><strong>Mod hosting and distribution</strong> for SPT-compatible modifications</li>
@@ -187,7 +234,8 @@
 
     <h2 id="privacy-data">7. Privacy and Data</h2>
 
-    <p>Your privacy is important to us. Our data practices are detailed in our <a href="{{ route('static.privacy') }}">Privacy Policy</a>, including:</p>
+    <p>Your privacy is important to us. Our data practices are detailed in our <a
+            href="{{ route('static.privacy') }}">Privacy Policy</a>, including:</p>
     <ul>
         <li>What information we collect and why</li>
         <li>How we use and protect your data</li>
@@ -197,7 +245,8 @@
 
     <h2 id="community-standards">8. Community Standards</h2>
 
-    <p>Detailed behavioral expectations are outlined in our <a href="{{ route('static.community-standards') }}">Community Standards</a>. Key principles:</p>
+    <p>Detailed behavioral expectations are outlined in our <a
+            href="{{ route('static.community-standards') }}">Community Standards</a>. Key principles:</p>
 
     <h3>Be Respectful</h3>
     <ul>
@@ -380,11 +429,17 @@
         <li><strong>Stay informed:</strong> We may update these Terms with notice</li>
     </ul>
 
-    <p>By using The Forge, you agree to these Terms and our <a href="{{ route('static.community-standards') }}">Community Standards</a>. Thank you for being part of our community!</p>
+    <p>By using The Forge, you agree to these Terms and our <a
+            href="{{ route('static.community-standards') }}">Community Standards</a>. Thank you for being part of our
+        community!</p>
 
     <hr>
 
-    <p><em>These Terms of Service work together with our <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a href="{{ route('static.community-standards') }}">Community Standards</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
+    <p><em>These Terms of Service work together with our <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a
+                href="{{ route('static.community-standards') }}"
+            >Community Standards</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a
+                href="{{ route('static.dmca') }}"
+            >DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: 2025-08-26</em></p>
 </x-layouts.static-toc>

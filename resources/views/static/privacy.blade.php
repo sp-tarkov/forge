@@ -4,30 +4,73 @@
     <x-slot name="pageDescription">{{ __('Privacy Policy for The Forge') }}</x-slot>
 
     <x-slot name="tableOfContents">
-        <x-table-of-contents-item href="#introduction" title="Introduction" />
-        <x-table-of-contents-item href="#information-we-collect" title="Information We Collect">
-            <x-table-of-contents-subitem href="#information-you-provide">Information You Provide Directly</x-table-of-contents-subitem>
-            <x-table-of-contents-subitem href="#information-collected-automatically">Information Collected Automatically</x-table-of-contents-subitem>
-            <x-table-of-contents-subitem href="#third-party-authentication">Third-Party Authentication</x-table-of-contents-subitem>
+        <x-table-of-contents-item
+            href="#introduction"
+            title="Introduction"
+        />
+        <x-table-of-contents-item
+            href="#information-we-collect"
+            title="Information We Collect"
+        >
+            <x-table-of-contents-subitem href="#information-you-provide">Information You Provide
+                Directly</x-table-of-contents-subitem>
+            <x-table-of-contents-subitem href="#information-collected-automatically">Information Collected
+                Automatically</x-table-of-contents-subitem>
+            <x-table-of-contents-subitem href="#third-party-authentication">Third-Party
+                Authentication</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#how-we-use-information" title="How We Use Your Information" />
-        <x-table-of-contents-item href="#legal-basis-processing" title="Legal Basis for Processing (GDPR)" />
-        <x-table-of-contents-item href="#data-sharing-disclosure" title="Data Sharing and Disclosure" />
-        <x-table-of-contents-item href="#data-retention" title="Data Retention" />
-        <x-table-of-contents-item href="#data-security" title="Data Security" />
-        <x-table-of-contents-item href="#your-privacy-rights" title="Your Privacy Rights" />
-        <x-table-of-contents-item href="#cookies-tracking" title="Cookies and Tracking" />
-        <x-table-of-contents-item href="#international-transfers" title="International Data Transfers" />
-        <x-table-of-contents-item href="#childrens-privacy" title="Children's Privacy" />
-        <x-table-of-contents-item href="#changes-policy" title="Changes to This Policy" />
-        <x-table-of-contents-item href="#contact-information" title="Contact Information" />
+        <x-table-of-contents-item
+            href="#how-we-use-information"
+            title="How We Use Your Information"
+        />
+        <x-table-of-contents-item
+            href="#legal-basis-processing"
+            title="Legal Basis for Processing (GDPR)"
+        />
+        <x-table-of-contents-item
+            href="#data-sharing-disclosure"
+            title="Data Sharing and Disclosure"
+        />
+        <x-table-of-contents-item
+            href="#data-retention"
+            title="Data Retention"
+        />
+        <x-table-of-contents-item
+            href="#data-security"
+            title="Data Security"
+        />
+        <x-table-of-contents-item
+            href="#your-privacy-rights"
+            title="Your Privacy Rights"
+        />
+        <x-table-of-contents-item
+            href="#cookies-tracking"
+            title="Cookies and Tracking"
+        />
+        <x-table-of-contents-item
+            href="#international-transfers"
+            title="International Data Transfers"
+        />
+        <x-table-of-contents-item
+            href="#childrens-privacy"
+            title="Children's Privacy"
+        />
+        <x-table-of-contents-item
+            href="#changes-policy"
+            title="Changes to This Policy"
+        />
+        <x-table-of-contents-item
+            href="#contact-information"
+            title="Contact Information"
+        />
     </x-slot>
 
     <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> August 26, 2025</p>
 
     <h2 id="introduction">1. Introduction</h2>
-    
-    <p>At The Forge, we take your privacy seriously. This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our website and services.</p>
+
+    <p>At The Forge, we take your privacy seriously. This Privacy Policy explains how we collect, use, store, and
+        protect your personal information when you use our website and services.</p>
 
     <p><strong>Quick Summary:</strong></p>
     <ul>
@@ -124,7 +167,8 @@
         <li><strong>Service Updates:</strong> Notifying you about important changes or maintenance</li>
         <li><strong>Community Management:</strong> Sending moderation notices or policy updates</li>
         <li><strong>Support Services:</strong> Responding to your help requests and technical issues</li>
-        <li><strong>Private Messaging:</strong> Facilitating user-to-user communication through our messaging system</li>
+        <li><strong>Private Messaging:</strong> Facilitating user-to-user communication through our messaging system
+        </li>
         <li><strong>Marketing:</strong> Newsletter and promotional emails (with your consent)</li>
     </ul>
 
@@ -320,7 +364,8 @@
     </ul>
 
     <h3>9.3 Do Not Track</h3>
-    <p>We respect Do Not Track signals where technically feasible, but note that this may limit some website functionality.</p>
+    <p>We respect Do Not Track signals where technically feasible, but note that this may limit some website
+        functionality.</p>
 
     <h2 id="international-transfers">10. International Data Transfers</h2>
 
@@ -336,7 +381,8 @@
 
     <h2 id="childrens-privacy">11. Children's Privacy</h2>
 
-    <p>The Forge requires users to be at least 18 years old. We do not knowingly collect personal information from children under 18.</p>
+    <p>The Forge requires users to be at least 18 years old. We do not knowingly collect personal information from
+        children under 18.</p>
 
     <p><strong>If we discover underage users:</strong></p>
     <ul>
@@ -345,7 +391,8 @@
         <li>Parents/guardians will be notified if possible</li>
     </ul>
 
-    <p><strong>Reporting:</strong> If you believe a child under 18 is using our services, please contact us immediately.</p>
+    <p><strong>Reporting:</strong> If you believe a child under 18 is using our services, please contact us immediately.
+    </p>
 
     <h2 id="changes-policy">12. Changes to This Policy</h2>
 
@@ -371,7 +418,8 @@
     <h2 id="contact-information">13. Contact Information</h2>
 
     <h3>13.1 General Privacy Questions</h3>
-    <p><strong>Email:</strong> singleplayertarkov@gmail.com<br><strong>Response Time:</strong> Within 5 business days</p>
+    <p><strong>Email:</strong> singleplayertarkov@gmail.com<br><strong>Response Time:</strong> Within 5 business days
+    </p>
 
     <h3>13.2 Data Protection Officer</h3>
     <p><strong>Name:</strong> Refringe<br><strong>Email:</strong> singleplayertarkov@gmail.com</p>
@@ -409,18 +457,24 @@
     <h2>Privacy Summary</h2>
 
     <p><strong>What we collect:</strong> Information needed to provide our modding platform services<br>
-    <strong>How we use it:</strong> Account management, content delivery, platform improvement<br>
-    <strong>Who we share with:</strong> Only necessary service providers and as required by law<br>
-    <strong>Your rights:</strong> Access, correct, delete, and control your personal data<br>
-    <strong>Our commitment:</strong> Industry-standard security and transparent practices</p>
+        <strong>How we use it:</strong> Account management, content delivery, platform improvement<br>
+        <strong>Who we share with:</strong> Only necessary service providers and as required by law<br>
+        <strong>Your rights:</strong> Access, correct, delete, and control your personal data<br>
+        <strong>Our commitment:</strong> Industry-standard security and transparent practices
+    </p>
 
     <p><strong>Questions?</strong> Contact us at singleplayertarkov@gmail.com</p>
 
     <hr>
 
-    <p><em>This policy is governed by Canadian privacy laws including PIPEDA, and complies with GDPR for EU users.</em></p>
+    <p><em>This policy is governed by Canadian privacy laws including PIPEDA, and complies with GDPR for EU users.</em>
+    </p>
 
-    <p><em>This Privacy Policy works together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a href="{{ route('static.community-standards') }}">Community Standards</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
+    <p><em>This Privacy Policy works together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a
+                href="{{ route('static.community-standards') }}"
+            >Community Standards</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a
+                href="{{ route('static.dmca') }}"
+            >DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
 </x-layouts.static-toc>

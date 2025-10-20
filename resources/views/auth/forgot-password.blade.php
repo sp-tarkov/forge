@@ -24,12 +24,27 @@
 
         <x-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('password.email') }}">
+        <form
+            method="POST"
+            action="{{ route('password.email') }}"
+        >
             @csrf
 
             <div class="block">
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-label
+                    for="email"
+                    value="{{ __('Email') }}"
+                />
+                <x-input
+                    id="email"
+                    class="block mt-1 w-full"
+                    type="email"
+                    name="email"
+                    :value="old('email')"
+                    required
+                    autofocus
+                    autocomplete="username"
+                />
             </div>
 
             <x-honeypot />
@@ -41,4 +56,4 @@
             </div>
         </form>
     </x-authentication-card>
-</x-guest-layout>
+    </x-guest-layout>
