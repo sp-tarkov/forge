@@ -129,7 +129,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
 
         // Test that owners can access the edit page
         visit('/mod/'.$mod->id.'/edit')
-            ->assertSee('Edit Mod')
+            ->assertSee('Edit Test Mod Name')
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
@@ -170,7 +170,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
 
         // Also verify browser can access the edit page after update
         visit('/mod/'.$mod->id.'/edit')
-            ->assertSee('Edit Mod')
+            ->assertSee('Edit Updated Mod Name')
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
@@ -197,7 +197,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
 
         // Test that authors can access the edit page
         visit('/mod/'.$mod->id.'/edit')
-            ->assertSee('Edit Mod')
+            ->assertSee('Edit Collaborative Mod')
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
