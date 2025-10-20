@@ -2,8 +2,12 @@
 
 <div
     x-data="{{ json_encode(['show' => true, 'style' => $style, 'message' => $message]) }}"
-    :class="{ 'bg-indigo-500': style == 'success', 'bg-red-700': style == 'danger', 'bg-yellow-500': style ==
-        'warning', 'bg-gray-500': style != 'success' && style != 'danger' && style != 'warning' }"
+    :class="{
+        'bg-indigo-500': style == 'success',
+        'bg-red-700': style == 'danger',
+        'bg-yellow-500': style == 'warning',
+        'bg-gray-500': style != 'success' && style != 'danger' && style != 'warning'
+    }"
     style="display: none;"
     x-show="show && message"
     x-on:banner-message.window="
@@ -17,8 +21,11 @@
             <div class="w-0 flex-1 flex items-center min-w-0">
                 <span
                     class="flex p-2 rounded-lg"
-                    :class="{ 'bg-indigo-600': style == 'success', 'bg-red-600': style == 'danger', 'bg-yellow-600': style ==
-                            'warning' }"
+                    :class="{
+                        'bg-indigo-600': style == 'success',
+                        'bg-red-600': style == 'danger',
+                        'bg-yellow-600': style == 'warning'
+                    }"
                 >
                     <svg
                         x-show="style == 'success'"
@@ -100,9 +107,11 @@
                 <button
                     type="button"
                     class="-me-1 flex p-2 rounded-md focus:outline-hidden sm:-me-2 transition"
-                    :class="{ 'hover:bg-indigo-600 focus:bg-indigo-600': style ==
-                        'success', 'hover:bg-red-600 focus:bg-red-600': style ==
-                        'danger', 'hover:bg-yellow-600 focus:bg-yellow-600': style == 'warning' }"
+                    :class="{
+                        'hover:bg-indigo-600 focus:bg-indigo-600': style == 'success',
+                        'hover:bg-red-600 focus:bg-red-600': style == 'danger',
+                        'hover:bg-yellow-600 focus:bg-yellow-600': style == 'warning'
+                    }"
                     aria-label="Dismiss"
                     x-on:click="show = false"
                 >

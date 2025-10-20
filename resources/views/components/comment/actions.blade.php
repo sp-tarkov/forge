@@ -45,8 +45,10 @@
                         animate() {
                             this.isAnimating = true;
                             if (this.timeoutId) clearTimeout(this.timeoutId);
-                            this.timeoutId = setTimeout(() => { this.isAnimating = false;
-                                this.timeoutId = null; }, 800);
+                            this.timeoutId = setTimeout(() => {
+                                this.isAnimating = false;
+                                this.timeoutId = null;
+                            }, 800);
                         }
                     }"
                 >

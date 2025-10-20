@@ -232,7 +232,8 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
     <p>Examples of properly formatted semantic versions include <code>1.0.0</code> for an initial stable release,
         <code>2.1.3</code> for a version with significant features and multiple patches, or <code>0.8.2</code> for
         pre-release development versions. Pre-release versions may include additional identifiers such as
-        <code>1.0.0-beta.1</code> or <code>2.0.0-rc.2</code>.</p>
+        <code>1.0.0-beta.1</code> or <code>2.0.0-rc.2</code>.
+    </p>
     <p><strong>When to Increment Version Components:</strong></p>
     <p>Increment the MAJOR version when making incompatible changes that require users to modify their configurations,
         when removing features or functionality that existing users depend on, when changing mod dependencies in ways
@@ -267,7 +268,8 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
     <p>When specifying SPT compatibility, use constraints that reflect the actual compatibility testing you have
         performed. If your mod has been tested with SPT 3.11 and you expect it to work with future patch releases, use
         <code>~3.11.0</code>. If your mod uses features introduced in SPT 4.0 but should work with future minor
-        releases, use <code>^4.0.0</code>.</p>
+        releases, use <code>^4.0.0</code>.
+    </p>
     <p>For mod dependencies, consider the stability and development practices of the dependencies you rely on.
         Well-maintained mods with consistent APIs may safely use caret constraints, while experimental or
         rapidly-changing dependencies may require more restrictive constraints.</p>
