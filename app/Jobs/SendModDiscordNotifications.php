@@ -82,45 +82,28 @@ class SendModDiscordNotifications implements ShouldQueue
                     ->where('disabled', false)
                     ->whereNotNull('published_at');
             })
-            ->with(['mod.latestVersion.latestSptVersion', 'mod.versions.latestSptVersion', 'latestSptVersion'])
+            ->with(['mod', 'sptVersions'])
             ->get()
             ->filter(fn (ModVersion $modVersion): bool => $modPolicy->view(null, $modVersion->mod) && $versionPolicy->view(null, $modVersion));
 
-        $versionsByMod = $modVersions->groupBy('mod_id'); // Send one notification per mod
-
-        foreach ($versionsByMod as $modId => $versions) {
+        // Send individual notifications for each new version
+        foreach ($modVersions as $modVersion) {
             try {
-                $firstVersion = $versions->first();
-                if (! $firstVersion) {
-                    continue;
-                }
+                $this->sendModVersionNotification($modVersion->mod, $modVersion);
 
-                $mod = $firstVersion->mod;
-                $latestVersion = $mod->latestVersion;
-
-                if (! $latestVersion) {
-                    Log::warning('No latest version found for mod', ['mod_id' => $mod->id]);
-
-                    continue;
-                }
-
-                $this->sendModVersionNotification($mod, $latestVersion);
-
-                // Mark all pending versions for this mod as sent
-                foreach ($versions as $version) {
-                    $version->discord_notification_sent = true;
-                    $version->save();
-                }
+                // Mark this version as sent
+                $modVersion->discord_notification_sent = true;
+                $modVersion->save();
 
                 Log::info('Discord notification sent for mod version', [
-                    'mod_id' => $mod->id,
-                    'mod_name' => $mod->name,
-                    'version' => $latestVersion->version,
-                    'version_count' => $versions->count(),
+                    'mod_id' => $modVersion->mod->id,
+                    'mod_name' => $modVersion->mod->name,
+                    'version' => $modVersion->version,
                 ]);
             } catch (Exception $e) {
                 Log::error('Failed to send Discord notification for mod version', [
-                    'mod_id' => $modId,
+                    'mod_id' => $modVersion->mod->id,
+                    'version' => $modVersion->version,
                     'error' => $e->getMessage(),
                 ]);
             }
