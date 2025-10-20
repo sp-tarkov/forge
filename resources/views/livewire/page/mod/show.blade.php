@@ -254,7 +254,7 @@
                             </svg>
                         </div>
                         <div class="text-sm font-medium text-black dark:text-white">
-                            <strong>Notice:</strong> This mod <em>may</em> make permanent changes to your profile, and <em>may</em> not be removable without starting a new profile. <a href="https://wiki.sp-tarkov.com/Installing_Mods#profiles" target="_blank" class="underline text-black hover:text-orange-800 dark:text-white dark:hover:text-white">More information.</a>
+                            <strong>Notice:</strong> This mod <em>may</em> make permanent changes to your profile, and <em>may</em> not be removable without starting a new profile. <a href="https://wiki.sp-tarkov.com/Profiles#mods" target="_blank" class="underline text-black hover:text-orange-800 dark:text-white dark:hover:text-white">More information.</a>
                         </div>
                     </div>
                 </div>
