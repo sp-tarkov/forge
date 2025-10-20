@@ -248,4 +248,20 @@ describe('Mod Show API', function (): void {
                 'data' => ['id', 'name'],
             ]);
     });
+
+    it('returns thumbnail as a URL', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create([
+            'thumbnail' => 'thumbnails/test-image.jpg',
+        ]);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mod/'.$mod->id);
+
+        $response->assertOk();
+
+        // The thumbnail should be returned as a full URL, not just the path
+        $response->assertJsonPath('data.thumbnail', $mod->thumbnailUrl);
+        expect($response->json('data.thumbnail'))->toContain('thumbnails/test-image.jpg');
+    });
 });

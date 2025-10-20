@@ -424,4 +424,20 @@ describe('Mod Index API', function (): void {
         // Assert that the created_at and updated_at fields are not present
         $response->assertJsonMissing(['data' => ['*' => ['created_at', 'updated_at']]]);
     });
+
+    it('returns thumbnail as a URL', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create([
+            'thumbnail' => 'thumbnails/test-image.jpg',
+        ]);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
+
+        $response->assertOk();
+
+        // The thumbnail should be returned as a full URL, not just the path
+        $response->assertJsonPath('data.0.thumbnail', $mod->thumbnailUrl);
+        expect($response->json('data.0.thumbnail'))->toContain('thumbnails/test-image.jpg');
+    });
 });

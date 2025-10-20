@@ -75,7 +75,7 @@ class ModResource extends JsonResource
         }
 
         if ($this->shouldInclude('thumbnail')) {
-            $data['thumbnail'] = $this->resource->thumbnail;
+            $data['thumbnail'] = $this->resource->thumbnailUrl;
         }
 
         if ($this->shouldInclude('downloads')) {
