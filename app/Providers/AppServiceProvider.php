@@ -27,6 +27,7 @@ use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
+use Mchev\Banhammer\Middleware\AuthBanned;
 use Override;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -42,12 +43,7 @@ class AppServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        // Register the Telescope service provider if in a local environment.
-        if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
-            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
-            $this->app->register(TelescopeServiceProvider::class);
-        }
-
+        //
     }
 
     /**
@@ -73,6 +69,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Livewire component overrides.
         $this->registerLivewireOverrides();
+
+        // Add auth.banned to Livewire persistent middleware to ensure banned users are blocked on all requests.
+        Livewire::addPersistentMiddleware([
+            AuthBanned::class,
+        ]);
 
         // Register the broadcasting.auth early to load our extended controller.
         $this->app->booted(function (): void {

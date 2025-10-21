@@ -1,4 +1,4 @@
-import jstz from 'jstz';
+import jstz from "jstz";
 
 window.jstz = jstz; // Livewire access
 
@@ -11,7 +11,7 @@ function setTimezoneSelectToDetected(tzSelect) {
                 tzSelect.selectedIndex = i;
 
                 // Trigger change for Livewire.
-                tzSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                tzSelect.dispatchEvent(new Event("change", { bubbles: true }));
 
                 break;
             }
@@ -19,18 +19,18 @@ function setTimezoneSelectToDetected(tzSelect) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    var tzSelect = document.getElementById('timezone');
-    var detectBtn = document.getElementById('detect-timezone');
+document.addEventListener("DOMContentLoaded", function () {
+    var tzSelect = document.getElementById("timezone");
+    var detectBtn = document.getElementById("detect-timezone");
 
     // Only auto-populate if the field has data-tz-auto="true" attribute and is empty
-    if (tzSelect && !tzSelect.value && tzSelect.getAttribute('data-tz-auto') === 'true') {
+    if (tzSelect && !tzSelect.value && tzSelect.getAttribute("data-tz-auto") === "true") {
         setTimezoneSelectToDetected(tzSelect);
     }
 
     // Button click to detect.
     if (detectBtn && tzSelect) {
-        detectBtn.addEventListener('click', function () {
+        detectBtn.addEventListener("click", function () {
             setTimezoneSelectToDetected(tzSelect);
         });
     }

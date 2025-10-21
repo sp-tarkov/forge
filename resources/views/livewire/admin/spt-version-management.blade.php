@@ -28,14 +28,23 @@
                         icon="arrow-path"
                         wire:loading.attr="disabled"
                     >
-                        <span wire:loading.remove wire:target="syncFromGitHub">Sync from GitHub</span>
-                        <span wire:loading wire:target="syncFromGitHub">Syncing...</span>
+                        <span
+                            wire:loading.remove
+                            wire:target="syncFromGitHub"
+                        >Sync from GitHub</span>
+                        <span
+                            wire:loading
+                            wire:target="syncFromGitHub"
+                        >Syncing...</span>
                     </flux:button>
                 </div>
             </div>
 
             {{-- Filters Section --}}
-            <div id="filters-container" class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div
+                id="filters-container"
+                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            >
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
                     <flux:button
@@ -51,7 +60,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {{-- Search Filter --}}
                     <div>
-                        <flux:label for="search" class="text-xs">Search Version</flux:label>
+                        <flux:label
+                            for="search"
+                            class="text-xs"
+                        >Search Version</flux:label>
                         <flux:input
                             type="text"
                             wire:model.live.debounce.300ms="search"
@@ -63,8 +75,15 @@
 
                     {{-- Color Filter --}}
                     <div>
-                        <flux:label for="colorFilter" class="text-xs">Color</flux:label>
-                        <flux:select wire:model.live="colorFilter" id="colorFilter" size="sm">
+                        <flux:label
+                            for="colorFilter"
+                            class="text-xs"
+                        >Color</flux:label>
+                        <flux:select
+                            wire:model.live="colorFilter"
+                            id="colorFilter"
+                            size="sm"
+                        >
                             <flux:select.option value="">All Colors</flux:select.option>
                             <flux:select.option value="green">Green</flux:select.option>
                             <flux:select.option value="red">Red</flux:select.option>
@@ -75,50 +94,84 @@
             </div>
 
             {{-- Table Section --}}
-            <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div
+                class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-800">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" wire:click="sortByColumn('version_major')">
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    wire:click="sortByColumn('version_major')"
+                                >
                                     <div class="flex items-center gap-2">
                                         Version
-                                        @if($sortBy === 'version_major')
-                                            <flux:icon.chevron-down class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}" />
+                                        @if ($sortBy === 'version_major')
+                                            <flux:icon.chevron-down
+                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                            />
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                >
                                     Color
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" wire:click="sortByColumn('mod_count')">
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    wire:click="sortByColumn('mod_count')"
+                                >
                                     <div class="flex items-center gap-2">
                                         Mod Count
-                                        @if($sortBy === 'mod_count')
-                                            <flux:icon.chevron-down class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}" />
+                                        @if ($sortBy === 'mod_count')
+                                            <flux:icon.chevron-down
+                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                            />
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                >
                                     Link
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" wire:click="sortByColumn('publish_date')">
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    wire:click="sortByColumn('publish_date')"
+                                >
                                     <div class="flex items-center gap-2">
                                         Publish Date
-                                        @if($sortBy === 'publish_date')
-                                            <flux:icon.chevron-down class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}" />
+                                        @if ($sortBy === 'publish_date')
+                                            <flux:icon.chevron-down
+                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                            />
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" wire:click="sortByColumn('created_at')">
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    wire:click="sortByColumn('created_at')"
+                                >
                                     <div class="flex items-center gap-2">
                                         Created
-                                        @if($sortBy === 'created_at')
-                                            <flux:icon.chevron-down class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}" />
+                                        @if ($sortBy === 'created_at')
+                                            <flux:icon.chevron-down
+                                                class="w-3 h-3 {{ $sortDirection === 'desc' ? '' : 'rotate-180' }}"
+                                            />
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                                >
                                     Actions
                                 </th>
                             </tr>
@@ -126,11 +179,15 @@
                         <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($this->versions as $version)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                         {{ $version->version }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <flux:badge :color="$version->color_class" size="sm">
+                                        <flux:badge
+                                            :color="$version->color_class"
+                                            size="sm"
+                                        >
                                             {{ ucfirst($version->color_class) }}
                                         </flux:badge>
                                     </td>
@@ -138,8 +195,12 @@
                                         {{ number_format($version->mod_count) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        @if($version->link)
-                                            <a href="{{ $version->link }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1">
+                                        @if ($version->link)
+                                            <a
+                                                href="{{ $version->link }}"
+                                                target="_blank"
+                                                class="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                                            >
                                                 {{ parse_url($version->link, PHP_URL_HOST) }}
                                                 <flux:icon.arrow-top-right-on-square variant="micro" />
                                             </a>
@@ -148,25 +209,39 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        @if($version->publish_date)
+                                        @if ($version->publish_date)
                                             @php
                                                 $userTimezone = auth()->user()->timezone ?? 'UTC';
-                                                $publishDateInUserTz = $version->publish_date->setTimezone($userTimezone);
+                                                $publishDateInUserTz = $version->publish_date->setTimezone(
+                                                    $userTimezone,
+                                                );
                                             @endphp
-                                            @if($version->publish_date->isFuture())
+                                            @if ($version->publish_date->isFuture())
                                                 <div class="flex items-center gap-1">
-                                                    <flux:icon.clock variant="micro" class="text-amber-500" />
-                                                    <span class="text-amber-600 dark:text-amber-400" title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}">
+                                                    <flux:icon.clock
+                                                        variant="micro"
+                                                        class="text-amber-500"
+                                                    />
+                                                    <span
+                                                        class="text-amber-600 dark:text-amber-400"
+                                                        title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}"
+                                                    >
                                                         {{ $publishDateInUserTz->format('M j, Y H:i') }}
                                                     </span>
                                                 </div>
                                             @else
-                                                <span class="text-green-600 dark:text-green-400" title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}">
+                                                <span
+                                                    class="text-green-600 dark:text-green-400"
+                                                    title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}"
+                                                >
                                                     {{ $publishDateInUserTz->format('M j, Y') }}
                                                 </span>
                                             @endif
                                         @else
-                                            <flux:badge color="gray" size="sm">Unpublished</flux:badge>
+                                            <flux:badge
+                                                color="gray"
+                                                size="sm"
+                                            >Unpublished</flux:badge>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
@@ -194,7 +269,10 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-12 text-center">
+                                    <td
+                                        colspan="7"
+                                        class="px-6 py-12 text-center"
+                                    >
                                         <div class="flex flex-col items-center justify-center gap-2">
                                             <flux:icon.inbox class="w-12 h-12 text-gray-400 dark:text-gray-600" />
                                             <p class="text-gray-500 dark:text-gray-400">No SPT versions found</p>
@@ -207,7 +285,7 @@
                 </div>
 
                 {{-- Pagination --}}
-                @if($this->versions->hasPages())
+                @if ($this->versions->hasPages())
                     <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                         {{ $this->versions->links() }}
                     </div>
@@ -217,7 +295,10 @@
     </div>
 
     {{-- Create Modal --}}
-    <flux:modal wire:model.self="showCreateModal" variant="flyout">
+    <flux:modal
+        wire:model.self="showCreateModal"
+        variant="flyout"
+    >
         <form wire:submit.prevent="saveVersion">
             <div class="space-y-6">
                 <div>
@@ -244,7 +325,10 @@
 
                     {{-- Link Input --}}
                     <flux:field>
-                        <flux:label for="formLink" badge="Optional">GitHub Link</flux:label>
+                        <flux:label
+                            for="formLink"
+                            badge="Optional"
+                        >GitHub Link</flux:label>
                         <flux:input
                             type="url"
                             wire:model.defer="formLink"
@@ -257,7 +341,11 @@
                     {{-- Color Class Select --}}
                     <flux:field>
                         <flux:label for="formColorClass">Color Class</flux:label>
-                        <flux:select wire:model.defer="formColorClass" id="formColorClass" required>
+                        <flux:select
+                            wire:model.defer="formColorClass"
+                            id="formColorClass"
+                            required
+                        >
                             <flux:select.option value="red">Red</flux:select.option>
                             <flux:select.option value="orange">Orange</flux:select.option>
                             <flux:select.option value="amber">Amber</flux:select.option>
@@ -286,32 +374,54 @@
 
                     {{-- Publish Date Input --}}
                     <flux:field>
-                        <flux:label for="formPublishDate" badge="Optional">Publish Date</flux:label>
+                        <flux:label
+                            for="formPublishDate"
+                            badge="Optional"
+                        >Publish Date</flux:label>
                         <flux:input
                             type="datetime-local"
                             wire:model.defer="formPublishDate"
                             id="formPublishDate"
                         />
                         <flux:error name="formPublishDate" />
-                        <flux:description>Leave empty to keep unpublished. Set a past date to publish immediately, or future date to schedule. Time is in your local timezone ({{ auth()->user()->timezone ?? 'UTC' }}).</flux:description>
+                        <flux:description>Leave empty to keep unpublished. Set a past date to publish immediately, or
+                            future date to schedule. Time is in your local timezone
+                            ({{ auth()->user()->timezone ?? 'UTC' }}).</flux:description>
                     </flux:field>
                 </div>
 
                 <flux:separator />
 
                 <div class="flex gap-2">
-                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="saveVersion">Create</span>
-                        <span wire:loading wire:target="saveVersion">Saving...</span>
+                    <flux:button
+                        type="submit"
+                        variant="primary"
+                        wire:loading.attr="disabled"
+                    >
+                        <span
+                            wire:loading.remove
+                            wire:target="saveVersion"
+                        >Create</span>
+                        <span
+                            wire:loading
+                            wire:target="saveVersion"
+                        >Saving...</span>
                     </flux:button>
-                    <flux:button type="button" variant="ghost" wire:click="closeModals">Cancel</flux:button>
+                    <flux:button
+                        type="button"
+                        variant="ghost"
+                        wire:click="closeModals"
+                    >Cancel</flux:button>
                 </div>
             </div>
         </form>
     </flux:modal>
 
     {{-- Edit Modal --}}
-    <flux:modal wire:model.self="showEditModal" variant="flyout">
+    <flux:modal
+        wire:model.self="showEditModal"
+        variant="flyout"
+    >
         <form wire:submit.prevent="saveVersion">
             <div class="space-y-6">
                 <div>
@@ -338,7 +448,10 @@
 
                     {{-- Link Input --}}
                     <flux:field>
-                        <flux:label for="formLinkEdit" badge="Optional">GitHub Link</flux:label>
+                        <flux:label
+                            for="formLinkEdit"
+                            badge="Optional"
+                        >GitHub Link</flux:label>
                         <flux:input
                             type="url"
                             wire:model.defer="formLink"
@@ -351,7 +464,11 @@
                     {{-- Color Class Select --}}
                     <flux:field>
                         <flux:label for="formColorClassEdit">Color Class</flux:label>
-                        <flux:select wire:model.defer="formColorClass" id="formColorClassEdit" required>
+                        <flux:select
+                            wire:model.defer="formColorClass"
+                            id="formColorClassEdit"
+                            required
+                        >
                             <flux:select.option value="red">Red</flux:select.option>
                             <flux:select.option value="orange">Orange</flux:select.option>
                             <flux:select.option value="amber">Amber</flux:select.option>
@@ -380,25 +497,44 @@
 
                     {{-- Publish Date Input --}}
                     <flux:field>
-                        <flux:label for="formPublishDateEdit" badge="Optional">Publish Date</flux:label>
+                        <flux:label
+                            for="formPublishDateEdit"
+                            badge="Optional"
+                        >Publish Date</flux:label>
                         <flux:input
                             type="datetime-local"
                             wire:model.defer="formPublishDate"
                             id="formPublishDateEdit"
                         />
                         <flux:error name="formPublishDate" />
-                        <flux:description>Leave empty to keep unpublished. Set a past date to publish immediately, or future date to schedule. Time is in your local timezone ({{ auth()->user()->timezone ?? 'UTC' }}).</flux:description>
+                        <flux:description>Leave empty to keep unpublished. Set a past date to publish immediately, or
+                            future date to schedule. Time is in your local timezone
+                            ({{ auth()->user()->timezone ?? 'UTC' }}).</flux:description>
                     </flux:field>
                 </div>
 
                 <flux:separator />
 
                 <div class="flex gap-2">
-                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove wire:target="saveVersion">Update</span>
-                        <span wire:loading wire:target="saveVersion">Saving...</span>
+                    <flux:button
+                        type="submit"
+                        variant="primary"
+                        wire:loading.attr="disabled"
+                    >
+                        <span
+                            wire:loading.remove
+                            wire:target="saveVersion"
+                        >Update</span>
+                        <span
+                            wire:loading
+                            wire:target="saveVersion"
+                        >Saving...</span>
                     </flux:button>
-                    <flux:button type="button" variant="ghost" wire:click="closeModals">Cancel</flux:button>
+                    <flux:button
+                        type="button"
+                        variant="ghost"
+                        wire:click="closeModals"
+                    >Cancel</flux:button>
                 </div>
             </div>
         </form>

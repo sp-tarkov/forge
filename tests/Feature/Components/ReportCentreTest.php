@@ -301,8 +301,11 @@ it('displays pending reports count in badge', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
-        ->assertSee('3 Pending Reports'); // Only pending count, not total
+    $component = Livewire::test(ReportCentre::class);
+
+    // Check for pending reports count - normalize whitespace
+    $html = preg_replace('/\s+/', ' ', $component->html());
+    expect($html)->toContain('3 Pending Reports'); // Only pending count, not total
 });
 
 it('displays singular pending report text correctly', function (): void {
@@ -318,8 +321,11 @@ it('displays singular pending report text correctly', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
-        ->assertSee('1 Pending Report'); // Singular form
+    $component = Livewire::test(ReportCentre::class);
+
+    // Check for singular pending report - normalize whitespace
+    $html = preg_replace('/\s+/', ' ', $component->html());
+    expect($html)->toContain('1 Pending Report'); // Singular form
 });
 
 it('displays no pending reports message', function (): void {

@@ -1,13 +1,13 @@
 @props(['size' => 'sm'])
 
 @php
-$sizes = [
-    'xs' => 'h-1.5 w-1.5',
-    'sm' => 'h-2 w-2',
-    'md' => 'h-2.5 w-2.5',
-    'lg' => 'h-3 w-3'
-];
-$sizeClass = $sizes[$size] ?? $sizes['sm'];
+    $sizes = [
+        'xs' => 'h-1.5 w-1.5',
+        'sm' => 'h-2 w-2',
+        'md' => 'h-2.5 w-2.5',
+        'lg' => 'h-3 w-3',
+    ];
+    $sizeClass = $sizes[$size] ?? $sizes['sm'];
 @endphp
 
 <span class="relative flex {{ $sizeClass }}">

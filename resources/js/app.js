@@ -1,5 +1,5 @@
 // Registrations
-import './registerEcho';
+import "./registerEcho";
 import "./registerViteAssets";
 import "./registerAlpineLivewire";
 

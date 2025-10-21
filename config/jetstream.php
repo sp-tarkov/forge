@@ -31,7 +31,7 @@ return [
      |
      */
 
-    'middleware' => ['web'],
+    'middleware' => ['web', 'auth.banned'],
 
     'auth_session' => AuthenticateSession::class,
 

@@ -231,6 +231,11 @@ it('sends discord notification for new mod versions', function (): void {
         ]);
     $newVersion->sptVersions()->sync($sptVersion2);
 
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
     // Run the job
     $job = new SendModDiscordNotifications;
     $job->handle();
@@ -242,9 +247,23 @@ it('sends discord notification for new mod versions', function (): void {
     // Assert old version still marked as notified
     $oldVersion->refresh();
     expect($oldVersion->discord_notification_sent)->toBeTrue();
+
+    // Verify the notification was sent with the correct version (2.0.0)
+    Http::assertSent(function ($request) {
+        $body = json_decode((string) $request->body(), true);
+        $embeds = $body['embeds'] ?? [];
+
+        if (empty($embeds)) {
+            return false;
+        }
+
+        $embed = $embeds[0];
+
+        return str_contains($embed['title'] ?? '', 'Version 2.0.0');
+    });
 });
 
-it('sends single notification for multiple new versions of same mod', function (): void {
+it('sends individual notifications for multiple new versions of same mod', function (): void {
     // Create SPT version
     $sptVersion = SptVersion::factory()->create(['version' => '3.10.0']);
 
@@ -278,6 +297,11 @@ it('sends single notification for multiple new versions of same mod', function (
         ]);
     $version2->sptVersions()->sync($sptVersion);
 
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
     // Run the job
     $job = new SendModDiscordNotifications;
     $job->handle();
@@ -287,6 +311,36 @@ it('sends single notification for multiple new versions of same mod', function (
     $version2->refresh();
     expect($version1->discord_notification_sent)->toBeTrue();
     expect($version2->discord_notification_sent)->toBeTrue();
+
+    // Verify TWO separate notifications were sent (one for each version)
+    Http::assertSentCount(2);
+
+    // Verify each notification contains the correct version
+    Http::assertSent(function ($request) {
+        $body = json_decode((string) $request->body(), true);
+        $embeds = $body['embeds'] ?? [];
+
+        if (empty($embeds)) {
+            return false;
+        }
+
+        $embed = $embeds[0];
+
+        return str_contains($embed['title'] ?? '', 'Version 2.0.0');
+    });
+
+    Http::assertSent(function ($request) {
+        $body = json_decode((string) $request->body(), true);
+        $embeds = $body['embeds'] ?? [];
+
+        if (empty($embeds)) {
+            return false;
+        }
+
+        $embed = $embeds[0];
+
+        return str_contains($embed['title'] ?? '', 'Version 2.1.0');
+    });
 });
 
 it('marks versions as notified when new mod notification is sent', function (): void {
@@ -609,5 +663,75 @@ it('does not duplicate spt versions in mod version update notification', functio
 
         // Check for duplicates - should only have 2 unique versions
         return count($versions) === count(array_unique($versions)) && count($versions) === 2;
+    });
+});
+
+it('sends notification for lower semantic version uploaded after higher version', function (): void {
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create(['version' => '3.10.0']);
+
+    // Create a mod that has already sent notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => true,
+        ]);
+
+    // Create version 1.1.0 first (already notified - this is the latest version)
+    $higherVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '1.1.0',
+            'version_major' => 1,
+            'version_minor' => 1,
+            'version_patch' => 0,
+            'disabled' => false,
+            'published_at' => now()->subHour(),
+            'discord_notification_sent' => true,
+        ]);
+    $higherVersion->sptVersions()->sync($sptVersion);
+
+    // Now upload version 1.0.9 (lower semantic version, needs notification)
+    $lowerVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'version' => '1.0.9',
+            'version_major' => 1,
+            'version_minor' => 0,
+            'version_patch' => 9,
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+    $lowerVersion->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendModDiscordNotifications;
+    $job->handle();
+
+    // Assert the lower version was marked as notified
+    $lowerVersion->refresh();
+    expect($lowerVersion->discord_notification_sent)->toBeTrue();
+
+    // Verify the notification was sent with the CORRECT version (1.0.9, not 1.1.0)
+    Http::assertSent(function ($request) {
+        $body = json_decode((string) $request->body(), true);
+        $embeds = $body['embeds'] ?? [];
+
+        if (empty($embeds)) {
+            return false;
+        }
+
+        $embed = $embeds[0];
+
+        // The title should contain version 1.0.9, not 1.1.0
+        return str_contains($embed['title'] ?? '', 'Version 1.0.9');
     });
 });

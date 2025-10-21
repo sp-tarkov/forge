@@ -4,39 +4,74 @@
     <x-slot name="pageDescription">{{ __('Community Standards for The Forge') }}</x-slot>
 
     <x-slot name="tableOfContents">
-        <x-table-of-contents-item href="#community-vision" title="Our Community Vision" />
-        <x-table-of-contents-item href="#general-rules" title="General Community Rules">
+        <x-table-of-contents-item
+            href="#community-vision"
+            title="Our Community Vision"
+        />
+        <x-table-of-contents-item
+            href="#general-rules"
+            title="General Community Rules"
+        >
             <x-table-of-contents-subitem href="#basic-conduct">Basic Conduct</x-table-of-contents-subitem>
             <x-table-of-contents-subitem href="#prohibited-behavior">Prohibited Behavior</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#content-standards" title="Content Standards">
+        <x-table-of-contents-item
+            href="#content-standards"
+            title="Content Standards"
+        >
             <x-table-of-contents-subitem href="#appropriate-content">Appropriate Content</x-table-of-contents-subitem>
-            <x-table-of-contents-subitem href="#inappropriate-content">Inappropriate Content</x-table-of-contents-subitem>
-            <x-table-of-contents-subitem href="#intellectual-property">Intellectual Property</x-table-of-contents-subitem>
+            <x-table-of-contents-subitem href="#inappropriate-content">Inappropriate
+                Content</x-table-of-contents-subitem>
+            <x-table-of-contents-subitem href="#intellectual-property">Intellectual
+                Property</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#forum-guidelines" title="Forum and Discussion Guidelines">
+        <x-table-of-contents-item
+            href="#forum-guidelines"
+            title="Forum and Discussion Guidelines"
+        >
             <x-table-of-contents-subitem href="#forum-etiquette">Forum Etiquette</x-table-of-contents-subitem>
             <x-table-of-contents-subitem href="#help-support">Help and Support</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#file-sharing" title="File Sharing and Mod Standards">
+        <x-table-of-contents-item
+            href="#file-sharing"
+            title="File Sharing and Mod Standards"
+        >
             <x-table-of-contents-subitem href="#quality-standards">Quality Standards</x-table-of-contents-subitem>
             <x-table-of-contents-subitem href="#prohibited-mods">Prohibited Mods and Tools</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#private-messaging" title="Private Messaging Guidelines" />
-        <x-table-of-contents-item href="#reporting-enforcement" title="Reporting and Enforcement">
+        <x-table-of-contents-item
+            href="#private-messaging"
+            title="Private Messaging Guidelines"
+        />
+        <x-table-of-contents-item
+            href="#reporting-enforcement"
+            title="Reporting and Enforcement"
+        >
             <x-table-of-contents-subitem href="#how-to-report">How to Report</x-table-of-contents-subitem>
-            <x-table-of-contents-subitem href="#community-moderation">Community Self-Moderation</x-table-of-contents-subitem>
+            <x-table-of-contents-subitem href="#community-moderation">Community
+                Self-Moderation</x-table-of-contents-subitem>
         </x-table-of-contents-item>
-        <x-table-of-contents-item href="#consequences-appeals" title="Consequences and Appeals" />
-        <x-table-of-contents-item href="#special-guidelines" title="Special Guidelines" />
-        <x-table-of-contents-item href="#getting-help" title="Getting Help" />
+        <x-table-of-contents-item
+            href="#consequences-appeals"
+            title="Consequences and Appeals"
+        />
+        <x-table-of-contents-item
+            href="#special-guidelines"
+            title="Special Guidelines"
+        />
+        <x-table-of-contents-item
+            href="#getting-help"
+            title="Getting Help"
+        />
     </x-slot>
 
     <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> August 26, 2025</p>
 
     <h2 id="community-vision">1. Our Community Vision</h2>
-    
-    <p>The Forge is built on the principles of collaboration, creativity, and mutual respect. We're a community of modders, players, and enthusiasts who share a passion for Single Player Tarkov. These Community Standards ensure everyone can participate in a welcoming, productive environment.</p>
+
+    <p>The Forge is built on the principles of collaboration, creativity, and mutual respect. We're a community of
+        modders, players, and enthusiasts who share a passion for Single Player Tarkov. These Community Standards ensure
+        everyone can participate in a welcoming, productive environment.</p>
 
     <p><strong>Our Core Values:</strong></p>
     <ul>
@@ -412,16 +447,25 @@
 
     <h2 id="getting-help">10. Getting Help</h2>
 
-    <p><strong>Need help or have questions?</strong> Visit our <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Contact page</a> for detailed information on how to reach our staff and community.</p>
+    <p><strong>Need help or have questions?</strong> Visit our <a
+            href="{{ route('static.contact') }}"
+            class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+        >Contact page</a> for detailed information on how to reach our staff and community.</p>
 
     <h3>10.1 Questions About Standards</h3>
 
     <p><strong>If you're unsure about something:</strong></p>
     <ul>
-        <li>Ask <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">staff</a> for clarification before posting</li>
+        <li>Ask <a
+                href="{{ route('static.contact') }}"
+                class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+            >staff</a> for clarification before posting</li>
         <li>Review similar content to see how rules apply</li>
         <li>When in doubt, err on the side of caution</li>
-        <li>Contact us through our <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Discord server or email</a></li>
+        <li>Contact us through our <a
+                href="{{ route('static.contact') }}"
+                class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+            >Discord server or email</a></li>
     </ul>
 
     <h3>10.2 Conflict Resolution</h3>
@@ -431,7 +475,10 @@
         <li>Try to resolve issues through private discussion first</li>
         <li>Use respectful communication and assume good faith</li>
         <li>Focus on finding solutions rather than being "right"</li>
-        <li>Involve <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">staff</a> if you cannot reach a resolution</li>
+        <li>Involve <a
+                href="{{ route('static.contact') }}"
+                class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+            >staff</a> if you cannot reach a resolution</li>
     </ul>
 
     <h3>10.3 Improving the Community</h3>
@@ -467,13 +514,21 @@
         <li>Cheating tools for multiplayer games</li>
     </ul>
 
-    <p><strong>Remember:</strong> These standards exist to keep The Forge a welcoming place for everyone. When in doubt, choose kindness and reach out to staff for guidance.</p>
+    <p><strong>Remember:</strong> These standards exist to keep The Forge a welcoming place for everyone. When in doubt,
+        choose kindness and reach out to staff for guidance.</p>
 
-    <p><strong>Questions?</strong> Visit our <a href="{{ route('static.contact') }}" class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors">Contact page</a> for all the ways to reach us.</p>
+    <p><strong>Questions?</strong> Visit our <a
+            href="{{ route('static.contact') }}"
+            class="underline text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200 transition-colors"
+        >Contact page</a> for all the ways to reach us.</p>
 
     <hr>
 
-    <p><em>These Community Standards work together with our <a href="{{ route('static.terms') }}">Terms of Service</a>, <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a href="{{ route('static.content-guidelines') }}">Content Guidelines</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
+    <p><em>These Community Standards work together with our <a href="{{ route('static.terms') }}">Terms of Service</a>,
+            <a href="{{ route('static.privacy') }}">Privacy Policy</a>, <a
+                href="{{ route('static.content-guidelines') }}"
+            >Content Guidelines</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern your
+            use of The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
 </x-layouts.static-toc>

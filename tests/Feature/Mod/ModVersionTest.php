@@ -238,6 +238,34 @@ describe('mod version downloads', function (): void {
         expect($mod->updated_at->format('Y-m-d H:i:s'))->toEqual($expected)
             ->and($modVersion->updated_at->format('Y-m-d H:i:s'))->toEqual($expected);
     });
+
+    it('returns 404 when mod does not exist', function (): void {
+        $spt = SptVersion::factory()->create();
+        $mod = Mod::factory()->create(['id' => 1, 'slug' => 'test-mod']);
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+        ]);
+
+        // Delete the mod to simulate orphaned mod version
+        DB::table('mods')->where('id', $mod->id)->delete();
+
+        $this->get($modVersion->downloadUrl())
+            ->assertNotFound();
+    });
+
+    it('returns 404 when slug does not match', function (): void {
+        $spt = SptVersion::factory()->create();
+        $mod = Mod::factory()->create(['id' => 1, 'slug' => 'test-mod']);
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+        ]);
+
+        // Try to access with wrong slug
+        $this->get(sprintf('/mod/download/%s/%s/%s', $mod->id, 'wrong-slug', $modVersion->version))
+            ->assertNotFound();
+    });
 });
 
 describe('Published Version Visibility', function (): void {

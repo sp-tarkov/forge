@@ -56,11 +56,14 @@ it('displays multiple message count correctly', function (): void {
     // Create notification with multiple messages
     $recipient->notify(new NewChatMessageNotification($conversation, $messages));
 
-    Livewire::actingAs($recipient)
+    $component = Livewire::actingAs($recipient)
         ->test(NotificationCenter::class)
         ->assertSee('Jane Smith')
-        ->assertSee('sent you 3 new messages')
         ->assertSee($messages->last()->content);
+
+    // Check for message count - normalize whitespace
+    $html = preg_replace('/\s+/', ' ', (string) $component->html());
+    expect($html)->toContain('sent you 3 new messages');
 });
 
 it('shows correct unread state for chat notifications', function (): void {

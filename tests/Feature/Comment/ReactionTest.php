@@ -74,10 +74,13 @@ describe('guest visibility', function (): void {
             $user->commentReactions()->create(['comment_id' => $comment->id]);
         }
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        $component = Livewire::test(CommentComponent::class, ['commentable' => $mod])
             ->assertSee('Test comment')
-            ->assertSee('3 Likes')
             ->assertDontSee('wire:click="toggleReaction"', false);
+
+        // Check for reaction count - normalize whitespace
+        $html = preg_replace('/\s+/', ' ', (string) $component->html());
+        expect($html)->toContain('3 Likes');
     });
 });
 

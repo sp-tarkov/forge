@@ -1,25 +1,46 @@
 <div>
     @if ($this->shouldShowWarning)
         <div class="max-w-7xl mx-auto pb-6 px-4 gap-6 sm:px-6 lg:px-8">
-            <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+            <flux:callout
+                icon="exclamation-triangle"
+                color="orange"
+                inline="inline"
+            >
                 <flux:callout.heading>Set Your Timezone</flux:callout.heading>
-                <flux:callout.text>Please set your timezone in your profile to ensure that the correct time is displayed across the site.</flux:callout.text>
-                <x-slot name="actions" class="@md:h-full m-0!">
-                    <flux:button wire:click="openModal" variant="outline" icon="clock">
+                <flux:callout.text>Please set your timezone in your profile to ensure that the correct time is displayed
+                    across the site.</flux:callout.text>
+                <x-slot
+                    name="actions"
+                    class="@md:h-full m-0!"
+                >
+                    <flux:button
+                        wire:click="openModal"
+                        variant="outline"
+                        icon="clock"
+                    >
                         Auto-detect & Save
                     </flux:button>
                 </x-slot>
             </flux:callout>
         </div>
 
-        <flux:modal wire:model.live="showModal" class="md:w-[500px] lg:w-[600px]">
+        <flux:modal
+            wire:model.live="showModal"
+            class="md:w-[500px] lg:w-[600px]"
+        >
             <div class="space-y-0">
                 {{-- Header Section --}}
                 <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
                     <div class="flex items-center gap-3">
-                        <flux:icon name="clock" class="w-8 h-8 text-blue-600" />
+                        <flux:icon
+                            name="clock"
+                            class="w-8 h-8 text-blue-600"
+                        />
                         <div>
-                            <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">
+                            <flux:heading
+                                size="xl"
+                                class="text-gray-900 dark:text-gray-100"
+                            >
                                 {{ __('Auto-detect Timezone') }}
                             </flux:heading>
                             <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
@@ -34,12 +55,19 @@
                     {{-- Detected Timezone Display --}}
                     <div>
                         <flux:field>
-                            <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div
+                                class="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white" id="detected-timezone-display">
+                                        <div
+                                            class="text-sm font-medium text-gray-900 dark:text-white"
+                                            id="detected-timezone-display"
+                                        >
                                             <span x-show="!$wire.detectedTimezone">Detecting...</span>
-                                            <span x-show="$wire.detectedTimezone" x-text="$wire.detectedTimezone"></span>
+                                            <span
+                                                x-show="$wire.detectedTimezone"
+                                                x-text="$wire.detectedTimezone"
+                                            ></span>
                                         </div>
                                         @if ($fallbackTimezone && $fallbackTimezone !== 'UTC')
                                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -47,7 +75,11 @@
                                             </div>
                                         @endif
                                     </div>
-                                    <flux:badge color="green" size="sm" x-show="$wire.detectedTimezone">
+                                    <flux:badge
+                                        color="green"
+                                        size="sm"
+                                        x-show="$wire.detectedTimezone"
+                                    >
                                         {{ __('Auto-detected') }}
                                     </flux:badge>
                                 </div>
@@ -59,18 +91,30 @@
                 {{-- Footer Actions --}}
                 <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
                     <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                        <flux:icon name="shield-check" class="w-4 h-4 mr-2 flex-shrink-0" />
+                        <flux:icon
+                            name="shield-check"
+                            class="w-4 h-4 mr-2 flex-shrink-0"
+                        />
                         <span class="leading-tight">
                             {{ __('Times will display in UTC until a timezone is set.') }}
                         </span>
                     </div>
 
                     <div class="flex gap-3">
-                        <flux:button wire:click="redirectToProfile" variant="outline" size="sm">
+                        <flux:button
+                            wire:click="redirectToProfile"
+                            variant="outline"
+                            size="sm"
+                        >
                             {{ __('Manually Set') }}
                         </flux:button>
-                        <flux:button wire:click="saveTimezone" variant="primary" size="sm" icon="check"
-                                    x-bind:disabled="!$wire.detectedTimezone && !$wire.fallbackTimezone">
+                        <flux:button
+                            wire:click="saveTimezone"
+                            variant="primary"
+                            size="sm"
+                            icon="check"
+                            x-bind:disabled="!$wire.detectedTimezone && !$wire.fallbackTimezone"
+                        >
                             {{ __('Save') }}
                         </flux:button>
                     </div>

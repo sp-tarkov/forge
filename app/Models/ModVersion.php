@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Number;
 use Override;
 use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
@@ -375,15 +376,15 @@ class ModVersion extends Model implements Trackable
     }
 
     /**
-     * Get the formatted file size in MB.
+     * Get the formatted file size with dynamic units (B, KB, MB, GB, TB).
      *
      * @return Attribute<string|null, never>
      */
     protected function formattedFileSize(): Attribute
     {
         return Attribute::make(
-            get: fn (): ?string => $this->content_length
-                ? number_format($this->content_length / 1024 / 1024, 1).' MB'
+            get: fn (): ?string => $this->content_length !== null
+                ? Number::fileSize($this->content_length, precision: 2)
                 : null
         );
     }

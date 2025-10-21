@@ -1,14 +1,14 @@
 <x-slot:title>
-    {!! __('Edit Mod Version - The Forge') !!}
+    {!! __('Edit Version for :mod - The Forge', ['mod' => $mod->name]) !!}
 </x-slot:title>
 
 <x-slot:description>
-    {!! __('Edit the details of your mod version.') !!}
+    {!! __('Edit the details of your :mod version.', ['mod' => $mod->name]) !!}
 </x-slot:description>
 
 <x-slot:header>
     <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Edit Mod Version') }}
+        {{ __('Edit Version for :mod', ['mod' => $mod->name]) }}
     </h2>
 </x-slot:header>
 
@@ -18,11 +18,21 @@
             <div class="md:col-span-1 flex justify-between">
                 <div class="px-4 sm:px-0">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Version Information</h3>
-                    <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Update the details for this mod version. Changes will be saved immediately.</p>
+                    <p class="my-2 text-sm/6 text-gray-600 dark:text-gray-400">Update the details for this mod version.
+                        Changes will be saved immediately.</p>
                     <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
-                        Please ensure you follow the <a href="{{ route('static.community-standards') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Community Standards</a>
-                        and the <a href="{{ route('static.content-guidelines') }}" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">Content Guidelines</a>.
-                        Failing to do so will result in your mod being removed from the Forge and possible action being taken against your account.
+                        Please ensure you follow the <a
+                            href="{{ route('static.community-standards') }}"
+                            target="_blank"
+                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                        >Community Standards</a>
+                        and the <a
+                            href="{{ route('static.content-guidelines') }}"
+                            target="_blank"
+                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                        >Content Guidelines</a>.
+                        Failing to do so will result in your mod being removed from the Forge and possible action being
+                        taken against your account.
                     </p>
                 </div>
                 <div class="px-4 sm:px-0"></div>
@@ -36,35 +46,61 @@
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Version Number') }}</flux:label>
                                 <flux:description>{!! __('The version number for this release. Must follow semantic versioning.') !!}</flux:description>
-                                <flux:input type="text" wire:model.blur="version" placeholder="1.0.0" maxlength="50" />
+                                <flux:input
+                                    type="text"
+                                    wire:model.blur="version"
+                                    placeholder="1.0.0"
+                                    maxlength="50"
+                                />
                                 <flux:error name="version" />
                             </flux:field>
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Description') }}</flux:label>
-                                <flux:description>{{ __("Explain what's new or changed in this version. Use markdown for formatting.") }}</flux:description>
-                                <flux:textarea rows="6" wire:model.blur="description" placeholder="This version includes updates to the..." />
+                                <flux:description>
+                                    {{ __("Explain what's new or changed in this version. Use markdown for formatting.") }}
+                                </flux:description>
+                                <flux:textarea
+                                    rows="6"
+                                    wire:model.blur="description"
+                                    placeholder="This version includes updates to the..."
+                                />
                                 <flux:error name="description" />
                             </flux:field>
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Download Link') }}</flux:label>
-                                <flux:description>{{ __('Provide a direct download link to the mod file. The mod archive must follow the structure specified in the file submission guidelines or the launcher will not support automatic installs or updates for your mod.') }}</flux:description>
-                                <flux:input type="url" wire:model.blur="link" placeholder="https://www.example.com/your-mod-archive.7zip" />
+                                <flux:description>
+                                    {{ __('Provide a direct download link to the mod file. The mod archive must follow the structure specified in the file submission guidelines or the launcher will not support automatic installs or updates for your mod.') }}
+                                </flux:description>
+                                <flux:input
+                                    type="url"
+                                    wire:model.blur="link"
+                                    placeholder="https://www.example.com/your-mod-archive.7zip"
+                                />
                                 <flux:error name="link" />
                             </flux:field>
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('SPT Version Constraint') }}</flux:label>
-                                <flux:description>{!! __('Specify which SPT versions this mod version is compatible with using semantic version constraints. For example, you can use the value ~3.11.0 to match all 3.11 versions. Works just like Composer or NPM. Start typing to see matches below.') !!}</flux:description>
-                                <flux:input type="text" wire:model.live.debounce="sptVersionConstraint" placeholder="~3.11.0" />
+                                <flux:description>{!! __(
+                                    'Specify which SPT versions this mod version is compatible with using semantic version constraints. For example, you can use the value ~3.11.0 to match all 3.11 versions. Works just like Composer or NPM. Start typing to see matches below.',
+                                ) !!}</flux:description>
+                                <flux:input
+                                    type="text"
+                                    wire:model.live.debounce="sptVersionConstraint"
+                                    placeholder="~3.11.0"
+                                />
                                 <flux:error name="sptVersionConstraint" />
                                 @if (count($matchingSptVersions) > 0)
                                     <div class="mt-2 space-y-1">
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('Current Matching SPT Versions:') }}</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            {{ __('Current Matching SPT Versions:') }}</p>
                                         <div class="flex flex-wrap gap-2">
                                             @foreach ($matchingSptVersions as $version)
-                                                <span class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
+                                                <span
+                                                    class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
+                                                >
                                                     {{ $version['version'] }}
                                                 </span>
                                             @endforeach
@@ -73,20 +109,28 @@
                                 @endif
                             </flux:field>
 
-
                             @if ($this->modGuidRequired && empty($modGuid))
                                 <div class="col-span-6">
-                                    <flux:callout icon="information-circle" color="amber">
+                                    <flux:callout
+                                        icon="information-circle"
+                                        color="amber"
+                                    >
                                         <flux:callout.text>
                                             <div class="space-y-3">
                                                 <div>
                                                     <strong>{{ __('Mod GUID Required') }}</strong>
                                                     <p class="mt-1 text-sm">
                                                         {{ __('This mod version targets SPT 4.0.0 or above, which requires a mod GUID. Enter a unique identifier for your mod in reverse domain notation. This GUID will be saved to the mod and should match the one in your mod files.') }}
-                                                        {!! __('Please see the <a href=":url" target="_blank" class="underline hover:no-underline">Content Guidelines</a> for more information.', ['url' => route('static.content-guidelines') . '#mod-types-requirements']) !!}
+                                                        {!! __(
+                                                            'Please see the <a href=":url" target="_blank" class="underline hover:no-underline">Content Guidelines</a> for more information.',
+                                                            ['url' => route('static.content-guidelines') . '#mod-types-requirements'],
+                                                        ) !!}
                                                     </p>
                                                 </div>
-                                                <div class="flex gap-3 items-start" x-data="{ count: 0, text: '' }">
+                                                <div
+                                                    class="flex gap-3 items-start"
+                                                    x-data="{ count: 0, text: '' }"
+                                                >
                                                     <div class="flex-1">
                                                         <flux:input
                                                             type="text"
@@ -96,7 +140,10 @@
                                                             @input="count = text.length"
                                                             placeholder="com.username.modname"
                                                         />
-                                                        <div class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-text="`Max Length: ${count}/255`"></div>
+                                                        <div
+                                                            class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                                                            x-text="`Max Length: ${count}/255`"
+                                                        ></div>
                                                     </div>
                                                     <flux:button
                                                         variant="primary"
@@ -106,8 +153,14 @@
                                                         type="button"
                                                         class="mt-1"
                                                     >
-                                                        <span wire:loading.remove wire:target="saveGuid">{{ __('Save GUID') }}</span>
-                                                        <span wire:loading wire:target="saveGuid">{{ __('Saving...') }}</span>
+                                                        <span
+                                                            wire:loading.remove
+                                                            wire:target="saveGuid"
+                                                        >{{ __('Save GUID') }}</span>
+                                                        <span
+                                                            wire:loading
+                                                            wire:target="saveGuid"
+                                                        >{{ __('Saving...') }}</span>
                                                     </flux:button>
                                                 </div>
                                                 <flux:error name="newModGuid" />
@@ -119,21 +172,38 @@
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('VirusTotal Link') }}</flux:label>
-                                <flux:description>{!! __('Provide a link to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod.') !!}</flux:description>
-                                <flux:input type="url" wire:model.blur="virusTotalLink" placeholder="https://www.virustotal.com..." />
+                                <flux:description>{!! __(
+                                    'Provide a link to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod.',
+                                ) !!}</flux:description>
+                                <flux:input
+                                    type="url"
+                                    wire:model.blur="virusTotalLink"
+                                    placeholder="https://www.virustotal.com..."
+                                />
                                 <flux:error name="virusTotalLink" />
                             </flux:field>
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Mod Dependencies') }}</flux:label>
-                                <flux:description>{{ __('Specify other mods that this version depends on. Use semantic version constraints to define compatible versions.') }}</flux:description>
+                                <flux:description>
+                                    {{ __('Specify other mods that this version depends on. Use semantic version constraints to define compatible versions.') }}
+                                </flux:description>
 
                                 <div class="space-y-4">
-                                    @foreach($dependencies as $index => $dependency)
-                                        <div wire:key="dependency-{{ $dependency['id'] ?? $index }}" class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                    @foreach ($dependencies as $index => $dependency)
+                                        <div
+                                            wire:key="dependency-{{ $dependency['id'] ?? $index }}"
+                                            class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                        >
                                             <div class="flex justify-between items-start mb-3">
-                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
-                                                <flux:button size="xs" variant="outline" wire:click="removeDependency({{ $index }})" type="button">
+                                                <span
+                                                    class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
+                                                <flux:button
+                                                    size="xs"
+                                                    variant="outline"
+                                                    wire:click="removeDependency({{ $index }})"
+                                                    type="button"
+                                                >
                                                     {{ __('Remove') }}
                                                 </flux:button>
                                             </div>
@@ -163,12 +233,15 @@
                                                 </flux:field>
                                             </div>
 
-                                            @if(isset($matchingDependencyVersions[$index]) && count($matchingDependencyVersions[$index]) > 0)
+                                            @if (isset($matchingDependencyVersions[$index]) && count($matchingDependencyVersions[$index]) > 0)
                                                 <div class="mt-3">
-                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ __('Matching Versions:') }}</p>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                                        {{ __('Matching Versions:') }}</p>
                                                     <div class="flex flex-wrap gap-1">
-                                                        @foreach($matchingDependencyVersions[$index] as $version)
-                                                            <span class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-800 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                                                        @foreach ($matchingDependencyVersions[$index] as $version)
+                                                            <span
+                                                                class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-800 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400"
+                                                            >
                                                                 v{{ $version['version'] }}
                                                             </span>
                                                         @endforeach
@@ -176,33 +249,44 @@
                                                 </div>
                                             @elseif(!empty($dependencies[$index]['modId']) && !empty($dependencies[$index]['constraint']))
                                                 <div class="mt-3">
-                                                    <p class="text-sm text-yellow-600 dark:text-yellow-400">{{ __('No matching versions found for this constraint.') }}</p>
+                                                    <p class="text-sm text-yellow-600 dark:text-yellow-400">
+                                                        {{ __('No matching versions found for this constraint.') }}</p>
                                                 </div>
                                             @endif
                                         </div>
                                     @endforeach
 
-                                    <flux:button size="sm" variant="outline" wire:click="addDependency" type="button">
+                                    <flux:button
+                                        size="sm"
+                                        variant="outline"
+                                        wire:click="addDependency"
+                                        type="button"
+                                    >
                                         {{ __('+ Add Dependency') }}
                                     </flux:button>
                                 </div>
                             </flux:field>
 
-                            <flux:field class="col-span-6" x-data="{
-                                now() {
-                                    // Format: YYYY-MM-DDTHH:MM
-                                    const pad = n => n.toString().padStart(2, '0');
-                                    const d = new Date();
-                                    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-                                },
-                                get pinToSpt() {
-                                    return $wire.pinToSptVersions;
-                                },
-                                hasUnpublished: {{ $this->hasUnpublishedSptVersions() ? 'true' : 'false' }}
-                            }">
+                            <flux:field
+                                class="col-span-6"
+                                x-data="{
+                                    now() {
+                                            // Format: YYYY-MM-DDTHH:MM
+                                            const pad = n => n.toString().padStart(2, '0');
+                                            const d = new Date();
+                                            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                                        },
+                                        get pinToSpt() {
+                                            return $wire.pinToSptVersions;
+                                        },
+                                        hasUnpublished: {{ $this->hasUnpublishedSptVersions() ? 'true' : 'false' }}
+                                }"
+                            >
                                 <flux:label>{{ __('Publish Date') }}</flux:label>
                                 <flux:description>
-                                    {!! __('Choose when to publish this mod version. You can either set a specific date or pin it to automatically publish when all of the unpublished SPT versions it supports are released.') !!}
+                                    {!! __(
+                                        'Choose when to publish this mod version. You can either set a specific date or pin it to automatically publish when all of the unpublished SPT versions it supports are released.',
+                                    ) !!}
                                 </flux:description>
 
                                 {{-- Pin to SPT version option (first) --}}
@@ -222,14 +306,18 @@
 
                                                     {{-- Show unpublished SPT versions inline --}}
                                                     @php
-                                                        $unpublishedVersions = collect($matchingSptVersions)->filter(function($version) {
-                                                            return !$version['is_published'];
-                                                        });
+                                                        $unpublishedVersions = collect($matchingSptVersions)->filter(
+                                                            function ($version) {
+                                                                return !$version['is_published'];
+                                                            },
+                                                        );
                                                     @endphp
 
                                                     @if ($unpublishedVersions->count() > 0)
                                                         @foreach ($unpublishedVersions as $version)
-                                                            <span class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium text-nowrap">
+                                                            <span
+                                                                class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium text-nowrap"
+                                                            >
                                                                 {{ $version['version'] }}
                                                             </span>
                                                         @endforeach
@@ -237,25 +325,44 @@
                                                 </div>
                                                 <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                                     {{ __('When enabled, this mod version will automatically publish when the unpublished SPT versions it supports are released.') }}
-                                                    <span class="text-orange-600 dark:text-amber-400 font-medium">{{ __('Note: SPT versions can be released at any time, so only use this option if your mod version is fully ready for release.') }}</span>
+                                                    <span
+                                                        class="text-orange-600 dark:text-amber-400 font-medium">{{ __('Note: SPT versions can be released at any time, so only use this option if your mod version is fully ready for release.') }}</span>
                                                 </div>
                                             </div>
                                         </label>
                                     </div>
 
                                     {{-- Separator (also hidden when pin is checked) --}}
-                                    <div x-show="!pinToSpt" x-transition>
-                                        <flux:separator text="or" class="my-4" />
+                                    <div
+                                        x-show="!pinToSpt"
+                                        x-transition
+                                    >
+                                        <flux:separator
+                                            text="or"
+                                            class="my-4"
+                                        />
                                     </div>
                                 @endif
 
                                 {{-- Manual publish date option (hidden when pin is checked) --}}
-                                <div x-show="!pinToSpt" x-transition>
+                                <div
+                                    x-show="!pinToSpt"
+                                    x-transition
+                                >
                                     <div class="space-y-3">
                                         @if (auth()->user()->timezone === null)
-                                            <flux:callout icon="exclamation-triangle" color="orange" inline="inline">
+                                            <flux:callout
+                                                icon="exclamation-triangle"
+                                                color="orange"
+                                                inline="inline"
+                                            >
                                                 <flux:callout.text>
-                                                    You have not selected a timezone for your account. You may continue, but the published date will be interpreted as a UTC date. Alternatively, you can <a href="/user/profile" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">edit your profile</a> to set a specific timezone.
+                                                    You have not selected a timezone for your account. You may continue,
+                                                    but the published date will be interpreted as a UTC date.
+                                                    Alternatively, you can <a
+                                                        href="/user/profile"
+                                                        class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                                                    >edit your profile</a> to set a specific timezone.
                                                 </flux:callout.text>
                                             </flux:callout>
                                         @else
@@ -270,7 +377,11 @@
                                                 placeholder="Leave blank to keep unpublished"
                                             />
                                             @if (auth()->user()->timezone !== null)
-                                                <flux:button size="sm" variant="outline" @click="$wire.set('publishedAt', now())">Now</flux:button>
+                                                <flux:button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    @click="$wire.set('publishedAt', now())"
+                                                >Now</flux:button>
                                             @endif
                                         </div>
                                     </div>
@@ -283,8 +394,14 @@
 
                         </div>
                     </div>
-                    <div class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
-                        <flux:button variant="primary" size="sm" class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700" type="submit">{{ __('Save Changes') }}</flux:button>
+                    <div
+                        class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
+                        <flux:button
+                            variant="primary"
+                            size="sm"
+                            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                            type="submit"
+                        >{{ __('Save Changes') }}</flux:button>
                     </div>
                 </form>
             </div>

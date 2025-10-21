@@ -29,7 +29,10 @@
                 </p>
 
                 <div class="flex justify-center">
-                    <flux:button variant="primary" href="{{ route('mods') }}">
+                    <flux:button
+                        variant="primary"
+                        href="{{ route('mods') }}"
+                    >
                         {{ __('Browse Mods') }}
                     </flux:button>
                 </div>

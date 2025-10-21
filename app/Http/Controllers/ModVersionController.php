@@ -16,12 +16,13 @@ class ModVersionController extends Controller
 {
     public function show(Request $request, int $modId, string $slug, string $version): RedirectResponse
     {
-        $modVersion = ModVersion::with('mod:id,slug')
-            ->whereModId($modId)
-            ->whereVersion($version)
+        $modVersion = ModVersion::query()
+            ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
+            ->where('mod_versions.mod_id', $modId)
+            ->where('mod_versions.version', $version)
+            ->where('mods.slug', $slug)
+            ->select('mod_versions.*')
             ->firstOrFail();
-
-        abort_if($modVersion->mod->slug !== $slug, 404);
 
         Gate::authorize('download', $modVersion);
 

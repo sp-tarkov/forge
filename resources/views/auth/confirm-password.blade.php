@@ -18,12 +18,26 @@
 
         <x-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('password.confirm') }}">
+        <form
+            method="POST"
+            action="{{ route('password.confirm') }}"
+        >
             @csrf
 
             <div>
-                <x-label for="password" value="{{ __('Password') }}" />
-                <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" autofocus />
+                <x-label
+                    for="password"
+                    value="{{ __('Password') }}"
+                />
+                <x-input
+                    id="password"
+                    class="block mt-1 w-full"
+                    type="password"
+                    name="password"
+                    required
+                    autocomplete="current-password"
+                    autofocus
+                />
             </div>
 
             <x-honeypot />
@@ -35,4 +49,4 @@
             </div>
         </form>
     </x-authentication-card>
-</x-guest-layout>
+    </x-guest-layout>

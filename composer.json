@@ -50,7 +50,6 @@
         "laravel/pail": "^1.2.3",
         "laravel/pint": "^1.25.1",
         "laravel/sail": "^1.46.0",
-        "laravel/telescope": "^5.13",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.8.2",
         "pestphp/pest": "^4.1.1",
@@ -89,8 +88,12 @@
         "spell": [
             "typos . --config ./typos.toml && echo 'DONE'"
         ],
+        "prettier": [
+            "npm run format"
+        ],
         "sendit": [
             "composer rector-fix",
+            "composer prettier",
             "composer pint",
             "composer phpstan",
             "composer spell",
@@ -120,9 +123,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-                "laravel/telescope"
-            ]
+            "dont-discover": []
         }
     },
     "config": {

@@ -17,7 +17,11 @@
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         @session('status')
-            <flux:callout icon="check-circle" color="green" class="mb-6">
+            <flux:callout
+                icon="check-circle"
+                color="green"
+                class="mb-6"
+            >
                 <flux:callout.text>{{ $value }}</flux:callout.text>
             </flux:callout>
         @endsession
@@ -27,14 +31,14 @@
                 <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
                     <x-welcome />
                 </div>
-                
+
                 @can('viewAny', App\Models\Report::class)
                     <div class="mt-6">
                         @livewire('report-centre')
                     </div>
                 @endcan
             </div>
-            
+
             <div class="lg:col-span-1">
                 @livewire('notification-center')
             </div>
