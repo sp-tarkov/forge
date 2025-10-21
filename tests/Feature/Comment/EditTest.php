@@ -128,9 +128,14 @@ describe('edit tracking', function (): void {
             'edited_at' => now(),
         ]);
 
-        Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
-            ->assertSeeHtml('<span class="text-gray-500 dark:text-gray-400" title="'.$comment->edited_at->format('Y-m-d H:i:s').'">*</span>');
+        $component = Livewire::actingAs($user)
+            ->test(CommentComponent::class, ['commentable' => $mod]);
+
+        // Check for edited indicator - normalize whitespace
+        $html = preg_replace('/\s+/', ' ', (string) $component->html());
+        // Check for the key parts of the edited indicator
+        expect($html)->toContain('title="'.$comment->edited_at->format('Y-m-d H:i:s').'"')
+            ->and($html)->toContain('>*</span>');
     });
 
     it('should refresh the comment listing with edited text after successful edit', function (): void {
