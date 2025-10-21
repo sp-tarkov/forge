@@ -76,7 +76,7 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/chat/unsubscribe/{user}/{conversation}', [ChatSubscriptionController::class, 'unsubscribe'])
         ->name('chat.unsubscribe');
 
-    // Jetstream/Profile Routes
+    // Authenticated routes
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {
 
         // Authenticated and verified routes

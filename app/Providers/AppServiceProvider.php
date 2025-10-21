@@ -27,6 +27,7 @@ use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
+use Mchev\Banhammer\Middleware\AuthBanned;
 use Override;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -68,6 +69,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Livewire component overrides.
         $this->registerLivewireOverrides();
+
+        // Add auth.banned to Livewire persistent middleware to ensure banned users are blocked on all requests.
+        Livewire::addPersistentMiddleware([
+            AuthBanned::class,
+        ]);
 
         // Register the broadcasting.auth early to load our extended controller.
         $this->app->booted(function (): void {

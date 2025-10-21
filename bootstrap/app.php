@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
 use Spatie\Honeypot\ProtectAgainstSpam;
 use Spatie\LaravelFlare\Facades\Flare;
@@ -22,6 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(IPBanned::class);
+
+        // Register middleware aliases
+        $middleware->alias([
+            'auth.banned' => AuthBanned::class,
+        ]);
 
         // Trust proxies to get real client IP addresses
         $middleware->trustProxies(at: '*');

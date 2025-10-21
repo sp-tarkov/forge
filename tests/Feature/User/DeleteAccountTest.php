@@ -28,4 +28,28 @@ describe('account deletion', function (): void {
 
         expect($user->fresh())->not->toBeNull();
     })->skip(fn (): bool => ! Features::hasAccountDeletionFeatures(), 'Account deletion is not enabled.');
+
+    it('prevents banned users from accessing their profile', function (): void {
+        $user = User::factory()->create();
+        $user->ban();
+
+        $response = $this->actingAs($user)->get('/user/profile');
+
+        $response->assertForbidden();
+
+        expect($user->fresh())->not->toBeNull();
+    })->skip(fn (): bool => ! Features::hasAccountDeletionFeatures(), 'Account deletion is not enabled.');
+
+    it('prevents banned users from accessing any page on the site', function (): void {
+        $user = User::factory()->create();
+        $user->ban();
+
+        // Banned users CANNOT access ANY pages (public or authenticated)
+        $this->actingAs($user)->get('/')->assertForbidden();
+        $this->actingAs($user)->get('/mods')->assertForbidden();
+        $this->actingAs($user)->get('/privacy-policy')->assertForbidden();
+        $this->actingAs($user)->get('/terms-of-service')->assertForbidden();
+        $this->actingAs($user)->get('/dashboard')->assertForbidden();
+        $this->actingAs($user)->get('/user/profile')->assertForbidden();
+    });
 });
