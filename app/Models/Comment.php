@@ -436,7 +436,7 @@ class Comment extends Model implements Reportable, Trackable
     protected function body(): Attribute
     {
         return Attribute::make(
-            set: fn (string $value): string => mb_trim($value),
+            set: mb_trim(...),
         );
     }
 

@@ -20,7 +20,7 @@ class SptVersionObserver
         // Clear all SPT version caches
         $this->clearSptVersionCaches();
 
-        defer(fn () => $this->resolveSptVersion());
+        defer($this->resolveSptVersion(...));
     }
 
     /**
@@ -31,7 +31,7 @@ class SptVersionObserver
         // Clear all SPT version caches
         $this->clearSptVersionCaches();
 
-        defer(fn () => $this->resolveSptVersion());
+        defer($this->resolveSptVersion(...));
     }
 
     /**

@@ -98,7 +98,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
 
         /** @var Collection<int, GitHubSptVersion> $gitHubSptReleases */
         $gitHubSptReleases = $releases
-            ->map(fn (array $record): GitHubSptVersion => GitHubSptVersion::fromArray($record))
+            ->map(GitHubSptVersion::fromArray(...))
             ->reject(fn (GitHubSptVersion $release): bool => $release->draft || $release->prerelease)
             ->map(function (GitHubSptVersion $release): GitHubSptVersion {
                 try {

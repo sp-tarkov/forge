@@ -58,7 +58,7 @@ class UserActivity extends Component
         // If not authenticated or not viewing own profile and not a moderator/admin, filter private events
         if (! auth()->check() ||
             (auth()->id() !== $this->user->id && ! auth()->user()->isModOrAdmin())) {
-            return $events->reject(fn (TrackingEvent $event): bool => $this->shouldEventBePrivate($event));
+            return $events->reject($this->shouldEventBePrivate(...));
         }
 
         return $events;

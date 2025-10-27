@@ -33,7 +33,7 @@ class SptVersionResource extends JsonResource
     {
         $this->requestedFields = $request->string('fields', '')
             ->explode(',')
-            ->map(fn (string $field): string => mb_trim($field))
+            ->map(mb_trim(...))
             ->filter()
             ->all();
 
