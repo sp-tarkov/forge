@@ -349,7 +349,7 @@ abstract class AbstractQueryBuilder
 
         // Filter the main query by these IDs and preserve the order from Scout
         $this->builder->whereIn($model->getQualifiedKeyName(), $orderedIds)
-            ->orderByRaw('FIELD('.$model->getQualifiedKeyName().', '.implode(',', array_map('intval', $orderedIds)).')');
+            ->orderByRaw('FIELD('.$model->getQualifiedKeyName().', '.implode(',', array_map(intval(...), $orderedIds)).')');
     }
 
     /**
