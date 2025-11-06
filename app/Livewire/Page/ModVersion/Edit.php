@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\ModVersion;
 
+use App\Enums\FikaCompatibilityStatus;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -96,6 +97,11 @@ class Edit extends Component
     public bool $pinToSptVersions = false;
 
     /**
+     * The Fika compatibility status for this mod version.
+     */
+    public string $fikaCompatibilityStatus = 'unknown';
+
+    /**
      * The mod dependencies to be created.
      *
      * @var array<int, array{modId: string, constraint: string}>
@@ -147,6 +153,7 @@ class Edit extends Component
         $this->link = $modVersion->link;
         $this->sptVersionConstraint = $modVersion->spt_version_constraint;
         $this->virusTotalLink = $modVersion->virus_total_link;
+        $this->fikaCompatibilityStatus = $modVersion->fika_compatibility_status->value;
         $this->publishedAt = $modVersion->published_at ? Date::parse($modVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
 
         $this->loadExistingDependencies();
@@ -377,6 +384,7 @@ class Edit extends Component
             $this->modVersion->content_length = $this->downloadLinkRule?->contentLength;
             $this->modVersion->spt_version_constraint = $validated['sptVersionConstraint'];
             $this->modVersion->virus_total_link = $validated['virusTotalLink'];
+            $this->modVersion->fika_compatibility_status = FikaCompatibilityStatus::from($this->fikaCompatibilityStatus);
             $this->modVersion->published_at = $publishedAtCarbon;
 
             $this->modVersion->save();

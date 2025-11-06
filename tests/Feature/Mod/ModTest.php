@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\FikaCompatibilityStatus;
 use App\Livewire\Page\Mod\Edit;
 use App\Models\License;
 use App\Models\Mod;
@@ -400,5 +401,164 @@ describe('mod GUID validation', function (): void {
             ->call('save')
             ->assertHasNoErrors()
             ->assertRedirect();
+    });
+});
+
+describe('mod fika compatibility', function (): void {
+    it('returns true when mod has published fika compatible version', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Compatible,
+            'published_at' => now()->subDay(),
+        ]);
+
+        expect($mod->hasFikaCompatibleVersion())->toBeTrue();
+    });
+
+    it('returns false when mod has no fika compatible versions', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+            'published_at' => now()->subDay(),
+        ]);
+
+        expect($mod->hasFikaCompatibleVersion())->toBeFalse();
+    });
+
+    it('returns false when mod has unsure fika compatibility status', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Unknown,
+            'published_at' => now()->subDay(),
+        ]);
+
+        expect($mod->hasFikaCompatibleVersion())->toBeFalse();
+    });
+
+    it('returns false when mod has unpublished fika compatible version', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Compatible,
+            'published_at' => null,
+        ]);
+
+        expect($mod->hasFikaCompatibleVersion())->toBeFalse();
+    });
+
+    it('returns false when mod has future published fika compatible version', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Compatible,
+            'published_at' => now()->addDay(),
+        ]);
+
+        expect($mod->hasFikaCompatibleVersion())->toBeFalse();
+    });
+
+    it('returns true when mod has at least one published fika compatible version among multiple versions', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+            'published_at' => now()->subDay(),
+        ]);
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Compatible,
+            'published_at' => now()->subDay(),
+        ]);
+
+        expect($mod->hasFikaCompatibleVersion())->toBeTrue();
+    });
+});
+
+describe('mod show page fika compatibility status in details section', function (): void {
+    beforeEach(function (): void {
+        SptVersion::factory()->create(['version' => '3.8.0']);
+    });
+
+    it('shows fika compatible when mod has any compatible version', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Compatible,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $response = $this->get(route('mod.show', [$mod->id, $mod->slug]));
+
+        $response->assertSee('Fika Compatible Version Available', false);
+    });
+
+    it('shows fika compatibility unknown when all versions are unknown', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Unknown,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Unknown,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $response = $this->get(route('mod.show', [$mod->id, $mod->slug]));
+
+        $response->assertSee('Fika Compatibility Unknown', false);
+    });
+
+    it('shows fika incompatible when at least one version is incompatible and none are compatible', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Unknown,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $response = $this->get(route('mod.show', [$mod->id, $mod->slug]));
+
+        $response->assertSee('Fika Incompatible', false);
+    });
+
+    it('shows fika incompatible when all versions are incompatible', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+            'published_at' => now()->subDay(),
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $response = $this->get(route('mod.show', [$mod->id, $mod->slug]));
+
+        $response->assertSee('Fika Incompatible', false);
+    });
+
+    it('shows fika compatibility unknown when mod has no published versions', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->for($user, 'owner')->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'fika_compatibility_status' => FikaCompatibilityStatus::Compatible,
+            'published_at' => null,
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('mod.show', [$mod->id, $mod->slug]));
+
+        $response->assertSee('Fika Compatibility Unknown', false);
     });
 });

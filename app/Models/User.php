@@ -436,7 +436,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Overwritten to instead use the queued version of the ResetPassword notification.
      */
-    public function sendPasswordResetNotification(#[SensitiveParameter] $token): void
+    public function sendPasswordResetNotification(#[SensitiveParameter] $token): void // @pest-ignore-type
     {
         $this->notify(new ResetPassword($token));
     }

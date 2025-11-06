@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
+use App\Enums\FikaCompatibilityStatus;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
@@ -504,6 +505,51 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'url' => $url,
             'label' => $label,
         ]);
+    }
+
+    /**
+     * Check if the mod has any published versions that are Fika compatible.
+     */
+    public function hasFikaCompatibleVersion(): bool
+    {
+        return $this->versions()
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->where('fika_compatibility_status', FikaCompatibilityStatus::Compatible)
+            ->exists();
+    }
+
+    /**
+     * Get the overall Fika compatibility status for this mod based on all published versions.
+     *
+     * Returns:
+     * - Compatible if ANY published version is compatible
+     * - Unknown if ALL published versions are unknown
+     * - Incompatible otherwise (at least one is incompatible and none are compatible)
+     */
+    public function getOverallFikaCompatibilityStatus(): FikaCompatibilityStatus
+    {
+        $publishedVersions = $this->versions()
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->get();
+
+        if ($publishedVersions->isEmpty()) {
+            return FikaCompatibilityStatus::Unknown;
+        }
+
+        // If any version is compatible, return Compatible
+        if ($publishedVersions->contains(fn (ModVersion $version): bool => $version->fika_compatibility_status === FikaCompatibilityStatus::Compatible)) {
+            return FikaCompatibilityStatus::Compatible;
+        }
+
+        // If all versions are unknown, return Unknown
+        if ($publishedVersions->every(fn (ModVersion $version): bool => $version->fika_compatibility_status === FikaCompatibilityStatus::Unknown)) {
+            return FikaCompatibilityStatus::Unknown;
+        }
+
+        // Otherwise, at least one is incompatible and none are compatible
+        return FikaCompatibilityStatus::Incompatible;
     }
 
     /**

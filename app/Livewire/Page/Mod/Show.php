@@ -222,6 +222,7 @@ class Show extends Component
             'addonCount' => $this->getAddonCount(),
             'addons' => $this->addons(),
             'modVersionsForFilter' => $this->getModVersionsForFilter(),
+            'fikaStatus' => $this->mod->getOverallFikaCompatibilityStatus(),
         ]);
     }
 
@@ -289,20 +290,16 @@ class Show extends Component
                 'authors',
                 'latestVersion',
                 'mod.latestVersion',
-                'latestVersion.compatibleModVersions' => function (Relation $query): mixed {
-                    return $query->where('mod_id', $this->mod->id)
-                        ->orderBy('version_major', 'desc')
-                        ->orderBy('version_minor', 'desc')
-                        ->orderBy('version_patch', 'desc');
-                },
+                'latestVersion.compatibleModVersions' => fn (Relation $query): mixed => $query->where('mod_id', $this->mod->id)
+                    ->orderBy('version_major', 'desc')
+                    ->orderBy('version_minor', 'desc')
+                    ->orderBy('version_patch', 'desc'),
                 // Load ALL compatible mod versions from ALL addon versions
-                'versions.compatibleModVersions' => function (Relation $query): mixed {
-                    return $query->where('mod_id', $this->mod->id)
-                        ->distinct()
-                        ->orderBy('version_major', 'desc')
-                        ->orderBy('version_minor', 'desc')
-                        ->orderBy('version_patch', 'desc');
-                },
+                'versions.compatibleModVersions' => fn (Relation $query): mixed => $query->where('mod_id', $this->mod->id)
+                    ->distinct()
+                    ->orderBy('version_major', 'desc')
+                    ->orderBy('version_minor', 'desc')
+                    ->orderBy('version_patch', 'desc'),
             ])
             ->when($this->selectedModVersionId, function (Builder $query): void {
                 // Filter addons that have ANY version compatible with the selected mod version

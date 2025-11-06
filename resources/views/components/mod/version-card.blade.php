@@ -129,6 +129,15 @@
                 >
                     {{ __('Virus Total Results') }}
                 </a>
+                <span class="text-left sm:text-right inline-flex items-center gap-1">
+                    <flux:icon
+                        icon="{{ $version->fika_compatibility_status->icon() }}"
+                        class="size-4 {{ $version->fika_compatibility_status->colorClass() }}"
+                    />
+                    <span class="text-gray-900 dark:text-gray-100">
+                        {{ $version->fika_compatibility_status->label() }}
+                    </span>
+                </span>
             </div>
         </div>
 

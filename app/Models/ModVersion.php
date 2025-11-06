@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Trackable;
+use App\Enums\FikaCompatibilityStatus;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
@@ -49,6 +50,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $virus_total_link
  * @property int $downloads
  * @property bool $disabled
+ * @property FikaCompatibilityStatus $fika_compatibility_status
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -365,6 +367,7 @@ class ModVersion extends Model implements Trackable
             'version_patch' => 'integer',
             'downloads' => 'integer',
             'disabled' => 'boolean',
+            'fika_compatibility_status' => FikaCompatibilityStatus::class,
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

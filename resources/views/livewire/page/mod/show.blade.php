@@ -157,24 +157,22 @@
                         @endif
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }}
                             {{ __(Str::plural('Download', $mod->downloads)) }}</p>
-                        @if ($mod->latestVersion?->latestSptVersion)
-                            <p class="mt-2">
+                        <p class="mt-2 flex flex-wrap gap-2 items-center">
+                            @if ($mod->latestVersion?->latestSptVersion)
                                 <span
                                     class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
                                 >
                                     {{ $mod->latestVersion->latestSptVersion->version_formatted }}
                                     {{ __('Compatible') }}
                                 </span>
-                            </p>
-                        @else
-                            <p class="mt-2">
+                            @else
                                 <span
                                     class="badge-version bg-gray-200 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
                                 >
                                     {{ __('Unknown SPT Version') }}
                                 </span>
-                            </p>
-                        @endif
+                            @endif
+                        </p>
                     </div>
                 </div>
 
@@ -594,6 +592,16 @@
                             </p>
                         </li>
                     @endif
+                    <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
+                        <flux:icon
+                            icon="{{ $fikaStatus->icon() }}"
+                            variant="micro"
+                            class="grow-0 size-4 {{ $fikaStatus->colorClass() }}"
+                        />
+                        <h3 class="grow text-gray-900 dark:text-gray-100">
+                            {{ $fikaStatus->modLabel() }}
+                        </h3>
+                    </li>
                     @if (
                         $mod->latestVersion?->dependencies->isNotEmpty() &&
                             $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
@@ -616,7 +624,7 @@
                         <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
                             <flux:icon.check-circle
                                 variant="micro"
-                                class="grow-0 size-4"
+                                class="grow-0 size-4 text-green-600 dark:text-green-500"
                             />
                             <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes Advertising') }}
@@ -627,7 +635,7 @@
                         <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
                             <flux:icon.check-circle
                                 variant="micro"
-                                class="grow-0 size-4"
+                                class="grow-0 size-4 text-green-600 dark:text-green-500"
                             />
                             <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes AI Generated Content') }}

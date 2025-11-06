@@ -852,6 +852,36 @@ describe('Mod Version Create Form', function (): void {
             $component->assertHasNoErrors('modGuid');
         });
 
+        it('allows creating a mod version with fika compatibility status', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+            SptVersion::factory()->create(['version' => '3.11.0']);
+
+            Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test version')
+                ->set('link', 'https://example.com/download.zip')
+                ->set('sptVersionConstraint', '~3.11.0')
+                ->set('virusTotalLink', 'https://www.virustotal.com/test')
+                ->set('fikaCompatibilityStatus', 'compatible')
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $modVersion = ModVersion::query()
+                ->where('mod_id', $mod->id)
+                ->where('version', '1.0.0')
+                ->first();
+
+            expect($modVersion)->not->toBeNull()
+                ->and($modVersion->fika_compatibility_status->value)->toBe('compatible');
+        });
+
         it('allows creating mod version for SPT 3.x when parent mod has no GUID', function (): void {
             $this->actingAs($this->user);
 

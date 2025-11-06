@@ -97,7 +97,7 @@ jobs:
           php artisan optimize
 
       - name: Run Type Coverage
-        run: ./vendor/bin/pest --type-coverage --min=99
+        run: ./vendor/bin/pest --type-coverage --min=100
 
       - name: Display Laravel Log
         if: failure()

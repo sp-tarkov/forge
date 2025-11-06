@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\ModVersion;
 
+use App\Enums\FikaCompatibilityStatus;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -91,6 +92,11 @@ class Create extends Component
      * Whether to pin the mod version to unpublished SPT versions.
      */
     public bool $pinToSptVersions = false;
+
+    /**
+     * The Fika compatibility status for this mod version.
+     */
+    public string $fikaCompatibilityStatus = 'unknown';
 
     /**
      * The mod dependencies to be created.
@@ -363,6 +369,7 @@ class Create extends Component
                 'content_length' => $this->downloadLinkRule?->contentLength,
                 'spt_version_constraint' => $validated['sptVersionConstraint'],
                 'virus_total_link' => $validated['virusTotalLink'],
+                'fika_compatibility_status' => FikaCompatibilityStatus::from($this->fikaCompatibilityStatus),
                 'published_at' => $this->publishedAt,
             ]);
 

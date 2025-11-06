@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\FikaCompatibilityStatus;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -47,6 +48,7 @@ class ModVersionFactory extends Factory
             'virus_total_link' => fake()->url(),
             'downloads' => fake()->randomNumber(),
             'disabled' => false,
+            'fika_compatibility_status' => $this->faker->randomElement(FikaCompatibilityStatus::cases()),
             'discord_notification_sent' => true,
             'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
             'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),

@@ -99,6 +99,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             'spt_version_constraint',
             'virus_total_link',
             'downloads',
+            'fika_compatibility_status',
             'published_at',
             'created_at',
             'updated_at',

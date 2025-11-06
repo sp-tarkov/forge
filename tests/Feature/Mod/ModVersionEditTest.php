@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\FikaCompatibilityStatus;
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Models\License;
 use App\Models\Mod;
@@ -317,6 +318,28 @@ describe('Mod Version Edit Form', function (): void {
             // Verify version was updated
             $modVersion->refresh();
             expect($modVersion->version)->toBe('2.0.0');
+        });
+
+        it('allows updating fika compatibility status when editing a mod version', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+                'virus_total_link' => 'https://www.virustotal.com/test',
+            ]);
+
+            Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+                ->assertSet('fikaCompatibilityStatus', 'incompatible')
+                ->set('fikaCompatibilityStatus', 'compatible')
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $modVersion->refresh();
+            expect($modVersion->fika_compatibility_status->value)->toBe('compatible');
         });
     });
 });

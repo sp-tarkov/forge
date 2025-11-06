@@ -80,7 +80,7 @@
             "./vendor/bin/rector process --config=rector.php"
         ],
         "coverage": [
-            "./vendor/bin/pest --type-coverage --min=99"
+            "./vendor/bin/pest --type-coverage --min=100"
         ],
         "pint": [
             "./vendor/bin/pint --config pint.json"
