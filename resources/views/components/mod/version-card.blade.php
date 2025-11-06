@@ -41,24 +41,50 @@
                     </flux:tooltip>
                 </a>
                 <div class="mt-3 flex flex-row justify-start items-center gap-2.5">
-                    <flux:tooltip
-                        content="Latest Compatible SPT Version"
-                        position="right"
-                    >
-                        @if ($version->latestSptVersion)
-                            <span
-                                class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
-                            >
-                                {{ $version->latestSptVersion->version_formatted }}
-                            </span>
-                        @else
-                            <span
-                                class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
-                            >
-                                {{ __('Unknown SPT Version') }}
-                            </span>
-                        @endif
-                    </flux:tooltip>
+                    @if ($version->sptVersions->isNotEmpty())
+                        <div class="flex flex-wrap gap-1 items-center">
+                            @if ($version->latestSptVersion)
+                                <span
+                                    class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium text-nowrap"
+                                >
+                                    {{ $version->latestSptVersion->version_formatted }}
+                                </span>
+                            @endif
+                            @if ($version->sptVersions->count() > 1)
+                                <flux:tooltip
+                                    position="top"
+                                    align="start"
+                                    class="!inline-flex !items-center"
+                                >
+                                    <span
+                                        class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 cursor-help"
+                                    >
+                                        +{{ $version->sptVersions->count() - 1 }} more
+                                    </span>
+                                    <flux:tooltip.content class="max-w-xs text-left">
+                                        <div class="text-xs">
+                                            <div class="font-semibold mb-1 text-left">All Compatible SPT Versions:</div>
+                                            <div class="flex flex-wrap gap-1 justify-start">
+                                                @foreach ($version->sptVersions as $sptVersion)
+                                                    <span
+                                                        class="badge-version {{ $sptVersion->color_class }} inline-flex items-center rounded px-1 py-0.5 text-xs"
+                                                    >
+                                                        {{ $sptVersion->version }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </flux:tooltip.content>
+                                </flux:tooltip>
+                            @endif
+                        </div>
+                    @else
+                        <span
+                            class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium text-nowrap"
+                        >
+                            {{ __('Unknown SPT Version') }}
+                        </span>
+                    @endif
                     @if ($version->formatted_file_size)
                         <p class="text-sm text-gray-600 dark:text-gray-400">
                             {{ $version->formatted_file_size }}

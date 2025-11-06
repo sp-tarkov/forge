@@ -253,6 +253,7 @@ class Show extends Component
         return $this->mod->versions()
             ->with([
                 'latestSptVersion',
+                'sptVersions',
                 'latestResolvedDependencies.mod:id,name,slug',
             ])
             ->withCount([
