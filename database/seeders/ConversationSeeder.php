@@ -226,7 +226,7 @@ class ConversationSeeder extends Seeder
             $recipient = ($sender->id === $user1->id) ? $user2 : $user1;
 
             // Read time should be after message time
-            $readTime = $this->faker->dateTimeBetween($messageTime, 'now');
+            $readTime = $this->faker->dateTimeBetween($messageTime->format('Y-m-d H:i:s'), 'now');
 
             MessageRead::factory()->create([
                 'message_id' => $message->id,

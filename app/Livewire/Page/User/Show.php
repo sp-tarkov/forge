@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\User;
 
+use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\User;
+use App\Traits\Livewire\ModeratesAddon;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -17,6 +19,7 @@ use Livewire\WithPagination;
 
 class Show extends Component
 {
+    use ModeratesAddon;
     use ModeratesMod;
     use WithPagination;
 
@@ -65,6 +68,23 @@ class Show extends Component
     }
 
     /**
+     * Get the total addon count visible to the current user.
+     */
+    public function getAddonCount(): int
+    {
+        $currentUser = auth()->user();
+
+        return $this->user->addons()
+            ->when(! ($currentUser?->isModOrAdmin() || $currentUser?->id === $this->user->id), function (Builder $query): void {
+                $query->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now());
+            })
+            ->whereNull('detached_at')
+            ->count();
+    }
+
+    /**
      * Render the user profile view.
      */
     #[Layout('components.layouts.base')]
@@ -73,8 +93,10 @@ class Show extends Component
         return view('livewire.page.user.show', [
             'user' => $this->user,
             'mods' => $this->getUserMods(),
+            'addons' => $this->getUserAddons(),
             'openGraphImage' => $this->user->profile_photo_path,
             'modCount' => $this->getModCount(),
+            'addonCount' => $this->getAddonCount(),
         ]);
     }
 
@@ -104,6 +126,35 @@ class Show extends Component
 
         return $query->paginate(10)
             ->fragment('mods');
+    }
+
+    /**
+     * Get the addons for the user.
+     *
+     * @return LengthAwarePaginator<int, Addon>
+     */
+    protected function getUserAddons(): LengthAwarePaginator
+    {
+        $currentUser = auth()->user();
+
+        return $this->user->addons()
+            ->with([
+                'owner',
+                'authors',
+                'latestVersion',
+                'mod:id,name,slug',
+                'mod.latestVersion:id,mod_id,version_major,version_minor,version_patch',
+                'versions.compatibleModVersions',
+            ])
+            ->unless($currentUser?->isModOrAdmin() || $currentUser?->id === $this->user->id, function (Builder $query): void {
+                $query->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now());
+            })
+            ->whereNull('detached_at')
+            ->orderBy('downloads', 'desc')
+            ->paginate(perPage: 10, pageName: 'addonPage')
+            ->fragment('addons');
     }
 
     /**

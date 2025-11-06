@@ -75,7 +75,11 @@ class UserFactory extends Factory
     public function moderator(): static
     {
         return $this->state(fn (array $attributes) => [
-            'user_role_id' => \App\Models\UserRole::where('name', 'Moderator')->first()?->id,
+            'user_role_id' => \App\Models\UserRole::query()
+                ->firstOrCreate(
+                    ['name' => 'Moderator'],
+                    \App\Models\UserRole::factory()->moderator()->make()->toArray()
+                )->id,
         ]);
     }
 
@@ -85,7 +89,11 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'user_role_id' => \App\Models\UserRole::where('name', 'Administrator')->first()?->id,
+            'user_role_id' => \App\Models\UserRole::query()
+                ->firstOrCreate(
+                    ['name' => 'Administrator'],
+                    \App\Models\UserRole::factory()->administrator()->make()->toArray()
+                )->id,
         ]);
     }
 }

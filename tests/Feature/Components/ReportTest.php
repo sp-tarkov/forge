@@ -177,9 +177,7 @@ describe('ReportComponent', function (): void {
         });
 
         it('prevents moderators from reporting any content', function (): void {
-            $moderatorRole = UserRole::factory()->moderator()->create();
-            $moderator = User::factory()->create();
-            $moderator->assignRole($moderatorRole);
+            $moderator = User::factory()->moderator()->create();
 
             $user = User::factory()->create();
             $comment = Comment::factory()->create(['user_id' => $user->id]);
@@ -194,9 +192,7 @@ describe('ReportComponent', function (): void {
         });
 
         it('prevents administrators from reporting any content', function (): void {
-            $adminRole = UserRole::factory()->administrator()->create();
-            $admin = User::factory()->create();
-            $admin->assignRole($adminRole);
+            $admin = User::factory()->admin()->create();
 
             $user = User::factory()->create();
             $comment = Comment::factory()->create(['user_id' => $user->id]);

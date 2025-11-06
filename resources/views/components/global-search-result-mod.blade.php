@@ -7,11 +7,9 @@
     class="flex flex-col"
 >
     @empty($result['thumbnail'])
-        <img
-            src="https://placehold.co/450x450/31343C/EEE?font=source-sans-pro&text={{ urlencode($result['name']) }}"
-            alt="{{ $result['name'] }}"
-            class="h-6 w-6 self-center border border-gray-700 group-hover/global-search-link:border-gray-600"
-        >
+        <div class="h-6 w-6 self-center flex items-center justify-center">
+            <flux:icon.cube-transparent class="w-5 h-5 text-gray-400 dark:text-gray-600" />
+        </div>
     @else
         <img
             src="{{ $result['thumbnail'] }}"
@@ -19,7 +17,14 @@
             class="h-6 w-6 self-center"
         >
     @endempty
-    <p class="grow">{{ $result['name'] }}</p>
+    <div class="grow flex flex-col">
+        <p class="font-medium">{{ $result['name'] }}</p>
+        @if (isset($result['downloads']))
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ number_format($result['downloads']) }} downloads
+            </p>
+        @endif
+    </div>
     <p
         class="ml-auto self-center badge-version {{ $result['latestVersionColorClass'] }} }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">
         {{ $result['latestVersion'] }}

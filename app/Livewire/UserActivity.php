@@ -9,6 +9,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -51,7 +52,7 @@ class UserActivity extends Component
         // Eagerly load the mod relationship without global scopes for ModVersion visitables only
         $events->each(function (TrackingEvent $event): void {
             if ($event->visitable instanceof ModVersion && ! $event->visitable->relationLoaded('mod')) {
-                $event->visitable->loadMissing(['mod' => fn ($query): mixed => $query->withoutGlobalScopes()]);
+                $event->visitable->loadMissing(['mod' => fn (Builder $query): Builder => $query->withoutGlobalScopes()]);
             }
         });
 

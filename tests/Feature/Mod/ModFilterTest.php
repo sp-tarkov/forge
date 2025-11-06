@@ -7,7 +7,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -239,8 +238,7 @@ describe('legacy versions filtering', function (): void {
 
     it('shows 0.0.0 versions in legacy filter only for admins', function (): void {
         // Create an administrator
-        $userRole = UserRole::factory()->administrator()->create();
-        $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+        $this->actingAs(User::factory()->admin()->create());
 
         // Create active SPT versions to establish proper context
         $activeSptVersions = [
@@ -350,8 +348,7 @@ describe('disabled mods filtering', function (): void {
 
     it('does show disabled mods to administrators and moderators', function (): void {
         // Create an administrator
-        $userRole = UserRole::factory()->administrator()->create();
-        $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+        $this->actingAs(User::factory()->admin()->create());
 
         // Create the SPT versions
         $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);

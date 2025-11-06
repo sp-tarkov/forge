@@ -6,7 +6,6 @@ use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Models\UserRole;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -173,9 +172,7 @@ describe('edit tracking', function (): void {
 
 describe('moderator permissions', function (): void {
     it('should not allow moderators to edit other users comments', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
@@ -196,9 +193,7 @@ describe('moderator permissions', function (): void {
     });
 
     it('should allow moderators to edit their own comments', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $mod = Mod::factory()->create();
         $comment = Comment::factory()->create([
@@ -219,9 +214,7 @@ describe('moderator permissions', function (): void {
     });
 
     it('should not allow moderators to bypass time limits on other users comments', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
@@ -248,9 +241,7 @@ describe('moderator permissions', function (): void {
 
 describe('administrator permissions', function (): void {
     it('should not allow administrators to edit other users comments', function (): void {
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
@@ -272,9 +263,7 @@ describe('administrator permissions', function (): void {
     });
 
     it('should allow administrators to edit their own comments', function (): void {
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
 
         $mod = Mod::factory()->create();
         $comment = Comment::factory()->create([

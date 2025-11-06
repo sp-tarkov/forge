@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Models\Addon;
+use App\Models\AddonVersion;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -28,6 +30,24 @@ enum TrackingEventType: string
     case VERSION_CREATE = 'version_create';
     case VERSION_EDIT = 'version_edit';
     case VERSION_DELETE = 'version_delete';
+
+    /** Addon-related events - requires an Addon model */
+    case ADDON_DOWNLOAD = 'addon_download';
+    case ADDON_CREATE = 'addon_create';
+    case ADDON_EDIT = 'addon_edit';
+    case ADDON_DELETE = 'addon_delete';
+    case ADDON_REPORT = 'addon_report';
+    case ADDON_ATTACH = 'addon_attach';
+    case ADDON_DETACH = 'addon_detach';
+    case ADDON_DISABLE = 'addon_disable';
+    case ADDON_ENABLE = 'addon_enable';
+    case ADDON_PUBLISH = 'addon_publish';
+    case ADDON_UNPUBLISH = 'addon_unpublish';
+
+    /** Addon version events - requires an AddonVersion model */
+    case ADDON_VERSION_CREATE = 'addon_version_create';
+    case ADDON_VERSION_EDIT = 'addon_version_edit';
+    case ADDON_VERSION_DELETE = 'addon_version_delete';
 
     /** Comment events - requires a Comment model */
     case COMMENT_CREATE = 'comment_create';
@@ -71,6 +91,20 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'Created mod version',
             self::VERSION_EDIT => 'Edited mod version',
             self::VERSION_DELETE => 'Deleted mod version',
+            self::ADDON_DOWNLOAD => 'Downloaded addon',
+            self::ADDON_CREATE => 'Created addon',
+            self::ADDON_EDIT => 'Edited addon',
+            self::ADDON_DELETE => 'Deleted addon',
+            self::ADDON_REPORT => 'Reported addon',
+            self::ADDON_ATTACH => 'Attached addon',
+            self::ADDON_DETACH => 'Detached addon',
+            self::ADDON_DISABLE => 'Disabled addon',
+            self::ADDON_ENABLE => 'Enabled addon',
+            self::ADDON_PUBLISH => 'Published addon',
+            self::ADDON_UNPUBLISH => 'Unpublished addon',
+            self::ADDON_VERSION_CREATE => 'Created addon version',
+            self::ADDON_VERSION_EDIT => 'Edited addon version',
+            self::ADDON_VERSION_DELETE => 'Deleted addon version',
             self::COMMENT_CREATE => 'Created comment',
             self::COMMENT_EDIT => 'Edited comment',
             self::COMMENT_DELETE => 'Deleted comment',
@@ -111,6 +145,20 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'User created a new mod version',
             self::VERSION_EDIT => 'User edited a mod version',
             self::VERSION_DELETE => 'User deleted a mod version',
+            self::ADDON_DOWNLOAD => 'User downloaded an addon',
+            self::ADDON_CREATE => 'User created a new addon',
+            self::ADDON_EDIT => 'User edited an addon',
+            self::ADDON_DELETE => 'User deleted an addon',
+            self::ADDON_REPORT => 'User reported an addon',
+            self::ADDON_ATTACH => 'User attached an addon to its parent mod',
+            self::ADDON_DETACH => 'User detached an addon from its parent mod',
+            self::ADDON_DISABLE => 'Moderator disabled an addon',
+            self::ADDON_ENABLE => 'Moderator enabled an addon',
+            self::ADDON_PUBLISH => 'Moderator published an addon',
+            self::ADDON_UNPUBLISH => 'Moderator unpublished an addon',
+            self::ADDON_VERSION_CREATE => 'User created a new addon version',
+            self::ADDON_VERSION_EDIT => 'User edited an addon version',
+            self::ADDON_VERSION_DELETE => 'User deleted an addon version',
             self::COMMENT_CREATE => 'User created a comment',
             self::COMMENT_EDIT => 'User edited a comment',
             self::COMMENT_DELETE => 'User deleted a comment',
@@ -142,6 +190,8 @@ enum TrackingEventType: string
         return match ($this) {
             self::MOD_CREATE, self::MOD_EDIT, self::MOD_DELETE, self::MOD_REPORT, self::MOD_FEATURE, self::MOD_UNFEATURE, self::MOD_DISABLE, self::MOD_ENABLE, self::MOD_PUBLISH, self::MOD_UNPUBLISH => Mod::class,
             self::MOD_DOWNLOAD, self::VERSION_CREATE, self::VERSION_EDIT, self::VERSION_DELETE => ModVersion::class,
+            self::ADDON_CREATE, self::ADDON_EDIT, self::ADDON_DELETE, self::ADDON_REPORT, self::ADDON_ATTACH, self::ADDON_DETACH, self::ADDON_DISABLE, self::ADDON_ENABLE, self::ADDON_PUBLISH, self::ADDON_UNPUBLISH => Addon::class,
+            self::ADDON_DOWNLOAD, self::ADDON_VERSION_CREATE, self::ADDON_VERSION_EDIT, self::ADDON_VERSION_DELETE => AddonVersion::class,
             self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT, self::COMMENT_PIN, self::COMMENT_UNPIN => Comment::class,
             self::USER_BAN, self::USER_UNBAN => User::class,
             default => null,
@@ -177,6 +227,20 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'tag',
             self::VERSION_EDIT => 'pencil',
             self::VERSION_DELETE => 'x-circle',
+            self::ADDON_DOWNLOAD => 'arrow-down-tray',
+            self::ADDON_CREATE => 'plus-circle',
+            self::ADDON_EDIT => 'pencil-square',
+            self::ADDON_DELETE => 'trash',
+            self::ADDON_REPORT => 'flag',
+            self::ADDON_ATTACH => 'link',
+            self::ADDON_DETACH => 'link-slash',
+            self::ADDON_DISABLE => 'eye-slash',
+            self::ADDON_ENABLE => 'eye',
+            self::ADDON_PUBLISH => 'globe-alt',
+            self::ADDON_UNPUBLISH => 'eye-slash',
+            self::ADDON_VERSION_CREATE => 'tag',
+            self::ADDON_VERSION_EDIT => 'pencil',
+            self::ADDON_VERSION_DELETE => 'x-circle',
             self::COMMENT_CREATE => 'chat-bubble-left',
             self::COMMENT_EDIT => 'chat-bubble-left-ellipsis',
             self::COMMENT_DELETE => 'chat-bubble-left-right',
@@ -222,6 +286,24 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'teal',
             self::VERSION_EDIT => 'emerald',
             self::VERSION_DELETE => 'red',
+
+            // Addon events - Fuchsia/Pink theme
+            self::ADDON_DOWNLOAD => 'fuchsia',
+            self::ADDON_CREATE => 'pink',
+            self::ADDON_EDIT => 'rose',
+            self::ADDON_DELETE => 'red',
+            self::ADDON_REPORT => 'orange',
+            self::ADDON_ATTACH => 'green',
+            self::ADDON_DETACH => 'amber',
+            self::ADDON_DISABLE => 'red',
+            self::ADDON_ENABLE => 'green',
+            self::ADDON_PUBLISH => 'blue',
+            self::ADDON_UNPUBLISH => 'gray',
+
+            // Addon version events - Sky/Cyan theme
+            self::ADDON_VERSION_CREATE => 'sky',
+            self::ADDON_VERSION_EDIT => 'cyan',
+            self::ADDON_VERSION_DELETE => 'red',
 
             // Comment events - Yellow/Amber theme
             self::COMMENT_CREATE => 'yellow',
@@ -279,9 +361,10 @@ enum TrackingEventType: string
     public function isPrivate(): bool
     {
         return match ($this) {
-            self::LOGIN, self::LOGOUT, self::REGISTER, self::PASSWORD_CHANGE, self::ACCOUNT_DELETE, self::MOD_REPORT, self::COMMENT_REPORT,
+            self::LOGIN, self::LOGOUT, self::REGISTER, self::PASSWORD_CHANGE, self::ACCOUNT_DELETE, self::MOD_REPORT, self::ADDON_REPORT, self::COMMENT_REPORT,
             self::USER_BAN, self::USER_UNBAN, self::IP_BAN, self::IP_UNBAN, self::MOD_FEATURE, self::MOD_UNFEATURE,
-            self::MOD_DISABLE, self::MOD_ENABLE, self::MOD_PUBLISH, self::MOD_UNPUBLISH, self::COMMENT_PIN, self::COMMENT_UNPIN => true,
+            self::MOD_DISABLE, self::MOD_ENABLE, self::MOD_PUBLISH, self::MOD_UNPUBLISH, self::ADDON_DISABLE, self::ADDON_ENABLE,
+            self::ADDON_PUBLISH, self::ADDON_UNPUBLISH, self::COMMENT_PIN, self::COMMENT_UNPIN => true,
             default => false,
         };
     }

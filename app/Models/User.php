@@ -141,6 +141,27 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
+     * Get all addons owned by the user.
+     *
+     * @return HasMany<Addon, $this>
+     */
+    public function addons(): HasMany
+    {
+        return $this->hasMany(Addon::class, 'owner_id');
+    }
+
+    /**
+     * Get all addons authored by the user.
+     *
+     * @return BelongsToMany<Addon, $this>
+     */
+    public function addonsAuthored(): BelongsToMany
+    {
+        return $this->belongsToMany(Addon::class, 'addon_authors')
+            ->withTimestamps();
+    }
+
+    /**
      * Get all conversations for the user.
      *
      * @return HasMany<Conversation, $this>
@@ -323,9 +344,44 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function toSearchableArray(): array
     {
+        $this->loadCount([
+            'mods' => fn (Builder $query) => $query->where('disabled', false)
+                ->whereNotNull('published_at')
+                ->whereHas('versions', fn (Builder $q) => $q
+                    ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->whereHas('latestSptVersion')),
+            'modsAuthored' => fn (Builder $query) => $query->where('disabled', false)
+                ->whereNotNull('published_at')
+                ->whereHas('versions', fn (Builder $q) => $q
+                    ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->whereHas('latestSptVersion')),
+            'addons' => fn (Builder $query) => $query->where('disabled', false)
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->whereHas('versions', fn (Builder $q) => $q
+                    ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now())),
+            'addonsAuthored' => fn (Builder $query) => $query->where('disabled', false)
+                ->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->whereHas('versions', fn (Builder $q) => $q
+                    ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now())),
+        ]);
+
+        $modCount = ($this->mods_count ?? 0) + ($this->mods_authored_count ?? 0);
+        $addonCount = ($this->addons_count ?? 0) + ($this->addons_authored_count ?? 0);
+
         return [
             'id' => (int) $this->id,
             'name' => $this->name,
+            'profile_photo_url' => $this->profile_photo_url,
+            'mods_count' => $modCount,
+            'addons_count' => $addonCount,
         ];
     }
 

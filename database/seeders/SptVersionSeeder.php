@@ -69,6 +69,7 @@ class SptVersionSeeder extends Seeder
                 'mod_count' => 0,
                 'link' => "https://github.com/sp-tarkov/build/releases/tag/{$version}",
                 'color_class' => $colorClass,
+                'publish_date' => now()->subDays(rand(30, 365)),
             ]);
         }
 

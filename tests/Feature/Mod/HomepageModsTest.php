@@ -7,7 +7,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -65,8 +64,7 @@ describe('homepage mod visibility', function (): void {
     });
 
     it('should display disabled mods for administrators', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+        $this->actingAs(User::factory()->admin()->create());
 
         SptVersion::factory()->create(['version' => '1.0.0']);
         Mod::factory()->create(['featured' => true]);

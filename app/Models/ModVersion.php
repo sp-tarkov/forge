@@ -59,6 +59,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, ModVersion> $latestResolvedDependencies
  * @property-read SptVersion|null $latestSptVersion
  * @property-read Collection<int, SptVersion> $sptVersions
+ * @property-read Collection<int, AddonVersion> $compatibleAddonVersions
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
@@ -189,6 +190,17 @@ class ModVersion extends Model implements Trackable
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels');
+    }
+
+    /**
+     * The relationship between a mod version and addon versions that are compatible with it.
+     *
+     * @return BelongsToMany<AddonVersion, $this>
+     */
+    public function compatibleAddonVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(AddonVersion::class, 'addon_resolved_mod_versions')
+            ->withTimestamps();
     }
 
     /**
@@ -400,6 +412,7 @@ class ModVersion extends Model implements Trackable
     protected function publiclyVisible(Builder $query): Builder
     {
         return $query->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
             ->where('disabled', false)
             ->whereHas('latestSptVersion');
     }

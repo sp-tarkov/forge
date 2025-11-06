@@ -1,7 +1,7 @@
 @props(['version'])
 
 <div
-    {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none']) }}>
+    {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black transition-all duration-200']) }}>
 
     <livewire:ribbon.mod-version
         wire:key="mod-version-show-ribbon-{{ $version->id }}"
@@ -11,7 +11,7 @@
     />
 
     <div class="pb-6 border-b-2 border-gray-200 dark:border-gray-800">
-        @can('update', $version)
+        @cachedCan('update', $version)
             <livewire:mod.version-action
                 wire:key="mod-version-show-action-{{ $version->id }}"
                 :version-id="$version->id"
@@ -20,23 +20,23 @@
                 :version-disabled="(bool) $version->disabled"
                 :version-published="(bool) $version->published_at && $version->published_at <= now()"
             />
-        @endcan
+        @endcachedCan
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">
                 <a
                     href="{{ $version->downloadUrl() }}"
-                    class="text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                    class="inline-flex items-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white hover:underline"
                     rel="nofollow"
                 >
-                    {{ __('Version') }} {{ $version->version }}
+                    <span>{{ __('Version') }} {{ $version->version }}</span>
                     <flux:tooltip
                         content="Download Mod Version"
                         position="right"
                     >
                         <flux:icon
                             icon="arrow-down-on-square-stack"
-                            class="inline-block size-6 ml-2 relative -top-1"
+                            class="inline-block size-6 ml-2"
                         />
                     </flux:tooltip>
                 </a>
@@ -68,16 +68,37 @@
                         class="text-sm text-gray-800 dark:text-gray-300"
                         title="{{ __('Exactly') }} {{ $version->downloads }}"
                     >
-                        {{ Number::downloads($version->downloads) }} {{ __('Downloads') }}
+                        {{ Number::downloads($version->downloads) }}
+                        {{ __(Str::plural('Download', $version->downloads)) }}
                     </p>
+                    @if ($version->mod->addons_enabled && ($version->compatible_addons_count ?? 0) > 0)
+                        <span class="text-gray-300 dark:text-gray-700">|</span>
+                        <a
+                            href="{{ route('mod.show', [$version->mod->id, $version->mod->slug]) }}?versionFilter={{ $version->id }}#addons"
+                            class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 hover:underline"
+                            wire:navigate
+                        >
+                            <flux:icon
+                                icon="puzzle-piece"
+                                variant="outline"
+                                class="w-4 h-4 group-hover:hidden"
+                            />
+                            <flux:icon
+                                icon="puzzle-piece"
+                                variant="solid"
+                                class="w-4 h-4 text-green-600 dark:text-green-500 hidden group-hover:block"
+                            />
+                            <span>View Addons</span>
+                        </a>
+                    @endif
                 </div>
             </div>
             <div class="flex flex-col items-start text-gray-700 dark:text-gray-400 sm:items-end mt-4 sm:mt-0">
-                <p class="text-left sm:text-right">{{ __('Created') }} {{ $version->created_at->dynamicFormat() }}</p>
-                <p class="text-left sm:text-right">{{ __('Updated') }} {{ $version->updated_at->dynamicFormat() }}</p>
+                <p class="text-left sm:text-right">{{ __('Released') }} {{ $version->created_at->dynamicFormat() }}
+                </p>
                 <a
                     href="{{ $version->virus_total_link }}"
-                    class="text-left sm:text-right underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                    class="text-left sm:text-right hover:underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
                     rel="nofollow"
                 >
                     {{ __('Virus Total Results') }}
@@ -95,7 +116,7 @@
                     <li>
                         <a
                             href="{{ $resolvedDependency->mod->detail_url }}"
-                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                            class="hover:underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
                         >
                             {{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})
                         </a>
@@ -104,7 +125,7 @@
             </ul>
         @endif
     </div>
-    <div class="py-3 user-markdown text-gray-700 dark:text-gray-400">
+    <div class="pt-3 user-markdown text-gray-700 dark:text-gray-400">
         {{--
         !DANGER ZONE!
 

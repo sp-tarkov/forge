@@ -1,7 +1,3 @@
-@php
-    use Illuminate\Support\Str;
-@endphp
-
 <div>
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">

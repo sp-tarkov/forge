@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Mod;
-use App\Models\ModVersion;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
@@ -30,20 +29,18 @@ class ModPolicy
             return $user?->isModOrAdmin() ?? false;
         }
 
-        // Check if mod is published
-        if (! $mod->published_at) {
+        // Check if mod is published and not scheduled for future
+        if (! $mod->published_at || $mod->published_at->isFuture()) {
             $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
             if (! $isPrivilegedUser) {
                 return false;
             }
         }
 
-        // Check if mod has valid SPT versions that are also published
-        if (! $this->hasValidPublishedSptVersion($mod, $user)) {
-            $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
-            if (! $isPrivilegedUser) {
-                return false;
-            }
+        // For non-privileged users, check if mod is publicly visible
+        $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
+        if (! $isPrivilegedUser && ! $mod->isPubliclyVisible()) {
+            return false;
         }
 
         return true;
@@ -231,23 +228,5 @@ class ModPolicy
 
         // User cannot report the same item more than once.
         return ! $reportable->hasBeenReportedBy($user->id);
-    }
-
-    /**
-     * Check if a version has a valid SPT version tag and is published.
-     */
-    private function hasValidPublishedSptVersion(Mod $mod, ?User $user): bool
-    {
-        $mod->loadMissing(['versions.latestSptVersion']);
-
-        $showUnpublished = $user?->isModOrAdmin() ?? false;
-
-        return $mod->versions->contains(function (ModVersion $version) use ($showUnpublished): bool {
-            $hasValidSptVersion = ! is_null($version->latestSptVersion);
-            $isPublished = ! is_null($version->published_at);
-            $isEnabled = ! $version->disabled;
-
-            return $hasValidSptVersion && $isEnabled && ($isPublished || $showUnpublished);
-        });
     }
 }

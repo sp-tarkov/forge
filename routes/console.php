@@ -6,7 +6,7 @@ use App\Console\Commands\CleanupOldNotificationLogs;
 use App\Console\Commands\ForgeHeartbeat;
 use App\Console\Commands\UpdateGeoLiteDatabase;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
-use App\Jobs\SendModDiscordNotifications;
+use App\Jobs\SendDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
 use Illuminate\Support\Facades\Schedule;
 
@@ -16,7 +16,7 @@ Schedule::command(CleanupOldNotificationLogs::class)->daily();
 Schedule::command(UpdateGeoLiteDatabase::class)->daily()->at('02:00');
 Schedule::job(new UpdateDisposableEmailBlocklist)->daily()->at('04:00');
 
-Schedule::job(new SendModDiscordNotifications)->everyMinute();
+Schedule::job(new SendDiscordNotifications)->everyMinute();
 Schedule::job(new ProcessPinnedModVersionPublishDates)->everyMinute();
 
 if (config('app.forge_heartbeat_url')) {

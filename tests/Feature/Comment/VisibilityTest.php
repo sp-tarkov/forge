@@ -7,7 +7,6 @@ use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
@@ -22,9 +21,7 @@ beforeEach(function (): void {
     $this->otherUser = User::factory()->create();
 
     // Create moderator with proper role
-    $moderatorRole = UserRole::factory()->moderator()->create();
-    $this->moderator = User::factory()->create();
-    $this->moderator->assignRole($moderatorRole);
+    $this->moderator = User::factory()->moderator()->create();
 });
 
 describe('guest visibility', function (): void {

@@ -8,7 +8,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Livewire\Livewire;
 
 describe('mod display', function (): void {
@@ -72,8 +71,7 @@ describe('mod access control', function (): void {
     });
 
     it('allows an administrator to view a disabled mod', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+        $this->actingAs(User::factory()->admin()->create());
 
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->disabled()->create();
@@ -174,8 +172,7 @@ describe('mod access control', function (): void {
     });
 
     it('allows an administrator to view an unpublished mod', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
         $this->actingAs($user);
 
         SptVersion::factory()->create(['version' => '1.1.1']);

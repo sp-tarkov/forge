@@ -6,7 +6,6 @@ use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Models\UserRole;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -86,9 +85,7 @@ describe('unpublished mod restrictions', function (): void {
     });
 
     it('should not allow moderators to comment on unpublished mods', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $mod = Mod::factory()->create(['published_at' => null]);
 
@@ -100,9 +97,7 @@ describe('unpublished mod restrictions', function (): void {
     });
 
     it('should not allow administrators to comment on unpublished mods', function (): void {
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
 
         $mod = Mod::factory()->create(['published_at' => null]);
 
@@ -255,9 +250,7 @@ describe('rate limiting', function (): void {
     });
 
     it('should allow administrators to bypass rate limiting', function (): void {
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
         $mod = Mod::factory()->create();
 
         $component = Livewire::actingAs($admin)
@@ -282,9 +275,7 @@ describe('rate limiting', function (): void {
     });
 
     it('should allow moderators to bypass rate limiting', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
         $mod = Mod::factory()->create();
 
         $component = Livewire::actingAs($moderator)

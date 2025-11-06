@@ -9,16 +9,13 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\Report;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->adminUser = User::factory()->create();
-    $this->adminUser->role()->associate(UserRole::factory()->administrator()->create());
-    $this->adminUser->save();
+    $this->adminUser = User::factory()->admin()->create();
 
     $this->regularUser = User::factory()->create();
 });

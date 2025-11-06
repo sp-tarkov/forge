@@ -12,7 +12,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use App\Policies\ModVersionPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
@@ -42,8 +41,7 @@ describe('action component visibility', function (): void {
     });
 
     it('displays on mod detail pages for administrators', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
 
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->create();
@@ -77,8 +75,7 @@ describe('mod deletion from homepage', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
             ->test(Homepage::class)
@@ -107,8 +104,7 @@ describe('mod deletion from mod listing', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
             ->test(ModIndex::class)
@@ -137,8 +133,7 @@ describe('mod deletion from mod detail page', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
             ->test(ModShow::class, [
@@ -173,8 +168,7 @@ describe('mod deletion from user profile', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
 
         $userProfile = User::factory()->create(['user_role_id' => null]);
 
@@ -327,8 +321,7 @@ describe('mod publishing functionality', function (): void {
 
 describe('mod featuring functionality', function (): void {
     it('allows administrators to feature mods without AI content', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => false]);
 
         Livewire::actingAs($user)
@@ -347,8 +340,7 @@ describe('mod featuring functionality', function (): void {
     });
 
     it('prevents administrators from featuring mods with AI content', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => true]);
 
         Livewire::actingAs($user)
@@ -367,8 +359,7 @@ describe('mod featuring functionality', function (): void {
     });
 
     it('allows administrators to unfeature mods with AI content', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
         $mod = Mod::factory()->create(['featured' => true, 'contains_ai_content' => true]);
 
         Livewire::actingAs($user)
@@ -387,8 +378,7 @@ describe('mod featuring functionality', function (): void {
     });
 
     it('hides feature option for mods with AI content in permissions', function (): void {
-        $userRole = UserRole::factory()->administrator()->create();
-        $user = User::factory()->create(['user_role_id' => $userRole->id]);
+        $user = User::factory()->admin()->create();
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => true]);
 
         Livewire::actingAs($user)

@@ -8,7 +8,6 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -51,9 +50,7 @@ describe('Pin Authorization', function (): void {
     });
 
     it('allows moderators to pin comments', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
@@ -69,9 +66,7 @@ describe('Pin Authorization', function (): void {
     });
 
     it('allows administrators to pin comments', function (): void {
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
 
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
@@ -118,9 +113,7 @@ describe('Pin Authorization', function (): void {
             'root_id' => $rootComment->id,
         ]);
 
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         // Root comment should be pinnable
         expect($owner->can('pin', $rootComment))->toBeTrue();
@@ -290,9 +283,7 @@ describe('Pin Functionality', function (): void {
     });
 
     it('allows moderators to unpin soft-deleted comments', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
@@ -322,9 +313,7 @@ describe('Pin Functionality', function (): void {
     });
 
     it('allows administrators to unpin soft-deleted comments', function (): void {
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
 
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
@@ -384,9 +373,7 @@ describe('Pin Action Visibility', function (): void {
         $author = User::factory()->create();
         $regularUser = User::factory()->create();
 
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         ModVersion::factory()->recycle($mod)->create();

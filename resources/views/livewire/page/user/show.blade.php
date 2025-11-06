@@ -100,6 +100,8 @@
                             <option value="wall">{{ __('Wall') }}</option>
                             <option value="mods">{{ $modCount }} {{ __(Str::plural('Mod', $modCount)) }}
                             </option>
+                            <option value="addons">{{ $addonCount }} {{ __(Str::plural('Addon', $addonCount)) }}
+                            </option>
                             <option value="activity">{{ __('Activity') }}</option>
                         </select>
                     </div>
@@ -118,6 +120,11 @@
                                 name="{{ __('Mods') }}"
                                 value="mods"
                                 :label="$modCount . ' ' . Str::plural('Mod', $modCount)"
+                            />
+                            <x-tab-button
+                                name="{{ __('Addons') }}"
+                                value="addons"
+                                :label="$addonCount . ' ' . Str::plural('Addon', $addonCount)"
                             />
                             <x-tab-button
                                 name="{{ __('Activity') }}"
@@ -147,6 +154,7 @@
                                     <x-mod.card
                                         :mod="$mod"
                                         :version="$mod->latestVersion"
+                                        placeholder-bg="bg-gray-200 dark:bg-gray-900"
                                     />
                                 </div>
                             @endforeach
@@ -155,10 +163,50 @@
                             {{ $mods->links() }}
                         </div>
                     @else
-                        <p
-                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
-                            {{ __('This user has not yet published any mods.') }}
-                        </p>
+                        <div
+                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                            <div class="text-center py-8">
+                                <flux:icon.cube-transparent class="mx-auto size-12 text-gray-400" />
+                                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ __('No Mods Yet') }}</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ __('This user has not yet published any mods.') }}</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Addons --}}
+                <div
+                    x-show="selectedTab === 'addons'"
+                    x-cloak
+                >
+                    @if ($addons->count())
+                        <div class="mb-4">
+                            {{ $addons->links() }}
+                        </div>
+                        <div class="grid gap-4">
+                            @foreach ($addons as $addon)
+                                <x-addon.card
+                                    :addon="$addon"
+                                    wire:key="user-addon-card-{{ $addon->id }}"
+                                />
+                            @endforeach
+                        </div>
+                        <div class="mt-5">
+                            {{ $addons->links() }}
+                        </div>
+                    @else
+                        <div
+                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                            <div class="text-center py-8">
+                                <flux:icon.puzzle-piece class="mx-auto size-12 text-gray-400" />
+                                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ __('No Addons Yet') }}</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ __('This user has not yet published any addons.') }}</p>
+                            </div>
+                        </div>
                     @endif
                 </div>
 

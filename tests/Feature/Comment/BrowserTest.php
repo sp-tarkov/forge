@@ -8,7 +8,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\Cache;
 
@@ -40,7 +39,6 @@ describe('Guest User Tests', function (): void {
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
             ->inDarkMode()
-            ->wait(1)
             ->assertSee('No comments yet')
             ->assertSee('Login or register to join the discussion')
             ->assertNotPresent('@new-comment-body')
@@ -210,9 +208,7 @@ describe('Comment Creation Tests', function (): void {
     });
 
     it('should allow administrators to bypass rate limiting', function (): void {
-        $admin = User::factory()->create();
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
 
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
@@ -237,9 +233,7 @@ describe('Comment Creation Tests', function (): void {
     });
 
     it('should allow moderators to bypass rate limiting', function (): void {
-        $moderator = User::factory()->create();
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
@@ -380,7 +374,6 @@ describe('Comment Reply Tests', function (): void {
         $page->click('@reply-button-'.$rootComment->id)
             ->type('@reply-body-'.$rootComment->id, $replyText)
             ->press('Post Reply')
-            ->wait(1)
             ->assertSee($replyText)
             ->assertNoJavaScriptErrors();
     });
@@ -854,9 +847,7 @@ describe('Comment Reactions Tests', function (): void {
 
 describe('Spam Marking Tests', function (): void {
     it('should show spam ribbon to moderators when comment is marked as spam', function (): void {
-        $moderator = User::factory()->create();
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
@@ -888,9 +879,7 @@ describe('Spam Marking Tests', function (): void {
     });
 
     it('should display admin action menu for moderators on clean comments', function (): void {
-        $moderator = User::factory()->create();
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
@@ -915,9 +904,7 @@ describe('Spam Marking Tests', function (): void {
     });
 
     it('should show spam ribbon immediately after marking comment as spam via UI', function (): void {
-        $moderator = User::factory()->create();
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
@@ -1202,9 +1189,7 @@ describe('Comment Display and Pagination Tests', function (): void {
 
 describe('Comment Pinning Tests', function (): void {
     it('should allow moderators to pin comments without browser errors', function (): void {
-        $moderator = User::factory()->create();
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
 
         $user = User::factory()->create();
         $mod = Mod::factory()->create();

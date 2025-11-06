@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Mod;
@@ -27,12 +28,16 @@ class CommentSeeder extends Seeder
         $this->initializeFaker();
 
         $mods = Mod::all();
+        $addons = Addon::where('comments_disabled', false)->get();
         $allUsers = User::all();
 
         // Add comments to mods
         $this->seedCommentsForMods($mods, $allUsers);
 
-        // Add reactions to comments
+        // Add comments to addons
+        $this->seedCommentsForAddons($addons, $allUsers);
+
+        // Add reactions to all comments
         $this->seedCommentReactions($allUsers);
     }
 
@@ -53,6 +58,49 @@ class CommentSeeder extends Seeder
                 }
             );
         });
+    }
+
+    /**
+     * Seed comments for addons.
+     *
+     * @param  Collection<int, Addon>  $addons
+     * @param  Collection<int, User>  $allUsers
+     */
+    private function seedCommentsForAddons(Collection $addons, Collection $allUsers): void
+    {
+        if ($addons->isEmpty()) {
+            return;
+        }
+
+        Comment::withoutEvents(function () use ($addons, $allUsers) {
+            progress(
+                label: 'Adding Addon Comments...',
+                steps: $addons,
+                callback: function (Addon $addon, Progress $progress) use ($allUsers) {
+                    $this->seedAddonComments($addon, $allUsers);
+                }
+            );
+        });
+    }
+
+    /**
+     * Seed comments for a single addon.
+     *
+     * @param  Collection<int, User>  $allUsers
+     */
+    private function seedAddonComments(Addon $addon, Collection $allUsers): void
+    {
+        // Create 1-15 parent comments (fewer than mods typically)
+        $parentCommentCount = rand(1, 15);
+
+        for ($i = 0; $i < $parentCommentCount; $i++) {
+            $comment = $this->createComment($addon, $allUsers);
+
+            // For each comment, 30% chance to have replies
+            if (rand(0, 9) < 3) {
+                $this->createReplies($comment, $allUsers);
+            }
+        }
     }
 
     /**
@@ -78,9 +126,10 @@ class CommentSeeder extends Seeder
     /**
      * Create a single comment.
      *
+     * @param  Mod|Addon  $commentable
      * @param  Collection<int, User>  $allUsers
      */
-    private function createComment(Mod $mod, Collection $allUsers): Comment
+    private function createComment($commentable, Collection $allUsers): Comment
     {
         $spamStatus = $this->getRandomSpamStatus();
         $isDeleted = rand(0, 100) < 10; // 10% chance to be deleted
@@ -94,7 +143,7 @@ class CommentSeeder extends Seeder
         }
 
         return Comment::factory()
-            ->recycle([$mod])
+            ->recycle([$commentable])
             ->recycle($allUsers)
             ->create($commentData);
     }
@@ -186,14 +235,25 @@ class CommentSeeder extends Seeder
      */
     private function addReactionsToComment(Comment $comment, Collection $allUsers): void
     {
-        // Add 1-5 reactions from different users
-        $reactingUsers = $allUsers->random(rand(1, 5));
+        // Add 1-5 reactions from different users (but no more than available users)
+        $maxReactions = min(5, $allUsers->count());
+        $reactionCount = rand(1, $maxReactions);
+
+        // Use shuffle and take to ensure unique users
+        $reactingUsers = $allUsers->shuffle()->take($reactionCount);
 
         foreach ($reactingUsers as $user) {
-            CommentReaction::factory()
-                ->recycle([$comment])
-                ->recycle([$user])
-                ->create();
+            // Check if this user has already reacted to this comment
+            $existingReaction = CommentReaction::where('user_id', $user->id)
+                ->where('comment_id', $comment->id)
+                ->exists();
+
+            if (! $existingReaction) {
+                CommentReaction::factory()
+                    ->recycle([$comment])
+                    ->recycle([$user])
+                    ->create();
+            }
         }
     }
 }

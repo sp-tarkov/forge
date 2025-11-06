@@ -8,7 +8,6 @@ use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Models\UserRole;
 use App\Services\CommentSpamChecker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -18,11 +17,7 @@ uses(RefreshDatabase::class);
 
 function createModerator(): User
 {
-    $moderatorRole = UserRole::factory()->moderator()->create();
-    $moderator = User::factory()->create();
-    $moderator->assignRole($moderatorRole);
-
-    return $moderator;
+    return User::factory()->moderator()->create();
 }
 
 describe('Comment Spam Ribbon Updates', function (): void {

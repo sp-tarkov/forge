@@ -18,6 +18,7 @@ use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
@@ -324,6 +325,16 @@ class Edit extends Component
     }
 
     /**
+     * Get only the unpublished SPT versions from the matching list.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getUnpublishedSptVersions(): array
+    {
+        return array_filter($this->matchingSptVersions, fn (array $version): bool => ! $version['is_published']);
+    }
+
+    /**
      * Save the mod version changes.
      */
     public function save(): void
@@ -412,7 +423,7 @@ class Edit extends Component
 
         Track::event(TrackingEventType::VERSION_EDIT, $this->modVersion);
 
-        flash()->success('Mod version has been successfully updated.');
+        Session::flash('success', 'Mod version has been successfully updated.');
 
         $this->redirect($this->modVersion->mod->detail_url);
     }

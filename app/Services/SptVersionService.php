@@ -17,7 +17,26 @@ class SptVersionService
     public function resolve(ModVersion $modVersion): void
     {
         $satisfyingVersionIds = $this->satisfyConstraint($modVersion);
-        $modVersion->sptVersions()->sync($satisfyingVersionIds);
+
+        // Preserve existing pivot data (like pinned_to_spt_publish) when syncing
+        $pivotData = [];
+        foreach ($satisfyingVersionIds as $versionId) {
+            $pivotData[$versionId] = ['pinned_to_spt_publish' => false];
+        }
+
+        // Preserve any existing pinned_to_spt_publish values
+        $existingPivots = $modVersion->sptVersions()
+            ->whereIn('spt_version_id', $satisfyingVersionIds)
+            ->get()
+            ->pluck('pivot');
+
+        foreach ($existingPivots as $pivot) {
+            if ($pivot->pinned_to_spt_publish) {
+                $pivotData[$pivot->spt_version_id]['pinned_to_spt_publish'] = true;
+            }
+        }
+
+        $modVersion->sptVersions()->sync($pivotData);
     }
 
     /**

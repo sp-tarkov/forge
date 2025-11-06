@@ -4,6 +4,7 @@
         count: $wire.entangle('count'),
         show: false,
         isModCatVisible: $wire.isModCatVisible,
+        isAddonCatVisible: $wire.isAddonCatVisible,
         isUserCatVisible: $wire.isUserCatVisible
     }"
     class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end"
@@ -23,18 +24,10 @@
             role="search"
         >
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg
-                    class="h-5 w-5 text-gray-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                >
-                    <path
-                        fill-rule="evenodd"
-                        d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                        clip-rule="evenodd"
-                    />
-                </svg>
+                <flux:icon.magnifying-glass
+                    variant="mini"
+                    class="size-5 text-gray-400"
+                />
             </div>
             <input
                 id="global-search"
@@ -71,21 +64,10 @@
                                     class="flex flex-row gap-1.5 py-2.5 px-4 text-[0.6875rem] font-semibold uppercase text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-950 select-none"
                                 >
                                     <span>{{ Str::plural($type) }}</span>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke-width="1.5"
-                                        stroke="currentColor"
-                                        class="w-4 h-4 transition-all transform duration-400"
-                                        :class="{ 'rotate-180': is{{ Str::ucfirst($type) }}CatVisible }"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                                        />
-                                    </svg>
+                                    <flux:icon.chevron-right
+                                        class="size-4 transition-all transform duration-400"
+                                        x-bind:class="{ 'rotate-90': is{{ Str::ucfirst($type) }}CatVisible }"
+                                    />
                                 </h4>
                                 <div
                                     class="divide-y divide-dashed divide-gray-200 dark:divide-gray-800 transition-all transform duration-400 max-h-0 overflow-hidden"

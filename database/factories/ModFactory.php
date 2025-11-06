@@ -6,7 +6,7 @@ namespace Database\Factories;
 
 use App\Models\License;
 use App\Models\Mod;
-use App\Models\ModSourceCodeLink;
+use App\Models\SourceCodeLink;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -19,7 +19,7 @@ class ModFactory extends Factory
 {
     public function definition(): array
     {
-        $name = fake()->sentence(rand(3, 5));
+        $name = Str::title(mb_rtrim(fake()->sentence(rand(3, 5)), '.'));
         $domain = fake()->domainName();
         $modSlug = Str::slug($name);
 
@@ -61,8 +61,9 @@ class ModFactory extends Factory
             // Create 1-3 source code links for each mod
             $numberOfLinks = rand(1, 3);
             for ($i = 0; $i < $numberOfLinks; $i++) {
-                ModSourceCodeLink::factory()->create([
-                    'mod_id' => $mod->id,
+                SourceCodeLink::factory()->create([
+                    'sourceable_type' => Mod::class,
+                    'sourceable_id' => $mod->id,
                 ]);
             }
         });

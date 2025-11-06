@@ -7,8 +7,9 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Edit :mod', ['mod' => $mod->name]) }}
+    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <flux:icon.cube-transparent class="w-5 h-5" />
+        {{ __('Edit Mod') }}: {{ $mod->name }}
     </h2>
 </x-slot>
 
@@ -292,7 +293,7 @@
                                     }
                                 }"
                             >
-                                <flux:label>{{ __('Publish Date') }}</flux:label>
+                                <flux:label badge="Optional">{{ __('Publish Date') }}</flux:label>
                                 <flux:description>
                                     {!! __(
                                         'Select the date and time the mod will be published. If the mod is not published, it will not be discoverable by other users. Leave blank to keep the mod unpublished.',

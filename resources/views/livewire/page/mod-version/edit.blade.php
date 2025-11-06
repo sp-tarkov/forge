@@ -7,8 +7,9 @@
 </x-slot:description>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Edit Version for :mod', ['mod' => $mod->name]) }}
+    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <flux:icon.cube-transparent class="w-5 h-5" />
+        {{ __('Edit Mod Version') }}: {{ $mod->name }}
     </h2>
 </x-slot:header>
 
@@ -282,7 +283,7 @@
                                         hasUnpublished: {{ $this->hasUnpublishedSptVersions() ? 'true' : 'false' }}
                                 }"
                             >
-                                <flux:label>{{ __('Publish Date') }}</flux:label>
+                                <flux:label badge="Optional">{{ __('Publish Date') }}</flux:label>
                                 <flux:description>
                                     {!! __(
                                         'Choose when to publish this mod version. You can either set a specific date or pin it to automatically publish when all of the unpublished SPT versions it supports are released.',
@@ -305,16 +306,8 @@
                                                     </span>
 
                                                     {{-- Show unpublished SPT versions inline --}}
-                                                    @php
-                                                        $unpublishedVersions = collect($matchingSptVersions)->filter(
-                                                            function ($version) {
-                                                                return !$version['is_published'];
-                                                            },
-                                                        );
-                                                    @endphp
-
-                                                    @if ($unpublishedVersions->count() > 0)
-                                                        @foreach ($unpublishedVersions as $version)
+                                                    @if (count($this->getUnpublishedSptVersions()) > 0)
+                                                        @foreach ($this->getUnpublishedSptVersions() as $version)
                                                             <span
                                                                 class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium text-nowrap"
                                                             >

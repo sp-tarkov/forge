@@ -4,7 +4,7 @@
 
 <x-slot:description>
     {!! __(
-        'Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.',
+        'Explore an enhanced Single Player Tarkov experience with the mods available below. Not sure where to start? Check out the featured mods; they are hand-picked by our team and a solid choice to get you started.',
     ) !!}
 </x-slot>
 
@@ -19,7 +19,8 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+            <flux:icon.cube-transparent class="w-5 h-5" />
             {{ __('Mod Listings') }}
         </h2>
         @auth
@@ -47,7 +48,7 @@
         class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
         <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __(
-            'Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.',
+            'Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Not sure where to start? Check out the featured mods; they are hand-picked by our team and a solid choice to get you started.',
         ) !!}</p>
         <search class="lg:hidden relative group mt-6">
             <div class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
