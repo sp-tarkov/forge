@@ -103,7 +103,7 @@ class ModCategoryController extends Controller
 
             // Filter by IDs
             if (isset($filters['id'])) {
-                $ids = array_map('intval', explode(',', $filters['id']));
+                $ids = array_map(intval(...), explode(',', $filters['id']));
                 $query->whereIn('id', $ids);
             }
 
