@@ -259,8 +259,10 @@
                             size="sm"
                         >
                             <flux:select.option value="">All Events</flux:select.option>
-                            @foreach(\App\Enums\TrackingEventType::cases() as $eventType)
-                                <flux:select.option value="{{ $eventType->value }}">{{ $eventType->getName() }}</flux:select.option>
+                            @foreach (\App\Enums\TrackingEventType::cases() as $eventType)
+                                <flux:select.option value="{{ $eventType->value }}">
+                                    {{ $eventType->getName() }}
+                                </flux:select.option>
                             @endforeach
                         </flux:select>
                     </div>
