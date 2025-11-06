@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.356.42",
+            "version": "3.359.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c886d60206d2f100c2d132052875f53ce3f999f7"
+                "reference": "a32e4c9522f0b61c947fafa1713d3a24b397a757"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c886d60206d2f100c2d132052875f53ce3f999f7",
-                "reference": "c886d60206d2f100c2d132052875f53ce3f999f7",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/a32e4c9522f0b61c947fafa1713d3a24b397a757",
+                "reference": "a32e4c9522f0b61c947fafa1713d3a24b397a757",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.356.42"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.359.3"
             },
-            "time": "2025-10-17T18:17:41+00:00"
+            "time": "2025-10-31T18:15:22+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -2229,16 +2229,16 @@
         },
         {
             "name": "knuckleswtf/scribe",
-            "version": "5.3.0",
+            "version": "5.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/knuckleswtf/scribe.git",
-                "reference": "380f9cd6de6d65d2e92930a8613d8a682e83e8c7"
+                "reference": "779f91aa01a18d271b2c8314d5c44635c7375dfc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/knuckleswtf/scribe/zipball/380f9cd6de6d65d2e92930a8613d8a682e83e8c7",
-                "reference": "380f9cd6de6d65d2e92930a8613d8a682e83e8c7",
+                "url": "https://api.github.com/repos/knuckleswtf/scribe/zipball/779f91aa01a18d271b2c8314d5c44635c7375dfc",
+                "reference": "779f91aa01a18d271b2c8314d5c44635c7375dfc",
                 "shasum": ""
             },
             "require": {
@@ -2254,9 +2254,8 @@
                 "nunomaduro/collision": "^6.0|^7.0|^8.0",
                 "php": ">=8.1",
                 "ramsey/uuid": "^4.2.2",
-                "shalvah/clara": "^3.1.0",
+                "shalvah/clara": "3.3.0",
                 "shalvah/upgrader": ">=0.6.0",
-                "spatie/data-transfer-object": "^2.6|^3.0",
                 "symfony/var-exporter": "^6.0|^7.0",
                 "symfony/yaml": "^6.0|^7.0"
             },
@@ -2311,7 +2310,7 @@
             ],
             "support": {
                 "issues": "https://github.com/knuckleswtf/scribe/issues",
-                "source": "https://github.com/knuckleswtf/scribe/tree/5.3.0"
+                "source": "https://github.com/knuckleswtf/scribe/tree/5.5.0"
             },
             "funding": [
                 {
@@ -2319,7 +2318,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2025-07-28T22:27:25+00:00"
+            "time": "2025-10-25T17:58:31+00:00"
         },
         {
             "name": "laminas/laminas-diactoros",
@@ -2695,16 +2694,16 @@
         },
         {
             "name": "laravel/horizon",
-            "version": "v5.36.0",
+            "version": "v5.38.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/horizon.git",
-                "reference": "eccc804c9da78064c97a8f506bb148f05c816409"
+                "reference": "3a3145345221df6a0eaacc478c22040d1252a065"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/horizon/zipball/eccc804c9da78064c97a8f506bb148f05c816409",
-                "reference": "eccc804c9da78064c97a8f506bb148f05c816409",
+                "url": "https://api.github.com/repos/laravel/horizon/zipball/3a3145345221df6a0eaacc478c22040d1252a065",
+                "reference": "3a3145345221df6a0eaacc478c22040d1252a065",
                 "shasum": ""
             },
             "require": {
@@ -2769,9 +2768,9 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel/horizon/issues",
-                "source": "https://github.com/laravel/horizon/tree/v5.36.0"
+                "source": "https://github.com/laravel/horizon/tree/v5.38.0"
             },
-            "time": "2025-10-10T13:44:39+00:00"
+            "time": "2025-10-26T17:03:39+00:00"
         },
         {
             "name": "laravel/jetstream",
@@ -2842,16 +2841,16 @@
         },
         {
             "name": "laravel/octane",
-            "version": "v2.13.0",
+            "version": "v2.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/octane.git",
-                "reference": "21fd6220560c609bf703fa4ce6008081a4ce746c"
+                "reference": "20b741badaa22cae73b87ffc4d979f3a7f06db25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/octane/zipball/21fd6220560c609bf703fa4ce6008081a4ce746c",
-                "reference": "21fd6220560c609bf703fa4ce6008081a4ce746c",
+                "url": "https://api.github.com/repos/laravel/octane/zipball/20b741badaa22cae73b87ffc4d979f3a7f06db25",
+                "reference": "20b741badaa22cae73b87ffc4d979f3a7f06db25",
                 "shasum": ""
             },
             "require": {
@@ -2928,7 +2927,7 @@
                 "issues": "https://github.com/laravel/octane/issues",
                 "source": "https://github.com/laravel/octane"
             },
-            "time": "2025-10-13T16:28:21+00:00"
+            "time": "2025-10-27T12:05:17+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -3279,16 +3278,16 @@
         },
         {
             "name": "laravel/socialite",
-            "version": "v5.23.0",
+            "version": "v5.23.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/socialite.git",
-                "reference": "e9e0fc83b9d8d71c8385a5da20e5b95ca6234cf5"
+                "reference": "83d7523c97c1101d288126948947891319eef800"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/socialite/zipball/e9e0fc83b9d8d71c8385a5da20e5b95ca6234cf5",
-                "reference": "e9e0fc83b9d8d71c8385a5da20e5b95ca6234cf5",
+                "url": "https://api.github.com/repos/laravel/socialite/zipball/83d7523c97c1101d288126948947891319eef800",
+                "reference": "83d7523c97c1101d288126948947891319eef800",
                 "shasum": ""
             },
             "require": {
@@ -3347,7 +3346,7 @@
                 "issues": "https://github.com/laravel/socialite/issues",
                 "source": "https://github.com/laravel/socialite"
             },
-            "time": "2025-07-23T14:16:08+00:00"
+            "time": "2025-10-27T15:36:41+00:00"
         },
         {
             "name": "laravel/tinker",
@@ -4188,16 +4187,16 @@
         },
         {
             "name": "livewire/flux",
-            "version": "v2.6.0",
+            "version": "v2.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/livewire/flux.git",
-                "reference": "3cb2ea40978449da74b3814eeef75f0388124224"
+                "reference": "227b88db0a02db91666af2303ea6727a3af78c51"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/livewire/flux/zipball/3cb2ea40978449da74b3814eeef75f0388124224",
-                "reference": "3cb2ea40978449da74b3814eeef75f0388124224",
+                "url": "https://api.github.com/repos/livewire/flux/zipball/227b88db0a02db91666af2303ea6727a3af78c51",
+                "reference": "227b88db0a02db91666af2303ea6727a3af78c51",
                 "shasum": ""
             },
             "require": {
@@ -4205,7 +4204,7 @@
                 "illuminate/support": "^10.0|^11.0|^12.0",
                 "illuminate/view": "^10.0|^11.0|^12.0",
                 "laravel/prompts": "^0.1|^0.2|^0.3",
-                "livewire/livewire": "^3.5.19",
+                "livewire/livewire": "^3.5.19|^4.0",
                 "php": "^8.1",
                 "symfony/console": "^6.0|^7.0"
             },
@@ -4248,9 +4247,9 @@
             ],
             "support": {
                 "issues": "https://github.com/livewire/flux/issues",
-                "source": "https://github.com/livewire/flux/tree/v2.6.0"
+                "source": "https://github.com/livewire/flux/tree/v2.6.1"
             },
-            "time": "2025-10-13T23:17:18+00:00"
+            "time": "2025-10-28T21:12:05+00:00"
         },
         {
             "name": "livewire/livewire",
@@ -7445,16 +7444,16 @@
         },
         {
             "name": "shalvah/clara",
-            "version": "3.2.0",
+            "version": "3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shalvah/clara.git",
-                "reference": "cdbb5737cbdd101756d97dd2279a979a1af7710b"
+                "reference": "6b30f389d71bfdd3f6e09f9b9537205ac7e118de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shalvah/clara/zipball/cdbb5737cbdd101756d97dd2279a979a1af7710b",
-                "reference": "cdbb5737cbdd101756d97dd2279a979a1af7710b",
+                "url": "https://api.github.com/repos/shalvah/clara/zipball/6b30f389d71bfdd3f6e09f9b9537205ac7e118de",
+                "reference": "6b30f389d71bfdd3f6e09f9b9537205ac7e118de",
                 "shasum": ""
             },
             "require": {
@@ -7486,9 +7485,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shalvah/clara/issues",
-                "source": "https://github.com/shalvah/clara/tree/3.2.0"
+                "source": "https://github.com/shalvah/clara/tree/3.3.0"
             },
-            "time": "2024-02-27T20:30:59+00:00"
+            "time": "2025-10-20T22:26:39+00:00"
         },
         {
             "name": "shalvah/upgrader",
@@ -7807,70 +7806,6 @@
                 }
             ],
             "time": "2025-08-26T08:22:30+00:00"
-        },
-        {
-            "name": "spatie/data-transfer-object",
-            "version": "3.9.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/spatie/data-transfer-object.git",
-                "reference": "1df0906c4e9e3aebd6c0506fd82c8b7d5548c1c8"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/spatie/data-transfer-object/zipball/1df0906c4e9e3aebd6c0506fd82c8b7d5548c1c8",
-                "reference": "1df0906c4e9e3aebd6c0506fd82c8b7d5548c1c8",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^8.0"
-            },
-            "require-dev": {
-                "illuminate/collections": "^8.36",
-                "jetbrains/phpstorm-attributes": "^1.0",
-                "larapack/dd": "^1.1",
-                "phpunit/phpunit": "^9.5.5"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Spatie\\DataTransferObject\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Brent Roose",
-                    "email": "brent@spatie.be",
-                    "homepage": "https://spatie.be",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Data transfer objects with batteries included",
-            "homepage": "https://github.com/spatie/data-transfer-object",
-            "keywords": [
-                "data-transfer-object",
-                "spatie"
-            ],
-            "support": {
-                "issues": "https://github.com/spatie/data-transfer-object/issues",
-                "source": "https://github.com/spatie/data-transfer-object/tree/3.9.1"
-            },
-            "funding": [
-                {
-                    "url": "https://spatie.be/open-source/support-us",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/spatie",
-                    "type": "github"
-                }
-            ],
-            "abandoned": "spatie/laravel-data",
-            "time": "2022-09-16T13:34:38+00:00"
         },
         {
             "name": "spatie/error-solutions",
