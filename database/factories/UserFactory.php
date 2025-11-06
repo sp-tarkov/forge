@@ -28,7 +28,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->userName(),
+            'name' => $this->generateUniqueName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -95,5 +95,33 @@ class UserFactory extends Factory
                     \App\Models\UserRole::factory()->administrator()->make()->toArray()
                 )->id,
         ]);
+    }
+
+    /**
+     * Generate a unique username, retrying with a suffix if the name already exists.
+     */
+    private function generateUniqueName(int $maxAttempts = 10): string
+    {
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            $name = fake()->userName();
+
+            // On first attempt, try the name as-is
+            if ($attempt === 0) {
+                if (! User::query()->where('name', $name)->exists()) {
+                    return $name;
+                }
+
+                continue;
+            }
+
+            // On subsequent attempts, append a number
+            $suffixedName = $name.$attempt;
+            if (! User::query()->where('name', $suffixedName)->exists()) {
+                return $suffixedName;
+            }
+        }
+
+        // Fallback: append a unique identifier
+        return fake()->userName().Str::random(4);
     }
 }
