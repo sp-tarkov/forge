@@ -84,7 +84,9 @@ return [
                 'ul,ol,li,'.
                 'blockquote,'.
                 'pre[class],code[class],'.
-                'span',
+                'span,'.
+                'iframe[width|height|src|title|frameborder|scrolling|allowfullscreen|allow]',
+            'HTML.SafeIframe' => true,
             'HTML.ForbiddenElements' => '',
             'HTML.TargetBlank' => true,
             'CSS.AllowedProperties' => '',
@@ -93,6 +95,7 @@ return [
             'AutoFormat.RemoveEmpty' => true,
             'AutoFormat.RemoveSpansWithoutAttributes' => true,
             'URI.AllowedSchemes' => ['http' => true, 'https' => true],
+            'URI.SafeIframeRegexp' => '%^(https?:)?\/\/(www\.youtube(?:-nocookie)?\.com\/embed\/|player\.vimeo\.com\/video\/)%',
             'Attr.AllowedFrameTargets' => ['_blank'],
         ],
         'comments' => [
@@ -108,7 +111,8 @@ return [
                 'table,thead,tbody,tr,th[align],td[align],'.
                 'dl,dt,dd,'.
                 'sup[id],ins,mark,'.
-                'span,',
+                'span,'.
+                'iframe[width|height|src|title|frameborder|scrolling|allowfullscreen|allow]',
             'HTML.SafeIframe' => true,
             'HTML.ForbiddenElements' => '',
             'HTML.TargetBlank' => true,
@@ -118,6 +122,7 @@ return [
             'AutoFormat.RemoveEmpty' => true,
             'AutoFormat.RemoveSpansWithoutAttributes' => true,
             'URI.AllowedSchemes' => ['http' => true, 'https' => true],
+            'URI.SafeIframeRegexp' => '%^(https?:)?\/\/(www\.youtube(?:-nocookie)?\.com\/embed\/|player\.vimeo\.com\/video\/)%',
             'Attr.AllowedClasses' => [
                 'external-link', 'language-js', 'footnotes', 'footnote-ref', 'footnote-backref', 'doc-endnotes',
                 'doc-endnote', 'doc-noteref', 'doc-backlink',
