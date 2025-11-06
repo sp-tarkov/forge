@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Api\V0\QueryBuilder;
 
+use App\Enums\FikaCompatibilityStatus;
 use App\Models\Mod;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
@@ -40,6 +41,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'updated_between' => 'filterByUpdatedBetween',
             'published_between' => 'filterByPublishedBetween',
             'spt_version' => 'filterBySptVersion',
+            'fika_compatibility' => 'filterByFikaCompatibility',
         ];
     }
 
@@ -408,5 +410,33 @@ class ModQueryBuilder extends AbstractQueryBuilder
         $validSptVersions = SptVersion::allValidVersions();
         $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
         $this->applySptVersionCondition($query, $compatibleSptVersions);
+    }
+
+    /**
+     * Filter by Fika compatibility status.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByFikaCompatibility(Builder $query, ?string $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $showCompatible = self::parseBooleanInput($value);
+
+        // Only filter when explicitly set to true (show compatible mods)
+        if (! $showCompatible) {
+            return;
+        }
+
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
+        $query->whereHas('versions', function (Builder $query) use ($showDisabled): void {
+            $query->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->unless($showDisabled, fn (Builder $q): Builder => $q->where('disabled', false))
+                ->where('fika_compatibility_status', FikaCompatibilityStatus::Compatible->value);
+        });
     }
 }

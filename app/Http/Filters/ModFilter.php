@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Filters;
 
+use App\Enums\FikaCompatibilityStatus;
 use App\Models\Mod;
 use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Builder;
@@ -198,6 +199,29 @@ class ModFilter
 
         return $this->builder->whereHas('category', function (Builder $query) use ($categorySlug): void {
             $query->where('slug', $categorySlug);
+        });
+    }
+
+    /**
+     * Filter the results by Fika compatibility status.
+     * When true, only show Fika compatible mods.
+     *
+     * @return Builder<Mod>
+     */
+    private function fikaCompatibility(mixed $option): Builder
+    {
+        // Only filter when explicitly set to true (checkbox checked)
+        if ($option !== true) {
+            return $this->builder;
+        }
+
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
+        return $this->builder->whereHas('versions', function (Builder $query) use ($showDisabled): void {
+            $query->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->unless($showDisabled, fn (Builder $q): Builder => $q->where('disabled', false))
+                ->where('fika_compatibility_status', FikaCompatibilityStatus::Compatible->value);
         });
     }
 

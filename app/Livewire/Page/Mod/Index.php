@@ -77,6 +77,13 @@ class Index extends Component
     public mixed $category = '';
 
     /**
+     * The Fika Compatibility filter value.
+     */
+    #[Session]
+    #[Url]
+    public mixed $fikaCompatibility = false;
+
+    /**
      * The available SPT versions.
      *
      * @var Collection<int, SptVersion>
@@ -117,6 +124,10 @@ class Index extends Component
             $this->category = '';
         }
 
+        if (! is_bool($this->fikaCompatibility)) {
+            $this->fikaCompatibility = false;
+        }
+
         // Set default versions if none provided via URL
         if (empty($this->sptVersions)) {
             $this->sptVersions = $this->defaultSptVersions();
@@ -134,6 +145,7 @@ class Index extends Component
         $this->sptVersions = $this->defaultSptVersions();
         $this->featured = 'include';
         $this->category = '';
+        $this->fikaCompatibility = false;
 
         unset($this->splitSptVersions); // Clear computed property cache
     }
@@ -224,6 +236,10 @@ class Index extends Component
             $count++;
         }
 
+        if ($this->fikaCompatibility === true) {
+            $count++;
+        }
+
         // Count sptVersions filter if it's not 'all' and not empty
         if (is_array($this->sptVersions)) {
             $count += count($this->sptVersions);
@@ -250,6 +266,7 @@ class Index extends Component
             'order' => $this->order,
             'sptVersions' => $this->sptVersions,
             'category' => $this->category,
+            'fikaCompatibility' => $this->fikaCompatibility,
         ]);
 
         $paginatedMods = $filters->apply()->paginate($this->perPage);

@@ -440,4 +440,51 @@ describe('Mod Index API', function (): void {
         $response->assertJsonPath('data.0.thumbnail', $mod->thumbnailUrl);
         expect($response->json('data.0.thumbnail'))->toContain('thumbnails/test-image.jpg');
     });
+
+    it('shows all mods when Fika compatibility filter is false', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'incompatible',
+        ]);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[fika_compatibility]=false');
+
+        $response->assertOk()->assertJsonCount(2, 'data');
+
+        $returnedIds = collect($response->json('data'))->pluck('id')->all();
+        expect($returnedIds)->toContain($modCompatible->id, $modIncompatible->id);
+    });
+
+    it('shows only Fika compatible mods when filter is true', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'incompatible',
+        ]);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[fika_compatibility]=true');
+
+        $response->assertOk()->assertJsonCount(1, 'data');
+
+        $returnedIds = collect($response->json('data'))->pluck('id')->all();
+        expect($returnedIds)->toContain($modCompatible->id)
+            ->not->toContain($modIncompatible->id);
+    });
 });

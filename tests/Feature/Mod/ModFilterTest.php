@@ -371,3 +371,49 @@ describe('disabled mods filtering', function (): void {
             ->toContain($modEnabled->id, $modDisabled->id);
     });
 });
+
+describe('Fika compatibility filtering', function (): void {
+    it('shows all mods when Fika compatibility filter is unchecked (false)', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'incompatible',
+        ]);
+
+        $filters = ['fikaCompatibility' => false];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        expect($filteredMods)->toHaveCount(2)
+            ->and($filteredMods->pluck('id')->toArray())->toContain($modCompatible->id, $modIncompatible->id);
+    });
+
+    it('shows only Fika compatible mods when filter is checked (true)', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility_status' => 'incompatible',
+        ]);
+
+        $filters = ['fikaCompatibility' => true];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        expect($filteredMods)->toHaveCount(1)
+            ->and($filteredMods->first()->id)->toBe($modCompatible->id);
+    });
+});

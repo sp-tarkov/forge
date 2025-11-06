@@ -469,27 +469,49 @@
                             </div>
                         </fieldset>
                     </div>
-                    <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
-                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}
-                        </legend>
-                        <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                            <x-filter-radio
-                                id="featured-0"
-                                name="featured"
-                                value="include"
-                            >{{ __('Include') }}</x-filter-radio>
-                            <x-filter-radio
-                                id="featured-1"
-                                name="featured"
-                                value="exclude"
-                            >{{ __('Exclude') }}</x-filter-radio>
-                            <x-filter-radio
-                                id="featured-2"
-                                name="featured"
-                                value="only"
-                            >{{ __('Only') }}</x-filter-radio>
-                        </div>
-                    </fieldset>
+                    <div class="col-span-1 md:col-span-1 mt-6 sm:mt-0 space-y-8">
+                        <fieldset>
+                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}
+                            </legend>
+                            <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                                <x-filter-radio
+                                    id="featured-0"
+                                    name="featured"
+                                    value="include"
+                                >{{ __('Include') }}</x-filter-radio>
+                                <x-filter-radio
+                                    id="featured-1"
+                                    name="featured"
+                                    value="exclude"
+                                >{{ __('Exclude') }}</x-filter-radio>
+                                <x-filter-radio
+                                    id="featured-2"
+                                    name="featured"
+                                    value="only"
+                                >{{ __('Only') }}</x-filter-radio>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">
+                                {{ __('Fika Compatibility') }}</legend>
+                            <div class="pt-6 sm:pt-4">
+                                <div class="flex items-center text-base sm:text-sm">
+                                    <input
+                                        id="fikaCompatibility"
+                                        type="checkbox"
+                                        wire:model.live="fikaCompatibility"
+                                        class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
+                                        wire:loading.attr="disabled"
+                                    >
+                                    <label
+                                        for="fikaCompatibility"
+                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                        wire:loading.class="opacity-50"
+                                    >{{ __('Compatible Only') }}</label>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
                     <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
                         <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Category') }}
                         </legend>
