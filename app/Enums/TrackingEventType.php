@@ -19,19 +19,19 @@ enum TrackingEventType: string
     case REGISTER = 'register';
     case PASSWORD_CHANGE = 'password_change';
 
-    /** Mod-related events - requires a Mod model */
+    /** Mod-related events */
     case MOD_DOWNLOAD = 'mod_download';
     case MOD_CREATE = 'mod_create';
     case MOD_EDIT = 'mod_edit';
     case MOD_DELETE = 'mod_delete';
     case MOD_REPORT = 'mod_report';
 
-    /** Mod version events - requires a ModVersion model */
+    /** Mod version events */
     case VERSION_CREATE = 'version_create';
     case VERSION_EDIT = 'version_edit';
     case VERSION_DELETE = 'version_delete';
 
-    /** Addon-related events - requires an Addon model */
+    /** Addon-related events */
     case ADDON_DOWNLOAD = 'addon_download';
     case ADDON_CREATE = 'addon_create';
     case ADDON_EDIT = 'addon_edit';
@@ -44,12 +44,12 @@ enum TrackingEventType: string
     case ADDON_PUBLISH = 'addon_publish';
     case ADDON_UNPUBLISH = 'addon_unpublish';
 
-    /** Addon version events - requires an AddonVersion model */
+    /** Addon version events */
     case ADDON_VERSION_CREATE = 'addon_version_create';
     case ADDON_VERSION_EDIT = 'addon_version_edit';
     case ADDON_VERSION_DELETE = 'addon_version_delete';
 
-    /** Comment events - requires a Comment model */
+    /** Comment events */
     case COMMENT_CREATE = 'comment_create';
     case COMMENT_EDIT = 'comment_edit';
     case COMMENT_DELETE = 'comment_delete';
@@ -316,7 +316,7 @@ enum TrackingEventType: string
             // Account management - Rose theme
             self::ACCOUNT_DELETE => 'rose',
 
-            // Moderation actions - Red/Orange/Gray theme for enforcement
+            // Moderation actions - Red/Orange/Gray theme
             self::USER_BAN => 'red',
             self::USER_UNBAN => 'green',
             self::IP_BAN => 'red',
@@ -357,15 +357,14 @@ enum TrackingEventType: string
     /**
      * Determine if this event type should be private (not shown to other users).
      * Private events are only visible to the user themselves, moderators, and administrators.
+     *
+     * Most events are private by default, except for explicitly public actions like making comments.
      */
     public function isPrivate(): bool
     {
         return match ($this) {
-            self::LOGIN, self::LOGOUT, self::REGISTER, self::PASSWORD_CHANGE, self::ACCOUNT_DELETE, self::MOD_REPORT, self::ADDON_REPORT, self::COMMENT_REPORT,
-            self::USER_BAN, self::USER_UNBAN, self::IP_BAN, self::IP_UNBAN, self::MOD_FEATURE, self::MOD_UNFEATURE,
-            self::MOD_DISABLE, self::MOD_ENABLE, self::MOD_PUBLISH, self::MOD_UNPUBLISH, self::ADDON_DISABLE, self::ADDON_ENABLE,
-            self::ADDON_PUBLISH, self::ADDON_UNPUBLISH, self::COMMENT_PIN, self::COMMENT_UNPIN => true,
-            default => false,
+            self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE => false,
+            default => true,
         };
     }
 }

@@ -288,7 +288,7 @@ describe('UserActivity Component', function (): void {
                 TrackingEvent::factory()->create([
                     'visitor_id' => $testUser->id,
                     'visitor_type' => User::class,
-                    'event_name' => TrackingEventType::MOD_CREATE->value, // Use a valid event name
+                    'event_name' => TrackingEventType::COMMENT_CREATE->value, // Use a public event name
                     'created_at' => now()->subMinutes($i),
                 ]);
             }
@@ -305,19 +305,19 @@ describe('UserActivity Component', function (): void {
             TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitor_type' => User::class,
-                'event_name' => TrackingEventType::MOD_CREATE->value,
+                'event_name' => TrackingEventType::COMMENT_CREATE->value,
                 'created_at' => now()->subHours(3),
             ]);
             TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitor_type' => User::class,
-                'event_name' => TrackingEventType::MOD_CREATE->value,
+                'event_name' => TrackingEventType::COMMENT_EDIT->value,
                 'created_at' => now()->subHours(1),
             ]);
             TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitor_type' => User::class,
-                'event_name' => TrackingEventType::MOD_CREATE->value,
+                'event_name' => TrackingEventType::COMMENT_LIKE->value,
                 'created_at' => now()->subHours(2),
             ]);
 
@@ -557,13 +557,6 @@ describe('UserActivity Component', function (): void {
 
         it('returns false for public event types', function (): void {
             $publicEventTypes = [
-                TrackingEventType::MOD_DOWNLOAD,
-                TrackingEventType::MOD_CREATE,
-                TrackingEventType::MOD_EDIT,
-                TrackingEventType::MOD_DELETE,
-                TrackingEventType::VERSION_CREATE,
-                TrackingEventType::VERSION_EDIT,
-                TrackingEventType::VERSION_DELETE,
                 TrackingEventType::COMMENT_CREATE,
                 TrackingEventType::COMMENT_EDIT,
                 TrackingEventType::COMMENT_DELETE,
@@ -628,9 +621,9 @@ describe('UserActivity Component', function (): void {
             ]));
 
             collect([
-                TrackingEventType::MOD_CREATE,
                 TrackingEventType::COMMENT_CREATE,
-                TrackingEventType::MOD_DOWNLOAD,
+                TrackingEventType::COMMENT_EDIT,
+                TrackingEventType::COMMENT_LIKE,
             ])->each(fn ($type) => TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitor_type' => User::class,
@@ -642,7 +635,7 @@ describe('UserActivity Component', function (): void {
 
             $recentActivity = $component->get('recentActivity');
 
-            expect($recentActivity->count())->toBe(6); // 3 private + 3 public
+            expect($recentActivity->count())->toBe(6); // 3 private + 3 public (comment events)
         });
 
         it('filters private events for unauthenticated users', function (): void {
@@ -660,9 +653,9 @@ describe('UserActivity Component', function (): void {
             ]));
 
             collect([
-                TrackingEventType::MOD_CREATE,
                 TrackingEventType::COMMENT_CREATE,
-                TrackingEventType::MOD_DOWNLOAD,
+                TrackingEventType::COMMENT_EDIT,
+                TrackingEventType::COMMENT_LIKE,
             ])->each(fn ($type) => TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitor_type' => User::class,
@@ -701,9 +694,9 @@ describe('UserActivity Component', function (): void {
             ]));
 
             collect([
-                TrackingEventType::MOD_CREATE,
                 TrackingEventType::COMMENT_CREATE,
-                TrackingEventType::MOD_DOWNLOAD,
+                TrackingEventType::COMMENT_EDIT,
+                TrackingEventType::COMMENT_LIKE,
             ])->each(fn ($type) => TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitor_type' => User::class,
@@ -862,18 +855,18 @@ describe('UserActivity Component', function (): void {
             $comment = Comment::factory()->create();
 
             // Create events for each
-            $modEvent = TrackingEvent::factory()->create([
-                'visitor_id' => $testUser->id,
-                'visitable_type' => Mod::class,
-                'visitable_id' => $mod->id,
-                'event_name' => TrackingEventType::MOD_CREATE->value,
-            ]);
-
-            $commentEvent = TrackingEvent::factory()->create([
+            $commentEvent1 = TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitable_type' => Comment::class,
                 'visitable_id' => $comment->id,
                 'event_name' => TrackingEventType::COMMENT_CREATE->value,
+            ]);
+
+            $commentEvent2 = TrackingEvent::factory()->create([
+                'visitor_id' => $testUser->id,
+                'visitable_type' => Comment::class,
+                'visitable_id' => $comment->id,
+                'event_name' => TrackingEventType::COMMENT_EDIT->value,
             ]);
 
             $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
@@ -882,11 +875,11 @@ describe('UserActivity Component', function (): void {
             expect($recentActivity->count())->toBeGreaterThanOrEqual(2);
 
             // Verify both events are present
-            $modEvents = $recentActivity->where('id', $modEvent->id);
-            $commentEvents = $recentActivity->where('id', $commentEvent->id);
+            $commentEvents1 = $recentActivity->where('id', $commentEvent1->id);
+            $commentEvents2 = $recentActivity->where('id', $commentEvent2->id);
 
-            expect($modEvents)->toHaveCount(1);
-            expect($commentEvents)->toHaveCount(1);
+            expect($commentEvents1)->toHaveCount(1);
+            expect($commentEvents2)->toHaveCount(1);
         });
     });
 
