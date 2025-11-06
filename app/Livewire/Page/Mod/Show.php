@@ -11,6 +11,7 @@ use App\Traits\Livewire\ModeratesAddon;
 use App\Traits\Livewire\ModeratesMod;
 use App\Traits\Livewire\ModeratesModVersion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -287,14 +288,14 @@ class Show extends Component
                 'authors',
                 'latestVersion',
                 'mod.latestVersion',
-                'latestVersion.compatibleModVersions' => function (Builder $query): void {
+                'latestVersion.compatibleModVersions' => function (BelongsToMany $query): void {
                     $query->where('mod_id', $this->mod->id)
                         ->orderBy('version_major', 'desc')
                         ->orderBy('version_minor', 'desc')
                         ->orderBy('version_patch', 'desc');
                 },
                 // Load ALL compatible mod versions from ALL addon versions
-                'versions.compatibleModVersions' => function (Builder $query): void {
+                'versions.compatibleModVersions' => function (BelongsToMany $query): void {
                     $query->where('mod_id', $this->mod->id)
                         ->distinct()
                         ->orderBy('version_major', 'desc')
