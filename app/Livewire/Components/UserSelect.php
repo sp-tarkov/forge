@@ -6,6 +6,7 @@ namespace App\Livewire\Components;
 
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Modelable;
 use Livewire\Attributes\Reactive;
@@ -86,7 +87,9 @@ class UserSelect extends Component
      */
     public function updatedSearch(): void
     {
-        if (mb_strlen($this->search) < 2) {
+        $searchTerm = Str::of($this->search)->trim();
+
+        if ($searchTerm->length() < 2) {
             $this->searchResults = collect();
             $this->showDropdown = false;
 
@@ -94,7 +97,7 @@ class UserSelect extends Component
         }
 
         $query = User::query()
-            ->where('name', 'like', '%'.$this->search.'%')
+            ->where('name', 'like', $this->search.'%')
             ->whereNotIn('id', array_merge($this->selectedUsers, $this->excludeUsers))
             ->withCount(['mods', 'comments'])
             ->limit(10);
