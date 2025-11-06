@@ -253,26 +253,15 @@
                             for="eventFilter"
                             class="text-xs"
                         >Event</flux:label>
-                        <flux:input
-                            wire:model.live.debounce.300ms="eventFilter"
-                            id="eventFilter"
-                            placeholder="Filter by event..."
-                            size="sm"
-                        />
-                    </div>
-
-                    <div>
-                        <flux:label
-                            for="eventMatchType"
-                            class="text-xs"
-                        >Event Match</flux:label>
                         <flux:select
-                            wire:model.live="eventMatchType"
-                            id="eventMatchType"
+                            wire:model.live="eventFilter"
+                            id="eventFilter"
                             size="sm"
                         >
-                            <flux:select.option value="contains">Contains</flux:select.option>
-                            <flux:select.option value="exact">Exact Match</flux:select.option>
+                            <flux:select.option value="">All Events</flux:select.option>
+                            @foreach(\App\Enums\TrackingEventType::cases() as $eventType)
+                                <flux:select.option value="{{ $eventType->value }}">{{ $eventType->getName() }}</flux:select.option>
+                            @endforeach
                         </flux:select>
                     </div>
 
@@ -657,8 +646,9 @@
                                                     size="xs"
                                                 />
                                                 <div class="flex flex-col">
-                                                    <span class="text-xs text-gray-900 dark:text-gray-100">Unknown
-                                                        User</span>
+                                                    <span class="text-xs text-gray-900 dark:text-gray-100">
+                                                        {{ $this->getEventDisplayName($event) ?? 'Unknown User' }}
+                                                    </span>
                                                     <span class="text-xs text-gray-500 dark:text-gray-400">ID:
                                                         {{ $this->getEventUserId($event) }}</span>
                                                 </div>
