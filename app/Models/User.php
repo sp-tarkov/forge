@@ -14,6 +14,7 @@ use App\Traits\HasCoverPhoto;
 use App\Traits\HasReports;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,6 +36,7 @@ use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
 use SensitiveParameter;
 use Shetabit\Visitor\Traits\Visitor;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -697,7 +699,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
 
     /**
      * Handle the about default value if empty. Ensures an empty string is retrieved if the DB value is NULL, and an
-     * empty string is saved if the input is NULL or empty.
+     * empty string is saved if the input is NULL or empty. Automatically trims whitespace.
      *
      * @return Attribute<string, string>
      */
@@ -705,8 +707,24 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     {
         return Attribute::make(
             get: fn (?string $value): string => $value ?? '', // If DB value is NULL, return ''
-            set: fn (?string $value): string => $value ?? '', // If input value is NULL, set as ''
+            set: fn (?string $value): string => mb_trim($value ?? ''), // Trim whitespace and handle NULL
         );
+    }
+
+    /**
+     * Get the about content processed as HTML with markdown formatting.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function aboutHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->about
+                ? Purify::config('comments')->clean(
+                    Markdown::convert($this->about)->getContent()
+                )
+                : ''
+        )->shouldCache();
     }
 
     /**

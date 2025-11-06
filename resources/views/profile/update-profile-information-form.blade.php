@@ -257,6 +257,28 @@
                 class="mt-2"
             />
         </div>
+
+        <!-- About -->
+        <div class="col-span-6 sm:col-span-4">
+            <x-label
+                for="about"
+                value="{{ __('About Me') }}"
+            />
+            <textarea
+                id="about"
+                rows="6"
+                class="mt-1 block w-full rounded-md border-0 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm"
+                wire:model.blur="state.about"
+                placeholder="{{ __('Tell us about yourself. Use markdown for formatting.') }}"
+            ></textarea>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ __('Basic markdown formatting is supported.') }}
+            </p>
+            <x-input-error
+                for="about"
+                class="mt-2"
+            />
+        </div>
     </x-slot>
 
     <x-slot name="actions">
