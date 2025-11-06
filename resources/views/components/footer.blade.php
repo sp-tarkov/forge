@@ -79,6 +79,11 @@
                                 class="text-sm leading-6 text-gray-300 hover:text-white"
                             >SPT Wiki</a></li>
                         <li><a
+                                href="https://github.com/sp-tarkov/build/releases"
+                                target="_blank"
+                                class="text-sm leading-6 text-gray-300 hover:text-white"
+                            >SPT Changelog</a></li>
+                        <li><a
                                 href="{{ route('static.contact') }}"
                                 wire:navigate
                                 class="text-sm leading-6 text-gray-300 hover:text-white"
@@ -99,6 +104,11 @@
                                 href="https://escapefromtarkov.fandom.com/wiki/Escape_from_Tarkov_Wiki"
                                 class="text-sm leading-6 text-gray-300 hover:text-white"
                             >EFT Wiki</a></li>
+                        <li><a
+                                href="https://escapefromtarkov.fandom.com/wiki/Changelog"
+                                target="_blank"
+                                class="text-sm leading-6 text-gray-300 hover:text-white"
+                            >EFT Changelog</a></li>
                     </ul>
                 </div>
                 <div>
