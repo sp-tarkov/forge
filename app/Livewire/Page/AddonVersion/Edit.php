@@ -9,6 +9,7 @@ use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
+use App\Models\VirusTotalLink;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
@@ -61,10 +62,11 @@ class Edit extends Component
     public string $modVersionConstraint = '';
 
     /**
-     * The link to the virus total scan of the addon version.
+     * The links to the virus total scans of the addon version.
+     *
+     * @var array<int, array{url: string, label: string}>
      */
-    #[Validate('required|string|url|starts_with:https://www.virustotal.com/')]
-    public string $virusTotalLink = '';
+    public array $virusTotalLinks = [];
 
     /**
      * The published at date of the addon version.
@@ -99,10 +101,38 @@ class Edit extends Component
         $this->description = $this->addonVersion->description ?? '';
         $this->link = $this->addonVersion->link;
         $this->modVersionConstraint = $this->addonVersion->mod_version_constraint;
-        $this->virusTotalLink = $this->addonVersion->virus_total_link ?? '';
+
+        // Load existing VirusTotal links
+        $this->virusTotalLinks = $addonVersion->virusTotalLinks->map(fn (VirusTotalLink $link): array => [
+            'url' => $link->url,
+            'label' => $link->label ?? '',
+        ])->all();
+
+        // Ensure at least one empty link field is present
+        if (empty($this->virusTotalLinks)) {
+            $this->virusTotalLinks[] = ['url' => '', 'label' => ''];
+        }
+
         $this->publishedAt = $this->addonVersion->published_at ? Date::parse($this->addonVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
 
         $this->updatedModVersionConstraint();
+    }
+
+    /**
+     * Add a new VirusTotal link field.
+     */
+    public function addVirusTotalLink(): void
+    {
+        $this->virusTotalLinks[] = ['url' => '', 'label' => ''];
+    }
+
+    /**
+     * Remove a VirusTotal link field.
+     */
+    public function removeVirusTotalLink(int $index): void
+    {
+        unset($this->virusTotalLinks[$index]);
+        $this->virusTotalLinks = array_values($this->virusTotalLinks);
     }
 
     /**
@@ -153,13 +183,32 @@ class Edit extends Component
         // Create and configure the DirectDownloadLink rule
         $this->downloadLinkRule = new DirectDownloadLink;
 
-        // Validate with the rule
-        $this->validate([
+        // Build validation rules
+        $rules = [
             'link' => ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule],
-        ]);
+            'version' => ['required', 'string', 'max:50', new SemverRule],
+            'description' => 'required|string',
+            'modVersionConstraint' => ['required', 'string', 'max:75', new SemverConstraintRule],
+            'publishedAt' => 'nullable|date',
+        ];
 
-        // Validate other fields
-        $this->validate();
+        // VirusTotal links validation
+        $rules['virusTotalLinks'] = 'required|array|min:1';
+        $rules['virusTotalLinks.*.url'] = 'required|string|url|starts_with:https://www.virustotal.com/';
+        $rules['virusTotalLinks.*.label'] = 'nullable|string|max:255';
+
+        // Build custom messages
+        $messages = [
+            'virusTotalLinks.required' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.min' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.*.url.required' => 'Please enter a valid VirusTotal URL.',
+            'virusTotalLinks.*.url.url' => 'Please enter a valid URL (e.g., https://www.virustotal.com/...).',
+            'virusTotalLinks.*.url.starts_with' => 'The URL must start with https://www.virustotal.com/',
+            'virusTotalLinks.*.label.max' => 'The label must not exceed 255 characters.',
+        ];
+
+        // Validate all fields
+        $this->validate($rules, $messages);
 
         // Parse the published at date in the user's timezone, convert to UTC for DB storage.
         // Zero out seconds for consistency with datetime-local input format.
@@ -175,9 +224,19 @@ class Edit extends Component
             'link' => $this->link,
             'content_length' => $this->downloadLinkRule->contentLength,
             'mod_version_constraint' => $this->modVersionConstraint,
-            'virus_total_link' => $this->virusTotalLink,
             'published_at' => $publishedAtCarbon,
         ]);
+
+        // Update VirusTotal links - delete existing and recreate
+        $this->addonVersion->virusTotalLinks()->delete();
+        foreach ($this->virusTotalLinks as $virusTotalLink) {
+            if (! empty($virusTotalLink['url'])) {
+                $this->addonVersion->virusTotalLinks()->create([
+                    'url' => $virusTotalLink['url'],
+                    'label' => ! empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
+                ]);
+            }
+        }
 
         Track::event(TrackingEventType::ADDON_VERSION_EDIT, $this->addonVersion);
 

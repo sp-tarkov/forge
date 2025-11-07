@@ -61,10 +61,13 @@ class Create extends Component
     public string $modVersionConstraint = '';
 
     /**
-     * The link to the virus total scan of the addon version.
+     * The links to the virus total scans of the addon version.
+     *
+     * @var array<int, array{url: string, label: string}>
      */
-    #[Validate('required|string|url|starts_with:https://www.virustotal.com/')]
-    public string $virusTotalLink = '';
+    public array $virusTotalLinks = [
+        ['url' => '', 'label' => ''],
+    ];
 
     /**
      * The published at date of the addon version.
@@ -94,6 +97,23 @@ class Create extends Component
         $this->addon = $addon->loadMissing('mod');
 
         $this->authorize('create', [AddonVersion::class, $this->addon]);
+    }
+
+    /**
+     * Add a new VirusTotal link field.
+     */
+    public function addVirusTotalLink(): void
+    {
+        $this->virusTotalLinks[] = ['url' => '', 'label' => ''];
+    }
+
+    /**
+     * Remove a VirusTotal link field.
+     */
+    public function removeVirusTotalLink(int $index): void
+    {
+        unset($this->virusTotalLinks[$index]);
+        $this->virusTotalLinks = array_values($this->virusTotalLinks);
     }
 
     /**
@@ -144,13 +164,32 @@ class Create extends Component
         // Create and configure the DirectDownloadLink rule
         $this->downloadLinkRule = new DirectDownloadLink;
 
-        // Validate with the rule
-        $this->validate([
+        // Build validation rules
+        $rules = [
             'link' => ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule],
-        ]);
+            'version' => ['required', 'string', 'max:50', new SemverRule],
+            'description' => 'required|string',
+            'modVersionConstraint' => ['required', 'string', 'max:75', new SemverConstraintRule],
+            'publishedAt' => 'nullable|date',
+        ];
 
-        // Validate other fields
-        $this->validate();
+        // VirusTotal links validation
+        $rules['virusTotalLinks'] = 'required|array|min:1';
+        $rules['virusTotalLinks.*.url'] = 'required|string|url|starts_with:https://www.virustotal.com/';
+        $rules['virusTotalLinks.*.label'] = 'nullable|string|max:255';
+
+        // Build custom messages
+        $messages = [
+            'virusTotalLinks.required' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.min' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.*.url.required' => 'Please enter a valid VirusTotal URL.',
+            'virusTotalLinks.*.url.url' => 'Please enter a valid URL (e.g., https://www.virustotal.com/...).',
+            'virusTotalLinks.*.url.starts_with' => 'The URL must start with https://www.virustotal.com/',
+            'virusTotalLinks.*.label.max' => 'The label must not exceed 255 characters.',
+        ];
+
+        // Validate all fields
+        $this->validate($rules, $messages);
 
         // Parse the published at date in the user's timezone, convert to UTC for DB storage.
         // Zero out seconds for consistency with datetime-local input format.
@@ -168,12 +207,21 @@ class Create extends Component
             'link' => $this->link,
             'content_length' => $this->downloadLinkRule->contentLength,
             'mod_version_constraint' => $this->modVersionConstraint,
-            'virus_total_link' => $this->virusTotalLink,
             'published_at' => $publishedAtCarbon,
         ]);
 
         // Save the addon version
         $addonVersion->save();
+
+        // Create VirusTotal links
+        foreach ($this->virusTotalLinks as $virusTotalLink) {
+            if (! empty($virusTotalLink['url'])) {
+                $addonVersion->virusTotalLinks()->create([
+                    'url' => $virusTotalLink['url'],
+                    'label' => ! empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
+                ]);
+            }
+        }
 
         Track::event(TrackingEventType::ADDON_VERSION_CREATE, $addonVersion);
 

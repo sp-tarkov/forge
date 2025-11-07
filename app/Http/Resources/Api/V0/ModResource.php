@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Mod;
-use App\Models\SourceCodeLink;
 use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -127,10 +126,7 @@ class ModResource extends JsonResource
         $data['versions'] = ModVersionResource::collection($this->whenLoaded('versions', fn (): Collection => $this->resource->versions->take(10)));
         $data['license'] = $this->whenLoaded('license', fn (): ?LicenseResource => $this->resource->license ? new LicenseResource($this->resource->license) : null);
         $data['category'] = $this->whenLoaded('category', fn (): ?ModCategoryResource => $this->resource->category ? new ModCategoryResource($this->resource->category) : null);
-        $data['source_code_links'] = $this->whenLoaded('sourceCodeLinks', fn (): array => $this->resource->sourceCodeLinks->map(fn (SourceCodeLink $link): array => [
-            'url' => $link->url,
-            'label' => $link->label,
-        ])->all());
+        $data['source_code_links'] = SourceCodeLinkResource::collection($this->whenLoaded('sourceCodeLinks'));
 
         return $data;
     }

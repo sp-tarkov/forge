@@ -7,11 +7,9 @@ namespace App\Http\Controllers\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\AddonResource;
-use App\Http\Resources\Api\V0\AddonVersionResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\Addon;
 use App\Support\Api\V0\QueryBuilder\AddonQueryBuilder;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\UrlParam;
@@ -210,73 +208,5 @@ class AddonController extends Controller
         }
 
         return ApiResponse::success(new AddonResource($addon));
-    }
-
-    /**
-     * Get Addon Versions
-     *
-     * Retrieves all versions for a specific addon with full version details.
-     *
-     * @response status=200 scenario="Success"
-     *  {
-     *      "success": true,
-     *      "data": [
-     *          {
-     *              "id": 1,
-     *              "version": "1.2.0",
-     *              "mod_version_constraint": "^2.0.0",
-     *              "downloads": 523,
-     *              "description": "Added 10 new tracks",
-     *              "published_at": "2025-01-09T17:48:53.000000Z"
-     *          },
-     *          {
-     *              "id": 2,
-     *              "version": "1.1.0",
-     *              "mod_version_constraint": "^2.0.0",
-     *              "downloads": 1000,
-     *              "description": "Fixed audio glitches",
-     *              "published_at": "2024-12-15T10:30:00.000000Z"
-     *          }
-     *      ],
-     *      "links": {
-     *          "first": "https://forge.test/api/v0/addons/1/versions?page=1",
-     *          "last": "https://forge.test/api/v0/addons/1/versions?page=1",
-     *          "prev": null,
-     *          "next": null
-     *      },
-     *      "meta": {
-     *          "current_page": 1,
-     *          "from": 1,
-     *          "last_page": 1,
-     *          "path": "https://forge.test/api/v0/addons/1/versions",
-     *          "per_page": 25,
-     *          "to": 2,
-     *          "total": 2
-     *      }
-     *  }
-     * @response status=404 scenario="Addon Does Not Exist"
-     *  {
-     *      "success": false,
-     *      "code": "NOT_FOUND",
-     *      "message": "Resource not found."
-     *  }
-     */
-    public function versions(Request $request, int $addonId): JsonResponse
-    {
-        $queryBuilder = (new AddonQueryBuilder);
-        $addon = $queryBuilder->findOrFail($addonId);
-
-        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
-
-        $versions = $addon->versions()
-            ->unless($showDisabled, fn (Builder $query) => $query->where('disabled', false))
-            ->unless($showDisabled, fn (Builder $query) => $query->whereNotNull('published_at'))
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderBy('version_labels')
-            ->paginate($request->integer('per_page', 25));
-
-        return ApiResponse::success(AddonVersionResource::collection($versions));
     }
 }

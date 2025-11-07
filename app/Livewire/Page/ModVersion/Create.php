@@ -70,10 +70,11 @@ class Create extends Component
     public string $sptVersionConstraint = '';
 
     /**
-     * The link to the virus total scan of the mod version.
+     * The virus total links for the mod version.
+     *
+     * @var array<int, array{url: string, label: string}>
      */
-    #[Validate('required|string|url|starts_with:https://www.virustotal.com/')]
-    public string $virusTotalLink = '';
+    public array $virusTotalLinks = [];
 
     /**
      * The published at date of the mod version.
@@ -265,6 +266,23 @@ class Create extends Component
     }
 
     /**
+     * Add a new VirusTotal link.
+     */
+    public function addVirusTotalLink(): void
+    {
+        $this->virusTotalLinks[] = ['url' => '', 'label' => ''];
+    }
+
+    /**
+     * Remove a VirusTotal link.
+     */
+    public function removeVirusTotalLink(int $index): void
+    {
+        unset($this->virusTotalLinks[$index]);
+        $this->virusTotalLinks = array_values($this->virusTotalLinks);
+    }
+
+    /**
      * Update the matching versions for a dependency constraint.
      */
     public function updatedDependencies(mixed $value, ?string $property = null): void
@@ -290,6 +308,11 @@ class Create extends Component
         $this->mod = $mod;
         $this->honeypotData = new HoneypotData;
         $this->modGuid = $mod->guid ?? '';
+
+        // Initialize with one empty VirusTotal link
+        $this->virusTotalLinks = [
+            ['url' => '', 'label' => ''],
+        ];
 
         $this->authorize('create', [ModVersion::class, $this->mod]);
     }
@@ -368,7 +391,6 @@ class Create extends Component
                 'link' => $validated['link'],
                 'content_length' => $this->downloadLinkRule?->contentLength,
                 'spt_version_constraint' => $validated['sptVersionConstraint'],
-                'virus_total_link' => $validated['virusTotalLink'],
                 'fika_compatibility_status' => FikaCompatibilityStatus::from($this->fikaCompatibilityStatus),
                 'published_at' => $this->publishedAt,
             ]);
@@ -408,6 +430,16 @@ class Create extends Component
                     $modVersion->dependencies()->create([
                         'dependent_mod_id' => $dependency['modId'],
                         'constraint' => $dependency['constraint'],
+                    ]);
+                }
+            }
+
+            // Create VirusTotal links if any were specified
+            foreach ($this->virusTotalLinks as $virusTotalLink) {
+                if (! empty($virusTotalLink['url'])) {
+                    $modVersion->virusTotalLinks()->create([
+                        'url' => $virusTotalLink['url'],
+                        'label' => ! empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
                     ]);
                 }
             }
@@ -457,6 +489,11 @@ class Create extends Component
             }
         }
 
+        // VirusTotal links validation
+        $rules['virusTotalLinks'] = 'required|array|min:1';
+        $rules['virusTotalLinks.*.url'] = 'required|string|url|starts_with:https://www.virustotal.com/';
+        $rules['virusTotalLinks.*.label'] = 'nullable|string|max:255';
+
         // Download link validation
         $this->downloadLinkRule = new DirectDownloadLink;
         $rules['link'] = ['required', 'string', 'url', 'starts_with:https://,http://', $this->downloadLinkRule];
@@ -475,6 +512,12 @@ class Create extends Component
             'newModGuid.required' => 'A mod GUID is required for versions compatible with SPT 4.0.0 or above.',
             'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
             'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+            'virusTotalLinks.required' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.min' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.*.url.required' => 'Please enter a valid VirusTotal URL.',
+            'virusTotalLinks.*.url.url' => 'Please enter a valid URL (e.g., https://www.virustotal.com/...).',
+            'virusTotalLinks.*.url.starts_with' => 'The URL must start with https://www.virustotal.com/',
+            'virusTotalLinks.*.label.max' => 'The label must not exceed 255 characters.',
         ];
 
         foreach ($this->dependencies as $index => $dependency) {
@@ -482,6 +525,12 @@ class Create extends Component
             $messages[sprintf('dependencies.%d.modId.exists', $index)] = 'The selected mod does not exist.';
             $messages[sprintf('dependencies.%d.constraint.required', $index)] = 'Please specify a version constraint.';
             $messages[sprintf('dependencies.%d.constraint.string', $index)] = 'This version constraint is invalid.';
+        }
+
+        foreach ($this->virusTotalLinks as $index => $virusTotalLink) {
+            $messages[sprintf('virusTotalLinks.%d.url.required', $index)] = 'Please provide a VirusTotal URL.';
+            $messages[sprintf('virusTotalLinks.%d.url.url', $index)] = 'Please provide a valid URL.';
+            $messages[sprintf('virusTotalLinks.%d.url.starts_with', $index)] = 'The URL must be from VirusTotal (https://www.virustotal.com/).';
         }
 
         return $messages;

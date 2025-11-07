@@ -411,19 +411,34 @@
                             @endforeach
                         </li>
                     @endif
-                    @if ($addon->latestVersion?->virus_total_link)
+                    @if ($addon->latestVersion?->virusTotalLinks->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3 class="font-bold">{{ __('Latest Version VirusTotal Result') }}</h3>
-                            <p class="truncate">
-                                <a
-                                    href="{{ $addon->latestVersion->virus_total_link }}"
-                                    title="{{ $addon->latestVersion->virus_total_link }}"
-                                    target="_blank"
-                                    class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
-                                >
-                                    {{ $addon->latestVersion->virus_total_link }}
-                                </a>
-                            </p>
+                            <h3 class="font-bold">{{ __('Latest Version VirusTotal Results') }}</h3>
+                            @foreach ($addon->latestVersion->virusTotalLinks as $virusTotalLink)
+                                <p class="truncate">
+                                    @if ($virusTotalLink->label !== '')
+                                        <span
+                                            class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                        <a
+                                            href="{{ $virusTotalLink->url }}"
+                                            title="{{ $virusTotalLink->url }}"
+                                            target="_blank"
+                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            {{ $virusTotalLink->url }}
+                                        </a>
+                                    @else
+                                        <a
+                                            href="{{ $virusTotalLink->url }}"
+                                            title="{{ $virusTotalLink->url }}"
+                                            target="_blank"
+                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            {{ $virusTotalLink->url }}
+                                        </a>
+                                    @endif
+                                </p>
+                            @endforeach
                         </li>
                     @endif
                     @if ($addon->contains_ads)

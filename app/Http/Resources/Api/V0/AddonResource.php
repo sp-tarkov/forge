@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Addon;
-use App\Models\SourceCodeLink;
 use App\Support\Api\V0\QueryBuilder\AddonQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -122,12 +121,7 @@ class AddonResource extends JsonResource
         $data['mod'] = new ModResource($this->whenLoaded('mod'));
         $data['license'] = new LicenseResource($this->whenLoaded('license'));
         $data['latest_version'] = new AddonVersionResource($this->whenLoaded('latestVersion'));
-
-        $data['source_code_links'] = $this->whenLoaded('sourceCodeLinks', fn (): array => $this->resource->sourceCodeLinks->map(fn (SourceCodeLink $link): array => [
-            'url' => $link->url,
-            'label' => $link->label,
-        ])->all());
-
+        $data['source_code_links'] = SourceCodeLinkResource::collection($this->whenLoaded('sourceCodeLinks'));
         $data['versions'] = AddonVersionResource::collection($this->whenLoaded('versions', fn () =>
             // Limit versions in list view to the 6 most recent versions
             $this->resource->versions

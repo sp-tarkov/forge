@@ -36,7 +36,7 @@ describe('Mod Version Index API', function (): void {
                 'success',
                 'data' => [
                     '*' => [
-                        'id', 'hub_id', 'version', 'description', 'link', 'spt_version_constraint', 'virus_total_link',
+                        'id', 'hub_id', 'version', 'description', 'link', 'spt_version_constraint',
                         'downloads', 'published_at', 'created_at', 'updated_at',
                     ],
                 ],

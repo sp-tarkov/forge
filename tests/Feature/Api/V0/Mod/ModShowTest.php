@@ -119,7 +119,7 @@ describe('Mod Show API', function (): void {
             ->assertJsonStructure([
                 'success',
                 'data' => ['versions' => [[
-                    'id', 'hub_id', 'version', 'link', 'spt_version_constraint', 'virus_total_link', 'downloads',
+                    'id', 'hub_id', 'version', 'link', 'spt_version_constraint', 'downloads',
                     'published_at', 'created_at', 'updated_at',
                 ]]],
             ])

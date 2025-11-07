@@ -27,7 +27,7 @@ class ModVersionResource extends JsonResource
             'id' => $this->id,
             'version' => $this->version,
             'description' => $this->description,
-            'virus_total_link' => $this->virus_total_link,
+            'virus_total_links' => VirusTotalLinkResource::collection($this->whenLoaded('virusTotalLinks')),
             'downloads' => $this->downloads,
             'mod_id' => $this->mod_id,
             'mod' => new ModResource($this->whenLoaded('mod')),

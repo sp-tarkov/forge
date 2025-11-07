@@ -122,13 +122,98 @@
             <div class="flex flex-col items-start text-gray-700 dark:text-gray-400 sm:items-end mt-4 sm:mt-0">
                 <p class="text-left sm:text-right">{{ __('Released') }} {{ $version->created_at->dynamicFormat() }}
                 </p>
-                <a
-                    href="{{ $version->virus_total_link }}"
-                    class="text-left sm:text-right hover:underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
-                    rel="nofollow"
-                >
-                    {{ __('Virus Total Results') }}
-                </a>
+                @if ($version->virusTotalLinks->isNotEmpty())
+                    <div
+                        x-data="{ isMobile: window.innerWidth < 640 }"
+                        x-init="window.addEventListener('resize', () => { isMobile = window.innerWidth < 640 })"
+                        class="text-left sm:text-right sm:!flex sm:!justify-end"
+                    >
+                        <flux:tooltip
+                            position="top"
+                            align="start"
+                            gap="0"
+                            x-show="isMobile"
+                        >
+                            <span class="underline text-gray-800 dark:text-gray-200 cursor-help">
+                                {{ __('VirusTotal Results') }}
+                            </span>
+                            <flux:tooltip.content class="max-w-xs text-left">
+                                <div class="text-xs">
+                                    <div class="font-semibold mb-1 text-left">{{ __('VirusTotal Results:') }}</div>
+                                    <div class="space-y-1.5">
+                                        @foreach ($version->virusTotalLinks as $virusTotalLink)
+                                            <p class="truncate">
+                                                @if ($virusTotalLink->label !== '')
+                                                    <span
+                                                        class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                                    <a
+                                                        href="{{ $virusTotalLink->url }}"
+                                                        title="{{ $virusTotalLink->url }}"
+                                                        target="_blank"
+                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                    >
+                                                        {{ $virusTotalLink->url }}
+                                                    </a>
+                                                @else
+                                                    <a
+                                                        href="{{ $virusTotalLink->url }}"
+                                                        title="{{ $virusTotalLink->url }}"
+                                                        target="_blank"
+                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                    >
+                                                        {{ $virusTotalLink->url }}
+                                                    </a>
+                                                @endif
+                                            </p>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </flux:tooltip.content>
+                        </flux:tooltip>
+                        <flux:tooltip
+                            position="top"
+                            align="end"
+                            gap="0"
+                            x-show="!isMobile"
+                        >
+                            <span class="underline text-gray-800 dark:text-gray-200 cursor-help">
+                                {{ __('VirusTotal Results') }}
+                            </span>
+                            <flux:tooltip.content class="max-w-xs text-left">
+                                <div class="text-xs">
+                                    <div class="font-semibold mb-1 text-left">{{ __('VirusTotal Results:') }}</div>
+                                    <div class="space-y-1.5">
+                                        @foreach ($version->virusTotalLinks as $virusTotalLink)
+                                            <p class="truncate">
+                                                @if ($virusTotalLink->label !== '')
+                                                    <span
+                                                        class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                                    <a
+                                                        href="{{ $virusTotalLink->url }}"
+                                                        title="{{ $virusTotalLink->url }}"
+                                                        target="_blank"
+                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                    >
+                                                        {{ $virusTotalLink->url }}
+                                                    </a>
+                                                @else
+                                                    <a
+                                                        href="{{ $virusTotalLink->url }}"
+                                                        title="{{ $virusTotalLink->url }}"
+                                                        target="_blank"
+                                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                                    >
+                                                        {{ $virusTotalLink->url }}
+                                                    </a>
+                                                @endif
+                                            </p>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </flux:tooltip.content>
+                        </flux:tooltip>
+                    </div>
+                @endif
                 <span class="text-left sm:text-right inline-flex items-center gap-1">
                     <flux:icon
                         icon="{{ $version->fika_compatibility_status->icon() }}"

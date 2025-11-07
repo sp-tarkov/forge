@@ -52,7 +52,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
                 ->call('save')
-                ->assertHasErrors(['version', 'description', 'link', 'sptVersionConstraint', 'virusTotalLink']);
+                ->assertHasErrors(['version', 'description', 'link', 'sptVersionConstraint']);
         });
 
         it('validates version format', function (): void {
@@ -69,7 +69,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test description')
                 ->set('link', 'https://example.com/download.zip')
                 ->set('sptVersionConstraint', '~3.11.0')
-                ->set('virusTotalLink', 'https://www.virustotal.com/test')
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test')
                 ->call('save')
                 ->assertHasErrors(['version']);
         });
@@ -110,7 +110,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version with dependencies')
                 ->set('link', 'https://example.com/download.zip')
                 ->set('sptVersionConstraint', '~3.11.0')
-                ->set('virusTotalLink', 'https://www.virustotal.com/test');
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
 
             // Add dependencies using proper methods to trigger matching versions update
             $component->call('addDependency');
@@ -495,7 +495,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version')
                 ->set('link', 'https://example.com/download.zip')
                 ->set('sptVersionConstraint', '~3.11.0')
-                ->set('virusTotalLink', 'https://www.virustotal.com/test');
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
 
             // Add self-dependency using methods
             $component->call('addDependency');
@@ -540,7 +540,7 @@ describe('Mod Version Create Form', function (): void {
             $component->set('description', 'Test description');
             $component->set('link', 'https://example.com/mod.zip');
             $component->set('sptVersionConstraint', '~3.9.0');
-            $component->set('virusTotalLink', 'https://www.virustotal.com/test');
+            $component->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
 
             // Try to save
             $component->call('save');
@@ -572,7 +572,7 @@ describe('Mod Version Create Form', function (): void {
             $component->set('description', 'Test description');
             $component->set('link', 'https://example.com/mod.zip');
             $component->set('sptVersionConstraint', '~3.9.0');
-            $component->set('virusTotalLink', 'https://www.virustotal.com/test');
+            $component->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
 
             // Try to save
             $component->call('save');
@@ -611,7 +611,7 @@ describe('Mod Version Create Form', function (): void {
             $component->set('description', 'Test description');
             $component->set('link', 'https://example.com/mod.zip');
             $component->set('sptVersionConstraint', '~3.9.0');
-            $component->set('virusTotalLink', 'https://www.virustotal.com/test');
+            $component->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
 
             // Try to save
             $component->call('save');
@@ -655,7 +655,7 @@ describe('Mod Version Create Form', function (): void {
             $component->set('description', 'Test description');
             $component->set('link', 'https://example.com/mod.zip');
             $component->set('sptVersionConstraint', '~3.9.0');
-            $component->set('virusTotalLink', 'https://www.virustotal.com/test');
+            $component->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
 
             // Try to save
             $component->call('save');
@@ -688,7 +688,7 @@ describe('Mod Version Create Form', function (): void {
             $component->set('description', 'Test description');
             $component->set('link', 'https://example.com/mod.zip');
             $component->set('sptVersionConstraint', '~3.9.0');
-            $component->set('virusTotalLink', 'https://www.virustotal.com/test');
+            $component->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
 
             // Try to save
             $component->call('save');
@@ -726,7 +726,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version')
                 ->set('link', 'https://example.com/download.zip')
                 ->set('sptVersionConstraint', '~3.11.0')
-                ->set('virusTotalLink', 'https://www.virustotal.com/test')
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test')
                 ->set('dependencies', [
                     ['modId' => (string) $dependencyMod->id, 'constraint' => 'invalid-constraint'],
                 ])
@@ -813,7 +813,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version')
                 ->set('link', 'https://example.com/mod.zip')
                 ->set('sptVersionConstraint', '>=4.0.0') // Targeting SPT 4.0.0+
-                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/gui/file/test');
 
             // Component should detect GUID is required
             expect($component->get('modGuidRequired'))->toBeTrue();
@@ -842,7 +842,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version')
                 ->set('link', 'https://example.com/mod.zip')
                 ->set('sptVersionConstraint', '>=4.0.0') // Targeting SPT 4.0.0+
-                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/gui/file/test');
 
             // Component should detect GUID exists
             expect($component->get('modGuidRequired'))->toBeTrue();
@@ -867,7 +867,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version')
                 ->set('link', 'https://example.com/download.zip')
                 ->set('sptVersionConstraint', '~3.11.0')
-                ->set('virusTotalLink', 'https://www.virustotal.com/test')
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test')
                 ->set('fikaCompatibilityStatus', 'compatible')
                 ->call('save')
                 ->assertHasNoErrors()
@@ -900,7 +900,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version')
                 ->set('link', 'https://example.com/mod.zip')
                 ->set('sptVersionConstraint', '~3.9.0') // Targeting SPT 3.x
-                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/gui/file/test');
 
             // Component should not require GUID for SPT 3.x
             expect($component->get('modGuidRequired'))->toBeFalse();
@@ -1046,7 +1046,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version with GUID')
                 ->set('link', 'https://example.com/mod.zip')
                 ->set('sptVersionConstraint', '>=4.0.0') // Targeting SPT 4.0.0+
-                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test')
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/gui/file/test')
                 ->set('newModGuid', 'com.test.newmod'); // Provide the new GUID
 
             // Component should detect GUID is required
@@ -1104,7 +1104,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('description', 'Test version')
                 ->set('link', 'https://example.com/mod.zip')
                 ->set('sptVersionConstraint', '>=4.0.0')
-                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test');
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/gui/file/test');
 
             // Test invalid format
             $component->set('newModGuid', 'Invalid GUID Format')
@@ -1163,7 +1163,7 @@ describe('Mod Version Create Form', function (): void {
             $component->set('version', '1.0.0')
                 ->set('description', 'Test version after inline save')
                 ->set('link', 'https://example.com/mod.zip')
-                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test')
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/gui/file/test')
                 ->call('save')
                 ->assertHasNoErrors() // Should not have GUID errors
                 ->assertRedirect();

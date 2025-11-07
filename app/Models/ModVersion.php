@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,6 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $link
  * @property int|null $content_length
  * @property string $spt_version_constraint
- * @property string $virus_total_link
  * @property int $downloads
  * @property bool $disabled
  * @property FikaCompatibilityStatus $fika_compatibility_status
@@ -62,6 +62,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read SptVersion|null $latestSptVersion
  * @property-read Collection<int, SptVersion> $sptVersions
  * @property-read Collection<int, AddonVersion> $compatibleAddonVersions
+ * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
@@ -203,6 +204,17 @@ class ModVersion extends Model implements Trackable
     {
         return $this->belongsToMany(AddonVersion::class, 'addon_resolved_mod_versions')
             ->withTimestamps();
+    }
+
+    /**
+     * The relationship between a mod version and its VirusTotal links.
+     *
+     * @return MorphMany<VirusTotalLink, $this>
+     */
+    public function virusTotalLinks(): MorphMany
+    {
+        return $this->morphMany(VirusTotalLink::class, 'linkable')
+            ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
     }
 
     /**

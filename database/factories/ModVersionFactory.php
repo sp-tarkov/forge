@@ -45,7 +45,6 @@ class ModVersionFactory extends Factory
             'description' => fake()->text(),
             'link' => fake()->url(),
             'spt_version_constraint' => $this->faker->randomElement(['^1.0.0', '^2.0.0', '>=3.0.0', '<4.0.0']),
-            'virus_total_link' => fake()->url(),
             'downloads' => fake()->randomNumber(),
             'disabled' => false,
             'fika_compatibility_status' => $this->faker->randomElement(FikaCompatibilityStatus::cases()),
@@ -57,6 +56,17 @@ class ModVersionFactory extends Factory
     }
 
     /**
+     * Configure the factory.
+     */
+    public function configure(): static
+    {
+        return $this->has(
+            \App\Models\VirusTotalLink::factory()->count(1),
+            'virusTotalLinks'
+        );
+    }
+
+    /**
      * Indicate that the mod version should be disabled.
      */
     public function disabled(): static
@@ -64,5 +74,17 @@ class ModVersionFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'disabled' => true,
         ]);
+    }
+
+    /**
+     * Indicate that the mod version should not have any VirusTotal links.
+     */
+    public function withoutVirusTotalLinks(): static
+    {
+        return $this->afterMaking(function (ModVersion $modVersion) {
+            // Remove any auto-created VirusTotal links
+        })->afterCreating(function (ModVersion $modVersion) {
+            $modVersion->virusTotalLinks()->delete();
+        });
     }
 }

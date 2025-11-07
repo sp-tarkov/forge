@@ -73,10 +73,6 @@ class AddonVersionResource extends JsonResource
             $data['mod_version_constraint'] = $this->resource->mod_version_constraint;
         }
 
-        if ($this->shouldInclude('virus_total_link')) {
-            $data['virus_total_link'] = $this->resource->virus_total_link;
-        }
-
         if ($this->shouldInclude('downloads')) {
             $data['downloads'] = $this->resource->downloads;
         }
@@ -92,6 +88,11 @@ class AddonVersionResource extends JsonResource
         if ($this->shouldInclude('updated_at')) {
             $data['updated_at'] = $this->resource->updated_at?->toISOString();
         }
+
+        // Handle relationships separately - they're only included when loaded via the include parameter.
+        $data['virus_total_links'] = VirusTotalLinkResource::collection(
+            $this->whenLoaded('virusTotalLinks')
+        );
 
         return $data;
     }

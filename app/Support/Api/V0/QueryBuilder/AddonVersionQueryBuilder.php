@@ -5,27 +5,25 @@ declare(strict_types=1);
 namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQuery;
-use App\Models\ModVersion;
-use App\Models\SptVersion;
+use App\Models\AddonVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Override;
 
 /**
- * @extends AbstractQueryBuilder<ModVersion>
+ * @extends AbstractQueryBuilder<AddonVersion>
  */
-class ModVersionQueryBuilder extends AbstractQueryBuilder
+class AddonVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
-     * Create a new ModVersionQueryBuilder instance.
+     * Create a new AddonVersionQueryBuilder instance.
      */
     public function __construct(
         /**
-         * The ID of the mod to filter versions for.
+         * The ID of the addon to filter versions for.
          */
-        protected readonly int $modId
+        protected readonly int $addonId
     ) {
         parent::__construct();
     }
@@ -40,14 +38,12 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'id' => 'filterById',
-            'hub_id' => 'filterByHubId',
             'version' => 'filterByVersion',
             'description' => 'filterByDescription',
             'link' => 'filterByLink',
             'published_between' => 'filterByPublishedBetween',
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
-            'spt_version' => 'filterBySptVersion',
         ];
     }
 
@@ -59,10 +55,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     public static function getAllowedIncludes(): array
     {
         return [
-            'dependencies' => [
-                'resolvedDependencies',
-                'resolvedDependencies.mod',
-            ],
             'virus_total_links' => 'virusTotalLinks',
         ];
     }
@@ -77,7 +69,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'id',
-            'mod_id',
+            'addon_id',
             'version',
         ];
     }
@@ -91,14 +83,12 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'id',
-            'hub_id',
             'version',
             'description',
             'link',
             'content_length',
-            'spt_version_constraint',
+            'mod_version_constraint',
             'downloads',
-            'fika_compatibility_status',
             'published_at',
             'created_at',
             'updated_at',
@@ -114,7 +104,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'id',
-            'hub_id',
             'version',
             'downloads',
             'published_at',
@@ -126,59 +115,30 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     /**
      * Get the base query for the model.
      *
-     * @return Builder<ModVersion>
+     * @return Builder<AddonVersion>
      */
     protected function getBaseQuery(): Builder
     {
-        $query = ModVersion::query()
-            ->whereModId($this->modId)
-            ->where('mod_versions.disabled', false);
-
-        // Apply the SPT version condition if the filter is not being used
-        if (! $this->hasFilter('spt_version')) {
-            $this->applySptVersionCondition($query);
-        }
-
-        return $query;
-    }
-
-    /**
-     * Apply the SPT version condition to the query.
-     *
-     * @param  Builder<ModVersion>  $query
-     * @param  array<string>|null  $compatibleVersions  Optional list of compatible versions to filter by
-     */
-    protected function applySptVersionCondition(Builder $query, ?array $compatibleVersions = null): void
-    {
-        $query->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($compatibleVersions): void {
-            $query->select(DB::raw(1))
-                ->from('mod_version_spt_version')
-                ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
-                ->whereColumn('mod_version_spt_version.mod_version_id', 'mod_versions.id')
-                ->whereNotNull('spt_versions.version')
-                ->where('spt_versions.version', '!=', '0.0.0');
-
-            // Get all mod versions compatible with specific SPT versions.
-            if ($compatibleVersions !== null) {
-                $query->whereIn('spt_versions.version', $compatibleVersions);
-            }
-        });
+        return AddonVersion::query()
+            ->where('addon_versions.addon_id', $this->addonId)
+            ->where('addon_versions.disabled', false)
+            ->whereNotNull('addon_versions.published_at');
     }
 
     /**
      * Get the model class for this query builder.
      *
-     * @return class-string<ModVersion>
+     * @return class-string<AddonVersion>
      */
     protected function getModelClass(): string
     {
-        return ModVersion::class;
+        return AddonVersion::class;
     }
 
     /**
-     * Filter by mod version IDs.
+     * Filter by addon version IDs.
      *
-     * @param  Builder<ModVersion>  $query
+     * @param  Builder<AddonVersion>  $query
      */
     protected function filterById(Builder $query, ?string $ids): void
     {
@@ -186,27 +146,13 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->whereIn('mod_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
-    }
-
-    /**
-     * Filter by hub IDs.
-     *
-     * @param  Builder<ModVersion>  $query
-     */
-    protected function filterByHubId(Builder $query, ?string $hubIds): void
-    {
-        if ($hubIds === null) {
-            return;
-        }
-
-        $query->whereIn('mod_versions.hub_id', self::parseCommaSeparatedInput($hubIds, 'integer'));
+        $query->whereIn('addon_versions.id', self::parseCommaSeparatedInput($ids, 'integer'));
     }
 
     /**
      * Filter by version.
      *
-     * @param  Builder<ModVersion>  $query
+     * @param  Builder<AddonVersion>  $query
      */
     protected function filterByVersion(Builder $query, ?string $semverConstraint): void
     {
@@ -214,15 +160,17 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $allVersionNumbers = ModVersion::versionNumbers($this->modId);
+        $allVersionNumbers = AddonVersion::query()->where('addon_id', $this->addonId)
+            ->pluck('version')
+            ->all();
         $compatibleVersions = Semver::satisfiedBy($allVersionNumbers, $semverConstraint);
-        $query->whereIn('mod_versions.version', $compatibleVersions);
+        $query->whereIn('addon_versions.version', $compatibleVersions);
     }
 
     /**
      * Filter by description.
      *
-     * @param  Builder<ModVersion>  $query
+     * @param  Builder<AddonVersion>  $query
      */
     protected function filterByDescription(Builder $query, ?string $term): void
     {
@@ -230,13 +178,13 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->whereLike('mod_versions.description', sprintf('%%%s%%', $term));
+        $query->whereLike('addon_versions.description', sprintf('%%%s%%', $term));
     }
 
     /**
      * Filter by link.
      *
-     * @param  Builder<ModVersion>  $query
+     * @param  Builder<AddonVersion>  $query
      */
     protected function filterByLink(Builder $query, ?string $term): void
     {
@@ -244,13 +192,13 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->whereLike('mod_versions.link', sprintf('%%%s%%', $term));
+        $query->whereLike('addon_versions.link', sprintf('%%%s%%', $term));
     }
 
     /**
      * Filter by publication date range.
      *
-     * @param  Builder<ModVersion>  $query
+     * @param  Builder<AddonVersion>  $query
      */
     protected function filterByPublishedBetween(Builder $query, ?string $range): void
     {
@@ -259,13 +207,13 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         [$start, $end] = explode(',', $range);
-        $query->whereBetween('mod_versions.published_at', [$start, $end]);
+        $query->whereBetween('addon_versions.published_at', [$start, $end]);
     }
 
     /**
      * Filter by creation date range.
      *
-     * @param  Builder<ModVersion>  $query
+     * @param  Builder<AddonVersion>  $query
      */
     protected function filterByCreatedBetween(Builder $query, ?string $range): void
     {
@@ -274,13 +222,13 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         [$start, $end] = explode(',', $range);
-        $query->whereBetween('mod_versions.created_at', [$start, $end]);
+        $query->whereBetween('addon_versions.created_at', [$start, $end]);
     }
 
     /**
      * Filter by update date range.
      *
-     * @param  Builder<ModVersion>  $query
+     * @param  Builder<AddonVersion>  $query
      */
     protected function filterByUpdatedBetween(Builder $query, ?string $range): void
     {
@@ -289,24 +237,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         }
 
         [$start, $end] = explode(',', $range);
-        $query->whereBetween('mod_versions.updated_at', [$start, $end]);
-    }
-
-    /**
-     * Filter by SPT version.
-     *
-     * @param  Builder<ModVersion>  $query
-     */
-    protected function filterBySptVersion(Builder $query, ?string $version): void
-    {
-        if ($version === null) {
-            return;
-        }
-
-        $validSptVersions = SptVersion::allValidVersions();
-        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
-
-        $this->applySptVersionCondition($query, $compatibleSptVersions);
+        $query->whereBetween('addon_versions.updated_at', [$start, $end]);
     }
 
     /**
@@ -351,8 +282,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                     $this->builder->orderBy('version_major', $direction)
                         ->orderBy('version_minor', $direction)
                         ->orderBy('version_patch', $direction)
-                        ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-                        ->orderBy('version_labels', $direction);
+                        ->orderBy('version_pre_release', $direction);
                 } else {
                     $this->builder->orderBy($cleanName, $direction);
                 }

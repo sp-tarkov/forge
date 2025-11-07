@@ -82,10 +82,6 @@ class ModVersionResource extends JsonResource
             $data['spt_version_constraint'] = $this->resource->spt_version_constraint;
         }
 
-        if ($this->shouldInclude('virus_total_link')) {
-            $data['virus_total_link'] = $this->resource->virus_total_link;
-        }
-
         if ($this->shouldInclude('downloads')) {
             $data['downloads'] = $this->resource->downloads;
         }
@@ -108,6 +104,10 @@ class ModVersionResource extends JsonResource
 
         $data['dependencies'] = new ModResolvedDependencyCollection(
             $this->whenLoaded('resolvedDependencies')
+        );
+
+        $data['virus_total_links'] = VirusTotalLinkResource::collection(
+            $this->whenLoaded('virusTotalLinks')
         );
 
         return $data;

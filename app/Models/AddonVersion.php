@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Override;
@@ -36,7 +37,6 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $link
  * @property int|null $content_length
  * @property string $mod_version_constraint
- * @property string|null $virus_total_link
  * @property int $downloads
  * @property bool $disabled
  * @property bool $discord_notification_sent
@@ -47,6 +47,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read string|null $formatted_file_size
  * @property-read Addon $addon
  * @property-read Collection<int, ModVersion> $compatibleModVersions
+ * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonVersionObserver::class])]
@@ -81,6 +82,17 @@ class AddonVersion extends Model
     {
         return $this->belongsToMany(ModVersion::class, 'addon_resolved_mod_versions')
             ->withTimestamps();
+    }
+
+    /**
+     * The relationship between an addon version and its VirusTotal links.
+     *
+     * @return MorphMany<VirusTotalLink, $this>
+     */
+    public function virusTotalLinks(): MorphMany
+    {
+        return $this->morphMany(VirusTotalLink::class, 'linkable')
+            ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
     }
 
     /**

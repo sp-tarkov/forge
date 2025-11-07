@@ -101,18 +101,57 @@
                                 @endif
                             </flux:field>
 
-                            {{-- VirusTotal Link --}}
+                            {{-- VirusTotal Links --}}
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('VirusTotal Link') }}</flux:label>
+                                <flux:label>{{ __('VirusTotal Links') }}</flux:label>
                                 <flux:description>{!! __(
-                                    'Provide a link to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your addon files. This helps users verify the safety of your addon.',
+                                    'Provide links to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your addon files. This helps users verify the safety of your addon. At least one link is required.',
                                 ) !!}</flux:description>
-                                <flux:input
-                                    type="url"
-                                    wire:model.blur="virusTotalLink"
-                                    placeholder="https://www.virustotal.com..."
-                                />
-                                <flux:error name="virusTotalLink" />
+
+                                <div class="space-y-3">
+                                    @foreach ($virusTotalLinks as $index => $virusTotalLink)
+                                        <div class="flex gap-2 items-center">
+                                            <div class="flex-1">
+                                                <flux:input
+                                                    type="url"
+                                                    wire:model.blur="virusTotalLinks.{{ $index }}.url"
+                                                    placeholder="https://www.virustotal.com/..."
+                                                />
+                                            </div>
+                                            <div class="w-40">
+                                                <flux:input
+                                                    type="text"
+                                                    wire:model.blur="virusTotalLinks.{{ $index }}.label"
+                                                    placeholder="Label (optional)"
+                                                />
+                                            </div>
+                                            @if ($index > 0)
+                                                <flux:button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    wire:click="removeVirusTotalLink({{ $index }})"
+                                                    type="button"
+                                                    icon="x-mark"
+                                                />
+                                            @endif
+                                        </div>
+                                        @error('virusTotalLinks.' . $index . '.url')
+                                            <flux:error>{{ $message }}</flux:error>
+                                        @enderror
+                                    @endforeach
+
+                                    <flux:button
+                                        variant="ghost"
+                                        size="sm"
+                                        wire:click="addVirusTotalLink"
+                                        type="button"
+                                        icon="plus"
+                                    >
+                                        {{ __('Add Link') }}
+                                    </flux:button>
+                                </div>
+
+                                <flux:error name="virusTotalLinks" />
                             </flux:field>
 
                             {{-- Published At --}}

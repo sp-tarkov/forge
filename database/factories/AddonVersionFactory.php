@@ -44,7 +44,6 @@ class AddonVersionFactory extends Factory
             'description' => fake()->text(),
             'link' => fake()->url(),
             'mod_version_constraint' => $this->faker->randomElement(['^1.0.0', '^2.0.0', '>=3.0.0', '<4.0.0']),
-            'virus_total_link' => fake()->url(),
             'content_length' => fake()->numberBetween(1000, 10000000),
             'downloads' => fake()->randomNumber(),
             'disabled' => false,
@@ -56,6 +55,17 @@ class AddonVersionFactory extends Factory
     }
 
     /**
+     * Configure the factory.
+     */
+    public function configure(): static
+    {
+        return $this->has(
+            \App\Models\VirusTotalLink::factory()->count(1),
+            'virusTotalLinks'
+        );
+    }
+
+    /**
      * Indicate that the addon version should be disabled.
      */
     public function disabled(): static
@@ -63,5 +73,17 @@ class AddonVersionFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'disabled' => true,
         ]);
+    }
+
+    /**
+     * Indicate that the addon version should not have any VirusTotal links.
+     */
+    public function withoutVirusTotalLinks(): static
+    {
+        return $this->afterMaking(function (AddonVersion $addonVersion) {
+            // Remove any auto-created VirusTotal links
+        })->afterCreating(function (AddonVersion $addonVersion) {
+            $addonVersion->virusTotalLinks()->delete();
+        });
     }
 }
