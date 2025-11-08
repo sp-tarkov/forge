@@ -9,6 +9,7 @@
     'versionDescriptionHtml',
     'versionUpdatedAt',
     'fileSize' => null,
+    'latestVersionDependencies' => null,
 ])
 
 <div class="{{ $name === 'download-show-mobile' ? 'lg:hidden block' : 'hidden lg:block' }}">
@@ -24,6 +25,86 @@
             </div>
         </button>
     </flux:modal.trigger>
+
+    {{-- Dependencies Display --}}
+    @if ($latestVersionDependencies && $latestVersionDependencies->isNotEmpty())
+        <div class="mt-6">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">{{ __('Required Mods:') }}</h3>
+            <div class="space-y-3">
+                @foreach ($latestVersionDependencies as $dependencyVersion)
+                    @if ($dependencyVersion->mod)
+                        <a
+                            href="{{ $dependencyVersion->mod->detail_url }}"
+                            class="block p-4 bg-gray-900 dark:bg-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-800 transition-colors shadow-md"
+                        >
+                            <div class="flex items-start gap-3">
+                                @if ($dependencyVersion->mod->thumbnail)
+                                    <img
+                                        src="{{ $dependencyVersion->mod->thumbnailUrl }}"
+                                        alt="{{ $dependencyVersion->mod->name }}"
+                                        class="w-16 h-16 rounded flex-shrink-0"
+                                    >
+                                @else
+                                    <div
+                                        class="w-16 h-16 rounded flex-shrink-0 bg-gray-700 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-400 text-sm font-bold"
+                                    >
+                                        {{ substr($dependencyVersion->mod->name, 0, 2) }}
+                                    </div>
+                                @endif
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-semibold text-base text-white dark:text-white">
+                                        {{ $dependencyVersion->mod->name }}
+                                    </div>
+                                    <div class="text-sm text-gray-400 dark:text-gray-400 mt-1">
+                                        {{ __('Created by') }}
+                                        @if ($dependencyVersion->mod->owner)
+                                            <x-user-name :user="$dependencyVersion->mod->owner" />
+                                        @else
+                                            {{ __('Unknown') }}
+                                        @endif
+                                    </div>
+                                    @if ($dependencyVersion->mod->latestVersion)
+                                        <div class="mt-2 flex items-center gap-2">
+                                            @if ($dependencyVersion->mod->latestVersion->latestSptVersion)
+                                                <span
+                                                    class="badge-version {{ $dependencyVersion->mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
+                                                >
+                                                    {{ $dependencyVersion->mod->latestVersion->latestSptVersion->version_formatted }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    @if ($dependencyVersion->mod->teaser)
+                                        <div class="text-xs text-gray-500 dark:text-gray-500 mt-2 line-clamp-2">
+                                            {{ $dependencyVersion->mod->teaser }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="flex-shrink-0 text-right">
+                                    <div class="text-sm text-gray-400 dark:text-gray-400 mb-1">
+                                        {{ Number::downloads($dependencyVersion->mod->downloads) }}
+                                    </div>
+                                    <svg
+                                        class="w-5 h-5 text-gray-400 dark:text-gray-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 5l7 7-7 7"
+                                        ></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </a>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     {{-- Download Dialog Modal --}}
     <flux:modal

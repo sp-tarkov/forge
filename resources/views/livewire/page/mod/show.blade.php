@@ -171,6 +171,7 @@
                     :version-description-html="$mod->latestVersion->description_html"
                     :version-updated-at="$mod->latestVersion->updated_at"
                     :file-size="$mod->latestVersion->formatted_file_size"
+                    :latest-version-dependencies="$mod->latestVersion->latestResolvedDependencies"
                 />
             @endif
 
@@ -301,6 +302,7 @@
                     :version-description-html="$mod->latestVersion->description_html"
                     :version-updated-at="$mod->latestVersion->updated_at"
                     :file-size="$mod->latestVersion->formatted_file_size"
+                    :latest-version-dependencies="$mod->latestVersion->latestResolvedDependencies"
                 />
             @endif
 
