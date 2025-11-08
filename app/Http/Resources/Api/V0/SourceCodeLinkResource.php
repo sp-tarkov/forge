@@ -25,7 +25,6 @@ class SourceCodeLinkResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->resource->id,
             'url' => $this->resource->url,
             'label' => $this->resource->label,
         ];

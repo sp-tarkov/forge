@@ -8,6 +8,7 @@ use App\Exceptions\Api\V0\InvalidQuery;
 use App\Models\AddonVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Str;
 use Override;
 
@@ -119,6 +120,32 @@ class AddonVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
+        $hasPublishedVersions = AddonVersion::query()
+            ->where('addon_versions.addon_id', $this->addonId)
+            ->where('addon_versions.disabled', false)
+            ->whereNotNull('addon_versions.published_at')
+            ->where('addon_versions.published_at', '<=', now())
+            ->exists();
+
+        if (! $hasPublishedVersions) {
+            throw new ModelNotFoundException()->setModel(AddonVersion::class);
+        }
+
+        // Check if parent mod has published versions with SPT versions
+        $parentModHasPublishedVersions = AddonVersion::query()
+            ->where('addon_versions.addon_id', $this->addonId)
+            ->whereHas('addon.mod.versions', function (Builder $modVersionQuery): void {
+                $modVersionQuery->where('mod_versions.disabled', false)
+                    ->whereNotNull('mod_versions.published_at')
+                    ->where('mod_versions.published_at', '<=', now())
+                    ->whereHas('latestSptVersion');
+            })
+            ->exists();
+
+        if (! $parentModHasPublishedVersions) {
+            throw new ModelNotFoundException()->setModel(AddonVersion::class);
+        }
+
         return AddonVersion::query()
             ->where('addon_versions.addon_id', $this->addonId)
             ->where('addon_versions.disabled', false)

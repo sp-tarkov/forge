@@ -97,7 +97,21 @@ describe('addon deletion from addon detail page', function (): void {
     });
 
     it('prevents normal users from deleting an addon from the addon detail page', function (): void {
-        $mod = Mod::factory()->create();
+        // Create SPT version for mod visibility
+        $sptVersion = SptVersion::factory()->create();
+
+        $mod = Mod::factory()->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+        // Create a mod version with SPT support (required for mod visibility)
+        $modVersion = ModVersion::factory()->for($mod)->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+        $modVersion->sptVersions()->sync($sptVersion);
+
         $addon = Addon::factory()
             ->hasVersions(1, [
                 'published_at' => now(),

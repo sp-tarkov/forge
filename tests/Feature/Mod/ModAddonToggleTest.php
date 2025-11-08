@@ -120,10 +120,22 @@ describe('Mod Addon Toggle', function (): void {
 
     it('existing addons remain accessible when addons are disabled', function (): void {
         $owner = User::factory()->withMfa()->create();
+
+        // Create SPT version for mod visibility
+        $sptVersion = SptVersion::factory()->create();
+
         $mod = Mod::factory()->for($owner, 'owner')->create([
             'addons_disabled' => false,
+            'disabled' => false,
             'published_at' => now(),
         ]);
+
+        // Create a mod version with SPT support (required for mod visibility)
+        $modVersion = ModVersion::factory()->for($mod)->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+        $modVersion->sptVersions()->sync($sptVersion);
 
         $addon = Addon::factory()
             ->for($mod)

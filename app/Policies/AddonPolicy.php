@@ -32,8 +32,15 @@ class AddonPolicy
 
         // For non-privileged users, check if addon is publicly visible
         $isPrivilegedUser = $user && ($addon->isAuthorOrOwner($user) || $user->isModOrAdmin());
-        if (! $isPrivilegedUser && ! $addon->isPubliclyVisible()) {
-            return false;
+        if (! $isPrivilegedUser) {
+            if (! $addon->isPubliclyVisible()) {
+                return false;
+            }
+
+            // Check if parent mod is publicly visible
+            if ($addon->mod && ! $addon->mod->isPubliclyVisible()) {
+                return false;
+            }
         }
 
         return true;

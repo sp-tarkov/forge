@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V0;
 
+use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\ModResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\UrlParam;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @group Mods
@@ -482,7 +485,16 @@ class ModController extends Controller
             ->withIncludes($request->string('include')->explode(',')->all())
             ->withFields($request->string('fields')->explode(',')->all());
 
-        $mod = $queryBuilder->findOrFail($modId);
+        try {
+            $mod = $queryBuilder->findOrFail($modId);
+        } catch (ModelNotFoundException) {
+            // If mod is not found with public filters, return 404
+            return ApiResponse::error(
+                'Resource not found.',
+                Response::HTTP_NOT_FOUND,
+                ApiErrorCode::NOT_FOUND
+            );
+        }
 
         return ApiResponse::success(new ModResource($mod));
     }

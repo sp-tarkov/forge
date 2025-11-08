@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\Addon;
+use App\Models\AddonVersion;
 use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -18,11 +21,31 @@ describe('Addon Show API', function (): void {
         ]);
 
         $this->token = $this->user->createToken('test-token-for-addon-show')->plainTextToken;
+        $this->sptVersion = SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        // Helper function to create a fully visible addon with all required relationships
+        $this->createVisibleAddon = function (array $addonAttributes = [], ?Mod $mod = null): Addon {
+            // Create mod with published version if not provided
+            if ($mod === null) {
+                $mod = Mod::factory()->create();
+                ModVersion::factory()->create([
+                    'mod_id' => $mod->id,
+                    'spt_version_constraint' => '^3.8.0',
+                ]);
+            }
+
+            // Create addon
+            $addon = Addon::factory()->for($mod)->published()->create($addonAttributes);
+
+            // Create addon version
+            AddonVersion::factory()->create(['addon_id' => $addon->id]);
+
+            return $addon;
+        };
     });
 
     it('returns addon details', function (): void {
-        $mod = Mod::factory()->create();
-        $addon = Addon::factory()->for($mod)->published()->create([
+        $addon = ($this->createVisibleAddon)([
             'name' => 'Test Addon',
         ]);
 
@@ -49,7 +72,12 @@ describe('Addon Show API', function (): void {
 
     it('includes mod relationship when requested', function (): void {
         $mod = Mod::factory()->create(['name' => 'Parent Mod']);
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
         $addon = Addon::factory()->for($mod)->published()->create();
+        AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=mod', $addon->id));
 
@@ -60,8 +88,9 @@ describe('Addon Show API', function (): void {
 
     it('includes owner relationship when requested', function (): void {
         $owner = User::factory()->create(['name' => 'addon_owner']);
-        $mod = Mod::factory()->create();
-        $addon = Addon::factory()->for($mod)->for($owner, 'owner')->published()->create();
+        $addon = ($this->createVisibleAddon)();
+        $addon->owner()->associate($owner);
+        $addon->save();
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=owner', $addon->id));
 
@@ -71,8 +100,7 @@ describe('Addon Show API', function (): void {
     });
 
     it('includes authors relationship when requested', function (): void {
-        $mod = Mod::factory()->create();
-        $addon = Addon::factory()->for($mod)->published()->create();
+        $addon = ($this->createVisibleAddon)();
         $authors = User::factory()->count(2)->create();
         $addon->authors()->attach($authors);
 
@@ -90,8 +118,7 @@ describe('Addon Show API', function (): void {
     });
 
     it('includes versions relationship when requested', function (): void {
-        $mod = Mod::factory()->create();
-        $addon = Addon::factory()->for($mod)->published()->withVersions(3)->create();
+        $addon = ($this->createVisibleAddon)();
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=versions', $addon->id));
 
@@ -107,8 +134,7 @@ describe('Addon Show API', function (): void {
     });
 
     it('shows detached status', function (): void {
-        $mod = Mod::factory()->create();
-        $addon = Addon::factory()->for($mod)->published()->detached()->create();
+        $addon = ($this->createVisibleAddon)(['detached_at' => now()->subDays(1)]);
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
@@ -117,21 +143,18 @@ describe('Addon Show API', function (): void {
             ->assertJsonPath('data.is_detached', true);
     });
 
-    it('allows viewing unpublished addon if owner', function (): void {
+    it('returns not found for unpublished addon', function (): void {
+        // Create an unpublished addon (API is stateless - no role-based access)
         $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
         $addon = Addon::factory()->for($mod)->for($this->user, 'owner')->create(['published_at' => null]);
+        AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
-        $response->assertStatus(Response::HTTP_OK);
-    });
-
-    it('prevents viewing unpublished addon if not authorized', function (): void {
-        $mod = Mod::factory()->create();
-        $addon = Addon::factory()->for($mod)->create(['published_at' => null]);
-
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
-
-        $response->assertStatus(Response::HTTP_FORBIDDEN);
+        $response->assertStatus(Response::HTTP_NOT_FOUND);
     });
 });

@@ -327,4 +327,32 @@ describe('Addon Show Page Warnings', function (): void {
         expect($component->instance()->shouldShowWarnings())->toBeTrue()
             ->and($component->instance()->getWarningMessages())->toHaveKey('unpublished');
     });
+
+    it('shows parent mod warning when parent mod has no published versions', function (): void {
+        $mod = Mod::factory()->create([
+            'disabled' => false,
+            'published_at' => now()->subDay(),
+        ]);
+        // No mod versions created
+
+        $addon = Addon::factory()
+            ->for($mod)
+            ->for($this->user, 'owner')
+            ->create([
+                'disabled' => false,
+                'published_at' => now()->subDay(),
+            ]);
+
+        AddonVersion::factory()
+            ->for($addon)
+            ->create([
+                'disabled' => false,
+                'published_at' => now()->subDay(),
+            ]);
+
+        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+
+        expect($component->instance()->shouldShowWarnings())->toBeTrue()
+            ->and($component->instance()->getWarningMessages())->toHaveKey('parent_mod_not_visible');
+    });
 });

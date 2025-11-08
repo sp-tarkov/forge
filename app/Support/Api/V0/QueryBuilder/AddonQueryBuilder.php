@@ -129,13 +129,30 @@ class AddonQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
-        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
-
         return Addon::query()
             ->select('addons.*')
-            ->unless($showDisabled, fn (Builder $query) => $query->where('addons.disabled', false))
-            ->unless($showDisabled, fn (Builder $query) => $query->whereNotNull('addons.published_at'))
-            ->unless($showDisabled, fn (Builder $query) => $query->where('addons.published_at', '<=', now()))
+            ->where('addons.disabled', false)
+            ->whereNotNull('addons.published_at')
+            ->where('addons.published_at', '<=', now())
+            ->whereHas('versions', function (Builder $versionQuery): void {
+                // Ensure addon has at least one published version
+                $versionQuery->where('addon_versions.disabled', false)
+                    ->whereNotNull('addon_versions.published_at')
+                    ->where('addon_versions.published_at', '<=', now());
+            })
+            ->whereHas('mod', function (Builder $modQuery): void {
+                // Ensure parent mod is published and not disabled
+                $modQuery->where('mods.disabled', false)
+                    ->whereNotNull('mods.published_at')
+                    ->where('mods.published_at', '<=', now());
+            })
+            ->whereHas('mod.versions', function (Builder $modVersionQuery): void {
+                // Ensure parent mod has at least one published version
+                $modVersionQuery->where('mod_versions.disabled', false)
+                    ->whereNotNull('mod_versions.published_at')
+                    ->where('mod_versions.published_at', '<=', now())
+                    ->whereHas('latestSptVersion');
+            })
             ->latest('addons.created_at');
     }
 

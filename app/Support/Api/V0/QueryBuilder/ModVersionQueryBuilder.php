@@ -9,6 +9,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Override;
@@ -130,6 +131,18 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
+        $hasVisibleVersions = ModVersion::query()
+            ->whereModId($this->modId)
+            ->where('mod_versions.disabled', false)
+            ->whereNotNull('mod_versions.published_at')
+            ->where('mod_versions.published_at', '<=', now())
+            ->whereHas('latestSptVersion')
+            ->exists();
+
+        if (! $hasVisibleVersions) {
+            throw new ModelNotFoundException()->setModel(ModVersion::class);
+        }
+
         $query = ModVersion::query()
             ->whereModId($this->modId)
             ->where('mod_versions.disabled', false);

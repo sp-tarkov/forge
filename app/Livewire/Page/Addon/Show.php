@@ -98,6 +98,12 @@ class Show extends Component
             $warnings['disabled'] = 'This addon is disabled. Users will be unable to view this addon until it is enabled.';
         }
 
+        // Check if parent mod is publicly visible
+        $mod = $this->addon->mod;
+        if ($mod && ! $mod->isPubliclyVisible()) {
+            $warnings['parent_mod_not_visible'] = 'Users will be unable to view this addon until the parent mod is publicly available.';
+        }
+
         return $warnings;
     }
 
@@ -150,7 +156,7 @@ class Show extends Component
     {
         return Addon::query()->withoutGlobalScopes()->with([
             'sourceCodeLinks',
-            'mod:id,name,slug',
+            'mod:id,name,slug,disabled,published_at',
             'owner',
             'authors',
             'license',

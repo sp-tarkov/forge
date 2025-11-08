@@ -19,8 +19,12 @@ describe('Mod Version VirusTotal Links Include', function (): void {
     });
 
     it('does not include virus_total_links by default', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $mod = Mod::factory()->create();
-        $modVersion = ModVersion::factory()->withoutVirusTotalLinks()->create(['mod_id' => $mod->id]);
+        $modVersion = ModVersion::factory()->withoutVirusTotalLinks()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
 
         VirusTotalLink::factory()->create([
             'linkable_type' => ModVersion::class,
@@ -51,7 +55,7 @@ describe('Mod Version VirusTotal Links Include', function (): void {
         $mod = Mod::factory()->create();
         $modVersion = ModVersion::factory()->withoutVirusTotalLinks()->create([
             'mod_id' => $mod->id,
-            'spt_version_constraint' => '3.8.0',
+            'spt_version_constraint' => '^3.8.0',
         ]);
 
         VirusTotalLink::factory()->create([
@@ -92,7 +96,7 @@ describe('Mod Version VirusTotal Links Include', function (): void {
         $mod = Mod::factory()->create();
         $modVersion = ModVersion::factory()->withoutVirusTotalLinks()->create([
             'mod_id' => $mod->id,
-            'spt_version_constraint' => '3.8.0',
+            'spt_version_constraint' => '^3.8.0',
         ]);
 
         VirusTotalLink::factory()->create([
@@ -123,7 +127,7 @@ describe('Mod Version VirusTotal Links Include', function (): void {
         $mod = Mod::factory()->create();
         ModVersion::factory()->withoutVirusTotalLinks()->create([
             'mod_id' => $mod->id,
-            'spt_version_constraint' => '3.8.0',
+            'spt_version_constraint' => '^3.8.0',
         ]);
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?include=virus_total_links', $mod->id));

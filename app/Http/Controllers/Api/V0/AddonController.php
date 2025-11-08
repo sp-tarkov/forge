@@ -8,8 +8,8 @@ use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\AddonResource;
 use App\Http\Responses\Api\V0\ApiResponse;
-use App\Models\Addon;
 use App\Support\Api\V0\QueryBuilder\AddonQueryBuilder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\UrlParam;
@@ -173,38 +173,18 @@ class AddonController extends Controller
     #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'owner,versions')]
     public function show(Request $request, int $addonId): JsonResponse
     {
-        // Find the addon without global scopes to properly handle authorization
-        $addon = Addon::query()->withoutGlobalScopes()->findOrFail($addonId);
+        $queryBuilder = (new AddonQueryBuilder)
+            ->withIncludes($request->string('include')->explode(',')->all())
+            ->withFields($request->string('fields')->explode(',')->all());
 
-        // Check authorization manually for unpublished/disabled addons
-        if (! $addon->published_at || $addon->disabled) {
-            $user = $request->user();
-
-            // Allow access if user is mod/admin or owner/author
-            if (! $user || (! $user->isModOrAdmin() && ! $addon->isAuthorOrOwner($user))) {
-                return ApiResponse::error(
-                    'Forbidden',
-                    Response::HTTP_FORBIDDEN,
-                    ApiErrorCode::FORBIDDEN
-                );
-            }
-        }
-
-        // Load the requested relationships
-        $includes = $request->string('include')->explode(',')->filter()->all();
-        if (! empty($includes)) {
-            $allowedIncludes = AddonQueryBuilder::getAllowedIncludes();
-            $relationships = [];
-
-            foreach ($includes as $include) {
-                if (isset($allowedIncludes[$include])) {
-                    $relationships[] = $allowedIncludes[$include];
-                }
-            }
-
-            if (! empty($relationships)) {
-                $addon->load($relationships);
-            }
+        try {
+            $addon = $queryBuilder->findOrFail($addonId);
+        } catch (ModelNotFoundException) {
+            return ApiResponse::error(
+                'Resource not found.',
+                Response::HTTP_NOT_FOUND,
+                ApiErrorCode::NOT_FOUND
+            );
         }
 
         return ApiResponse::success(new AddonResource($addon));

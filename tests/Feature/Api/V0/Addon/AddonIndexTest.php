@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\Addon;
+use App\Models\AddonVersion;
 use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -18,11 +21,33 @@ describe('Addon Index API', function (): void {
         ]);
 
         $this->token = $this->user->createToken('test-token-for-addon-index')->plainTextToken;
+        $this->sptVersion = SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        // Helper function to create a fully visible addon with all required relationships
+        $this->createVisibleAddon = function (array $addonAttributes = [], ?Mod $mod = null): Addon {
+            // Create mod with published version if not provided
+            if ($mod === null) {
+                $mod = Mod::factory()->create();
+                ModVersion::factory()->create([
+                    'mod_id' => $mod->id,
+                    'spt_version_constraint' => '^3.8.0',
+                ]);
+            }
+
+            // Create addon
+            $addon = Addon::factory()->for($mod)->published()->create($addonAttributes);
+
+            // Create addon version
+            AddonVersion::factory()->create(['addon_id' => $addon->id]);
+
+            return $addon;
+        };
     });
 
     it('returns a paginated list of addons', function (): void {
-        $mod = Mod::factory()->create();
-        Addon::factory()->count(24)->for($mod)->published()->create();
+        foreach (range(1, 24) as $i) {
+            ($this->createVisibleAddon)();
+        }
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons');
 
@@ -49,8 +74,9 @@ describe('Addon Index API', function (): void {
     });
 
     it('returns a paginated list of addons with custom per_page', function (): void {
-        $mod = Mod::factory()->create();
-        Addon::factory()->count(20)->for($mod)->published()->create();
+        foreach (range(1, 20) as $i) {
+            ($this->createVisibleAddon)();
+        }
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons?per_page=10');
 
@@ -59,10 +85,9 @@ describe('Addon Index API', function (): void {
     });
 
     it('filters addons by id', function (): void {
-        $mod = Mod::factory()->create();
-        $addon1 = Addon::factory()->for($mod)->published()->create();
-        $addon2 = Addon::factory()->for($mod)->published()->create();
-        Addon::factory()->for($mod)->published()->create();
+        $addon1 = ($this->createVisibleAddon)();
+        $addon2 = ($this->createVisibleAddon)();
+        ($this->createVisibleAddon)();
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addons?filter[id]=%d,%d', $addon1->id, $addon2->id));
 
@@ -77,12 +102,10 @@ describe('Addon Index API', function (): void {
     });
 
     it('filters addons by name wildcard', function (): void {
-        $mod = Mod::factory()->create();
-
-        $addon1 = Addon::factory()->for($mod)->published()->create(['name' => 'Awesome Addon']);
-        Addon::factory()->for($mod)->published()->create(['name' => 'Another Addon']);
-        $addon2 = Addon::factory()->for($mod)->published()->create(['name' => 'Awesome Feature']);
-        Addon::factory()->for($mod)->published()->create(['name' => 'Different Addon']);
+        $addon1 = ($this->createVisibleAddon)(['name' => 'Awesome Addon']);
+        ($this->createVisibleAddon)(['name' => 'Another Addon']);
+        $addon2 = ($this->createVisibleAddon)(['name' => 'Awesome Feature']);
+        ($this->createVisibleAddon)(['name' => 'Different Addon']);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons?filter[name]=Awesome');
 
@@ -97,12 +120,16 @@ describe('Addon Index API', function (): void {
     });
 
     it('filters addons by mod_id', function (): void {
+        // Create mod1 with published version
         $mod1 = Mod::factory()->create();
-        $mod2 = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod1->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
 
-        $addon1 = Addon::factory()->for($mod1)->published()->create();
-        $addon2 = Addon::factory()->for($mod1)->published()->create();
-        Addon::factory()->for($mod2)->published()->create();
+        $addon1 = ($this->createVisibleAddon)([], $mod1);
+        $addon2 = ($this->createVisibleAddon)([], $mod1);
+        ($this->createVisibleAddon)();  // Different mod
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addons?filter[mod_id]=%d', $mod1->id));
 
@@ -117,8 +144,14 @@ describe('Addon Index API', function (): void {
     });
 
     it('includes only published addons by default', function (): void {
+        $publishedAddon = ($this->createVisibleAddon)();
+
+        // Create unpublished addon
         $mod = Mod::factory()->create();
-        $publishedAddon = Addon::factory()->for($mod)->published()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
         Addon::factory()->for($mod)->create(['published_at' => null]);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons');
@@ -134,7 +167,12 @@ describe('Addon Index API', function (): void {
 
     it('includes mod relationship when requested', function (): void {
         $mod = Mod::factory()->create(['name' => 'Parent Mod']);
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
         $addon = Addon::factory()->for($mod)->published()->create();
+        AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons?include=mod');
 
@@ -146,7 +184,12 @@ describe('Addon Index API', function (): void {
     it('includes owner relationship when requested', function (): void {
         $owner = User::factory()->create(['name' => 'addon_owner']);
         $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
         $addon = Addon::factory()->for($mod)->for($owner, 'owner')->published()->create();
+        AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons?include=owner');
 
@@ -156,8 +199,7 @@ describe('Addon Index API', function (): void {
     });
 
     it('includes latest_version relationship when requested', function (): void {
-        $mod = Mod::factory()->create();
-        $addon = Addon::factory()->for($mod)->published()->withVersions(3)->create();
+        ($this->createVisibleAddon)();
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons?include=latest_version');
 
@@ -173,9 +215,8 @@ describe('Addon Index API', function (): void {
     });
 
     it('shows detached status in response', function (): void {
-        $mod = Mod::factory()->create();
-        $attachedAddon = Addon::factory()->for($mod)->published()->create();
-        $detachedAddon = Addon::factory()->for($mod)->published()->detached()->create();
+        $attachedAddon = ($this->createVisibleAddon)();
+        $detachedAddon = ($this->createVisibleAddon)(['detached_at' => now()->subDays(1)]);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons');
 
@@ -190,10 +231,9 @@ describe('Addon Index API', function (): void {
     });
 
     it('sorts addons by created_at descending by default', function (): void {
-        $mod = Mod::factory()->create();
-        $addon1 = Addon::factory()->for($mod)->published()->create(['created_at' => now()->subDays(2)]);
-        $addon2 = Addon::factory()->for($mod)->published()->create(['created_at' => now()->subDay()]);
-        $addon3 = Addon::factory()->for($mod)->published()->create(['created_at' => now()]);
+        $addon1 = ($this->createVisibleAddon)(['created_at' => now()->subDays(2)]);
+        $addon2 = ($this->createVisibleAddon)(['created_at' => now()->subDay()]);
+        $addon3 = ($this->createVisibleAddon)(['created_at' => now()]);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/addons');
 

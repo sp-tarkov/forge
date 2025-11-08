@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\VirusTotalLink;
 use Illuminate\Support\Facades\Hash;
@@ -15,10 +18,18 @@ describe('Addon Version VirusTotal Links Include', function (): void {
         ]);
 
         $this->token = $this->user->createToken('test-token')->plainTextToken;
+
+        // Create SPT version for mod versions
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
     });
 
     it('does not include virus_total_links by default', function (): void {
-        $addon = Addon::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         $addonVersion = AddonVersion::factory()->withoutVirusTotalLinks()->create(['addon_id' => $addon->id]);
 
         VirusTotalLink::factory()->create([
@@ -46,7 +57,12 @@ describe('Addon Version VirusTotal Links Include', function (): void {
     });
 
     it('includes virus_total_links when requested via include parameter', function (): void {
-        $addon = Addon::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         $addonVersion = AddonVersion::factory()->withoutVirusTotalLinks()->create(['addon_id' => $addon->id]);
 
         VirusTotalLink::factory()->create([
@@ -83,7 +99,12 @@ describe('Addon Version VirusTotal Links Include', function (): void {
     });
 
     it('includes multiple virus_total_links when addon version has multiple', function (): void {
-        $addon = Addon::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         $addonVersion = AddonVersion::factory()->withoutVirusTotalLinks()->create(['addon_id' => $addon->id]);
 
         VirusTotalLink::factory()->create([
@@ -110,7 +131,12 @@ describe('Addon Version VirusTotal Links Include', function (): void {
     });
 
     it('returns empty array when addon version has no virus_total_links', function (): void {
-        $addon = Addon::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->withoutVirusTotalLinks()->create(['addon_id' => $addon->id]);
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions?include=virus_total_links', $addon->id));

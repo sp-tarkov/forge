@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Livewire\Page\Addon\Show as AddonShow;
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use App\Models\Mod;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -65,7 +68,24 @@ describe('addon version deletion from addon detail page', function (): void {
 
     it('prevents unauthorized users from deleting an addon version', function (): void {
         $user = User::factory()->create(['user_role_id' => null]);
+
+        // Create an SPT version for mod visibility
+        $sptVersion = SptVersion::factory()->create();
+
+        $mod = Mod::factory()->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+        // Create a mod version with SPT support (required for mod visibility)
+        $modVersion = ModVersion::factory()->for($mod)->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+        $modVersion->sptVersions()->sync($sptVersion);
+
         $addon = Addon::factory()
+            ->for($mod, 'mod')
             ->hasVersions(1, [
                 'published_at' => now(),
                 'disabled' => false,

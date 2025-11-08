@@ -802,6 +802,9 @@ it('does not send notification for future-published mod versions', function (): 
 });
 
 it('sends discord notification for newly published addons', function (): void {
+    // Create SPT version for mod visibility
+    $sptVersion = SptVersion::factory()->create();
+
     // Create supporting data
     $mod = Mod::factory()
         ->for(User::factory()->create(), 'owner')
@@ -809,6 +812,15 @@ it('sends discord notification for newly published addons', function (): void {
             'disabled' => false,
             'published_at' => now(),
         ]);
+
+    // Create a mod version with SPT support (required for mod visibility)
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
 
     // Create an addon that should trigger notification
     $addon = Addon::factory()
@@ -896,6 +908,9 @@ it('does not send notification for future-published addons', function (): void {
 });
 
 it('sends discord notification for new addon versions', function (): void {
+    // Create SPT version for mod visibility
+    $sptVersion = SptVersion::factory()->create();
+
     // Create a mod
     $mod = Mod::factory()
         ->for(User::factory()->create(), 'owner')
@@ -903,6 +918,15 @@ it('sends discord notification for new addon versions', function (): void {
             'disabled' => false,
             'published_at' => now(),
         ]);
+
+    // Create a mod version with SPT support (required for mod visibility)
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
 
     // Create an addon that has already sent notification
     $addon = Addon::factory()
@@ -1023,6 +1047,9 @@ it('does not send notification for unpublished addon versions', function (): voi
 });
 
 it('marks all published addon versions as notified when new addon notification is sent', function (): void {
+    // Create SPT version for mod visibility
+    $sptVersion = SptVersion::factory()->create();
+
     // Create a mod
     $mod = Mod::factory()
         ->for(User::factory()->create(), 'owner')
@@ -1030,6 +1057,15 @@ it('marks all published addon versions as notified when new addon notification i
             'disabled' => false,
             'published_at' => now(),
         ]);
+
+    // Create a mod version with SPT support (required for mod visibility)
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
 
     // Create an addon that hasn't sent notification yet
     $addon = Addon::factory()
