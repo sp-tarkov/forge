@@ -30,7 +30,7 @@ class AddonFactory extends Factory
             'slug' => $addonSlug,
             'teaser' => fake()->sentence(),
             'description' => fake()->paragraphs(rand(2, 5), true),
-            'license_id' => License::factory(),
+            'license_id' => License::inRandomOrder()->first()->id ?? License::factory(),
             'downloads' => 0,
             'contains_ai_content' => fake()->boolean(),
             'contains_ads' => fake()->boolean(),

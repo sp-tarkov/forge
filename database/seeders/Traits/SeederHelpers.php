@@ -148,7 +148,7 @@ trait SeederHelpers
     protected function getDefaultCounts(): array
     {
         return [
-            'license' => 10,
+            'license' => 20,
             'administrator' => 5,
             'moderator' => 5,
             'user' => 100,
