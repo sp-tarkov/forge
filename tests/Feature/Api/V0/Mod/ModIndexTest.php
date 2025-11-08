@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\FikaCompatibility;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -425,6 +426,22 @@ describe('Mod Index API', function (): void {
         $response->assertJsonMissing(['data' => ['*' => ['created_at', 'updated_at']]]);
     });
 
+    it('returns fika_compatibility when requested', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        Mod::factory()->hasVersions(1, [
+            'spt_version_constraint' => '3.8.0',
+            'fika_compatibility' => FikaCompatibility::Compatible,
+            'published_at' => now()->subDay(),
+        ])->create();
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?fields=fika_compatibility');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.fika_compatibility', true);
+    });
+
     it('returns thumbnail as a URL', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
@@ -447,13 +464,13 @@ describe('Mod Index API', function (): void {
         $modCompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modCompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'compatible',
+            'fika_compatibility' => 'compatible',
         ]);
 
         $modIncompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modIncompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'incompatible',
+            'fika_compatibility' => 'incompatible',
         ]);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[fika_compatibility]=false');
@@ -470,13 +487,13 @@ describe('Mod Index API', function (): void {
         $modCompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modCompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'compatible',
+            'fika_compatibility' => 'compatible',
         ]);
 
         $modIncompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modIncompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'incompatible',
+            'fika_compatibility' => 'incompatible',
         ]);
 
         $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[fika_compatibility]=true');

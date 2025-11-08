@@ -86,8 +86,8 @@ class ModVersionResource extends JsonResource
             $data['downloads'] = $this->resource->downloads;
         }
 
-        if ($this->shouldInclude('fika_compatibility_status')) {
-            $data['fika_compatibility_status'] = $this->resource->fika_compatibility_status->value;
+        if ($this->shouldInclude('fika_compatibility')) {
+            $data['fika_compatibility'] = $this->resource->fika_compatibility->value;
         }
 
         if ($this->shouldInclude('published_at')) {

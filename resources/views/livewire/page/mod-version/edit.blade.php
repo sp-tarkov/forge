@@ -228,10 +228,9 @@
                                 <flux:description>{{ __('Specify whether this mod version is compatible with Fika.') }}
                                 </flux:description>
                                 <flux:select wire:model.blur="fikaCompatibilityStatus">
-                                    <option value="compatible">{{ __('Compatible - Fika Compatible') }}</option>
-                                    <option value="incompatible">{{ __('Incompatible - Not Fika Compatible') }}
-                                    </option>
-                                    <option value="unknown">{{ __('Unknown - Compatibility Unknown') }}</option>
+                                    <option value="compatible">{{ __('Compatible') }}</option>
+                                    <option value="incompatible">{{ __('Incompatible') }}</option>
+                                    <option value="unknown">{{ __('Compatibility Unknown') }}</option>
                                 </flux:select>
                                 <flux:error name="fikaCompatibilityStatus" />
                             </flux:field>

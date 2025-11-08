@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
-use App\Enums\FikaCompatibilityStatus;
+use App\Enums\FikaCompatibility;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
@@ -60,6 +60,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read string $detail_url
  * @property-read string $description_html
  * @property-read bool $addons_enabled
+ * @property-read bool $fika_compatibility
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read ModCategory|null $category
@@ -515,7 +516,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         return $this->versions()
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
-            ->where('fika_compatibility_status', FikaCompatibilityStatus::Compatible)
+            ->where('fika_compatibility', FikaCompatibility::Compatible)
             ->exists();
     }
 
@@ -527,7 +528,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      * - Unknown if ALL published versions are unknown
      * - Incompatible otherwise (at least one is incompatible and none are compatible)
      */
-    public function getOverallFikaCompatibilityStatus(): FikaCompatibilityStatus
+    public function getOverallFikaCompatibility(): FikaCompatibility
     {
         $publishedVersions = $this->versions()
             ->whereNotNull('published_at')
@@ -535,21 +536,36 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             ->get();
 
         if ($publishedVersions->isEmpty()) {
-            return FikaCompatibilityStatus::Unknown;
+            return FikaCompatibility::Unknown;
         }
 
         // If any version is compatible, return Compatible
-        if ($publishedVersions->contains(fn (ModVersion $version): bool => $version->fika_compatibility_status === FikaCompatibilityStatus::Compatible)) {
-            return FikaCompatibilityStatus::Compatible;
+        if ($publishedVersions->contains(fn (ModVersion $version): bool => $version->fika_compatibility === FikaCompatibility::Compatible)) {
+            return FikaCompatibility::Compatible;
         }
 
         // If all versions are unknown, return Unknown
-        if ($publishedVersions->every(fn (ModVersion $version): bool => $version->fika_compatibility_status === FikaCompatibilityStatus::Unknown)) {
-            return FikaCompatibilityStatus::Unknown;
+        if ($publishedVersions->every(fn (ModVersion $version): bool => $version->fika_compatibility === FikaCompatibility::Unknown)) {
+            return FikaCompatibility::Unknown;
         }
 
         // Otherwise, at least one is incompatible and none are compatible
-        return FikaCompatibilityStatus::Incompatible;
+        return FikaCompatibility::Incompatible;
+    }
+
+    /**
+     * Determine if the mod has any published version that is Fika compatible.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function fikaCompatibility(): Attribute
+    {
+        return Attribute::get(fn (): bool => $this->versions()
+            ->where('fika_compatibility', FikaCompatibility::Compatible)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->exists()
+        )->shouldCache();
     }
 
     /**

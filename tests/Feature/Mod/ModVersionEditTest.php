@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\FikaCompatibilityStatus;
+use App\Enums\FikaCompatibility;
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Models\License;
 use App\Models\Mod;
@@ -327,7 +327,7 @@ describe('Mod Version Edit Form', function (): void {
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
             $modVersion = ModVersion::factory()->create([
                 'mod_id' => $mod->id,
-                'fika_compatibility_status' => FikaCompatibilityStatus::Incompatible,
+                'fika_compatibility' => FikaCompatibility::Incompatible,
             ]);
 
             Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
@@ -341,7 +341,7 @@ describe('Mod Version Edit Form', function (): void {
                 ->assertRedirect();
 
             $modVersion->refresh();
-            expect($modVersion->fika_compatibility_status->value)->toBe('compatible');
+            expect($modVersion->fika_compatibility->value)->toBe('compatible');
         });
     });
 });

@@ -92,6 +92,10 @@ class ModResource extends JsonResource
             $data['detail_url'] = $this->resource->detail_url;
         }
 
+        if ($this->shouldInclude('fika_compatibility')) {
+            $data['fika_compatibility'] = $this->resource->fika_compatibility;
+        }
+
         if ($this->shouldInclude('featured')) {
             $data['featured'] = (bool) $this->resource->featured;
         }

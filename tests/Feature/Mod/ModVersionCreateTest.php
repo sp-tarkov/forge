@@ -879,7 +879,7 @@ describe('Mod Version Create Form', function (): void {
                 ->first();
 
             expect($modVersion)->not->toBeNull()
-                ->and($modVersion->fika_compatibility_status->value)->toBe('compatible');
+                ->and($modVersion->fika_compatibility->value)->toBe('compatible');
         });
 
         it('allows creating mod version for SPT 3.x when parent mod has no GUID', function (): void {

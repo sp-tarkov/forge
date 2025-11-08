@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Filters;
 
-use App\Enums\FikaCompatibilityStatus;
+use App\Enums\FikaCompatibility;
 use App\Models\Mod;
 use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Builder;
@@ -221,7 +221,7 @@ class ModFilter
             $query->whereNotNull('published_at')
                 ->where('published_at', '<=', now())
                 ->unless($showDisabled, fn (Builder $q): Builder => $q->where('disabled', false))
-                ->where('fika_compatibility_status', FikaCompatibilityStatus::Compatible->value);
+                ->where('fika_compatibility', FikaCompatibility::Compatible->value);
         });
     }
 

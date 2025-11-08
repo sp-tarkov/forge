@@ -379,13 +379,13 @@ describe('Fika compatibility filtering', function (): void {
         $modCompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modCompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'compatible',
+            'fika_compatibility' => 'compatible',
         ]);
 
         $modIncompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modIncompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'incompatible',
+            'fika_compatibility' => 'incompatible',
         ]);
 
         $filters = ['fikaCompatibility' => false];
@@ -401,13 +401,13 @@ describe('Fika compatibility filtering', function (): void {
         $modCompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modCompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'compatible',
+            'fika_compatibility' => 'compatible',
         ]);
 
         $modIncompatible = Mod::factory()->create();
         ModVersion::factory()->recycle($modIncompatible)->create([
             'spt_version_constraint' => '^1.0.0',
-            'fika_compatibility_status' => 'incompatible',
+            'fika_compatibility' => 'incompatible',
         ]);
 
         $filters = ['fikaCompatibility' => true];

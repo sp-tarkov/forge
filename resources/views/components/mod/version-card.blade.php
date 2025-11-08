@@ -216,11 +216,11 @@
                 @endif
                 <span class="text-left sm:text-right inline-flex items-center gap-1">
                     <flux:icon
-                        icon="{{ $version->fika_compatibility_status->icon() }}"
-                        class="size-4 {{ $version->fika_compatibility_status->colorClass() }}"
+                        icon="{{ $version->fika_compatibility->icon() }}"
+                        class="size-4 {{ $version->fika_compatibility->colorClass() }}"
                     />
                     <span class="text-gray-900 dark:text-gray-100">
-                        {{ $version->fika_compatibility_status->label() }}
+                        {{ $version->fika_compatibility->label() }}
                     </span>
                 </span>
             </div>

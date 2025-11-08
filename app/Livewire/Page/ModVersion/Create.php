@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\ModVersion;
 
-use App\Enums\FikaCompatibilityStatus;
+use App\Enums\FikaCompatibility;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -391,7 +391,7 @@ class Create extends Component
                 'link' => $validated['link'],
                 'content_length' => $this->downloadLinkRule?->contentLength,
                 'spt_version_constraint' => $validated['sptVersionConstraint'],
-                'fika_compatibility_status' => FikaCompatibilityStatus::from($this->fikaCompatibilityStatus),
+                'fika_compatibility' => FikaCompatibility::from($this->fikaCompatibilityStatus),
                 'published_at' => $this->publishedAt,
             ]);
 

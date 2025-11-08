@@ -49,6 +49,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
             'spt_version' => 'filterBySptVersion',
+            'fika_compatibility' => 'filterByFikaCompatibility',
         ];
     }
 
@@ -99,7 +100,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             'content_length',
             'spt_version_constraint',
             'downloads',
-            'fika_compatibility_status',
+            'fika_compatibility',
             'published_at',
             'created_at',
             'updated_at',
@@ -320,6 +321,21 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
 
         $this->applySptVersionCondition($query, $compatibleSptVersions);
+    }
+
+    /**
+     * Filter by Fika compatibility status.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByFikaCompatibility(Builder $query, ?string $compatibility): void
+    {
+        if ($compatibility === null) {
+            return;
+        }
+
+        $compatibilityValues = self::parseCommaSeparatedInput($compatibility, 'string');
+        $query->whereIn('mod_versions.fika_compatibility', $compatibilityValues);
     }
 
     /**

@@ -7,7 +7,7 @@ namespace App\Enums;
 /**
  * Represents the Fika compatibility status of a mod version.
  */
-enum FikaCompatibilityStatus: string
+enum FikaCompatibility: string
 {
     /**
      * Mod version is compatible with Fika.

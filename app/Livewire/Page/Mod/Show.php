@@ -222,7 +222,7 @@ class Show extends Component
             'addonCount' => $this->getAddonCount(),
             'addons' => $this->addons(),
             'modVersionsForFilter' => $this->getModVersionsForFilter(),
-            'fikaStatus' => $this->mod->getOverallFikaCompatibilityStatus(),
+            'fikaStatus' => $this->mod->getOverallFikaCompatibility(),
         ]);
     }
 
