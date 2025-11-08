@@ -43,7 +43,7 @@ describe('Mod Edit Form', function (): void {
 
             Livewire::test(Edit::class, ['modId' => $mod->id])
                 ->set('name', 'Test Mod')
-                ->set('guid', 'invalid-guid')
+                ->set('guid', 'invalid guid!')
                 ->set('teaser', 'Test teaser')
                 ->set('description', 'Test description')
                 ->set('license', (string) $license->id)
@@ -335,7 +335,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         // Test using Livewire component test
         Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
-            ->set('guid', 'invalid-guid-format')
+            ->set('guid', 'invalid guid!')
             ->call('save')
             ->assertHasErrors(['guid']);
     });

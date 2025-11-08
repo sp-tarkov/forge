@@ -1011,7 +1011,7 @@ describe('Mod Version Create Form', function (): void {
             // Test duplicate GUID
             $component->set('newModGuid', 'com.existing.mod')
                 ->call('saveGuid')
-                ->assertHasErrors(['newModGuid' => 'unique']);
+                ->assertHasErrors(['newModGuid']);
 
             // Test empty GUID
             $component->set('newModGuid', '')

@@ -266,7 +266,7 @@ describe('Mod Version Edit Form', function (): void {
             // Test duplicate GUID
             $component->set('newModGuid', 'com.existing.mod')
                 ->call('saveGuid')
-                ->assertHasErrors(['newModGuid' => 'unique']);
+                ->assertHasErrors(['newModGuid']);
         });
 
         it('does not require GUID when editing version if already saved inline', function (): void {

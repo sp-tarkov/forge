@@ -15,6 +15,7 @@ use App\Models\SptVersion;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
+use App\Rules\UniqueCaseSensitiveGuid;
 use App\Support\Version;
 use Composer\Semver\Semver;
 use Exception;
@@ -326,11 +327,10 @@ class Create extends Component
 
         // Validate the GUID
         $this->validate([
-            'newModGuid' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'],
+            'newModGuid' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', new UniqueCaseSensitiveGuid($this->mod->id)],
         ], [
             'newModGuid.required' => 'The mod GUID is required.',
-            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
-            'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only letters, numbers, hyphens, and dots.',
         ]);
 
         // Save the GUID to the mod
@@ -475,7 +475,7 @@ class Create extends Component
 
         // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
         if ($this->modGuidRequired && empty($this->modGuid) && ! $this->guidSaved) {
-            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'];
+            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', 'unique:mods,guid'];
         }
 
         foreach ($this->dependencies as $index => $dependency) {

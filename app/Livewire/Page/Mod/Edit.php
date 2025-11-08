@@ -10,6 +10,7 @@ use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
+use App\Rules\UniqueCaseSensitiveGuid;
 use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Http\UploadedFile;
@@ -332,8 +333,8 @@ class Edit extends Component
     {
         // GUID is required if any existing mod version targets SPT >= 4.0.0
         $guidRules = $this->isGuidRequired
-            ? 'required|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id
-            : 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id;
+            ? ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', new UniqueCaseSensitiveGuid($this->mod->id)]
+            : ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', new UniqueCaseSensitiveGuid($this->mod->id)];
 
         return [
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',

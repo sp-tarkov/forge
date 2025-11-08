@@ -260,7 +260,16 @@ class ModQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->whereIn('mods.guid', self::parseCommaSeparatedInput($guids));
+        $inputGuids = self::parseCommaSeparatedInput($guids);
+
+        // Use a raw query to perform case-sensitive comparison
+        // The database uses utf8mb4_0900_ai_ci which is case-insensitive,
+        // so we need to explicitly check for exact case matches in the application layer
+        $query->where(function (Builder $q) use ($inputGuids): void {
+            foreach ($inputGuids as $inputGuid) {
+                $q->orWhereRaw('BINARY mods.guid = ?', [$inputGuid]);
+            }
+        });
     }
 
     /**
