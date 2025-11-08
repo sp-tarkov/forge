@@ -46,8 +46,7 @@
                                     >
                                 @else
                                     <div
-                                        class="w-16 h-16 rounded flex-shrink-0 bg-gray-700 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-400 text-sm font-bold"
-                                    >
+                                        class="w-16 h-16 rounded flex-shrink-0 bg-gray-700 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-400 text-sm font-bold">
                                         {{ substr($dependencyVersion->mod->name, 0, 2) }}
                                     </div>
                                 @endif
