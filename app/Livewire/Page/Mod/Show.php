@@ -238,7 +238,8 @@ class Show extends Component
             'authors',
             'license',
             'latestVersion.latestSptVersion',
-            'latestVersion.latestResolvedDependencies.mod:id,name,slug',
+            'latestVersion.latestResolvedDependencies.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id',
+            'latestVersion.latestResolvedDependencies.mod.owner.role',
         ])->findOrFail($modId);
     }
 

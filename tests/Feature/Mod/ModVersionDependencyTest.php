@@ -319,9 +319,13 @@ describe('Mod Version Dependencies', function (): void {
 
             $response = $this->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]));
 
-            // The view shows latestResolvedDependencies, so only the latest versions should appear
-            $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod1->name, $dependentMod1Version2->version)));
-            $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod2->name, $dependentMod2Version4->version)));
+            // The view shows latestResolvedDependencies in the Required Dependencies section
+            $response->assertSee(__('Required Dependencies'))
+                ->assertSee(__('The latest version of this mod requires the following mods to be installed as well.'))
+                ->assertSee($dependentMod1->name)
+                ->assertSee(__('Requires').' v'.$dependentMod1Version2->version)
+                ->assertSee($dependentMod2->name)
+                ->assertSee(__('Requires').' v'.$dependentMod2Version4->version);
         });
     });
 });

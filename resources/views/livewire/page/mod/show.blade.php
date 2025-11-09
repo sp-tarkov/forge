@@ -444,6 +444,69 @@
                 />
             @endif
 
+            {{-- Required Dependencies --}}
+            @if ($mod->latestVersion?->latestResolvedDependencies->isNotEmpty())
+                @php
+                    $dependencyCount = $mod->latestVersion->latestResolvedDependencies->count();
+                @endphp
+                <div
+                    class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {{ $dependencyCount === 1 ? __('Required Dependency') : __('Required Dependencies') }}
+                    </h2>
+                    <p class="mt-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
+                        {{ $dependencyCount === 1
+                            ? __('The latest version of this mod requires the following mod to be installed as well.')
+                            : __('The latest version of this mod requires the following mods to be installed as well.') }}
+                    </p>
+                    <ul
+                        role="list"
+                        class="divide-y divide-gray-200 dark:divide-gray-800"
+                    >
+                        @foreach ($mod->latestVersion->latestResolvedDependencies as $dependency)
+                            <li class="py-3 first:pt-0 last:pb-0">
+                                <a
+                                    href="{{ route('mod.show', [$dependency->mod->id, $dependency->mod->slug]) }}"
+                                    wire:navigate
+                                    class="flex items-center gap-3 group"
+                                >
+                                    {{-- Mod Thumbnail --}}
+                                    @if ($dependency->mod->thumbnail)
+                                        <img
+                                            src="{{ $dependency->mod->thumbnailUrl }}"
+                                            alt="{{ $dependency->mod->name }}"
+                                            class="w-12 h-12 rounded-lg flex-shrink-0 object-cover"
+                                        >
+                                    @else
+                                        <div
+                                            class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <flux:icon.cube-transparent
+                                                class="w-6 h-6 text-gray-400 dark:text-gray-600"
+                                            />
+                                        </div>
+                                    @endif
+
+                                    {{-- Mod Info --}}
+                                    <div class="flex-1 min-w-0">
+                                        <p
+                                            class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400">
+                                            {{ $dependency->mod->name }}
+                                        </p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400">
+                                            {{ __('Requires') }} v{{ $dependency->version }}
+                                            @if ($dependency->mod->owner)
+                                                &middot;
+                                                <x-user-name :user="$dependency->mod->owner" />
+                                            @endif
+                                        </p>
+                                    </div>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {{-- Profile Binding Notice --}}
             @if ($requiresProfileBindingNotice)
                 <div
@@ -617,24 +680,6 @@
                             {{ $fikaStatus->modLabel() }}
                         </h3>
                     </li>
-                    @if (
-                        $mod->latestVersion?->dependencies->isNotEmpty() &&
-                            $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
-                        <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3 class="font-bold">{{ __('Latest Version Dependencies') }}</h3>
-                            <p class="truncate">
-                                @foreach ($mod->latestVersion->dependencies as $dependency)
-                                    <a
-                                        href="{{ $dependency->resolvedVersion->mod->detail_url }}"
-                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        {{ $dependency->resolvedVersion->mod->name }}
-                                        &nbsp;({{ $dependency->resolvedVersion->version }})
-                                    </a><br />
-                                @endforeach
-                            </p>
-                        </li>
-                    @endif
                     @if ($mod->contains_ads)
                         <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
                             <flux:icon.check-circle
