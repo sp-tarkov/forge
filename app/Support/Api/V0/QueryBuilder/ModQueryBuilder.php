@@ -252,6 +252,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
     /**
      * Filter by GUID.
      *
+     * Requires DB column to have case sensitive collation (like utf8mb4_0900_as_cs in MySQL).
+     *
      * @param  Builder<Mod>  $query
      */
     protected function filterByGuid(Builder $query, ?string $guids): void
@@ -261,15 +263,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
         }
 
         $inputGuids = self::parseCommaSeparatedInput($guids);
-
-        // Use a raw query to perform case-sensitive comparison
-        // The database uses utf8mb4_0900_ai_ci which is case-insensitive,
-        // so we need to explicitly check for exact case matches in the application layer
-        $query->where(function (Builder $q) use ($inputGuids): void {
-            foreach ($inputGuids as $inputGuid) {
-                $q->orWhereRaw('BINARY mods.guid = ?', [$inputGuid]);
-            }
-        });
+        $query->whereIn('mods.guid', $inputGuids);
     }
 
     /**

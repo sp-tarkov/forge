@@ -16,7 +16,6 @@ use App\Models\VirusTotalLink;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
-use App\Rules\UniqueCaseSensitiveGuid;
 use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Support\Facades\Date;
@@ -230,7 +229,7 @@ class Edit extends Component
 
         // Validate the GUID
         $this->validate([
-            'newModGuid' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', new UniqueCaseSensitiveGuid($this->mod->id)],
+            'newModGuid' => 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id,
         ], [
             'newModGuid.required' => 'The mod GUID is required.',
             'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only letters, numbers, hyphens, and dots.',
