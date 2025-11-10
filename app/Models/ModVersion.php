@@ -156,6 +156,7 @@ class ModVersion extends Model implements Trackable
                         LIMIT 1)
                     ");
             })
+            ->distinct()
             ->withTimestamps();
     }
 

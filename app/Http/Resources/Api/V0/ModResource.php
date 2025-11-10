@@ -38,6 +38,31 @@ class ModResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
+        // For dependency tree endpoint - return only essential identifying fields
+        if ($request->routeIs('api.v0.mods.dependencies.tree')) {
+            return [
+                'id' => $this->resource->id,
+                'guid' => $this->resource->guid,
+                'name' => $this->resource->name,
+                'slug' => $this->resource->slug,
+                'latest_compatible_version' => $this->when(
+                    isset($this->resource->latestCompatibleVersion),
+                    fn (): ?ModVersionResource => $this->resource->latestCompatibleVersion
+                        ? new ModVersionResource($this->resource->latestCompatibleVersion)
+                        : null
+                ),
+                'dependencies' => $this->when(
+                    isset($this->resource->dependencies),
+                    fn (): array => $this->resource->dependencies ?? []
+                ),
+                'conflict' => $this->when(
+                    isset($this->resource->conflict),
+                    fn (): bool => $this->resource->conflict ?? false
+                ),
+            ];
+        }
+
+        // For all other endpoints - use field filtering
         $this->requestedFields = $request->string('fields', '')
             ->explode(',')
             ->map(fn (string $field): string => mb_trim($field))

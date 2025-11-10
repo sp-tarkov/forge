@@ -48,6 +48,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $license_id
  * @property int|null $category_id
  * @property int $downloads
+ * @property ModVersion|null $latestCompatibleVersion Dynamic property for dependency tree endpoint
+ * @property array<int, mixed> $dependencies Dynamic property for dependency tree endpoint
+ * @property bool $conflict Dynamic property for dependency tree endpoint indicating version constraint conflicts
  * @property bool $featured
  * @property bool $contains_ai_content
  * @property bool $contains_ads
