@@ -20,7 +20,7 @@ beforeEach(function (): void {
 describe('Mod Dependencies Resolution Endpoint', function (): void {
     describe('Parameter Validation', function (): void {
         it('returns error when no parameters are provided', function (): void {
-            $response = $this->getJson('/api/v0/mods/dependencies/tree');
+            $response = $this->getJson('/api/v0/mods/dependencies');
 
             $response->assertBadRequest()
                 ->assertJson([
@@ -31,7 +31,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
         });
 
         it('returns error when empty mods parameter is provided', function (): void {
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=');
 
             $response->assertBadRequest()
                 ->assertJson([
@@ -42,7 +42,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
         });
 
         it('returns error when only whitespace is provided for mods', function (): void {
-            $url = '/api/v0/mods/dependencies/tree?mods='.urlencode('   ');
+            $url = '/api/v0/mods/dependencies?mods='.urlencode('   ');
             $response = $this->getJson($url);
 
             $response->assertBadRequest()
@@ -54,7 +54,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
         });
 
         it('returns error when invalid format is provided', function (): void {
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=abc,xyz');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=abc,xyz');
 
             $response->assertBadRequest()
                 ->assertJson([
@@ -65,7 +65,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
         });
 
         it('returns error when missing colon separator', function (): void {
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=5');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=5');
 
             $response->assertBadRequest()
                 ->assertJson([
@@ -76,7 +76,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
         });
 
         it('returns empty array when non-existent mod:version pairs are provided', function (): void {
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=99999:1.0.0,88888:2.0.0');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=99999:1.0.0,88888:2.0.0');
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -86,7 +86,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
         });
 
         it('returns empty array when non-existent GUID:version pairs are provided', function (): void {
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=com.nonexistent.mod:1.0.0');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=com.nonexistent.mod:1.0.0');
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -112,7 +112,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $modVersion->sptVersions()->sync([$sptVersion->id]);
 
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=com.example.testmod:1.0.0');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=com.example.testmod:1.0.0');
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -149,7 +149,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $mod2Version->sptVersions()->sync([$sptVersion->id]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0,com.example.mod2:2.0.0', $mod1->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,com.example.mod2:2.0.0', $mod1->id));
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -166,7 +166,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
 
             $response = $this->withHeaders([
                 'Accept' => 'application/json',
-            ])->getJson('/api/v0/mods/dependencies/tree?mods=1:1.0.0');
+            ])->getJson('/api/v0/mods/dependencies?mods=1:1.0.0');
 
             $response->assertUnauthorized()
                 ->assertJson([
@@ -221,7 +221,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $dependencyModVersion->id,
             ]);
 
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=com.example.mainmod:1.0.0');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=com.example.mainmod:1.0.0');
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -246,7 +246,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $modVersion->sptVersions()->sync([$sptVersion->id]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mod->id));
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -256,7 +256,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
         });
 
         it('returns empty array when mod version does not exist', function (): void {
-            $response = $this->getJson('/api/v0/mods/dependencies/tree?mods=99999:1.0.0');
+            $response = $this->getJson('/api/v0/mods/dependencies?mods=99999:1.0.0');
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -309,7 +309,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $dependencyModVersion->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -378,7 +378,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $level2Version->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -445,7 +445,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $sharedDepVersion->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
 
             // Should return only 1 instance of the shared dependency (deduplicated)
             $response->assertSuccessful()
@@ -523,7 +523,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $sharedDepVersion2->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
 
             // Should return 2 instances of the shared dependency (different versions)
             $response->assertSuccessful()
@@ -643,7 +643,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $sharedDepVersion1_8->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
 
             // Should return only 1 instance with version 1.8.0 (highest version satisfying both ^1.0.0 and ^1.5.0)
             $response->assertSuccessful()
@@ -711,7 +711,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $nestedVersion->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -819,7 +819,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $uniqueDep2Version->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,%d:2.0.0', $mod1->id, $mod2->id));
 
             // Should return 3 unique dependencies (1 shared + 2 unique), not 4
             $response->assertSuccessful()
@@ -882,7 +882,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $resolvedVersion->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -907,7 +907,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $modVersion->sptVersions()->sync([$sptVersion->id]);
 
-            $url = '/api/v0/mods/dependencies/tree?mods='.urlencode(sprintf(' %d:1.0.0 , %d:1.0.0 ', $mod->id, $mod->id));
+            $url = '/api/v0/mods/dependencies?mods='.urlencode(sprintf(' %d:1.0.0 , %d:1.0.0 ', $mod->id, $mod->id));
             $response = $this->getJson($url);
 
             $response->assertSuccessful();
@@ -928,7 +928,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $modVersion->sptVersions()->sync([$sptVersion->id]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0,%d:1.0.0,%d:1.0.0', $mod->id, $mod->id, $mod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0,%d:1.0.0,%d:1.0.0', $mod->id, $mod->id, $mod->id));
 
             $response->assertSuccessful();
         });
@@ -982,7 +982,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $modAVersion->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $modA->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $modA->id));
 
             // Should not infinite loop - returns Mod B, which shows Mod A as dependency, but A's deps are empty
             $response->assertSuccessful()
@@ -1012,7 +1012,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $modVersion->sptVersions()->sync([$sptVersion->id]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $unpublishedMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $unpublishedMod->id));
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -1038,7 +1038,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $modVersion->sptVersions()->sync([$sptVersion->id]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $disabledMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $disabledMod->id));
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -1064,7 +1064,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
             $modVersion->sptVersions()->sync([$sptVersion->id]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $futureMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $futureMod->id));
 
             $response->assertSuccessful()
                 ->assertJson([
@@ -1123,7 +1123,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             // Don't create dependency or resolved dependency for unpublished mod
             // In production, dependencies on unpublished mods wouldn't exist in the database
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -1189,7 +1189,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $disabledDepVersion->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -1244,7 +1244,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $publishedVersion->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             $response->assertSuccessful()
                 ->assertJsonCount(1, 'data')
@@ -1310,7 +1310,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'resolved_mod_version_id' => $level2Version->id,
             ]);
 
-            $response = $this->getJson(sprintf('/api/v0/mods/dependencies/tree?mods=%d:1.0.0', $mainMod->id));
+            $response = $this->getJson(sprintf('/api/v0/mods/dependencies?mods=%d:1.0.0', $mainMod->id));
 
             // Should exclude both Level 1 and Level 2 since Level 1 is disabled
             $response->assertSuccessful()

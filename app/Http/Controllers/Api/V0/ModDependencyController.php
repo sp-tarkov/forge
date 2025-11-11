@@ -9,14 +9,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\ModResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\Mod;
-use App\Support\Api\V0\QueryBuilder\ModDependencyTreeQueryBuilder;
+use App\Models\ModVersion;
+use App\Services\ModDependencyService;
 use Composer\Semver\Semver;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Knuckles\Scribe\Attributes\UrlParam;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,6 +25,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ModDependencyController extends Controller
 {
+    public function __construct(protected ModDependencyService $dependencyService) {}
+
     /**
      * Get Mod Dependencies
      *
@@ -169,35 +169,8 @@ class ModDependencyController extends Controller
             );
         }
 
-        // Parse identifier:version pairs
-        $modVersionPairs = collect(explode(',', $modsParam))
-            ->map(fn (string $pair): string => mb_trim($pair))
-            ->reject(fn (string $pair): bool => empty($pair))
-            ->unique()
-            ->map(function (string $pair): ?array {
-                $parts = explode(':', $pair);
-                if (count($parts) !== 2) {
-                    return null;
-                }
-
-                $identifier = mb_trim($parts[0]);
-                $version = mb_trim($parts[1]);
-
-                if (empty($identifier) || empty($version)) {
-                    return null;
-                }
-
-                // Determine if identifier is numeric (mod_id) or string (GUID)
-                $isNumeric = is_numeric($identifier) && (int) $identifier > 0;
-
-                return [
-                    'identifier' => $identifier,
-                    'version' => $version,
-                    'is_mod_id' => $isNumeric,
-                ];
-            })
-            ->filter()
-            ->values();
+        // Parse identifier:version pairs using service
+        $modVersionPairs = $this->dependencyService->parseModVersionPairs($modsParam);
 
         if ($modVersionPairs->isEmpty()) {
             return ApiResponse::error(
@@ -207,31 +180,8 @@ class ModDependencyController extends Controller
             );
         }
 
-        // Look up mod version IDs from identifier:version pairs
-        $queriedModVersionIds = collect();
-        foreach ($modVersionPairs as $pair) {
-            $query = DB::table('mod_versions')
-                ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
-                ->where('mod_versions.version', $pair['version'])
-                ->whereNotNull('mod_versions.published_at')
-                ->where('mod_versions.published_at', '<=', now())
-                ->where('mod_versions.disabled', false)
-                ->whereNotNull('mods.published_at')
-                ->where('mods.published_at', '<=', now())
-                ->where('mods.disabled', false);
-
-            if ($pair['is_mod_id']) {
-                $query->where('mods.id', (int) $pair['identifier']);
-            } else {
-                $query->where('mods.guid', $pair['identifier']);
-            }
-
-            $versionId = $query->value('mod_versions.id');
-
-            if ($versionId) {
-                $queriedModVersionIds->push($versionId);
-            }
-        }
+        // Look up mod version IDs from identifier:version pairs using service
+        $queriedModVersionIds = $this->dependencyService->resolveModVersionIds($modVersionPairs);
 
         if ($queriedModVersionIds->isEmpty()) {
             return ApiResponse::success([]);
@@ -242,7 +192,7 @@ class ModDependencyController extends Controller
         $constraintsByModId = collect();
 
         foreach ($queriedModVersionIds as $versionId) {
-            $dependencies = $this->buildDependencyTree($versionId, collect(), $request, $constraintsByModId);
+            $dependencies = $this->buildDependencyTree($versionId, collect(), $constraintsByModId);
             if ($dependencies) {
                 $allDependencies = $allDependencies->merge($dependencies);
             }
@@ -321,107 +271,58 @@ class ModDependencyController extends Controller
      * @param  Collection<int, Collection<int, string>>  $constraintsByModId  Collect constraints for each mod
      * @return array<int, ModResource>|null
      */
-    private function buildDependencyTree(int $modVersionId, Collection $processedVersionIds, Request $request, Collection $constraintsByModId): ?array
+    private function buildDependencyTree(int $modVersionId, Collection $processedVersionIds, Collection $constraintsByModId): ?array
     {
-        // Check for circular dependencies
-        if ($processedVersionIds->contains($modVersionId)) {
+        // Use service to build the dependency tree
+        $tree = $this->dependencyService->buildDependencyTree($modVersionId, $processedVersionIds, $constraintsByModId);
+
+        if (is_null($tree)) {
             return null;
         }
 
-        // Mark this version as processed
-        $processedVersionIds = $processedVersionIds->push($modVersionId);
-
-        // Get the latest resolved version for each dependency by semantic version
-        $dependencies = DB::table('mod_resolved_dependencies')
-            ->select(
-                'mod_dependencies.dependent_mod_id',
-                'mod_dependencies.constraint',
-                DB::raw('MAX(resolved_versions.id) as latest_version_id')
-            )
-            ->join('mod_dependencies', 'mod_resolved_dependencies.dependency_id', '=', 'mod_dependencies.id')
-            ->join('mod_versions as resolved_versions', function (JoinClause $join): void {
-                $join->on('mod_resolved_dependencies.resolved_mod_version_id', '=', 'resolved_versions.id')
-                    ->whereNotNull('resolved_versions.published_at')
-                    ->where('resolved_versions.published_at', '<=', now())
-                    ->where('resolved_versions.disabled', false);
-            })
-            ->join('mods', function (JoinClause $join): void {
-                $join->on('mod_dependencies.dependent_mod_id', '=', 'mods.id')
-                    ->whereNotNull('mods.published_at')
-                    ->where('mods.published_at', '<=', now())
-                    ->where('mods.disabled', false);
-            })
-            ->join(DB::raw('(
-                SELECT
-                    mv.mod_id,
-                    mv.id,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY mv.mod_id
-                        ORDER BY mv.version_major DESC, mv.version_minor DESC, mv.version_patch DESC,
-                                 CASE WHEN mv.version_labels = "" THEN 0 ELSE 1 END, mv.version_labels
-                    ) as rn
-                FROM mod_versions mv
-                INNER JOIN mod_resolved_dependencies mrd ON mv.id = mrd.resolved_mod_version_id
-                WHERE mrd.mod_version_id = '.$modVersionId.'
-                    AND mv.published_at IS NOT NULL
-                    AND mv.published_at <= NOW()
-                    AND mv.disabled = 0
-            ) as ranked'), function (JoinClause $join): void {
-                $join->on('resolved_versions.id', '=', 'ranked.id')
-                    ->where('ranked.rn', '=', 1);
-            })
-            ->where('mod_resolved_dependencies.mod_version_id', $modVersionId)
-            ->groupBy('mod_dependencies.dependent_mod_id', 'mod_dependencies.constraint')
-            ->get();
-
-        if ($dependencies->isEmpty()) {
+        if (empty($tree)) {
             return [];
         }
 
-        // Store constraints for each mod
-        foreach ($dependencies as $dependency) {
-            $modId = $dependency->dependent_mod_id;
-            if (! $constraintsByModId->has($modId)) {
-                $constraintsByModId->put($modId, collect());
-            }
-
-            $constraintsByModId->get($modId)->push($dependency->constraint);
-        }
-
-        // Load the actual mod versions with their mods using QueryBuilder for consistency
-        $versionIds = $dependencies->pluck('latest_version_id')->filter()->unique()->all();
-
-        // Get the mods for these versions
-        $queryBuilder = new ModDependencyTreeQueryBuilder;
-
-        // Get all mods that have a version in our version IDs list
-        $mods = $queryBuilder->apply()
-            ->whereHas('versions', function (Builder $query) use ($versionIds): void {
-                $query->whereIn('id', $versionIds);
-            })
-            ->with(['versions' => function (mixed $query) use ($versionIds): void {
-                $query->whereIn('id', $versionIds);
-            }])
-            ->get();
-
-        // Build a map of mod_id => latest_version_id from our dependencies
-        $modVersionMap = $dependencies->pluck('latest_version_id', 'dependent_mod_id');
-
-        // Build tree nodes for each mod
-        return $mods->map(function (Mod $mod) use ($modVersionMap, $processedVersionIds, $request, $constraintsByModId): ModResource {
-            $latestVersionId = $modVersionMap[$mod->id] ?? null;
-            $latestVersion = $latestVersionId ? $mod->versions->firstWhere('id', $latestVersionId) : null;
-
-            // Recursively build dependencies for this version
-            $subDependencies = $latestVersionId
-                ? $this->buildDependencyTree($latestVersionId, $processedVersionIds, $request, $constraintsByModId)
-                : [];
+        // Transform tree nodes into ModResources
+        return collect($tree)->map(function (array $node) use ($constraintsByModId): ModResource {
+            $mod = $node['mod'];
+            $latestVersion = $node['latest_version'];
+            $subDependencies = $node['dependencies'];
 
             // Attach the latest compatible version and dependencies to the mod (dynamic properties for API response)
             $mod->latestCompatibleVersion = $latestVersion;
 
             // Apply smart deduplication to nested dependencies as well
-            $deduplicatedSubDeps = $this->deduplicateDependencies(collect($subDependencies ?? []), $constraintsByModId);
+            $deduplicatedSubDeps = $this->deduplicateDependencies(collect($this->transformTreeToResources($subDependencies, $constraintsByModId)), $constraintsByModId);
+            $mod->dependencies = $deduplicatedSubDeps;
+
+            return new ModResource($mod);
+        })->values()->all();
+    }
+
+    /**
+     * Transform dependency tree nodes into ModResources recursively.
+     *
+     * @param  array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}>  $tree
+     * @param  Collection<int, Collection<int, string>>  $constraintsByModId
+     * @return array<int, ModResource>
+     */
+    private function transformTreeToResources(array $tree, Collection $constraintsByModId): array
+    {
+        return collect($tree)->map(function (array $node) use ($constraintsByModId): ModResource {
+            $mod = $node['mod'];
+            $latestVersion = $node['latest_version'];
+            $subDependencies = $node['dependencies'];
+
+            // Attach the latest compatible version and dependencies to the mod
+            $mod->latestCompatibleVersion = $latestVersion;
+
+            // Recursively transform and deduplicate sub-dependencies
+            $deduplicatedSubDeps = $this->deduplicateDependencies(
+                collect($this->transformTreeToResources($subDependencies, $constraintsByModId)),
+                $constraintsByModId
+            );
             $mod->dependencies = $deduplicatedSubDeps;
 
             return new ModResource($mod);

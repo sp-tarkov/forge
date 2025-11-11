@@ -649,9 +649,11 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('description')->clean(
-                Markdown::convert($this->description)->getContent()
-            )
+            get: fn (): string => $this->description
+                ? Purify::config('description')->clean(
+                    Markdown::convert($this->description)->getContent()
+                )
+                : ''
         )->shouldCache();
     }
 
