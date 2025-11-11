@@ -34,6 +34,12 @@ class ModController extends Controller
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
      *
+     * <aside class="notice">
+     * The <code>fika_compatibility</code> field on a mod is a boolean that indicates whether any published version is
+     * confirmed compatible with Fika. Version records expose their own <code>fika_compatibility</code> field as a
+     * string with one of <code>compatible</code>, <code>incompatible</code>, or <code>unknown</code>.
+     * </aside>
+     *
      * @response status=200 scenario="Success (All fields, No Includes)"
      *  {
      *      "success": true,
@@ -326,11 +332,17 @@ class ModController extends Controller
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
      * Fields available:<br /><code>hub_id, guid, name, slug, teaser, description, thumbnail, downloads,
-     * source_code_links, detail_url, fika_compatibility, featured, contains_ai_content, contains_ads, published_at,
-     * created_at, updated_at</code>
+     * detail_url, fika_compatibility, featured, contains_ai_content, contains_ads, published_at, created_at,
+     * updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
+     *
+     * <aside class="notice">
+     * The <code>fika_compatibility</code> field on a mod is a boolean that indicates whether any published version is
+     * confirmed compatible with Fika. Version records expose their own <code>fika_compatibility</code> field as a
+     * string with one of <code>compatible</code>, <code>incompatible</code>, or <code>unknown</code>.
+     * </aside>
      *
      * @response status=200 scenario="Success (All fields, No Includes)"
      *  {

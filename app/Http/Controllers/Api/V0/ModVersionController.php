@@ -32,6 +32,11 @@ class ModVersionController extends Controller
      * dependencies will be included. If a dependency has dependencies of its own, they will not be included. To resolve
      * the full tree of dependencies, use the <code>mod/dependencies</code> endpoint.</aside>
      *
+     * <aside class="notice">
+     * The <code>fika_compatibility</code> field on each version is a string with one of <code>compatible</code>,
+     * <code>incompatible</code>, or <code>unknown</code>.
+     * </aside>
+     *
      * @response status=200 scenario="Success (All fields, No Includes)"
      *  {
      *      "success": true,
