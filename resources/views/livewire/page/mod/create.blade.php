@@ -360,6 +360,17 @@
                             </flux:field>
 
                             <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Add-ons">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="addonsDisabled"
+                                        label="Disable Add-ons"
+                                        description="When enabled, users will not be able to create or view add-ons for this mod. Use this if your mod does not support or allow add-ons."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
                                 <flux:checkbox.group label="Notifications">
                                     <flux:checkbox
                                         value="true"
