@@ -14,7 +14,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user = User::factory()->create();
-    $this->actingAs($this->user, 'sanctum');
+    $this->token = $this->user->createToken('test', ['read'])->plainTextToken;
+    $this->withHeader('Authorization', 'Bearer '.$this->token);
 });
 
 describe('Mod Dependencies Resolution Endpoint', function (): void {

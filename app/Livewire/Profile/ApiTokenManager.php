@@ -11,7 +11,7 @@ use Override;
 
 class ApiTokenManager extends BaseApiTokenManager
 {
-    private const READ_ABILITY = 'read';
+    private const string READ_ABILITY = 'read';
 
     #[Override]
     public function mount(): void
@@ -23,8 +23,11 @@ class ApiTokenManager extends BaseApiTokenManager
         );
     }
 
+    /**
+     * @param  int  $tokenId
+     */
     #[Override]
-    public function manageApiTokenPermissions($tokenId): void
+    public function manageApiTokenPermissions($tokenId): void // @pest-ignore-type
     {
         parent::manageApiTokenPermissions($tokenId);
 
