@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\User;
 
@@ -144,6 +145,10 @@ return [
                 'sortableAttributes' => [],
             ],
             Mod::class => [
+                'filterableAttributes' => [],
+                'sortableAttributes' => [],
+            ],
+            Addon::class => [
                 'filterableAttributes' => [],
                 'sortableAttributes' => [],
             ],
