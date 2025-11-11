@@ -47,7 +47,7 @@ class SptVersionService
     private function satisfyConstraint(ModVersion $modVersion): array
     {
         return match ($modVersion->spt_version_constraint) {
-            '' => [],
+            null, '' => [],
             '0.0.0' => $this->getLegacyVersionId(),
             default => $this->resolveSemverConstraint($modVersion->spt_version_constraint),
         };

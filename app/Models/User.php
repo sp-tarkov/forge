@@ -153,6 +153,41 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
+     * Build a query including mods the user owns or is an additional author of.
+     *
+     * @return Builder<Mod>
+     */
+    public function ownedAndAuthoredMods(): Builder
+    {
+        return Mod::query()
+            ->leftJoin('mod_authors', 'mods.id', '=', 'mod_authors.mod_id')
+            ->where(function (Builder $query): void {
+                $query->where('mods.owner_id', $this->id)
+                    ->orWhere('mod_authors.user_id', $this->id);
+            })
+            ->select('mods.*')
+            ->distinct();
+    }
+
+    /**
+     * Build a query including addons the user owns or is an additional author of.
+     *
+     * @return Builder<Addon>
+     */
+    public function ownedAndAuthoredAddons(): Builder
+    {
+        return Addon::query()
+            ->leftJoin('addon_authors', 'addons.id', '=', 'addon_authors.addon_id')
+            ->where(function (Builder $query): void {
+                $query->where('addons.owner_id', $this->id)
+                    ->orWhere('addon_authors.user_id', $this->id);
+            })
+            ->whereNull('addons.detached_at')
+            ->select('addons.*')
+            ->distinct();
+    }
+
+    /**
      * Get all addons authored by the user.
      *
      * @return BelongsToMany<Addon, $this>
