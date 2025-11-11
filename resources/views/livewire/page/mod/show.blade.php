@@ -8,29 +8,51 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+            <flux:icon.cube-transparent class="w-5 h-5" />
             {{ __('Mod Details') }}
         </h2>
-        @if (auth()->user()
-                ?->can('viewActions', [App\Models\Mod::class, $mod]))
-            @if (auth()->user()?->hasMfaEnabled())
-                <flux:button
-                    href="{{ route('mod.version.create', ['mod' => $mod->id]) }}"
-                    size="sm"
-                >
-                    {{ __('Create Mod Version') }}
-                </flux:button>
-            @else
-                <flux:tooltip content="Must enable MFA to create mod versions.">
-                    <div>
+        <div class="flex items-center gap-2">
+            @auth
+                @if ($mod->addons_enabled)
+                    @if (auth()->user()->hasMfaEnabled())
                         <flux:button
-                            disabled="true"
+                            href="{{ route('addon.guidelines', ['mod' => $mod->id]) }}"
                             size="sm"
-                        >{{ __('Create Mod Version') }}</flux:button>
-                    </div>
-                </flux:tooltip>
+                        >{{ __('Create Addon') }}</flux:button>
+                    @else
+                        <flux:tooltip content="Must enable MFA to create addons.">
+                            <div>
+                                <flux:button
+                                    disabled="true"
+                                    size="sm"
+                                >{{ __('Create Addon') }}</flux:button>
+                            </div>
+                        </flux:tooltip>
+                    @endif
+                @endif
+            @endauth
+            @if (auth()->user()
+                    ?->can('viewActions', [App\Models\Mod::class, $mod]))
+                @if (auth()->user()?->hasMfaEnabled())
+                    <flux:button
+                        href="{{ route('mod.version.create', ['mod' => $mod->id]) }}"
+                        size="sm"
+                    >
+                        {{ __('Create Mod Version') }}
+                    </flux:button>
+                @else
+                    <flux:tooltip content="Must enable MFA to create mod versions.">
+                        <div>
+                            <flux:button
+                                disabled="true"
+                                size="sm"
+                            >{{ __('Create Mod Version') }}</flux:button>
+                        </div>
+                    </flux:tooltip>
+                @endif
             @endif
-        @endif
+        </div>
     </div>
 </x-slot>
 
@@ -53,7 +75,7 @@
                         <div>{{ $warning }}</div>
                     @endforeach
                 </flux:callout.text>
-                @can('create', [App\Models\ModVersion::class, $mod])
+                @cachedCan('create', [App\Models\ModVersion::class, $mod])
                     @if (isset($warningMessages['no_versions']))
                         <x-slot
                             name="actions"
@@ -63,7 +85,7 @@
                             </flux:button>
                         </x-slot>
                     @endif
-                @endcan
+                @endcachedCan
             </flux:callout>
         </div>
     @endif
@@ -74,7 +96,7 @@
             {{-- Main Mod Details Card --}}
             <div
                 class="relative p-4 sm:p-6 text-center sm:text-left bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none">
-                @can('update', $mod)
+                @cachedCan('update', $mod)
                     <livewire:mod.action
                         wire:key="mod-action-show-{{ $mod->id }}"
                         :mod-id="$mod->id"
@@ -83,7 +105,7 @@
                         :mod-disabled="(bool) $mod->disabled"
                         :mod-published="(bool) $mod->published_at && $mod->published_at <= now()"
                     />
-                @endcan
+                @endcachedCan
 
                 <livewire:ribbon.mod
                     wire:key="mod-ribbon-show-{{ $mod->id }}"
@@ -91,6 +113,7 @@
                     :disabled="$mod->disabled"
                     :published-at="$mod->published_at?->toISOString()"
                     :featured="$mod->featured"
+                    :publicly-visible="$mod->isPubliclyVisible()"
                 />
 
                 <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
@@ -102,11 +125,10 @@
                                 class="w-36 rounded-lg"
                             >
                         @else
-                            <img
-                                src="https://placehold.co/144x144/31343C/EEE?font=source-sans-pro&text={{ urlencode($mod->name) }}"
-                                alt="{{ $mod->name }}"
-                                class="w-36 rounded-lg"
-                            >
+                            <div
+                                class="w-36 h-36 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                                <flux:icon.cube-transparent class="w-20 h-20 text-gray-400 dark:text-gray-600" />
+                            </div>
                         @endif
                     </div>
                     <div
@@ -122,31 +144,35 @@
                             </h2>
                         </div>
                         @if ($mod->owner)
-                            <p>{{ __('Created by') }}&nbsp;<a
+                            <p>
+                                {{ __('Created by') }}
+                                <a
                                     href="{{ $mod->owner->profile_url }}"
-                                    class="underline hover:text-black dark:hover:text-white"
-                                ><x-user-name :user="$mod->owner" /></a></p>
+                                    class="hover:text-black dark:hover:text-white"
+                                ><x-user-name
+                                        :user="$mod->owner"
+                                        class="underline"
+                                    /></a>
+                            </p>
                         @endif
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }}
-                            {{ __('Downloads') }}</p>
-                        @if ($mod->latestVersion?->latestSptVersion)
-                            <p class="mt-2">
+                            {{ __(Str::plural('Download', $mod->downloads)) }}</p>
+                        <p class="mt-2 flex flex-wrap gap-2 items-center">
+                            @if ($mod->latestVersion?->latestSptVersion)
                                 <span
                                     class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
                                 >
                                     {{ $mod->latestVersion->latestSptVersion->version_formatted }}
                                     {{ __('Compatible') }}
                                 </span>
-                            </p>
-                        @else
-                            <p class="mt-2">
+                            @else
                                 <span
                                     class="badge-version bg-gray-200 text-gray-700 inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
                                 >
                                     {{ __('Unknown SPT Version') }}
                                 </span>
-                            </p>
-                        @endif
+                            @endif
+                        </p>
                     </div>
                 </div>
 
@@ -196,6 +222,10 @@
                             <option value="description">{{ __('Description') }}</option>
                             <option value="versions">{{ $versionCount }}
                                 {{ __(Str::plural('Version', $versionCount)) }}</option>
+                            @if ($mod->addons_enabled)
+                                <option value="addons">{{ $addonCount }}
+                                    {{ __(Str::plural('Addon', $addonCount)) }}</option>
+                            @endif
                             @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
                                 <option value="comments">{{ $commentCount }}
                                     {{ __(Str::plural('Comment', $commentCount)) }}</option>
@@ -215,6 +245,13 @@
                                 value="versions"
                                 :label="$versionCount . ' ' . Str::plural('Version', $versionCount)"
                             />
+                            @if ($mod->addons_enabled)
+                                <x-tab-button
+                                    name="Addons"
+                                    value="addons"
+                                    :label="$addonCount . ' ' . Str::plural('Addon', $addonCount)"
+                                />
+                            @endif
                             @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
                                 <x-tab-button
                                     name="Comments"
@@ -243,18 +280,121 @@
                 {{-- Mod Versions --}}
                 <div x-show="selectedTab === 'versions'">
                     @forelse($versions as $version)
-                        @can('view', $version)
+                        @cachedCan('view', $version)
                             <div wire:key="mod-show-version-{{ $mod->id }}-{{ $version->id }}">
                                 <x-mod.version-card :version="$version" />
                             </div>
-                        @endcan
+                        @endcachedCan
                     @empty
                         <div
                             class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                            <p class="text-gray-900 dark:text-gray-200">{{ __('No versions found.') }}</p>
+                            <div class="text-center py-8">
+                                <flux:icon.archive-box class="mx-auto h-12 w-12 text-gray-400" />
+                                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ __('No Versions Yet') }}</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ __('This mod doesn\'t have any versions yet.') }}</p>
+                                @cachedCan('create', [App\Models\ModVersion::class, $mod])
+                                    <div class="mt-6">
+                                        <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">
+                                            {{ __('Create First Version') }}
+                                        </flux:button>
+                                    </div>
+                                @endcachedCan
+                            </div>
                         </div>
                     @endforelse
                     {{ $versions->links() }}
+                </div>
+
+                {{-- Addons --}}
+                <div
+                    x-show="selectedTab === 'addons'"
+                    x-cloak
+                >
+                    @if ($mod->addons_enabled)
+                        @if ($addonCount > 0)
+                            {{-- Version Filter --}}
+                            <div class="mb-4 flex items-center justify-between gap-4">
+                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                                    <span x-show="!$wire.selectedModVersionId">
+                                        Select a mod version to filter by on the right.
+                                    </span>
+                                    <span
+                                        x-show="$wire.selectedModVersionId"
+                                        x-cloak
+                                    >
+                                        Showing addons compatible with selected version.
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label
+                                        for="mod-version-filter"
+                                        class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
+                                    >
+                                        Filter by mod version:
+                                    </label>
+                                    <flux:select
+                                        wire:model.live="selectedModVersionId"
+                                        id="mod-version-filter"
+                                        size="sm"
+                                    >
+                                        <flux:select.option value="">All versions</flux:select.option>
+                                        @foreach ($modVersionsForFilter as $version)
+                                            <flux:select.option value="{{ $version->id }}">
+                                                v{{ $version->version }}
+                                                @if ($version->latestSptVersion)
+                                                    ({{ $version->latestSptVersion->version_formatted }})
+                                                @endif
+                                            </flux:select.option>
+                                        @endforeach
+                                    </flux:select>
+                                </div>
+                            </div>
+
+                            <div class="grid gap-4">
+                                @foreach ($addons as $addon)
+                                    <x-addon.card
+                                        :addon="$addon"
+                                        :selected-mod-version-id="$selectedModVersionId"
+                                        wire:key="addon-card-{{ $addon->id }}"
+                                    />
+                                @endforeach
+                            </div>
+                            {{ $addons->links() }}
+                        @else
+                            <div
+                                class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                                <div class="text-center py-8">
+                                    <flux:icon.puzzle-piece class="mx-auto size-12 text-gray-400" />
+                                    <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                        {{ __('No Addons Yet') }}</h3>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        {{ __('This mod doesn\'t have any addons yet.') }}</p>
+                                    @cachedCan('create', [App\Models\Addon::class, $mod])
+                                        <div class="mt-6">
+                                            <flux:button href="{{ route('addon.guidelines', ['mod' => $mod->id]) }}">
+                                                {{ __('Create First Addon') }}
+                                            </flux:button>
+                                        </div>
+                                    @endcachedCan
+                                </div>
+                            </div>
+                        @endif
+                    @else
+                        <div
+                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                            <flux:callout
+                                icon="information-circle"
+                                color="zinc"
+                            >
+                                <flux:callout.heading>{{ __('Addons Disabled') }}</flux:callout.heading>
+                                <flux:callout.text>
+                                    {{ __('The mod owner has disabled addons for this mod.') }}
+                                </flux:callout.text>
+                            </flux:callout>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Comments --}}
@@ -304,25 +444,79 @@
                 />
             @endif
 
+            {{-- Required Dependencies --}}
+            @if ($mod->latestVersion?->latestResolvedDependencies->isNotEmpty())
+                @php
+                    $dependencyCount = $mod->latestVersion->latestResolvedDependencies->count();
+                @endphp
+                <div
+                    class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {{ $dependencyCount === 1 ? __('Required Dependency') : __('Required Dependencies') }}
+                    </h2>
+                    <p class="mt-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
+                        {{ $dependencyCount === 1
+                            ? __('The latest version of this mod requires the following mod to be installed as well.')
+                            : __('The latest version of this mod requires the following mods to be installed as well.') }}
+                    </p>
+                    <ul
+                        role="list"
+                        class="divide-y divide-gray-200 dark:divide-gray-800"
+                    >
+                        @foreach ($mod->latestVersion->latestResolvedDependencies as $dependency)
+                            <li class="py-3 first:pt-0 last:pb-0">
+                                <a
+                                    href="{{ route('mod.show', [$dependency->mod->id, $dependency->mod->slug]) }}"
+                                    wire:navigate
+                                    class="flex items-center gap-3 group"
+                                >
+                                    {{-- Mod Thumbnail --}}
+                                    @if ($dependency->mod->thumbnail)
+                                        <img
+                                            src="{{ $dependency->mod->thumbnailUrl }}"
+                                            alt="{{ $dependency->mod->name }}"
+                                            class="w-12 h-12 rounded-lg flex-shrink-0 object-cover"
+                                        >
+                                    @else
+                                        <div
+                                            class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <flux:icon.cube-transparent
+                                                class="w-6 h-6 text-gray-400 dark:text-gray-600"
+                                            />
+                                        </div>
+                                    @endif
+
+                                    {{-- Mod Info --}}
+                                    <div class="flex-1 min-w-0">
+                                        <p
+                                            class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400">
+                                            {{ $dependency->mod->name }}
+                                        </p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400">
+                                            {{ __('Requires') }} v{{ $dependency->version }}
+                                            @if ($dependency->mod->owner)
+                                                &middot;
+                                                <x-user-name :user="$dependency->mod->owner" />
+                                            @endif
+                                        </p>
+                                    </div>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {{-- Profile Binding Notice --}}
             @if ($requiresProfileBindingNotice)
                 <div
                     class="p-3 sm:p-4 bg-amber-500 dark:bg-amber-600 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     <div class="flex gap-3 items-center">
                         <div class="flex-shrink-0">
-                            <svg
-                                class="h-5 w-5 text-black dark:text-white"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 8a1 1 0 100-2 1 1 0 000 2z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            <flux:icon.exclamation-triangle
+                                variant="mini"
+                                class="size-5 text-black dark:text-white"
+                            />
                         </div>
                         <div class="text-sm font-medium text-black dark:text-white">
                             <strong>Notice:</strong> This mod <em>may</em> make permanent changes to your profile, and
@@ -337,7 +531,8 @@
             @endif
 
             {{-- Additional Mod Details --}}
-            <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+            <div
+                class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Details') }}</h2>
                 <ul
                     role="list"
@@ -357,35 +552,15 @@
                                     class="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                     title="Copy GUID"
                                 >
-                                    <svg
+                                    <flux:icon.clipboard-document
                                         x-show="!copied"
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                        ></path>
-                                    </svg>
-                                    <svg
+                                        class="size-4"
+                                    />
+                                    <flux:icon.check
                                         x-show="copied"
                                         x-cloak
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 13l4 4L19 7"
-                                        ></path>
-                                    </svg>
+                                        class="size-4"
+                                    />
                                 </button>
                             @else
                                 <span class="text-gray-500 dark:text-gray-400 italic">{{ __('Not Available') }}</span>
@@ -395,12 +570,15 @@
                     @if ($mod->authors->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3 class="font-bold">{{ __('Additional Authors') }}</h3>
-                            <p class="truncate">
+                            <p class="truncate [&>span:not(:last-child)]:after:content-[',_']">
                                 @foreach ($mod->authors->sortDesc() as $user)
-                                    <a
-                                        href="{{ $user->profile_url }}"
-                                        class="underline hover:text-black dark:hover:text-white"
-                                    ><x-user-name :user="$user" /></a>{{ $loop->last ? '' : ',' }}
+                                    <span><a
+                                            href="{{ $user->profile_url }}"
+                                            class="hover:text-black dark:hover:text-white"
+                                        ><x-user-name
+                                                :user="$user"
+                                                class="underline"
+                                            /></a></span>
                                 @endforeach
                             </p>
                         </li>
@@ -462,53 +640,52 @@
                             @endforeach
                         </li>
                     @endif
-                    @if ($mod->latestVersion?->virus_total_link)
+                    @if ($mod->latestVersion?->virusTotalLinks->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3 class="font-bold">{{ __('Latest Version VirusTotal Result') }}</h3>
-                            <p class="truncate">
-                                <a
-                                    href="{{ $mod->latestVersion->virus_total_link }}"
-                                    title="{{ $mod->latestVersion->virus_total_link }}"
-                                    target="_blank"
-                                    class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
-                                >
-                                    {{ $mod->latestVersion->virus_total_link }}
-                                </a>
-                            </p>
+                            <h3 class="font-bold">{{ __('Latest Version VirusTotal Results') }}</h3>
+                            @foreach ($mod->latestVersion->virusTotalLinks as $virusTotalLink)
+                                <p class="truncate">
+                                    @if ($virusTotalLink->label !== '')
+                                        <span
+                                            class="text-gray-800 dark:text-gray-200">{{ $virusTotalLink->label }}:</span>
+                                        <a
+                                            href="{{ $virusTotalLink->url }}"
+                                            title="{{ $virusTotalLink->url }}"
+                                            target="_blank"
+                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            {{ $virusTotalLink->url }}
+                                        </a>
+                                    @else
+                                        <a
+                                            href="{{ $virusTotalLink->url }}"
+                                            title="{{ $virusTotalLink->url }}"
+                                            target="_blank"
+                                            class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            {{ $virusTotalLink->url }}
+                                        </a>
+                                    @endif
+                                </p>
+                            @endforeach
                         </li>
                     @endif
-                    @if (
-                        $mod->latestVersion?->dependencies->isNotEmpty() &&
-                            $mod->latestVersion->dependencies->contains(fn($dependency) => $dependency->resolvedVersion?->mod))
-                        <li class="px-4 py-4 last:pb-0 sm:px-0">
-                            <h3 class="font-bold">{{ __('Latest Version Dependencies') }}</h3>
-                            <p class="truncate">
-                                @foreach ($mod->latestVersion->dependencies as $dependency)
-                                    <a
-                                        href="{{ $dependency->resolvedVersion->mod->detail_url }}"
-                                        class="underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        {{ $dependency->resolvedVersion->mod->name }}
-                                        &nbsp;({{ $dependency->resolvedVersion->version }})
-                                    </a><br />
-                                @endforeach
-                            </p>
-                        </li>
-                    @endif
+                    <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
+                        <flux:icon
+                            icon="{{ $fikaStatus->icon() }}"
+                            variant="micro"
+                            class="grow-0 size-4 {{ $fikaStatus->colorClass() }}"
+                        />
+                        <h3 class="grow text-gray-900 dark:text-gray-100">
+                            {{ $fikaStatus->modLabel() }}
+                        </h3>
+                    </li>
                     @if ($mod->contains_ads)
                         <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
-                            <svg
-                                class="grow-0 w-[16px] h-[16px]"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            <flux:icon.check-circle
+                                variant="micro"
+                                class="grow-0 size-4 text-green-600 dark:text-green-500"
+                            />
                             <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes Advertising') }}
                             </h3>
@@ -516,18 +693,10 @@
                     @endif
                     @if ($mod->contains_ai_content)
                         <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
-                            <svg
-                                class="grow-0 w-[16px] h-[16px]"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            <flux:icon.check-circle
+                                variant="micro"
+                                class="grow-0 size-4 text-green-600 dark:text-green-500"
+                            />
                             <h3 class="grow text-gray-900 dark:text-gray-100">
                                 {{ __('Includes AI Generated Content') }}
                             </h3>

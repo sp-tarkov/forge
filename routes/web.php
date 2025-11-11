@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AddonVersionController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\ChatSubscriptionController;
 use App\Http\Controllers\CommentSubscriptionController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\SocialiteController;
 use App\Livewire\Admin\SptVersionManagement;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
+use App\Livewire\Page\Addon\GuidelinesAcknowledgment as AddonGuidelinesAcknowledgment;
 use App\Livewire\Page\Chat;
 use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Create as ModCreate;
@@ -51,6 +53,14 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/mod/download/{mod}/{slug}/{version}', [ModVersionController::class, 'show'])
         ->where(['mod' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
         ->name('mod.version.download');
+
+    Route::get('/addon/{addonId}/{slug}', App\Livewire\Page\Addon\Show::class)
+        ->where(['addonId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
+        ->name('addon.show');
+
+    Route::get('/addon/download/{addon}/{slug}/{version}', [AddonVersionController::class, 'show'])
+        ->where(['addon' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
+        ->name('addon.version.download');
 
     Route::get('/user/{userId}/{slug}', UserShow::class)
         ->where(['userId' => '[0-9]+'])
@@ -99,6 +109,26 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::get('/mod/{mod}/version/{modVersion}/edit', ModVersionEdit::class)
             ->where(['mod' => '[0-9]+', 'modVersion' => '[0-9]+'])
             ->name('mod.version.edit');
+
+        Route::get('/addon/guidelines/{mod}', AddonGuidelinesAcknowledgment::class)
+            ->where(['mod' => '[0-9]+'])
+            ->name('addon.guidelines');
+
+        Route::get('/addon/create/{mod}', App\Livewire\Page\Addon\Create::class)
+            ->where(['mod' => '[0-9]+'])
+            ->name('addon.create');
+
+        Route::get('/addon/{addonId}/edit', App\Livewire\Page\Addon\Edit::class)
+            ->where(['addonId' => '[0-9]+'])
+            ->name('addon.edit');
+
+        Route::get('/addon/{addon}/version/create', App\Livewire\Page\AddonVersion\Create::class)
+            ->where(['addon' => '[0-9]+'])
+            ->name('addon.version.create');
+
+        Route::get('/addon/{addon}/version/{addonVersion}/edit', App\Livewire\Page\AddonVersion\Edit::class)
+            ->where(['addon' => '[0-9]+', 'addonVersion' => '[0-9]+'])
+            ->name('addon.version.edit');
 
         Route::get('/chat/{conversationHash?}', Chat::class)
             ->where(['conversationHash' => '[a-zA-Z0-9]+'])

@@ -12,83 +12,83 @@
         />
         <flux:menu>
             @if ($this->menuOpen)
-                @if ($this->permissions['viewActions'] ?? false)
-                    <flux:menu.group heading="Author Actions">
-                        @if ($this->permissions['update'] ?? false)
-                            <flux:menu.item
-                                href="{{ route('mod.edit', $this->modId) }}"
-                                icon:trailing="pencil-square"
-                            >Edit Mod</flux:menu.item>
-                        @endif
-                        @if ($this->modPublished)
-                            @if ($this->permissions['unpublish'] ?? false)
-                                <flux:modal.trigger name="mod-action-unpublish-{{ $this->modId }}">
-                                    <flux:menu.item icon:trailing="eye-slash">Unpublish Mod</flux:menu.item>
-                                </flux:modal.trigger>
-                            @endif
-                        @else
-                            @if ($this->permissions['publish'] ?? false)
-                                <flux:modal.trigger name="mod-action-publish-{{ $this->modId }}">
-                                    <flux:menu.item icon:trailing="eye">Publish Mod</flux:menu.item>
-                                </flux:modal.trigger>
-                            @endif
-                        @endif
-                        @if ($this->permissions['delete'] ?? false)
-                            <flux:modal.trigger name="mod-action-delete-{{ $this->modId }}">
-                                <flux:menu.item
-                                    icon:trailing="trash"
-                                    variant="danger"
-                                >Delete Mod</flux:menu.item>
-                            </flux:modal.trigger>
-                        @endif
-                    </flux:menu.group>
-                @endif
-                @if ($this->permissions['isModOrAdmin'] ?? false)
-                    <flux:menu.group heading="{{ auth()->user()->role->name }} Actions">
-                        @if ($this->permissions['update'] ?? false)
-                            <flux:menu.item
-                                href="{{ route('mod.edit', $this->modId) }}"
-                                icon:trailing="pencil-square"
-                            >Edit Mod</flux:menu.item>
-                        @endif
-                        @if ($this->modFeatured)
-                            @if ($this->permissions['unfeature'] ?? false)
-                                <flux:modal.trigger name="mod-action-unfeature-{{ $this->modId }}">
-                                    <flux:menu.item icon:trailing="arrow-trending-down">Remove Featured</flux:menu.item>
-                                </flux:modal.trigger>
-                            @endif
-                        @else
-                            @if ($this->permissions['feature'] ?? false)
-                                <flux:modal.trigger name="mod-action-feature-{{ $this->modId }}">
-                                    <flux:menu.item icon:trailing="sparkles">Feature Mod</flux:menu.item>
-                                </flux:modal.trigger>
-                            @endif
-                        @endif
-                        @if ($this->modDisabled)
-                            @if ($this->permissions['enable'] ?? false)
-                                <flux:modal.trigger name="mod-action-enable-{{ $this->modId }}">
-                                    <flux:menu.item icon:trailing="eye">Enable Mod</flux:menu.item>
-                                </flux:modal.trigger>
-                            @endif
-                        @else
-                            @if ($this->permissions['disable'] ?? false)
-                                <flux:modal.trigger name="mod-action-disable-{{ $this->modId }}">
-                                    <flux:menu.item icon:trailing="eye-slash">Disable Mod</flux:menu.item>
-                                </flux:modal.trigger>
-                            @endif
-                        @endif
-                        @if ($this->permissions['delete'] ?? false)
-                            <flux:modal.trigger name="mod-action-delete-{{ $this->modId }}">
-                                <flux:menu.item
-                                    icon:trailing="trash"
-                                    variant="danger"
-                                >Delete Mod</flux:menu.item>
-                            </flux:modal.trigger>
-                        @endif
-                    </flux:menu.group>
-                @endif
-            @else
-                <flux:menu.item disabled>Loading...</flux:menu.item>
+                @cachedCan('viewActions', $this->mod)
+                <flux:menu.group heading="Author Actions">
+                    @cachedCan('update', $this->mod)
+                    <flux:menu.item
+                        href="{{ route('mod.edit', $this->modId) }}"
+                        icon:trailing="pencil-square"
+                    >Edit Mod</flux:menu.item>
+                    @endcachedCan
+                    @if ($this->modPublished)
+                        @cachedCan('unpublish', $this->mod)
+                        <flux:modal.trigger name="mod-action-unpublish-{{ $this->modId }}">
+                            <flux:menu.item icon:trailing="eye-slash">Unpublish Mod</flux:menu.item>
+                        </flux:modal.trigger>
+                        @endcachedCan
+                    @else
+                        @cachedCan('publish', $this->mod)
+                        <flux:modal.trigger name="mod-action-publish-{{ $this->modId }}">
+                            <flux:menu.item icon:trailing="eye">Publish Mod</flux:menu.item>
+                        </flux:modal.trigger>
+                    @endif
+            @endif
+            @cachedCan('delete', $this->mod)
+            <flux:modal.trigger name="mod-action-delete-{{ $this->modId }}">
+                <flux:menu.item
+                    icon:trailing="trash"
+                    variant="danger"
+                >Delete Mod</flux:menu.item>
+            </flux:modal.trigger>
+            @endcachedCan
+            </flux:menu.group>
+            @endcachedCan
+            @if (auth()->user()?->isModOrAdmin())
+                <flux:menu.group heading="{{ auth()->user()->role->name }} Actions">
+                    @cachedCan('update', $this->mod)
+                    <flux:menu.item
+                        href="{{ route('mod.edit', $this->modId) }}"
+                        icon:trailing="pencil-square"
+                    >Edit Mod</flux:menu.item>
+                    @endcachedCan
+                    @if ($this->modFeatured)
+                        @cachedCan('unfeature', $this->mod)
+                        <flux:modal.trigger name="mod-action-unfeature-{{ $this->modId }}">
+                            <flux:menu.item icon:trailing="arrow-trending-down">Remove Featured</flux:menu.item>
+                        </flux:modal.trigger>
+                        @endcachedCan
+                    @else
+                        @cachedCan('feature', $this->mod)
+                        <flux:modal.trigger name="mod-action-feature-{{ $this->modId }}">
+                            <flux:menu.item icon:trailing="sparkles">Feature Mod</flux:menu.item>
+                        </flux:modal.trigger>
+                        @endcachedCan
+                    @endif
+                    @if ($this->modDisabled)
+                        @cachedCan('enable', $this->mod)
+                        <flux:modal.trigger name="mod-action-enable-{{ $this->modId }}">
+                            <flux:menu.item icon:trailing="eye">Enable Mod</flux:menu.item>
+                        </flux:modal.trigger>
+                        @endcachedCan
+                    @else
+                        @cachedCan('disable', $this->mod)
+                        <flux:modal.trigger name="mod-action-disable-{{ $this->modId }}">
+                            <flux:menu.item icon:trailing="eye-slash">Disable Mod</flux:menu.item>
+                        </flux:modal.trigger>
+                    @endif
+            @endif
+            @cachedCan('delete', $this->mod)
+                <flux:modal.trigger name="mod-action-delete-{{ $this->modId }}">
+                    <flux:menu.item
+                        icon:trailing="trash"
+                        variant="danger"
+                    >Delete Mod</flux:menu.item>
+                </flux:modal.trigger>
+            @endcachedCan
+            </flux:menu.group>
+            @endif
+        @else
+            <flux:menu.item disabled>Loading...</flux:menu.item>
             @endif
         </flux:menu>
     </flux:dropdown>

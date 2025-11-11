@@ -6,8 +6,8 @@
         $role && $role->color_class ? "text-{$role->color_class}-500 dark:text-{$role->color_class}-400" : '';
 @endphp
 
-<span class="inline-flex items-center gap-1 {{ $class }}">
-    <span>{{ $user->name }}</span>
+<span class="inline-flex items-center gap-1">
+    <span class="{{ $class }}">{{ $user->name }}</span>
     @if ($role && $role->icon)
         <flux:tooltip :content="$role->name">
             <flux:icon

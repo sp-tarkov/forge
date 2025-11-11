@@ -7,7 +7,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -239,8 +238,7 @@ describe('legacy versions filtering', function (): void {
 
     it('shows 0.0.0 versions in legacy filter only for admins', function (): void {
         // Create an administrator
-        $userRole = UserRole::factory()->administrator()->create();
-        $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+        $this->actingAs(User::factory()->admin()->create());
 
         // Create active SPT versions to establish proper context
         $activeSptVersions = [
@@ -350,8 +348,7 @@ describe('disabled mods filtering', function (): void {
 
     it('does show disabled mods to administrators and moderators', function (): void {
         // Create an administrator
-        $userRole = UserRole::factory()->administrator()->create();
-        $this->actingAs(User::factory()->create(['user_role_id' => $userRole->id]));
+        $this->actingAs(User::factory()->admin()->create());
 
         // Create the SPT versions
         $sptVersion1 = SptVersion::factory()->create(['version' => '1.0.0']);
@@ -372,5 +369,51 @@ describe('disabled mods filtering', function (): void {
             ->toHaveCount(2)
             ->and($filteredMods->pluck('id')->toArray())
             ->toContain($modEnabled->id, $modDisabled->id);
+    });
+});
+
+describe('Fika compatibility filtering', function (): void {
+    it('shows all mods when Fika compatibility filter is unchecked (false)', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'incompatible',
+        ]);
+
+        $filters = ['fikaCompatibility' => false];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        expect($filteredMods)->toHaveCount(2)
+            ->and($filteredMods->pluck('id')->toArray())->toContain($modCompatible->id, $modIncompatible->id);
+    });
+
+    it('shows only Fika compatible mods when filter is checked (true)', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'incompatible',
+        ]);
+
+        $filters = ['fikaCompatibility' => true];
+        $filteredMods = new ModFilter($filters)->apply()->get();
+
+        expect($filteredMods)->toHaveCount(1)
+            ->and($filteredMods->first()->id)->toBe($modCompatible->id);
     });
 });

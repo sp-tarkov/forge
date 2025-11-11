@@ -309,7 +309,7 @@ class UpdateGeoLiteDatabase extends Command
         if (empty($extractedFiles)) {
             // List contents for debugging
             $contents = File::glob($tempDir.'/*');
-            $contentsInfo = empty($contents) ? 'directory is empty' : 'found: '.implode(', ', array_map('basename', $contents));
+            $contentsInfo = empty($contents) ? 'directory is empty' : 'found: '.implode(', ', array_map(basename(...), $contents));
 
             throw new Exception('Could not find GeoLite2-City.mmdb in extracted files. Directory contents: '.$contentsInfo);
         }

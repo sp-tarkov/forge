@@ -14,6 +14,7 @@ use Livewire\Component;
 
 /**
  * @property-read array<string, string>|null $ribbonData
+ * @property-read bool $canSeeWarnings
  */
 class Mod extends Component
 {
@@ -48,15 +49,25 @@ class Mod extends Component
     public bool $homepageFeatured = false;
 
     /**
+     * Whether the mod is publicly visible.
+     */
+    #[Locked]
+    public bool $publiclyVisible = false;
+
+    /**
      * Refresh the mod data when it's updated.
      */
     #[On('mod-updated.{modId}')]
     public function refreshMod(): void
     {
-        $mod = ModModel::query()->select('disabled', 'published_at', 'featured')->find($this->modId);
+        $mod = ModModel::query()
+            ->with('versions.latestSptVersion')
+            ->find($this->modId);
+
         if ($mod) {
             $hasChanges = false;
             $newPublishedAt = $mod->published_at?->toISOString();
+            $newPubliclyVisible = $mod->isPubliclyVisible();
 
             if ($this->disabled !== $mod->disabled) {
                 $this->disabled = $mod->disabled;
@@ -73,12 +84,38 @@ class Mod extends Component
                 $hasChanges = true;
             }
 
+            if ($this->publiclyVisible !== $newPubliclyVisible) {
+                $this->publiclyVisible = $newPubliclyVisible;
+                $hasChanges = true;
+            }
+
             if (! $hasChanges) {
                 $this->skipRender();
             }
         } else {
             $this->skipRender();
         }
+    }
+
+    /**
+     * Check if the current user can see visibility warnings.
+     */
+    #[Computed]
+    public function canSeeWarnings(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        $mod = ModModel::query()->find($this->modId);
+
+        if (! $mod) {
+            return false;
+        }
+
+        return $user->isModOrAdmin() || $mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -100,6 +137,12 @@ class Mod extends Component
         $publishedAt = Date::parse($this->publishedAt);
         if ($publishedAt->isFuture()) {
             return ['color' => 'emerald', 'label' => __('Scheduled')];
+        }
+
+        // Check if mod is not publicly visible due to missing or unpublished versions or invalid SPT compatibility
+        // Only show this to privileged users who can see warnings
+        if (! $this->publiclyVisible && $this->canSeeWarnings) {
+            return ['color' => 'amber', 'label' => __('Unpublished')];
         }
 
         if ($this->featured && ! $this->homepageFeatured) {

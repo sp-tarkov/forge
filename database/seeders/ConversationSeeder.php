@@ -133,12 +133,21 @@ class ConversationSeeder extends Seeder
      */
     private function createConversation(int $userId1, int $userId2): Conversation
     {
-        return Conversation::factory()->create([
+        $conversation = Conversation::factory()->create([
             'user1_id' => $userId1,
             'user2_id' => $userId2,
             'created_by' => $this->faker->randomElement([$userId1, $userId2]),
             'created_at' => $this->faker->dateTimeBetween('-3 months', 'now'),
         ]);
+
+        // Ensure hash_id is set. Since DatabaseSeeder uses WithoutModelEvents,
+        // the created event won't fire, so we need to manually set the hash_id.
+        if (! $conversation->hash_id) {
+            $conversation->hash_id = Conversation::generateHashId($conversation->id);
+            $conversation->saveQuietly();
+        }
+
+        return $conversation;
     }
 
     /**
@@ -226,7 +235,7 @@ class ConversationSeeder extends Seeder
             $recipient = ($sender->id === $user1->id) ? $user2 : $user1;
 
             // Read time should be after message time
-            $readTime = $this->faker->dateTimeBetween($messageTime, 'now');
+            $readTime = $this->faker->dateTimeBetween($messageTime->format('Y-m-d H:i:s'), 'now');
 
             MessageRead::factory()->create([
                 'message_id' => $message->id,
@@ -282,6 +291,12 @@ class ConversationSeeder extends Seeder
                 'created_by' => $randomUser->id,
                 'created_at' => now()->subDays(2),
             ]);
+
+            // Ensure hash_id is set (should be set by the created event, but ensure it as a safeguard)
+            if (! $conversation->hash_id) {
+                $conversation->hash_id = Conversation::generateHashId($conversation->id);
+                $conversation->saveQuietly();
+            }
         }
 
         // Load markdown content

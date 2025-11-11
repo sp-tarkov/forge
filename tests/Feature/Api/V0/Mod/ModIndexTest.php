@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\FikaCompatibility;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -425,6 +426,22 @@ describe('Mod Index API', function (): void {
         $response->assertJsonMissing(['data' => ['*' => ['created_at', 'updated_at']]]);
     });
 
+    it('returns fika_compatibility when requested', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        Mod::factory()->hasVersions(1, [
+            'spt_version_constraint' => '3.8.0',
+            'fika_compatibility' => FikaCompatibility::Compatible,
+            'published_at' => now()->subDay(),
+        ])->create();
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?fields=fika_compatibility');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.fika_compatibility', true);
+    });
+
     it('returns thumbnail as a URL', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
@@ -439,5 +456,84 @@ describe('Mod Index API', function (): void {
         // The thumbnail should be returned as a full URL, not just the path
         $response->assertJsonPath('data.0.thumbnail', $mod->thumbnailUrl);
         expect($response->json('data.0.thumbnail'))->toContain('thumbnails/test-image.jpg');
+    });
+
+    it('shows all mods when Fika compatibility filter is false', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'incompatible',
+        ]);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[fika_compatibility]=false');
+
+        $response->assertOk()->assertJsonCount(2, 'data');
+
+        $returnedIds = collect($response->json('data'))->pluck('id')->all();
+        expect($returnedIds)->toContain($modCompatible->id, $modIncompatible->id);
+    });
+
+    it('shows only Fika compatible mods when filter is true', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modCompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modCompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'compatible',
+        ]);
+
+        $modIncompatible = Mod::factory()->create();
+        ModVersion::factory()->recycle($modIncompatible)->create([
+            'spt_version_constraint' => '^1.0.0',
+            'fika_compatibility' => 'incompatible',
+        ]);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[fika_compatibility]=true');
+
+        $response->assertOk()->assertJsonCount(1, 'data');
+
+        $returnedIds = collect($response->json('data'))->pluck('id')->all();
+        expect($returnedIds)->toContain($modCompatible->id)
+            ->not->toContain($modIncompatible->id);
+    });
+
+    it('treats GUID filtering as case-sensitive', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+
+        // Create mods with similar GUIDs but different cases, each with a published version
+        $modLowercase = Mod::factory()->create(['guid' => 'com.example.casesensitive']);
+        ModVersion::factory()->recycle($modLowercase)->create(['spt_version_constraint' => '^1.0.0']);
+
+        $modUppercase = Mod::factory()->create(['guid' => 'com.example.CaseSensitive']);
+        ModVersion::factory()->recycle($modUppercase)->create(['spt_version_constraint' => '^1.0.0']);
+
+        $modMixedcase = Mod::factory()->create(['guid' => 'com.example.CASESENSITIVE']);
+        ModVersion::factory()->recycle($modMixedcase)->create(['spt_version_constraint' => '^1.0.0']);
+
+        // Filter by the lowercase GUID should only return the lowercase mod
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[guid]=com.example.casesensitive');
+
+        $response->assertOk()->assertJsonCount(1, 'data');
+        expect($response->json('data.0.id'))->toBe($modLowercase->id);
+
+        // Filter by the uppercase variant should only return that specific mod
+        $response2 = $this->withToken($this->token)->getJson('/api/v0/mods?filter[guid]=com.example.CaseSensitive');
+
+        $response2->assertOk()->assertJsonCount(1, 'data');
+        expect($response2->json('data.0.id'))->toBe($modUppercase->id);
+
+        // Filter by the all-caps variant should only return that specific mod
+        $response3 = $this->withToken($this->token)->getJson('/api/v0/mods?filter[guid]=com.example.CASESENSITIVE');
+
+        $response3->assertOk()->assertJsonCount(1, 'data');
+        expect($response3->json('data.0.id'))->toBe($modMixedcase->id);
     });
 });

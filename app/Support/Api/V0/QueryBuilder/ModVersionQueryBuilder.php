@@ -9,6 +9,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Override;
@@ -44,11 +45,11 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             'version' => 'filterByVersion',
             'description' => 'filterByDescription',
             'link' => 'filterByLink',
-            'virus_total_link' => 'filterByVirusTotalLink',
             'published_between' => 'filterByPublishedBetween',
             'created_between' => 'filterByCreatedBetween',
             'updated_between' => 'filterByUpdatedBetween',
             'spt_version' => 'filterBySptVersion',
+            'fika_compatibility' => 'filterByFikaCompatibility',
         ];
     }
 
@@ -64,6 +65,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 'resolvedDependencies',
                 'resolvedDependencies.mod',
             ],
+            'virus_total_links' => 'virusTotalLinks',
         ];
     }
 
@@ -97,8 +99,8 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
             'link',
             'content_length',
             'spt_version_constraint',
-            'virus_total_link',
             'downloads',
+            'fika_compatibility',
             'published_at',
             'created_at',
             'updated_at',
@@ -130,6 +132,18 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
+        $hasVisibleVersions = ModVersion::query()
+            ->whereModId($this->modId)
+            ->where('mod_versions.disabled', false)
+            ->whereNotNull('mod_versions.published_at')
+            ->where('mod_versions.published_at', '<=', now())
+            ->whereHas('latestSptVersion')
+            ->exists();
+
+        if (! $hasVisibleVersions) {
+            throw new ModelNotFoundException()->setModel(ModVersion::class);
+        }
+
         $query = ModVersion::query()
             ->whereModId($this->modId)
             ->where('mod_versions.disabled', false);
@@ -248,20 +262,6 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     }
 
     /**
-     * Filter by VirusTotal link.
-     *
-     * @param  Builder<ModVersion>  $query
-     */
-    protected function filterByVirusTotalLink(Builder $query, ?string $term): void
-    {
-        if ($term === null) {
-            return;
-        }
-
-        $query->whereLike('mod_versions.virus_total_link', sprintf('%%%s%%', $term));
-    }
-
-    /**
      * Filter by publication date range.
      *
      * @param  Builder<ModVersion>  $query
@@ -321,6 +321,21 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
 
         $this->applySptVersionCondition($query, $compatibleSptVersions);
+    }
+
+    /**
+     * Filter by Fika compatibility status.
+     *
+     * @param  Builder<ModVersion>  $query
+     */
+    protected function filterByFikaCompatibility(Builder $query, ?string $compatibility): void
+    {
+        if ($compatibility === null) {
+            return;
+        }
+
+        $compatibilityValues = self::parseCommaSeparatedInput($compatibility, 'string');
+        $query->whereIn('mod_versions.fika_compatibility', $compatibilityValues);
     }
 
     /**

@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Enums\TrackingEventType;
 use App\Exceptions\Api\V0\InvalidQuery;
+use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Livewire\Profile\UpdatePasswordForm;
@@ -212,5 +213,25 @@ class AppServiceProvider extends ServiceProvider
         // Email verification directives
         Blade::if('verified', fn (): bool => auth()->check() && auth()->user()->hasVerifiedEmail());
         Blade::if('unverified', fn (): bool => auth()->check() && ! auth()->user()->hasVerifiedEmail());
+
+        // CachedGate directives
+        Blade::if('cachedCan', function (string $ability, mixed ...$arguments): bool {
+            if (empty($arguments)) {
+                return CachedGate::allows($ability);
+            }
+
+            $arg = count($arguments) === 1 ? $arguments[0] : $arguments;
+
+            return CachedGate::allows($ability, $arg);
+        });
+        Blade::if('cachedCannot', function (string $ability, mixed ...$arguments): bool {
+            if (empty($arguments)) {
+                return CachedGate::denies($ability);
+            }
+
+            $arg = count($arguments) === 1 ? $arguments[0] : $arguments;
+
+            return CachedGate::denies($ability, $arg);
+        });
     }
 }

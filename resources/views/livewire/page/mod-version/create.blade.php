@@ -7,8 +7,9 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Create a New Version for :mod', ['mod' => $mod->name]) }}
+    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <flux:icon.cube-transparent class="w-5 h-5" />
+        {{ __('Create Mod Version') }}: {{ $mod->name }}
     </h2>
 </x-slot>
 
@@ -171,16 +172,67 @@
                             @endif
 
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('VirusTotal Link') }}</flux:label>
+                                <flux:label>{{ __('VirusTotal Links') }}</flux:label>
                                 <flux:description>{!! __(
-                                    'Provide a link to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod.',
+                                    'Provide links to the <a href="https://www.virustotal.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">VirusTotal</a> scan results for your mod files. This helps users verify the safety of your mod. At least one link is required.',
                                 ) !!}</flux:description>
-                                <flux:input
-                                    type="url"
-                                    wire:model.blur="virusTotalLink"
-                                    placeholder="https://www.virustotal.com..."
-                                />
-                                <flux:error name="virusTotalLink" />
+
+                                <div class="space-y-3">
+                                    @foreach ($virusTotalLinks as $index => $virusTotalLink)
+                                        <div class="flex gap-2 items-center">
+                                            <div class="flex-1">
+                                                <flux:input
+                                                    type="url"
+                                                    wire:model.blur="virusTotalLinks.{{ $index }}.url"
+                                                    placeholder="https://www.virustotal.com/..."
+                                                />
+                                            </div>
+                                            <div class="w-40">
+                                                <flux:input
+                                                    type="text"
+                                                    wire:model.blur="virusTotalLinks.{{ $index }}.label"
+                                                    placeholder="Label (optional)"
+                                                />
+                                            </div>
+                                            @if ($index > 0)
+                                                <flux:button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    wire:click="removeVirusTotalLink({{ $index }})"
+                                                    type="button"
+                                                    icon="x-mark"
+                                                />
+                                            @endif
+                                        </div>
+                                        @error('virusTotalLinks.' . $index . '.url')
+                                            <flux:error>{{ $message }}</flux:error>
+                                        @enderror
+                                    @endforeach
+
+                                    <flux:button
+                                        variant="ghost"
+                                        size="sm"
+                                        wire:click="addVirusTotalLink"
+                                        type="button"
+                                        icon="plus"
+                                    >
+                                        {{ __('Add Link') }}
+                                    </flux:button>
+                                </div>
+
+                                <flux:error name="virusTotalLinks" />
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
+                                <flux:label>{{ __('Fika Compatibility') }}</flux:label>
+                                <flux:description>{{ __('Specify whether this mod version is compatible with Fika.') }}
+                                </flux:description>
+                                <flux:select wire:model.blur="fikaCompatibilityStatus">
+                                    <option value="compatible">{{ __('Compatible') }}</option>
+                                    <option value="incompatible">{{ __('Incompatible') }}</option>
+                                    <option value="unknown">{{ __('Compatibility Unknown') }}</option>
+                                </flux:select>
+                                <flux:error name="fikaCompatibilityStatus" />
                             </flux:field>
 
                             <flux:field class="col-span-6">
@@ -282,7 +334,7 @@
                                         hasUnpublished: {{ $this->hasUnpublishedSptVersions() ? 'true' : 'false' }}
                                 }"
                             >
-                                <flux:label>{{ __('Publish Date') }}</flux:label>
+                                <flux:label badge="Optional">{{ __('Publish Date') }}</flux:label>
                                 <flux:description>
                                     @if ($this->hasUnpublishedSptVersions())
                                         {!! __(
@@ -311,16 +363,8 @@
                                                     </span>
 
                                                     {{-- Show unpublished SPT versions inline --}}
-                                                    @php
-                                                        $unpublishedVersions = collect($matchingSptVersions)->filter(
-                                                            function ($version) {
-                                                                return !$version['is_published'];
-                                                            },
-                                                        );
-                                                    @endphp
-
-                                                    @if ($unpublishedVersions->count() > 0)
-                                                        @foreach ($unpublishedVersions as $version)
+                                                    @if (count($this->getUnpublishedSptVersions()) > 0)
+                                                        @foreach ($this->getUnpublishedSptVersions() as $version)
                                                             <span
                                                                 class="badge-version {{ $version['color_class'] }} inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium text-nowrap"
                                                             >

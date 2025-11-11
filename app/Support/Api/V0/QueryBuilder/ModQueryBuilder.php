@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Api\V0\QueryBuilder;
 
+use App\Enums\FikaCompatibility;
 use App\Models\Mod;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
@@ -40,6 +41,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'updated_between' => 'filterByUpdatedBetween',
             'published_between' => 'filterByPublishedBetween',
             'spt_version' => 'filterBySptVersion',
+            'fika_compatibility' => 'filterByFikaCompatibility',
         ];
     }
 
@@ -130,6 +132,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'detail_url' => ['slug'],
+            'fika_compatibility' => [],
         ];
     }
 
@@ -140,13 +143,12 @@ class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
-        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
-
         $query = Mod::query()
             ->select('mods.*')
-            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false));
+            ->where('mods.disabled', false);
 
         // Apply the SPT version condition if the filter is not being used
+        // This also ensures mods have at least one visible version
         if (! $this->hasFilter('spt_version')) {
             $this->applySptVersionCondition($query);
         }
@@ -162,9 +164,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
      */
     protected function applySptVersionCondition(Builder $query, ?array $compatibleVersions = null): void
     {
-        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
-
-        $query->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($compatibleVersions, $showDisabled): void {
+        $query->whereExists(function (\Illuminate\Database\Query\Builder $query) use ($compatibleVersions): void {
             $query->select(DB::raw(1))
                 ->from('mod_versions')
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
@@ -172,8 +172,9 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 ->whereColumn('mod_versions.mod_id', 'mods.id')
                 ->whereNotNull('spt_versions.version')
                 ->where('spt_versions.version', '!=', '0.0.0')
-                ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $query) => $query->where('mod_versions.disabled', false))
-                ->unless($showDisabled, fn (\Illuminate\Database\Query\Builder $query) => $query->whereNotNull('mod_versions.published_at'));
+                ->where('mod_versions.disabled', false)
+                ->whereNotNull('mod_versions.published_at')
+                ->where('mod_versions.published_at', '<=', now());
 
             // Get all mods with versions compatible with specific SPT versions.
             if ($compatibleVersions !== null) {
@@ -251,6 +252,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
     /**
      * Filter by GUID.
      *
+     * Requires DB column to have case sensitive collation (like utf8mb4_0900_as_cs in MySQL).
+     *
      * @param  Builder<Mod>  $query
      */
     protected function filterByGuid(Builder $query, ?string $guids): void
@@ -259,7 +262,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $query->whereIn('mods.guid', self::parseCommaSeparatedInput($guids));
+        $inputGuids = self::parseCommaSeparatedInput($guids);
+        $query->whereIn('mods.guid', $inputGuids);
     }
 
     /**
@@ -408,5 +412,33 @@ class ModQueryBuilder extends AbstractQueryBuilder
         $validSptVersions = SptVersion::allValidVersions();
         $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
         $this->applySptVersionCondition($query, $compatibleSptVersions);
+    }
+
+    /**
+     * Filter by Fika compatibility status.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByFikaCompatibility(Builder $query, ?string $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $showCompatible = self::parseBooleanInput($value);
+
+        // Only filter when explicitly set to true (show compatible mods)
+        if (! $showCompatible) {
+            return;
+        }
+
+        $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
+
+        $query->whereHas('versions', function (Builder $query) use ($showDisabled): void {
+            $query->whereNotNull('published_at')
+                ->where('published_at', '<=', now())
+                ->unless($showDisabled, fn (Builder $q): Builder => $q->where('disabled', false))
+                ->where('fika_compatibility', FikaCompatibility::Compatible->value);
+        });
     }
 }

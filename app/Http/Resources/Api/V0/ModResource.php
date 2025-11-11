@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Mod;
-use App\Models\ModSourceCodeLink;
 use App\Support\Api\V0\QueryBuilder\ModQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -39,6 +38,31 @@ class ModResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
+        // For dependency tree endpoint - return only essential identifying fields
+        if ($request->routeIs('api.v0.mods.dependencies')) {
+            return [
+                'id' => $this->resource->id,
+                'guid' => $this->resource->guid,
+                'name' => $this->resource->name,
+                'slug' => $this->resource->slug,
+                'latest_compatible_version' => $this->when(
+                    isset($this->resource->latestCompatibleVersion),
+                    fn (): ?ModVersionResource => $this->resource->latestCompatibleVersion
+                        ? new ModVersionResource($this->resource->latestCompatibleVersion)
+                        : null
+                ),
+                'dependencies' => $this->when(
+                    isset($this->resource->dependencies),
+                    fn (): array => $this->resource->dependencies ?? []
+                ),
+                'conflict' => $this->when(
+                    isset($this->resource->conflict),
+                    fn (): bool => $this->resource->conflict ?? false
+                ),
+            ];
+        }
+
+        // For all other endpoints - use field filtering
         $this->requestedFields = $request->string('fields', '')
             ->explode(',')
             ->map(fn (string $field): string => mb_trim($field))
@@ -93,6 +117,10 @@ class ModResource extends JsonResource
             $data['detail_url'] = $this->resource->detail_url;
         }
 
+        if ($this->shouldInclude('fika_compatibility')) {
+            $data['fika_compatibility'] = $this->resource->fika_compatibility;
+        }
+
         if ($this->shouldInclude('featured')) {
             $data['featured'] = (bool) $this->resource->featured;
         }
@@ -127,10 +155,7 @@ class ModResource extends JsonResource
         $data['versions'] = ModVersionResource::collection($this->whenLoaded('versions', fn (): Collection => $this->resource->versions->take(10)));
         $data['license'] = $this->whenLoaded('license', fn (): ?LicenseResource => $this->resource->license ? new LicenseResource($this->resource->license) : null);
         $data['category'] = $this->whenLoaded('category', fn (): ?ModCategoryResource => $this->resource->category ? new ModCategoryResource($this->resource->category) : null);
-        $data['source_code_links'] = $this->whenLoaded('sourceCodeLinks', fn (): array => $this->resource->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
-            'url' => $link->url,
-            'label' => $link->label,
-        ])->all());
+        $data['source_code_links'] = SourceCodeLinkResource::collection($this->whenLoaded('sourceCodeLinks'));
 
         return $data;
     }

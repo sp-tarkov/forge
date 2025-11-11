@@ -21,10 +21,12 @@ describe('comment display', function (): void {
 
     it('should correctly paginate comments', function (): void {
         $user = User::factory()->create();
-        $mod = Mod::factory()->create();
+        // Use withoutEvents to skip factory's afterCreating callback (SourceCodeLinks)
+        $mod = Mod::withoutEvents(fn () => Mod::factory()->create());
         Comment::factory()->count(15)->create([
             'commentable_id' => $mod->id,
             'commentable_type' => $mod::class,
+            'user_id' => $user->id,
         ]);
 
         $test = Livewire::actingAs($user)

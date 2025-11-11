@@ -37,6 +37,18 @@ class ModVersionResource extends JsonResource
     #[Override]
     public function toArray(Request $request): array
     {
+        // For dependency tree endpoint - return only essential identifying fields
+        if ($request->routeIs('api.v0.mods.dependencies.tree')) {
+            return [
+                'id' => $this->resource->id,
+                'version' => $this->resource->version,
+                'link' => $this->resource->link,
+                'content_length' => $this->resource->content_length,
+                'fika_compatibility' => $this->resource->fika_compatibility->value,
+            ];
+        }
+
+        // For all other endpoints - use field filtering
         $this->requestedFields = $request->string('fields', '')
             ->explode(',')
             ->map(fn (string $field): string => mb_trim($field))
@@ -82,12 +94,12 @@ class ModVersionResource extends JsonResource
             $data['spt_version_constraint'] = $this->resource->spt_version_constraint;
         }
 
-        if ($this->shouldInclude('virus_total_link')) {
-            $data['virus_total_link'] = $this->resource->virus_total_link;
-        }
-
         if ($this->shouldInclude('downloads')) {
             $data['downloads'] = $this->resource->downloads;
+        }
+
+        if ($this->shouldInclude('fika_compatibility')) {
+            $data['fika_compatibility'] = $this->resource->fika_compatibility->value;
         }
 
         if ($this->shouldInclude('published_at')) {
@@ -104,6 +116,10 @@ class ModVersionResource extends JsonResource
 
         $data['dependencies'] = new ModResolvedDependencyCollection(
             $this->whenLoaded('resolvedDependencies')
+        );
+
+        $data['virus_total_links'] = VirusTotalLinkResource::collection(
+            $this->whenLoaded('virusTotalLinks')
         );
 
         return $data;

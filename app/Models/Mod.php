@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
+use App\Enums\FikaCompatibility;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -46,22 +48,29 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $license_id
  * @property int|null $category_id
  * @property int $downloads
+ * @property ModVersion|null $latestCompatibleVersion Dynamic property for dependency tree endpoint
+ * @property array<int, mixed> $dependencies Dynamic property for dependency tree endpoint
+ * @property bool $conflict Dynamic property for dependency tree endpoint indicating version constraint conflicts
  * @property bool $featured
  * @property bool $contains_ai_content
  * @property bool $contains_ads
  * @property bool $disabled
  * @property bool $comments_disabled
+ * @property bool $addons_disabled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
  * @property-read string $detail_url
  * @property-read string $description_html
+ * @property-read bool $addons_enabled
+ * @property-read bool $fika_compatibility
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read ModCategory|null $category
  * @property-read Collection<int, User> $authors
  * @property-read Collection<int, ModVersion> $versions
- * @property-read Collection<int, ModSourceCodeLink> $sourceCodeLinks
+ * @property-read Collection<int, SourceCodeLink> $sourceCodeLinks
+ * @property-read Collection<int, Addon> $addons
  * @property-read ModVersion|null $latestVersion
  * @property-read ModVersion|null $latestUpdatedVersion
  *
@@ -101,11 +110,11 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      * The relationship between a mod and its source code links.
      * Links are sorted alphabetically by label (or URL if no label).
      *
-     * @return HasMany<ModSourceCodeLink, $this>
+     * @return MorphMany<SourceCodeLink, $this>
      */
-    public function sourceCodeLinks(): HasMany
+    public function sourceCodeLinks(): MorphMany
     {
-        return $this->hasMany(ModSourceCodeLink::class)
+        return $this->morphMany(SourceCodeLink::class, 'sourceable')
             ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
     }
 
@@ -114,15 +123,31 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function calculateDownloads(): void
     {
+        $cacheKey = 'mod_downloads_cached_'.$this->id;
+        $hasExistingCache = Cache::has($cacheKey);
+
+        // Get the cached download count (the count that was last indexed in search)
+        // If no cache exists, use the current downloads value as baseline
+        $cachedDownloads = Cache::get($cacheKey, $this->downloads);
+
+        // Calculate the new actual download count
+        $newDownloads = (int) DB::table('mod_versions')
+            ->where('mod_id', $this->id)
+            ->sum('downloads');
+
+        // Update the mod's downloads field
         DB::table('mods')
             ->where('id', $this->id)
-            ->update([
-                'downloads' => DB::table('mod_versions')
-                    ->where('mod_id', $this->id)
-                    ->sum('downloads'),
-            ]);
+            ->update(['downloads' => $newDownloads]);
 
         $this->refresh();
+
+        // Only sync to search if there was a previously cached value and the difference is >= 15
+        if ($hasExistingCache && abs($newDownloads - $cachedDownloads) >= 15) {
+            $this->searchable();
+        }
+
+        Cache::forever($cacheKey, $newDownloads);
     }
 
     /**
@@ -167,6 +192,40 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     public function category(): BelongsTo
     {
         return $this->belongsTo(ModCategory::class);
+    }
+
+    /**
+     * The relationship between a mod and its addons.
+     *
+     * @return HasMany<Addon, $this>
+     */
+    public function addons(): HasMany
+    {
+        return $this->hasMany(Addon::class);
+    }
+
+    /**
+     * The relationship between a mod and its enabled addons.
+     *
+     * @return HasMany<Addon, $this>
+     */
+    public function enabledAddons(): HasMany
+    {
+        return $this->hasMany(Addon::class)
+            ->where('disabled', false)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
+    }
+
+    /**
+     * The relationship between a mod and its attached (non-detached) addons.
+     *
+     * @return HasMany<Addon, $this>
+     */
+    public function attachedAddons(): HasMany
+    {
+        return $this->hasMany(Addon::class)
+            ->whereNull('detached_at');
     }
 
     /**
@@ -219,6 +278,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'description' => $this->description,
             'thumbnail' => $this->thumbnailUrl,
             'featured' => $this->featured,
+            'downloads' => $this->downloads,
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,
             'published_at' => $this->published_at?->timestamp,
@@ -246,6 +306,11 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
+        // Ensure the mod is published (not scheduled for future).
+        if ($this->published_at->isFuture()) {
+            return false;
+        }
+
         // Check if mod has any versions compatible with active SPT releases
         if (! $this->hasActiveSptCompatibility()) {
             return false;
@@ -253,6 +318,35 @@ class Mod extends Model implements Commentable, Reportable, Trackable
 
         // All conditions are met; the mod should be searchable.
         return true;
+    }
+
+    /**
+     * Check if the mod is publicly visible to anonymous users.
+     * This checks for ANY published SPT version, not just active ones.
+     * This is used for general visibility (view policy, ribbons, etc.)
+     */
+    public function isPubliclyVisible(): bool
+    {
+        // Ensure the mod is not disabled
+        if ($this->disabled) {
+            return false;
+        }
+
+        // Ensure the mod has a publish date
+        if (is_null($this->published_at)) {
+            return false;
+        }
+
+        // Ensure the mod is published (not scheduled for future)
+        if ($this->published_at->isFuture()) {
+            return false;
+        }
+
+        // Check if mod has at least one publicly visible version with ANY SPT version
+        return $this->versions()
+            ->publiclyVisible()
+            ->whereHas('latestSptVersion')
+            ->exists();
     }
 
     /**
@@ -409,12 +503,82 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Add a new source code link to this mod.
      */
-    public function addSourceCodeLink(string $url, string $label = ''): ModSourceCodeLink
+    public function addSourceCodeLink(string $url, string $label = ''): SourceCodeLink
     {
         return $this->sourceCodeLinks()->create([
             'url' => $url,
             'label' => $label,
         ]);
+    }
+
+    /**
+     * Check if the mod has any published versions that are Fika compatible.
+     */
+    public function hasFikaCompatibleVersion(): bool
+    {
+        return $this->versions()
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->where('fika_compatibility', FikaCompatibility::Compatible)
+            ->exists();
+    }
+
+    /**
+     * Get the overall Fika compatibility status for this mod based on all published versions.
+     *
+     * Returns:
+     * - Compatible if ANY published version is compatible
+     * - Unknown if ALL published versions are unknown
+     * - Incompatible otherwise (at least one is incompatible and none are compatible)
+     */
+    public function getOverallFikaCompatibility(): FikaCompatibility
+    {
+        $publishedVersions = $this->versions()
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->get();
+
+        if ($publishedVersions->isEmpty()) {
+            return FikaCompatibility::Unknown;
+        }
+
+        // If any version is compatible, return Compatible
+        if ($publishedVersions->contains(fn (ModVersion $version): bool => $version->fika_compatibility === FikaCompatibility::Compatible)) {
+            return FikaCompatibility::Compatible;
+        }
+
+        // If all versions are unknown, return Unknown
+        if ($publishedVersions->every(fn (ModVersion $version): bool => $version->fika_compatibility === FikaCompatibility::Unknown)) {
+            return FikaCompatibility::Unknown;
+        }
+
+        // Otherwise, at least one is incompatible and none are compatible
+        return FikaCompatibility::Incompatible;
+    }
+
+    /**
+     * Determine if the mod has any published version that is Fika compatible.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function fikaCompatibility(): Attribute
+    {
+        return Attribute::get(fn (): bool => $this->versions()
+            ->where('fika_compatibility', FikaCompatibility::Compatible)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->exists()
+        )->shouldCache();
+    }
+
+    /**
+     * Get whether addons are enabled for this mod.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function addonsEnabled(): Attribute
+    {
+        return Attribute::get(fn (): bool => ! $this->addons_disabled);
     }
 
     /**
@@ -456,6 +620,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'contains_ads' => 'boolean',
             'disabled' => 'boolean',
             'comments_disabled' => 'boolean',
+            'addons_disabled' => 'boolean',
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -484,9 +649,11 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('description')->clean(
-                Markdown::convert($this->description)->getContent()
-            )
+            get: fn (): string => $this->description
+                ? Purify::config('description')->clean(
+                    Markdown::convert($this->description)->getContent()
+                )
+                : ''
         )->shouldCache();
     }
 

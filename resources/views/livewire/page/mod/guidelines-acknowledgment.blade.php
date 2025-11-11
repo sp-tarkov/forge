@@ -19,20 +19,7 @@
                 <div class="text-center mb-8">
                     <div
                         class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-100 dark:bg-cyan-900 mb-4">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            class="w-8 h-8 text-cyan-600 dark:text-cyan-400"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
-                            />
-                        </svg>
+                        <flux:icon.exclamation-circle class="size-8 text-cyan-600 dark:text-cyan-400" />
                     </div>
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Important Guidelines</h1>
                     <p class="text-lg text-gray-600 dark:text-gray-400">Please review these key points before submitting
@@ -44,20 +31,7 @@
                     <div class="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-5 rounded-r-lg">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-6 h-6 text-red-600 dark:text-red-400"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-                                    />
-                                </svg>
+                                <flux:icon.exclamation-triangle class="size-6 text-red-600 dark:text-red-400" />
                             </div>
                             <div class="ml-4 flex-1">
                                 <h3 class="text-lg font-semibold text-red-800 dark:text-red-300">No AI-Generated Mods
@@ -77,20 +51,7 @@
                     <div class="border-l-4 border-orange-500 bg-orange-50 dark:bg-orange-900/20 p-5 rounded-r-lg">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-6 h-6 text-orange-600 dark:text-orange-400"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
-                                    />
-                                </svg>
+                                <flux:icon.user-group class="size-6 text-orange-600 dark:text-orange-400" />
                             </div>
                             <div class="ml-4 flex-1">
                                 <h3 class="text-lg font-semibold text-orange-800 dark:text-orange-300">Get Permission
@@ -139,20 +100,7 @@
                     <div class="border-l-4 border-green-500 bg-green-50 dark:bg-green-900/20 p-5 rounded-r-lg">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-6 h-6 text-green-600 dark:text-green-400"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="m4.5 12.75 6 6 9-13.5"
-                                    />
-                                </svg>
+                                <flux:icon.check class="size-6 text-green-600 dark:text-green-400" />
                             </div>
                             <div class="ml-4 flex-1">
                                 <h3 class="text-lg font-semibold text-green-800 dark:text-green-300">Test Your Mod
@@ -170,25 +118,7 @@
                     <div class="border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/20 p-5 rounded-r-lg">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-6 h-6 text-purple-600 dark:text-purple-400"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
-                                    />
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M6 6h.008v.008H6V6Z"
-                                    />
-                                </svg>
+                                <flux:icon.tag class="size-6 text-purple-600 dark:text-purple-400" />
                             </div>
                             <div class="ml-4 flex-1">
                                 <h3 class="text-lg font-semibold text-purple-800 dark:text-purple-300">Use Semantic
@@ -205,20 +135,7 @@
                     <div class="border-l-4 border-gray-500 bg-gray-50 dark:bg-gray-800 p-5 rounded-r-lg">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-6 h-6 text-gray-600 dark:text-gray-400"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"
-                                    />
-                                </svg>
+                                <flux:icon.no-symbol class="size-6 text-gray-600 dark:text-gray-400" />
                             </div>
                             <div class="ml-4 flex-1">
                                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-300">Prohibited Content

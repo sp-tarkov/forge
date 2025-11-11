@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\ModVersion;
 
+use App\Enums\FikaCompatibility;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
@@ -11,6 +12,7 @@ use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
+use App\Models\VirusTotalLink;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
@@ -18,6 +20,7 @@ use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
@@ -71,10 +74,11 @@ class Edit extends Component
     public string $sptVersionConstraint = '';
 
     /**
-     * The link to the virus total scan of the mod version.
+     * The links to the virus total scans of the mod version.
+     *
+     * @var array<int, array{url: string, label: string}>
      */
-    #[Validate('required|string|url|starts_with:https://www.virustotal.com/')]
-    public string $virusTotalLink = '';
+    public array $virusTotalLinks = [];
 
     /**
      * The published at date of the mod version.
@@ -93,6 +97,11 @@ class Edit extends Component
      * Whether to pin the mod version to unpublished SPT versions.
      */
     public bool $pinToSptVersions = false;
+
+    /**
+     * The Fika compatibility status for this mod version.
+     */
+    public string $fikaCompatibilityStatus = 'unknown';
 
     /**
      * The mod dependencies to be created.
@@ -145,7 +154,19 @@ class Edit extends Component
         $this->description = $modVersion->description;
         $this->link = $modVersion->link;
         $this->sptVersionConstraint = $modVersion->spt_version_constraint;
-        $this->virusTotalLink = $modVersion->virus_total_link;
+
+        // Load existing VirusTotal links
+        $this->virusTotalLinks = $modVersion->virusTotalLinks->map(fn (VirusTotalLink $link): array => [
+            'url' => $link->url,
+            'label' => $link->label ?? '',
+        ])->all();
+
+        // Ensure at least one empty link field is present
+        if (empty($this->virusTotalLinks)) {
+            $this->virusTotalLinks[] = ['url' => '', 'label' => ''];
+        }
+
+        $this->fikaCompatibilityStatus = $modVersion->fika_compatibility->value;
         $this->publishedAt = $modVersion->published_at ? Date::parse($modVersion->published_at)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('Y-m-d\TH:i') : null;
 
         $this->loadExistingDependencies();
@@ -183,6 +204,23 @@ class Edit extends Component
     }
 
     /**
+     * Add a new VirusTotal link field.
+     */
+    public function addVirusTotalLink(): void
+    {
+        $this->virusTotalLinks[] = ['url' => '', 'label' => ''];
+    }
+
+    /**
+     * Remove a VirusTotal link field.
+     */
+    public function removeVirusTotalLink(int $index): void
+    {
+        unset($this->virusTotalLinks[$index]);
+        $this->virusTotalLinks = array_values($this->virusTotalLinks);
+    }
+
+    /**
      * Save the GUID to the mod without refreshing the page.
      */
     public function saveGuid(): void
@@ -191,11 +229,10 @@ class Edit extends Component
 
         // Validate the GUID
         $this->validate([
-            'newModGuid' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'],
+            'newModGuid' => 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id,
         ], [
             'newModGuid.required' => 'The mod GUID is required.',
-            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
-            'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+            'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only letters, numbers, hyphens, and dots.',
         ]);
 
         // Save the GUID to the mod
@@ -324,6 +361,16 @@ class Edit extends Component
     }
 
     /**
+     * Get only the unpublished SPT versions from the matching list.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getUnpublishedSptVersions(): array
+    {
+        return array_filter($this->matchingSptVersions, fn (array $version): bool => ! $version['is_published']);
+    }
+
+    /**
      * Save the mod version changes.
      */
     public function save(): void
@@ -365,10 +412,21 @@ class Edit extends Component
             $this->modVersion->link = $validated['link'];
             $this->modVersion->content_length = $this->downloadLinkRule?->contentLength;
             $this->modVersion->spt_version_constraint = $validated['sptVersionConstraint'];
-            $this->modVersion->virus_total_link = $validated['virusTotalLink'];
+            $this->modVersion->fika_compatibility = FikaCompatibility::from($this->fikaCompatibilityStatus);
             $this->modVersion->published_at = $publishedAtCarbon;
 
             $this->modVersion->save();
+
+            // Update VirusTotal links - delete existing and recreate
+            $this->modVersion->virusTotalLinks()->delete();
+            foreach ($this->virusTotalLinks as $virusTotalLink) {
+                if (! empty($virusTotalLink['url'])) {
+                    $this->modVersion->virusTotalLinks()->create([
+                        'url' => $virusTotalLink['url'],
+                        'label' => ! empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
+                    ]);
+                }
+            }
 
             // Update SPT versions with pinning information
             if (! empty($this->matchingSptVersions)) {
@@ -412,7 +470,7 @@ class Edit extends Component
 
         Track::event(TrackingEventType::VERSION_EDIT, $this->modVersion);
 
-        flash()->success('Mod version has been successfully updated.');
+        Session::flash('success', 'Mod version has been successfully updated.');
 
         $this->redirect($this->modVersion->mod->detail_url);
     }
@@ -437,8 +495,13 @@ class Edit extends Component
 
         // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
         if ($this->modGuidRequired && empty($this->modGuid) && ! $this->guidSaved) {
-            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/', 'unique:mods,guid'];
+            $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', 'unique:mods,guid'];
         }
+
+        // VirusTotal links validation
+        $rules['virusTotalLinks'] = 'required|array|min:1';
+        $rules['virusTotalLinks.*.url'] = 'required|string|url|starts_with:https://www.virustotal.com/';
+        $rules['virusTotalLinks.*.label'] = 'nullable|string|max:255';
 
         foreach ($this->dependencies as $index => $dependency) {
             // If either field is filled, both are required
@@ -469,6 +532,12 @@ class Edit extends Component
             'newModGuid.required' => 'A mod GUID is required for versions compatible with SPT 4.0.0 or above.',
             'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
             'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+            'virusTotalLinks.required' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.min' => 'At least one VirusTotal link is required.',
+            'virusTotalLinks.*.url.required' => 'Please enter a valid VirusTotal URL.',
+            'virusTotalLinks.*.url.url' => 'Please enter a valid URL (e.g., https://www.virustotal.com/...).',
+            'virusTotalLinks.*.url.starts_with' => 'The URL must start with https://www.virustotal.com/',
+            'virusTotalLinks.*.label.max' => 'The label must not exceed 255 characters.',
         ];
 
         foreach ($this->dependencies as $index => $dependency) {

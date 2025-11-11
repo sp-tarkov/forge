@@ -7,6 +7,7 @@ namespace App\Livewire;
 use App\Models\User;
 use App\Services\UserBlockingService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -71,7 +72,7 @@ class BlockButton extends Component
             $blockingService->blockUser($currentUser, $this->user, $this->blockReason);
             $this->isBlocked = true;
             $this->dispatch('user-blocked', userId: $this->user->id);
-            flash()->success('You have successfully blocked '.$this->user->name.'.');
+            Session::flash('success', 'You have successfully blocked '.$this->user->name.'.');
 
             // Redirect to homepage after blocking since the user profile will now be inaccessible
             $this->redirect(route('home'));

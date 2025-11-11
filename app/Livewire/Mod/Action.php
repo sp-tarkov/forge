@@ -8,9 +8,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
 use App\Traits\Livewire\ModerationActionMenu;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -94,37 +92,6 @@ class Action extends Component
         return Mod::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'featured', 'disabled', 'published_at', 'owner_id', 'contains_ai_content'])
             ->with('owner:id,name')
             ->findOrFail($this->modId);
-    }
-
-    /**
-     * Get cached permissions for the current user.
-     *
-     * @return array<string, bool>
-     */
-    #[Computed(persist: true)]
-    public function permissions(): array
-    {
-        $user = auth()->user();
-        if (! $user) {
-            return [];
-        }
-
-        return Cache::remember(
-            sprintf('mod.%d.permissions.%s', $this->modId, $user->id),
-            60, // Seconds
-            fn (): array => [
-                'viewActions' => Gate::allows('viewActions', $this->mod),
-                'update' => Gate::allows('update', $this->mod),
-                'delete' => Gate::allows('delete', $this->mod),
-                'feature' => Gate::allows('feature', $this->mod),
-                'unfeature' => Gate::allows('unfeature', $this->mod),
-                'disable' => Gate::allows('disable', $this->mod),
-                'enable' => Gate::allows('enable', $this->mod),
-                'publish' => Gate::allows('publish', $this->mod),
-                'unpublish' => Gate::allows('unpublish', $this->mod),
-                'isModOrAdmin' => $user->isModOrAdmin(),
-            ]
-        );
     }
 
     /**

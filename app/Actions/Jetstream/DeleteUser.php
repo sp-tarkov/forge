@@ -16,7 +16,13 @@ class DeleteUser implements DeletesUsers
      */
     public function delete(User $user): void
     {
-        Track::event(TrackingEventType::ACCOUNT_DELETE);
+        // Store user information before deletion for tracking purposes
+        $userData = [
+            'name' => $user->name,
+            'email' => $user->email,
+        ];
+
+        Track::event(TrackingEventType::ACCOUNT_DELETE, $user, $userData);
 
         $user->deleteProfilePhoto();
         $user->tokens->each->delete();

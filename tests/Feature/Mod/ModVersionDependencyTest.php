@@ -280,6 +280,80 @@ describe('Mod Version Dependencies', function (): void {
             $serviceSpy->shouldHaveReceived('resolve');
         });
 
+        it('does not return duplicate entries from latestResolvedDependencies when duplicate records exist', function (): void {
+            $this->withoutDefer();
+            SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+            // Create a mod version WITHOUT triggering the observer
+            $mainMod = Mod::factory()->create(['name' => 'Main Mod']);
+            $mainModVersion = ModVersion::factory()->recycle($mainMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+
+            // Create a dependency mod with a single version
+            $dependencyMod = Mod::factory()->create(['name' => 'Dependency Mod']);
+            $dependencyVersion = ModVersion::factory()->recycle($dependencyMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
+
+            // Manually create ONE dependency
+            $dependency = ModDependency::factory()->make([
+                'mod_version_id' => $mainModVersion->id,
+                'dependent_mod_id' => $dependencyMod->id,
+                'constraint' => '^2.0.0',
+            ]);
+            $dependency->saveQuietly(); // Skip observer
+
+            // Create TWO identical resolved dependency records (simulating a data integrity issue)
+            ModResolvedDependency::factory()->make([
+                'mod_version_id' => $mainModVersion->id,
+                'dependency_id' => $dependency->id,
+                'resolved_mod_version_id' => $dependencyVersion->id,
+            ])->saveQuietly();
+
+            ModResolvedDependency::factory()->make([
+                'mod_version_id' => $mainModVersion->id,
+                'dependency_id' => $dependency->id,
+                'resolved_mod_version_id' => $dependencyVersion->id,
+            ])->saveQuietly();
+
+            // Verify we have 2 duplicate resolved dependency records
+            expect(ModResolvedDependency::query()->where('mod_version_id', $mainModVersion->id)->count())->toBe(2);
+
+            // latestResolvedDependencies should still return ONLY 1 unique entry (not duplicates)
+            $mainModVersion->load('latestResolvedDependencies');
+            $latest = $mainModVersion->latestResolvedDependencies;
+
+            expect($latest)->toHaveCount(1)
+                ->and($latest->pluck('id')->unique())
+                ->toHaveCount(1)
+                ->and($latest->first()->version)->toBe('2.0.0');
+        });
+
+        it('does not return duplicate entries from latestResolvedDependencies with multiple versions', function (): void {
+            SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+            // Create a mod version
+            $mainMod = Mod::factory()->create(['name' => 'Main Mod']);
+            $mainModVersion = ModVersion::factory()->recycle($mainMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+
+            // Create a dependency mod with multiple versions
+            $dependencyMod = Mod::factory()->create(['name' => 'Dependency Mod']);
+            $dependencyVersion1 = ModVersion::factory()->recycle($dependencyMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
+            $dependencyVersion2 = ModVersion::factory()->recycle($dependencyMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
+
+            // Create a single dependency
+            $dependency = ModDependency::factory()->recycle([$mainModVersion, $dependencyMod])->create(['constraint' => '>=1.0.0']);
+
+            // The observer should create 2 resolved dependencies (one for each matching version)
+            expect(ModResolvedDependency::query()->where('mod_version_id', $mainModVersion->id)->count())->toBe(2);
+
+            // latestResolvedDependencies should return ONLY 1 entry (the latest version)
+            $mainModVersion->load('latestResolvedDependencies');
+            $latest = $mainModVersion->latestResolvedDependencies;
+
+            expect($latest)->toHaveCount(1)
+                ->and($latest->pluck('version')->unique())
+                ->toHaveCount(1)
+                ->toContain($dependencyVersion2->version);
+        });
+
         it('displays the latest resolved dependencies on the mod detail page', function (): void {
             SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
@@ -319,9 +393,13 @@ describe('Mod Version Dependencies', function (): void {
 
             $response = $this->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]));
 
-            // The view shows latestResolvedDependencies, so only the latest versions should appear
-            $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod1->name, $dependentMod1Version2->version)));
-            $response->assertSeeInOrder(explode(' ', __('Dependencies: ').sprintf('%s (%s)', $dependentMod2->name, $dependentMod2Version4->version)));
+            // The view shows latestResolvedDependencies in the Required Dependencies section
+            $response->assertSee(__('Required Dependencies'))
+                ->assertSee(__('The latest version of this mod requires the following mods to be installed as well.'))
+                ->assertSee($dependentMod1->name)
+                ->assertSee(__('Requires').' v'.$dependentMod1Version2->version)
+                ->assertSee($dependentMod2->name)
+                ->assertSee(__('Requires').' v'.$dependentMod2Version4->version);
         });
     });
 });

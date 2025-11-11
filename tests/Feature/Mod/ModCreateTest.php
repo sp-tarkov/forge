@@ -63,7 +63,7 @@ describe('Mod Create Form', function (): void {
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
                 ->set('name', 'Test Mod')
-                ->set('guid', 'invalid-guid')
+                ->set('guid', 'invalid guid!')
                 ->set('teaser', 'Test teaser')
                 ->set('description', 'Test description')
                 ->set('license', (string) $license->id)
@@ -117,6 +117,36 @@ describe('Mod Create Form', function (): void {
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
                 ->set('name', 'New Mod Name')
                 ->set('guid', 'com.example.unique')
+                ->set('teaser', 'New teaser')
+                ->set('description', 'New description')
+                ->set('license', (string) $license->id)
+                ->set('category', (string) $category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/example/new')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('containsAds', false)
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+        });
+
+        it('treats GUIDs as case-sensitive for uniqueness validation', function (): void {
+            $license = License::factory()->create();
+            $category = ModCategory::factory()->create();
+            $user = User::factory()->withMfa()->create();
+
+            // Create a mod with a specific GUID using lowercase
+            Mod::factory()->create(['guid' => 'com.example.casesensitive']);
+
+            $this->actingAs($user);
+
+            // Attempt to create a new mod with a different case GUID - should be allowed
+            Livewire::test(Create::class)
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'New Mod Name')
+                ->set('guid', 'com.example.CaseSensitive')
                 ->set('teaser', 'New teaser')
                 ->set('description', 'New description')
                 ->set('license', (string) $license->id)

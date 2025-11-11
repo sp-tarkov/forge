@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -47,6 +48,12 @@ class GlobalSearch extends Component
     public bool $isUserCatVisible = true;
 
     /**
+     * The session variable for showing Addon category in search results
+     */
+    #[Session]
+    public bool $isAddonCatVisible = true;
+
+    /**
      * Toggle the visibility of a search result category.
      */
     public function toggleTypeVisibility(string $type): void
@@ -80,6 +87,7 @@ class GlobalSearch extends Component
         if (Str::length($query) > 0) {
             return [
                 'mod' => $this->fetchModResults($query),
+                'addon' => $this->fetchAddonResults($query),
                 'user' => $this->fetchUserResults($query),
             ];
         }
@@ -119,6 +127,24 @@ class GlobalSearch extends Component
                 ['latestVersionLabel', 'asc'],
                 ['_rankingScore', 'desc'],
             ])
+            ->values();
+
+        return $searchHits;
+    }
+
+    /**
+     * Fetch the addon search results.
+     *
+     * @return Collection<int, mixed>
+     */
+    protected function fetchAddonResults(string $query): Collection
+    {
+        /** @var array{hits: array<int, mixed>} $rawResults */
+        $rawResults = Addon::search($query)->options(['showRankingScore' => true])->raw();
+
+        /** @var Collection<int, mixed> $searchHits */
+        $searchHits = collect($rawResults['hits'])
+            ->sortByDesc('_rankingScore')
             ->values();
 
         return $searchHits;

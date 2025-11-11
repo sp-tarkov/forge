@@ -7,7 +7,6 @@ use App\Livewire\Ribbon\Comment as CommentRibbon;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
@@ -21,14 +20,10 @@ beforeEach(function (): void {
     $this->otherUser = User::factory()->create();
 
     // Create moderator with proper role
-    $moderatorRole = UserRole::factory()->moderator()->create();
-    $this->moderator = User::factory()->create();
-    $this->moderator->assignRole($moderatorRole);
+    $this->moderator = User::factory()->moderator()->create();
 
     // Create admin with proper role
-    $adminRole = UserRole::factory()->administrator()->create();
-    $this->admin = User::factory()->create();
-    $this->admin->assignRole($adminRole);
+    $this->admin = User::factory()->admin()->create();
 
     $this->mod = Mod::factory()->create();
 });

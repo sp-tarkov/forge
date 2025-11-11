@@ -91,6 +91,31 @@ class ModCategorySeeder extends Seeder
             'description' => 'Economy and loot mods',
         ]);
 
+        ModCategory::factory()->create([
+            'title' => 'Shotguns',
+            'description' => 'Shotgun weapon mods',
+        ]);
+
+        ModCategory::factory()->create([
+            'title' => 'SMGs',
+            'description' => 'Submachine gun weapon mods',
+        ]);
+
+        ModCategory::factory()->create([
+            'title' => 'Consumables',
+            'description' => 'Consumable item mods',
+        ]);
+
+        ModCategory::factory()->create([
+            'title' => 'Quests',
+            'description' => 'Quest and mission mods',
+        ]);
+
+        ModCategory::factory()->create([
+            'title' => 'Audio',
+            'description' => 'Audio and sound mods',
+        ]);
+
         $this->command->outputComponents()->info('Mod categories seeded');
     }
 }

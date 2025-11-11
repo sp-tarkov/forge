@@ -19,6 +19,20 @@ class UpdateProfileForm extends UpdateProfileInformationForm
     public mixed $cover = null;
 
     /**
+     * Mount the component.
+     */
+    #[Override]
+    public function mount(): void
+    {
+        parent::mount();
+
+        // Ensure about field is initialized in state
+        if (! isset($this->state['about'])) {
+            $this->state['about'] = $this->user->about ?? '';
+        }
+    }
+
+    /**
      * When the photo is temporarily uploaded.
      */
     public function updatedPhoto(): void

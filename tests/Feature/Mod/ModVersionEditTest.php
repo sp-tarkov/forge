@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\FikaCompatibility;
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Models\License;
 use App\Models\Mod;
@@ -46,7 +47,6 @@ describe('Mod Version Edit Form', function (): void {
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
             $modVersion = ModVersion::factory()->create([
                 'mod_id' => $mod->id,
-                'virus_total_link' => 'https://www.virustotal.com/test',
             ]);
 
             Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
@@ -54,9 +54,9 @@ describe('Mod Version Edit Form', function (): void {
                 ->set('description', '')
                 ->set('link', '')
                 ->set('sptVersionConstraint', '')
-                ->set('virusTotalLink', '')
+                ->set('virusTotalLinks', [])
                 ->call('save')
-                ->assertHasErrors(['version', 'description', 'link', 'sptVersionConstraint', 'virusTotalLink']);
+                ->assertHasErrors(['version', 'description', 'link', 'sptVersionConstraint', 'virusTotalLinks']);
         });
 
         it('validates version format when editing', function (): void {
@@ -66,7 +66,6 @@ describe('Mod Version Edit Form', function (): void {
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
             $modVersion = ModVersion::factory()->create([
                 'mod_id' => $mod->id,
-                'virus_total_link' => 'https://www.virustotal.com/test',
             ]);
 
             Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
@@ -74,7 +73,7 @@ describe('Mod Version Edit Form', function (): void {
                 ->set('description', 'Test description')
                 ->set('link', 'https://example.com/download.zip')
                 ->set('sptVersionConstraint', '~3.11.0')
-                ->set('virusTotalLink', 'https://www.virustotal.com/test')
+                ->set('virusTotalLinks', [['url' => 'https://www.virustotal.com/test', 'label' => '']])
                 ->call('save')
                 ->assertHasErrors(['version']);
         });
@@ -121,7 +120,6 @@ describe('Mod Version Edit Form', function (): void {
             $modVersion = ModVersion::factory()->create([
                 'mod_id' => $mod->id,
                 'version' => '1.0.0',
-                'virus_total_link' => 'https://www.virustotal.com/test',
             ]);
 
             // Create dependency mods with versions
@@ -151,6 +149,9 @@ describe('Mod Version Edit Form', function (): void {
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
                 ->set('dependencies', [
                     ['modId' => (string) $dependencyMod2->id, 'constraint' => '^2.0.0'],
+                ])
+                ->set('virusTotalLinks', [
+                    ['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test Scan'],
                 ])
                 ->call('save')
                 ->assertHasNoErrors()
@@ -265,7 +266,7 @@ describe('Mod Version Edit Form', function (): void {
             // Test duplicate GUID
             $component->set('newModGuid', 'com.existing.mod')
                 ->call('saveGuid')
-                ->assertHasErrors(['newModGuid' => 'unique']);
+                ->assertHasErrors(['newModGuid']);
         });
 
         it('does not require GUID when editing version if already saved inline', function (): void {
@@ -309,7 +310,7 @@ describe('Mod Version Edit Form', function (): void {
             $component->set('version', '2.0.0')
                 ->set('description', 'Updated version')
                 ->set('link', 'https://example.com/mod.zip')
-                ->set('virusTotalLink', 'https://www.virustotal.com/gui/file/test')
+                ->set('virusTotalLinks', [['url' => 'https://www.virustotal.com/gui/file/test', 'label' => '']])
                 ->call('save')
                 ->assertHasNoErrors()
                 ->assertRedirect();
@@ -317,6 +318,30 @@ describe('Mod Version Edit Form', function (): void {
             // Verify version was updated
             $modVersion->refresh();
             expect($modVersion->version)->toBe('2.0.0');
+        });
+
+        it('allows updating fika compatibility status when editing a mod version', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'fika_compatibility' => FikaCompatibility::Incompatible,
+            ]);
+
+            Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+                ->assertSet('fikaCompatibilityStatus', 'incompatible')
+                ->set('fikaCompatibilityStatus', 'compatible')
+                ->set('virusTotalLinks', [
+                    ['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test Scan'],
+                ])
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $modVersion->refresh();
+            expect($modVersion->fika_compatibility->value)->toBe('compatible');
         });
     });
 });

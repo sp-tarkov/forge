@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Api\V0\ApiErrorCode;
+use App\Enums\FikaCompatibility;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\SptVersion;
@@ -119,7 +120,7 @@ describe('Mod Show API', function (): void {
             ->assertJsonStructure([
                 'success',
                 'data' => ['versions' => [[
-                    'id', 'hub_id', 'version', 'link', 'spt_version_constraint', 'virus_total_link', 'downloads',
+                    'id', 'hub_id', 'version', 'link', 'spt_version_constraint', 'downloads',
                     'published_at', 'created_at', 'updated_at',
                 ]]],
             ])
@@ -247,6 +248,22 @@ describe('Mod Show API', function (): void {
                 'success',
                 'data' => ['id', 'name'],
             ]);
+    });
+
+    it('returns fika_compatibility when requested', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mod = Mod::factory()->hasVersions(1, [
+            'spt_version_constraint' => '3.8.0',
+            'fika_compatibility' => FikaCompatibility::Compatible,
+            'published_at' => now()->subDay(),
+        ])->create();
+
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d?fields=fika_compatibility', $mod->id));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.fika_compatibility', true);
     });
 
     it('returns thumbnail as a URL', function (): void {

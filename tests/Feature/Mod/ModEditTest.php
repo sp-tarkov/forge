@@ -43,7 +43,7 @@ describe('Mod Edit Form', function (): void {
 
             Livewire::test(Edit::class, ['modId' => $mod->id])
                 ->set('name', 'Test Mod')
-                ->set('guid', 'invalid-guid')
+                ->set('guid', 'invalid guid!')
                 ->set('teaser', 'Test teaser')
                 ->set('description', 'Test description')
                 ->set('license', (string) $license->id)
@@ -129,7 +129,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
 
         // Test that owners can access the edit page
         visit('/mod/'.$mod->id.'/edit')
-            ->assertSee('Edit Test Mod Name')
+            ->assertSee('Edit Mod: Test Mod Name')
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
@@ -170,7 +170,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
 
         // Also verify browser can access the edit page after update
         visit('/mod/'.$mod->id.'/edit')
-            ->assertSee('Edit Updated Mod Name')
+            ->assertSee('Edit Mod: Updated Mod Name')
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
@@ -197,7 +197,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
 
         // Test that authors can access the edit page
         visit('/mod/'.$mod->id.'/edit')
-            ->assertSee('Edit Collaborative Mod')
+            ->assertSee('Edit Mod: Collaborative Mod')
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
@@ -335,7 +335,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         // Test using Livewire component test
         Livewire::test(Edit::class, ['modId' => $mod->id])
             ->assertSee('Mod Information')
-            ->set('guid', 'invalid-guid-format')
+            ->set('guid', 'invalid guid!')
             ->call('save')
             ->assertHasErrors(['guid']);
     });

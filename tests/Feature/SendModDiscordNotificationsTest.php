@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Jobs\SendModDiscordNotifications;
+use App\Jobs\SendDiscordNotifications;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
@@ -54,7 +54,7 @@ it('sends discord notification for newly visible mods', function (): void {
     $modVersion->sptVersions()->sync($sptVersion);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod was marked as notified
@@ -73,7 +73,7 @@ it('does not send notification for disabled mods', function (): void {
         ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod was not marked as notified
@@ -92,7 +92,7 @@ it('does not send notification for unpublished mods', function (): void {
         ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod was not marked as notified
@@ -111,7 +111,7 @@ it('does not send notification for mods without valid SPT versions', function ()
         ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod was not marked as notified
@@ -143,7 +143,7 @@ it('does not send notification for already notified mods', function (): void {
     $modVersion->sptVersions()->sync($sptVersion);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod still has the sent flag as true
@@ -187,7 +187,7 @@ it('includes all mod details in discord embed', function (): void {
     $modVersion->sptVersions()->sync($sptVersion);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Verify the mod was marked as notified
@@ -237,7 +237,7 @@ it('sends discord notification for new mod versions', function (): void {
     ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert new version was marked as notified
@@ -303,7 +303,7 @@ it('sends individual notifications for multiple new versions of same mod', funct
     ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert both versions were marked as notified
@@ -367,7 +367,7 @@ it('marks versions as notified when new mod notification is sent', function (): 
     $version->sptVersions()->sync($sptVersion);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod was notified (first time)
@@ -403,7 +403,7 @@ it('does not send version notification for disabled versions', function (): void
     $version->sptVersions()->sync($sptVersion);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert version was not marked as notified
@@ -435,7 +435,7 @@ it('does not send version notification for unpublished versions', function (): v
     $version->sptVersions()->sync($sptVersion);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert version was not marked as notified
@@ -486,7 +486,7 @@ it('does not duplicate spt versions in new mod notification', function (): void 
     ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod was marked as notified
@@ -560,7 +560,7 @@ it('does not send version update notification when new mod is created', function
     ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert mod was marked as notified
@@ -630,7 +630,7 @@ it('does not duplicate spt versions in mod version update notification', functio
     ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert new version was marked as notified
@@ -713,7 +713,7 @@ it('sends notification for lower semantic version uploaded after higher version'
     ]);
 
     // Run the job
-    $job = new SendModDiscordNotifications;
+    $job = new SendDiscordNotifications;
     $job->handle();
 
     // Assert the lower version was marked as notified

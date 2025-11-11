@@ -7,7 +7,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -82,8 +81,7 @@ describe('mod visibility on profile', function (): void {
         });
 
         it('shows mods without versions to administrators', function (): void {
-            $role = UserRole::factory()->administrator()->create();
-            $user = User::factory()->create(['user_role_id' => $role->id]);
+            $user = User::factory()->admin()->create();
 
             $mod = Mod::factory()->create();
             $mod->owner()->associate($user);
@@ -139,8 +137,7 @@ describe('mod visibility on profile', function (): void {
         });
 
         it('shows administrators disabled mods on a profile page', function (): void {
-            $role = UserRole::factory()->administrator()->create();
-            $user = User::factory()->create(['user_role_id' => $role->id]);
+            $user = User::factory()->admin()->create();
 
             SptVersion::factory()->create(['version' => '1.0.0']);
             $mod = Mod::factory()->disabled()->create();

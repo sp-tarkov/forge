@@ -8,12 +8,13 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
 use App\Models\ModCategory;
-use App\Models\ModSourceCodeLink;
+use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -117,6 +118,11 @@ class Edit extends Component
     public bool $disableProfileBindingNotice = false;
 
     /**
+     * Whether addons are disabled for the mod.
+     */
+    public bool $addonsDisabled = false;
+
+    /**
      * Mount the component.
      */
     public function mount(int $modId): void
@@ -136,7 +142,7 @@ class Edit extends Component
         $this->category = (string) ($this->mod->category_id ?? '');
 
         // Load existing source code links
-        $this->sourceCodeLinks = $this->mod->sourceCodeLinks->map(fn (ModSourceCodeLink $link): array => [
+        $this->sourceCodeLinks = $this->mod->sourceCodeLinks->map(fn (SourceCodeLink $link): array => [
             'url' => $link->url,
             'label' => $link->label,
         ])->all();
@@ -151,6 +157,7 @@ class Edit extends Component
         $this->containsAds = (bool) $this->mod->contains_ads;
         $this->commentsDisabled = (bool) $this->mod->comments_disabled;
         $this->disableProfileBindingNotice = (bool) $this->mod->profile_binding_notice_disabled;
+        $this->addonsDisabled = (bool) $this->mod->addons_disabled;
 
         // Load existing authors
         $this->authorIds = $this->mod->authors->pluck('id')->toArray();
@@ -232,6 +239,7 @@ class Edit extends Component
         $this->mod->contains_ads = $this->containsAds;
         $this->mod->comments_disabled = $this->commentsDisabled;
         $this->mod->profile_binding_notice_disabled = $this->disableProfileBindingNotice;
+        $this->mod->addons_disabled = $this->addonsDisabled;
         $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
@@ -270,7 +278,7 @@ class Edit extends Component
 
         Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 
-        flash()->success('Mod has been Successfully Updated');
+        Session::flash('success', 'Mod has been Successfully Updated');
 
         $this->redirect($this->mod->detail_url);
     }
@@ -324,8 +332,8 @@ class Edit extends Component
     {
         // GUID is required if any existing mod version targets SPT >= 4.0.0
         $guidRules = $this->isGuidRequired
-            ? 'required|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id
-            : 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid,'.$this->mod->id;
+            ? 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id
+            : 'nullable|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id;
 
         return [
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -345,6 +353,7 @@ class Edit extends Component
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
             'disableProfileBindingNotice' => 'boolean',
+            'addonsDisabled' => 'boolean',
         ];
     }
 

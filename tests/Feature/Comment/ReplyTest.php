@@ -6,7 +6,6 @@ use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
@@ -237,9 +236,7 @@ describe('rate limiting', function (): void {
     });
 
     it('should allow administrators to bypass rate limiting for replies', function (): void {
-        $adminRole = UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create();
-        $admin->assignRole($adminRole);
+        $admin = User::factory()->admin()->create();
         $mod = Mod::factory()->create();
         $parentComment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -268,9 +265,7 @@ describe('rate limiting', function (): void {
     });
 
     it('should allow moderators to bypass rate limiting for replies', function (): void {
-        $moderatorRole = UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create();
-        $moderator->assignRole($moderatorRole);
+        $moderator = User::factory()->moderator()->create();
         $mod = Mod::factory()->create();
         $parentComment = Comment::factory()->create([
             'commentable_id' => $mod->id,

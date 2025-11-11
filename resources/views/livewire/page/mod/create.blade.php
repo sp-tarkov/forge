@@ -7,8 +7,9 @@
 </x-slot>
 
 <x-slot:header>
-    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
-        {{ __('Create a New Mod') }}
+    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <flux:icon.cube-transparent class="w-5 h-5" />
+        {{ __('Create Mod') }}
     </h2>
 </x-slot>
 
@@ -281,7 +282,7 @@
                                     }
                                 }"
                             >
-                                <flux:label>{{ __('Publish Date') }}</flux:label>
+                                <flux:label badge="Optional">{{ __('Publish Date') }}</flux:label>
                                 <flux:description>
                                     {!! __(
                                         'Select the date and time the mod will be published. If the mod is not published, it will not be discoverable by other users. Leave blank to keep the mod unpublished.',

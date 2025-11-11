@@ -40,8 +40,6 @@ class VisitorAnalytics extends Component
      */
     public string $eventFilter = '';
 
-    public string $eventMatchType = 'contains';
-
     /**
      * Technical filters.
      */
@@ -168,8 +166,8 @@ class VisitorAnalytics extends Component
 
         // Event filter
         if (! empty($this->eventFilter)) {
-            $matchType = $this->eventMatchType === 'exact' ? 'exact' : 'contains';
-            $filters[] = sprintf("Event %s: '%s'", $matchType, $this->eventFilter);
+            $eventType = TrackingEventType::from($this->eventFilter);
+            $filters[] = sprintf("Event: '%s'", $eventType->getName());
         }
 
         // Technical filters
@@ -242,7 +240,6 @@ class VisitorAnalytics extends Component
         $this->dateFrom = now()->subMonths(12)->format('Y-m-d');
         $this->dateTo = now()->format('Y-m-d');
         $this->eventFilter = '';
-        $this->eventMatchType = 'contains';
         $this->ipFilter = '';
         $this->browserFilter = '';
         $this->platformFilter = '';
@@ -388,6 +385,24 @@ class VisitorAnalytics extends Component
     }
 
     /**
+     * Get the user name for display, falling back to snapshot data if the user is deleted.
+     */
+    public function getEventDisplayName(TrackingEvent $event): ?string
+    {
+        // If we have the user model, return their name
+        if ($event->visitor_id && $event->user) {
+            return $event->user->name;
+        }
+
+        // Fallback to snapshot data from event_data (for deleted users)
+        if ($event->visitor_id && isset($event->event_data['name'])) {
+            return $event->event_data['name'];
+        }
+
+        return null;
+    }
+
+    /**
      * Get the URL for an event if it should be displayed as a link.
      */
     public function getEventUrl(TrackingEvent $event): ?string
@@ -456,11 +471,7 @@ class VisitorAnalytics extends Component
     private function applyEventFilters(Builder $query): void
     {
         if (! empty($this->eventFilter)) {
-            if ($this->eventMatchType === 'exact') {
-                $query->where('tracking_events.event_name', '=', $this->eventFilter);
-            } else {
-                $query->where('tracking_events.event_name', 'like', '%'.$this->eventFilter.'%');
-            }
+            $query->where('tracking_events.event_name', '=', $this->eventFilter);
         }
     }
 

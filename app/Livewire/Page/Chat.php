@@ -286,6 +286,10 @@ class Chat extends Component
             $conversation = Conversation::query()->where('hash_id', $conversation)->first();
         }
 
+        if (! $conversation || ! $conversation->hash_id) {
+            return;
+        }
+
         $this->redirect($conversation->url, navigate: true);
     }
 
@@ -906,9 +910,13 @@ class Chat extends Component
     {
         $user = Auth::user();
 
-        $latestConversation = Conversation::query()->latestFor($user)->first();
+        $latestConversation = Conversation::query()
+            ->latestFor($user)
+            ->whereNotNull('hash_id')
+            ->first();
+
         if ($latestConversation) {
-            $this->redirectToConversation($latestConversation->hash_id);
+            $this->redirectToConversation($latestConversation);
         }
     }
 
@@ -928,6 +936,7 @@ class Chat extends Component
         return Conversation::query()
             ->visibleTo($user)
             ->notArchivedBy($user)
+            ->whereNotNull('hash_id')
             ->withUserContext($user)
             ->withUnreadCount($user)
             ->with(['user1', 'user2', 'lastMessage'])

@@ -10,6 +10,7 @@ use App\Models\Mod;
 use App\Models\ModCategory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -224,7 +225,7 @@ class Create extends Component
 
         Track::event(TrackingEventType::MOD_CREATE, $mod);
 
-        flash()->success('Mod has been Successfully Created');
+        Session::flash('success', 'Mod has been Successfully Created');
 
         $this->redirect($mod->detail_url);
     }
@@ -277,7 +278,7 @@ class Create extends Component
         return [
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'name' => 'required|string|max:75',
-            'guid' => 'nullable|string|max:255|regex:/^[a-z0-9]+(\.[a-z0-9]+)*$/|unique:mods,guid',
+            'guid' => 'nullable|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid',
             'teaser' => 'required|string|max:255',
             'description' => 'required|string',
             'license' => 'required|exists:licenses,id',

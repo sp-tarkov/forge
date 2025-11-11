@@ -22,8 +22,8 @@ class ModVersionController extends Controller
      *
      * Retrieves a paginated list of mod versions, allowing filtering, sorting, and relationship inclusion.
      *
-     * Fields available:<br /><code>hub_id, version, description, link, content_length, spt_version_constraint, virus_total_link,
-     * downloads, published_at, created_at, updated_at</code>
+     * Fields available:<br /><code>hub_id, version, description, link, content_length, spt_version_constraint,
+     * downloads, fika_compatibility, published_at, created_at, updated_at</code>
      *
      * The <code>content_length</code> field contains the file size in bytes as determined by the Content-Length header
      * from the download link. This field may be null for versions created before file size validation was implemented.
@@ -44,8 +44,8 @@ class ModVersionController extends Controller
      *              "link": "http://kautzer.com/enim-ut-quis-suscipit-dolores.html",
      *              "content_length": 52428800,
      *              "spt_version_constraint": "^1.0.0",
-     *              "virus_total_link": "https://herman.net/accusantium-vitae-et-totam-deleniti-cupiditate-dolorem-non-sit.html",
      *              "downloads": 8,
+     *              "fika_compatibility": "unknown",
      *              "published_at": "2024-05-09T10:49:41.000000Z",
      *              "created_at": "2024-12-19T04:49:41.000000Z",
      *              "updated_at": "2025-02-18T11:49:41.000000Z"
@@ -57,8 +57,8 @@ class ModVersionController extends Controller
      *              "description": "Mollitia voluptatem quia et ex aut. Qui libero tempore ut. Suscipit a eius recusandae aut pariatur soluta necessitatibus.",
      *              "link": "http://lockman.net/",
      *              "spt_version_constraint": "<4.0.0",
-     *              "virus_total_link": "https://www.blick.com/quis-reprehenderit-quis-quia-nobis-assumenda-eveniet-ipsa-qui",
      *              "downloads": 3332503,
+     *              "fika_compatibility": "compatible",
      *              "published_at": "2024-07-03T05:49:25.000000Z",
      *              "created_at": "2024-10-06T23:49:25.000000Z",
      *              "updated_at": "2024-10-15T03:49:25.000000Z"
@@ -70,8 +70,8 @@ class ModVersionController extends Controller
      *              "description": "Consequatur modi et labore ea neque id. Natus sapiente amet rerum quia in molestiae autem. Eligendi molestiae blanditiis voluptatem earum.",
      *              "link": "https://auer.com/ipsum-ratione-sint-eveniet-aut-porro-qui-in-odio.html",
      *              "spt_version_constraint": "<4.0.0",
-     *              "virus_total_link": "http://baumbach.com/impedit-earum-corporis-sunt.html",
      *              "downloads": 40217550,
+     *              "fika_compatibility": "incompatible",
      *              "published_at": "2024-12-23T14:48:58.000000Z",
      *              "created_at": "2024-09-26T13:48:58.000000Z",
      *              "updated_at": "2025-03-21T01:48:58.000000Z"
@@ -83,8 +83,8 @@ class ModVersionController extends Controller
      *              "description": "Aut ut inventore aut ex tempora a aspernatur asperiores. A laborum ullam ex rerum illo dolorem cupiditate. Veritatis id dolor qui quam et.",
      *              "link": "http://kreiger.com/ut-voluptas-doloremque-natus-dolorem-odit-facilis",
      *              "spt_version_constraint": "^1.0.0",
-     *              "virus_total_link": "http://www.mayert.net/dignissimos-rem-id-nam-cumque",
      *              "downloads": 11236658,
+     *              "fika_compatibility": "unknown",
      *              "published_at": "2025-03-18T23:49:12.000000Z",
      *              "created_at": "2024-09-04T16:49:12.000000Z",
      *              "updated_at": "2024-05-26T13:49:12.000000Z"
@@ -96,8 +96,8 @@ class ModVersionController extends Controller
      *              "description": "Aut in rerum est labore omnis. Voluptatem est velit doloribus expedita et. Illo error ut aspernatur quia quo repellat tenetur.",
      *              "link": "http://www.becker.org/eum-laboriosam-ut-voluptates-voluptatibus-voluptates-nihil",
      *              "spt_version_constraint": ">=3.0.0",
-     *              "virus_total_link": "http://www.dickens.org/omnis-dolor-et-culpa-illo-excepturi-beatae-optio",
      *              "downloads": 425925,
+     *              "fika_compatibility": "compatible",
      *              "published_at": "2025-03-20T13:50:00.000000Z",
      *              "created_at": "2025-02-12T01:50:00.000000Z",
      *              "updated_at": "2025-03-17T07:50:00.000000Z"
@@ -148,8 +148,8 @@ class ModVersionController extends Controller
      *              "link": "http://kautzer.com/enim-ut-quis-suscipit-dolores.html",
      *              "content_length": 52428800,
      *              "spt_version_constraint": "^1.0.0",
-     *              "virus_total_link": "https://herman.net/accusantium-vitae-et-totam-deleniti-cupiditate-dolorem-non-sit.html",
      *              "downloads": 8,
+     *              "fika_compatibility": "unknown",
      *              "dependencies": [
      *                  {
      *                      "id": 5,
@@ -179,8 +179,8 @@ class ModVersionController extends Controller
      *              "description": "Mollitia voluptatem quia et ex aut. Qui libero tempore ut. Suscipit a eius recusandae aut pariatur soluta necessitatibus.",
      *              "link": "http://lockman.net/",
      *              "spt_version_constraint": "<4.0.0",
-     *              "virus_total_link": "https://www.blick.com/quis-reprehenderit-quis-quia-nobis-assumenda-eveniet-ipsa-qui",
      *              "downloads": 3332503,
+     *              "fika_compatibility": "compatible",
      *              "dependencies": [],
      *              "published_at": "2024-07-03T05:49:25.000000Z",
      *              "created_at": "2024-10-06T23:49:25.000000Z",
@@ -233,12 +233,12 @@ class ModVersionController extends Controller
     #[UrlParam('filter[version]', description: 'Filter mod versions by using a SemVer constraint.', required: false, example: '^1.0.0')]
     #[UrlParam('filter[description]', description: 'Fuzzy-filter by mod version description.', required: false, example: 'This is a description')]
     #[UrlParam('filter[link]', description: 'Filter by mod version link.', required: false, example: 'example.com')]
-    #[UrlParam('filter[virus_total_link]', description: 'Filter by mod version virus total link.', required: false, example: 'example.com')]
     #[UrlParam('filter[published_between]', description: 'Filter by mod version published between.', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('filter[created_between]', description: 'Filter by mod version created between.', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('filter[updated_between]', description: 'Filter by mod version updated between.', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('filter[spt_version]', description: 'Filter mod versions that are compatible with a SemVer constraint.', required: false, example: '^3.8.0')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: dependencies.', required: false, example: 'dependencies')]
+    #[UrlParam('filter[fika_compatibility]', description: 'Filter by Fika compatibility status. Comma-separated. Available values: compatible, incompatible, unknown.', required: false, example: 'compatible')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: dependencies, virus_total_links.', required: false, example: 'dependencies,virus_total_links')]
     #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields.', required: false, example: '-version,-created_at')]
     #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]

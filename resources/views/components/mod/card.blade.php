@@ -1,4 +1,10 @@
-@props(['mod', 'version', 'section' => 'default', 'homepageFeatured' => false])
+@props([
+    'mod',
+    'version',
+    'section' => 'default',
+    'homepageFeatured' => false,
+    'placeholderBg' => 'bg-gray-100 dark:bg-gray-800',
+])
 
 <div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
 
@@ -9,6 +15,7 @@
         :published-at="$mod->published_at?->toISOString()"
         :featured="$mod->featured"
         :homepage-featured="$homepageFeatured"
+        :publicly-visible="$mod->isPubliclyVisible()"
     />
 
     <a
@@ -25,11 +32,9 @@
                         class="h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-transform duration-200"
                     >
                 @else
-                    <img
-                        src="https://placehold.co/450x450/31343C/EEE?font=source-sans-pro&text={{ urlencode($mod->name) }}"
-                        alt="{{ $mod->name }}"
-                        class="h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-transform duration-200"
-                    >
+                    <div class="h-48 w-full md:h-full md:w-48 {{ $placeholderBg }} flex items-center justify-center">
+                        <flux:icon.cube-transparent class="w-24 h-24 text-gray-400 dark:text-gray-600" />
+                    </div>
                 @endif
             </div>
 
@@ -56,42 +61,18 @@
                         @if (($mod->updated_at || $mod->created_at) && $version)
                             <div class="flex items-end w-full">
                                 <div class="flex items-center gap-1">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke-width="1.5"
-                                        stroke="currentColor"
-                                        class="w-5 h-5"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"
-                                        />
-                                    </svg>
+                                    <flux:icon.calendar class="size-5" />
                                     <x-time :datetime="$version->created_at" />
                                 </div>
                             </div>
                         @endif
                         <div class="flex justify-end items-center gap-1">
-                            <span title="{{ __('Exactly :downloads', ['downloads' => $mod->downloads]) }}">
+                            <span
+                                title="{{ Number::format($mod->downloads) }} {{ __(Str::plural('Download', $mod->downloads)) }}"
+                            >
                                 {{ Number::downloads($mod->downloads) }}
                             </span>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                class="w-5 h-5"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                                />
-                            </svg>
+                            <flux:icon.arrow-down-tray class="size-5" />
                         </div>
                     </div>
                 </div>
@@ -99,7 +80,7 @@
         </div>
     </a>
 
-    @can('update', $mod)
+    @cachedCan('update', $mod)
         <livewire:mod.action
             wire:key="mod-action-{{ $section }}-{{ $mod->id }}"
             :mod-id="$mod->id"
@@ -109,5 +90,5 @@
             :mod-published="(bool) $mod->published_at && $mod->published_at <= now()"
             :homepage-featured="$homepageFeatured"
         />
-    @endcan
+    @endcachedCan
 </div>

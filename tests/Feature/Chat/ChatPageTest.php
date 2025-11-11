@@ -44,7 +44,6 @@ describe('Chat Browser Tests', function (): void {
         $page = visit('/chat')
             ->on()->desktop()
             ->inDarkMode()
-            ->wait(1)
             ->assertNoJavascriptErrors();
     });
 

@@ -183,6 +183,13 @@ return [
                 'POST /api/v0/auth/email/resend',
                 'GET /api/v0/auth/user',
             ],
+            'Mods' => [
+                'GET /api/v0/mods',
+                'GET /api/v0/mod/{modId}',
+                'GET /api/v0/mod/{modId}/versions',
+                'GET /api/v0/mods/updates',
+                'GET /api/v0/mods/dependencies',
+            ],
             '*',
         ],
     ],

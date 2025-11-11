@@ -19,6 +19,7 @@ describe('OAuth authentication', function (): void {
         $mock->shouldReceive('getAvatar')->andReturn('avatar-url');
         $mock->token = 'access-token';
         $mock->refreshToken = 'refresh-token';
+        $mock->user = ['mfa_enabled' => false];
 
         // Mock Socialite facade
         Socialite::shouldReceive('driver->user')->andReturn($mock);
@@ -60,6 +61,7 @@ describe('OAuth authentication', function (): void {
         $mock->shouldReceive('getAvatar')->andReturn('new-avatar-url');
         $mock->token = 'new-access-token';
         $mock->refreshToken = 'new-refresh-token';
+        $mock->user = ['mfa_enabled' => false];
 
         // Mock Socialite facade
         Socialite::shouldReceive('driver->user')->andReturn($mock);

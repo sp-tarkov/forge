@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Scopes;
 
+use App\Models\Addon;
+use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,15 +23,15 @@ class PublishedScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        // This scope is only applicable to Mod and ModVersion models.
+        // This scope is only applicable to Mod, ModVersion, Addon, and AddonVersion models.
         throw_unless(
-            $model instanceof Mod || $model instanceof ModVersion,
+            $model instanceof Mod || $model instanceof ModVersion || $model instanceof Addon || $model instanceof AddonVersion,
             InvalidArgumentException::class,
-            'PublishedScope can only be applied to Mod or ModVersion models.'
+            'PublishedScope can only be applied to Mod, ModVersion, Addon, or AddonVersion models.'
         );
 
-        // If user is authenticated and is an admin, show everything.
-        if (Auth::check() && Auth::user()->isAdmin()) {
+        // If user is authenticated and is an admin or moderator, show everything.
+        if (Auth::check() && Auth::user()->isModOrAdmin()) {
             return;
         }
 
@@ -61,6 +63,24 @@ class PublishedScope implements Scope
                         $unpublishedQuery->where(function (Builder $ownerQuery): void {
                             $ownerQuery->whereHas('mod', function (Builder $modQuery): void {
                                 $modQuery->where('owner_id', Auth::id())
+                                    ->orWhereHas('authors', function (Builder $authorsQuery): void {
+                                        $authorsQuery->where('users.id', Auth::id());
+                                    });
+                            });
+                        });
+                    } elseif ($model instanceof Addon) {
+                        // For Addons, directly check ownership.
+                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($model): void {
+                            $ownerQuery->where($model->getTable().'.owner_id', Auth::id())
+                                ->orWhereHas('authors', function (Builder $authorsQuery): void {
+                                    $authorsQuery->where('users.id', Auth::id());
+                                });
+                        });
+                    } elseif ($model instanceof AddonVersion) {
+                        // For AddonVersions, check for ownership through the addon relationship.
+                        $unpublishedQuery->where(function (Builder $ownerQuery): void {
+                            $ownerQuery->whereHas('addon', function (Builder $addonQuery): void {
+                                $addonQuery->where('owner_id', Auth::id())
                                     ->orWhereHas('authors', function (Builder $authorsQuery): void {
                                         $authorsQuery->where('users.id', Auth::id());
                                     });

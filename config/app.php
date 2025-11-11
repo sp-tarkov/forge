@@ -6,6 +6,7 @@ use App\Facades\CachedGate;
 use App\Facades\Track;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Str;
 
 return [
 
@@ -158,6 +159,7 @@ return [
         'CachedGate' => CachedGate::class,
         'Carbon' => Carbon::class,
         'Track' => Track::class,
+        'Str' => Str::class,
     ])->toArray(),
 
 ];

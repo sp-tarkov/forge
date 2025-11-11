@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Ribbon;
 
+use App\Models\Mod;
 use App\Models\ModVersion as ModVersionModel;
 use Illuminate\Support\Facades\Date;
 use Illuminate\View\View;
@@ -62,6 +63,38 @@ class ModVersion extends Component
         } else {
             $this->skipRender();
         }
+    }
+
+    /**
+     * Check if the current user can see visibility warnings.
+     */
+    #[Computed]
+    public function canSeeWarnings(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        $version = ModVersionModel::query()->with('mod')->find($this->versionId);
+
+        if (! $version) {
+            return false;
+        }
+
+        // Check if mod relationship exists by checking the foreign key
+        if (! $version->mod_id) {
+            return false;
+        }
+
+        /** @var Mod|null $mod */
+        $mod = $version->mod;
+        if (! $mod) {
+            return false;
+        }
+
+        return $user->isModOrAdmin() || $mod->isAuthorOrOwner($user);
     }
 
     /**

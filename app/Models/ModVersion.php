@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Trackable;
+use App\Enums\FikaCompatibility;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -46,9 +48,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $link
  * @property int|null $content_length
  * @property string $spt_version_constraint
- * @property string $virus_total_link
  * @property int $downloads
  * @property bool $disabled
+ * @property FikaCompatibility $fika_compatibility
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -59,6 +61,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, ModVersion> $latestResolvedDependencies
  * @property-read SptVersion|null $latestSptVersion
  * @property-read Collection<int, SptVersion> $sptVersions
+ * @property-read Collection<int, AddonVersion> $compatibleAddonVersions
+ * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
@@ -152,7 +156,7 @@ class ModVersion extends Model implements Trackable
                         LIMIT 1)
                     ");
             })
-            ->with('mod:id,name,slug')
+            ->distinct()
             ->withTimestamps();
     }
 
@@ -189,6 +193,28 @@ class ModVersion extends Model implements Trackable
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels');
+    }
+
+    /**
+     * The relationship between a mod version and addon versions that are compatible with it.
+     *
+     * @return BelongsToMany<AddonVersion, $this>
+     */
+    public function compatibleAddonVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(AddonVersion::class, 'addon_resolved_mod_versions')
+            ->withTimestamps();
+    }
+
+    /**
+     * The relationship between a mod version and its VirusTotal links.
+     *
+     * @return MorphMany<VirusTotalLink, $this>
+     */
+    public function virusTotalLinks(): MorphMany
+    {
+        return $this->morphMany(VirusTotalLink::class, 'linkable')
+            ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
     }
 
     /**
@@ -353,6 +379,7 @@ class ModVersion extends Model implements Trackable
             'version_patch' => 'integer',
             'downloads' => 'integer',
             'disabled' => 'boolean',
+            'fika_compatibility' => FikaCompatibility::class,
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -400,6 +427,7 @@ class ModVersion extends Model implements Trackable
     protected function publiclyVisible(Builder $query): Builder
     {
         return $query->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
             ->where('disabled', false)
             ->whereHas('latestSptVersion');
     }

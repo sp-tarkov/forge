@@ -4,7 +4,7 @@
 
 <x-slot:description>
     {!! __(
-        'Explore an enhanced Single Player Tarkov experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.',
+        'Explore an enhanced Single Player Tarkov experience with the mods available below. Not sure where to start? Check out the featured mods; they are hand-picked by our team and a solid choice to get you started.',
     ) !!}
 </x-slot>
 
@@ -19,7 +19,8 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+            <flux:icon.cube-transparent class="w-5 h-5" />
             {{ __('Mod Listings') }}
         </h2>
         @auth
@@ -47,7 +48,7 @@
         class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mods') }}</h1>
         <p class="mt-4 text-base text-gray-800 dark:text-gray-300">{!! __(
-            'Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Check out the featured mods for a tailored solo-survival game with maximum immersion.',
+            'Explore an enhanced <abbr title="Single Player Tarkov">SPT</abbr> experience with the mods available below. Not sure where to start? Check out the featured mods; they are hand-picked by our team and a solid choice to get you started.',
         ) !!}</p>
         <search class="lg:hidden relative group mt-6">
             <div class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
@@ -468,27 +469,49 @@
                             </div>
                         </fieldset>
                     </div>
-                    <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
-                        <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}
-                        </legend>
-                        <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
-                            <x-filter-radio
-                                id="featured-0"
-                                name="featured"
-                                value="include"
-                            >{{ __('Include') }}</x-filter-radio>
-                            <x-filter-radio
-                                id="featured-1"
-                                name="featured"
-                                value="exclude"
-                            >{{ __('Exclude') }}</x-filter-radio>
-                            <x-filter-radio
-                                id="featured-2"
-                                name="featured"
-                                value="only"
-                            >{{ __('Only') }}</x-filter-radio>
-                        </div>
-                    </fieldset>
+                    <div class="col-span-1 md:col-span-1 mt-6 sm:mt-0 space-y-8">
+                        <fieldset>
+                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Featured') }}
+                            </legend>
+                            <div class="space-y-6 pt-6 sm:space-y-4 sm:pt-4">
+                                <x-filter-radio
+                                    id="featured-0"
+                                    name="featured"
+                                    value="include"
+                                >{{ __('Include') }}</x-filter-radio>
+                                <x-filter-radio
+                                    id="featured-1"
+                                    name="featured"
+                                    value="exclude"
+                                >{{ __('Exclude') }}</x-filter-radio>
+                                <x-filter-radio
+                                    id="featured-2"
+                                    name="featured"
+                                    value="only"
+                                >{{ __('Only') }}</x-filter-radio>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend class="block font-semibold text-gray-800 dark:text-gray-100">
+                                {{ __('Fika Compatibility') }}</legend>
+                            <div class="pt-6 sm:pt-4">
+                                <div class="flex items-center text-base sm:text-sm">
+                                    <input
+                                        id="fikaCompatibility"
+                                        type="checkbox"
+                                        wire:model.live="fikaCompatibility"
+                                        class="cursor-pointer h-4 w-4 shrink-0 rounded-sm border-gray-300 text-gray-600 focus:ring-gray-500"
+                                        wire:loading.attr="disabled"
+                                    >
+                                    <label
+                                        for="fikaCompatibility"
+                                        class="cursor-pointer ml-3 min-w-0 inline-flex text-gray-600 dark:text-gray-300"
+                                        wire:loading.class="opacity-50"
+                                    >{{ __('Compatible Only') }}</label>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
                     <fieldset class="col-span-1 md:col-span-1 mt-6 sm:mt-0">
                         <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Category') }}
                         </legend>

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Jobs\ResolveSptVersionsJob;
-use App\Jobs\UpdateModDownloadsJob;
+use App\Jobs\UpdateDownloadsJob;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\ModVersion;
@@ -172,7 +172,7 @@ it('sorts mods by downloads when specified', function (): void {
     $modVersion2->sptVersions()->sync($this->sptVersion->id);
 
     // Run the job to update mod download counts from their versions
-    (new UpdateModDownloadsJob)->handle();
+    (new UpdateDownloadsJob)->handle();
 
     // Get the RSS feed sorted by downloads
     $response = $this->get(route('mods.rss', ['order' => 'downloaded']));

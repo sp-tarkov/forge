@@ -7,7 +7,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -469,11 +468,7 @@ describe('Published Version Visibility', function (): void {
 
     it('allows moderators to access mod detail page even with unpublished versions', function (): void {
         // Create a moderator user
-        $moderatorRole = UserRole::query()->where('name', 'Moderator')->first()
-            ?? UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create([
-            'user_role_id' => $moderatorRole->id,
-        ]);
+        $moderator = User::factory()->moderator()->create();
 
         // Create a mod with only an unpublished version
         $mod = Mod::factory()->create([
@@ -604,11 +599,7 @@ describe('Published Version Visibility', function (): void {
 
     it('shows visibility warnings to moderators viewing problematic mods', function (): void {
         // Create a moderator user
-        $moderatorRole = UserRole::query()->where('name', 'Moderator')->first()
-            ?? UserRole::factory()->moderator()->create();
-        $moderator = User::factory()->create([
-            'user_role_id' => $moderatorRole->id,
-        ]);
+        $moderator = User::factory()->moderator()->create();
 
         // Create a disabled mod with no versions
         $mod = Mod::factory()->create([
@@ -790,11 +781,7 @@ describe('Published Version Visibility', function (): void {
 
     it('shows warnings to administrators even when they can see unpublished versions', function (): void {
         // Create an administrator role
-        $adminRole = UserRole::query()->where('name', 'Administrator')->first()
-            ?? UserRole::factory()->administrator()->create();
-        $admin = User::factory()->create([
-            'user_role_id' => $adminRole->id,
-        ]);
+        $admin = User::factory()->admin()->create();
 
         $mod = Mod::factory()->create([
             'published_at' => now(),
