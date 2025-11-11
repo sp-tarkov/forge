@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Support\Api\V0\QueryBuilder\UserQueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -108,8 +109,13 @@ class AuthController extends Controller
         // Determine and filter abilities
         $allowedAbilities = ['create', 'read', 'update', 'delete'];
         $requestedAbilities = $validated['abilities'] ?? ['read'];
-        $validAbilities = array_intersect($requestedAbilities, $allowedAbilities);
-        $abilitiesToGrant = ! empty($validAbilities) ? $validAbilities : ['read'];
+        $validAbilities = array_values(array_intersect($requestedAbilities, $allowedAbilities));
+
+        if (! in_array('read', $validAbilities, true)) {
+            $validAbilities = Arr::prepend($validAbilities, 'read');
+        }
+
+        $abilitiesToGrant = array_values(array_unique($validAbilities));
 
         // Create the token
         $token = $user->createToken($tokenName, $abilitiesToGrant)->plainTextToken;
