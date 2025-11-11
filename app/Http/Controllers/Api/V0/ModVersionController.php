@@ -30,7 +30,8 @@ class ModVersionController extends Controller
      *
      * <aside class="notice">This endpoint only offers limited mod version dependency information. Only the immediate
      * dependencies will be included. If a dependency has dependencies of its own, they will not be included. To resolve
-     * the full tree of dependencies, use the <code>mod/dependencies</code> endpoint.</aside>
+     * the full tree of dependencies, use the <a href="#mods-GETapi-v0-mods-dependencies"><code>/mods/dependencies</code></a>
+     * endpoint.</aside>
      *
      * <aside class="notice">
      * The <code>fika_compatibility</code> field on each version is a string with one of <code>compatible</code>,
