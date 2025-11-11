@@ -338,11 +338,9 @@
                     :active="request()->routeIs('user.show')"
                 >{{ __('Profile') }}</x-responsive-nav-link>
                 <x-responsive-nav-link
-                    href="{{ auth()->user()->profile_url }}#mods"
-                >{{ __('My Mods') }}</x-responsive-nav-link>
+                    href="{{ auth()->user()->profile_url }}#mods">{{ __('My Mods') }}</x-responsive-nav-link>
                 <x-responsive-nav-link
-                    href="{{ auth()->user()->profile_url }}#addons"
-                >{{ __('My Addons') }}</x-responsive-nav-link>
+                    href="{{ auth()->user()->profile_url }}#addons">{{ __('My Addons') }}</x-responsive-nav-link>
                 <x-responsive-nav-link
                     href="{{ route('profile.show') }}"
                     :active="request()->routeIs('profile.show')"
