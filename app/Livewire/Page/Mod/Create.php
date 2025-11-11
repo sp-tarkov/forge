@@ -112,6 +112,11 @@ class Create extends Component
     public bool $disableProfileBindingNotice = false;
 
     /**
+     * Whether addons are disabled for the mod.
+     */
+    public bool $addonsDisabled = false;
+
+    /**
      * Mount the component.
      */
     public function mount(): void
@@ -185,6 +190,7 @@ class Create extends Component
             'contains_ai_content' => $this->containsAiContent,
             'contains_ads' => $this->containsAds,
             'comments_disabled' => $this->commentsDisabled,
+            'addons_disabled' => $this->addonsDisabled,
             'profile_binding_notice_disabled' => $this->disableProfileBindingNotice,
             'published_at' => $this->publishedAt,
         ]);
@@ -290,6 +296,7 @@ class Create extends Component
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
+            'addonsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
