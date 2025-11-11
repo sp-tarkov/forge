@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.359.6",
+            "version": "3.359.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8d2ab3687196f15209c316080a431911f2e02bb5"
+                "reference": "a5be7ed5efd25d70a74275daeff896b896d9c286"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8d2ab3687196f15209c316080a431911f2e02bb5",
-                "reference": "8d2ab3687196f15209c316080a431911f2e02bb5",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/a5be7ed5efd25d70a74275daeff896b896d9c286",
+                "reference": "a5be7ed5efd25d70a74275daeff896b896d9c286",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.359.6"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.359.8"
             },
-            "time": "2025-11-05T19:08:10+00:00"
+            "time": "2025-11-07T19:48:19+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -5596,16 +5596,16 @@
         },
         {
             "name": "php-flasher/flasher",
-            "version": "v2.1.6",
+            "version": "v2.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-flasher/flasher.git",
-                "reference": "054a209515d2eb1bb72467023d8614a29b5d2e60"
+                "reference": "d6f60b2ff19bc1bec49dcf7b48833805f0097242"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-flasher/flasher/zipball/054a209515d2eb1bb72467023d8614a29b5d2e60",
-                "reference": "054a209515d2eb1bb72467023d8614a29b5d2e60",
+                "url": "https://api.github.com/repos/php-flasher/flasher/zipball/d6f60b2ff19bc1bec49dcf7b48833805f0097242",
+                "reference": "d6f60b2ff19bc1bec49dcf7b48833805f0097242",
                 "shasum": ""
             },
             "require": {
@@ -5649,34 +5649,30 @@
             },
             "funding": [
                 {
-                    "url": "https://www.paypal.com/paypalme/yoeunes",
-                    "type": "custom"
-                },
-                {
                     "url": "https://github.com/yoeunes",
                     "type": "github"
                 }
             ],
-            "time": "2025-02-21T20:05:00+00:00"
+            "time": "2025-11-10T14:20:21+00:00"
         },
         {
             "name": "php-flasher/flasher-laravel",
-            "version": "v2.1.6",
+            "version": "v2.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-flasher/flasher-laravel.git",
-                "reference": "7097ab207d602db59b241206048c9884aadc5c06"
+                "reference": "d4cdc528190214379aebf2779219cb542a747301"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-flasher/flasher-laravel/zipball/7097ab207d602db59b241206048c9884aadc5c06",
-                "reference": "7097ab207d602db59b241206048c9884aadc5c06",
+                "url": "https://api.github.com/repos/php-flasher/flasher-laravel/zipball/d4cdc528190214379aebf2779219cb542a747301",
+                "reference": "d4cdc528190214379aebf2779219cb542a747301",
                 "shasum": ""
             },
             "require": {
                 "illuminate/support": "^11.0|^12.0",
                 "php": ">=8.2",
-                "php-flasher/flasher": "^2.1.6"
+                "php-flasher/flasher": "^2.2.0"
             },
             "type": "library",
             "extra": {
@@ -5727,15 +5723,11 @@
             },
             "funding": [
                 {
-                    "url": "https://www.paypal.com/paypalme/yoeunes",
-                    "type": "custom"
-                },
-                {
                     "url": "https://github.com/yoeunes",
                     "type": "github"
                 }
             ],
-            "time": "2025-02-21T20:05:00+00:00"
+            "time": "2025-11-10T14:20:21+00:00"
         },
         {
             "name": "php-http/discovery",
@@ -7808,16 +7800,16 @@
         },
         {
             "name": "spatie/error-solutions",
-            "version": "2.0.1",
+            "version": "2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/error-solutions.git",
-                "reference": "e3cc50fa7324a4c737d728272ce38ad9e03a5c14"
+                "reference": "d077da6c230767b23c4ef2dc43f98c0d1a46b6fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/error-solutions/zipball/e3cc50fa7324a4c737d728272ce38ad9e03a5c14",
-                "reference": "e3cc50fa7324a4c737d728272ce38ad9e03a5c14",
+                "url": "https://api.github.com/repos/spatie/error-solutions/zipball/d077da6c230767b23c4ef2dc43f98c0d1a46b6fd",
+                "reference": "d077da6c230767b23c4ef2dc43f98c0d1a46b6fd",
                 "shasum": ""
             },
             "require": {
@@ -7868,7 +7860,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/error-solutions/issues",
-                "source": "https://github.com/spatie/error-solutions/tree/2.0.1"
+                "source": "https://github.com/spatie/error-solutions/tree/2.0.2"
             },
             "funding": [
                 {
@@ -7876,20 +7868,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-01T14:00:34+00:00"
+            "time": "2025-11-06T08:39:38+00:00"
         },
         {
             "name": "spatie/flare-client-php",
-            "version": "2.3.3",
+            "version": "2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/flare-client-php.git",
-                "reference": "ac3097224c05a0487eede2e866371beb184a5808"
+                "reference": "a66c323e2a3435e2c09ee748a441bb4e88247453"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/ac3097224c05a0487eede2e866371beb184a5808",
-                "reference": "ac3097224c05a0487eede2e866371beb184a5808",
+                "url": "https://api.github.com/repos/spatie/flare-client-php/zipball/a66c323e2a3435e2c09ee748a441bb4e88247453",
+                "reference": "a66c323e2a3435e2c09ee748a441bb4e88247453",
                 "shasum": ""
             },
             "require": {
@@ -7918,9 +7910,6 @@
                 }
             },
             "autoload": {
-                "files": [
-                    "src/helpers.php"
-                ],
                 "psr-4": {
                     "Spatie\\FlareClient\\": "src"
                 }
@@ -7939,7 +7928,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/flare-client-php/issues",
-                "source": "https://github.com/spatie/flare-client-php/tree/2.3.3"
+                "source": "https://github.com/spatie/flare-client-php/tree/2.5.0"
             },
             "funding": [
                 {
@@ -7947,7 +7936,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-05T06:57:49+00:00"
+            "time": "2025-11-07T15:19:37+00:00"
         },
         {
             "name": "spatie/laravel-discord-alerts",
@@ -8117,16 +8106,16 @@
         },
         {
             "name": "spatie/laravel-flare",
-            "version": "2.4.0",
+            "version": "2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-flare.git",
-                "reference": "00d44eccf8a2df325aeb9b32f61be0c28f8fd2b6"
+                "reference": "81ace97e790673848f3af770311b01a9951b7deb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/00d44eccf8a2df325aeb9b32f61be0c28f8fd2b6",
-                "reference": "00d44eccf8a2df325aeb9b32f61be0c28f8fd2b6",
+                "url": "https://api.github.com/repos/spatie/laravel-flare/zipball/81ace97e790673848f3af770311b01a9951b7deb",
+                "reference": "81ace97e790673848f3af770311b01a9951b7deb",
                 "shasum": ""
             },
             "require": {
@@ -8136,7 +8125,7 @@
                 "illuminate/support": "^11.46|^12.0",
                 "php": "^8.2",
                 "spatie/error-solutions": "^2.0",
-                "spatie/flare-client-php": "^2.3.3",
+                "spatie/flare-client-php": "^2.5",
                 "spatie/laravel-error-share": "^1.0.3",
                 "symfony/console": "^7.2.1",
                 "symfony/var-dumper": "^7.2.3"
@@ -8204,7 +8193,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-05T07:38:52+00:00"
+            "time": "2025-11-07T15:30:52+00:00"
         },
         {
             "name": "spatie/laravel-honeypot",
