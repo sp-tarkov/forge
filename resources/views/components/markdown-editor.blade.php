@@ -17,15 +17,28 @@
         content: @entangle($wireModel).live,
         containsLogFile: false,
         logFilePattern: null,
+        containsUpdateRequest: false,
+        updateRequestPattern: null,
         init() {
             this.logFilePattern = new RegExp('(?:\\[(?:Message|Info|Warning|Error)\\s*:\\s+[^\\]]+\\]|\\[\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\]\\[(?:Info|Debug|Warning|Error)\\]\\[|\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+[+\\-]\\d{2}:\\d{2}\\|\\d+\\.\\d+\\.\\d+\\.\\d+\\.\\d+\\||&quot;_(?:id|tpl)&quot;:\\s*&quot;[0-9a-f]{24}&quot;)');
-            this.$watch('content', () => this.checkForLogFile());
+            this.updateRequestPattern = new RegExp('(?:when\\s+(?:will|can|are|is)(?:\\s+(?:this|the))?(?:\\s+mod)?(?:\\s+be)?|can\\s+(?:you|u|it)|please|pls|plz|any\\s+(?:plans|eta|chance)(?:\\s+to)?|will\\s+there\\s+be|(?:is\\s+this\\s+)?gonna\\s+be|does\\s+(?:this\\s+)?(?:mod\\s+)?(?:work|support))\\s+(?:you\\s+)?(?:update(?:d)?|port(?:ed)?|support(?:ed)?|make\\s+(?:it\\s+)?(?:work|compatible)|new\\s+versions?)(?:\\s+(?:this|it|the\\s+mod|to|for|with))?|(?:update|port|support)(?:d)?\\s+(?:this|it|the\\s+mod|for|to)(?:\\s+(?:ver(?:sion)?|spt|latest|new|newer|\\d+\\.\\d+(?:\\.\\d+)?(?:\\.\\w+)?))?|(?:work|working|compatible)(?:ing)?\\s+(?:with|on|for)(?:\\s+(?:older\\s+)?(?:ver(?:sion)?(?:\\s+of)?|spt|latest|new|newer|\\d+\\.\\d+(?:\\.\\d+)?(?:\\.\\w+)?))?|waiting\\s+for\\s+(?:update|port)|(?:still|not)\\s+(?:working|updated|supported)', 'i');
+            this.$watch('content', () => {
+                this.checkForLogFile();
+                this.checkForUpdateRequest();
+            });
         },
         checkForLogFile() {
             const hasLogFile = this.logFilePattern.test(this.content || '');
             if (this.containsLogFile !== hasLogFile) {
                 this.containsLogFile = hasLogFile;
                 this.$dispatch('log-file-detected', { containsLogFile: hasLogFile });
+            }
+        },
+        checkForUpdateRequest() {
+            const hasUpdateRequest = this.updateRequestPattern.test(this.content || '');
+            if (this.containsUpdateRequest !== hasUpdateRequest) {
+                this.containsUpdateRequest = hasUpdateRequest;
+                this.$dispatch('update-request-detected', { containsUpdateRequest: hasUpdateRequest });
             }
         },
         async switchToPreview() {
@@ -163,6 +176,15 @@
             </flux:callout.text>
         </flux:callout>
     </div>
+
+    {{-- Update Request Warning --}}
+    <div x-show="containsUpdateRequest" x-cloak>
+        <flux:callout variant="warning" icon="exclamation-triangle">
+            <flux:callout.heading>{{ __('Warning: Potential Update Request Detected') }}</flux:callout.heading>
+            <flux:callout.text>
+                Pestering or harassing mod authors to update their mods is against our <flux:callout.link href="/community-standards" external>community guidelines</flux:callout.link>. First offense is a 7-day ban. Please be respectful and patient with mod authors.
+            </flux:callout.text>
+        </flux:callout>
     </div>
 
     <flux:error name="{{ $errorName ?? $name }}" />

@@ -3,7 +3,7 @@
 <form
     x-data="{ hasLogFile: false }"
     @log-file-detected.window="hasLogFile = $event.detail.containsLogFile"
-    wire:submit.prevent="{{ $submitAction }}"
+    @submit.prevent="!hasLogFile && $wire.{{ $submitAction }}()"
 >
     <x-honeypot livewire-model="honeypotData" />
     <x-markdown-editor
@@ -24,10 +24,15 @@
                     size="sm"
                     class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
                     type="submit"
+                    :loading="false"
                     ::disabled="hasLogFile"
                     ::class="{ 'opacity-50 cursor-not-allowed': hasLogFile }"
                 >
-                    {{ $submitText }}
+                    <span x-show="!hasLogFile" wire:loading wire:target="{{ $submitAction }}">
+                        <flux:icon.loading class="size-5" />
+                    </span>
+                    <span x-show="!hasLogFile" wire:loading.remove wire:target="{{ $submitAction }}">{{ $submitText }}</span>
+                    <span x-show="hasLogFile" x-cloak>{{ $submitText }}</span>
                 </flux:button>
                 <flux:button
                     type="button"
@@ -48,10 +53,15 @@
                 size="sm"
                 class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
                 type="submit"
+                :loading="false"
                 ::disabled="hasLogFile"
                 ::class="{ 'opacity-50 cursor-not-allowed': hasLogFile }"
             >
-                {{ $submitText }}
+                <span x-show="!hasLogFile" wire:loading wire:target="{{ $submitAction }}">
+                    <flux:icon.loading class="size-5" />
+                </span>
+                <span x-show="!hasLogFile" wire:loading.remove wire:target="{{ $submitAction }}">{{ $submitText }}</span>
+                <span x-show="hasLogFile" x-cloak>{{ $submitText }}</span>
             </flux:button>
             <div class="text-xs text-slate-400 text-right ml-2">
                 {{ __('Basic Markdown formatting is supported.') }}
