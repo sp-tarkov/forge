@@ -119,8 +119,8 @@
             <flux:textarea
                 name="{{ $name }}"
                 wire:model="{{ $wireModel }}"
-                rows="{{ $rows }}"
                 placeholder="{{ $placeholder }}"
+                style="field-sizing: content; min-height: 100px;"
                 {{ $attributes }}
             />
         </div>
