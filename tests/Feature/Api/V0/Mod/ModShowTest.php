@@ -64,25 +64,25 @@ describe('Mod Show API', function (): void {
             ]);
     });
 
-    it('includes owner when requested', function (): void {
+    it('always includes owner', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $owner = User::factory()->create();
         $mod = Mod::factory()->for($owner, 'owner')->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s?include=owner', $mod->id));
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s', $mod->id));
 
         $response->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.owner.id', $owner->id);
     });
 
-    it('includes authors when requested', function (): void {
+    it('always includes additional_authors', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $authors = User::factory()->count(2)->create();
         $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
         $mod->additionalAuthors()->attach($authors);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s?include=additional_authors', $mod->id));
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s', $mod->id));
 
         $response
             ->assertOk()
@@ -132,13 +132,14 @@ describe('Mod Show API', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->for($owner, 'owner')->hasVersions(3, ['spt_version_constraint' => '3.8.0'])->create();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s?include=owner,versions', $mod->id));
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s?include=versions', $mod->id));
 
         $response->assertOk()
             ->assertJsonStructure([
                 'success',
                 'data' => [
                     'owner' => ['id', 'name'],
+                    'additional_authors',
                     'versions' => [['id'], ['id']],
                 ],
             ])

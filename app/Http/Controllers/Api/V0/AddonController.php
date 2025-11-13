@@ -33,6 +33,11 @@ class AddonController extends Controller
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>addon/{id}/versions</code> endpoint.</aside>
      *
+     * <aside class="notice">
+     * The <code>owner</code> and <code>additional_authors</code> relationships are always included in the response by
+     * default and do not need to be specified in the <code>include</code> parameter.
+     * </aside>
+     *
      * @response status=200 scenario="Success (All fields, No Includes)"
      *  {
      *      "success": true,
@@ -45,6 +50,13 @@ class AddonController extends Controller
      *              "teaser": "A collection of atmospheric music tracks",
      *              "thumbnail": "",
      *              "downloads": 1523,
+     *              "owner": {
+     *                  "id": 1,
+     *                  "name": "AddonAuthor",
+     *                  "profile_photo_url": "https://example.com/profile.jpg",
+     *                  "cover_photo_url": "https://example.com/cover.jpg"
+     *              },
+     *              "additional_authors": [],
      *              "source_code_links": [],
      *              "detail_url": "https://forge.sp-tarkov.com/addon/1/ultimate-music-pack",
      *              "contains_ads": false,
@@ -110,7 +122,7 @@ class AddonController extends Controller
     #[UrlParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('query', description: 'Search query to filter addons using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'music pack')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'versions,mod')]
     #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `created_at`, `updated_at`, `published_at`.', required: false, example: '-name')]
     #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
@@ -139,6 +151,11 @@ class AddonController extends Controller
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>addon/{id}/versions</code> endpoint.</aside>
      *
+     * <aside class="notice">
+     * The <code>owner</code> and <code>additional_authors</code> relationships are always included in the response by
+     * default and do not need to be specified in the <code>include</code> parameter.
+     * </aside>
+     *
      * @response status=200 scenario="Success (All fields, No Includes)"
      *  {
      *      "success": true,
@@ -151,6 +168,13 @@ class AddonController extends Controller
      *          "description": "This addon adds over 50 new music tracks...",
      *          "thumbnail": "",
      *          "downloads": 1523,
+     *          "owner": {
+     *              "id": 1,
+     *              "name": "AddonAuthor",
+     *              "profile_photo_url": "https://example.com/profile.jpg",
+     *              "cover_photo_url": "https://example.com/cover.jpg"
+     *          },
+     *          "additional_authors": [],
      *          "source_code_links": [],
      *          "detail_url": "https://forge.sp-tarkov.com/addon/1/ultimate-music-pack",
      *          "contains_ads": false,
@@ -170,7 +194,7 @@ class AddonController extends Controller
      *  }
      */
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,created_at')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'versions,license')]
     public function show(Request $request, int $addonId): JsonResponse
     {
         $queryBuilder = (new AddonQueryBuilder)

@@ -193,18 +193,18 @@ describe('Mod Index API', function (): void {
         $response->assertJsonPath('data.2.id', $modOld->id);
     });
 
-    it('includes owner relationship', function (): void {
+    it('always includes owner relationship', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
         $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=owner');
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
         $response->assertStatus(Response::HTTP_OK);
         $response->assertJsonStructure(['data' => ['*' => ['owner' => ['id', 'name']]]]);
         $response->assertJsonPath('data.0.owner.id', $mod->owner->id);
     });
 
-    it('includes authors relationship', function (): void {
+    it('always includes additional_authors relationship', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
         $user1 = User::factory()->create();
@@ -214,7 +214,7 @@ describe('Mod Index API', function (): void {
         $mod->additionalAuthors()->attach($user1);
         $mod->additionalAuthors()->attach($user2);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=additional_authors');
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
 
         $response->assertStatus(Response::HTTP_OK);
         $response->assertJsonStructure(['data' => ['*' => ['additional_authors' => ['*' => ['id', 'name']]]]]);
@@ -252,10 +252,10 @@ describe('Mod Index API', function (): void {
 
         $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods?fields=id,name&include=owner');
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?fields=id,name&include=license');
 
         $response->assertStatus(Response::HTTP_OK);
-        $response->assertJsonStructure(['data' => ['*' => ['id', 'name', 'owner' => ['id', 'name']]]]);
+        $response->assertJsonStructure(['data' => ['*' => ['id', 'name', 'owner' => ['id', 'name'], 'additional_authors', 'license' => ['id', 'name']]]]);
     });
 
     it('includes enabled mods with an enabled version', function (): void {

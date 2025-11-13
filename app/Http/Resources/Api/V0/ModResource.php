@@ -149,9 +149,11 @@ class ModResource extends JsonResource
             $data['updated_at'] = $this->resource->updated_at?->toISOString();
         }
 
-        // Handle relationships separately... they're only included when loaded.
-        $data['owner'] = $this->whenLoaded('owner', fn (): ?UserResource => $this->resource->owner ? new UserResource($this->resource->owner) : null);
-        $data['additional_authors'] = UserResource::collection($this->whenLoaded('additionalAuthors'));
+        // Handle relationships - owner and additional_authors are always included
+        $data['owner'] = $this->resource->owner ? new UserResource($this->resource->owner) : null;
+        $data['additional_authors'] = UserResource::collection($this->resource->additionalAuthors);
+
+        // Other relationships are only included when loaded
         $data['versions'] = ModVersionResource::collection($this->whenLoaded('versions', fn (): Collection => $this->resource->versions->take(10)));
         $data['license'] = $this->whenLoaded('license', fn (): ?LicenseResource => $this->resource->license ? new LicenseResource($this->resource->license) : null);
         $data['category'] = $this->whenLoaded('category', fn (): ?ModCategoryResource => $this->resource->category ? new ModCategoryResource($this->resource->category) : null);

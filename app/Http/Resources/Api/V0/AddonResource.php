@@ -115,9 +115,11 @@ class AddonResource extends JsonResource
             $data['updated_at'] = $this->resource->updated_at->toISOString();
         }
 
-        // Handle relationships - always include when loaded
-        $data['owner'] = new UserResource($this->whenLoaded('owner'));
-        $data['additional_authors'] = UserResource::collection($this->whenLoaded('additionalAuthors'));
+        // Handle relationships - owner and additional_authors are always included
+        $data['owner'] = $this->resource->owner ? new UserResource($this->resource->owner) : null;
+        $data['additional_authors'] = UserResource::collection($this->resource->additionalAuthors);
+
+        // Other relationships are only included when loaded
         $data['mod'] = new ModResource($this->whenLoaded('mod'));
         $data['license'] = new LicenseResource($this->whenLoaded('license'));
         $data['latest_version'] = new AddonVersionResource($this->whenLoaded('latestVersion'));

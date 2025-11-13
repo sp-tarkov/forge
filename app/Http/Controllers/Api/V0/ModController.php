@@ -40,7 +40,12 @@ class ModController extends Controller
      * string with one of <code>compatible</code>, <code>incompatible</code>, or <code>unknown</code>.
      * </aside>
      *
-     * @response status=200 scenario="Success (All fields, No Includes)"
+     * <aside class="notice">
+     * The <code>owner</code> and <code>additional_authors</code> relationships are always included in the response by
+     * default and do not need to be specified in the <code>include</code> parameter.
+     * </aside>
+     *
+     * @response status=200 scenario="Success (All fields)"
      *  {
      *      "success": true,
      *      "data": [
@@ -53,6 +58,13 @@ class ModController extends Controller
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
      *              "thumbnail": "",
      *              "downloads": 55212644,
+     *              "owner": {
+     *                  "id": 1,
+     *                  "name": "ModAuthor",
+     *                  "profile_photo_url": "https://example.com/profile.jpg",
+     *                  "cover_photo_url": "https://example.com/cover.jpg"
+     *              },
+     *              "additional_authors": [],
      *              "source_code_links": [
      *                  {
      *                      "url": "http://oconnell.com/earum-sed-fugit-corrupti",
@@ -77,6 +89,13 @@ class ModController extends Controller
      *              "teaser": "Minima adipisci perspiciatis nemo maiores rem porro natus.",
      *              "thumbnail": "",
      *              "downloads": 219598104,
+     *              "owner": {
+     *                  "id": 2,
+     *                  "name": "AnotherAuthor",
+     *                  "profile_photo_url": "https://example.com/profile2.jpg",
+     *                  "cover_photo_url": "https://example.com/cover2.jpg"
+     *              },
+     *              "additional_authors": [],
      *              "source_code_links": [
      *                  {
      *                      "url": "http://baumbach.net/",
@@ -126,7 +145,7 @@ class ModController extends Controller
      *          "total": 2
      *      }
      *  }
-     * @response status=200 scenario="Success (Include Owner and Category)"
+     * @response status=200 scenario="Success (Include Category)"
      *  {
      *      "success": true,
      *      "data": [
@@ -139,37 +158,38 @@ class ModController extends Controller
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
      *              "thumbnail": "",
      *              "downloads": 55212644,
-     *              "source_code_links": [
-     *                  {
-     *                      "url": "http://oconnell.com/earum-sed-fugit-corrupti",
-     *                      "label": null
-     *                  }
-     *              ],
-     *              "detail_url": "https://forge.sp-tarkov.com/mods/1/recusandae-velit-incidunt",
-     *              "fika_compatibility": true,
-     *              "featured": true,
-     *              "contains_ads": true,
-     *              "contains_ai_content": false,
      *              "owner": {
      *                  "id": 1,
      *                  "name": "ModAuthor",
      *                  "profile_photo_url": "https://example.com/profile.jpg",
      *                  "cover_photo_url": "https://example.com/cover.jpg"
      *              },
+     *              "additional_authors": [],
+     *              "source_code_links": [
+     *                  {
+     *                      "url": "http://oconnell.com/earum-sed-fugit-corrupti",
+     *                      "label": null
+     *                  }
+     *              ],
      *              "category": {
      *                  "id": 1,
      *                  "name": "Gameplay",
      *                  "slug": "gameplay",
      *                  "color_class": "blue"
      *              },
+     *              "detail_url": "https://forge.sp-tarkov.com/mods/1/recusandae-velit-incidunt",
+     *              "fika_compatibility": true,
+     *              "featured": true,
+     *              "contains_ads": true,
+     *              "contains_ai_content": false,
      *              "published_at": "2025-01-09T17:48:53.000000Z",
      *              "created_at": "2024-12-11T14:48:53.000000Z",
      *              "updated_at": "2025-04-10T13:50:00.000000Z"
      *          }
      *      ],
      *      "links": {
-     *          "first": "https://forge.test/api/v0/mods?include=owner,category&page=1",
-     *          "last": "https://forge.test/api/v0/mods?include=owner,category&page=1",
+     *          "first": "https://forge.test/api/v0/mods?include=category&page=1",
+     *          "last": "https://forge.test/api/v0/mods?include=category&page=1",
      *          "prev": null,
      *          "next": null
      *      },
@@ -184,7 +204,7 @@ class ModController extends Controller
      *                  "active": false
      *              },
      *              {
-     *                  "url": "https://forge.test/api/v0/mods?include=owner,category&page=1",
+     *                  "url": "https://forge.test/api/v0/mods?include=category&page=1",
      *                  "label": "1",
      *                  "active": true
      *              },
@@ -213,6 +233,13 @@ class ModController extends Controller
      *              "teaser": "Minus est minima quibusdam necessitatibus inventore iste.",
      *              "thumbnail": "",
      *              "downloads": 55212644,
+     *              "owner": {
+     *                  "id": 1,
+     *                  "name": "ModAuthor",
+     *                  "profile_photo_url": "https://example.com/profile.jpg",
+     *                  "cover_photo_url": "https://example.com/cover.jpg"
+     *              },
+     *              "additional_authors": [],
      *              "source_code_links": [
      *                  {
      *                      "url": "http://oconnell.com/earum-sed-fugit-corrupti",
@@ -308,7 +335,7 @@ class ModController extends Controller
     #[UrlParam('filter[spt_version]', description: 'Filter mods that are compatible with an SPT version SemVer constraint. This will only filter the mods, not the mod versions.', required: false, example: '^3.8.0')]
     #[UrlParam('filter[fika_compatibility]', type: 'boolean', description: 'Filter by Fika compatibility status. When true, only shows mods with Fika compatible versions (1, true, 0, false).', required: false, example: 'true')]
     #[UrlParam('query', description: 'Search query to filter mods using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'raid time')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'versions,category')]
     #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `featured`, `created_at`, `updated_at`, `published_at`.', required: false, example: 'featured,-name')]
     #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
@@ -344,6 +371,11 @@ class ModController extends Controller
      * string with one of <code>compatible</code>, <code>incompatible</code>, or <code>unknown</code>.
      * </aside>
      *
+     * <aside class="notice">
+     * The <code>owner</code> and <code>additional_authors</code> relationships are always included in the response by
+     * default and do not need to be specified in the <code>include</code> parameter.
+     * </aside>
+     *
      * @response status=200 scenario="Success (All fields, No Includes)"
      *  {
      *      "success": true,
@@ -357,6 +389,13 @@ class ModController extends Controller
      *          "thumbnail": "",
      *          "downloads": 219598104,
      *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
+     *          "owner": {
+     *              "id": 1,
+     *              "name": "ModOwner",
+     *              "profile_photo_url": "https://example.com/owner.jpg",
+     *              "cover_photo_url": "https://example.com/owner-cover.jpg"
+     *          },
+     *          "additional_authors": [],
      *          "source_code_links": [
      *              {
      *                  "url": "http://baumbach.net/",
@@ -373,7 +412,7 @@ class ModController extends Controller
      *          "updated_at": "2025-04-10T13:50:21.000000Z"
      *      }
      *  }
-     * @response status=200 scenario="Success (Include Authors and License)"
+     * @response status=200 scenario="Success (Include License)"
      *  {
      *      "success": true,
      *      "data": {
@@ -386,17 +425,12 @@ class ModController extends Controller
      *          "thumbnail": "",
      *          "downloads": 219598104,
      *          "description": "Adipisci rerum minima maiores sed. Neque totam quia libero exercitationem ullam.",
-     *          "source_code_links": [
-     *              {
-     *                  "url": "http://baumbach.net/",
-     *                  "label": null
-     *              }
-     *          ],
-     *          "detail_url": "https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil",
-     *          "fika_compatibility": true,
-     *          "featured": false,
-     *          "contains_ads": true,
-     *          "contains_ai_content": true,
+     *          "owner": {
+     *              "id": 1,
+     *              "name": "ModOwner",
+     *              "profile_photo_url": "https://example.com/owner.jpg",
+     *              "cover_photo_url": "https://example.com/owner-cover.jpg"
+     *          },
      *          "additional_authors": [
      *              {
      *                  "id": 5,
@@ -411,6 +445,17 @@ class ModController extends Controller
      *                  "cover_photo_url": "https://example.com/cover2.jpg"
      *              }
      *          ],
+     *          "source_code_links": [
+     *              {
+     *                  "url": "http://baumbach.net/",
+     *                  "label": null
+     *              }
+     *          ],
+     *          "detail_url": "https://forge.sp-tarkov.com/mods/2/adipisci-iusto-voluptas-nihil",
+     *          "fika_compatibility": true,
+     *          "featured": false,
+     *          "contains_ads": true,
+     *          "contains_ai_content": true,
      *          "license": {
      *              "id": 2,
      *              "name": "GNU General Public License v3.0",
@@ -421,7 +466,7 @@ class ModController extends Controller
      *          "updated_at": "2025-04-10T13:50:21.000000Z"
      *      }
      *  }
-     * @response status=200 scenario="Success (Include All Available Relationships)"
+     * @response status=200 scenario="Success (Include Versions, License, and Category)"
      *  {
      *      "success": true,
      *      "data": {
@@ -499,7 +544,7 @@ class ModController extends Controller
      *  }
      */
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'versions,license')]
     public function show(Request $request, int $modId): JsonResponse
     {
         $queryBuilder = (new ModQueryBuilder)

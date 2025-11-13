@@ -53,8 +53,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
     public static function getAllowedIncludes(): array
     {
         return [
-            'owner' => 'owner',
-            'additional_authors' => 'additionalAuthors',
             'versions' => 'versions',
             'license' => 'license',
             'category' => 'category',
@@ -145,7 +143,8 @@ class ModQueryBuilder extends AbstractQueryBuilder
     {
         $query = Mod::query()
             ->select('mods.*')
-            ->where('mods.disabled', false);
+            ->where('mods.disabled', false)
+            ->with(['owner', 'additionalAuthors']);
 
         // Apply the SPT version condition if the filter is not being used
         // This also ensures mods have at least one visible version

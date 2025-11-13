@@ -86,25 +86,25 @@ describe('Addon Show API', function (): void {
             ->assertJsonPath('data.mod.name', 'Parent Mod');
     });
 
-    it('includes owner relationship when requested', function (): void {
+    it('always includes owner relationship', function (): void {
         $owner = User::factory()->create(['name' => 'addon_owner']);
         $addon = ($this->createVisibleAddon)();
         $addon->owner()->associate($owner);
         $addon->save();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=owner', $addon->id));
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('data.owner.name', 'addon_owner');
     });
 
-    it('includes authors relationship when requested', function (): void {
+    it('always includes additional_authors relationship', function (): void {
         $addon = ($this->createVisibleAddon)();
         $authors = User::factory()->count(2)->create();
         $addon->additionalAuthors()->attach($authors);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=additional_authors', $addon->id));
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
