@@ -15,6 +15,19 @@
         previewHtml: '',
         isLoadingPreview: false,
         content: @entangle($wireModel).live,
+        containsLogFile: false,
+        logFilePattern: null,
+        init() {
+            this.logFilePattern = new RegExp('(?:\\[(?:Message|Info|Warning|Error)\\s*:\\s+[^\\]]+\\]|\\[\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\]\\[(?:Info|Debug|Warning|Error)\\]\\[|\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+[+\\-]\\d{2}:\\d{2}\\|\\d+\\.\\d+\\.\\d+\\.\\d+\\.\\d+\\||&quot;_(?:id|tpl)&quot;:\\s*&quot;[0-9a-f]{24}&quot;)');
+            this.$watch('content', () => this.checkForLogFile());
+        },
+        checkForLogFile() {
+            const hasLogFile = this.logFilePattern.test(this.content || '');
+            if (this.containsLogFile !== hasLogFile) {
+                this.containsLogFile = hasLogFile;
+                this.$dispatch('log-file-detected', { containsLogFile: hasLogFile });
+            }
+        },
         async switchToPreview() {
             this.activeTab = 'preview';
             this.isLoadingPreview = true;
@@ -138,6 +151,18 @@
                 class="user-markdown"
             ></div>
         </div>
+    </div>
+
+    {{-- Log File Detection Warning --}}
+    <div x-show="containsLogFile" x-cloak>
+        <flux:callout variant="danger" icon="x-circle">
+            <flux:callout.heading>{{ __('Log files detected!') }}</flux:callout.heading>
+            <flux:callout.text>
+                Please use our code paste service instead:
+                <flux:callout.link href="https://codepaste.sp-tarkov.com" external>https://codepaste.sp-tarkov.com</flux:callout.link>
+            </flux:callout.text>
+        </flux:callout>
+    </div>
     </div>
 
     <flux:error name="{{ $errorName ?? $name }}" />

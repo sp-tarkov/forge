@@ -14,6 +14,7 @@ use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\User;
+use App\Rules\DoesNotContainLogFile;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -1120,7 +1121,13 @@ class CommentComponent extends Component
         data_set($this, $fieldKey, $trimmedValue);
 
         $this->validate([
-            $fieldKey => sprintf('required|string|min:%s|max:%s', $minLength, $maxLength),
+            $fieldKey => [
+                'required',
+                'string',
+                sprintf('min:%s', $minLength),
+                sprintf('max:%s', $maxLength),
+                new DoesNotContainLogFile,
+            ],
         ], [], [
             $fieldKey => $fieldName,
         ]);

@@ -1,6 +1,10 @@
 @props(['formKey', 'submitAction', 'placeholder', 'submitText', 'cancelAction' => null, 'dataTest' => null])
 
-<form wire:submit.prevent="{{ $submitAction }}">
+<form
+    x-data="{ hasLogFile: false }"
+    @log-file-detected.window="hasLogFile = $event.detail.containsLogFile"
+    wire:submit.prevent="{{ $submitAction }}"
+>
     <x-honeypot livewire-model="honeypotData" />
     <x-markdown-editor
         wire-model="{{ $formKey }}"
@@ -20,6 +24,8 @@
                     size="sm"
                     class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
                     type="submit"
+                    ::disabled="hasLogFile"
+                    ::class="{ 'opacity-50 cursor-not-allowed': hasLogFile }"
                 >
                     {{ $submitText }}
                 </flux:button>
@@ -42,6 +48,8 @@
                 size="sm"
                 class="text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
                 type="submit"
+                ::disabled="hasLogFile"
+                ::class="{ 'opacity-50 cursor-not-allowed': hasLogFile }"
             >
                 {{ $submitText }}
             </flux:button>
