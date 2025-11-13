@@ -89,9 +89,9 @@ class VisitorAnalytics extends Component
     {
         abort_unless(auth()->user()?->isAdmin(), 403, 'Access denied. Administrator privileges required.');
 
-        // Set default date range (last 12 months)
+        // Set default date range (last month)
         $this->dateTo = now()->format('Y-m-d');
-        $this->dateFrom = now()->subMonths(12)->format('Y-m-d');
+        $this->dateFrom = now()->subMonth()->format('Y-m-d');
     }
 
     /**
@@ -237,7 +237,7 @@ class VisitorAnalytics extends Component
     {
         $this->filter = 'all';
         $this->userSearch = '';
-        $this->dateFrom = now()->subMonths(12)->format('Y-m-d');
+        $this->dateFrom = now()->subMonth()->format('Y-m-d');
         $this->dateTo = now()->format('Y-m-d');
         $this->eventFilter = '';
         $this->ipFilter = '';
