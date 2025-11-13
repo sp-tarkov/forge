@@ -91,6 +91,11 @@ class Edit extends Component
     public bool $commentsDisabled = false;
 
     /**
+     * Whether to subscribe to comment notifications for the addon.
+     */
+    public bool $subscribeToComments = false;
+
+    /**
      * The selected author user IDs.
      *
      * @var array<int>
@@ -129,6 +134,9 @@ class Edit extends Component
         $this->containsAiContent = (bool) $this->addon->contains_ai_content;
         $this->containsAds = (bool) $this->addon->contains_ads;
         $this->commentsDisabled = (bool) $this->addon->comments_disabled;
+
+        // Check if the user is subscribed to comment notifications
+        $this->subscribeToComments = $this->addon->isUserSubscribed(auth()->user());
 
         // Load existing authors
         $this->authorIds = $this->addon->authors->pluck('id')->toArray();
@@ -218,6 +226,13 @@ class Edit extends Component
             }
         }
 
+        // Handle comment subscription
+        if ($this->subscribeToComments && ! $this->addon->isUserSubscribed(auth()->user())) {
+            $this->addon->subscribeUser(auth()->user());
+        } elseif (! $this->subscribeToComments && $this->addon->isUserSubscribed(auth()->user())) {
+            $this->addon->unsubscribeUser(auth()->user());
+        }
+
         Track::event(TrackingEventType::ADDON_EDIT, $this->addon);
 
         Session::flash('success', 'Addon has been Successfully Updated');
@@ -300,6 +315,7 @@ class Edit extends Component
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
+            'subscribeToComments' => 'boolean',
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
         ];
