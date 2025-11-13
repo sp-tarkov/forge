@@ -295,8 +295,9 @@ class CommentComponent extends Component
     /**
      * Update an existing comment.
      */
-    public function updateComment(Comment $comment): void
+    public function updateComment(int $commentId): void
     {
+        $comment = Comment::query()->findOrFail($commentId);
         $this->validateCommentBelongsToCommentable($comment);
         $this->authorize('update', $comment);
         $this->protectAgainstSpam();

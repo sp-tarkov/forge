@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Cache;
@@ -160,10 +162,13 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function ownedAndAuthoredMods(): Builder
     {
         return Mod::query()
-            ->leftJoin('mod_additional_authors', 'mods.id', '=', 'mod_additional_authors.mod_id')
+            ->leftJoin('additional_authors', function (JoinClause $join): void {
+                $join->on('mods.id', '=', 'additional_authors.authorable_id')
+                    ->where('additional_authors.authorable_type', '=', Mod::class);
+            })
             ->where(function (Builder $query): void {
                 $query->where('mods.owner_id', $this->id)
-                    ->orWhere('mod_additional_authors.user_id', $this->id);
+                    ->orWhere('additional_authors.user_id', $this->id);
             })
             ->select('mods.*')
             ->distinct();
@@ -177,10 +182,13 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function ownedAndAuthoredAddons(): Builder
     {
         return Addon::query()
-            ->leftJoin('addon_additional_authors', 'addons.id', '=', 'addon_additional_authors.addon_id')
+            ->leftJoin('additional_authors', function (JoinClause $join): void {
+                $join->on('addons.id', '=', 'additional_authors.authorable_id')
+                    ->where('additional_authors.authorable_type', '=', Addon::class);
+            })
             ->where(function (Builder $query): void {
                 $query->where('addons.owner_id', $this->id)
-                    ->orWhere('addon_additional_authors.user_id', $this->id);
+                    ->orWhere('additional_authors.user_id', $this->id);
             })
             ->whereNull('addons.detached_at')
             ->select('addons.*')
@@ -190,11 +198,11 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Get all addons authored by the user.
      *
-     * @return BelongsToMany<Addon, $this>
+     * @return MorphToMany<Addon, $this>
      */
-    public function addonsAdditionalAuthored(): BelongsToMany
+    public function addonsAdditionalAuthored(): MorphToMany
     {
-        return $this->belongsToMany(Addon::class, 'addon_additional_authors')
+        return $this->morphedByMany(Addon::class, 'authorable', 'additional_authors')
             ->withTimestamps();
     }
 
@@ -222,11 +230,11 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * The relationship between a user and the mods they are an author of.
      *
-     * @return BelongsToMany<Mod, $this>
+     * @return MorphToMany<Mod, $this>
      */
-    public function modsAdditionalAuthored(): BelongsToMany
+    public function modsAdditionalAuthored(): MorphToMany
     {
-        return $this->belongsToMany(Mod::class, 'mod_additional_authors');
+        return $this->morphedByMany(Mod::class, 'authorable', 'additional_authors');
     }
 
     /**

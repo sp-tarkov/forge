@@ -154,11 +154,11 @@ describe('replying to comments with log content', function (): void {
 
         Livewire::actingAs($user)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set("formStates.reply-{$parentComment->id}.body", '[Error: Something went wrong]')
+            ->set(sprintf('formStates.reply-%d.body', $parentComment->id), '[Error: Something went wrong]')
             ->call('createReply', $parentComment->id)
-            ->assertHasErrors(["formStates.reply-{$parentComment->id}.body"]);
+            ->assertHasErrors([sprintf('formStates.reply-%d.body', $parentComment->id)]);
 
-        expect(Comment::where('parent_id', $parentComment->id)->count())->toBe(0);
+        expect(Comment::query()->where('parent_id', $parentComment->id)->count())->toBe(0);
     });
 
     it('should allow replying with normal content', function (): void {
@@ -172,7 +172,7 @@ describe('replying to comments with log content', function (): void {
 
         Livewire::actingAs($user)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set("formStates.reply-{$parentComment->id}.body", 'This is a valid reply')
+            ->set(sprintf('formStates.reply-%d.body', $parentComment->id), 'This is a valid reply')
             ->call('createReply', $parentComment->id)
             ->assertHasNoErrors();
 
@@ -198,9 +198,9 @@ describe('editing comments with log content', function (): void {
 
         Livewire::actingAs($user)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set("formStates.edit-{$comment->id}.body", '[Error: Log content added]')
+            ->set(sprintf('formStates.edit-%d.body', $comment->id), '[Error: Log content added]')
             ->call('updateComment', $comment->id)
-            ->assertHasErrors(["formStates.edit-{$comment->id}.body"]);
+            ->assertHasErrors([sprintf('formStates.edit-%d.body', $comment->id)]);
 
         $comment->refresh();
         expect($comment->body)->toBe('Original comment');
@@ -219,7 +219,7 @@ describe('editing comments with log content', function (): void {
 
         Livewire::actingAs($user)
             ->test(CommentComponent::class, ['commentable' => $mod])
-            ->set("formStates.edit-{$comment->id}.body", 'Updated comment without logs')
+            ->set(sprintf('formStates.edit-%d.body', $comment->id), 'Updated comment without logs')
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();
 

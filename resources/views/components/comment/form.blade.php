@@ -3,7 +3,7 @@
 <form
     x-data="{ hasLogFile: false }"
     @log-file-detected.window="hasLogFile = $event.detail.containsLogFile"
-    @submit.prevent="!hasLogFile && $wire.{{ $submitAction }}()"
+    @submit.prevent="!hasLogFile && $wire.{{ $submitAction }}"
 >
     <x-honeypot livewire-model="honeypotData" />
     <x-markdown-editor
@@ -28,11 +28,22 @@
                     ::disabled="hasLogFile"
                     ::class="{ 'opacity-50 cursor-not-allowed': hasLogFile }"
                 >
-                    <span x-show="!hasLogFile" wire:loading wire:target="{{ $submitAction }}">
+                    <span
+                        x-show="!hasLogFile"
+                        wire:loading
+                        wire:target="{{ $submitAction }}"
+                    >
                         <flux:icon.loading class="size-5" />
                     </span>
-                    <span x-show="!hasLogFile" wire:loading.remove wire:target="{{ $submitAction }}">{{ $submitText }}</span>
-                    <span x-show="hasLogFile" x-cloak>{{ $submitText }}</span>
+                    <span
+                        x-show="!hasLogFile"
+                        wire:loading.remove
+                        wire:target="{{ $submitAction }}"
+                    >{{ $submitText }}</span>
+                    <span
+                        x-show="hasLogFile"
+                        x-cloak
+                    >{{ $submitText }}</span>
                 </flux:button>
                 <flux:button
                     type="button"
@@ -57,11 +68,22 @@
                 ::disabled="hasLogFile"
                 ::class="{ 'opacity-50 cursor-not-allowed': hasLogFile }"
             >
-                <span x-show="!hasLogFile" wire:loading wire:target="{{ $submitAction }}">
+                <span
+                    x-show="!hasLogFile"
+                    wire:loading
+                    wire:target="{{ $submitAction }}"
+                >
                     <flux:icon.loading class="size-5" />
                 </span>
-                <span x-show="!hasLogFile" wire:loading.remove wire:target="{{ $submitAction }}">{{ $submitText }}</span>
-                <span x-show="hasLogFile" x-cloak>{{ $submitText }}</span>
+                <span
+                    x-show="!hasLogFile"
+                    wire:loading.remove
+                    wire:target="{{ $submitAction }}"
+                >{{ $submitText }}</span>
+                <span
+                    x-show="hasLogFile"
+                    x-cloak
+                >{{ $submitText }}</span>
             </flux:button>
             <div class="text-xs text-slate-400 text-right ml-2">
                 {{ __('Basic Markdown formatting is supported.') }}

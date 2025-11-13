@@ -167,22 +167,41 @@
     </div>
 
     {{-- Log File Detection Warning --}}
-    <div x-show="containsLogFile" x-cloak>
-        <flux:callout variant="danger" icon="x-circle">
+    <div
+        x-show="containsLogFile"
+        x-cloak
+    >
+        <flux:callout
+            variant="danger"
+            icon="x-circle"
+        >
             <flux:callout.heading>{{ __('Log files detected!') }}</flux:callout.heading>
             <flux:callout.text>
                 Please use our code paste service instead:
-                <flux:callout.link href="https://codepaste.sp-tarkov.com" external>https://codepaste.sp-tarkov.com</flux:callout.link>
+                <flux:callout.link
+                    href="https://codepaste.sp-tarkov.com"
+                    external
+                >https://codepaste.sp-tarkov.com</flux:callout.link>
             </flux:callout.text>
         </flux:callout>
     </div>
 
     {{-- Update Request Warning --}}
-    <div x-show="containsUpdateRequest" x-cloak>
-        <flux:callout variant="warning" icon="exclamation-triangle">
+    <div
+        x-show="containsUpdateRequest"
+        x-cloak
+    >
+        <flux:callout
+            variant="warning"
+            icon="exclamation-triangle"
+        >
             <flux:callout.heading>{{ __('Warning: Potential Update Request Detected') }}</flux:callout.heading>
             <flux:callout.text>
-                Pestering or harassing mod authors to update their mods is against our <flux:callout.link href="/community-standards" external>community guidelines</flux:callout.link>. First offense is a 7-day ban. Please be respectful and patient with mod authors.
+                Pestering or harassing mod authors to update their mods is against our <flux:callout.link
+                    href="/community-standards"
+                    external
+                >community guidelines</flux:callout.link>. First offense is a 7-day ban. Please be respectful and
+                patient with mod authors.
             </flux:callout.text>
         </flux:callout>
     </div>
