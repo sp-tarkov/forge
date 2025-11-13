@@ -198,10 +198,10 @@ describe('mod access control', function (): void {
         SptVersion::factory()->create(['version' => '1.1.1']);
 
         $mod1 = Mod::factory()->create(['published_at' => null]); // Unpublished
-        $mod1->authors()->attach($user);
+        $mod1->additionalAuthors()->attach($user);
 
         $mod2 = Mod::factory()->create(['published_at' => now()->addDays(1)]); // Published in the future
-        $mod2->authors()->attach($user);
+        $mod2->additionalAuthors()->attach($user);
 
         ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => '1.1.1']);
         ModVersion::factory()->recycle($mod2)->create(['spt_version_constraint' => '1.1.1']);

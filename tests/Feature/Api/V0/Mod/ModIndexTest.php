@@ -211,15 +211,15 @@ describe('Mod Index API', function (): void {
         $user2 = User::factory()->create();
 
         $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
-        $mod->authors()->attach($user1);
-        $mod->authors()->attach($user2);
+        $mod->additionalAuthors()->attach($user1);
+        $mod->additionalAuthors()->attach($user2);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=authors');
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=additional_authors');
 
         $response->assertStatus(Response::HTTP_OK);
-        $response->assertJsonStructure(['data' => ['*' => ['authors' => ['*' => ['id', 'name']]]]]);
+        $response->assertJsonStructure(['data' => ['*' => ['additional_authors' => ['*' => ['id', 'name']]]]]);
 
-        $returnedAuthors = collect($response->json('data.0.authors'))->pluck('id')->all();
+        $returnedAuthors = collect($response->json('data.0.additional_authors'))->pluck('id')->all();
         expect($returnedAuthors)->toContain($user1->id)
             ->toContain($user2->id);
     });

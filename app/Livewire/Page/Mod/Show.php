@@ -235,7 +235,7 @@ class Show extends Component
             'sourceCodeLinks',
             'category',
             'owner',
-            'authors',
+            'additionalAuthors',
             'license',
             'latestVersion.latestSptVersion',
             'latestVersion.latestResolvedDependencies.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id',
@@ -288,7 +288,7 @@ class Show extends Component
         return $this->mod->addons()
             ->with([
                 'owner',
-                'authors',
+                'additionalAuthors',
                 'latestVersion',
                 'mod.latestVersion',
                 'latestVersion.compatibleModVersions' => fn (Relation $query): mixed => $query->where('mod_id', $this->mod->id)

@@ -54,7 +54,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'owner' => 'owner',
-            'authors' => 'authors',
+            'additional_authors' => 'additionalAuthors',
             'versions' => 'versions',
             'license' => 'license',
             'category' => 'category',

@@ -102,15 +102,15 @@ describe('Addon Show API', function (): void {
     it('includes authors relationship when requested', function (): void {
         $addon = ($this->createVisibleAddon)();
         $authors = User::factory()->count(2)->create();
-        $addon->authors()->attach($authors);
+        $addon->additionalAuthors()->attach($authors);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=authors', $addon->id));
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=additional_authors', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
                 'data' => [
-                    'authors' => [
+                    'additional_authors' => [
                         '*' => ['id', 'name'],
                     ],
                 ],

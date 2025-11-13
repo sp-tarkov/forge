@@ -160,10 +160,10 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function ownedAndAuthoredMods(): Builder
     {
         return Mod::query()
-            ->leftJoin('mod_authors', 'mods.id', '=', 'mod_authors.mod_id')
+            ->leftJoin('mod_additional_authors', 'mods.id', '=', 'mod_additional_authors.mod_id')
             ->where(function (Builder $query): void {
                 $query->where('mods.owner_id', $this->id)
-                    ->orWhere('mod_authors.user_id', $this->id);
+                    ->orWhere('mod_additional_authors.user_id', $this->id);
             })
             ->select('mods.*')
             ->distinct();
@@ -177,10 +177,10 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     public function ownedAndAuthoredAddons(): Builder
     {
         return Addon::query()
-            ->leftJoin('addon_authors', 'addons.id', '=', 'addon_authors.addon_id')
+            ->leftJoin('addon_additional_authors', 'addons.id', '=', 'addon_additional_authors.addon_id')
             ->where(function (Builder $query): void {
                 $query->where('addons.owner_id', $this->id)
-                    ->orWhere('addon_authors.user_id', $this->id);
+                    ->orWhere('addon_additional_authors.user_id', $this->id);
             })
             ->whereNull('addons.detached_at')
             ->select('addons.*')
@@ -192,9 +192,9 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      *
      * @return BelongsToMany<Addon, $this>
      */
-    public function addonsAuthored(): BelongsToMany
+    public function addonsAdditionalAuthored(): BelongsToMany
     {
-        return $this->belongsToMany(Addon::class, 'addon_authors')
+        return $this->belongsToMany(Addon::class, 'addon_additional_authors')
             ->withTimestamps();
     }
 
@@ -224,9 +224,9 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      *
      * @return BelongsToMany<Mod, $this>
      */
-    public function modsAuthored(): BelongsToMany
+    public function modsAdditionalAuthored(): BelongsToMany
     {
-        return $this->belongsToMany(Mod::class, 'mod_authors');
+        return $this->belongsToMany(Mod::class, 'mod_additional_authors');
     }
 
     /**
@@ -388,7 +388,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
                     ->where('disabled', false)
                     ->whereNotNull('published_at')
                     ->whereHas('latestSptVersion')),
-            'modsAuthored' => fn (Builder $query) => $query->where('disabled', false)
+            'modsAdditionalAuthored' => fn (Builder $query) => $query->where('disabled', false)
                 ->whereNotNull('published_at')
                 ->whereHas('versions', fn (Builder $q) => $q
                     ->where('disabled', false)
@@ -401,7 +401,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
                     ->where('disabled', false)
                     ->whereNotNull('published_at')
                     ->where('published_at', '<=', now())),
-            'addonsAuthored' => fn (Builder $query) => $query->where('disabled', false)
+            'addonsAdditionalAuthored' => fn (Builder $query) => $query->where('disabled', false)
                 ->whereNotNull('published_at')
                 ->where('published_at', '<=', now())
                 ->whereHas('versions', fn (Builder $q) => $q
@@ -410,8 +410,8 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
                     ->where('published_at', '<=', now())),
         ]);
 
-        $modCount = ($this->mods_count ?? 0) + ($this->mods_authored_count ?? 0);
-        $addonCount = ($this->addons_count ?? 0) + ($this->addons_authored_count ?? 0);
+        $modCount = ($this->mods_count ?? 0) + ($this->mods_additional_authored_count ?? 0);
+        $addonCount = ($this->addons_count ?? 0) + ($this->addons_additional_authored_count ?? 0);
 
         return [
             'id' => (int) $this->id,

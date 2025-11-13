@@ -567,11 +567,11 @@
                             @endif
                         </p>
                     </li>
-                    @if ($mod->authors->isNotEmpty())
+                    @if ($mod->additionalAuthors->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3 class="font-bold">{{ __('Additional Authors') }}</h3>
                             <p class="truncate [&>span:not(:last-child)]:after:content-[',_']">
-                                @foreach ($mod->authors->sortDesc() as $user)
+                                @foreach ($mod->additionalAuthors->sortDesc() as $user)
                                     <span><a
                                             href="{{ $user->profile_url }}"
                                             class="hover:text-black dark:hover:text-white"

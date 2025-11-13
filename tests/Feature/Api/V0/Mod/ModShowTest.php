@@ -80,17 +80,17 @@ describe('Mod Show API', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $authors = User::factory()->count(2)->create();
         $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
-        $mod->authors()->attach($authors);
+        $mod->additionalAuthors()->attach($authors);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s?include=authors', $mod->id));
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s?include=additional_authors', $mod->id));
 
         $response
             ->assertOk()
             ->assertJsonStructure([
                 'success',
-                'data' => ['authors' => [['id', 'name'], ['id', 'name']]],
+                'data' => ['additional_authors' => [['id', 'name'], ['id', 'name']]],
             ])
-            ->assertJsonCount(2, 'data.authors');
+            ->assertJsonCount(2, 'data.additional_authors');
     });
 
     it('includes license when requested', function (): void {

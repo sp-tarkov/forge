@@ -282,7 +282,7 @@ describe('mod publishing functionality', function (): void {
         $owner = User::factory()->create();
         $author = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
-        $mod->authors()->attach($author);
+        $mod->additionalAuthors()->attach($author);
 
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 
@@ -500,7 +500,7 @@ describe('mod version publishing functionality', function (): void {
         $owner = User::factory()->create();
         $author = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
-        $mod->authors()->attach($author);
+        $mod->additionalAuthors()->attach($author);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => null]);
 
         $publishDate = Date::now()->format('Y-m-d\TH:i');

@@ -183,7 +183,7 @@ class Create extends Component
 
         // Add authors
         if (! empty($this->authorIds)) {
-            $addon->authors()->attach($this->authorIds);
+            $addon->additionalAuthors()->attach($this->authorIds);
         }
 
         // Add source code links

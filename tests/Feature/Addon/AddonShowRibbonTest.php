@@ -109,7 +109,7 @@ describe('Addon Show Page Ribbon Display', function (): void {
             ->for($owner, 'owner')
             ->create(['published_at' => null]);
 
-        $addon->authors()->attach($author);
+        $addon->additionalAuthors()->attach($author);
 
         $response = $this->actingAs($author)
             ->get(route('addon.show', [$addon->id, $addon->slug]));

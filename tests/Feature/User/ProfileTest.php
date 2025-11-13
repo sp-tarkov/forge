@@ -54,7 +54,7 @@ describe('mod visibility on profile', function (): void {
 
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->for($owner, 'owner')->create();
-        $mod->authors()->attach($profileUser);
+        $mod->additionalAuthors()->attach($profileUser);
 
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
@@ -183,7 +183,7 @@ describe('mod visibility on profile', function (): void {
 
             SptVersion::factory()->create(['version' => '1.0.0']);
             $mod = Mod::factory()->disabled()->for($owner, 'owner')->create();
-            $mod->authors()->attach($author);
+            $mod->additionalAuthors()->attach($author);
             ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
             $response = $this->actingAs($author)
@@ -215,7 +215,7 @@ describe('addon visibility on profile', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        $addon->authors()->attach($profileUser);
+        $addon->additionalAuthors()->attach($profileUser);
 
         AddonVersion::factory()->for($addon)->create([
             'mod_version_constraint' => '1.0.0',
@@ -335,7 +335,7 @@ describe('addon visibility on profile', function (): void {
                     'published_at' => now()->subDay(),
                 ]);
 
-            $addon->authors()->attach($author);
+            $addon->additionalAuthors()->attach($author);
 
             AddonVersion::factory()->for($addon)->create([
                 'mod_version_constraint' => '1.0.0',
@@ -423,7 +423,7 @@ describe('addon visibility on profile', function (): void {
                     'published_at' => null,
                 ]);
 
-            $addon->authors()->attach($author);
+            $addon->additionalAuthors()->attach($author);
 
             AddonVersion::factory()->for($addon)->create([
                 'mod_version_constraint' => '1.0.0',

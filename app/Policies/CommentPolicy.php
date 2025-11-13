@@ -46,7 +46,7 @@ class CommentPolicy
                 }
 
                 // Mod authors can view comments on their authored mods
-                if ($mod->authors->contains($user)) {
+                if ($mod->additionalAuthors->contains($user)) {
                     return true;
                 }
 
@@ -296,7 +296,7 @@ class CommentPolicy
             }
 
             // Check if the user is one of the mod authors
-            if ($mod->authors->contains($user)) {
+            if ($mod->additionalAuthors->contains($user)) {
                 return true;
             }
         }
@@ -341,7 +341,7 @@ class CommentPolicy
             }
 
             // Check if the user is one of the mod authors
-            if ($mod->authors->contains($user)) {
+            if ($mod->additionalAuthors->contains($user)) {
                 return true;
             }
         }
@@ -457,7 +457,7 @@ class CommentPolicy
             }
 
             // Check if the user is one of the mod authors
-            if ($mod->authors->contains($user)) {
+            if ($mod->additionalAuthors->contains($user)) {
                 return true;
             }
         }
@@ -491,7 +491,7 @@ class CommentPolicy
             }
 
             // Check if the user is one of the mod authors
-            if ($mod->authors->contains($user)) {
+            if ($mod->additionalAuthors->contains($user)) {
                 return true;
             }
         }

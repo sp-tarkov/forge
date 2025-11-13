@@ -147,7 +147,7 @@ describe('modOwnerSoftDelete Policy Method', function (): void {
     it('returns true for mod authors', function (): void {
         $modAuthor = User::factory()->create();
         $mod = Mod::factory()->create();
-        $mod->authors()->attach($modAuthor);
+        $mod->additionalAuthors()->attach($modAuthor);
         $comment = Comment::factory()->for($mod, 'commentable')->create();
 
         expect($this->policy->modOwnerSoftDelete($modAuthor, $comment))->toBeTrue();
@@ -178,7 +178,7 @@ describe('modOwnerSoftDelete Policy Method', function (): void {
 
     it('returns true for moderators who are also mod authors', function (): void {
         $mod = Mod::factory()->create();
-        $mod->authors()->attach($this->moderator);
+        $mod->additionalAuthors()->attach($this->moderator);
         $comment = Comment::factory()->for($mod, 'commentable')->create();
 
         expect($this->policy->modOwnerSoftDelete($this->moderator, $comment))->toBeTrue();
@@ -284,7 +284,7 @@ describe('modOwnerRestore Policy Method', function (): void {
     it('returns true for mod authors on deleted mod comments', function (): void {
         $modAuthor = User::factory()->create();
         $mod = Mod::factory()->create();
-        $mod->authors()->attach($modAuthor);
+        $mod->additionalAuthors()->attach($modAuthor);
         $comment = Comment::factory()->for($mod, 'commentable')->create([
             'deleted_at' => now(),
         ]);
@@ -329,7 +329,7 @@ describe('modOwnerRestore Policy Method', function (): void {
 
     it('returns true for moderators who are mod authors on deleted mod comments', function (): void {
         $mod = Mod::factory()->create();
-        $mod->authors()->attach($this->moderator);
+        $mod->additionalAuthors()->attach($this->moderator);
         $comment = Comment::factory()->for($mod, 'commentable')->create([
             'deleted_at' => now(),
         ]);

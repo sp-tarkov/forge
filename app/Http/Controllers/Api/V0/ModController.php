@@ -308,7 +308,7 @@ class ModController extends Controller
     #[UrlParam('filter[spt_version]', description: 'Filter mods that are compatible with an SPT version SemVer constraint. This will only filter the mods, not the mod versions.', required: false, example: '^3.8.0')]
     #[UrlParam('filter[fika_compatibility]', type: 'boolean', description: 'Filter by Fika compatibility status. When true, only shows mods with Fika compatible versions (1, true, 0, false).', required: false, example: 'true')]
     #[UrlParam('query', description: 'Search query to filter mods using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'raid time')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'owner,versions')]
     #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `featured`, `created_at`, `updated_at`, `published_at`.', required: false, example: 'featured,-name')]
     #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
@@ -397,7 +397,7 @@ class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
-     *          "authors": [
+     *          "additional_authors": [
      *              {
      *                  "id": 5,
      *                  "name": "ContributorOne",
@@ -451,7 +451,7 @@ class ModController extends Controller
      *              "profile_photo_url": "https://example.com/owner.jpg",
      *              "cover_photo_url": "https://example.com/owner-cover.jpg"
      *          },
-     *          "authors": [
+     *          "additional_authors": [
      *              {
      *                  "id": 5,
      *                  "name": "ContributorOne",
@@ -499,7 +499,7 @@ class ModController extends Controller
      *  }
      */
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,featured,created_at')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `category`, `source_code_links`.', required: false, example: 'owner,versions')]
     public function show(Request $request, int $modId): JsonResponse
     {
         $queryBuilder = (new ModQueryBuilder)

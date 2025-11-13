@@ -34,7 +34,7 @@ describe('Addon Policy', function (): void {
         it('allows author to view unpublished addon', function (): void {
             $author = User::factory()->create();
             $addon = Addon::factory()->create(['published_at' => null]);
-            $addon->authors()->attach($author);
+            $addon->additionalAuthors()->attach($author);
 
             $this->actingAs($author);
 
@@ -130,7 +130,7 @@ describe('Addon Policy', function (): void {
         it('allows author to update addon', function (): void {
             $author = User::factory()->create(['email_verified_at' => now()]);
             $addon = Addon::factory()->create();
-            $addon->authors()->attach($author);
+            $addon->additionalAuthors()->attach($author);
 
             $this->actingAs($author);
 
@@ -187,7 +187,7 @@ describe('Addon Policy', function (): void {
         it('prevents author (non-owner) from deleting addon', function (): void {
             $author = User::factory()->create();
             $addon = Addon::factory()->create();
-            $addon->authors()->attach($author);
+            $addon->additionalAuthors()->attach($author);
 
             $this->actingAs($author);
 
@@ -217,7 +217,7 @@ describe('Addon Policy', function (): void {
         it('allows author with verified email to publish', function (): void {
             $author = User::factory()->create(['email_verified_at' => now()]);
             $addon = Addon::factory()->create(['published_at' => null]);
-            $addon->authors()->attach($author);
+            $addon->additionalAuthors()->attach($author);
 
             $this->actingAs($author);
 
@@ -304,7 +304,7 @@ describe('Addon Policy', function (): void {
         it('allows mod author to detach addon', function (): void {
             $modAuthor = User::factory()->create(['email_verified_at' => now()]);
             $mod = Mod::factory()->create();
-            $mod->authors()->attach($modAuthor);
+            $mod->additionalAuthors()->attach($modAuthor);
             $addon = Addon::factory()->for($mod)->create();
 
             $this->actingAs($modAuthor);

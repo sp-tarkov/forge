@@ -110,7 +110,7 @@ class AddonController extends Controller
     #[UrlParam('filter[updated_between]', description: 'Filter by update date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('filter[published_between]', description: 'Filter by publication date range (YYYY-MM-DD,YYYY-MM-DD).', required: false, example: '2025-01-01,2025-03-31')]
     #[UrlParam('query', description: 'Search query to filter addons using Meilisearch. This will search across name, slug, and description fields.', required: false, example: 'music pack')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'owner,versions')]
     #[UrlParam('sort', description: 'Sort results by attribute(s). Default ASC. Prefix with `-` for DESC. Comma-separate multiple fields. Allowed: `name`, `created_at`, `updated_at`, `published_at`.', required: false, example: '-name')]
     #[UrlParam('page', type: 'integer', description: 'The page number for pagination.', required: false, example: 2)]
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
@@ -170,7 +170,7 @@ class AddonController extends Controller
      *  }
      */
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'name,slug,created_at')]
-    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `authors`, `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'owner,versions')]
+    #[UrlParam('include', description: 'Comma-separated list of relationships. Available: `owner`, `additional_authors`, `versions`, `license`, `mod`, `source_code_links`.', required: false, example: 'owner,versions')]
     public function show(Request $request, int $addonId): JsonResponse
     {
         $queryBuilder = (new AddonQueryBuilder)

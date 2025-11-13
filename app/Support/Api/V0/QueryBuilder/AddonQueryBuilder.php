@@ -44,7 +44,7 @@ class AddonQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'owner' => 'owner',
-            'authors' => 'authors',
+            'additional_authors' => 'additionalAuthors',
             'versions' => 'versions',
             'latest_version' => 'latestVersion',
             'license' => 'license',

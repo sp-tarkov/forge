@@ -76,7 +76,7 @@ class VersionAction extends Component
     public function version(): AddonVersion
     {
         return AddonVersion::query()->select(['id', 'version', 'disabled', 'published_at', 'addon_id'])
-            ->with(['addon:id,name,owner_id', 'addon.owner:id', 'addon.authors:id'])
+            ->with(['addon:id,name,owner_id', 'addon.owner:id', 'addon.additionalAuthors:id'])
             ->findOrFail($this->versionId);
     }
 

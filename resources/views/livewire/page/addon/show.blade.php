@@ -354,11 +354,11 @@
                             </p>
                         </li>
                     @endif
-                    @if ($addon->authors->isNotEmpty())
+                    @if ($addon->additionalAuthors->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3 class="font-bold">{{ __('Additional Authors') }}</h3>
                             <p class="truncate">
-                                @foreach ($addon->authors->sortDesc() as $user)
+                                @foreach ($addon->additionalAuthors->sortDesc() as $user)
                                     <a
                                         href="{{ $user->profile_url }}"
                                         class="underline hover:text-black dark:hover:text-white"

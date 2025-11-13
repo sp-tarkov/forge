@@ -63,7 +63,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read User|null $owner
  * @property-read User|null $detachedBy
  * @property-read License|null $license
- * @property-read Collection<int, User> $authors
+ * @property-read Collection<int, User> $additionalAuthors
  * @property-read Collection<int, AddonVersion> $versions
  * @property-read Collection<int, SourceCodeLink> $sourceCodeLinks
  * @property-read AddonVersion|null $latestVersion
@@ -121,13 +121,13 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
-     * The relationship between an addon and its authors (Users).
+     * The relationship between an addon and its additional authors (Users).
      *
      * @return BelongsToMany<User, $this>
      */
-    public function authors(): BelongsToMany
+    public function additionalAuthors(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'addon_authors')
+        return $this->belongsToMany(User::class, 'addon_additional_authors')
             ->withTimestamps();
     }
 
@@ -203,7 +203,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
         }
 
         return $this->owner_id === $user->id ||
-               $this->authors->contains('id', $user->id);
+               $this->additionalAuthors->contains('id', $user->id);
     }
 
     /**

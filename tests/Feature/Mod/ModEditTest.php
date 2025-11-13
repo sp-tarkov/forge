@@ -188,7 +188,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         ]);
 
         // Add the user as an author
-        $mod->authors()->attach($author);
+        $mod->additionalAuthors()->attach($author);
 
         // Verify policy allows editing
         expect($author->can('update', $mod))->toBeTrue();

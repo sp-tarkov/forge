@@ -67,7 +67,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read ModCategory|null $category
- * @property-read Collection<int, User> $authors
+ * @property-read Collection<int, User> $additionalAuthors
  * @property-read Collection<int, ModVersion> $versions
  * @property-read Collection<int, SourceCodeLink> $sourceCodeLinks
  * @property-read Collection<int, Addon> $addons
@@ -165,13 +165,13 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
-     * The relationship between a mod and its authors (Users).
+     * The relationship between a mod and its additional authors (Users).
      *
      * @return BelongsToMany<User, $this>
      */
-    public function authors(): BelongsToMany
+    public function additionalAuthors(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'mod_authors');
+        return $this->belongsToMany(User::class, 'mod_additional_authors');
     }
 
     /**
@@ -497,7 +497,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        return $user->id === $this->owner?->id || $this->authors->pluck('id')->contains($user->id);
+        return $user->id === $this->owner?->id || $this->additionalAuthors->pluck('id')->contains($user->id);
     }
 
     /**

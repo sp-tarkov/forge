@@ -114,7 +114,7 @@ class Show extends Component
         $query = $this->user->ownedAndAuthoredMods()
             ->with([
                 'owner:id,name',
-                'authors:id,name',
+                'additionalAuthors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
             ])
@@ -143,7 +143,7 @@ class Show extends Component
         $query = $this->user->ownedAndAuthoredAddons()
             ->with([
                 'owner',
-                'authors',
+                'additionalAuthors',
                 'latestVersion',
                 'mod:id,name,slug',
                 'mod.latestVersion:id,mod_id,version_major,version_minor,version_patch',

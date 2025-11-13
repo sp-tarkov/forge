@@ -309,7 +309,7 @@ describe('Addon Show Page Warnings', function (): void {
         $addon = Addon::factory()
             ->for($mod)
             ->for($owner, 'owner')
-            ->hasAttached($this->user, [], 'authors')
+            ->hasAttached($this->user, [], 'additionalAuthors')
             ->create([
                 'disabled' => false,
                 'published_at' => null,

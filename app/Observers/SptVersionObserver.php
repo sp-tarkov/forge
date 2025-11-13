@@ -41,7 +41,7 @@ class SptVersionObserver
     {
         // Clear all SPT version caches using the new naming convention
         Cache::forget('spt-versions:all:user');
-        Cache::forget('spt-versions:all:authors');
+        Cache::forget('spt-versions:all:additional-authors');
         Cache::forget('spt-versions:active:user');
         Cache::forget('spt-versions:active:admin');
         Cache::forget('spt-versions:filter-list:user');

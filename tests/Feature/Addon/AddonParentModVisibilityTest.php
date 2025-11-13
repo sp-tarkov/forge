@@ -55,7 +55,7 @@ describe('Addon Parent Mod Visibility', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
-        $addon->authors()->attach($this->user->id);
+        $addon->additionalAuthors()->attach($this->user->id);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         $response = $this->actingAs($this->user)->get(route('addon.show', [$addon->id, $addon->slug]));

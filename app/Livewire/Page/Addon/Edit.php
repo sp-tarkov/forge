@@ -109,7 +109,7 @@ class Edit extends Component
     {
         $this->honeypotData = new HoneypotData;
 
-        $this->addon = Addon::query()->with(['sourceCodeLinks', 'authors', 'mod'])->findOrFail($addonId);
+        $this->addon = Addon::query()->with(['sourceCodeLinks', 'additionalAuthors', 'mod'])->findOrFail($addonId);
 
         $this->authorize('update', $this->addon);
 
@@ -139,7 +139,7 @@ class Edit extends Component
         $this->subscribeToComments = $this->addon->isUserSubscribed(auth()->user());
 
         // Load existing authors
-        $this->authorIds = $this->addon->authors->pluck('id')->toArray();
+        $this->authorIds = $this->addon->additionalAuthors->pluck('id')->toArray();
     }
 
     /**
@@ -210,7 +210,7 @@ class Edit extends Component
         $this->addon->save();
 
         // Sync authors (this will remove old ones and add new ones)
-        $this->addon->authors()->sync($this->authorIds);
+        $this->addon->additionalAuthors()->sync($this->authorIds);
 
         // Sync source code links
         // Delete existing links

@@ -131,7 +131,7 @@ class Edit extends Component
     {
         $this->honeypotData = new HoneypotData;
 
-        $this->mod = Mod::query()->with(['sourceCodeLinks', 'authors'])->findOrFail($modId);
+        $this->mod = Mod::query()->with(['sourceCodeLinks', 'additionalAuthors'])->findOrFail($modId);
 
         $this->authorize('update', $this->mod);
 
@@ -162,7 +162,7 @@ class Edit extends Component
         $this->addonsDisabled = (bool) $this->mod->addons_disabled;
 
         // Load existing authors
-        $this->authorIds = $this->mod->authors->pluck('id')->toArray();
+        $this->authorIds = $this->mod->additionalAuthors->pluck('id')->toArray();
     }
 
     /**
@@ -276,7 +276,7 @@ class Edit extends Component
         }
 
         // Update authors (sync will add/remove as needed)
-        $this->mod->authors()->sync($this->authorIds);
+        $this->mod->additionalAuthors()->sync($this->authorIds);
 
         Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 

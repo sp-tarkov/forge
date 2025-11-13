@@ -52,7 +52,7 @@ describe('addon version deletion from addon detail page', function (): void {
     it('prevents addon authors from deleting an addon version', function (): void {
         $author = User::factory()->create();
         $addon = Addon::factory()->create();
-        $addon->authors()->attach($author);
+        $addon->additionalAuthors()->attach($author);
         $version = AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         Livewire::actingAs($author)
