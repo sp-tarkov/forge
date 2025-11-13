@@ -514,13 +514,15 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     /**
      * Get the full URL for the thumbnail image.
      *
-     * @return Attribute<string|null, never>
+     * @return Attribute<string, never>
      */
     protected function thumbnailUrl(): Attribute
     {
-        return Attribute::make(
-            get: fn () => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
-        );
+        $disk = config('filesystems.asset_upload', 'public');
+
+        return Attribute::get(fn (): string => $this->thumbnail
+            ? Storage::disk($disk)->url($this->thumbnail)
+            : '');
     }
 
     /**

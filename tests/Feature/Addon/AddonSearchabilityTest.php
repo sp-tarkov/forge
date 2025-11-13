@@ -67,7 +67,7 @@ it('includes thumbnail in searchable array when available', function (): void {
     expect($searchArray['thumbnail'])->toBe($addon->thumbnailUrl);
 });
 
-it('includes null thumbnail in searchable array when not available', function (): void {
+it('includes empty string thumbnail in searchable array when not available', function (): void {
     $addon = Addon::factory()
         ->hasVersions(1, ['published_at' => now()])
         ->create([
@@ -78,5 +78,5 @@ it('includes null thumbnail in searchable array when not available', function ()
     $searchArray = $addon->toSearchableArray();
 
     expect($searchArray)->toHaveKey('thumbnail');
-    expect($searchArray['thumbnail'])->toBeNull();
+    expect($searchArray['thumbnail'])->toBe('');
 });
