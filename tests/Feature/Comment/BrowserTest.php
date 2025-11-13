@@ -423,6 +423,7 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$comment->id)
+            ->waitForText('Reply To Comment')
             ->type('@reply-body-'.$comment->id, $replyText)
             ->press('Post Reply')
             ->assertDontSee('Reply To Comment')

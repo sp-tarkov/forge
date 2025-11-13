@@ -8,6 +8,7 @@ use App\Models\Message;
 use App\Models\User;
 use App\Notifications\NewChatMessageNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -59,7 +60,7 @@ it('displays multiple message count correctly', function (): void {
     $component = Livewire::actingAs($recipient)
         ->test(NotificationCenter::class)
         ->assertSee('Jane Smith')
-        ->assertSee($messages->last()->content);
+        ->assertSee(Str::limit($messages->last()->content, 150));
 
     // Check for message count - normalize whitespace
     $html = preg_replace('/\s+/', ' ', (string) $component->html());
