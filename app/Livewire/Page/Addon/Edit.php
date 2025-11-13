@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Addon;
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Addon;
 use App\Models\SourceCodeLink;
 use Illuminate\Http\UploadedFile;
@@ -23,6 +24,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 class Edit extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithFileUploads;
 

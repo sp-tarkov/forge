@@ -9,6 +9,7 @@ use App\Enums\SpamStatus;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Jobs\CheckCommentForSpam;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Mod;
@@ -31,6 +32,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
  */
 class CommentComponent extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithPagination;
 

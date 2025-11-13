@@ -153,16 +153,17 @@
 
                             {{-- Description --}}
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('Description') }}</flux:label>
-                                <flux:description>
-                                    {{ __('Explain the addon in detail. This will be displayed on the addon page. Use markdown for formatting.') }}
-                                </flux:description>
-                                <flux:textarea
-                                    rows="6"
-                                    wire:model.blur="description"
+                                <x-markdown-editor
+                                    wire-model="description"
+                                    name="description"
+                                    :label="__('Description')"
+                                    :description="__(
+                                        'Explain the addon in detail. This will be displayed on the addon page. Use markdown for formatting.',
+                                    )"
                                     placeholder="My addon is a *great addon* that does something..."
+                                    rows="6"
+                                    purify-config="description"
                                 />
-                                <flux:error name="description" />
                             </flux:field>
 
                             {{-- License --}}

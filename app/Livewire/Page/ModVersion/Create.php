@@ -7,6 +7,7 @@ namespace App\Livewire\Page\ModVersion;
 use App\Enums\FikaCompatibility;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
@@ -34,6 +35,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
  */
 class Create extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
 
     /**

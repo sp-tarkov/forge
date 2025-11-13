@@ -2,16 +2,16 @@
 
 <form wire:submit.prevent="{{ $submitAction }}">
     <x-honeypot livewire-model="honeypotData" />
-    <flux:textarea
+    <x-markdown-editor
+        wire-model="{{ $formKey }}"
         name="body"
-        wire:model="{{ $formKey }}"
+        :placeholder="$placeholder ?? __('Please ensure your comment does not break the community guidelines.')"
+        rows="4"
+        purify-config="comments"
+        error-name="{{ $formKey }}"
         data-test="{{ $dataTest ?? str_replace('.', '-', $formKey) }}"
-        resize="vertical"
-        placeholder="{{ $placeholder ?? __('Please ensure your comment does not break the community guidelines.') }}"
     />
-    @error($formKey)
-        <div class="text-red-500 text-xs my-1.5">{{ $message }}</div>
-    @enderror
+
     <div class="flex items-center justify-between mt-2">
         @if ($cancelAction)
             <div class="flex items-center gap-2">

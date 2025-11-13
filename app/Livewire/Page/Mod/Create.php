@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Mod;
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use Illuminate\Http\UploadedFile;
@@ -22,6 +23,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 class Create extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithFileUploads;
 

@@ -159,16 +159,17 @@
                             </flux:field>
 
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('Description') }}</flux:label>
-                                <flux:description>
-                                    {{ __('Explain the mod in detail. This will be displayed on the mod page. Use markdown for formatting.') }}
-                                </flux:description>
-                                <flux:textarea
-                                    rows="6"
-                                    wire:model.blur="description"
+                                <x-markdown-editor
+                                    wire-model="description"
+                                    name="description"
+                                    :label="__('Description')"
+                                    :description="__(
+                                        'Explain the mod in detail. This will be displayed on the mod page. Use markdown for formatting.',
+                                    )"
                                     placeholder="My mod is a *great mod* that does something..."
+                                    rows="6"
+                                    purify-config="description"
                                 />
-                                <flux:error name="description" />
                             </flux:field>
 
                             <flux:field class="col-span-6">

@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Mod;
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\SourceCodeLink;
@@ -30,6 +31,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
  */
 class Edit extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithFileUploads;
 
