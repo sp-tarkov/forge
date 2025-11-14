@@ -299,7 +299,7 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$comment->id)
-            ->assertSee('Reply To Comment')
+            ->waitForText('Reply To Comment')
             ->assertPresent('@reply-body-'.$comment->id)
             ->assertSee('Post Reply')
             ->assertNoJavaScriptErrors();
@@ -323,7 +323,7 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$comment->id)
-            ->assertSee('Reply To Comment')
+            ->waitForText('Reply To Comment')
             ->click('@cancel-reply-body-'.$comment->id)
             ->assertDontSee('Reply To Comment')
             ->assertNoJavaScriptErrors();
@@ -348,6 +348,7 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$comment->id)
+            ->waitForText('Reply To Comment')
             ->type('@reply-body-'.$comment->id, $replyText)
             ->press('Post Reply')
             ->assertSee($replyText)
@@ -373,6 +374,7 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$rootComment->id)
+            ->waitForText('Reply To Comment')
             ->type('@reply-body-'.$rootComment->id, $replyText)
             ->press('Post Reply')
             ->assertSee($replyText)
@@ -398,6 +400,7 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$comment->id)
+            ->waitForText('Reply To Comment')
             ->type('@reply-body-'.$comment->id, $shortReply)
             ->press('Post Reply')
             ->assertSee('must be at least')

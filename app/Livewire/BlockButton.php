@@ -21,6 +21,8 @@ class BlockButton extends Component
 
     public ?string $blockReason = null;
 
+    public string $size = 'sm';
+
     /**
      * Initialize the component with the target user
      */

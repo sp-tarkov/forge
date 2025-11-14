@@ -22,50 +22,87 @@
             />
         </div>
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="sm:-mt-12 sm:flex sm:items-end sm:space-x-5">
-                <div class="flex">
+            <div class="flex items-start gap-4 md:-mt-12 md:items-end md:gap-5">
+                <div class="flex-shrink-0 -mt-12 md:mt-0">
                     <img
                         src="{{ $user->profile_photo_url }}"
                         alt="{{ __(':name\'s Profile Picture', ['name' => $user->name]) }}"
-                        class="h-24 w-24 rounded-full ring-4 ring-white dark:ring-gray-800 sm:h-32 sm:w-32"
+                        class="h-32 w-32 rounded-full ring-4 ring-white dark:ring-gray-800"
                     />
                 </div>
-                <div class="mt-8 sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-4">
-                    <div class="min-w-0 flex-1">
-                        <h1 class="truncate text-2xl font-bold">
+                <div
+                    class="pt-4 min-w-0 flex-1 flex flex-col items-end md:pt-0 md:flex-row md:items-center md:space-x-4">
+                    <div class="text-right md:text-left md:min-w-0 md:flex-1">
+                        <h1 class="truncate text-lg md:text-2xl font-bold">
                             <x-user-name :user="$user" />
                         </h1>
-                        <div>
+                        <div class="text-xs md:text-base text-gray-600 dark:text-gray-400 mt-0.5">
                             {{ __('Member since') }}
                             <x-time :datetime="$user->created_at" />
                         </div>
                     </div>
                     @if (auth()->check() && auth()->user()->id !== $user->id)
-                        {{-- Follow Buttons --}}
-                        <livewire:user.follow-buttons
-                            :profile-user-id="$user->id"
-                            :is-following="auth()->user()->isFollowing($user->id)"
-                        />
+                        {{-- Mobile buttons (xs size) --}}
+                        <div class="mt-2 flex flex-wrap justify-end gap-1.5 md:hidden">
+                            {{-- Follow Buttons --}}
+                            <livewire:user.follow-buttons
+                                :profile-user-id="$user->id"
+                                :is-following="auth()->user()->isFollowing($user->id)"
+                                size="xs"
+                            />
 
-                        {{-- Block/Unblock Button --}}
-                        <livewire:block-button :user="$user" />
+                            {{-- Block/Unblock Button --}}
+                            <livewire:block-button
+                                :user="$user"
+                                size="xs"
+                            />
 
-                        {{-- Ban/Unban Action --}}
-                        @can('ban', $user)
-                            <livewire:user.ban-action :user="$user" />
-                        @endcan
+                            {{-- Ban/Unban Action --}}
+                            @can('ban', $user)
+                                <livewire:user.ban-action
+                                    :user="$user"
+                                    size="xs"
+                                />
+                            @endcan
 
-                        {{-- Report button --}}
-                        <livewire:report-component
-                            variant="button"
-                            :reportable-id="$user->id"
-                            :reportable-type="get_class($user)"
-                        />
+                            {{-- Report button --}}
+                            <livewire:report-component
+                                variant="button"
+                                :reportable-id="$user->id"
+                                :reportable-type="get_class($user)"
+                                size="xs"
+                            />
+                        </div>
+
+                        {{-- Desktop buttons (sm size) --}}
+                        <div class="hidden md:flex md:flex-wrap md:gap-0 md:space-x-4">
+                            {{-- Follow Buttons --}}
+                            <livewire:user.follow-buttons
+                                :profile-user-id="$user->id"
+                                :is-following="auth()->user()->isFollowing($user->id)"
+                            />
+
+                            {{-- Block/Unblock Button --}}
+                            <livewire:block-button :user="$user" />
+
+                            {{-- Ban/Unban Action --}}
+                            @can('ban', $user)
+                                <livewire:user.ban-action :user="$user" />
+                            @endcan
+
+                            {{-- Report button --}}
+                            <livewire:report-component
+                                variant="button"
+                                :reportable-id="$user->id"
+                                :reportable-type="get_class($user)"
+                            />
+                        </div>
                     @endif
                 </div>
             </div>
         </div>
     </div>
+
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {{-- Left Column --}}
@@ -74,6 +111,50 @@
                 x-init="$watch('selectedTab', (tab) => { window.location.hash = tab })"
                 class="lg:col-span-3 flex flex-col gap-6"
             >
+                {{-- Ban Information (Visible to Admins/Moderators Only - Small Screens) --}}
+                @if ($activeBan && auth()->check() && auth()->user()->isModOrAdmin())
+                    <div class="lg:hidden">
+                        <flux:callout
+                            variant="danger"
+                            class="shadow-lg"
+                        >
+                            <div class="flex flex-col gap-2 text-sm">
+                                <div class="font-semibold text-base">{{ __('This user is currently banned') }}</div>
+
+                                @if ($activeBan->comment)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Reason:') }}</strong></div>
+                                        <div>{{ $activeBan->comment }}</div>
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->expired_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Ban Expires:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->expired_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->expired_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @else
+                                    <div>
+                                        <strong>{{ __('Ban Type:') }}</strong> {{ __('Permanent') }}
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->created_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Banned On:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->created_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->created_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </flux:callout>
+                    </div>
+                @endif
 
                 {{-- About --}}
                 @if ($user->about)
@@ -220,7 +301,52 @@
             </div>
 
             {{-- Right Column --}}
-            <div class="col-span-1 flex flex-col justify-top items-center">
+            <div class="col-span-1 flex flex-col justify-top items-center gap-6">
+                {{-- Ban Information (Visible to Admins/Moderators Only - Large Screens) --}}
+                @if ($activeBan && auth()->check() && auth()->user()->isModOrAdmin())
+                    <div class="hidden lg:block w-full">
+                        <flux:callout
+                            variant="danger"
+                            class="shadow-lg"
+                        >
+                            <div class="flex flex-col gap-2 text-sm">
+                                <div class="font-semibold text-base">{{ __('This user is currently banned') }}</div>
+
+                                @if ($activeBan->comment)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Reason:') }}</strong></div>
+                                        <div>{{ $activeBan->comment }}</div>
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->expired_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Ban Expires:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->expired_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->expired_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @else
+                                    <div>
+                                        <strong>{{ __('Ban Type:') }}</strong> {{ __('Permanent') }}
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->created_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Banned On:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->created_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->created_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </flux:callout>
+                    </div>
+                @endif
+
                 {{-- Follows --}}
                 <livewire:user.follow-cards :profile-user="$user" />
             </div>

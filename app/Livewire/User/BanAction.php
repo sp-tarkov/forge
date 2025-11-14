@@ -31,6 +31,9 @@ class BanAction extends Component
     /** Controls visibility of the unban modal */
     public bool $showUnbanModal = false;
 
+    /** The size of the button */
+    public string $size = 'sm';
+
     /**
      * Initialize the component with the target user.
      */
