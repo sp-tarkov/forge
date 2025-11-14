@@ -135,6 +135,21 @@ class Edit extends Component
     public bool $guidSaved = false;
 
     /**
+     * The mod category ID (for checking if category is set).
+     */
+    public ?int $modCategoryId = null;
+
+    /**
+     * The new category ID to set on the mod if needed.
+     */
+    public string $newModCategoryId = '';
+
+    /**
+     * Whether the category has been successfully saved.
+     */
+    public bool $categorySaved = false;
+
+    /**
      * The DirectDownloadLink rule instance (for content length extraction).
      */
     private ?DirectDownloadLink $downloadLinkRule = null;
@@ -149,6 +164,7 @@ class Edit extends Component
         $this->mod = $mod;
         $this->modVersion = $modVersion;
         $this->modGuid = $mod->guid ?? '';
+        $this->modCategoryId = $mod->category_id;
 
         $this->authorize('update', [$this->modVersion, $this->mod]);
 
@@ -247,6 +263,33 @@ class Edit extends Component
 
         // Show success message
         flash()->success('Mod GUID has been successfully saved.');
+    }
+
+    /**
+     * Save the category to the mod without refreshing the page.
+     */
+    public function saveCategory(): void
+    {
+        $this->authorize('update', $this->mod);
+
+        // Validate the category
+        $this->validate([
+            'newModCategoryId' => 'required|exists:mod_categories,id',
+        ], [
+            'newModCategoryId.required' => 'Please select a category.',
+            'newModCategoryId.exists' => 'The selected category is invalid.',
+        ]);
+
+        // Save the category to the mod
+        $this->mod->category_id = (int) $this->newModCategoryId;
+        $this->mod->save();
+
+        // Update the component state
+        $this->modCategoryId = (int) $this->newModCategoryId;
+        $this->categorySaved = true;
+
+        // Show success message
+        flash()->success('Mod category has been successfully saved.');
     }
 
     /**
@@ -500,6 +543,11 @@ class Edit extends Component
             $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', 'unique:mods,guid'];
         }
 
+        // Add mod category validation if mod doesn't have one and hasn't been saved already
+        if (empty($this->modCategoryId) && ! $this->categorySaved) {
+            $rules['newModCategoryId'] = ['required', 'exists:mod_categories,id'];
+        }
+
         // VirusTotal links validation
         $rules['virusTotalLinks'] = 'required|array|min:1';
         $rules['virusTotalLinks.*.url'] = 'required|string|url|starts_with:https://www.virustotal.com/';
@@ -534,6 +582,8 @@ class Edit extends Component
             'newModGuid.required' => 'A mod GUID is required for versions compatible with SPT 4.0.0 or above.',
             'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
             'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+            'newModCategoryId.required' => 'A category is required before publishing a mod version.',
+            'newModCategoryId.exists' => 'The selected category is invalid.',
             'virusTotalLinks.required' => 'At least one VirusTotal link is required.',
             'virusTotalLinks.min' => 'At least one VirusTotal link is required.',
             'virusTotalLinks.*.url.required' => 'Please enter a valid VirusTotal URL.',
