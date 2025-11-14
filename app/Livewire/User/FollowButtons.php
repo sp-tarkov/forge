@@ -22,6 +22,11 @@ class FollowButtons extends Component
     public bool $isFollowing;
 
     /**
+     * The size of the button.
+     */
+    public string $size = 'sm';
+
+    /**
      * Action to follow a user.
      */
     public function follow(): void

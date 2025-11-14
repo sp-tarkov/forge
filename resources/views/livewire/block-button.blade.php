@@ -5,13 +5,13 @@
                 <flux:button
                     wire:click="toggleBlockModal"
                     variant="outline"
-                    size="sm"
+                    size="{{ $size }}"
                     class="whitespace-nowrap"
                 >
                     <div class="flex items-center">
                         <flux:icon.no-symbol
                             variant="{{ $isBlocked ? 'solid' : 'outline' }}"
-                            class="{{ $isBlocked ? 'text-red-500' : 'text-white' }} mr-1.5"
+                            class="{{ $isBlocked ? 'text-red-500' : 'text-white' }} {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5"
                         />
                         {{ $isBlocked ? __('Blocked') : __('Block User') }}
                     </div>

@@ -26,8 +26,9 @@
                 <flux:button
                     x-on:click="$wire.showReportModal = true"
                     variant="outline"
-                    size="sm"
+                    size="{{ $size }}"
                     icon="flag"
+                    icon:variant="{{ $size === 'xs' ? 'micro' : 'micro' }}"
                 >
                     {{ $this->buttonLabel }}
                 </flux:button>

@@ -70,6 +70,11 @@ class ReportComponent extends Component
     public bool $submitted = false;
 
     /**
+     * The size of the button.
+     */
+    public string $size = 'sm';
+
+    /**
      * Get the button label based on a reportable type.
      */
     #[Computed]

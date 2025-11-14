@@ -3,11 +3,11 @@
         <flux:button
             x-on:click="$wire.showUnbanModal = true"
             variant="outline"
-            size="sm"
+            size="{{ $size }}"
             class="whitespace-nowrap"
         >
             <div class="flex items-center">
-                <flux:icon.shield-check class="text-green-600 mr-1.5" />
+                <flux:icon.shield-check class="text-green-600 {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5" />
                 {{ __('Unban User') }}
             </div>
         </flux:button>
@@ -15,11 +15,11 @@
         <flux:button
             x-on:click="$wire.showBanModal = true"
             variant="outline"
-            size="sm"
+            size="{{ $size }}"
             class="whitespace-nowrap"
         >
             <div class="flex items-center">
-                <flux:icon.shield-exclamation class="text-red-600 mr-1.5" />
+                <flux:icon.shield-exclamation class="text-red-600 {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5" />
                 {{ __('Ban User') }}
             </div>
         </flux:button>

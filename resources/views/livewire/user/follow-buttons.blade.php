@@ -6,13 +6,13 @@
         <flux:button
             wire:click="unfollow"
             variant="outline"
-            size="sm"
+            size="{{ $size }}"
             class="whitespace-nowrap"
         >
             <div class="flex items-center">
                 <flux:icon.heart
                     variant="solid"
-                    class="text-red-500 mr-1.5"
+                    class="text-red-500 {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5"
                 />
                 {{ __('Following') }}
             </div>
@@ -22,13 +22,13 @@
         <flux:button
             wire:click="follow"
             variant="outline"
-            size="sm"
+            size="{{ $size }}"
             class="whitespace-nowrap"
         >
             <div class="flex items-center">
                 <flux:icon.heart
                     variant="outline"
-                    class="text-white mr-1.5"
+                    class="text-white {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5"
                 />
                 {{ __('Follow') }}
             </div>
