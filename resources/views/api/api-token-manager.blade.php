@@ -54,6 +54,7 @@
                                 <x-checkbox
                                     wire:model="createApiTokenForm.permissions"
                                     :value="$permission"
+                                    :disabled="$permission === 'read'"
                                 />
                                 <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ $permission }}</span>
                             </label>
@@ -242,6 +243,7 @@
                             <flux:checkbox
                                 wire:model="updateApiTokenForm.permissions"
                                 :value="$permission"
+                                :disabled="$permission === 'read'"
                             />
                             <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ $permission }}</span>
                         </label>

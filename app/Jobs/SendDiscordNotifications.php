@@ -42,7 +42,7 @@ class SendDiscordNotifications implements ShouldQueue
         $mods = Mod::query()
             ->where('discord_notification_sent', false)
             ->where('disabled', false)
-            ->with(['owner', 'category', 'license', 'authors', 'versions.latestSptVersion'])
+            ->with(['owner', 'category', 'license', 'additionalAuthors', 'versions.latestSptVersion'])
             ->get()
             ->filter(fn (Mod $mod): bool => $modPolicy->view(null, $mod));
 
@@ -115,7 +115,7 @@ class SendDiscordNotifications implements ShouldQueue
         $addons = Addon::query()
             ->where('discord_notification_sent', false)
             ->where('disabled', false)
-            ->with(['owner', 'license', 'authors', 'versions', 'mod'])
+            ->with(['owner', 'license', 'additionalAuthors', 'versions', 'mod'])
             ->get()
             ->filter(fn (Addon $addon): bool => $addonPolicy->view(null, $addon));
 
@@ -206,10 +206,10 @@ class SendDiscordNotifications implements ShouldQueue
             ];
         }
 
-        $authors = $mod->authors->pluck('name')->filter()->toArray();
+        $authors = $mod->additionalAuthors->pluck('name')->filter()->toArray();
         if (! empty($authors)) {
             $embed['fields'][] = [
-                'name' => 'Authors',
+                'name' => 'Additional Authors',
                 'value' => implode(', ', $authors),
                 'inline' => true,
             ];
@@ -357,10 +357,10 @@ class SendDiscordNotifications implements ShouldQueue
             ];
         }
 
-        $authors = $addon->authors->pluck('name')->filter()->toArray();
+        $authors = $addon->additionalAuthors->pluck('name')->filter()->toArray();
         if (! empty($authors)) {
             $embed['fields'][] = [
-                'name' => 'Authors',
+                'name' => 'Additional Authors',
                 'value' => implode(', ', $authors),
                 'inline' => true,
             ];

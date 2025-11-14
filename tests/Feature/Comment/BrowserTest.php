@@ -201,6 +201,7 @@ describe('Comment Creation Tests', function (): void {
             ->assertPresent('@new-comment-body')
             ->type('@new-comment-body', $commentText1)
             ->press('Post Comment')
+            ->waitForText($commentText1)
             ->type('@new-comment-body', $commentText2)
             ->press('Post Comment')
             ->assertDontSee($commentText2)
@@ -422,6 +423,7 @@ describe('Comment Reply Tests', function (): void {
             ->inDarkMode();
 
         $page->click('@reply-button-'.$comment->id)
+            ->waitForText('Reply To Comment')
             ->type('@reply-body-'.$comment->id, $replyText)
             ->press('Post Reply')
             ->assertDontSee('Reply To Comment')

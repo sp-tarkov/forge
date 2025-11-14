@@ -13,6 +13,9 @@
     --font-sans:
         Figtree, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
+    --color-accent: var(--color-cyan-500);
+    --color-accent-content: var(--color-cyan-600);
+    --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
@@ -28,7 +31,14 @@
         --color-zinc-800: var(--color-slate-800);
         --color-zinc-900: var(--color-slate-900);
         --color-zinc-950: var(--color-slate-950);
+        --color-accent: var(--color-cyan-500);
+        --color-accent-content: var(--color-cyan-400);
+        --color-accent-foreground: var(--color-white);
     }
+}
+
+[data-flux-control]:focus {
+    @apply !ring-accent-content !border-accent-content;
 }
 
 @layer base {

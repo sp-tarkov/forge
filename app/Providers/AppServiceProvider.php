@@ -9,6 +9,7 @@ use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Http\Controllers\VisitorsPresenceBroadcastingController;
+use App\Livewire\Profile\ApiTokenManager as CustomApiTokenManager;
 use App\Livewire\Profile\UpdatePasswordForm;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
@@ -165,6 +166,7 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerLivewireOverrides(): void
     {
+        Livewire::component('api.api-token-manager', CustomApiTokenManager::class);
         Livewire::component('profile.update-password-form', UpdatePasswordForm::class);
     }
 

@@ -75,6 +75,27 @@ describe('Auth Login API', function (): void {
             ->and($token->abilities)->toEqual($abilities);
     });
 
+    it('always adds the read ability when creating a token', function (): void {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $response = $this->postJson('/api/v0/auth/login', [
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'abilities' => ['update'],
+        ]);
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $token = PersonalAccessToken::query()->where('tokenable_id', $user->id)->first();
+        expect($token)->not->toBeNull();
+        expect($token->abilities)->toHaveCount(2)
+            ->toContain('read')
+            ->toContain('update');
+    });
+
     it('creates a token with default abilities when abilities array is empty or omitted', function (): void {
         $user = User::factory()->create([
             'email' => 'test@example.com',

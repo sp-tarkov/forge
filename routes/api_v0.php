@@ -24,8 +24,8 @@ Route::post('/auth/email/resend', [AuthController::class, 'resend'])
     ->middleware('throttle:3,60')
     ->name('api.v0.auth.resend');
 
-// Authenticated (Requires Sanctum Token)
-Route::middleware('auth:sanctum')->group(function (): void {
+// Authenticated (Requires Sanctum Token with read ability)
+Route::middleware(['auth:sanctum', 'abilities:read'])->group(function (): void {
     // Auth
     Route::get('/auth/user', [AuthController::class, 'user'])->name('api.v0.auth.user');
     Route::get('/auth/abilities', [AuthController::class, 'abilities'])->name('api.v0.auth.abilities');

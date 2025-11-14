@@ -275,7 +275,7 @@ describe('addon publishing functionality', function (): void {
         $author = User::factory()->create();
         $mod = Mod::factory()->create();
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id, 'published_at' => null]);
-        $addon->authors()->attach($author);
+        $addon->additionalAuthors()->attach($author);
 
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 

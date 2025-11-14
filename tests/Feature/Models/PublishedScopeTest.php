@@ -89,7 +89,7 @@ describe('PublishedScope', function (): void {
             $mod = Mod::factory()->create([
                 'published_at' => null,
             ]);
-            $mod->authors()->attach($this->author->id);
+            $mod->additionalAuthors()->attach($this->author->id);
 
             $this->actingAs($this->author);
             $results = Mod::query()->get();
@@ -171,7 +171,7 @@ describe('PublishedScope', function (): void {
 
         it('allows mod authors to see versions of mods they authored', function (): void {
             $mod = Mod::factory()->create(['published_at' => Date::now()->subDay()]);
-            $mod->authors()->attach($this->author->id);
+            $mod->additionalAuthors()->attach($this->author->id);
             $unpublishedVersion = ModVersion::factory()->create([
                 'mod_id' => $mod->id,
                 'published_at' => null,
@@ -253,7 +253,7 @@ describe('PublishedScope', function (): void {
             $addon = Addon::factory()->create([
                 'published_at' => null,
             ]);
-            $addon->authors()->attach($this->author->id);
+            $addon->additionalAuthors()->attach($this->author->id);
 
             $this->actingAs($this->author);
             $results = Addon::query()->get();
@@ -335,7 +335,7 @@ describe('PublishedScope', function (): void {
 
         it('allows addon authors to see versions of addons they authored', function (): void {
             $addon = Addon::factory()->create(['published_at' => Date::now()->subDay()]);
-            $addon->authors()->attach($this->author->id);
+            $addon->additionalAuthors()->attach($this->author->id);
             $unpublishedVersion = AddonVersion::factory()->create([
                 'addon_id' => $addon->id,
                 'published_at' => null,

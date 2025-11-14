@@ -33,12 +33,33 @@ class UserPolicy
         return true;
     }
 
-    /*
+    /**
      * Determine whether the user can view disabled mods on a user page. This is only allowed for the user that owns the
      * user page, moderators, and administrators.
      */
     public function viewDisabledUserMods(?User $user, User $userPageOwner): bool
     {
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        if ($user->id === $userPageOwner->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the user can view disabled addons on a user page. This is allowed for moderators,
+     * administrators, the profile owner, and any authors of addons on the profile.
+     */
+    public function viewDisabledUserAddons(?User $user, User $userPageOwner): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
         if ($user->isModOrAdmin()) {
             return true;
         }

@@ -158,7 +158,7 @@ class Show extends Component
             'sourceCodeLinks',
             'mod:id,name,slug,disabled,published_at',
             'owner',
-            'authors',
+            'additionalAuthors',
             'license',
             'latestVersion',
         ])->findOrFail($addonId);

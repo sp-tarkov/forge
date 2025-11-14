@@ -181,7 +181,7 @@ describe('Addon Index API', function (): void {
             ->assertJsonPath('data.0.mod.name', 'Parent Mod');
     });
 
-    it('includes owner relationship when requested', function (): void {
+    it('always includes owner relationship', function (): void {
         $owner = User::factory()->create(['name' => 'addon_owner']);
         $mod = Mod::factory()->create();
         ModVersion::factory()->create([
@@ -191,7 +191,7 @@ describe('Addon Index API', function (): void {
         $addon = Addon::factory()->for($mod)->for($owner, 'owner')->published()->create();
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons?include=owner');
+        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
 
         $response
             ->assertStatus(Response::HTTP_OK)

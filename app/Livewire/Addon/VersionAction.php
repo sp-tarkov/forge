@@ -6,6 +6,7 @@ namespace App\Livewire\Addon;
 
 use App\Models\AddonVersion;
 use App\Traits\Livewire\ModerationActionMenu;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Gate;
@@ -75,7 +76,7 @@ class VersionAction extends Component
     public function version(): AddonVersion
     {
         return AddonVersion::query()->select(['id', 'version', 'disabled', 'published_at', 'addon_id'])
-            ->with(['addon:id,name,owner_id', 'addon.owner:id', 'addon.authors:id'])
+            ->with(['addon:id,name,owner_id', 'addon.owner:id', 'addon.additionalAuthors:id'])
             ->findOrFail($this->versionId);
     }
 
@@ -113,12 +114,15 @@ class VersionAction extends Component
      */
     public function disable(): void
     {
-        $this->authorize('disable', $this->version);
+        $version = $this->version;
 
-        AddonVersion::query()->where('id', $this->versionId)->update(['disabled' => true]);
+        $this->authorize('disable', $version);
+
+        $version->disabled = true;
+        $version->save();
 
         $this->versionDisabled = true;
-        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.', $this->versionId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
         $this->dispatch('addon-version-updated.'.$this->versionId, disabled: true);
 
@@ -132,12 +136,15 @@ class VersionAction extends Component
      */
     public function enable(): void
     {
-        $this->authorize('enable', $this->version);
+        $version = $this->version;
 
-        AddonVersion::query()->where('id', $this->versionId)->update(['disabled' => false]);
+        $this->authorize('enable', $version);
+
+        $version->disabled = false;
+        $version->save();
 
         $this->versionDisabled = false;
-        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.', $this->versionId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
         $this->dispatch('addon-version-updated.'.$this->versionId, disabled: false);
 
@@ -151,14 +158,16 @@ class VersionAction extends Component
      */
     public function publish(): void
     {
-        $this->authorize('publish', $this->version);
-
         $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
+        $version = $this->version;
 
-        AddonVersion::query()->where('id', $this->versionId)->update(['published_at' => $publishedDate]);
+        $this->authorize('publish', $version);
+
+        $version->published_at = $publishedDate;
+        $version->save();
 
         $this->versionPublished = true;
-        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.', $this->versionId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
         $this->dispatch('addon-version-updated.'.$this->versionId, published: true);
 
@@ -172,12 +181,15 @@ class VersionAction extends Component
      */
     public function unpublish(): void
     {
-        $this->authorize('unpublish', $this->version);
+        $version = $this->version;
 
-        AddonVersion::query()->where('id', $this->versionId)->update(['published_at' => null]);
+        $this->authorize('unpublish', $version);
+
+        $version->published_at = null;
+        $version->save();
 
         $this->versionPublished = false;
-        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.', $this->versionId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
         $this->dispatch('addon-version-updated.'.$this->versionId, published: false);
 

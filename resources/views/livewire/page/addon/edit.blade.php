@@ -108,7 +108,8 @@
                             {{-- Name --}}
                             <flux:field
                                 class="col-span-6"
-                                x-data="{ count: 0, text: '' }"
+                                x-data="{ text: $wire.entangle('name') }"
+                                x-init="$watch('text', value => {})"
                             >
                                 <flux:label>{{ __('Name') }}</flux:label>
                                 <flux:description>
@@ -118,12 +119,10 @@
                                     type="text"
                                     wire:model.blur="name"
                                     maxlength="75"
-                                    x-model="text"
-                                    @input="count = text.length"
                                 />
                                 <div
                                     class="mt-1 text-sm text-gray-500 dark:text-gray-400"
-                                    x-text="`Max Length: ${count}/75`"
+                                    x-text="`Max Length: ${(text || '').length}/75`"
                                 ></div>
                                 <flux:error name="name" />
                             </flux:field>
@@ -131,7 +130,8 @@
                             {{-- Teaser --}}
                             <flux:field
                                 class="col-span-6"
-                                x-data="{ count: 0, text: '' }"
+                                x-data="{ text: $wire.entangle('teaser') }"
+                                x-init="$watch('text', value => {})"
                             >
                                 <flux:label>{{ __('Teaser') }}</flux:label>
                                 <flux:description>
@@ -141,28 +141,27 @@
                                     type="text"
                                     wire:model.blur="teaser"
                                     maxlength="255"
-                                    x-model="text"
-                                    @input="count = text.length"
                                 />
                                 <div
                                     class="mt-1 text-sm text-gray-500 dark:text-gray-400"
-                                    x-text="`Max Length: ${count}/255`"
+                                    x-text="`Max Length: ${(text || '').length}/255`"
                                 ></div>
                                 <flux:error name="teaser" />
                             </flux:field>
 
                             {{-- Description --}}
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('Description') }}</flux:label>
-                                <flux:description>
-                                    {{ __('Explain the addon in detail. This will be displayed on the addon page. Use markdown for formatting.') }}
-                                </flux:description>
-                                <flux:textarea
-                                    rows="6"
-                                    wire:model.blur="description"
+                                <x-markdown-editor
+                                    wire-model="description"
+                                    name="description"
+                                    :label="__('Description')"
+                                    :description="__(
+                                        'Explain the addon in detail. This will be displayed on the addon page. Use markdown for formatting.',
+                                    )"
                                     placeholder="My addon is a *great addon* that does something..."
+                                    rows="6"
+                                    purify-config="description"
                                 />
-                                <flux:error name="description" />
                             </flux:field>
 
                             {{-- License --}}

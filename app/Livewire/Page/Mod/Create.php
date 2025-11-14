@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Mod;
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use Illuminate\Http\UploadedFile;
@@ -22,6 +23,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 class Create extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithFileUploads;
 
@@ -211,7 +213,7 @@ class Create extends Component
 
         // Add authors
         if (! empty($this->authorIds)) {
-            $mod->authors()->attach($this->authorIds);
+            $mod->additionalAuthors()->attach($this->authorIds);
         }
 
         // Add source code links

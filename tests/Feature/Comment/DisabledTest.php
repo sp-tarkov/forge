@@ -100,7 +100,7 @@ describe('Comment Policy with Disabled Comments', function (): void {
 
     it('allows mod authors to view comments when comments are disabled', function (): void {
         $author = User::factory()->create();
-        $this->mod->authors()->attach($author);
+        $this->mod->additionalAuthors()->attach($author);
         $this->mod->update(['comments_disabled' => true]);
         $this->comment->refresh();
 
@@ -301,7 +301,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
 
     it('shows comments tab for mod authors when comments are disabled', function (): void {
         $author = User::factory()->create();
-        $this->mod->authors()->attach($author);
+        $this->mod->additionalAuthors()->attach($author);
         $this->mod->update(['comments_disabled' => true]);
 
         $response = $this->actingAs($author)
@@ -344,7 +344,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
 
     it('shows author notice when comments are disabled and user is mod author', function (): void {
         $author = User::factory()->create();
-        $this->mod->authors()->attach($author);
+        $this->mod->additionalAuthors()->attach($author);
         $this->mod->update(['comments_disabled' => true]);
 
         $response = $this->actingAs($author)
@@ -396,7 +396,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
 
     it('hides comment creation form for mod authors when comments are disabled', function (): void {
         $author = User::factory()->create();
-        $this->mod->authors()->attach($author);
+        $this->mod->additionalAuthors()->attach($author);
         $this->mod->update(['comments_disabled' => true]);
 
         $response = $this->actingAs($author)

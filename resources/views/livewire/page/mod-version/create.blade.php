@@ -44,6 +44,58 @@
                         <div class="grid grid-cols-6 gap-6">
                             @csrf
 
+                            @if (empty($modCategoryId))
+                                <div class="col-span-6">
+                                    <flux:callout
+                                        icon="information-circle"
+                                        color="cyan"
+                                    >
+                                        <flux:callout.text>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <strong>{{ __('Mod Category Required') }}</strong>
+                                                    <p class="mt-1 text-sm">
+                                                        {{ __('This mod does not have a category set. Please select a category that best describes your mod. This helps users find your mod more easily.') }}
+                                                    </p>
+                                                </div>
+                                                <div class="flex gap-3 items-start">
+                                                    <div class="flex-1">
+                                                        <flux:select
+                                                            wire:model.live="newModCategoryId"
+                                                            placeholder="Choose category..."
+                                                        >
+                                                            @foreach (\App\Models\ModCategory::orderBy('title')->get() as $category)
+                                                                <flux:select.option value="{{ $category->id }}">
+                                                                    {{ $category->title }}
+                                                                </flux:select.option>
+                                                            @endforeach
+                                                        </flux:select>
+                                                    </div>
+                                                    <flux:button
+                                                        variant="primary"
+                                                        size="sm"
+                                                        wire:click="saveCategory"
+                                                        wire:loading.attr="disabled"
+                                                        type="button"
+                                                        class="mt-1"
+                                                    >
+                                                        <span
+                                                            wire:loading.remove
+                                                            wire:target="saveCategory"
+                                                        >{{ __('Save Category') }}</span>
+                                                        <span
+                                                            wire:loading
+                                                            wire:target="saveCategory"
+                                                        >{{ __('Saving...') }}</span>
+                                                    </flux:button>
+                                                </div>
+                                                <flux:error name="newModCategoryId" />
+                                            </div>
+                                        </flux:callout.text>
+                                    </flux:callout>
+                                </div>
+                            @endif
+
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Version Number') }}</flux:label>
                                 <flux:description>{!! __('The version number for this release. Must follow semantic versioning.') !!}</flux:description>
@@ -57,16 +109,17 @@
                             </flux:field>
 
                             <flux:field class="col-span-6">
-                                <flux:label>{{ __('Description') }}</flux:label>
-                                <flux:description>
-                                    {{ __("Explain what's new or changed in this version. Use markdown for formatting.") }}
-                                </flux:description>
-                                <flux:textarea
-                                    rows="6"
-                                    wire:model.blur="description"
+                                <x-markdown-editor
+                                    wire-model="description"
+                                    name="description"
+                                    :label="__('Description')"
+                                    :description="__(
+                                        'Explain what\'s new or changed in this version. Use markdown for formatting.',
+                                    )"
                                     placeholder="This version includes updates to the..."
+                                    rows="6"
+                                    purify-config="description"
                                 />
-                                <flux:error name="description" />
                             </flux:field>
 
                             <flux:field class="col-span-6">

@@ -174,6 +174,16 @@
                                         wire:navigate
                                     >{{ __('View Profile') }}</flux:menu.item>
                                     <flux:menu.item
+                                        icon="cube-transparent"
+                                        href="{{ auth()->user()->profile_url }}#mods"
+                                        wire:navigate
+                                    >{{ __('My Mods') }}</flux:menu.item>
+                                    <flux:menu.item
+                                        icon="puzzle-piece"
+                                        href="{{ auth()->user()->profile_url }}#addons"
+                                        wire:navigate
+                                    >{{ __('My Addons') }}</flux:menu.item>
+                                    <flux:menu.item
                                         icon="cog-6-tooth"
                                         href="{{ route('profile.show') }}"
                                         wire:navigate
@@ -327,6 +337,10 @@
                     href="{{ auth()->user()->profile_url }}"
                     :active="request()->routeIs('user.show')"
                 >{{ __('Profile') }}</x-responsive-nav-link>
+                <x-responsive-nav-link
+                    href="{{ auth()->user()->profile_url }}#mods">{{ __('My Mods') }}</x-responsive-nav-link>
+                <x-responsive-nav-link
+                    href="{{ auth()->user()->profile_url }}#addons">{{ __('My Addons') }}</x-responsive-nav-link>
                 <x-responsive-nav-link
                     href="{{ route('profile.show') }}"
                     :active="request()->routeIs('profile.show')"

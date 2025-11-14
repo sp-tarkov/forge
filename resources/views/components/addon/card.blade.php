@@ -102,8 +102,8 @@
                                     @else
                                         Unknown
                                     @endif
-                                    @if ($addon->authors->isNotEmpty())
-                                        @foreach ($addon->authors as $author)
+                                    @if ($addon->additionalAuthors->isNotEmpty())
+                                        @foreach ($addon->additionalAuthors as $author)
                                             <span><a
                                                     href="{{ $author->profile_url }}"
                                                     class="hover:text-gray-900 dark:hover:text-gray-100 underline"

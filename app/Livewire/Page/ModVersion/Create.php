@@ -7,6 +7,7 @@ namespace App\Livewire\Page\ModVersion;
 use App\Enums\FikaCompatibility;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
@@ -34,6 +35,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
  */
 class Create extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
 
     /**
@@ -127,6 +129,21 @@ class Create extends Component
      * Whether the GUID has been successfully saved.
      */
     public bool $guidSaved = false;
+
+    /**
+     * The mod category ID (for checking if category is set).
+     */
+    public ?int $modCategoryId = null;
+
+    /**
+     * The new category ID to set on the mod if needed.
+     */
+    public string $newModCategoryId = '';
+
+    /**
+     * Whether the category has been successfully saved.
+     */
+    public bool $categorySaved = false;
 
     /**
      * The DirectDownloadLink rule instance (for content length extraction).
@@ -308,6 +325,7 @@ class Create extends Component
         $this->mod = $mod;
         $this->honeypotData = new HoneypotData;
         $this->modGuid = $mod->guid ?? '';
+        $this->modCategoryId = $mod->category_id;
 
         // Initialize with one empty VirusTotal link
         $this->virusTotalLinks = [
@@ -342,6 +360,33 @@ class Create extends Component
 
         // Show success message
         flash()->success('Mod GUID has been successfully saved.');
+    }
+
+    /**
+     * Save the category to the mod without refreshing the page.
+     */
+    public function saveCategory(): void
+    {
+        $this->authorize('update', $this->mod);
+
+        // Validate the category
+        $this->validate([
+            'newModCategoryId' => 'required|exists:mod_categories,id',
+        ], [
+            'newModCategoryId.required' => 'Please select a category.',
+            'newModCategoryId.exists' => 'The selected category is invalid.',
+        ]);
+
+        // Save the category to the mod
+        $this->mod->category_id = (int) $this->newModCategoryId;
+        $this->mod->save();
+
+        // Update the component state
+        $this->modCategoryId = (int) $this->newModCategoryId;
+        $this->categorySaved = true;
+
+        // Show success message
+        flash()->success('Mod category has been successfully saved.');
     }
 
     /**
@@ -477,6 +522,11 @@ class Create extends Component
             $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', 'unique:mods,guid'];
         }
 
+        // Add mod category validation if mod doesn't have one and hasn't been saved already
+        if (empty($this->modCategoryId) && ! $this->categorySaved) {
+            $rules['newModCategoryId'] = ['required', 'exists:mod_categories,id'];
+        }
+
         foreach ($this->dependencies as $index => $dependency) {
             // If either field is filled, both are required
             if (! empty($dependency['modId']) || ! empty($dependency['constraint'])) {
@@ -511,6 +561,8 @@ class Create extends Component
             'newModGuid.required' => 'A mod GUID is required for versions compatible with SPT 4.0.0 or above.',
             'newModGuid.regex' => 'The mod GUID must use reverse domain notation (e.g., com.username.modname) with only lowercase letters, numbers, and dots.',
             'newModGuid.unique' => 'This mod GUID is already in use by another mod.',
+            'newModCategoryId.required' => 'A category is required before publishing a mod version.',
+            'newModCategoryId.exists' => 'The selected category is invalid.',
             'virusTotalLinks.required' => 'At least one VirusTotal link is required.',
             'virusTotalLinks.min' => 'At least one VirusTotal link is required.',
             'virusTotalLinks.*.url.required' => 'Please enter a valid VirusTotal URL.',

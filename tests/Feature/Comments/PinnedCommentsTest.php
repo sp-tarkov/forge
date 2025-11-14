@@ -37,7 +37,7 @@ describe('Pin Authorization', function (): void {
         $author = User::factory()->create();
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
-        $mod->authors()->attach($author);
+        $mod->additionalAuthors()->attach($author);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -256,7 +256,7 @@ describe('Pin Functionality', function (): void {
         $author = User::factory()->create();
         $mod = Mod::factory()->create();
         ModVersion::factory()->recycle($mod)->create();
-        $mod->authors()->attach($author);
+        $mod->additionalAuthors()->attach($author);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,
@@ -377,7 +377,7 @@ describe('Pin Action Visibility', function (): void {
 
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         ModVersion::factory()->recycle($mod)->create();
-        $mod->authors()->attach($author);
+        $mod->additionalAuthors()->attach($author);
 
         $comment = Comment::factory()->create([
             'commentable_id' => $mod->id,

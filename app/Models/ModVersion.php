@@ -47,7 +47,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $description
  * @property string $link
  * @property int|null $content_length
- * @property string $spt_version_constraint
+ * @property string|null $spt_version_constraint
  * @property int $downloads
  * @property bool $disabled
  * @property FikaCompatibility $fika_compatibility

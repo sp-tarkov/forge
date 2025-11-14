@@ -188,7 +188,7 @@ class SptVersion extends Model
      */
     public static function allValidVersions(bool $includeUnpublished = false): array
     {
-        $cacheKey = $includeUnpublished ? 'spt-versions:all:authors' : 'spt-versions:all:user';
+        $cacheKey = $includeUnpublished ? 'spt-versions:all:additional-authors' : 'spt-versions:all:user';
 
         return Cache::flexible($cacheKey, [5 * 60, 60 * 60], fn () => self::query()
             ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))

@@ -11,6 +11,7 @@ use App\Traits\Livewire\ModeratesAddon;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -53,16 +54,16 @@ class Show extends Component
      */
     public function getModCount(): int
     {
-        $query = $this->user->mods();
+        $viewer = Auth::user();
 
-        $query->unless(
-            request()->user()?->can('viewDisabledUserMods', $this->user),
-            fn (Builder $q): Builder => $q
-                ->whereDisabled(false)
+        $query = $this->user->ownedAndAuthoredMods();
+
+        if (! $viewer?->can('viewDisabledUserMods', $this->user)) {
+            $query->whereDisabled(false)
                 ->whereHas('versions', function (Builder $versionQuery): void {
                     $versionQuery->where('disabled', false)->whereNotNull('published_at');
-                })
-        );
+                });
+        }
 
         return $query->count();
     }
@@ -72,16 +73,17 @@ class Show extends Component
      */
     public function getAddonCount(): int
     {
-        $currentUser = auth()->user();
+        $viewer = Auth::user();
 
-        return $this->user->addons()
-            ->when(! ($currentUser?->isModOrAdmin() || $currentUser?->id === $this->user->id), function (Builder $query): void {
-                $query->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
-            })
-            ->whereNull('detached_at')
-            ->count();
+        $query = $this->user->ownedAndAuthoredAddons();
+
+        if (! $viewer?->can('viewDisabledUserAddons', $this->user)) {
+            $query->where('addons.disabled', false)
+                ->whereNotNull('addons.published_at')
+                ->where('addons.published_at', '<=', now());
+        }
+
+        return $query->count();
     }
 
     /**
@@ -107,22 +109,23 @@ class Show extends Component
      */
     protected function getUserMods(): LengthAwarePaginator
     {
-        $query = $this->user->mods()
+        $viewer = Auth::user();
+
+        $query = $this->user->ownedAndAuthoredMods()
             ->with([
                 'owner:id,name',
-                'authors:id,name',
+                'additionalAuthors:id,name',
                 'latestVersion',
                 'latestVersion.latestSptVersion',
-            ])->latest();
+            ])
+            ->latest();
 
-        $query->unless(
-            request()->user()?->can('viewDisabledUserMods', $this->user),
-            fn (Builder $q): Builder => $q
-                ->whereDisabled(false)
+        if (! $viewer?->can('viewDisabledUserMods', $this->user)) {
+            $query->whereDisabled(false)
                 ->whereHas('versions', function (Builder $versionQuery): void {
                     $versionQuery->where('disabled', false)->whereNotNull('published_at');
-                })
-        );
+                });
+        }
 
         return $query->paginate(10)
             ->fragment('mods');
@@ -135,25 +138,26 @@ class Show extends Component
      */
     protected function getUserAddons(): LengthAwarePaginator
     {
-        $currentUser = auth()->user();
+        $viewer = Auth::user();
 
-        return $this->user->addons()
+        $query = $this->user->ownedAndAuthoredAddons()
             ->with([
                 'owner',
-                'authors',
+                'additionalAuthors',
                 'latestVersion',
                 'mod:id,name,slug',
                 'mod.latestVersion:id,mod_id,version_major,version_minor,version_patch',
                 'versions.compatibleModVersions',
             ])
-            ->unless($currentUser?->isModOrAdmin() || $currentUser?->id === $this->user->id, function (Builder $query): void {
-                $query->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
-            })
-            ->whereNull('detached_at')
-            ->orderBy('downloads', 'desc')
-            ->paginate(perPage: 10, pageName: 'addonPage')
+            ->orderBy('addons.downloads', 'desc');
+
+        if (! $viewer?->can('viewDisabledUserAddons', $this->user)) {
+            $query->where('addons.disabled', false)
+                ->whereNotNull('addons.published_at')
+                ->where('addons.published_at', '<=', now());
+        }
+
+        return $query->paginate(perPage: 10, pageName: 'addonPage')
             ->fragment('addons');
     }
 

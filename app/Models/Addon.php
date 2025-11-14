@@ -22,10 +22,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -63,7 +63,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read User|null $owner
  * @property-read User|null $detachedBy
  * @property-read License|null $license
- * @property-read Collection<int, User> $authors
+ * @property-read Collection<int, User> $additionalAuthors
  * @property-read Collection<int, AddonVersion> $versions
  * @property-read Collection<int, SourceCodeLink> $sourceCodeLinks
  * @property-read AddonVersion|null $latestVersion
@@ -121,13 +121,13 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
-     * The relationship between an addon and its authors (Users).
+     * The relationship between an addon and its additional authors (Users).
      *
-     * @return BelongsToMany<User, $this>
+     * @return MorphToMany<User, $this>
      */
-    public function authors(): BelongsToMany
+    public function additionalAuthors(): MorphToMany
     {
-        return $this->belongsToMany(User::class, 'addon_authors')
+        return $this->morphToMany(User::class, 'authorable', 'additional_authors')
             ->withTimestamps();
     }
 
@@ -203,7 +203,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
         }
 
         return $this->owner_id === $user->id ||
-               $this->authors->contains('id', $user->id);
+               $this->additionalAuthors->contains('id', $user->id);
     }
 
     /**
@@ -514,13 +514,15 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     /**
      * Get the full URL for the thumbnail image.
      *
-     * @return Attribute<string|null, never>
+     * @return Attribute<string, never>
      */
     protected function thumbnailUrl(): Attribute
     {
-        return Attribute::make(
-            get: fn () => $this->thumbnail ? Storage::disk('public')->url($this->thumbnail) : null,
-        );
+        $disk = config('filesystems.asset_upload', 'public');
+
+        return Attribute::get(fn (): string => $this->thumbnail
+            ? Storage::disk($disk)->url($this->thumbnail)
+            : '');
     }
 
     /**

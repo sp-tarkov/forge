@@ -8,6 +8,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Addon;
 use App\Traits\Livewire\ModerationActionMenu;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -91,15 +92,17 @@ class Action extends Component
      */
     public function disable(): void
     {
-        $this->authorize('disable', $this->addon);
+        $addon = $this->addon;
 
-        // Update the database directly
-        Addon::query()->where('id', $this->addonId)->update(['disabled' => true]);
+        $this->authorize('disable', $addon);
 
-        Track::event(TrackingEventType::ADDON_DISABLE, $this->addon);
+        $addon->disabled = true;
+        $addon->save();
+
+        Track::event(TrackingEventType::ADDON_DISABLE, $addon);
 
         $this->addonDisabled = true;
-        $this->clearPermissionCache(sprintf('addon.%d.permissions.', $this->addonId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, disabled: true);
@@ -114,14 +117,17 @@ class Action extends Component
      */
     public function enable(): void
     {
-        $this->authorize('enable', $this->addon);
+        $addon = $this->addon;
 
-        Addon::query()->where('id', $this->addonId)->update(['disabled' => false]);
+        $this->authorize('enable', $addon);
 
-        Track::event(TrackingEventType::ADDON_ENABLE, $this->addon);
+        $addon->disabled = false;
+        $addon->save();
+
+        Track::event(TrackingEventType::ADDON_ENABLE, $addon);
 
         $this->addonDisabled = false;
-        $this->clearPermissionCache(sprintf('addon.%d.permissions.', $this->addonId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, disabled: false);
@@ -136,16 +142,18 @@ class Action extends Component
      */
     public function publish(): void
     {
-        $this->authorize('publish', $this->addon);
-
         $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
+        $addon = $this->addon;
 
-        Addon::query()->where('id', $this->addonId)->update(['published_at' => $publishedDate]);
+        $this->authorize('publish', $addon);
 
-        Track::event(TrackingEventType::ADDON_PUBLISH, $this->addon);
+        $addon->published_at = $publishedDate;
+        $addon->save();
+
+        Track::event(TrackingEventType::ADDON_PUBLISH, $addon);
 
         $this->addonPublished = true;
-        $this->clearPermissionCache(sprintf('addon.%d.permissions.', $this->addonId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, published: true);
@@ -160,14 +168,17 @@ class Action extends Component
      */
     public function unpublish(): void
     {
-        $this->authorize('unpublish', $this->addon);
+        $addon = $this->addon;
 
-        Addon::query()->where('id', $this->addonId)->update(['published_at' => null]);
+        $this->authorize('unpublish', $addon);
 
-        Track::event(TrackingEventType::ADDON_UNPUBLISH, $this->addon);
+        $addon->published_at = null;
+        $addon->save();
+
+        Track::event(TrackingEventType::ADDON_UNPUBLISH, $addon);
 
         $this->addonPublished = false;
-        $this->clearPermissionCache(sprintf('addon.%d.permissions.', $this->addonId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, published: false);
@@ -182,20 +193,21 @@ class Action extends Component
      */
     public function attach(): void
     {
-        $this->authorize('attach', $this->addon);
+        $addon = $this->addon;
 
-        Addon::query()->where('id', $this->addonId)->update([
-            'detached_at' => null,
-            'detached_by_user_id' => null,
-        ]);
+        $this->authorize('attach', $addon);
+
+        $addon->detached_at = null;
+        $addon->detached_by_user_id = null;
+        $addon->save();
 
         // Update search index to reflect the attachment
-        $this->addon->refresh()->searchable();
+        $addon->refresh()->searchable();
 
-        Track::event(TrackingEventType::ADDON_ATTACH, $this->addon);
+        Track::event(TrackingEventType::ADDON_ATTACH, $addon);
 
         $this->addonDetached = false;
-        $this->clearPermissionCache(sprintf('addon.%d.permissions.', $this->addonId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         flash()->success('Addon successfully attached!');
 
@@ -207,20 +219,21 @@ class Action extends Component
      */
     public function detach(): void
     {
-        $this->authorize('detach', $this->addon);
+        $addon = $this->addon;
 
-        Addon::query()->where('id', $this->addonId)->update([
-            'detached_at' => now(),
-            'detached_by_user_id' => auth()->id(),
-        ]);
+        $this->authorize('detach', $addon);
+
+        $addon->detached_at = now();
+        $addon->detached_by_user_id = auth()->id();
+        $addon->save();
 
         // Update search index to reflect the detachment
-        $this->addon->refresh()->searchable();
+        $addon->refresh()->searchable();
 
-        Track::event(TrackingEventType::ADDON_DETACH, $this->addon);
+        Track::event(TrackingEventType::ADDON_DETACH, $addon);
 
         $this->addonDetached = true;
-        $this->clearPermissionCache(sprintf('addon.%d.permissions.', $this->addonId).auth()->id());
+        $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) auth()->id()));
 
         flash()->success('Addon successfully detached!');
 

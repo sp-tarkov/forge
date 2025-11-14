@@ -63,7 +63,7 @@ class Homepage extends Component
                 'latestVersion',
                 'latestVersion.latestSptVersion',
                 'owner:id,name',
-                'authors:id,name',
+                'additionalAuthors:id,name',
                 'license:id,name,link',
             ])
             ->inRandomOrder()
@@ -92,7 +92,7 @@ class Homepage extends Component
                 'latestVersion',
                 'latestVersion.latestSptVersion',
                 'owner:id,name',
-                'authors:id,name',
+                'additionalAuthors:id,name',
                 'license:id,name,link',
             ])->latest()
             ->limit(6);
@@ -134,7 +134,7 @@ class Homepage extends Component
                 'latestUpdatedVersion',
                 'latestUpdatedVersion.latestSptVersion',
                 'owner:id,name',
-                'authors:id,name',
+                'additionalAuthors:id,name',
                 'license:id,name,link',
             ])
             ->orderByDesc('latest_version.created_at')

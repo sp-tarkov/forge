@@ -29,7 +29,7 @@ describe('Addon Detachment', function (): void {
             $modAuthor = User::factory()->create(['email_verified_at' => now()]);
             $addonOwner = User::factory()->create();
             $mod = Mod::factory()->for($modOwner, 'owner')->create();
-            $mod->authors()->attach($modAuthor);
+            $mod->additionalAuthors()->attach($modAuthor);
             $addon = Addon::factory()->for($mod)->for($addonOwner, 'owner')->create();
 
             $this->actingAs($modAuthor);
@@ -286,15 +286,15 @@ describe('Addon Detachment', function (): void {
             $mod = Mod::factory()->create();
             $addon = Addon::factory()->for($mod)->create();
             $authors = User::factory()->count(2)->create();
-            $addon->authors()->attach($authors);
+            $addon->additionalAuthors()->attach($authors);
 
-            expect($addon->authors)->toHaveCount(2);
+            expect($addon->additionalAuthors)->toHaveCount(2);
 
             $addon->detached_at = now();
             $addon->save();
 
             $addon->refresh();
-            expect($addon->authors)->toHaveCount(2);
+            expect($addon->additionalAuthors)->toHaveCount(2);
         });
 
         it('records who detached the addon', function (): void {
@@ -346,7 +346,7 @@ describe('Addon Detachment', function (): void {
             $modOwner = User::factory()->create();
             $modAuthor = User::factory()->create(['email_verified_at' => now()]);
             $mod = Mod::factory()->for($modOwner, 'owner')->create();
-            $mod->authors()->attach($modAuthor);
+            $mod->additionalAuthors()->attach($modAuthor);
             $addon = Addon::factory()->for($mod)->detached()->create();
 
             $this->actingAs($modAuthor);

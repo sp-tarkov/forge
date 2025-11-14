@@ -120,7 +120,7 @@ class ModSeeder extends Seeder
             callback: function (Mod $mod, Progress $progress) use ($allUsers) {
                 $userIds = $allUsers->random(rand(0, 2))->pluck('id')->toArray();
                 if (count($userIds)) {
-                    $mod->authors()->attach($userIds);
+                    $mod->additionalAuthors()->attach($userIds);
                 }
             }
         );

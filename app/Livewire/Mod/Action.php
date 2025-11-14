@@ -8,6 +8,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
 use App\Traits\Livewire\ModerationActionMenu;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -99,14 +100,17 @@ class Action extends Component
      */
     public function feature(): void
     {
-        $this->authorize('feature', $this->mod);
+        $mod = $this->mod;
 
-        Mod::query()->where('id', $this->modId)->update(['featured' => true]);
+        $this->authorize('feature', $mod);
 
-        Track::event(TrackingEventType::MOD_FEATURE, $this->mod);
+        $mod->featured = true;
+        $mod->save();
+
+        Track::event(TrackingEventType::MOD_FEATURE, $mod);
 
         $this->modFeatured = true;
-        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         $this->dispatch('mod-updated.'.$this->modId, featured: true);
 
@@ -120,15 +124,17 @@ class Action extends Component
      */
     public function unfeature(): void
     {
-        $this->authorize('unfeature', $this->mod);
+        $mod = $this->mod;
 
-        // Update the database directly
-        Mod::query()->where('id', $this->modId)->update(['featured' => false]);
+        $this->authorize('unfeature', $mod);
 
-        Track::event(TrackingEventType::MOD_UNFEATURE, $this->mod);
+        $mod->featured = false;
+        $mod->save();
+
+        Track::event(TrackingEventType::MOD_UNFEATURE, $mod);
 
         $this->modFeatured = false;
-        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, featured: false);
@@ -143,15 +149,17 @@ class Action extends Component
      */
     public function disable(): void
     {
-        $this->authorize('disable', $this->mod);
+        $mod = $this->mod;
 
-        // Update the database directly
-        Mod::query()->where('id', $this->modId)->update(['disabled' => true]);
+        $this->authorize('disable', $mod);
 
-        Track::event(TrackingEventType::MOD_DISABLE, $this->mod);
+        $mod->disabled = true;
+        $mod->save();
+
+        Track::event(TrackingEventType::MOD_DISABLE, $mod);
 
         $this->modDisabled = true;
-        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, disabled: true);
@@ -166,14 +174,17 @@ class Action extends Component
      */
     public function enable(): void
     {
-        $this->authorize('enable', $this->mod);
+        $mod = $this->mod;
 
-        Mod::query()->where('id', $this->modId)->update(['disabled' => false]);
+        $this->authorize('enable', $mod);
 
-        Track::event(TrackingEventType::MOD_ENABLE, $this->mod);
+        $mod->disabled = false;
+        $mod->save();
+
+        Track::event(TrackingEventType::MOD_ENABLE, $mod);
 
         $this->modDisabled = false;
-        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, disabled: false);
@@ -188,16 +199,18 @@ class Action extends Component
      */
     public function publish(): void
     {
-        $this->authorize('publish', $this->mod);
-
         $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
+        $mod = $this->mod;
 
-        Mod::query()->where('id', $this->modId)->update(['published_at' => $publishedDate]);
+        $this->authorize('publish', $mod);
 
-        Track::event(TrackingEventType::MOD_PUBLISH, $this->mod);
+        $mod->published_at = $publishedDate;
+        $mod->save();
+
+        Track::event(TrackingEventType::MOD_PUBLISH, $mod);
 
         $this->modPublished = true;
-        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, published: true);
@@ -212,14 +225,17 @@ class Action extends Component
      */
     public function unpublish(): void
     {
-        $this->authorize('unpublish', $this->mod);
+        $mod = $this->mod;
 
-        Mod::query()->where('id', $this->modId)->update(['published_at' => null]);
+        $this->authorize('unpublish', $mod);
 
-        Track::event(TrackingEventType::MOD_UNPUBLISH, $this->mod);
+        $mod->published_at = null;
+        $mod->save();
+
+        Track::event(TrackingEventType::MOD_UNPUBLISH, $mod);
 
         $this->modPublished = false;
-        $this->clearPermissionCache(sprintf('mod.%d.permissions.', $this->modId).auth()->id());
+        $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, published: false);

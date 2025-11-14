@@ -54,7 +54,7 @@ class PublishedScope implements Scope
                         // For Mods, directly check ownership.
                         $unpublishedQuery->where(function (Builder $ownerQuery) use ($model): void {
                             $ownerQuery->where($model->getTable().'.owner_id', Auth::id())
-                                ->orWhereHas('authors', function (Builder $authorsQuery): void {
+                                ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
                                     $authorsQuery->where('users.id', Auth::id());
                                 });
                         });
@@ -63,7 +63,7 @@ class PublishedScope implements Scope
                         $unpublishedQuery->where(function (Builder $ownerQuery): void {
                             $ownerQuery->whereHas('mod', function (Builder $modQuery): void {
                                 $modQuery->where('owner_id', Auth::id())
-                                    ->orWhereHas('authors', function (Builder $authorsQuery): void {
+                                    ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
                                         $authorsQuery->where('users.id', Auth::id());
                                     });
                             });
@@ -72,7 +72,7 @@ class PublishedScope implements Scope
                         // For Addons, directly check ownership.
                         $unpublishedQuery->where(function (Builder $ownerQuery) use ($model): void {
                             $ownerQuery->where($model->getTable().'.owner_id', Auth::id())
-                                ->orWhereHas('authors', function (Builder $authorsQuery): void {
+                                ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
                                     $authorsQuery->where('users.id', Auth::id());
                                 });
                         });
@@ -81,7 +81,7 @@ class PublishedScope implements Scope
                         $unpublishedQuery->where(function (Builder $ownerQuery): void {
                             $ownerQuery->whereHas('addon', function (Builder $addonQuery): void {
                                 $addonQuery->where('owner_id', Auth::id())
-                                    ->orWhereHas('authors', function (Builder $authorsQuery): void {
+                                    ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
                                         $authorsQuery->where('users.id', Auth::id());
                                     });
                             });

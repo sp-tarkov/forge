@@ -6,6 +6,7 @@ namespace App\Livewire\Page\Addon;
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Addon;
 use App\Models\SourceCodeLink;
 use Illuminate\Http\UploadedFile;
@@ -23,6 +24,7 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 class Edit extends Component
 {
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithFileUploads;
 
@@ -89,6 +91,11 @@ class Edit extends Component
     public bool $commentsDisabled = false;
 
     /**
+     * Whether to subscribe to comment notifications for the addon.
+     */
+    public bool $subscribeToComments = false;
+
+    /**
      * The selected author user IDs.
      *
      * @var array<int>
@@ -102,7 +109,7 @@ class Edit extends Component
     {
         $this->honeypotData = new HoneypotData;
 
-        $this->addon = Addon::query()->with(['sourceCodeLinks', 'authors', 'mod'])->findOrFail($addonId);
+        $this->addon = Addon::query()->with(['sourceCodeLinks', 'additionalAuthors', 'mod'])->findOrFail($addonId);
 
         $this->authorize('update', $this->addon);
 
@@ -128,8 +135,11 @@ class Edit extends Component
         $this->containsAds = (bool) $this->addon->contains_ads;
         $this->commentsDisabled = (bool) $this->addon->comments_disabled;
 
+        // Check if the user is subscribed to comment notifications
+        $this->subscribeToComments = $this->addon->isUserSubscribed(auth()->user());
+
         // Load existing authors
-        $this->authorIds = $this->addon->authors->pluck('id')->toArray();
+        $this->authorIds = $this->addon->additionalAuthors->pluck('id')->toArray();
     }
 
     /**
@@ -200,7 +210,7 @@ class Edit extends Component
         $this->addon->save();
 
         // Sync authors (this will remove old ones and add new ones)
-        $this->addon->authors()->sync($this->authorIds);
+        $this->addon->additionalAuthors()->sync($this->authorIds);
 
         // Sync source code links
         // Delete existing links
@@ -214,6 +224,13 @@ class Edit extends Component
                     'label' => $link['label'] ?? '',
                 ]);
             }
+        }
+
+        // Handle comment subscription
+        if ($this->subscribeToComments && ! $this->addon->isUserSubscribed(auth()->user())) {
+            $this->addon->subscribeUser(auth()->user());
+        } elseif (! $this->subscribeToComments && $this->addon->isUserSubscribed(auth()->user())) {
+            $this->addon->unsubscribeUser(auth()->user());
         }
 
         Track::event(TrackingEventType::ADDON_EDIT, $this->addon);
@@ -298,6 +315,7 @@ class Edit extends Component
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
+            'subscribeToComments' => 'boolean',
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
         ];

@@ -155,7 +155,7 @@ class AddonSeeder extends Seeder
                 if (rand(0, 9) < 3) {
                     $userIds = $allUsers->random(rand(1, 2))->pluck('id')->toArray();
                     if (count($userIds)) {
-                        $addon->authors()->attach($userIds);
+                        $addon->additionalAuthors()->attach($userIds);
                     }
                 }
             }

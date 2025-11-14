@@ -22,10 +22,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -67,7 +67,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read ModCategory|null $category
- * @property-read Collection<int, User> $authors
+ * @property-read Collection<int, User> $additionalAuthors
  * @property-read Collection<int, ModVersion> $versions
  * @property-read Collection<int, SourceCodeLink> $sourceCodeLinks
  * @property-read Collection<int, Addon> $addons
@@ -165,13 +165,13 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
-     * The relationship between a mod and its authors (Users).
+     * The relationship between a mod and its additional authors (Users).
      *
-     * @return BelongsToMany<User, $this>
+     * @return MorphToMany<User, $this>
      */
-    public function authors(): BelongsToMany
+    public function additionalAuthors(): MorphToMany
     {
-        return $this->belongsToMany(User::class, 'mod_authors');
+        return $this->morphToMany(User::class, 'authorable', 'additional_authors');
     }
 
     /**
@@ -497,7 +497,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        return $user->id === $this->owner?->id || $this->authors->pluck('id')->contains($user->id);
+        return $user->id === $this->owner?->id || $this->additionalAuthors->pluck('id')->contains($user->id);
     }
 
     /**

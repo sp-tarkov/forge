@@ -23,19 +23,38 @@ describe('Auth Abilities API', function (): void {
             ]);
     });
 
-    it('returns empty array if token has no abilities', function (): void {
+    it('forbids access when token lacks the read ability', function (): void {
         $user = User::factory()->create([
             'password' => Hash::make('password123'),
         ]);
-        $token = $user->createToken('test-token', [])->plainTextToken;
+        $token = $user->createToken('test-token', ['create'])->plainTextToken;
 
         $response = $this->withToken($token)->getJson(route('api.v0.auth.abilities'));
 
-        $response->assertStatus(Response::HTTP_OK)
-            ->assertJson([
-                'success' => true,
-                'data' => [],
-            ]);
+        $response->assertForbidden();
+    });
+
+    it('allows fetching the authenticated user when token includes the read ability', function (): void {
+        $user = User::factory()->create([
+            'password' => Hash::make('password123'),
+        ]);
+        $token = $user->createToken('test-token', ['read'])->plainTextToken;
+
+        $response = $this->withToken($token)->getJson(route('api.v0.auth.user'));
+
+        $response->assertOk()
+            ->assertJsonPath('data.id', $user->id);
+    });
+
+    it('forbids fetching the authenticated user when token lacks the read ability', function (): void {
+        $user = User::factory()->create([
+            'password' => Hash::make('password123'),
+        ]);
+        $token = $user->createToken('test-token', ['create'])->plainTextToken;
+
+        $response = $this->withToken($token)->getJson(route('api.v0.auth.user'));
+
+        $response->assertForbidden();
     });
 
     it('returns error for unauthenticated request', function (): void {

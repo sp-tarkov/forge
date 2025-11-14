@@ -59,6 +59,7 @@ function initializeTabs(container = document) {
 
             // Create the "tab" button
             const link = document.createElement("button");
+            link.type = "button"; // Prevent form submission
             link.textContent = titleElement.textContent.trim();
             link.className = "tab-link";
             link.setAttribute("role", "tab");

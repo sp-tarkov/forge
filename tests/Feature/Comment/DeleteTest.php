@@ -404,7 +404,7 @@ describe('mod owner soft deletion', function (): void {
         $modAuthor = User::factory()->create();
         $commenter = User::factory()->create();
         $mod = createPublishedMod();
-        $mod->authors()->attach($modAuthor);
+        $mod->additionalAuthors()->attach($modAuthor);
 
         $comment = Comment::factory()->create([
             'commentable_type' => Mod::class,
@@ -767,7 +767,7 @@ describe('mod owner restore', function (): void {
         $modAuthor = User::factory()->create();
         $commenter = User::factory()->create();
         $mod = createPublishedMod();
-        $mod->authors()->attach($modAuthor);
+        $mod->additionalAuthors()->attach($modAuthor);
 
         $comment = Comment::factory()->create([
             'commentable_type' => Mod::class,

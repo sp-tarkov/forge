@@ -43,8 +43,6 @@ class AddonQueryBuilder extends AbstractQueryBuilder
     public static function getAllowedIncludes(): array
     {
         return [
-            'owner' => 'owner',
-            'authors' => 'authors',
             'versions' => 'versions',
             'latest_version' => 'latestVersion',
             'license' => 'license',
@@ -134,6 +132,7 @@ class AddonQueryBuilder extends AbstractQueryBuilder
             ->where('addons.disabled', false)
             ->whereNotNull('addons.published_at')
             ->where('addons.published_at', '<=', now())
+            ->with(['owner', 'additionalAuthors'])
             ->whereHas('versions', function (Builder $versionQuery): void {
                 // Ensure addon has at least one published version
                 $versionQuery->where('addon_versions.disabled', false)

@@ -18,8 +18,13 @@
                     autoplay
                     muted
                     loop
+                    playsinline
                     class="absolute inset-0 -z-10 h-full w-full object-cover z-0"
                 >
+                    <source
+                        src="{{ Vite::asset('resources/video/welcome.webm') }}"
+                        type="video/webm"
+                    >
                     <source
                         src="{{ Vite::asset('resources/video/welcome.mp4') }}"
                         type="video/mp4"

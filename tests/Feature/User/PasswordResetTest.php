@@ -66,4 +66,50 @@ describe('password reset', function (): void {
             return true;
         });
     })->skip(fn (): bool => ! Features::enabled(Features::resetPasswords()), 'Password updates are not enabled.');
+
+    it('shows same message for valid and invalid email addresses', function (): void {
+        Notification::fake();
+
+        $user = User::factory()->create();
+
+        // Request password reset for a valid email
+        $validResponse = $this->post('/forgot-password', [
+            'email' => $user->email,
+        ]);
+
+        // Request password reset for an invalid email
+        $invalidResponse = $this->post('/forgot-password', [
+            'email' => 'nonexistent@example.com',
+        ]);
+
+        // Both should redirect back
+        $validResponse->assertRedirect();
+        $invalidResponse->assertRedirect();
+
+        // Get the session messages
+        $validMessage = $validResponse->getSession()->get('status');
+        $invalidMessage = $invalidResponse->getSession()->get('status');
+
+        // Expected ambiguous message
+        $expectedMessage = 'If your email address is in our system, we have sent you a password reset link.';
+
+        // Both should have a status message (not an error)
+        expect($validMessage)->not->toBeNull();
+        expect($invalidMessage)->not->toBeNull();
+
+        // Both messages should be identical
+        expect($validMessage)->toBe($invalidMessage);
+
+        // Both messages should be the expected ambiguous message
+        expect($validMessage)->toBe($expectedMessage);
+        expect($invalidMessage)->toBe($expectedMessage);
+
+        // Should not have validation errors
+        $validResponse->assertSessionHasNoErrors();
+        $invalidResponse->assertSessionHasNoErrors();
+
+        // Notification should only be sent to the valid user
+        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertNothingSentTo(new User(['email' => 'nonexistent@example.com']));
+    })->skip(fn (): bool => ! Features::enabled(Features::resetPasswords()), 'Password updates are not enabled.');
 });
