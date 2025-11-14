@@ -192,7 +192,8 @@
                                                             placeholder="Choose category..."
                                                         >
                                                             @foreach (\App\Models\ModCategory::orderBy('title')->get() as $category)
-                                                                <flux:select.option value="{{ $category->id }}">{{ $category->title }}
+                                                                <flux:select.option value="{{ $category->id }}">
+                                                                    {{ $category->title }}
                                                                 </flux:select.option>
                                                             @endforeach
                                                         </flux:select>
