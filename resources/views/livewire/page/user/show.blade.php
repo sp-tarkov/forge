@@ -66,6 +66,7 @@
             </div>
         </div>
     </div>
+
     <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {{-- Left Column --}}
@@ -74,6 +75,50 @@
                 x-init="$watch('selectedTab', (tab) => { window.location.hash = tab })"
                 class="lg:col-span-3 flex flex-col gap-6"
             >
+                {{-- Ban Information (Visible to Admins/Moderators Only - Small Screens) --}}
+                @if ($activeBan && auth()->check() && auth()->user()->isModOrAdmin())
+                    <div class="lg:hidden">
+                        <flux:callout
+                            variant="danger"
+                            class="shadow-lg"
+                        >
+                            <div class="flex flex-col gap-2 text-sm">
+                                <div class="font-semibold text-base">{{ __('This user is currently banned') }}</div>
+
+                                @if ($activeBan->comment)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Reason:') }}</strong></div>
+                                        <div>{{ $activeBan->comment }}</div>
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->expired_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Ban Expires:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->expired_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->expired_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @else
+                                    <div>
+                                        <strong>{{ __('Ban Type:') }}</strong> {{ __('Permanent') }}
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->created_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Banned On:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->created_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->created_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </flux:callout>
+                    </div>
+                @endif
 
                 {{-- About --}}
                 @if ($user->about)
@@ -220,7 +265,52 @@
             </div>
 
             {{-- Right Column --}}
-            <div class="col-span-1 flex flex-col justify-top items-center">
+            <div class="col-span-1 flex flex-col justify-top items-center gap-6">
+                {{-- Ban Information (Visible to Admins/Moderators Only - Large Screens) --}}
+                @if ($activeBan && auth()->check() && auth()->user()->isModOrAdmin())
+                    <div class="hidden lg:block w-full">
+                        <flux:callout
+                            variant="danger"
+                            class="shadow-lg"
+                        >
+                            <div class="flex flex-col gap-2 text-sm">
+                                <div class="font-semibold text-base">{{ __('This user is currently banned') }}</div>
+
+                                @if ($activeBan->comment)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Reason:') }}</strong></div>
+                                        <div>{{ $activeBan->comment }}</div>
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->expired_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Ban Expires:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->expired_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->expired_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @else
+                                    <div>
+                                        <strong>{{ __('Ban Type:') }}</strong> {{ __('Permanent') }}
+                                    </div>
+                                @endif
+
+                                @if ($activeBan->created_at)
+                                    <div class="break-words">
+                                        <div><strong>{{ __('Banned On:') }}</strong></div>
+                                        <div>
+                                            {{ $activeBan->created_at->format('M j, Y \a\t g:i A') }}
+                                            ({{ $activeBan->created_at->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </flux:callout>
+                    </div>
+                @endif
+
                 {{-- Follows --}}
                 <livewire:user.follow-cards :profile-user="$user" />
             </div>

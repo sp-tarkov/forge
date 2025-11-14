@@ -17,6 +17,7 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Mchev\Banhammer\Models\Ban;
 
 class Show extends Component
 {
@@ -39,6 +40,8 @@ class Show extends Component
         $this->enforceCanonicalSlug($this->user, $slug);
 
         Gate::authorize('view', $this->user);
+
+        $this->handleBannedUser();
     }
 
     /**
@@ -87,6 +90,24 @@ class Show extends Component
     }
 
     /**
+     * Get the active ban for the user.
+     */
+    public function getActiveBan(): ?Ban
+    {
+        if ($this->user->isNotBanned()) {
+            return null;
+        }
+
+        /** @var Ban|null */
+        return $this->user->bans()
+            ->where(function (Builder $query): void {
+                $query->whereNull('expired_at')
+                    ->orWhere('expired_at', '>', now());
+            })
+            ->first();
+    }
+
+    /**
      * Render the user profile view.
      */
     #[Layout('components.layouts.base')]
@@ -99,7 +120,46 @@ class Show extends Component
             'openGraphImage' => $this->user->profile_photo_path,
             'modCount' => $this->getModCount(),
             'addonCount' => $this->getAddonCount(),
+            'activeBan' => $this->getActiveBan(),
         ]);
+    }
+
+    /**
+     * Handle displaying profile for banned users.
+     */
+    protected function handleBannedUser(): void
+    {
+        // Load bans relationship to check ban status
+        $this->user->loadMissing('bans');
+
+        // If user is not banned, continue normally
+        if ($this->user->isNotBanned()) {
+            return;
+        }
+
+        // Get the current viewer
+        $viewer = Auth::user();
+
+        // If viewer is admin or moderator, they can see the profile with ban info
+        if ($viewer && $viewer->isModOrAdmin()) {
+            return;
+        }
+
+        // For guests and normal users, redirect to banned user page
+        /** @var Ban|null $activeBan */
+        $activeBan = $this->user->bans()
+            ->where(function (Builder $query): void {
+                $query->whereNull('expired_at')
+                    ->orWhere('expired_at', '>', now());
+            })
+            ->first();
+
+        // Flash ban expiry date to session if available
+        if ($activeBan && $activeBan->expired_at) { // @phpstan-ignore property.notFound
+            session()->flash('ban_expires_at', $activeBan->expired_at);
+        }
+
+        $this->redirectRoute('user.banned', navigate: true);
     }
 
     /**

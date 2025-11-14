@@ -23,6 +23,7 @@ use App\Livewire\Page\Mod\Index as ModIndex;
 use App\Livewire\Page\Mod\Show as ModShow;
 use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
 use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
+use App\Livewire\Page\User\Banned;
 use App\Livewire\Page\User\Show as UserShow;
 use App\Models\Mod;
 use Illuminate\Contracts\View\Factory;
@@ -65,6 +66,9 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/user/{userId}/{slug}', UserShow::class)
         ->where(['userId' => '[0-9]+'])
         ->name('user.show');
+
+    Route::get('/user-banned', Banned::class)
+        ->name('user.banned');
 
     // Socialite OAuth Login
     Route::controller(SocialiteController::class)->group(function (): void {
