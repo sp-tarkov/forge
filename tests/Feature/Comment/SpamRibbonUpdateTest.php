@@ -127,7 +127,7 @@ describe('Comment Spam Ribbon Updates', function (): void {
         Config::set('akismet.enabled', false);
 
         $job = new CheckCommentForSpam($comment, isRecheck: true);
-        $job->handle(app(CommentSpamChecker::class));
+        $job->handle(resolve(CommentSpamChecker::class));
 
         // Verify that the comment was marked as clean
         $comment->refresh();

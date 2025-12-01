@@ -95,7 +95,7 @@ describe('spam checker behavior', function (): void {
             'user_id' => $user->id,
         ]);
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
         $result = $spamChecker->checkSpam($comment);
 
         expect($result->isSpam)->toBeFalse();

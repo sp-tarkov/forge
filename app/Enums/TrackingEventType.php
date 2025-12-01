@@ -15,46 +15,72 @@ enum TrackingEventType: string
 {
     /** User authentication events */
     case LOGIN = 'login';
+
     case LOGOUT = 'logout';
+
     case REGISTER = 'register';
+
     case PASSWORD_CHANGE = 'password_change';
 
     /** Mod-related events */
     case MOD_DOWNLOAD = 'mod_download';
+
     case MOD_CREATE = 'mod_create';
+
     case MOD_EDIT = 'mod_edit';
+
     case MOD_DELETE = 'mod_delete';
+
     case MOD_REPORT = 'mod_report';
 
     /** Mod version events */
     case VERSION_CREATE = 'version_create';
+
     case VERSION_EDIT = 'version_edit';
+
     case VERSION_DELETE = 'version_delete';
 
     /** Addon-related events */
     case ADDON_DOWNLOAD = 'addon_download';
+
     case ADDON_CREATE = 'addon_create';
+
     case ADDON_EDIT = 'addon_edit';
+
     case ADDON_DELETE = 'addon_delete';
+
     case ADDON_REPORT = 'addon_report';
+
     case ADDON_ATTACH = 'addon_attach';
+
     case ADDON_DETACH = 'addon_detach';
+
     case ADDON_DISABLE = 'addon_disable';
+
     case ADDON_ENABLE = 'addon_enable';
+
     case ADDON_PUBLISH = 'addon_publish';
+
     case ADDON_UNPUBLISH = 'addon_unpublish';
 
     /** Addon version events */
     case ADDON_VERSION_CREATE = 'addon_version_create';
+
     case ADDON_VERSION_EDIT = 'addon_version_edit';
+
     case ADDON_VERSION_DELETE = 'addon_version_delete';
 
     /** Comment events */
     case COMMENT_CREATE = 'comment_create';
+
     case COMMENT_EDIT = 'comment_edit';
+
     case COMMENT_DELETE = 'comment_delete';
+
     case COMMENT_LIKE = 'comment_like';
+
     case COMMENT_UNLIKE = 'comment_unlike';
+
     case COMMENT_REPORT = 'comment_report';
 
     /** Account management events */
@@ -62,16 +88,27 @@ enum TrackingEventType: string
 
     /** Moderator/Administrator actions */
     case USER_BAN = 'user_ban';
+
     case USER_UNBAN = 'user_unban';
+
     case IP_BAN = 'ip_ban';
+
     case IP_UNBAN = 'ip_unban';
+
     case MOD_FEATURE = 'mod_feature';
+
     case MOD_UNFEATURE = 'mod_unfeature';
+
     case MOD_DISABLE = 'mod_disable';
+
     case MOD_ENABLE = 'mod_enable';
+
     case MOD_PUBLISH = 'mod_publish';
+
     case MOD_UNPUBLISH = 'mod_unpublish';
+
     case COMMENT_PIN = 'comment_pin';
+
     case COMMENT_UNPIN = 'comment_unpin';
 
     /**
