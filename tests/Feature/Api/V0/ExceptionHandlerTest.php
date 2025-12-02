@@ -74,7 +74,7 @@ describe('API Exception Handler', function (): void {
         $response = $this->get('/this-route-does-not-exist');
 
         $response->assertStatus(Response::HTTP_NOT_FOUND);
-        $response->assertHeader('content-type', 'text/html; charset=UTF-8'); // Should be HTML
+        $response->assertHeader('content-type', 'text/html; charset=utf-8'); // Should be HTML
         $response->assertDontSeeText('"success": false'); // Ensure not JSON
         $response->assertDontSeeText('Resource not found.');
     });
