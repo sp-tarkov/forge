@@ -14,6 +14,7 @@
         purify-config="comments"
         error-name="{{ $formKey }}"
         data-test="{{ $dataTest ?? str_replace('.', '-', $formKey) }}"
+        :show-update-request-warning="true"
     />
 
     <div class="flex items-center justify-between mt-2">

@@ -7,6 +7,7 @@
     'rows' => 6,
     'purifyConfig' => 'description',
     'errorName' => null,
+    'showUpdateRequestWarning' => false,
 ])
 
 <div
@@ -187,24 +188,26 @@
     </div>
 
     {{-- Update Request Warning --}}
-    <div
-        x-show="containsUpdateRequest"
-        x-cloak
-    >
-        <flux:callout
-            variant="warning"
-            icon="exclamation-triangle"
+    @if ($showUpdateRequestWarning)
+        <div
+            x-show="containsUpdateRequest"
+            x-cloak
         >
-            <flux:callout.heading>{{ __('Warning: Potential Update Request Detected') }}</flux:callout.heading>
-            <flux:callout.text>
-                Pestering or harassing mod authors to update their mods is against our <flux:callout.link
-                    href="/community-standards"
-                    external
-                >community guidelines</flux:callout.link>. First offense is a 7-day ban. Please be respectful and
-                patient with mod authors.
-            </flux:callout.text>
-        </flux:callout>
-    </div>
+            <flux:callout
+                variant="warning"
+                icon="exclamation-triangle"
+            >
+                <flux:callout.heading>{{ __('Warning: Potential Update Request Detected') }}</flux:callout.heading>
+                <flux:callout.text>
+                    Pestering or harassing mod authors to update their mods is against our <flux:callout.link
+                        href="/community-standards"
+                        external
+                    >community guidelines</flux:callout.link>. First offense is a 7-day ban. Please be respectful and
+                    patient with mod authors.
+                </flux:callout.text>
+            </flux:callout>
+        </div>
+    @endif
 
     <flux:error name="{{ $errorName ?? $name }}" />
 </div>
