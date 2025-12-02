@@ -140,6 +140,9 @@ class AddonVersion extends Model
     protected static function booted(): void
     {
         static::saving(function (AddonVersion $addonVersion): void {
+            // Strip the "v" prefix from the version string if present.
+            $addonVersion->version = mb_ltrim($addonVersion->version, 'vV');
+
             // Extract the version sections from the version string.
             try {
                 $version = new Version($addonVersion->version);

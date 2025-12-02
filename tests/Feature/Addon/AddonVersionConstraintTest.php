@@ -11,6 +11,50 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+describe('version prefix stripping', function (): void {
+    it('strips lowercase v prefix from version on save', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($user, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($user, 'owner')->published()->create();
+
+        $addonVersion = AddonVersion::factory()->for($addon)->create(['version' => 'v1.2.3']);
+
+        expect($addonVersion->version)->toBe('1.2.3');
+    });
+
+    it('strips uppercase V prefix from version on save', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($user, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($user, 'owner')->published()->create();
+
+        $addonVersion = AddonVersion::factory()->for($addon)->create(['version' => 'V1.2.3']);
+
+        expect($addonVersion->version)->toBe('1.2.3');
+    });
+
+    it('does not modify version without v prefix', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($user, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($user, 'owner')->published()->create();
+
+        $addonVersion = AddonVersion::factory()->for($addon)->create(['version' => '1.2.3']);
+
+        expect($addonVersion->version)->toBe('1.2.3');
+    });
+
+    it('strips v prefix on update', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->for($user, 'owner')->create(['published_at' => now()]);
+        $addon = Addon::factory()->for($mod)->for($user, 'owner')->published()->create();
+
+        $addonVersion = AddonVersion::factory()->for($addon)->create(['version' => '1.0.0']);
+
+        $addonVersion->update(['version' => 'v2.0.0']);
+
+        expect($addonVersion->fresh()->version)->toBe('2.0.0');
+    });
+});
+
 describe('Addon Version Constraint Resolution', function (): void {
     it('resolves compatible mod versions based on constraint', function (): void {
         $user = User::factory()->withMfa()->create();
