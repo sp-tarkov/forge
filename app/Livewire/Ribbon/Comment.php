@@ -33,7 +33,8 @@ class Comment extends Component
     /**
      * Whether the current user can see the ribbon.
      */
-    public bool $canSeeRibbon;
+    #[Locked]
+    public bool $canSeeRibbon = false;
 
     /**
      * Listen for comment updates and refresh the ribbon data.
