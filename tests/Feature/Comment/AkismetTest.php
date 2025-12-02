@@ -32,7 +32,7 @@ beforeEach(function (): void {
 
 describe('API key verification', function (): void {
     it('verifies API key is valid', function (): void {
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
 
         $isValid = $spamChecker->verifyKey();
 
@@ -42,7 +42,7 @@ describe('API key verification', function (): void {
     it('verifies API key is invalid with wrong key', function (): void {
         Config::set('akismet.api_key', 'invalid-key-12345');
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
 
         $isValid = $spamChecker->verifyKey();
 
@@ -68,7 +68,7 @@ describe('spam detection', function (): void {
             'referrer' => 'https://example.com',
         ]);
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
         $result = $spamChecker->checkSpam($comment);
 
         expect($result->isSpam)->toBeTrue()
@@ -94,7 +94,7 @@ describe('spam detection', function (): void {
             'referrer' => 'https://example.com',
         ]);
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
         $result = $spamChecker->checkSpam($comment);
 
         expect($result->isSpam)->toBeFalse()
@@ -118,7 +118,7 @@ describe('spam/ham reporting', function (): void {
             'referrer' => 'https://example.com',
         ]);
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
 
         // This should not throw an exception
         $spamChecker->markAsSpam($comment);
@@ -141,7 +141,7 @@ describe('spam/ham reporting', function (): void {
             'referrer' => 'https://example.com',
         ]);
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
 
         // This should not throw an exception
         $spamChecker->markAsHam($comment);
@@ -153,7 +153,7 @@ describe('spam/ham reporting', function (): void {
 
 describe('API usage tracking', function (): void {
     it('retrieves usage limit information', function (): void {
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
 
         $usage = $spamChecker->getUsageLimit();
 
@@ -182,7 +182,7 @@ describe('error handling', function (): void {
             'referrer' => '',
         ]);
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
         $result = $spamChecker->checkSpam($comment);
 
         // Should return safe default (not spam) when an API key is invalid
@@ -208,7 +208,7 @@ describe('error handling', function (): void {
 
         // We can't easily verify the is_test parameter is sent,
         // but we can verify the request completes successfully in test mode
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
         $result = $spamChecker->checkSpam($comment);
 
         expect($result)->toBeInstanceOf(SpamCheckResult::class)
@@ -230,7 +230,7 @@ describe('error handling', function (): void {
             'referrer' => '',
         ]);
 
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
         $result = $spamChecker->checkSpam($comment);
 
         // Should still work with empty request data
@@ -241,7 +241,7 @@ describe('error handling', function (): void {
 
 describe('caching behavior', function (): void {
     it('caches key verification results', function (): void {
-        $spamChecker = app(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamChecker::class);
 
         // Clear cache first
         Cache::forget('akismet:verify_key:'.config('akismet.api_key'));

@@ -63,7 +63,7 @@ class BlockButton extends Component
             }
         }
 
-        $blockingService = app(UserBlockingService::class);
+        $blockingService = resolve(UserBlockingService::class);
 
         if ($this->isBlocked) {
             $blockingService->unblockUser($currentUser, $this->user);

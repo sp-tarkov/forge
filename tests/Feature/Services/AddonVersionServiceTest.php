@@ -13,7 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->service = app(AddonVersionService::class);
+    $this->service = resolve(AddonVersionService::class);
     $this->user = User::factory()->withMfa()->create();
     $this->mod = Mod::factory()->for($this->user, 'owner')->create(['published_at' => now()]);
     $this->addon = Addon::factory()->for($this->mod)->for($this->user, 'owner')->published()->create();
