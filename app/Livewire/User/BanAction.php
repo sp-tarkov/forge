@@ -7,10 +7,12 @@ namespace App\Livewire\User;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\User;
+use App\Notifications\UserBannedNotification;
 use Carbon\Carbon;
 use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Mchev\Banhammer\Models\Ban;
 
 class BanAction extends Component
 {
@@ -64,7 +66,10 @@ class BanAction extends Component
             $attributes['expired_at'] = $this->getExpirationDate();
         }
 
-        $this->user->ban($attributes);
+        /** @var Ban $ban */
+        $ban = $this->user->ban($attributes);
+
+        $this->user->notify(new UserBannedNotification($ban));
 
         Track::event(TrackingEventType::USER_BAN, $this->user);
 
