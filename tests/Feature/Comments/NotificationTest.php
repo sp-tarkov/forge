@@ -329,4 +329,98 @@ describe('Comment Notifications', function (): void {
             // The delay property should be a Carbon instance set to 5 minutes from creation
             $job->delay instanceof Carbon);
     });
+
+    it('does not create duplicate notifications on job retry after partial success', function (): void {
+        Notification::fake();
+        Bus::fake();
+
+        // Create subscribers
+        $subscriber1 = User::factory()->create(['email_comment_notifications_enabled' => true]);
+        $subscriber2 = User::factory()->create(['email_comment_notifications_enabled' => true]);
+        $subscriber3 = User::factory()->create(['email_comment_notifications_enabled' => true]);
+
+        $mod = Mod::factory()->create();
+
+        // Subscribe all users
+        CommentSubscription::subscribe($subscriber1, $mod);
+        CommentSubscription::subscribe($subscriber2, $mod);
+        CommentSubscription::subscribe($subscriber3, $mod);
+
+        // Create a comment
+        $commenter = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $commenter->id,
+        ]);
+
+        // Process the notification job
+        $job = new ProcessCommentNotification($comment);
+        $job->handle();
+
+        // Verify all three subscribers received exactly one notification
+        Notification::assertSentToTimes($subscriber1, NewCommentNotification::class, 1);
+        Notification::assertSentToTimes($subscriber2, NewCommentNotification::class, 1);
+        Notification::assertSentToTimes($subscriber3, NewCommentNotification::class, 1);
+
+        // Verify all three have log entries
+        expect(NotificationLog::hasBeenSent($comment, $subscriber1->id, NewCommentNotification::class))->toBeTrue()
+            ->and(NotificationLog::hasBeenSent($comment, $subscriber2->id, NewCommentNotification::class))->toBeTrue()
+            ->and(NotificationLog::hasBeenSent($comment, $subscriber3->id, NewCommentNotification::class))->toBeTrue();
+
+        // Simulate job retry - should not send any more notifications
+        $job->handle();
+
+        // Still only one notification per subscriber (no duplicates)
+        Notification::assertSentToTimes($subscriber1, NewCommentNotification::class, 1);
+        Notification::assertSentToTimes($subscriber2, NewCommentNotification::class, 1);
+        Notification::assertSentToTimes($subscriber3, NewCommentNotification::class, 1);
+    });
+
+    it('allows retry for users whose notification failed while skipping already notified users', function (): void {
+        Bus::fake();
+
+        // Create subscribers
+        $subscriber1 = User::factory()->create(['email_comment_notifications_enabled' => true]);
+        $subscriber2 = User::factory()->create(['email_comment_notifications_enabled' => true]);
+
+        $mod = Mod::factory()->create();
+
+        CommentSubscription::subscribe($subscriber1, $mod);
+        CommentSubscription::subscribe($subscriber2, $mod);
+
+        $commenter = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $commenter->id,
+        ]);
+
+        // Simulate that subscriber1 was already notified (has log entry)
+        NotificationLog::recordSent(
+            $comment,
+            $subscriber1->id,
+            NewCommentNotification::class,
+            NotificationType::ALL
+        );
+
+        // subscriber2 has no log entry (simulates failed notification on previous attempt)
+
+        // Now fake notifications to track who receives them
+        Notification::fake();
+
+        // Process the job (simulating a retry)
+        $job = new ProcessCommentNotification($comment);
+        $job->handle();
+
+        // subscriber1 should NOT receive notification (already has log entry)
+        Notification::assertNotSentTo($subscriber1, NewCommentNotification::class);
+
+        // subscriber2 SHOULD receive notification (no log entry existed)
+        Notification::assertSentTo($subscriber2, NewCommentNotification::class);
+        Notification::assertSentToTimes($subscriber2, NewCommentNotification::class, 1);
+
+        // Now subscriber2 should have a log entry
+        expect(NotificationLog::hasBeenSent($comment, $subscriber2->id, NewCommentNotification::class))->toBeTrue();
+    });
 });
