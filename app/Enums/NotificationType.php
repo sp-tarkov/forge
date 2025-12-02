@@ -7,7 +7,9 @@ namespace App\Enums;
 enum NotificationType: string
 {
     case EMAIL = 'email';
+
     case DATABASE = 'database';
+
     case ALL = 'all';
 
     /**
