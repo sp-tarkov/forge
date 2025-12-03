@@ -34,10 +34,10 @@ it('displays chat message notifications with correct details', function (): void
     Livewire::actingAs($recipient)
         ->test(NotificationCenter::class)
         ->assertSee('John Doe')
-        ->assertSee('sent you a new message')
+        ->assertSee('sent you a')
+        ->assertSee('new message')
         ->assertSee('Hello! This is a test message that should appear in notifications.')
-        ->assertSee('View Conversation')
-        ->assertSeeHtml('bg-purple-500'); // Chat notification icon color
+        ->assertSeeHtml('bg-purple-100'); // Chat notification icon background color
 });
 
 it('displays multiple message count correctly', function (): void {
@@ -57,14 +57,12 @@ it('displays multiple message count correctly', function (): void {
     // Create notification with multiple messages
     $recipient->notify(new NewChatMessageNotification($conversation, $messages));
 
-    $component = Livewire::actingAs($recipient)
+    Livewire::actingAs($recipient)
         ->test(NotificationCenter::class)
         ->assertSee('Jane Smith')
+        ->assertSee('sent you')
+        ->assertSee('3 new messages')
         ->assertSee(Str::limit($messages->last()->content, 150));
-
-    // Check for message count - normalize whitespace
-    $html = preg_replace('/\s+/', ' ', (string) $component->html());
-    expect($html)->toContain('sent you 3 new messages');
 });
 
 it('shows correct unread state for chat notifications', function (): void {
@@ -87,9 +85,9 @@ it('shows correct unread state for chat notifications', function (): void {
     $component = Livewire::actingAs($recipient)
         ->test(NotificationCenter::class);
 
-    // Check initial unread state
-    $component->assertSeeHtml('bg-gray-50 dark:bg-gray-800') // Unread state
-        ->assertSee('Mark as read');
+    // Check initial unread state - blue left border indicates unread
+    $component->assertSeeHtml('bg-blue-500') // Unread indicator bar
+        ->assertSee('Mark read');
 
     // Mark as read
     $component->call('markAsRead', $notificationId);
@@ -98,7 +96,7 @@ it('shows correct unread state for chat notifications', function (): void {
     expect($recipient->notifications()->find($notificationId)->read_at)->not->toBeNull();
 });
 
-it('links to the correct conversation', function (): void {
+it('redirects to conversation when notification is reviewed', function (): void {
     $recipient = User::factory()->create();
     $sender = User::factory()->create();
 
@@ -113,11 +111,12 @@ it('links to the correct conversation', function (): void {
     ]);
 
     $recipient->notify(new NewChatMessageNotification($conversation, collect([$message])));
+    $notificationId = $recipient->notifications()->first()->id;
 
     Livewire::actingAs($recipient)
         ->test(NotificationCenter::class)
-        ->assertSee($conversation->url)
-        ->assertSee('View Conversation');
+        ->call('reviewNotification', $notificationId)
+        ->assertRedirect($conversation->url);
 });
 
 it('correctly handles notifications when sender name is provided', function (): void {
@@ -141,6 +140,8 @@ it('correctly handles notifications when sender name is provided', function (): 
     Livewire::actingAs($recipient)
         ->test(NotificationCenter::class)
         ->assertSee('John Smith')
-        ->assertSee('sent you a new message')
-        ->assertSee('Message from John Smith');
+        ->assertSee('sent you a')
+        ->assertSee('new message')
+        ->assertSee('Message from John Smith')
+        ->assertSeeHtml('bg-purple-100'); // Chat notification icon background
 });

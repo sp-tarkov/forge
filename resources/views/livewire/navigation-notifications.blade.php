@@ -161,14 +161,15 @@
             </div>
 
             {{-- Footer --}}
-            <div class="px-4 py-2 border-t border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+            <div class="flex flex-col py-1.5 border-t border-slate-300 dark:border-gray-700">
                 <a
                     href="{{ route('dashboard') }}"
                     wire:navigate
                     x-on:click="notificationDropdownOpen = false"
-                    class="flex items-center justify-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    class="flex items-center gap-2 bg-gray-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
+                    role="menuitem"
                 >
-                    <flux:icon.arrow-right class="w-3 h-3" />
+                    <flux:icon.arrow-right class="w-4 h-4" />
                     {{ __('View all notifications') }}
                 </a>
             </div>

@@ -26,16 +26,8 @@
             </flux:callout>
         @endsession
 
-        <div class="space-y-6">
-            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
-                <x-welcome />
-            </div>
-
-            @can('viewAny', App\Models\Report::class)
-                @livewire('report-centre')
-            @endcan
-
-            @livewire('notification-center')
+        <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg">
+            <x-welcome />
         </div>
     </div>
 </x-layouts.base>

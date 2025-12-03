@@ -200,6 +200,20 @@
                                     >{{ __('API Tokens') }}</flux:menu.item>
                                 </flux:menu.submenu>
 
+                                @if (auth()->user()->isModOrAdmin())
+                                    {{-- Moderation Submenu --}}
+                                    <flux:menu.submenu
+                                        heading="{{ __('Moderation') }}"
+                                        icon="flag"
+                                    >
+                                        <flux:menu.item
+                                            icon="document-text"
+                                            href="{{ route('report-centre') }}"
+                                            wire:navigate
+                                        >{{ __('Report Centre') }}</flux:menu.item>
+                                    </flux:menu.submenu>
+                                @endif
+
                                 @if (auth()->user()->isAdmin())
                                     {{-- Staff Submenu --}}
                                     <flux:menu.submenu
@@ -369,6 +383,12 @@
                     href="{{ route('api-tokens.index') }}"
                     :active="request()->routeIs('api-tokens.index')"
                 >{{ __('API Token') }}</x-responsive-nav-link>
+                @if (auth()->user()->isModOrAdmin())
+                    <x-responsive-nav-link
+                        href="{{ route('report-centre') }}"
+                        :active="request()->routeIs('report-centre')"
+                    >{{ __('Report Centre') }}</x-responsive-nav-link>
+                @endif
                 @if (auth()->user()->isAdmin())
                     <x-responsive-nav-link
                         href="{{ route('admin.spt-versions') }}"
