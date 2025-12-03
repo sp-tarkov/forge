@@ -60,9 +60,18 @@ class TrackService
                 $visitorId = Auth::id();
                 $visitorType = Auth::check() ? Auth::user()::class : null;
 
-                // Special handling for authentication events where trackable is the user
-                if (in_array($eventType, [TrackingEventType::LOGIN, TrackingEventType::LOGOUT, TrackingEventType::REGISTER, TrackingEventType::ACCOUNT_DELETE]) && $trackable instanceof User) {
-                    // Use the trackable user as the visitor since Auth might be cleared (especially for logout and account deletion)
+                // For events where trackable user should be the visitor
+                // - Authentication events: Auth might be cleared (logout and account deletion)
+                // - Ban received events: Track from the banned user's perspective (not the moderator's)
+                $userAsVisitorEvents = [
+                    TrackingEventType::LOGIN,
+                    TrackingEventType::LOGOUT,
+                    TrackingEventType::REGISTER,
+                    TrackingEventType::ACCOUNT_DELETE,
+                    TrackingEventType::USER_BANNED,
+                    TrackingEventType::USER_UNBANNED,
+                ];
+                if (in_array($eventType, $userAsVisitorEvents) && $trackable instanceof User) {
                     $visitorId = $trackable->getKey();
                     $visitorType = $trackable->getMorphClass();
                 }

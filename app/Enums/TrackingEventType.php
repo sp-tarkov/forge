@@ -91,6 +91,11 @@ enum TrackingEventType: string
 
     case USER_UNBAN = 'user_unban';
 
+    /** User received moderation actions (from banned user's perspective) */
+    case USER_BANNED = 'user_banned';
+
+    case USER_UNBANNED = 'user_unbanned';
+
     case IP_BAN = 'ip_ban';
 
     case IP_UNBAN = 'ip_unban';
@@ -152,6 +157,8 @@ enum TrackingEventType: string
             self::ACCOUNT_DELETE => 'Deleted account',
             self::USER_BAN => 'Banned user',
             self::USER_UNBAN => 'Unbanned user',
+            self::USER_BANNED => 'Was banned',
+            self::USER_UNBANNED => 'Was unbanned',
             self::IP_BAN => 'Banned IP address',
             self::IP_UNBAN => 'Unbanned IP address',
             self::MOD_FEATURE => 'Featured mod',
@@ -206,6 +213,8 @@ enum TrackingEventType: string
             self::ACCOUNT_DELETE => 'User deleted their account',
             self::USER_BAN => 'Moderator banned a user',
             self::USER_UNBAN => 'Moderator unbanned a user',
+            self::USER_BANNED => 'User was banned by a moderator',
+            self::USER_UNBANNED => 'User was unbanned by a moderator',
             self::IP_BAN => 'Moderator banned an IP address',
             self::IP_UNBAN => 'Moderator unbanned an IP address',
             self::MOD_FEATURE => 'Moderator featured a mod',
@@ -230,7 +239,7 @@ enum TrackingEventType: string
             self::ADDON_CREATE, self::ADDON_EDIT, self::ADDON_DELETE, self::ADDON_REPORT, self::ADDON_ATTACH, self::ADDON_DETACH, self::ADDON_DISABLE, self::ADDON_ENABLE, self::ADDON_PUBLISH, self::ADDON_UNPUBLISH => Addon::class,
             self::ADDON_DOWNLOAD, self::ADDON_VERSION_CREATE, self::ADDON_VERSION_EDIT, self::ADDON_VERSION_DELETE => AddonVersion::class,
             self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT, self::COMMENT_PIN, self::COMMENT_UNPIN => Comment::class,
-            self::USER_BAN, self::USER_UNBAN => User::class,
+            self::USER_BAN, self::USER_UNBAN, self::USER_BANNED, self::USER_UNBANNED => User::class,
             default => null,
         };
     }
@@ -287,6 +296,8 @@ enum TrackingEventType: string
             self::ACCOUNT_DELETE => 'user-minus',
             self::USER_BAN => 'no-symbol',
             self::USER_UNBAN => 'check-circle',
+            self::USER_BANNED => 'no-symbol',
+            self::USER_UNBANNED => 'check-circle',
             self::IP_BAN => 'shield-exclamation',
             self::IP_UNBAN => 'shield-check',
             self::MOD_FEATURE => 'star',
@@ -356,6 +367,8 @@ enum TrackingEventType: string
             // Moderation actions - Red/Orange/Gray theme
             self::USER_BAN => 'red',
             self::USER_UNBAN => 'green',
+            self::USER_BANNED => 'red',
+            self::USER_UNBANNED => 'green',
             self::IP_BAN => 'red',
             self::IP_UNBAN => 'green',
             self::MOD_FEATURE => 'yellow',

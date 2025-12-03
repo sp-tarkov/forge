@@ -72,6 +72,7 @@ class BanAction extends Component
         $this->user->notify(new UserBannedNotification($ban));
 
         Track::event(TrackingEventType::USER_BAN, $this->user);
+        Track::event(TrackingEventType::USER_BANNED, $this->user);
 
         flash()->success('User successfully banned!');
 
@@ -91,6 +92,7 @@ class BanAction extends Component
         $this->user->unban();
 
         Track::event(TrackingEventType::USER_UNBAN, $this->user);
+        Track::event(TrackingEventType::USER_UNBANNED, $this->user);
 
         flash()->success('User successfully unbanned!');
 
