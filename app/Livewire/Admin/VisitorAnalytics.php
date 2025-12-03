@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,49 +23,64 @@ class VisitorAnalytics extends Component
     /**
      * User-based filters.
      */
+    #[Url]
     public string $filter = 'all';
 
+    #[Url]
     public string $userSearch = '';
 
     /**
      * Date range filters.
      */
+    #[Url]
     public ?string $dateFrom = null;
 
+    #[Url]
     public ?string $dateTo = null;
 
     /**
      * Event-specific filters.
      */
+    #[Url]
     public string $eventFilter = '';
 
     /**
      * Technical filters.
      */
+    #[Url]
     public string $ipFilter = '';
 
+    #[Url]
     public string $browserFilter = '';
 
+    #[Url]
     public string $platformFilter = '';
 
+    #[Url]
     public string $deviceFilter = '';
 
+    #[Url]
     public string $refererFilter = '';
 
     /**
      * Geographic filters.
      */
+    #[Url]
     public string $countryFilter = '';
 
+    #[Url]
     public string $regionFilter = '';
 
+    #[Url]
     public string $cityFilter = '';
 
     /**
      * Sorting configuration.
      */
+    #[Url]
     public string $sortBy = 'created_at';
 
+    #[Url]
     public string $sortDirection = 'desc';
 
     /**
