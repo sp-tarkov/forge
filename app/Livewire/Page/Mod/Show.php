@@ -289,7 +289,7 @@ class Show extends Component
                 'sptVersions',
                 'latestResolvedDependencies.mod:id,name,slug',
             ])
-            ->when(! $user?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {
+            ->unless($user?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {
                 $query->publiclyVisible();
             })
             ->withCount([
