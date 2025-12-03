@@ -290,5 +290,112 @@ describe('AddonVersionService', function (): void {
                 ->not->toContain($v1_0_0->id)
                 ->toContain($v2_0_0->id);
         });
+
+        it('re-resolves addon versions when new mod version is created', function (): void {
+            // Create initial mod version
+            $v2_0_5 = ModVersion::factory()->for($this->mod)->create(['version' => '2.0.5']);
+
+            // Create addon version with tilde constraint that should match 2.0.x versions
+            $addonVersion = AddonVersion::factory()
+                ->for($this->addon)
+                ->create(['mod_version_constraint' => '~2.0.5']);
+
+            // Initially should match v2.0.5
+            $addonVersion->refresh();
+            expect($addonVersion->compatibleModVersions->pluck('id')->toArray())
+                ->toContain($v2_0_5->id);
+
+            // Create new mod version 2.0.6 - this should automatically trigger re-resolution
+            $v2_0_6 = ModVersion::factory()->for($this->mod)->create(['version' => '2.0.6']);
+
+            // Addon version should now include both 2.0.5 and 2.0.6
+            $addonVersion->refresh();
+            expect($addonVersion->compatibleModVersions->pluck('id')->toArray())
+                ->toContain($v2_0_5->id)
+                ->toContain($v2_0_6->id);
+        });
+
+        it('re-resolves addon versions when mod version is deleted', function (): void {
+            // Create mod versions
+            $v2_0_5 = ModVersion::factory()->for($this->mod)->create(['version' => '2.0.5']);
+            $v2_0_6 = ModVersion::factory()->for($this->mod)->create(['version' => '2.0.6']);
+
+            // Create addon version with tilde constraint
+            $addonVersion = AddonVersion::factory()
+                ->for($this->addon)
+                ->create(['mod_version_constraint' => '~2.0.5']);
+
+            // Should match both versions initially
+            $addonVersion->refresh();
+            expect($addonVersion->compatibleModVersions)->toHaveCount(2);
+
+            // Delete one version - should trigger re-resolution
+            $v2_0_6->delete();
+
+            // Addon version should now only include 2.0.5
+            $addonVersion->refresh();
+            expect($addonVersion->compatibleModVersions)->toHaveCount(1);
+            expect($addonVersion->compatibleModVersions->pluck('id')->toArray())
+                ->toContain($v2_0_5->id);
+        });
+
+        it('re-resolves addon versions when mod version is updated', function (): void {
+            // Create initial mod version
+            $v2_0_5 = ModVersion::factory()->for($this->mod)->create(['version' => '2.0.5']);
+
+            // Create addon version with tilde constraint
+            $addonVersion = AddonVersion::factory()
+                ->for($this->addon)
+                ->create(['mod_version_constraint' => '~2.0.5']);
+
+            // Should match v2.0.5 initially
+            $addonVersion->refresh();
+            expect($addonVersion->compatibleModVersions->pluck('id')->toArray())
+                ->toContain($v2_0_5->id);
+
+            // Update the mod version to disable it
+            $v2_0_5->disabled = true;
+            $v2_0_5->save();
+
+            // Addon version should no longer have any compatible versions
+            $addonVersion->refresh();
+            expect($addonVersion->compatibleModVersions)->toBeEmpty();
+        });
+
+        it('only re-resolves addon versions for the same mod', function (): void {
+            // Create another mod
+            $otherMod = Mod::factory()->for($this->user, 'owner')->create(['published_at' => now()]);
+            $otherAddon = Addon::factory()->for($otherMod)->for($this->user, 'owner')->published()->create();
+
+            // Create mod versions for both mods
+            $v1_0_0 = ModVersion::factory()->for($this->mod)->create(['version' => '1.0.0']);
+            $otherV1_0_0 = ModVersion::factory()->for($otherMod)->create(['version' => '1.0.0']);
+
+            // Create addon versions for both addons
+            $addonVersion = AddonVersion::factory()
+                ->for($this->addon)
+                ->create(['mod_version_constraint' => '^1.0.0']);
+
+            $otherAddonVersion = AddonVersion::factory()
+                ->for($otherAddon)
+                ->create(['mod_version_constraint' => '^1.0.0']);
+
+            // Verify initial state
+            $addonVersion->refresh();
+            $otherAddonVersion->refresh();
+            expect($addonVersion->compatibleModVersions)->toHaveCount(1);
+            expect($otherAddonVersion->compatibleModVersions)->toHaveCount(1);
+
+            // Create new version for first mod - should only affect first addon
+            $v1_1_0 = ModVersion::factory()->for($this->mod)->create(['version' => '1.1.0']);
+
+            $addonVersion->refresh();
+            $otherAddonVersion->refresh();
+
+            // First addon should have 2 compatible versions
+            expect($addonVersion->compatibleModVersions)->toHaveCount(2);
+            // Other addon should still have 1 compatible version
+            expect($otherAddonVersion->compatibleModVersions)->toHaveCount(1);
+        });
     });
 });
