@@ -293,6 +293,25 @@ describe('mod version downloads', function (): void {
         $this->get(sprintf('/mod/download/%s/%s/%s', $mod->id, 'wrong-slug', $modVersion->version))
             ->assertNotFound();
     });
+
+    it('returns 403 when mod is unpublished', function (): void {
+        $spt = SptVersion::factory()->create();
+        $mod = Mod::factory()->create([
+            'slug' => 'unpublished-mod',
+            'published_at' => null,
+        ]);
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+        ]);
+
+        // Build URL manually since downloadUrl() can't access the unpublished mod via relationship
+        $downloadUrl = sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion->version);
+
+        // Attempt to download a version of an unpublished mod should be forbidden
+        $this->get($downloadUrl)
+            ->assertForbidden();
+    });
 });
 
 describe('Published Version Visibility', function (): void {

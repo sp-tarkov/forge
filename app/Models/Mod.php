@@ -292,6 +292,14 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Check if the mod is published (has a publish date that is not in the future).
+     */
+    public function isPublished(): bool
+    {
+        return $this->published_at !== null && ! $this->published_at->isFuture();
+    }
+
+    /**
      * Determine if the model instance should be searchable.
      */
     public function shouldBeSearchable(): bool
@@ -301,13 +309,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        // Ensure the mod has a publish date.
-        if (is_null($this->published_at)) {
-            return false;
-        }
-
-        // Ensure the mod is published (not scheduled for future).
-        if ($this->published_at->isFuture()) {
+        // Ensure the mod is published.
+        if (! $this->isPublished()) {
             return false;
         }
 
@@ -332,13 +335,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        // Ensure the mod has a publish date
-        if (is_null($this->published_at)) {
-            return false;
-        }
-
-        // Ensure the mod is published (not scheduled for future)
-        if ($this->published_at->isFuture()) {
+        // Ensure the mod is published
+        if (! $this->isPublished()) {
             return false;
         }
 

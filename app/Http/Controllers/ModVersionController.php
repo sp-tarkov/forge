@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\ModVersion;
+use App\Models\Scopes\PublishedScope;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -22,6 +24,7 @@ class ModVersionController extends Controller
             ->where('mod_versions.version', $version)
             ->where('mods.slug', $slug)
             ->select('mod_versions.*')
+            ->with(['mod' => fn (Relation $query): Relation => $query->withoutGlobalScope(PublishedScope::class)])
             ->firstOrFail();
 
         Gate::authorize('download', $modVersion);
