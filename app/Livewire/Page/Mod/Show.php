@@ -191,12 +191,43 @@ class Show extends Component
     /**
      * Get mod versions for the filter dropdown.
      *
+     * Limited to versions from the last two minor releases to reduce query size.
+     *
      * @return Collection<int, ModVersion>
      */
     public function getModVersionsForFilter(): Collection
     {
+        // Get the last 2 distinct minor versions (major.minor combinations)
+        $recentMinorVersions = $this->mod->versions()
+            ->select(['version_major', 'version_minor'])
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->where('disabled', false)
+            ->whereHas('latestSptVersion')
+            ->reorder() // Clear default ordering to avoid GROUP BY conflicts
+            ->groupBy(['version_major', 'version_minor'])
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->limit(2)
+            ->get();
+
+        if ($recentMinorVersions->isEmpty()) {
+            return collect();
+        }
+
+        // Get all versions from those minor releases
         return $this->mod->versions()
+            ->select(['id', 'mod_id', 'version', 'version_major', 'version_minor', 'version_patch', 'version_labels'])
+            ->with(['latestSptVersion:spt_versions.id,spt_versions.version'])
             ->publiclyVisible()
+            ->where(function (Builder $query) use ($recentMinorVersions): void {
+                foreach ($recentMinorVersions as $minorVersion) {
+                    $query->orWhere(function (Builder $q) use ($minorVersion): void {
+                        $q->where('version_major', $minorVersion->version_major)
+                            ->where('version_minor', $minorVersion->version_minor);
+                    });
+                }
+            })
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
@@ -290,17 +321,14 @@ class Show extends Component
                 'owner',
                 'additionalAuthors',
                 'latestVersion',
-                'mod.latestVersion',
-                'latestVersion.compatibleModVersions' => fn (Relation $query): mixed => $query->where('mod_id', $this->mod->id)
+                'mod.latestVersion:id,mod_id,version,version_major,version_minor,version_patch',
+                'latestVersion.compatibleModVersions' => fn (Relation $query): mixed => $query
+                    ->select(['mod_versions.id', 'mod_versions.mod_id', 'mod_versions.version', 'mod_versions.version_major', 'mod_versions.version_minor', 'mod_versions.version_patch'])
+                    ->where('mod_id', $this->mod->id)
                     ->orderBy('version_major', 'desc')
                     ->orderBy('version_minor', 'desc')
                     ->orderBy('version_patch', 'desc'),
-                // Load ALL compatible mod versions from ALL addon versions
-                'versions.compatibleModVersions' => fn (Relation $query): mixed => $query->where('mod_id', $this->mod->id)
-                    ->distinct()
-                    ->orderBy('version_major', 'desc')
-                    ->orderBy('version_minor', 'desc')
-                    ->orderBy('version_patch', 'desc'),
+                // Note: versions.compatibleModVersions removed - getAllCompatibleModVersions() queries directly for efficiency
             ])
             ->when($this->selectedModVersionId, function (Builder $query): void {
                 // Filter addons that have ANY version compatible with the selected mod version

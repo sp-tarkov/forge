@@ -531,22 +531,22 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function getOverallFikaCompatibility(): FikaCompatibility
     {
-        $publishedVersions = $this->versions()
+        // Use efficient EXISTS queries instead of loading all versions
+        $baseQuery = fn () => $this->versions()
             ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->get();
+            ->where('published_at', '<=', now());
 
-        if ($publishedVersions->isEmpty()) {
+        if (! $baseQuery()->exists()) {
             return FikaCompatibility::Unknown;
         }
 
         // If any version is compatible, return Compatible
-        if ($publishedVersions->contains(fn (ModVersion $version): bool => $version->fika_compatibility === FikaCompatibility::Compatible)) {
+        if ($baseQuery()->where('fika_compatibility', FikaCompatibility::Compatible)->exists()) {
             return FikaCompatibility::Compatible;
         }
 
-        // If all versions are unknown, return Unknown
-        if ($publishedVersions->every(fn (ModVersion $version): bool => $version->fika_compatibility === FikaCompatibility::Unknown)) {
+        // If all versions are unknown, return Unknown (no non-unknown versions exist)
+        if (! $baseQuery()->where('fika_compatibility', '!=', FikaCompatibility::Unknown)->exists()) {
             return FikaCompatibility::Unknown;
         }
 
