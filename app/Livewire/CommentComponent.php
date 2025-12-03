@@ -1036,6 +1036,18 @@ class CommentComponent extends Component
 
         $visibleRootComments = $rootComments->getCollection();
 
+        // Auto-expand and load descendants for root comments on the current page that have replies.
+        // This ensures replies are shown by default, but only for the visible page (not all comments).
+        foreach ($visibleRootComments as $rootComment) {
+            $commentId = $rootComment->id;
+            $hasDescendants = ($this->descendantCounts[$commentId] ?? 0) > 0;
+
+            if ($hasDescendants && ! isset($this->loadedDescendants[$commentId])) {
+                $this->showDescendants[$commentId] = true;
+                $this->loadDescendants($commentId);
+            }
+        }
+
         return view('livewire.comment-component', [
             'rootComments' => $rootComments,
             'visibleRootComments' => $visibleRootComments,
@@ -1060,12 +1072,6 @@ class CommentComponent extends Component
     protected function initializeDescendantCounts(): void
     {
         $this->descendantCounts = $this->commentable->getDescendantCounts();
-        foreach ($this->descendantCounts as $commentId => $count) {
-            if ($count > 0) {
-                $this->showDescendants[$commentId] = true;
-                $this->loadDescendants($commentId);
-            }
-        }
     }
 
     /**
