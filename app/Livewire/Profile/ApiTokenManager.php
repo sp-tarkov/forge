@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Profile;
 
+use App\Models\User;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Jetstream\Http\Livewire\ApiTokenManager as BaseApiTokenManager;
 use Laravel\Jetstream\Jetstream;
 use Override;
@@ -58,6 +60,21 @@ class ApiTokenManager extends BaseApiTokenManager
         ])->save();
 
         $this->managingApiTokenPermissions = false;
+    }
+
+    #[Override]
+    public function deleteApiToken(): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $user->tokens()->where('id', $this->apiTokenIdBeingDeleted)->first()?->delete();
+
+        $user->load('tokens');
+
+        $this->confirmingApiTokenDeletion = false;
+
+        $this->managingPermissionsFor = null;
     }
 
     /**

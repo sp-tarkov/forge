@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Profile\ApiTokenManager;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Features;
-use Laravel\Jetstream\Http\Livewire\ApiTokenManager;
 use Livewire\Livewire;
 
 describe('API token deletion', function (): void {
@@ -25,6 +25,17 @@ describe('API token deletion', function (): void {
         Livewire::test(ApiTokenManager::class)
             ->set(['apiTokenIdBeingDeleted' => $token->id])
             ->call('deleteApiToken');
+
+        expect($user->fresh()->tokens)->toHaveCount(0);
+    })->skip(fn (): bool => ! Features::hasApiFeatures(), 'API support is not enabled.');
+
+    it('handles deleting an already-deleted token gracefully', function (): void {
+        $this->actingAs($user = User::factory()->create());
+
+        Livewire::test(ApiTokenManager::class)
+            ->set(['apiTokenIdBeingDeleted' => 99999])
+            ->call('deleteApiToken')
+            ->assertSet('confirmingApiTokenDeletion', false);
 
         expect($user->fresh()->tokens)->toHaveCount(0);
     })->skip(fn (): bool => ! Features::hasApiFeatures(), 'API support is not enabled.');
