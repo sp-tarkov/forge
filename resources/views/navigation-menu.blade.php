@@ -132,6 +132,11 @@
                             </flux:menu>
                         </flux:dropdown>
 
+                        {{-- Notifications Dropdown --}}
+                        @auth
+                            <livewire:navigation-notifications />
+                        @endauth
+
                         {{-- Chat Dropdown --}}
                         @auth
                             <livewire:navigation-chat />
@@ -318,6 +323,21 @@
                     <div class="text-base font-medium text-gray-900 dark:text-gray-100">{{ auth()->user()->name }}</div>
                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ auth()->user()->email }}</div>
                 </div>
+                {{-- Mobile Notifications Button --}}
+                <a
+                    href="{{ route('dashboard') }}"
+                    wire:navigate
+                    class="relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
+                >
+                    <flux:icon.bell class="h-5 w-5" />
+                    @if (auth()->user()->unreadNotifications()->count() > 0)
+                        <span
+                            class="absolute top-1 left-2 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white"
+                        >
+                            {{ auth()->user()->unreadNotifications()->count() > 9 ? '9+' : auth()->user()->unreadNotifications()->count() }}
+                        </span>
+                    @endif
+                </a>
                 {{-- Mobile Chat Button --}}
                 <a
                     href="{{ route('chat') }}"

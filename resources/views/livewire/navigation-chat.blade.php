@@ -32,12 +32,15 @@
             role="menu"
         >
             @if ($conversations->count() > 0)
+                {{-- Header --}}
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-300 dark:border-gray-700">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                        {{ __('Recent Conversations') }}
+                    </h3>
+                </div>
+
                 <div class="flex flex-col divide-y divide-slate-300 dark:divide-gray-700">
                     <div class="flex flex-col py-2">
-                        <div class="px-3 pb-2">
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                                {{ __('Recent Conversations') }}</p>
-                        </div>
                         @foreach ($conversations as $conversation)
                             @if ($conversation->other_user)
                                 <button
