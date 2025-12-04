@@ -12,8 +12,8 @@ use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
 use App\Traits\HasReports;
-use App\Traits\RendersDescriptionHtml;
 use Database\Factories\ModFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use Shetabit\Visitor\Traits\Visitable;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -59,8 +60,8 @@ use Shetabit\Visitor\Traits\Visitable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
- * @property string|null $description_html
  * @property-read string $detail_url
+ * @property-read string $description_html
  * @property-read bool $addons_enabled
  * @property-read bool $fika_compatibility
  * @property-read User|null $owner
@@ -88,7 +89,6 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /** @use HasReports<Mod> */
     use HasReports;
 
-    use RendersDescriptionHtml;
     use Searchable;
     use Visitable;
 
@@ -637,6 +637,22 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             get: fn (?string $value) => $value ? Str::lower($value) : '',
             set: fn (?string $value) => $value ? Str::slug($value) : '',
         );
+    }
+
+    /**
+     * Generate the cleaned version of the HTML description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->description
+                ? Purify::config('description')->clean(
+                    Markdown::convert($this->description)->getContent()
+                )
+                : ''
+        )->shouldCache();
     }
 
     /**

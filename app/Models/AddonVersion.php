@@ -8,9 +8,9 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\AddonVersionObserver;
 use App\Support\Version;
-use App\Traits\RendersDescriptionHtml;
 use Carbon\Carbon;
 use Database\Factories\AddonVersionFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Override;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -42,7 +43,7 @@ use Override;
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property string|null $description_html
+ * @property-read string $description_html
  * @property-read string|null $formatted_file_size
  * @property-read Addon $addon
  * @property-read Collection<int, ModVersion> $compatibleModVersions
@@ -54,8 +55,6 @@ class AddonVersion extends Model
 {
     /** @use HasFactory<AddonVersionFactory> */
     use HasFactory;
-
-    use RendersDescriptionHtml;
 
     /**
      * Update the parent addon's updated_at timestamp when the addon version is updated.
@@ -159,6 +158,18 @@ class AddonVersion extends Model
                 $addonVersion->version_pre_release = '';
             }
         });
+    }
+
+    /**
+     * Get the rendered HTML version of the description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => Markdown::convert(Purify::clean($this->description ?? ''))->getContent(),
+        );
     }
 
     /**

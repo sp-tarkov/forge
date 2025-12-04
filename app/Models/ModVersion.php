@@ -11,9 +11,9 @@ use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
-use App\Traits\RendersDescriptionHtml;
 use Carbon\Carbon;
 use Database\Factories\ModVersionFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Override;
 use Shetabit\Visitor\Traits\Visitable;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -53,7 +54,7 @@ use Shetabit\Visitor\Traits\Visitable;
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property string|null $description_html
+ * @property-read string $description_html
  * @property-read Mod $mod
  * @property-read Collection<int, ModDependency> $dependencies
  * @property-read Collection<int, ModVersion> $resolvedDependencies
@@ -70,7 +71,6 @@ class ModVersion extends Model implements Trackable
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
 
-    use RendersDescriptionHtml;
     use Visitable;
 
     /**
@@ -389,6 +389,20 @@ class ModVersion extends Model implements Trackable
             'deleted_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Generate the cleaned version of the HTML description.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function descriptionHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Purify::config('description')->clean(
+                Markdown::convert($this->description)->getContent()
+            )
+        )->shouldCache();
     }
 
     /**

@@ -12,9 +12,9 @@ use App\Notifications\VerifyEmail;
 use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
 use App\Traits\HasReports;
-use App\Traits\RendersAboutHtml;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,6 +38,7 @@ use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
 use SensitiveParameter;
 use Shetabit\Visitor\Traits\Visitor;
+use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -48,7 +49,6 @@ use Shetabit\Visitor\Traits\Visitor;
  * @property Carbon|null $email_verified_at
  * @property string|null $password
  * @property string $about
- * @property string|null $about_html
  * @property int|null $user_role_id
  * @property string|null $profile_photo_path
  * @property string|null $cover_photo_path
@@ -94,7 +94,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     use HasReports;
 
     use Notifiable;
-    use RendersAboutHtml;
     use Searchable;
     use TwoFactorAuthenticatable;
     use Visitor;
@@ -753,6 +752,22 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             get: fn (?string $value): string => $value ?? '', // If DB value is NULL, return ''
             set: fn (?string $value): string => mb_trim($value ?? ''), // Trim whitespace and handle NULL
         );
+    }
+
+    /**
+     * Get the about content processed as HTML with markdown formatting.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function aboutHtml(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->about
+                ? Purify::config('comments')->clean(
+                    Markdown::convert($this->about)->getContent()
+                )
+                : ''
+        )->shouldCache();
     }
 
     /**
