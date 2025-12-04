@@ -7,3 +7,4 @@ import "./registerAlpineLivewire";
 import "./userTabsets";
 import "./highlight";
 import "./detectTimezone";
+import "./youtubeLite";

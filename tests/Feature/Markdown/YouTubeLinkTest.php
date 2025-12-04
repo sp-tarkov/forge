@@ -14,11 +14,11 @@ describe('YouTube link rendering in mod descriptions', function (): void {
 
         $html = $mod->description_html;
 
-        // Standalone YouTube links should be converted to iframes
+        // Standalone YouTube links should be converted to lite YouTube embeds
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 
     it('converts standalone youtu.be link to YouTube embed in mod descriptions', function (): void {
@@ -28,11 +28,11 @@ describe('YouTube link rendering in mod descriptions', function (): void {
 
         $html = $mod->description_html;
 
-        // Standalone YouTube links should be converted to iframes
+        // Standalone YouTube links should be converted to lite YouTube embeds
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 
     it('converts YouTube link on its own line to YouTube embed', function (): void {
@@ -43,9 +43,9 @@ describe('YouTube link rendering in mod descriptions', function (): void {
         $html = $mod->description_html;
 
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 
     it('converts inline YouTube link to clickable link in mod descriptions', function (): void {
@@ -60,7 +60,7 @@ describe('YouTube link rendering in mod descriptions', function (): void {
             ->toContain('<a')
             ->toContain('https://youtu.be/88Cu_DiZ9YY')
             ->toContain('href="https://youtu.be/88Cu_DiZ9YY"')
-            ->not->toContain('<iframe');
+            ->not->toContain('class="youtube-lite"');
     });
 
     it('handles multiple YouTube links in mod descriptions', function (): void {
@@ -70,12 +70,12 @@ describe('YouTube link rendering in mod descriptions', function (): void {
 
         $html = $mod->description_html;
 
-        // Both standalone links should be converted to iframes
-        expect($html)->toContain('<iframe');
+        // Both standalone links should be converted to lite YouTube embeds
+        expect($html)->toContain('class="youtube-lite"');
 
-        // Count the number of iframes
-        $iframeCount = mb_substr_count($html, '<iframe');
-        expect($iframeCount)->toBe(2);
+        // Count the number of lite embeds
+        $embedCount = mb_substr_count($html, 'class="youtube-lite"');
+        expect($embedCount)->toBe(2);
     });
 });
 
@@ -90,11 +90,11 @@ describe('YouTube link rendering in comments', function (): void {
 
         $html = $comment->body_html;
 
-        // Standalone YouTube links should be converted to iframes
+        // Standalone YouTube links should be converted to lite YouTube embeds
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 
     it('converts youtu.be link to YouTube embed in comments', function (): void {
@@ -107,11 +107,11 @@ describe('YouTube link rendering in comments', function (): void {
 
         $html = $comment->body_html;
 
-        // Standalone YouTube links should be converted to iframes
+        // Standalone YouTube links should be converted to lite YouTube embeds
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 
     it('converts inline YouTube link to clickable link in comments', function (): void {
@@ -130,7 +130,7 @@ describe('YouTube link rendering in comments', function (): void {
             ->toContain('href="https://youtu.be/88Cu_DiZ9YY"')
             ->toContain('Check out this video')
             ->toContain('for more info')
-            ->not->toContain('<iframe');
+            ->not->toContain('class="youtube-lite"');
     });
 
     it('converts standalone YouTube link on its own line in comments to YouTube embed', function (): void {
@@ -144,9 +144,9 @@ describe('YouTube link rendering in comments', function (): void {
         $html = $comment->body_html;
 
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 
     it('handles multiple YouTube links in comments as YouTube embeds', function (): void {
@@ -159,12 +159,12 @@ describe('YouTube link rendering in comments', function (): void {
 
         $html = $comment->body_html;
 
-        // Both standalone links should be converted to iframes
-        expect($html)->toContain('<iframe');
+        // Both standalone links should be converted to lite YouTube embeds
+        expect($html)->toContain('class="youtube-lite"');
 
-        // Count the number of iframes
-        $iframeCount = mb_substr_count($html, '<iframe');
-        expect($iframeCount)->toBe(2);
+        // Count the number of lite embeds
+        $embedCount = mb_substr_count($html, 'class="youtube-lite"');
+        expect($embedCount)->toBe(2);
     });
 });
 
@@ -176,11 +176,11 @@ describe('YouTube link rendering on user profiles', function (): void {
 
         $html = $user->about_html;
 
-        // Standalone YouTube links should be converted to iframes
+        // Standalone YouTube links should be converted to lite YouTube embeds
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 
     it('converts youtu.be link to YouTube embed in user about field', function (): void {
@@ -190,10 +190,10 @@ describe('YouTube link rendering on user profiles', function (): void {
 
         $html = $user->about_html;
 
-        // Standalone YouTube links should be converted to iframes
+        // Standalone YouTube links should be converted to lite YouTube embeds
         expect($html)
-            ->toContain('<iframe')
-            ->toContain('youtube')
-            ->toContain('88Cu_DiZ9YY');
+            ->toContain('class="youtube-lite"')
+            ->toContain('data-video-id="88Cu_DiZ9YY"')
+            ->toContain('i.ytimg.com/vi/88Cu_DiZ9YY');
     });
 });
