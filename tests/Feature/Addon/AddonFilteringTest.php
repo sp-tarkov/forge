@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Mod\Show\AddonsTab;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -11,6 +12,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function (): void {
+    $this->withoutDefer();
+});
 
 it('shows addons that have any version compatible when filtering by mod version', function (): void {
     $user = User::factory()->create();
@@ -87,7 +92,8 @@ it('shows addons that have any version compatible when filtering by mod version'
     $this->actingAs($user);
 
     // When filtering by the specific mod version
-    Livewire::test('page.mod.show', ['modId' => $mod->id, 'slug' => $mod->slug])
+    Livewire::withoutLazyLoading()
+        ->test(AddonsTab::class, ['modId' => $mod->id])
         ->set('selectedModVersionId', $modVersion->id)
         ->assertSuccessful()
         ->assertSee('Compatible Addon')
@@ -137,7 +143,8 @@ it('shows all addons when no mod version filter is selected', function (): void 
     $this->actingAs($user);
 
     // When NOT filtering (All versions selected)
-    Livewire::test('page.mod.show', ['modId' => $mod->id, 'slug' => $mod->slug])
+    Livewire::withoutLazyLoading()
+        ->test(AddonsTab::class, ['modId' => $mod->id])
         ->assertSuccessful()
         ->assertSee('Has Compatible Versions')
         ->assertSee('No Compatible Versions');

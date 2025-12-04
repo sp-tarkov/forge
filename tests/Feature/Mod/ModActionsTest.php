@@ -7,7 +7,7 @@ use App\Livewire\Mod\VersionAction;
 use App\Livewire\Page\Homepage;
 use App\Livewire\Page\Mod\Index as ModIndex;
 use App\Livewire\Page\Mod\Show as ModShow;
-use App\Livewire\Page\User\Show as UserShow;
+use App\Livewire\User\Show\ModsTab as UserModsTab;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -173,9 +173,8 @@ describe('mod deletion from user profile', function (): void {
         $userProfile = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(UserShow::class, [
+            ->test(UserModsTab::class, [
                 'userId' => $userProfile->id,
-                'slug' => $userProfile->slug,
             ])
             ->call('deleteMod', $mod->id)
             ->assertSuccessful();
@@ -193,9 +192,8 @@ describe('mod deletion from user profile', function (): void {
         $userProfile = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(UserShow::class, [
+            ->test(UserModsTab::class, [
                 'userId' => $userProfile->id,
-                'slug' => $userProfile->slug,
             ])
             ->call('deleteMod', $mod->id)
             ->assertForbidden();

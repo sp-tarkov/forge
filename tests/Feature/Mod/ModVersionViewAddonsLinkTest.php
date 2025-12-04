@@ -14,6 +14,10 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    $this->withoutDefer();
+});
+
 describe('Mod Version View Addons Link', function (): void {
     it('shows view addons link when mod version has compatible addons', function (): void {
         $user = User::factory()->withMfa()->create();
@@ -38,10 +42,11 @@ describe('Mod Version View Addons Link', function (): void {
             ->for($addon)
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
-        Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
             ->assertSee('View Addons');
     });
 
@@ -68,10 +73,11 @@ describe('Mod Version View Addons Link', function (): void {
             ->for($addon)
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
-        Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
             ->assertDontSee('View Addons');
     });
 
@@ -98,10 +104,11 @@ describe('Mod Version View Addons Link', function (): void {
             ->for($addon)
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
-        Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
             ->assertDontSee('View Addons');
     });
 
@@ -128,10 +135,11 @@ describe('Mod Version View Addons Link', function (): void {
             ->for($addon)
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
-        Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
             ->assertDontSee('View Addons');
     });
 
@@ -158,10 +166,11 @@ describe('Mod Version View Addons Link', function (): void {
             ->for($addon)
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
-        Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
             ->assertDontSee('View Addons');
     });
 });

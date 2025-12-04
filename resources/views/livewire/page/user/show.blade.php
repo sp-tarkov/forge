@@ -217,44 +217,18 @@
 
                 {{-- Wall --}}
                 <div x-show="selectedTab === 'wall'">
-                    <livewire:comment-component
-                        wire:key="comment-component-{{ $user->id }}"
-                        :commentable="$user"
+                    <livewire:user.show.wall-tab
+                        wire:key="user-wall-tab-{{ $user->id }}"
+                        :user-id="$user->id"
                     />
                 </div>
 
                 {{-- Mods --}}
                 <div x-show="selectedTab === 'mods'">
-                    @if ($mods->count())
-                        <div class="mb-4">
-                            {{ $mods->links() }}
-                        </div>
-                        <div class="my-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                            @foreach ($mods as $mod)
-                                <div wire:key="user-show-mod-card-{{ $mod->id }}">
-                                    <x-mod.card
-                                        :mod="$mod"
-                                        :version="$mod->latestVersion"
-                                        placeholder-bg="bg-gray-200 dark:bg-gray-900"
-                                    />
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="mt-5">
-                            {{ $mods->links() }}
-                        </div>
-                    @else
-                        <div
-                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                            <div class="text-center py-8">
-                                <flux:icon.cube-transparent class="mx-auto size-12 text-gray-400" />
-                                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                    {{ __('No Mods Yet') }}</h3>
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ __('This user has not yet published any mods.') }}</p>
-                            </div>
-                        </div>
-                    @endif
+                    <livewire:user.show.mods-tab
+                        wire:key="user-mods-tab-{{ $user->id }}"
+                        :user-id="$user->id"
+                    />
                 </div>
 
                 {{-- Addons --}}
@@ -262,41 +236,18 @@
                     x-show="selectedTab === 'addons'"
                     x-cloak
                 >
-                    @if ($addons->count())
-                        <div class="mb-4">
-                            {{ $addons->links() }}
-                        </div>
-                        <div class="grid gap-4">
-                            @foreach ($addons as $addon)
-                                <x-addon.card
-                                    :addon="$addon"
-                                    wire:key="user-addon-card-{{ $addon->id }}"
-                                />
-                            @endforeach
-                        </div>
-                        <div class="mt-5">
-                            {{ $addons->links() }}
-                        </div>
-                    @else
-                        <div
-                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                            <div class="text-center py-8">
-                                <flux:icon.puzzle-piece class="mx-auto size-12 text-gray-400" />
-                                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                    {{ __('No Addons Yet') }}</h3>
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ __('This user has not yet published any addons.') }}</p>
-                            </div>
-                        </div>
-                    @endif
+                    <livewire:user.show.addons-tab
+                        wire:key="user-addons-tab-{{ $user->id }}"
+                        :user-id="$user->id"
+                    />
                 </div>
 
                 {{-- Activity --}}
-                <div
-                    x-show="selectedTab === 'activity'"
-                    class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl"
-                >
-                    <livewire:user-activity :user="$user" />
+                <div x-show="selectedTab === 'activity'">
+                    <livewire:user.show.activity-tab
+                        wire:key="user-activity-tab-{{ $user->id }}"
+                        :user-id="$user->id"
+                    />
                 </div>
             </div>
 

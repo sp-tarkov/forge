@@ -8,17 +8,14 @@ use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Traits\Livewire\ModeratesAddon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 class Show extends Component
 {
     use ModeratesAddon;
-    use WithPagination;
 
     /**
      * The addon being shown.
@@ -141,7 +138,6 @@ class Show extends Component
     {
         return view('livewire.page.addon.show', [
             'addon' => $this->addon,
-            'versions' => $this->versions(),
             'shouldShowWarnings' => $this->shouldShowWarnings(),
             'warningMessages' => $this->getWarningMessages(),
             'versionCount' => $this->getVersionCount(),
@@ -162,24 +158,6 @@ class Show extends Component
             'license',
             'latestVersion',
         ])->findOrFail($addonId);
-    }
-
-    /**
-     * The addon's versions.
-     *
-     * @return LengthAwarePaginator<int, AddonVersion>
-     */
-    protected function versions(): LengthAwarePaginator
-    {
-        return $this->addon->versions()
-            ->with(['compatibleModVersions'])
-            ->unless(auth()->user()?->can('viewAny', [AddonVersion::class, $this->addon]), function (Builder $query): void {
-                $query->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
-            })
-            ->paginate(perPage: 6, pageName: 'versionPage')
-            ->fragment('versions');
     }
 
     /**

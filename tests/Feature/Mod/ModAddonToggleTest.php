@@ -13,6 +13,10 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    $this->withoutDefer();
+});
+
 describe('Mod Addon Toggle', function (): void {
     it('allows mod owner to disable addons for their mod', function (): void {
         $owner = User::factory()->withMfa()->create();
@@ -73,10 +77,11 @@ describe('Mod Addon Toggle', function (): void {
             ->count(3)
             ->create();
 
-        Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
             ->assertSee('Addons')
             ->assertSee('3 Addons');
     });
@@ -88,10 +93,11 @@ describe('Mod Addon Toggle', function (): void {
             'published_at' => now(),
         ]);
 
-        $component = Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ]);
+        $component = Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ]);
 
         $html = $component->html();
         expect($html)->not->toContain("selectedTab = 'addons'");
@@ -110,10 +116,11 @@ describe('Mod Addon Toggle', function (): void {
 
         $this->actingAs($owner);
 
-        Livewire::test(Show::class, [
-            'modId' => $mod->id,
-            'slug' => $mod->slug,
-        ])
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, [
+                'modId' => $mod->id,
+                'slug' => $mod->slug,
+            ])
             ->assertSee('Addons')
             ->assertSee('Create First Addon');
     });

@@ -4,28 +4,20 @@ declare(strict_types=1);
 
 namespace App\Livewire\Page\Mod;
 
-use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModeratesAddon;
 use App\Traits\Livewire\ModeratesMod;
-use App\Traits\Livewire\ModeratesModVersion;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 class Show extends Component
 {
     use ModeratesAddon;
     use ModeratesMod;
-    use ModeratesModVersion;
-    use WithPagination;
 
     /**
      * The mod being shown.
@@ -36,11 +28,6 @@ class Show extends Component
      * The Open Graph image for social media sharing.
      */
     public ?string $openGraphImage = null;
-
-    /**
-     * The selected mod version filter for addons.
-     */
-    public ?int $selectedModVersionId = null;
 
     /**
      * Mount the component.
@@ -54,19 +41,6 @@ class Show extends Component
         Gate::authorize('view', $this->mod);
 
         $this->openGraphImage = $this->mod->thumbnail;
-
-        // Handle version filter query parameter
-        if (request()->has('versionFilter')) {
-            $this->selectedModVersionId = (int) request('versionFilter');
-        }
-    }
-
-    /**
-     * Reset pagination when mod version filter changes.
-     */
-    public function updatedSelectedModVersionId(): void
-    {
-        $this->resetPage('addonPage');
     }
 
     /**
@@ -189,54 +163,6 @@ class Show extends Component
     }
 
     /**
-     * Get mod versions for the filter dropdown.
-     *
-     * Limited to versions from the last two minor releases to reduce query size.
-     *
-     * @return Collection<int, ModVersion>
-     */
-    public function getModVersionsForFilter(): Collection
-    {
-        // Get the last 2 distinct minor versions (major.minor combinations)
-        $recentMinorVersions = $this->mod->versions()
-            ->select(['version_major', 'version_minor'])
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->where('disabled', false)
-            ->whereHas('latestSptVersion')
-            ->reorder() // Clear default ordering to avoid GROUP BY conflicts
-            ->groupBy(['version_major', 'version_minor'])
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->limit(2)
-            ->get();
-
-        if ($recentMinorVersions->isEmpty()) {
-            return collect();
-        }
-
-        // Get all versions from those minor releases
-        return $this->mod->versions()
-            ->select(['id', 'mod_id', 'version', 'version_major', 'version_minor', 'version_patch', 'version_labels'])
-            ->with(['latestSptVersion:spt_versions.id,spt_versions.version'])
-            ->publiclyVisible()
-            ->where(function (Builder $query) use ($recentMinorVersions): void {
-                foreach ($recentMinorVersions as $minorVersion) {
-                    $query->orWhere(function (Builder $q) use ($minorVersion): void {
-                        $q->where('version_major', $minorVersion->version_major)
-                            ->where('version_minor', $minorVersion->version_minor);
-                    });
-                }
-            })
-            ->orderByDesc('version_major')
-            ->orderByDesc('version_minor')
-            ->orderByDesc('version_patch')
-            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('version_labels')
-            ->get();
-    }
-
-    /**
      * Render the component.
      */
     #[Layout('components.layouts.base')]
@@ -244,15 +170,12 @@ class Show extends Component
     {
         return view('livewire.page.mod.show', [
             'mod' => $this->mod,
-            'versions' => $this->versions(),
             'shouldShowWarnings' => $this->shouldShowWarnings(),
             'warningMessages' => $this->getWarningMessages(),
             'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
             'versionCount' => $this->getVersionCount(),
             'commentCount' => $this->getCommentCount(),
             'addonCount' => $this->getAddonCount(),
-            'addons' => $this->addons(),
-            'modVersionsForFilter' => $this->getModVersionsForFilter(),
             'fikaStatus' => $this->mod->getOverallFikaCompatibility(),
         ]);
     }
@@ -272,86 +195,6 @@ class Show extends Component
             'latestVersion.latestResolvedDependencies.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id',
             'latestVersion.latestResolvedDependencies.mod.owner.role',
         ])->findOrFail($modId);
-    }
-
-    /**
-     * The mod's versions.
-     *
-     * @return LengthAwarePaginator<int, ModVersion>
-     */
-    protected function versions(): LengthAwarePaginator
-    {
-        $user = auth()->user();
-
-        return $this->mod->versions()
-            ->with([
-                'latestSptVersion',
-                'sptVersions',
-                'latestResolvedDependencies.mod:id,name,slug',
-            ])
-            ->unless($user?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {
-                $query->publiclyVisible();
-            })
-            ->withCount([
-                'compatibleAddonVersions as compatible_addons_count' => function (Builder $query) use ($user): void {
-                    // Only count published, enabled addons for non-privileged users
-                    $query->whereHas('addon', function (Builder $addonQuery) use ($user): void {
-                        $addonQuery->whereNull('detached_at');
-
-                        if (! $user?->isModOrAdmin()) {
-                            $addonQuery->where('disabled', false)
-                                ->whereNotNull('published_at')
-                                ->where('published_at', '<=', now());
-                        }
-                    });
-                },
-            ])
-            ->paginate(perPage: 6, pageName: 'versionPage')
-            ->fragment('versions');
-    }
-
-    /**
-     * The mod's addons.
-     *
-     * @return LengthAwarePaginator<int, Addon>
-     */
-    protected function addons(): LengthAwarePaginator
-    {
-        $user = auth()->user();
-
-        return $this->mod->addons()
-            ->with([
-                'owner',
-                'additionalAuthors',
-                'latestVersion',
-                'mod.latestVersion:id,mod_id,version,version_major,version_minor,version_patch',
-                'latestVersion.compatibleModVersions' => fn (Relation $query): mixed => $query
-                    ->select(['mod_versions.id', 'mod_versions.mod_id', 'mod_versions.version', 'mod_versions.version_major', 'mod_versions.version_minor', 'mod_versions.version_patch'])
-                    ->where('mod_id', $this->mod->id)
-                    ->orderBy('version_major', 'desc')
-                    ->orderBy('version_minor', 'desc')
-                    ->orderBy('version_patch', 'desc'),
-                // Note: versions.compatibleModVersions removed - getAllCompatibleModVersions() queries directly for efficiency
-            ])
-            ->when($this->selectedModVersionId, function (Builder $query): void {
-                // Filter addons that have ANY version compatible with the selected mod version
-                $query->whereHas('versions', function (Builder $versionQuery): void {
-                    $versionQuery->where('disabled', false)
-                        ->whereNotNull('published_at')
-                        ->whereHas('compatibleModVersions', function (Builder $compatQuery): void {
-                            $compatQuery->where('mod_versions.id', $this->selectedModVersionId);
-                        });
-                });
-            })
-            ->when(! $user?->isModOrAdmin(), function (Builder $query): void {
-                $query->where('disabled', false)
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
-            })
-            ->whereNull('detached_at')
-            ->orderBy('downloads', 'desc')
-            ->paginate(perPage: 10, pageName: 'addonPage')
-            ->fragment('addons');
     }
 
     /**

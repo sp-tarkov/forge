@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Livewire\Page\Mod\Create;
 use App\Livewire\Page\Mod\Edit;
+use App\Livewire\Page\Mod\Show;
 use App\Models\Comment;
 use App\Models\License;
 use App\Models\Mod;
@@ -16,6 +17,7 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    $this->withoutDefer();
     Queue::fake(); // Prevent spam check jobs from running
     config()->set('honeypot.enabled', false); // Disable honeypot for testing
 
@@ -252,177 +254,180 @@ describe('Mod Show Page Comment Visibility', function (): void {
     });
 
     it('shows comments tab for mod owners when comments are enabled', function (): void {
-        $response = $this->actingAs($this->user)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
+        $this->actingAs($this->user);
 
-        $response->assertSeeText('Comment');
-        $response->assertSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSeeText('Comment')
+            ->assertSee('comment-component');
     });
 
     it('hides comments tab for normal users when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->otherUser);
 
-        $response = $this->actingAs($this->otherUser) // Use otherUser instead of user (owner)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertDontSeeText('Comment');
-        $response->assertDontSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertDontSeeText('Comment')
+            ->assertDontSee('comment-component');
     });
 
     it('shows comments tab for moderators when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->moderator);
 
-        $response = $this->actingAs($this->moderator)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSeeText('Comment');
-        $response->assertSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSeeText('Comment')
+            ->assertSee('comment-component');
     });
 
     it('shows comments tab for admins when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->admin);
 
-        $response = $this->actingAs($this->admin)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSeeText('Comment');
-        $response->assertSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSeeText('Comment')
+            ->assertSee('comment-component');
     });
 
     it('shows comments tab for mod owners when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->user);
 
-        $response = $this->actingAs($this->user)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSeeText('Comment');
-        $response->assertSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSeeText('Comment')
+            ->assertSee('comment-component');
     });
 
     it('shows comments tab for mod authors when comments are disabled', function (): void {
         $author = User::factory()->create();
         $this->mod->additionalAuthors()->attach($author);
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($author);
 
-        $response = $this->actingAs($author)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSeeText('Comment');
-        $response->assertSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSeeText('Comment')
+            ->assertSee('comment-component');
     });
 
     it('shows admin notice when comments are disabled and user is admin', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->admin);
 
-        $response = $this->actingAs($this->admin)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSee('Comments have been disabled for this mod');
-        $response->assertSee('not visible to normal users');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSee('Comments have been disabled for this mod')
+            ->assertSee('not visible to normal users');
     });
 
     it('shows moderator notice when comments are disabled and user is moderator', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->moderator);
 
-        $response = $this->actingAs($this->moderator)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSee('Comments have been disabled for this mod');
-        $response->assertSee('not visible to normal users');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSee('Comments have been disabled for this mod')
+            ->assertSee('not visible to normal users');
     });
 
     it('shows owner notice when comments are disabled and user is mod owner', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->user);
 
-        $response = $this->actingAs($this->user)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSee('Comments have been disabled for this mod');
-        $response->assertSee('not visible to normal users');
-        $response->assertSee('mod owner or author');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSee('Comments have been disabled for this mod')
+            ->assertSee('not visible to normal users')
+            ->assertSee('mod owner or author');
     });
 
     it('shows author notice when comments are disabled and user is mod author', function (): void {
         $author = User::factory()->create();
         $this->mod->additionalAuthors()->attach($author);
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($author);
 
-        $response = $this->actingAs($author)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertSee('Comments have been disabled for this mod');
-        $response->assertSee('not visible to normal users');
-        $response->assertSee('mod owner or author');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSee('Comments have been disabled for this mod')
+            ->assertSee('not visible to normal users')
+            ->assertSee('mod owner or author');
     });
 
     it('hides comments for guests when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
 
-        $response = $this->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertDontSee('Comments', false);
-        $response->assertDontSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertDontSee('Comments', false)
+            ->assertDontSee('comment-component');
     });
 
     it('hides comment creation form when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->otherUser);
 
-        $response = $this->actingAs($this->otherUser)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertDontSee('Post Comment');
-        $response->assertDontSee('comment-component');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertDontSee('Post Comment')
+            ->assertDontSee('comment-component');
     });
 
     it('shows comment creation form when comments are enabled', function (): void {
-        $response = $this->actingAs($this->user)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
+        $this->actingAs($this->user);
 
-        $response->assertSeeText('Comment');
-        $response->assertSee('comment-component');
-        $response->assertDontSee('Comments have been disabled for this mod');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertSeeText('Comment')
+            ->assertSee('comment-component')
+            ->assertDontSee('Comments have been disabled for this mod');
     });
 
     it('hides comment creation form for mod owners when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->user);
 
-        $response = $this->actingAs($this->user)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertDontSee('Post Comment');
-        $response->assertSee('Comments have been disabled for this mod');
-        $response->assertSee('Comments are disabled.');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertDontSee('Post Comment')
+            ->assertSee('Comments have been disabled for this mod')
+            ->assertSee('Comments are disabled.');
     });
 
     it('hides comment creation form for mod authors when comments are disabled', function (): void {
         $author = User::factory()->create();
         $this->mod->additionalAuthors()->attach($author);
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($author);
 
-        $response = $this->actingAs($author)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertDontSee('Post Comment');
-        $response->assertSee('Comments have been disabled for this mod');
-        $response->assertSee('Comments are disabled.');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertDontSee('Post Comment')
+            ->assertSee('Comments have been disabled for this mod')
+            ->assertSee('Comments are disabled.');
     });
 
     it('hides comment creation form for admins when comments are disabled', function (): void {
         $this->mod->update(['comments_disabled' => true]);
+        $this->actingAs($this->admin);
 
-        $response = $this->actingAs($this->admin)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
-
-        $response->assertDontSee('Post Comment');
-        $response->assertSee('Comments have been disabled for this mod');
-        $response->assertSee('Comments are disabled.');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertDontSee('Post Comment')
+            ->assertSee('Comments have been disabled for this mod')
+            ->assertSee('Comments are disabled.');
     });
 
     it('does not show comment enable/disable options in action menu', function (): void {
-        $response = $this->actingAs($this->user)
-            ->get(route('mod.show', [$this->mod->id, $this->mod->slug]));
+        $this->actingAs($this->user);
 
-        $response->assertDontSee('Enable Comments');
-        $response->assertDontSee('Disable Comments');
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->assertDontSee('Enable Comments')
+            ->assertDontSee('Disable Comments');
     });
 });

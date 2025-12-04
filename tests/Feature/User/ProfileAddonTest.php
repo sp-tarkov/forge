@@ -7,10 +7,15 @@ use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
 describe('addon visibility on profile', function (): void {
+    beforeEach(function (): void {
+        Livewire::withoutLazyLoading();
+    });
+
     it('shows addons on a profile page', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();

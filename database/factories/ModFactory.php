@@ -53,6 +53,26 @@ class ModFactory extends Factory
     }
 
     /**
+     * Indicate that the mod has addons enabled.
+     */
+    public function addonsEnabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'addons_disabled' => false,
+        ]);
+    }
+
+    /**
+     * Indicate that the mod has addons disabled.
+     */
+    public function addonsDisabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'addons_disabled' => true,
+        ]);
+    }
+
+    /**
      * Configure the model factory.
      */
     public function configure(): static

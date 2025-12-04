@@ -264,161 +264,40 @@
                 </div>
 
                 {{-- Mod Description --}}
-                <div
-                    x-show="selectedTab === 'description'"
-                    class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
-                >
-                    {{--
-                        !DANGER ZONE!
-
-                        This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
-                        fields like this when you're absolutely sure that the data is safe. Which is almost never.
-                     --}}
-                    {!! $mod->description_html !!}
+                <div x-show="selectedTab === 'description'">
+                    <livewire:mod.show.description-tab
+                        wire:key="description-tab-{{ $mod->id }}"
+                        :mod-id="$mod->id"
+                    />
                 </div>
 
                 {{-- Mod Versions --}}
                 <div x-show="selectedTab === 'versions'">
-                    @forelse($versions as $version)
-                        @cachedCan('view', $version)
-                            <div wire:key="mod-show-version-{{ $mod->id }}-{{ $version->id }}">
-                                <x-mod.version-card :version="$version" />
-                            </div>
-                        @endcachedCan
-                    @empty
-                        <div
-                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                            <div class="text-center py-8">
-                                <flux:icon.archive-box class="mx-auto h-12 w-12 text-gray-400" />
-                                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                    {{ __('No Versions Yet') }}</h3>
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ __('This mod doesn\'t have any versions yet.') }}</p>
-                                @cachedCan('create', [App\Models\ModVersion::class, $mod])
-                                    <div class="mt-6">
-                                        <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">
-                                            {{ __('Create First Version') }}
-                                        </flux:button>
-                                    </div>
-                                @endcachedCan
-                            </div>
-                        </div>
-                    @endforelse
-                    {{ $versions->links() }}
+                    <livewire:mod.show.versions-tab
+                        wire:key="versions-tab-{{ $mod->id }}"
+                        :mod-id="$mod->id"
+                    />
                 </div>
 
                 {{-- Addons --}}
-                <div
-                    x-show="selectedTab === 'addons'"
-                    x-cloak
-                >
-                    @if ($mod->addons_enabled)
-                        @if ($addonCount > 0)
-                            {{-- Version Filter --}}
-                            <div class="mb-4 flex items-center justify-between gap-4">
-                                <div class="text-sm text-gray-600 dark:text-gray-400">
-                                    <span x-show="!$wire.selectedModVersionId">
-                                        Select a mod version to filter by on the right.
-                                    </span>
-                                    <span
-                                        x-show="$wire.selectedModVersionId"
-                                        x-cloak
-                                    >
-                                        Showing addons compatible with selected version.
-                                    </span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <label
-                                        for="mod-version-filter"
-                                        class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
-                                    >
-                                        Filter by mod version:
-                                    </label>
-                                    <flux:select
-                                        wire:model.live="selectedModVersionId"
-                                        id="mod-version-filter"
-                                        size="sm"
-                                    >
-                                        <flux:select.option value="">All versions</flux:select.option>
-                                        @foreach ($modVersionsForFilter as $version)
-                                            <flux:select.option value="{{ $version->id }}">
-                                                v{{ $version->version }}
-                                                @if ($version->latestSptVersion)
-                                                    ({{ $version->latestSptVersion->version_formatted }})
-                                                @endif
-                                            </flux:select.option>
-                                        @endforeach
-                                    </flux:select>
-                                </div>
-                            </div>
-
-                            <div class="grid gap-4">
-                                @foreach ($addons as $addon)
-                                    <x-addon.card
-                                        :addon="$addon"
-                                        :selected-mod-version-id="$selectedModVersionId"
-                                        wire:key="addon-card-{{ $addon->id }}"
-                                    />
-                                @endforeach
-                            </div>
-                            {{ $addons->links() }}
-                        @else
-                            <div
-                                class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                                <div class="text-center py-8">
-                                    <flux:icon.puzzle-piece class="mx-auto size-12 text-gray-400" />
-                                    <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                        {{ __('No Addons Yet') }}</h3>
-                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        {{ __('This mod doesn\'t have any addons yet.') }}</p>
-                                    @cachedCan('create', [App\Models\Addon::class, $mod])
-                                        <div class="mt-6">
-                                            <flux:button href="{{ route('addon.guidelines', ['mod' => $mod->id]) }}">
-                                                {{ __('Create First Addon') }}
-                                            </flux:button>
-                                        </div>
-                                    @endcachedCan
-                                </div>
-                            </div>
-                        @endif
-                    @else
-                        <div
-                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                            <flux:callout
-                                icon="information-circle"
-                                color="zinc"
-                            >
-                                <flux:callout.heading>{{ __('Addons Disabled') }}</flux:callout.heading>
-                                <flux:callout.text>
-                                    {{ __('The mod owner has disabled addons for this mod.') }}
-                                </flux:callout.text>
-                            </flux:callout>
-                        </div>
-                    @endif
-                </div>
+                @if ($mod->addons_enabled)
+                    <div
+                        x-show="selectedTab === 'addons'"
+                        x-cloak
+                    >
+                        <livewire:mod.show.addons-tab
+                            wire:key="addons-tab-{{ $mod->id }}"
+                            :mod-id="$mod->id"
+                        />
+                    </div>
+                @endif
 
                 {{-- Comments --}}
                 @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
-                    <div
-                        id="comments"
-                        x-show="selectedTab === 'comments'"
-                    >
-                        @if ($mod->comments_disabled && (auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user())))
-                            <div class="mb-6">
-                                <flux:callout
-                                    icon="exclamation-triangle"
-                                    color="orange"
-                                    inline="inline"
-                                >
-                                    <flux:callout.text>
-                                        {{ __('Comments have been disabled for this mod and are not visible to normal users. As :role, you can still view and manage all comments.', ['role' => auth()->user()?->isModOrAdmin() ? 'an administrator or moderator' : 'the mod owner or author']) }}
-                                    </flux:callout.text>
-                                </flux:callout>
-                            </div>
-                        @endif
-                        <livewire:comment-component
-                            wire:key="comment-component-{{ $mod->id }}"
-                            :commentable="$mod"
+                    <div x-show="selectedTab === 'comments'">
+                        <livewire:mod.show.comments-tab
+                            wire:key="comments-tab-{{ $mod->id }}"
+                            :mod-id="$mod->id"
                         />
                     </div>
                 @endif
@@ -481,8 +360,7 @@
                                         <div
                                             class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <flux:icon.cube-transparent
-                                                class="w-6 h-6 text-gray-400 dark:text-gray-600"
-                                            />
+                                                class="w-6 h-6 text-gray-400 dark:text-gray-600" />
                                         </div>
                                     @endif
 
