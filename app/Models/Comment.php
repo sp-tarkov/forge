@@ -11,8 +11,8 @@ use App\Enums\SpamStatus;
 use App\Observers\CommentObserver;
 use App\Support\Akismet\SpamCheckResult;
 use App\Traits\HasReports;
+use App\Traits\RendersBodyHtml;
 use Database\Factories\CommentFactory;
-use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +27,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Shetabit\Visitor\Models\Visit;
 use Shetabit\Visitor\Traits\Visitable;
-use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -36,6 +35,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $commentable_id
  * @property string $commentable_type
  * @property string $body
+ * @property string|null $body_html
  * @property string $user_ip
  * @property string $user_agent
  * @property string $referrer
@@ -75,6 +75,7 @@ class Comment extends Model implements Reportable, Trackable
     /** @use HasReports<Comment> */
     use HasReports;
 
+    use RendersBodyHtml;
     use Visitable;
 
     /**
@@ -412,20 +413,6 @@ class Comment extends Model implements Reportable, Trackable
     public function getReportableUrl(): string
     {
         return $this->getUrl();
-    }
-
-    /**
-     * Get the comment body processed as HTML with light markdown formatting.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function bodyHtml(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => Purify::config('comments')->clean(
-                Markdown::convert($this->body)->getContent()
-            )
-        )->shouldCache();
     }
 
     /**

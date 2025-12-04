@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Jobs\ProcessChatMessageNotification;
+use App\Traits\RendersContentHtml;
 use Database\Factories\MessageFactory;
-use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -18,16 +18,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Override;
-use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
  * @property int $conversation_id
  * @property int $user_id
  * @property string $content
+ * @property string|null $content_html
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property string $content_html
  * @property bool $is_mine
  * @property bool $is_read
  * @property Conversation $conversation
@@ -42,12 +41,14 @@ class Message extends Model
     /** @use HasFactory<MessageFactory> */
     use HasFactory;
 
+    use RendersContentHtml;
+
     /**
      * The accessors to append to the model's array form.
      *
      * @var list<string>
      */
-    protected $appends = ['is_mine', 'is_read', 'content_html'];
+    protected $appends = ['is_mine', 'is_read'];
 
     /**
      * Get the conversation that owns the message.
@@ -252,19 +253,5 @@ class Message extends Model
     {
         return $query->select('messages.*')
             ->selectRaw('? as current_user_id', [$user->id]);
-    }
-
-    /**
-     * Generate the cleaned version of the HTML content from markdown.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function contentHtml(): Attribute
-    {
-        return Attribute::make(
-            get: fn (): string => Purify::config('messages')->clean(
-                Markdown::convert($this->content)->getContent()
-            )
-        )->shouldCache();
     }
 }

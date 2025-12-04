@@ -11,8 +11,8 @@ use App\Models\Scopes\PublishedScope;
 use App\Observers\AddonObserver;
 use App\Traits\HasComments;
 use App\Traits\HasReports;
+use App\Traits\RendersDescriptionHtml;
 use Database\Factories\AddonFactory;
-use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -32,7 +32,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use Shetabit\Visitor\Traits\Visitable;
-use Stevebauman\Purify\Facades\Purify;
 
 /**
  * @property int $id
@@ -56,8 +55,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property string|null $description_html
  * @property-read string $detail_url
- * @property-read string $description_html
  * @property-read string|null $thumbnailUrl
  * @property-read Mod|null $mod
  * @property-read User|null $owner
@@ -83,6 +82,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     /** @use HasReports<Addon> */
     use HasReports;
 
+    use RendersDescriptionHtml;
     use Searchable;
     use Visitable;
 
@@ -486,18 +486,6 @@ class Addon extends Model implements Commentable, Reportable, Trackable
         return $query->where('disabled', false)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now());
-    }
-
-    /**
-     * Get the rendered HTML version of the description.
-     *
-     * @return Attribute<string, never>
-     */
-    protected function descriptionHtml(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => Markdown::convert(Purify::clean($this->description ?? ''))->getContent(),
-        );
     }
 
     /**
