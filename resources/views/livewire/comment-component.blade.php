@@ -280,13 +280,20 @@
                     <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                         {{ __('This comment will be hidden from regular users but can be restored later by moderators.') }}
                     </flux:text>
+
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
                     class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                     <flux:button
-                        x-on:click="$wire.showSoftDeleteModal = false"
+                        x-on:click="$wire.showSoftDeleteModal = false; $wire.moderationReason = ''"
                         variant="outline"
                         size="sm"
                     >
@@ -481,6 +488,13 @@
                             </div>
                         </div>
                     @endif
+
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
                 </div>
 
                 {{-- Footer Actions --}}
@@ -497,7 +511,7 @@
 
                     <div class="flex gap-3">
                         <flux:button
-                            x-on:click="$wire.showHardDeleteModal = false"
+                            x-on:click="$wire.showHardDeleteModal = false; $wire.moderationReason = ''"
                             variant="outline"
                             size="sm"
                         >
@@ -551,13 +565,20 @@
                     <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                         {{ __('Are you sure you want to pin this comment? Pinned comments appear at the top of the comment section.') }}
                     </flux:text>
+
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
                     class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                     <flux:button
-                        x-on:click="$wire.showPinModal = false"
+                        x-on:click="$wire.showPinModal = false; $wire.moderationReason = ''"
                         variant="outline"
                         size="sm"
                     >
@@ -611,13 +632,20 @@
                     <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                         {{ __('Are you sure you want to unpin this comment? It will no longer appear at the top of the comment section.') }}
                     </flux:text>
+
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
                     class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                     <flux:button
-                        x-on:click="$wire.showUnpinModal = false"
+                        x-on:click="$wire.showUnpinModal = false; $wire.moderationReason = ''"
                         variant="outline"
                         size="sm"
                     >
@@ -671,13 +699,20 @@
                     <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                         {{ __('This comment will be marked as spam and hidden from regular users.') }}
                     </flux:text>
+
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
                     class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                     <flux:button
-                        x-on:click="$wire.showMarkAsSpamModal = false"
+                        x-on:click="$wire.showMarkAsSpamModal = false; $wire.moderationReason = ''"
                         variant="outline"
                         size="sm"
                     >
@@ -730,13 +765,20 @@
                     <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                         {{ __('Are you sure you want to mark this comment as clean? This will remove any spam flags and make it visible to all users.') }}
                     </flux:text>
+
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
                     class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                     <flux:button
-                        x-on:click="$wire.showMarkAsCleanModal = false"
+                        x-on:click="$wire.showMarkAsCleanModal = false; $wire.moderationReason = ''"
                         variant="outline"
                         size="sm"
                     >
@@ -848,13 +890,20 @@
                     <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                         {{ __('Are you sure you want to restore this comment? It will become visible to users again.') }}
                     </flux:text>
+
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
                 </div>
 
                 {{-- Footer Actions --}}
                 <div
                     class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                     <flux:button
-                        x-on:click="$wire.showRestoreModal = false"
+                        x-on:click="$wire.showRestoreModal = false; $wire.moderationReason = ''"
                         variant="outline"
                         size="sm"
                     >

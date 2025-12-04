@@ -7,17 +7,27 @@ namespace App\Traits\Livewire;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
+use Illuminate\Support\Facades\Auth;
 
 trait ModeratesMod
 {
     /**
      * Delete the mod. Will automatically synchronize the listing.
      */
-    public function deleteMod(Mod $mod, string $route = ''): void
+    public function deleteMod(Mod $mod, string $route = '', string $reason = ''): void
     {
         $this->authorize('delete', $mod);
 
-        Track::event(TrackingEventType::MOD_DELETE, $mod);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::MOD_DELETE,
+            $mod,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($reason ?: null) : null
+        );
 
         $mod->delete();
 
@@ -33,14 +43,19 @@ trait ModeratesMod
      * Remove the featured flag from the mod. Will automatically synchronize the listing. This should only be used in
      * the context of the homepage featured section; otherwise, use the moderation->unfeature method.
      */
-    public function unfeatureMod(Mod $mod): void
+    public function unfeatureMod(Mod $mod, string $reason = ''): void
     {
         $this->authorize('unfeature', $mod);
 
         $mod->featured = false;
         $mod->save();
 
-        Track::event(TrackingEventType::MOD_UNFEATURE, $mod);
+        Track::eventSync(
+            TrackingEventType::MOD_UNFEATURE,
+            $mod,
+            isModerationAction: true,
+            reason: $reason ?: null
+        );
 
         flash()->success('Mod successfully unfeatured!');
     }

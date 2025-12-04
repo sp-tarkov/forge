@@ -211,6 +211,11 @@
                                             href="{{ route('report-centre') }}"
                                             wire:navigate
                                         >{{ __('Report Centre') }}</flux:menu.item>
+                                        <flux:menu.item
+                                            icon="shield-check"
+                                            href="{{ route('moderation-actions') }}"
+                                            wire:navigate
+                                        >{{ __('Moderation Actions') }}</flux:menu.item>
                                     </flux:menu.submenu>
                                 @endif
 
@@ -388,6 +393,10 @@
                         href="{{ route('report-centre') }}"
                         :active="request()->routeIs('report-centre')"
                     >{{ __('Report Centre') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('moderation-actions') }}"
+                        :active="request()->routeIs('moderation-actions')"
+                    >{{ __('Moderation Actions') }}</x-responsive-nav-link>
                 @endif
                 @if (auth()->user()->isAdmin())
                     <x-responsive-nav-link

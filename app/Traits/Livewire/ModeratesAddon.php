@@ -8,17 +8,27 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use Illuminate\Support\Facades\Auth;
 
 trait ModeratesAddon
 {
     /**
      * Delete the addon. Will automatically synchronize the listing.
      */
-    public function deleteAddon(Addon $addon, string $route = ''): void
+    public function deleteAddon(Addon $addon, string $route = '', string $reason = ''): void
     {
         $this->authorize('delete', $addon);
 
-        Track::event(TrackingEventType::ADDON_DELETE, $addon);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_DELETE,
+            $addon,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($reason ?: null) : null
+        );
 
         $addon->delete();
 
@@ -33,11 +43,20 @@ trait ModeratesAddon
     /**
      * Delete the addon version. Will automatically synchronize the listing.
      */
-    public function deleteAddonVersion(AddonVersion $version): void
+    public function deleteAddonVersion(AddonVersion $version, string $reason = ''): void
     {
         $this->authorize('delete', $version);
 
-        Track::event(TrackingEventType::VERSION_DELETE, $version);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $version->addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_VERSION_DELETE,
+            $version,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($reason ?: null) : null
+        );
 
         $version->delete();
 

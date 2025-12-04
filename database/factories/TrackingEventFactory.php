@@ -154,6 +154,18 @@ class TrackingEventFactory extends Factory
     }
 
     /**
+     * State for creating moderation actions.
+     */
+    public function moderationAction(): static
+    {
+        return $this->state(function (array $attributes): array {
+            return [
+                'is_moderation_action' => true,
+            ];
+        });
+    }
+
+    /**
      * Create a trackable model instance based on the event type.
      */
     private function createTrackableModel(TrackingEventType $eventType): ?Model
@@ -171,7 +183,7 @@ class TrackingEventFactory extends Factory
 
             TrackingEventType::COMMENT_CREATE,
             TrackingEventType::COMMENT_EDIT,
-            TrackingEventType::COMMENT_DELETE,
+            TrackingEventType::COMMENT_SOFT_DELETE,
             TrackingEventType::COMMENT_LIKE,
             TrackingEventType::COMMENT_UNLIKE,
             TrackingEventType::COMMENT_REPORT => Comment::factory()->create(),

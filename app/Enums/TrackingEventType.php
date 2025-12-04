@@ -40,6 +40,14 @@ enum TrackingEventType: string
 
     case VERSION_DELETE = 'version_delete';
 
+    case VERSION_DISABLE = 'version_disable';
+
+    case VERSION_ENABLE = 'version_enable';
+
+    case VERSION_PUBLISH = 'version_publish';
+
+    case VERSION_UNPUBLISH = 'version_unpublish';
+
     /** Addon-related events */
     case ADDON_DOWNLOAD = 'addon_download';
 
@@ -70,12 +78,22 @@ enum TrackingEventType: string
 
     case ADDON_VERSION_DELETE = 'addon_version_delete';
 
+    case ADDON_VERSION_DISABLE = 'addon_version_disable';
+
+    case ADDON_VERSION_ENABLE = 'addon_version_enable';
+
+    case ADDON_VERSION_PUBLISH = 'addon_version_publish';
+
+    case ADDON_VERSION_UNPUBLISH = 'addon_version_unpublish';
+
     /** Comment events */
     case COMMENT_CREATE = 'comment_create';
 
     case COMMENT_EDIT = 'comment_edit';
 
-    case COMMENT_DELETE = 'comment_delete';
+    case COMMENT_SOFT_DELETE = 'comment_soft_delete';
+
+    case COMMENT_HARD_DELETE = 'comment_hard_delete';
 
     case COMMENT_LIKE = 'comment_like';
 
@@ -116,6 +134,33 @@ enum TrackingEventType: string
 
     case COMMENT_UNPIN = 'comment_unpin';
 
+    case COMMENT_RESTORE = 'comment_restore';
+
+    case COMMENT_MARK_SPAM = 'comment_mark_spam';
+
+    case COMMENT_MARK_CLEAN = 'comment_mark_clean';
+
+    /**
+     * Get all moderation action event types.
+     *
+     * @return array<int, self>
+     */
+    public static function moderationActions(): array
+    {
+        return array_values(array_filter(
+            self::cases(),
+            fn (self $type): bool => $type->isModerationAction()
+        ));
+    }
+
+    /**
+     * Get the user-friendly display name for this event type.
+     */
+    public function label(): string
+    {
+        return $this->getName();
+    }
+
     /**
      * Get the user-friendly display name for this event type.
      */
@@ -133,6 +178,10 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'Created mod version',
             self::VERSION_EDIT => 'Edited mod version',
             self::VERSION_DELETE => 'Deleted mod version',
+            self::VERSION_DISABLE => 'Disabled mod version',
+            self::VERSION_ENABLE => 'Enabled mod version',
+            self::VERSION_PUBLISH => 'Published mod version',
+            self::VERSION_UNPUBLISH => 'Unpublished mod version',
             self::ADDON_DOWNLOAD => 'Downloaded addon',
             self::ADDON_CREATE => 'Created addon',
             self::ADDON_EDIT => 'Edited addon',
@@ -147,9 +196,14 @@ enum TrackingEventType: string
             self::ADDON_VERSION_CREATE => 'Created addon version',
             self::ADDON_VERSION_EDIT => 'Edited addon version',
             self::ADDON_VERSION_DELETE => 'Deleted addon version',
+            self::ADDON_VERSION_DISABLE => 'Disabled addon version',
+            self::ADDON_VERSION_ENABLE => 'Enabled addon version',
+            self::ADDON_VERSION_PUBLISH => 'Published addon version',
+            self::ADDON_VERSION_UNPUBLISH => 'Unpublished addon version',
             self::COMMENT_CREATE => 'Created comment',
             self::COMMENT_EDIT => 'Edited comment',
-            self::COMMENT_DELETE => 'Deleted comment',
+            self::COMMENT_SOFT_DELETE => 'Soft deleted comment',
+            self::COMMENT_HARD_DELETE => 'Hard deleted comment',
             self::COMMENT_LIKE => 'Liked comment',
             self::COMMENT_UNLIKE => 'Unliked comment',
             self::COMMENT_REPORT => 'Reported comment',
@@ -169,6 +223,9 @@ enum TrackingEventType: string
             self::MOD_UNPUBLISH => 'Unpublished mod',
             self::COMMENT_PIN => 'Pinned comment',
             self::COMMENT_UNPIN => 'Unpinned comment',
+            self::COMMENT_RESTORE => 'Restored comment',
+            self::COMMENT_MARK_SPAM => 'Marked comment as spam',
+            self::COMMENT_MARK_CLEAN => 'Marked comment as clean',
         };
     }
 
@@ -189,6 +246,10 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'User created a new mod version',
             self::VERSION_EDIT => 'User edited a mod version',
             self::VERSION_DELETE => 'User deleted a mod version',
+            self::VERSION_DISABLE => 'Moderator disabled a mod version',
+            self::VERSION_ENABLE => 'Moderator enabled a mod version',
+            self::VERSION_PUBLISH => 'Moderator published a mod version',
+            self::VERSION_UNPUBLISH => 'Moderator unpublished a mod version',
             self::ADDON_DOWNLOAD => 'User downloaded an addon',
             self::ADDON_CREATE => 'User created a new addon',
             self::ADDON_EDIT => 'User edited an addon',
@@ -203,9 +264,14 @@ enum TrackingEventType: string
             self::ADDON_VERSION_CREATE => 'User created a new addon version',
             self::ADDON_VERSION_EDIT => 'User edited an addon version',
             self::ADDON_VERSION_DELETE => 'User deleted an addon version',
+            self::ADDON_VERSION_DISABLE => 'Moderator disabled an addon version',
+            self::ADDON_VERSION_ENABLE => 'Moderator enabled an addon version',
+            self::ADDON_VERSION_PUBLISH => 'Moderator published an addon version',
+            self::ADDON_VERSION_UNPUBLISH => 'Moderator unpublished an addon version',
             self::COMMENT_CREATE => 'User created a comment',
             self::COMMENT_EDIT => 'User edited a comment',
-            self::COMMENT_DELETE => 'User deleted a comment',
+            self::COMMENT_SOFT_DELETE => 'User soft deleted a comment',
+            self::COMMENT_HARD_DELETE => 'Staff hard deleted a comment',
             self::COMMENT_LIKE => 'User liked a comment',
             self::COMMENT_UNLIKE => 'User unliked a comment',
             self::COMMENT_REPORT => 'User reported a comment',
@@ -225,6 +291,9 @@ enum TrackingEventType: string
             self::MOD_UNPUBLISH => 'Moderator unpublished a mod',
             self::COMMENT_PIN => 'Moderator pinned a comment',
             self::COMMENT_UNPIN => 'Moderator unpinned a comment',
+            self::COMMENT_RESTORE => 'Moderator restored a deleted comment',
+            self::COMMENT_MARK_SPAM => 'Moderator marked a comment as spam',
+            self::COMMENT_MARK_CLEAN => 'Moderator marked a comment as clean',
         };
     }
 
@@ -235,10 +304,10 @@ enum TrackingEventType: string
     {
         return match ($this) {
             self::MOD_CREATE, self::MOD_EDIT, self::MOD_DELETE, self::MOD_REPORT, self::MOD_FEATURE, self::MOD_UNFEATURE, self::MOD_DISABLE, self::MOD_ENABLE, self::MOD_PUBLISH, self::MOD_UNPUBLISH => Mod::class,
-            self::MOD_DOWNLOAD, self::VERSION_CREATE, self::VERSION_EDIT, self::VERSION_DELETE => ModVersion::class,
+            self::MOD_DOWNLOAD, self::VERSION_CREATE, self::VERSION_EDIT, self::VERSION_DELETE, self::VERSION_DISABLE, self::VERSION_ENABLE, self::VERSION_PUBLISH, self::VERSION_UNPUBLISH => ModVersion::class,
             self::ADDON_CREATE, self::ADDON_EDIT, self::ADDON_DELETE, self::ADDON_REPORT, self::ADDON_ATTACH, self::ADDON_DETACH, self::ADDON_DISABLE, self::ADDON_ENABLE, self::ADDON_PUBLISH, self::ADDON_UNPUBLISH => Addon::class,
-            self::ADDON_DOWNLOAD, self::ADDON_VERSION_CREATE, self::ADDON_VERSION_EDIT, self::ADDON_VERSION_DELETE => AddonVersion::class,
-            self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT, self::COMMENT_PIN, self::COMMENT_UNPIN => Comment::class,
+            self::ADDON_DOWNLOAD, self::ADDON_VERSION_CREATE, self::ADDON_VERSION_EDIT, self::ADDON_VERSION_DELETE, self::ADDON_VERSION_DISABLE, self::ADDON_VERSION_ENABLE, self::ADDON_VERSION_PUBLISH, self::ADDON_VERSION_UNPUBLISH => AddonVersion::class,
+            self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_SOFT_DELETE, self::COMMENT_HARD_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT, self::COMMENT_PIN, self::COMMENT_UNPIN, self::COMMENT_RESTORE, self::COMMENT_MARK_SPAM, self::COMMENT_MARK_CLEAN => Comment::class,
             self::USER_BAN, self::USER_UNBAN, self::USER_BANNED, self::USER_UNBANNED => User::class,
             default => null,
         };
@@ -273,6 +342,10 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'tag',
             self::VERSION_EDIT => 'pencil',
             self::VERSION_DELETE => 'x-circle',
+            self::VERSION_DISABLE => 'eye-slash',
+            self::VERSION_ENABLE => 'eye',
+            self::VERSION_PUBLISH => 'globe-alt',
+            self::VERSION_UNPUBLISH => 'eye-slash',
             self::ADDON_DOWNLOAD => 'arrow-down-tray',
             self::ADDON_CREATE => 'plus-circle',
             self::ADDON_EDIT => 'pencil-square',
@@ -287,9 +360,14 @@ enum TrackingEventType: string
             self::ADDON_VERSION_CREATE => 'tag',
             self::ADDON_VERSION_EDIT => 'pencil',
             self::ADDON_VERSION_DELETE => 'x-circle',
+            self::ADDON_VERSION_DISABLE => 'eye-slash',
+            self::ADDON_VERSION_ENABLE => 'eye',
+            self::ADDON_VERSION_PUBLISH => 'globe-alt',
+            self::ADDON_VERSION_UNPUBLISH => 'eye-slash',
             self::COMMENT_CREATE => 'chat-bubble-left',
             self::COMMENT_EDIT => 'chat-bubble-left-ellipsis',
-            self::COMMENT_DELETE => 'chat-bubble-left-right',
+            self::COMMENT_SOFT_DELETE => 'chat-bubble-left-right',
+            self::COMMENT_HARD_DELETE => 'trash',
             self::COMMENT_LIKE => 'heart',
             self::COMMENT_UNLIKE => 'heart',
             self::COMMENT_REPORT => 'exclamation-triangle',
@@ -308,6 +386,9 @@ enum TrackingEventType: string
             self::MOD_UNPUBLISH => 'eye-slash',
             self::COMMENT_PIN => 'bookmark',
             self::COMMENT_UNPIN => 'bookmark',
+            self::COMMENT_RESTORE => 'arrow-uturn-left',
+            self::COMMENT_MARK_SPAM => 'shield-exclamation',
+            self::COMMENT_MARK_CLEAN => 'shield-check',
         };
     }
 
@@ -334,6 +415,10 @@ enum TrackingEventType: string
             self::VERSION_CREATE => 'teal',
             self::VERSION_EDIT => 'emerald',
             self::VERSION_DELETE => 'red',
+            self::VERSION_DISABLE => 'red',
+            self::VERSION_ENABLE => 'green',
+            self::VERSION_PUBLISH => 'blue',
+            self::VERSION_UNPUBLISH => 'gray',
 
             // Addon events - Fuchsia/Pink theme
             self::ADDON_DOWNLOAD => 'fuchsia',
@@ -352,11 +437,16 @@ enum TrackingEventType: string
             self::ADDON_VERSION_CREATE => 'sky',
             self::ADDON_VERSION_EDIT => 'cyan',
             self::ADDON_VERSION_DELETE => 'red',
+            self::ADDON_VERSION_DISABLE => 'red',
+            self::ADDON_VERSION_ENABLE => 'green',
+            self::ADDON_VERSION_PUBLISH => 'blue',
+            self::ADDON_VERSION_UNPUBLISH => 'gray',
 
             // Comment events - Yellow/Amber theme
             self::COMMENT_CREATE => 'yellow',
             self::COMMENT_EDIT => 'amber',
-            self::COMMENT_DELETE => 'red',
+            self::COMMENT_SOFT_DELETE => 'red',
+            self::COMMENT_HARD_DELETE => 'red',
             self::COMMENT_LIKE => 'pink',
             self::COMMENT_UNLIKE => 'zinc',
             self::COMMENT_REPORT => 'orange',
@@ -379,6 +469,9 @@ enum TrackingEventType: string
             self::MOD_UNPUBLISH => 'gray',
             self::COMMENT_PIN => 'blue',
             self::COMMENT_UNPIN => 'gray',
+            self::COMMENT_RESTORE => 'green',
+            self::COMMENT_MARK_SPAM => 'red',
+            self::COMMENT_MARK_CLEAN => 'green',
         };
     }
 
@@ -413,8 +506,48 @@ enum TrackingEventType: string
     public function isPrivate(): bool
     {
         return match ($this) {
-            self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE => false,
+            self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_SOFT_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE => false,
             default => true,
+        };
+    }
+
+    /**
+     * Determine if this event type represents a moderation action.
+     * These are actions performed by moderators/administrators on users or content.
+     */
+    public function isModerationAction(): bool
+    {
+        return match ($this) {
+            self::USER_BAN,
+            self::USER_UNBAN,
+            self::IP_BAN,
+            self::IP_UNBAN,
+            self::MOD_FEATURE,
+            self::MOD_UNFEATURE,
+            self::MOD_DISABLE,
+            self::MOD_ENABLE,
+            self::MOD_PUBLISH,
+            self::MOD_UNPUBLISH,
+            self::VERSION_DISABLE,
+            self::VERSION_ENABLE,
+            self::VERSION_PUBLISH,
+            self::VERSION_UNPUBLISH,
+            self::ADDON_DISABLE,
+            self::ADDON_ENABLE,
+            self::ADDON_PUBLISH,
+            self::ADDON_UNPUBLISH,
+            self::ADDON_VERSION_DISABLE,
+            self::ADDON_VERSION_ENABLE,
+            self::ADDON_VERSION_PUBLISH,
+            self::ADDON_VERSION_UNPUBLISH,
+            self::COMMENT_PIN,
+            self::COMMENT_UNPIN,
+            self::COMMENT_SOFT_DELETE,
+            self::COMMENT_HARD_DELETE,
+            self::COMMENT_RESTORE,
+            self::COMMENT_MARK_SPAM,
+            self::COMMENT_MARK_CLEAN => true,
+            default => false,
         };
     }
 }

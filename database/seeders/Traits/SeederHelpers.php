@@ -69,7 +69,7 @@ trait SeederHelpers
                 TrackingEventType::COMMENT_CREATE,
                 TrackingEventType::COMMENT_LIKE,
                 TrackingEventType::COMMENT_EDIT,
-                TrackingEventType::COMMENT_DELETE,
+                TrackingEventType::COMMENT_SOFT_DELETE,
             ]);
         }
 
@@ -105,7 +105,7 @@ trait SeederHelpers
 
             TrackingEventType::COMMENT_CREATE,
             TrackingEventType::COMMENT_EDIT,
-            TrackingEventType::COMMENT_DELETE,
+            TrackingEventType::COMMENT_SOFT_DELETE,
             TrackingEventType::COMMENT_LIKE,
             TrackingEventType::COMMENT_UNLIKE,
             TrackingEventType::COMMENT_REPORT => Comment::inRandomOrder()->first(),

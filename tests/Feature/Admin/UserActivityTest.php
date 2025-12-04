@@ -559,7 +559,7 @@ describe('UserActivity Component', function (): void {
             $publicEventTypes = [
                 TrackingEventType::COMMENT_CREATE,
                 TrackingEventType::COMMENT_EDIT,
-                TrackingEventType::COMMENT_DELETE,
+                TrackingEventType::COMMENT_SOFT_DELETE,
                 TrackingEventType::COMMENT_LIKE,
                 TrackingEventType::COMMENT_UNLIKE,
             ];

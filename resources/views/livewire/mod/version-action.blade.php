@@ -116,12 +116,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will allow visitors to view and download the version.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-version-action-enable-{{ $this->versionId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-enable-{{ $this->versionId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -175,12 +184,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will prevent visitors from viewing or downloading the version.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-version-action-disable-{{ $this->versionId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-disable-{{ $this->versionId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -250,6 +268,15 @@
                         </div>
                     </div>
                 </div>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
@@ -266,14 +293,14 @@
 
                 <div class="flex gap-3">
                     <flux:button
-                        x-on:click="$flux.modal('mod-version-action-delete-{{ $this->versionId }}').close()"
+                        x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-delete-{{ $this->versionId }}').close()"
                         variant="outline"
                         size="sm"
                     >
                         {{ __('Cancel') }}
                     </flux:button>
                     <flux:button
-                        x-on:click="$flux.modal('mod-version-action-delete-{{ $this->versionId }}').close(); $wire.$parent.deleteModVersion({{ $this->versionId }})"
+                        x-on:click="$flux.modal('mod-version-action-delete-{{ $this->versionId }}').close(); $wire.$parent.deleteModVersion({{ $this->versionId }}, $wire.moderationReason)"
                         variant="primary"
                         size="sm"
                         icon="trash"
@@ -364,12 +391,21 @@
                         @endif
                     </div>
                 </flux:field>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-version-action-publish-{{ $this->versionId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-publish-{{ $this->versionId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -423,12 +459,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will remove the published date and prevent visitors from viewing or downloading the version.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-version-action-unpublish-{{ $this->versionId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-version-action-unpublish-{{ $this->versionId }}').close()"
                     variant="outline"
                     size="sm"
                 >

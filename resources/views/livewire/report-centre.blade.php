@@ -3,25 +3,70 @@
     class="bg-white dark:bg-gray-900 overflow-hidden shadow-xl sm:rounded-lg"
 >
     <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-            <h3
-                id="reports"
-                class="text-lg font-semibold text-gray-900 dark:text-white"
-            >Report Centre</h3>
-            @if ($this->pendingReportsCount > 0)
-                <flux:badge
-                    color="yellow"
-                    size="sm"
-                >
-                    {{ $this->pendingReportsCount }}
-                    {{ $this->pendingReportsCount === 1 ? 'Pending Report' : 'Pending Reports' }}
-                </flux:badge>
-            @else
-                <flux:badge
-                    color="gray"
-                    size="sm"
-                >No Pending Reports</flux:badge>
-            @endif
+        <div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h3
+                        id="reports"
+                        class="text-lg font-semibold text-gray-900 dark:text-white"
+                    >Report Centre</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Review and manage user-submitted reports about content or users that may violate community
+                        guidelines.
+                    </p>
+                </div>
+                <div class="flex items-center gap-4 flex-shrink-0">
+                    <flux:switch
+                        wire:model.live="filterUnresolved"
+                        label="{{ __('Unresolved only') }}"
+                    />
+                    @if ($this->pendingReportsCount > 0)
+                        <flux:badge
+                            color="yellow"
+                            size="sm"
+                        >
+                            {{ $this->pendingReportsCount }}
+                            {{ $this->pendingReportsCount === 1 ? 'Pending Report' : 'Pending Reports' }}
+                        </flux:badge>
+                    @else
+                        <flux:badge
+                            color="gray"
+                            size="sm"
+                        >No Pending Reports</flux:badge>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Filters --}}
+            <div class="mt-4 flex flex-wrap items-end gap-4">
+                <div class="w-32">
+                    <flux:input
+                        wire:model.live.debounce.300ms="filterReportId"
+                        label="{{ __('Report ID') }}"
+                        placeholder="#"
+                        size="sm"
+                        type="number"
+                        min="1"
+                    />
+                </div>
+                <div class="w-48">
+                    <flux:input
+                        wire:model.live.debounce.300ms="filterReporterUsername"
+                        label="{{ __('Reporter') }}"
+                        placeholder="{{ __('Username...') }}"
+                        size="sm"
+                    />
+                </div>
+                @if ($filterReportId !== '' || $filterReporterUsername !== '')
+                    <flux:button
+                        wire:click="clearFilters"
+                        variant="ghost"
+                        size="sm"
+                    >
+                        {{ __('Clear filters') }}
+                    </flux:button>
+                @endif
+            </div>
         </div>
 
         @if ($this->reports->count() > 0)
@@ -65,13 +110,34 @@
                                             </div>
                                         </div>
 
-                                        <flux:badge
-                                            color="{{ $report->status === \App\Enums\ReportStatus::PENDING ? 'yellow' : ($report->status === \App\Enums\ReportStatus::RESOLVED ? 'green' : 'gray') }}"
-                                            size="sm"
-                                            icon="{{ $report->status === \App\Enums\ReportStatus::PENDING ? 'clock' : ($report->status === \App\Enums\ReportStatus::RESOLVED ? 'check-circle' : 'x-circle') }}"
-                                        >
-                                            {{ $report->status->label() }}
-                                        </flux:badge>
+                                        <div class="flex items-center gap-2">
+                                            {{-- Report ID --}}
+                                            <flux:badge
+                                                color="zinc"
+                                                size="sm"
+                                            >
+                                                #{{ $report->id }}
+                                            </flux:badge>
+
+                                            {{-- Assignee badge --}}
+                                            @if ($report->assignee)
+                                                <flux:badge
+                                                    color="blue"
+                                                    size="sm"
+                                                    icon="user"
+                                                >
+                                                    {{ $report->assignee->id === auth()->id() ? 'You' : $report->assignee->name }}
+                                                </flux:badge>
+                                            @endif
+
+                                            <flux:badge
+                                                color="{{ $report->status === \App\Enums\ReportStatus::PENDING ? 'yellow' : ($report->status === \App\Enums\ReportStatus::RESOLVED ? 'green' : 'gray') }}"
+                                                size="sm"
+                                                icon="{{ $report->status === \App\Enums\ReportStatus::PENDING ? 'clock' : ($report->status === \App\Enums\ReportStatus::RESOLVED ? 'check-circle' : 'x-circle') }}"
+                                            >
+                                                {{ $report->status->label() }}
+                                            </flux:badge>
+                                        </div>
                                     </div>
 
                                     {{-- Report details --}}
@@ -107,6 +173,248 @@
                                         @endif
                                     </div>
 
+                                    {{-- Quick Actions Section - Only visible to the moderator who picked up the report --}}
+                                    @if (
+                                        $report->status === \App\Enums\ReportStatus::PENDING &&
+                                            $report->reportable &&
+                                            $report->assignee_id === auth()->id())
+                                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                                            <div
+                                                class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                                Quick Actions
+                                            </div>
+                                            <div class="flex flex-wrap gap-2 mb-3">
+                                                @if ($report->reportable_type === 'App\Models\User')
+                                                    @if ($report->reportable->isBanned())
+                                                        @can('unban', $report->reportable)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="filled"
+                                                                icon="shield-check"
+                                                                wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                            >
+                                                                Unban User
+                                                            </flux:button>
+                                                        @endcan
+                                                    @else
+                                                        @can('ban', $report->reportable)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="danger"
+                                                                icon="no-symbol"
+                                                                wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                            >
+                                                                Ban User
+                                                            </flux:button>
+                                                        @endcan
+                                                    @endif
+                                                @elseif ($report->reportable_type === 'App\Models\Mod')
+                                                    @if ($report->reportable->disabled)
+                                                        @can('disable', $report->reportable)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="filled"
+                                                                icon="eye"
+                                                                wire:click="openActionModal({{ $report->id }}, 'enable_mod')"
+                                                            >
+                                                                Enable Mod
+                                                            </flux:button>
+                                                        @endcan
+                                                    @else
+                                                        @can('disable', $report->reportable)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="danger"
+                                                                icon="eye-slash"
+                                                                wire:click="openActionModal({{ $report->id }}, 'disable_mod')"
+                                                            >
+                                                                Disable Mod
+                                                            </flux:button>
+                                                        @endcan
+                                                    @endif
+                                                    @if ($report->reportable->owner->isBanned())
+                                                        @can('unban', $report->reportable->owner)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="filled"
+                                                                icon="shield-check"
+                                                                wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                            >
+                                                                Unban Owner
+                                                            </flux:button>
+                                                        @endcan
+                                                    @else
+                                                        @can('ban', $report->reportable->owner)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="danger"
+                                                                icon="no-symbol"
+                                                                wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                            >
+                                                                Ban Owner
+                                                            </flux:button>
+                                                        @endcan
+                                                    @endif
+                                                @elseif ($report->reportable_type === 'App\Models\Addon')
+                                                    @if ($report->reportable->disabled)
+                                                        @can('disable', $report->reportable)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="filled"
+                                                                icon="eye"
+                                                                wire:click="openActionModal({{ $report->id }}, 'enable_addon')"
+                                                            >
+                                                                Enable Addon
+                                                            </flux:button>
+                                                        @endcan
+                                                    @else
+                                                        @can('disable', $report->reportable)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="danger"
+                                                                icon="eye-slash"
+                                                                wire:click="openActionModal({{ $report->id }}, 'disable_addon')"
+                                                            >
+                                                                Disable Addon
+                                                            </flux:button>
+                                                        @endcan
+                                                    @endif
+                                                    @if ($report->reportable->owner->isBanned())
+                                                        @can('unban', $report->reportable->owner)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="filled"
+                                                                icon="shield-check"
+                                                                wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                            >
+                                                                Unban Owner
+                                                            </flux:button>
+                                                        @endcan
+                                                    @else
+                                                        @can('ban', $report->reportable->owner)
+                                                            <flux:button
+                                                                size="xs"
+                                                                variant="danger"
+                                                                icon="no-symbol"
+                                                                wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                            >
+                                                                Ban Owner
+                                                            </flux:button>
+                                                        @endcan
+                                                    @endif
+                                                @elseif ($report->reportable_type === 'App\Models\Comment')
+                                                    @can('softDelete', $report->reportable)
+                                                        <flux:button
+                                                            size="xs"
+                                                            variant="danger"
+                                                            icon="trash"
+                                                            wire:click="openActionModal({{ $report->id }}, 'delete_comment')"
+                                                        >
+                                                            Soft-delete Comment
+                                                        </flux:button>
+                                                    @endcan
+                                                    @can('restore', $report->reportable)
+                                                        <flux:button
+                                                            size="xs"
+                                                            variant="filled"
+                                                            icon="arrow-path"
+                                                            wire:click="openActionModal({{ $report->id }}, 'restore_comment')"
+                                                        >
+                                                            Restore Comment
+                                                        </flux:button>
+                                                    @endcan
+                                                    @if ($report->reportable->user)
+                                                        @if ($report->reportable->user->isBanned())
+                                                            @can('unban', $report->reportable->user)
+                                                                <flux:button
+                                                                    size="xs"
+                                                                    variant="filled"
+                                                                    icon="shield-check"
+                                                                    wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                                >
+                                                                    Unban Author
+                                                                </flux:button>
+                                                            @endcan
+                                                        @else
+                                                            @can('ban', $report->reportable->user)
+                                                                <flux:button
+                                                                    size="xs"
+                                                                    variant="danger"
+                                                                    icon="no-symbol"
+                                                                    wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                                >
+                                                                    Ban Author
+                                                                </flux:button>
+                                                            @endcan
+                                                        @endif
+                                                    @endif
+                                                @endif
+
+                                                <flux:button
+                                                    size="xs"
+                                                    variant="ghost"
+                                                    icon="link"
+                                                    wire:click="openLinkActionModal({{ $report->id }})"
+                                                >
+                                                    Link Existing Action
+                                                </flux:button>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Actions Taken Section --}}
+                                    @if ($report->actions->isNotEmpty())
+                                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                                            <div
+                                                class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                                Actions Taken
+                                            </div>
+                                            <div class="space-y-2 mb-3">
+                                                @foreach ($report->actions as $action)
+                                                    <div
+                                                        class="group flex items-start gap-2 text-sm rounded -mx-2 px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                        @php
+                                                            $eventType = $action->trackingEvent->getEventType();
+                                                        @endphp
+                                                        <flux:icon
+                                                            :name="$eventType?->getIcon() ?? 'check'"
+                                                            class="size-4 mt-0.5 text-gray-400 flex-shrink-0"
+                                                        />
+                                                        <div class="min-w-0 flex-1">
+                                                            <span class="font-medium text-gray-900 dark:text-white">
+                                                                {{ $action->trackingEvent->event_display_name }}
+                                                            </span>
+                                                            <span class="text-gray-500 dark:text-gray-400">
+                                                                by {{ $action->moderator->name }}
+                                                            </span>
+                                                            <span class="text-gray-400 dark:text-gray-500">
+                                                                {{ $action->created_at->diffForHumans() }}
+                                                            </span>
+                                                            @if ($action->trackingEvent->reason)
+                                                                <p
+                                                                    class="text-gray-600 dark:text-gray-400 text-xs mt-1 italic">
+                                                                    "{{ $action->trackingEvent->reason }}"
+                                                                </p>
+                                                            @endif
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            class="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                            wire:click="detachAction({{ $action->id }})"
+                                                            wire:confirm="Are you sure you want to detach this action from the report?"
+                                                            title="Detach action from report"
+                                                        >
+                                                            <flux:icon
+                                                                name="x-mark"
+                                                                class="size-4 text-gray-400 hover:text-red-500"
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     {{-- Action links - Desktop only --}}
                                     <div
                                         class="hidden lg:flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
@@ -125,22 +433,55 @@
 
                                         <div class="flex items-center space-x-4">
                                             @if ($report->status === \App\Enums\ReportStatus::PENDING)
-                                                <button
-                                                    wire:click="markAsResolved({{ $report->id }})"
-                                                    class="inline-flex items-center space-x-1 text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150"
-                                                >
-                                                    <flux:icon.check class="size-4" />
-                                                    <span>Resolve</span>
-                                                </button>
+                                                {{-- Pick Up / Release buttons --}}
+                                                @if ($report->assignee_id === null)
+                                                    <button
+                                                        wire:click="pickUp({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.hand-raised class="size-4" />
+                                                        <span>Pick Up</span>
+                                                    </button>
+                                                @else
+                                                    <button
+                                                        wire:click="release({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.hand-raised class="size-4" />
+                                                        <span>Release</span>
+                                                    </button>
 
-                                                <button
-                                                    wire:click="markAsDismissed({{ $report->id }})"
-                                                    class="inline-flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors duration-150"
-                                                >
-                                                    <flux:icon.x-mark class="size-4" />
-                                                    <span>Dismiss</span>
-                                                </button>
+                                                    {{-- Resolve/Dismiss only visible when picked up --}}
+                                                    <button
+                                                        wire:click="markAsResolved({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.check class="size-4" />
+                                                        <span>Resolve</span>
+                                                    </button>
+
+                                                    <button
+                                                        wire:click="markAsDismissed({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.x-mark class="size-4" />
+                                                        <span>Dismiss</span>
+                                                    </button>
+                                                @endif
                                             @endif
+
+                                            @can('unresolve', $report)
+                                                @if ($report->status !== \App\Enums\ReportStatus::PENDING)
+                                                    <button
+                                                        wire:click="markAsUnresolved({{ $report->id }})"
+                                                        wire:confirm="Are you sure you want to reopen this report?"
+                                                        class="inline-flex items-center space-x-1 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.arrow-path class="size-4" />
+                                                        <span>Reopen</span>
+                                                    </button>
+                                                @endif
+                                            @endcan
 
                                             @can('delete', $report)
                                                 <button
@@ -209,6 +550,19 @@
                                                     {{ \Illuminate\Support\Str::limit(strip_tags($report->reportable->body), 150) }}
                                                 </div>
                                             </div>
+                                        @elseif($report->reportable_type === 'App\Models\Addon')
+                                            <div class="space-y-2">
+                                                <div class="flex items-center space-x-2">
+                                                    <flux:icon.puzzle-piece class="size-4 text-indigo-500" />
+                                                    <span
+                                                        class="text-sm font-medium text-gray-900 dark:text-white">Addon</span>
+                                                </div>
+                                                <p class="text-sm text-gray-900 dark:text-white font-medium">
+                                                    {{ $report->reportable->name }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">
+                                                    {{ \Illuminate\Support\Str::limit($report->reportable->teaser, 120) }}
+                                                </p>
+                                            </div>
                                         @endif
                                     @else
                                         <div
@@ -240,22 +594,55 @@
 
                                         <div class="flex items-center space-x-4">
                                             @if ($report->status === \App\Enums\ReportStatus::PENDING)
-                                                <button
-                                                    wire:click="markAsResolved({{ $report->id }})"
-                                                    class="inline-flex items-center space-x-1 text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150"
-                                                >
-                                                    <flux:icon.check class="size-4" />
-                                                    <span>Resolve</span>
-                                                </button>
+                                                {{-- Pick Up / Release buttons --}}
+                                                @if ($report->assignee_id === null)
+                                                    <button
+                                                        wire:click="pickUp({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.hand-raised class="size-4" />
+                                                        <span>Pick Up</span>
+                                                    </button>
+                                                @else
+                                                    <button
+                                                        wire:click="release({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.hand-raised class="size-4" />
+                                                        <span>Release</span>
+                                                    </button>
 
-                                                <button
-                                                    wire:click="markAsDismissed({{ $report->id }})"
-                                                    class="inline-flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors duration-150"
-                                                >
-                                                    <flux:icon.x-mark class="size-4" />
-                                                    <span>Dismiss</span>
-                                                </button>
+                                                    {{-- Resolve/Dismiss only visible when picked up --}}
+                                                    <button
+                                                        wire:click="markAsResolved({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.check class="size-4" />
+                                                        <span>Resolve</span>
+                                                    </button>
+
+                                                    <button
+                                                        wire:click="markAsDismissed({{ $report->id }})"
+                                                        class="inline-flex items-center space-x-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.x-mark class="size-4" />
+                                                        <span>Dismiss</span>
+                                                    </button>
+                                                @endif
                                             @endif
+
+                                            @can('unresolve', $report)
+                                                @if ($report->status !== \App\Enums\ReportStatus::PENDING)
+                                                    <button
+                                                        wire:click="markAsUnresolved({{ $report->id }})"
+                                                        wire:confirm="Are you sure you want to reopen this report?"
+                                                        class="inline-flex items-center space-x-1 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors duration-150"
+                                                    >
+                                                        <flux:icon.arrow-path class="size-4" />
+                                                        <span>Reopen</span>
+                                                    </button>
+                                                @endif
+                                            @endcan
 
                                             @can('delete', $report)
                                                 <button
@@ -294,4 +681,380 @@
             </div>
         @endif
     </div>
+
+    {{-- Action Confirmation Modal --}}
+    <flux:modal
+        wire:model="showActionModal"
+        class="md:w-[500px] lg:w-[600px]"
+    >
+        <div class="space-y-0">
+            {{-- Header Section --}}
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                <div class="flex items-center gap-3">
+                    @if ($selectedAction === 'ban_user')
+                        <flux:icon
+                            name="shield-exclamation"
+                            class="w-8 h-8 text-red-600"
+                        />
+                    @elseif ($selectedAction === 'unban_user')
+                        <flux:icon
+                            name="shield-check"
+                            class="w-8 h-8 text-green-600"
+                        />
+                    @elseif ($selectedAction === 'disable_mod' || $selectedAction === 'disable_addon')
+                        <flux:icon
+                            name="eye-slash"
+                            class="w-8 h-8 text-red-600"
+                        />
+                    @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon')
+                        <flux:icon
+                            name="eye"
+                            class="w-8 h-8 text-green-600"
+                        />
+                    @elseif ($selectedAction === 'delete_comment')
+                        <flux:icon
+                            name="trash"
+                            class="w-8 h-8 text-red-600"
+                        />
+                    @elseif ($selectedAction === 'restore_comment')
+                        <flux:icon
+                            name="arrow-path"
+                            class="w-8 h-8 text-green-600"
+                        />
+                    @else
+                        <flux:icon
+                            name="shield-exclamation"
+                            class="w-8 h-8 text-amber-600"
+                        />
+                    @endif
+                    <div>
+                        <flux:heading
+                            size="xl"
+                            class="text-gray-900 dark:text-gray-100"
+                        >
+                            @if ($selectedAction === 'ban_user')
+                                {{ __('Ban User') }}
+                            @elseif ($selectedAction === 'unban_user')
+                                {{ __('Unban User') }}
+                            @elseif ($selectedAction === 'disable_mod')
+                                {{ __('Disable Mod') }}
+                            @elseif ($selectedAction === 'enable_mod')
+                                {{ __('Enable Mod') }}
+                            @elseif ($selectedAction === 'disable_addon')
+                                {{ __('Disable Addon') }}
+                            @elseif ($selectedAction === 'enable_addon')
+                                {{ __('Enable Addon') }}
+                            @elseif ($selectedAction === 'delete_comment')
+                                {{ __('Soft-delete Comment') }}
+                            @elseif ($selectedAction === 'restore_comment')
+                                {{ __('Restore Comment') }}
+                            @else
+                                {{ __('Confirm Action') }}
+                            @endif
+                        </flux:heading>
+                        <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                            @if ($selectedAction === 'ban_user')
+                                {{ __('Restrict user access to the platform') }}
+                            @elseif ($selectedAction === 'unban_user')
+                                {{ __('Restore user access to the platform') }}
+                            @elseif ($selectedAction === 'disable_mod')
+                                {{ __('Hide this mod from the public') }}
+                            @elseif ($selectedAction === 'enable_mod')
+                                {{ __('Make this mod visible to the public') }}
+                            @elseif ($selectedAction === 'disable_addon')
+                                {{ __('Hide this addon from the public') }}
+                            @elseif ($selectedAction === 'enable_addon')
+                                {{ __('Make this addon visible to the public') }}
+                            @elseif ($selectedAction === 'delete_comment')
+                                {{ __('Soft delete this comment (can be restored)') }}
+                            @elseif ($selectedAction === 'restore_comment')
+                                {{ __('Make this comment visible again') }}
+                            @else
+                                {{ __('Take action in response to this report') }}
+                            @endif
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Content Section --}}
+            <div class="space-y-6">
+                {{-- Warning Callout --}}
+                @if ($selectedAction === 'ban_user')
+                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <flux:icon
+                                name="exclamation-triangle"
+                                class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
+                            />
+                            <div>
+                                <flux:text class="text-red-800 dark:text-red-200 text-sm font-medium">
+                                    {{ __('Warning') }}
+                                </flux:text>
+                                <flux:text class="text-red-700 dark:text-red-300 text-sm mt-1">
+                                    {{ __('Banned users cannot access the platform when logged in, but may still access content when logged out.') }}
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                @elseif ($selectedAction === 'delete_comment')
+                    <div
+                        class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <flux:icon
+                                name="information-circle"
+                                class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0"
+                            />
+                            <div>
+                                <flux:text class="text-amber-800 dark:text-amber-200 text-sm font-medium">
+                                    {{ __('Information') }}
+                                </flux:text>
+                                <flux:text class="text-amber-700 dark:text-amber-300 text-sm mt-1">
+                                    {{ __('This will soft delete the comment. It can be restored by an administrator if needed.') }}
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                @elseif ($selectedAction === 'restore_comment')
+                    <div
+                        class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <flux:icon
+                                name="information-circle"
+                                class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
+                            />
+                            <div>
+                                <flux:text class="text-green-800 dark:text-green-200 text-sm font-medium">
+                                    {{ __('Information') }}
+                                </flux:text>
+                                <flux:text class="text-green-700 dark:text-green-300 text-sm mt-1">
+                                    {{ __('This will restore the comment and make it visible to users again.') }}
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                @elseif ($selectedAction === 'unban_user')
+                    <div
+                        class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <flux:icon
+                                name="information-circle"
+                                class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
+                            />
+                            <div>
+                                <flux:text class="text-green-800 dark:text-green-200 text-sm font-medium">
+                                    {{ __('Information') }}
+                                </flux:text>
+                                <flux:text class="text-green-700 dark:text-green-300 text-sm mt-1">
+                                    {{ __('This will restore the user\'s access to the platform. Make sure any issues have been resolved.') }}
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon')
+                    <div
+                        class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <flux:icon
+                                name="information-circle"
+                                class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
+                            />
+                            <div>
+                                <flux:text class="text-green-800 dark:text-green-200 text-sm font-medium">
+                                    {{ __('Information') }}
+                                </flux:text>
+                                <flux:text class="text-green-700 dark:text-green-300 text-sm mt-1">
+                                    {{ __('This will restore public visibility. Make sure the issue has been resolved before enabling.') }}
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div
+                        class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <flux:icon
+                                name="information-circle"
+                                class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0"
+                            />
+                            <div>
+                                <flux:text class="text-amber-800 dark:text-amber-200 text-sm font-medium">
+                                    {{ __('Information') }}
+                                </flux:text>
+                                <flux:text class="text-amber-700 dark:text-amber-300 text-sm mt-1">
+                                    {{ __('This action will be logged and linked to the report for audit purposes.') }}
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if ($selectedAction === 'ban_user')
+                    <div>
+                        <flux:radio.group
+                            wire:model.live="banDuration"
+                            label="{{ __('Ban Duration') }}"
+                            class="text-left"
+                        >
+                            <flux:radio
+                                value="1_hour"
+                                label="{{ __('1 Hour') }}"
+                            />
+                            <flux:radio
+                                value="24_hours"
+                                label="{{ __('24 Hours') }}"
+                            />
+                            <flux:radio
+                                value="7_days"
+                                label="{{ __('7 Days') }}"
+                            />
+                            <flux:radio
+                                value="30_days"
+                                label="{{ __('30 Days') }}"
+                            />
+                            <flux:radio
+                                value="permanent"
+                                label="{{ __('Permanent') }}"
+                            />
+                        </flux:radio.group>
+                    </div>
+                @endif
+
+                <div>
+                    <flux:textarea
+                        wire:model="actionNote"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ $selectedAction === 'ban_user' ? __('Please provide a reason for this ban...') : __('Explain why you\'re taking this action...') }}"
+                        rows="3"
+                    />
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        @if ($selectedAction === 'ban_user')
+                            {{ __('This reason will be visible to the banned user.') }}
+                        @else
+                            {{ __('This note will be visible to other moderators and included in the audit trail.') }}
+                        @endif
+                    </p>
+                </div>
+
+                <flux:switch
+                    wire:model="resolveAfterAction"
+                    label="{{ __('Resolve report after action') }}"
+                    description="{{ __('Automatically mark this report as resolved after taking the action.') }}"
+                />
+            </div>
+
+            {{-- Footer Actions --}}
+            <div class="flex justify-between items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                    <flux:icon
+                        name="information-circle"
+                        class="w-4 h-4 mr-2 flex-shrink-0"
+                    />
+                    <span class="leading-tight">
+                        @if ($selectedAction === 'ban_user')
+                            {{ __('This action can be reversed by unbanning the user') }}
+                        @elseif ($selectedAction === 'unban_user')
+                            {{ __('This action can be reversed by banning the user again') }}
+                        @elseif ($selectedAction === 'disable_mod' || $selectedAction === 'disable_addon')
+                            {{ __('This action can be reversed by re-enabling') }}
+                        @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon')
+                            {{ __('This action can be reversed by disabling again') }}
+                        @elseif ($selectedAction === 'delete_comment')
+                            {{ __('This action can be reversed by an administrator') }}
+                        @elseif ($selectedAction === 'restore_comment')
+                            {{ __('This action can be reversed by soft-deleting again') }}
+                        @else
+                            {{ __('This action will be logged for audit purposes') }}
+                        @endif
+                    </span>
+                </div>
+
+                <div class="flex gap-3">
+                    <flux:button
+                        wire:click="$set('showActionModal', false)"
+                        variant="outline"
+                        size="sm"
+                    >
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button
+                        wire:click="executeAction"
+                        variant="{{ in_array($selectedAction, ['enable_mod', 'enable_addon', 'unban_user']) ? 'primary' : 'danger' }}"
+                        size="sm"
+                        icon="{{ $selectedAction === 'ban_user' ? 'shield-exclamation' : ($selectedAction === 'unban_user' ? 'shield-check' : ($selectedAction === 'delete_comment' ? 'trash' : (in_array($selectedAction, ['enable_mod', 'enable_addon']) ? 'eye' : 'eye-slash'))) }}"
+                    >
+                        @if ($selectedAction === 'ban_user')
+                            {{ __('Ban User') }}
+                        @elseif ($selectedAction === 'unban_user')
+                            {{ __('Unban User') }}
+                        @elseif ($selectedAction === 'disable_mod')
+                            {{ __('Disable Mod') }}
+                        @elseif ($selectedAction === 'enable_mod')
+                            {{ __('Enable Mod') }}
+                        @elseif ($selectedAction === 'disable_addon')
+                            {{ __('Disable Addon') }}
+                        @elseif ($selectedAction === 'enable_addon')
+                            {{ __('Enable Addon') }}
+                        @elseif ($selectedAction === 'delete_comment')
+                            {{ __('Soft-delete Comment') }}
+                        @else
+                            {{ __('Confirm Action') }}
+                        @endif
+                    </flux:button>
+                </div>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Link Existing Action Modal --}}
+    <flux:modal
+        wire:model="showLinkActionModal"
+        class="max-w-lg"
+    >
+        <flux:heading size="lg">Link Existing Action</flux:heading>
+
+        <div class="mt-4 space-y-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                Link an existing moderation action you've taken to this report.
+            </p>
+
+            @if ($this->recentModerationActions->isEmpty())
+                <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                    <flux:icon.clipboard-document-list class="size-8 mx-auto mb-2" />
+                    <p class="text-sm">No recent moderation actions found.</p>
+                </div>
+            @else
+                <flux:select
+                    wire:model="selectedTrackingEventId"
+                    label="Select Action"
+                >
+                    <flux:select.option value="0">Select an action...</flux:select.option>
+                    @foreach ($this->recentModerationActions as $action)
+                        <flux:select.option value="{{ $action->id }}">
+                            {{ $action->event_display_name }} - {{ $action->user?->name ?? 'System' }} -
+                            {{ $action->created_at->diffForHumans() }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
+
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+            <flux:button
+                variant="ghost"
+                wire:click="$set('showLinkActionModal', false)"
+            >
+                Cancel
+            </flux:button>
+            <flux:button
+                variant="primary"
+                icon="link"
+                wire:click="linkExistingAction"
+                :disabled="$this->recentModerationActions->isEmpty()"
+            >
+                Link Action
+            </flux:button>
+        </div>
+    </flux:modal>
 </div>

@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace App\Livewire\User;
 
+use App\Enums\ReportStatus;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Models\Addon;
+use App\Models\Comment;
+use App\Models\Mod;
+use App\Models\Report;
 use App\Models\User;
 use App\Notifications\UserBannedNotification;
+use App\Services\ReportActionService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Mchev\Banhammer\Models\Ban;
@@ -36,12 +45,54 @@ class BanAction extends Component
     /** The size of the button */
     public string $size = 'sm';
 
+    /** The selected report to link to the ban action */
+    public int $selectedReportId = 0;
+
     /**
      * Initialize the component with the target user.
      */
     public function mount(User $user): void
     {
         $this->user = $user;
+    }
+
+    /**
+     * Get pending reports related to this user.
+     *
+     * This includes reports where the user is directly reported, or reports
+     * for content (mods, addons, comments) owned/authored by this user.
+     *
+     * @return Collection<int, Report>
+     */
+    #[Computed]
+    public function availableReports(): Collection
+    {
+        $userId = $this->user->id;
+
+        return Report::query()
+            ->where('status', ReportStatus::PENDING)
+            ->where(function (Builder $query) use ($userId): void {
+                // Direct user reports
+                $query->where(function (Builder $q) use ($userId): void {
+                    $q->where('reportable_type', User::class)
+                        ->where('reportable_id', $userId);
+                })
+                // Reports for mods owned by this user
+                    ->orWhereHasMorph('reportable', [Mod::class], function (Builder $modQuery) use ($userId): void {
+                        $modQuery->where('owner_id', $userId);
+                    })
+                // Reports for addons owned by this user
+                    ->orWhereHasMorph('reportable', [Addon::class], function (Builder $addonQuery) use ($userId): void {
+                        $addonQuery->where('owner_id', $userId);
+                    })
+                // Reports for comments authored by this user
+                    ->orWhereHasMorph('reportable', [Comment::class], function (Builder $commentQuery) use ($userId): void {
+                        $commentQuery->where('user_id', $userId);
+                    });
+            })
+            ->with(['reporter', 'reportable'])
+            ->latest()
+            ->get();
     }
 
     /**
@@ -66,6 +117,34 @@ class BanAction extends Component
             $attributes['expired_at'] = $this->getExpirationDate();
         }
 
+        // If a report is selected, use the ReportActionService to link the action
+        if ($this->selectedReportId !== 0) {
+            $report = Report::query()->find($this->selectedReportId);
+            if ($report !== null) {
+                $service = resolve(ReportActionService::class);
+                $service->takeAction(
+                    report: $report,
+                    eventType: TrackingEventType::USER_BAN,
+                    trackable: $this->user,
+                    actionCallback: function () use ($attributes): void {
+                        /** @var Ban $ban */
+                        $ban = $this->user->ban($attributes);
+                        $this->user->notify(new UserBannedNotification($ban));
+                        Track::event(TrackingEventType::USER_BANNED, $this->user);
+                    },
+                    resolveReport: true,
+                    reason: $this->reason ?: null,
+                );
+
+                flash()->success('User banned and linked to report!');
+                $this->showBanModal = false;
+                $this->reset(['duration', 'reason', 'selectedReportId']);
+
+                return;
+            }
+        }
+
+        // Standard ban without report linking
         /** @var Ban $ban */
         $ban = $this->user->ban($attributes);
 
@@ -77,7 +156,7 @@ class BanAction extends Component
         flash()->success('User successfully banned!');
 
         $this->showBanModal = false;
-        $this->reset(['duration', 'reason']);
+        $this->reset(['duration', 'reason', 'selectedReportId']);
     }
 
     /**

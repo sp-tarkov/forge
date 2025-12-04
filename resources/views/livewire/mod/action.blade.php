@@ -129,12 +129,21 @@
                     This will remove the mod from the homepage featured section and remove the "featured" ribbon on its
                     listing card.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-action-unfeature-{{ $this->modId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-unfeature-{{ $this->modId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -142,7 +151,7 @@
                 </flux:button>
                 {{-- In the homepage featured section, the parent must handle the action so the listing can be updated --}}
                 <flux:button
-                    x-on:click="$flux.modal('mod-action-unfeature-{{ $this->modId }}').close(); {{ $homepageFeatured ? '$wire.$parent.unfeatureMod(' . $this->modId . ')' : '$wire.unfeature()' }}"
+                    x-on:click="$flux.modal('mod-action-unfeature-{{ $this->modId }}').close(); {{ $homepageFeatured ? '$wire.$parent.unfeatureMod(' . $this->modId . ', $wire.moderationReason)' : '$wire.unfeature()' }}"
                     variant="primary"
                     size="sm"
                     icon="arrow-trending-down"
@@ -189,12 +198,21 @@
                     This will add the mod to the homepage featured section and add the "featured" ribbon on its listing
                     card.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-action-feature-{{ $this->modId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-feature-{{ $this->modId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -247,12 +265,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will prevent visitors on the site from seeing the mod.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-action-disable-{{ $this->modId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-disable-{{ $this->modId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -305,12 +332,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will allow visitors on the site to see the mod.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-action-enable-{{ $this->modId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-enable-{{ $this->modId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -380,6 +416,15 @@
                         </div>
                     </div>
                 </div>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
@@ -396,14 +441,14 @@
 
                 <div class="flex gap-3">
                     <flux:button
-                        x-on:click="$flux.modal('mod-action-delete-{{ $this->modId }}').close()"
+                        x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-delete-{{ $this->modId }}').close()"
                         variant="outline"
                         size="sm"
                     >
                         {{ __('Cancel') }}
                     </flux:button>
                     <flux:button
-                        x-on:click="$flux.modal('mod-action-delete-{{ $this->modId }}').close(); $wire.$parent.deleteMod({{ $this->modId }}, '{{ $routeName }}')"
+                        x-on:click="$flux.modal('mod-action-delete-{{ $this->modId }}').close(); $wire.$parent.deleteMod({{ $this->modId }}, '{{ $routeName }}', $wire.moderationReason)"
                         variant="primary"
                         size="sm"
                         icon="trash"
@@ -494,12 +539,21 @@
                         @endif
                     </div>
                 </flux:field>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-action-publish-{{ $this->modId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-publish-{{ $this->modId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -552,12 +606,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will remove the published date and prevent visitors on the site from discovering the mod.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('mod-action-unpublish-{{ $this->modId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('mod-action-unpublish-{{ $this->modId }}').close()"
                     variant="outline"
                     size="sm"
                 >

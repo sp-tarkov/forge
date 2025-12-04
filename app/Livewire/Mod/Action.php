@@ -58,6 +58,11 @@ class Action extends Component
     public ?string $publishedAt = null;
 
     /**
+     * The reason for moderation actions.
+     */
+    public string $moderationReason = '';
+
+    /**
      * The route name of the current page on initialization of the component.
      */
     #[Locked]
@@ -91,8 +96,22 @@ class Action extends Component
     public function mod(): Mod
     {
         return Mod::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'featured', 'disabled', 'published_at', 'owner_id', 'contains_ai_content'])
-            ->with('owner:id,name')
+            ->with(['owner:id,name', 'additionalAuthors:id'])
             ->findOrFail($this->modId);
+    }
+
+    /**
+     * Determine if the moderation reason field should be shown.
+     * Only show for mod/admin users who are NOT an owner or additional author.
+     */
+    #[Computed]
+    public function showModerationReason(): bool
+    {
+        $user = Auth::user();
+
+        return $user
+            && $user->isModOrAdmin()
+            && ! $this->mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -107,7 +126,12 @@ class Action extends Component
         $mod->featured = true;
         $mod->save();
 
-        Track::event(TrackingEventType::MOD_FEATURE, $mod);
+        Track::eventSync(
+            TrackingEventType::MOD_FEATURE,
+            $mod,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         $this->modFeatured = true;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
@@ -116,6 +140,7 @@ class Action extends Component
 
         flash()->success('Mod successfully featured!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -131,7 +156,12 @@ class Action extends Component
         $mod->featured = false;
         $mod->save();
 
-        Track::event(TrackingEventType::MOD_UNFEATURE, $mod);
+        Track::eventSync(
+            TrackingEventType::MOD_UNFEATURE,
+            $mod,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         $this->modFeatured = false;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
@@ -141,6 +171,7 @@ class Action extends Component
 
         flash()->success('Mod successfully unfeatured!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -156,7 +187,16 @@ class Action extends Component
         $mod->disabled = true;
         $mod->save();
 
-        Track::event(TrackingEventType::MOD_DISABLE, $mod);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::MOD_DISABLE,
+            $mod,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->modDisabled = true;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
@@ -166,6 +206,7 @@ class Action extends Component
 
         flash()->success('Mod successfully disabled!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -181,7 +222,16 @@ class Action extends Component
         $mod->disabled = false;
         $mod->save();
 
-        Track::event(TrackingEventType::MOD_ENABLE, $mod);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::MOD_ENABLE,
+            $mod,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->modDisabled = false;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
@@ -191,6 +241,7 @@ class Action extends Component
 
         flash()->success('Mod successfully enabled!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -207,7 +258,16 @@ class Action extends Component
         $mod->published_at = $publishedDate;
         $mod->save();
 
-        Track::event(TrackingEventType::MOD_PUBLISH, $mod);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::MOD_PUBLISH,
+            $mod,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->modPublished = true;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
@@ -217,6 +277,7 @@ class Action extends Component
 
         flash()->success('Mod successfully published!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -232,7 +293,16 @@ class Action extends Component
         $mod->published_at = null;
         $mod->save();
 
-        Track::event(TrackingEventType::MOD_UNPUBLISH, $mod);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::MOD_UNPUBLISH,
+            $mod,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->modPublished = false;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
@@ -242,6 +312,7 @@ class Action extends Component
 
         flash()->success('Mod successfully unpublished!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 

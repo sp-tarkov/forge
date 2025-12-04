@@ -10,6 +10,7 @@ use App\Http\Controllers\FileRedirectController;
 use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
+use App\Livewire\Admin\ModerationActions;
 use App\Livewire\Admin\SptVersionManagement;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
@@ -142,6 +143,10 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::get('/report-centre', fn (): View|Factory => view('report-centre'))
             ->can('viewAny', Report::class)
             ->name('report-centre');
+
+        Route::get('/moderation-actions', ModerationActions::class)
+            ->can('viewAny', Report::class)
+            ->name('moderation-actions');
 
         // Authenticated, verified, administrator routes
         Route::middleware('can:admin')->group(function (): void {

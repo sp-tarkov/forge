@@ -152,6 +152,11 @@ class CommentComponent extends Component
     public ?int $restoringCommentId = null;
 
     /**
+     * Reason/note for moderation actions.
+     */
+    public string $moderationReason = '';
+
+    /**
      * Spam check tracking state.
      *
      * @var array<int, array{inProgress: bool, startedAt: string|null}>
@@ -374,7 +379,7 @@ class CommentComponent extends Component
             $comment->update(['deleted_at' => now()]);
         }
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::event(TrackingEventType::COMMENT_SOFT_DELETE, $comment);
 
         // Clear cached computed properties.
         unset($this->commentCount);
@@ -461,11 +466,17 @@ class CommentComponent extends Component
 
         $comment->update(['pinned_at' => now()]);
 
-        Track::event(TrackingEventType::COMMENT_PIN, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_PIN,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         flash()->success('Comment successfully pinned!');
         $this->showPinModal = false;
         $this->pinningCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -484,11 +495,17 @@ class CommentComponent extends Component
 
         $comment->update(['pinned_at' => null]);
 
-        Track::event(TrackingEventType::COMMENT_UNPIN, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_UNPIN,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         flash()->success('Comment successfully unpinned!');
         $this->showUnpinModal = false;
         $this->pinningCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -520,7 +537,12 @@ class CommentComponent extends Component
 
         $comment->update(['deleted_at' => now()]);
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_SOFT_DELETE,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         $this->updateCachedDescendant($comment);
 
@@ -529,6 +551,7 @@ class CommentComponent extends Component
 
         $this->showSoftDeleteModal = false;
         $this->softDeletingCommentId = null;
+        $this->moderationReason = '';
 
         flash()->success('Comment successfully deleted!');
     }
@@ -562,7 +585,7 @@ class CommentComponent extends Component
 
         $comment->update(['deleted_at' => now()]);
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::event(TrackingEventType::COMMENT_SOFT_DELETE, $comment);
 
         $this->updateCachedDescendant($comment);
 
@@ -644,6 +667,13 @@ class CommentComponent extends Component
 
         $comment->update(['deleted_at' => null]);
 
+        Track::eventSync(
+            TrackingEventType::COMMENT_RESTORE,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
+
         $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
@@ -651,6 +681,7 @@ class CommentComponent extends Component
 
         $this->showRestoreModal = false;
         $this->restoringCommentId = null;
+        $this->moderationReason = '';
 
         flash()->success('Comment successfully restored!');
     }
@@ -697,6 +728,13 @@ class CommentComponent extends Component
 
         $comment->markAsSpamByModerator(auth()->id());
 
+        Track::eventSync(
+            TrackingEventType::COMMENT_MARK_SPAM,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
+
         $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
@@ -705,6 +743,7 @@ class CommentComponent extends Component
         flash()->success('Comment marked as spam!');
         $this->showMarkAsSpamModal = false;
         $this->spamActionCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -723,6 +762,13 @@ class CommentComponent extends Component
 
         $comment->markAsHam();
 
+        Track::eventSync(
+            TrackingEventType::COMMENT_MARK_CLEAN,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
+
         $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
@@ -731,6 +777,7 @@ class CommentComponent extends Component
         flash()->success('Comment marked as clean!');
         $this->showMarkAsCleanModal = false;
         $this->spamActionCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -852,11 +899,17 @@ class CommentComponent extends Component
         // Delete the comment itself.
         $comment->delete();
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_HARD_DELETE,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         $this->showHardDeleteModal = false;
         $this->hardDeletingCommentId = null;
         $this->hardDeleteDescendantCount = 0;
+        $this->moderationReason = '';
 
         flash()->success('Comment thread permanently deleted!');
     }

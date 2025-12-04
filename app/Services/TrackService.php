@@ -43,63 +43,7 @@ class TrackService
     {
         defer(function () use ($eventType, $trackable, $additionalData): void {
             try {
-                $request = request();
-                $visitorData = $this->getVisitorData();
-
-                // Get location data for the current IP
-                $ip = $request->ip();
-                $locationData = [];
-                if ($ip) {
-                    $locationData = $this->geolocationService->getLocationFromIP($ip);
-                }
-
-                // Extract contextual information based on the event type and trackable model
-                $eventData = $this->extractEventData($eventType, $trackable, $additionalData);
-
-                // For authentication events (login, logout, register), the user is both the visitor and visitable
-                $visitorId = Auth::id();
-                $visitorType = Auth::check() ? Auth::user()::class : null;
-
-                // For events where trackable user should be the visitor
-                // - Authentication events: Auth might be cleared (logout and account deletion)
-                // - Ban received events: Track from the banned user's perspective (not the moderator's)
-                $userAsVisitorEvents = [
-                    TrackingEventType::LOGIN,
-                    TrackingEventType::LOGOUT,
-                    TrackingEventType::REGISTER,
-                    TrackingEventType::ACCOUNT_DELETE,
-                    TrackingEventType::USER_BANNED,
-                    TrackingEventType::USER_UNBANNED,
-                ];
-                if (in_array($eventType, $userAsVisitorEvents) && $trackable instanceof User) {
-                    $visitorId = $trackable->getKey();
-                    $visitorType = $trackable->getMorphClass();
-                }
-
-                // Record the event
-                TrackingEvent::query()->create([
-                    'event_name' => $eventType->value,
-                    'event_data' => $eventData,
-                    'url' => $request->getPathInfo(),
-                    'referer' => $request->header('referer'),
-                    'languages' => $request->getLanguages(),
-                    'useragent' => $request->userAgent(),
-                    'device' => $visitorData['device'],
-                    'platform' => $visitorData['platform'],
-                    'browser' => $visitorData['browser'],
-                    'ip' => $ip,
-                    'visitable_type' => $trackable?->getMorphClass(),
-                    'visitable_id' => $trackable?->getKey(),
-                    'visitor_type' => $visitorType,
-                    'visitor_id' => $visitorId,
-                    'country_code' => $locationData['country_code'] ?? null,
-                    'country_name' => $locationData['country_name'] ?? null,
-                    'region_name' => $locationData['region_name'] ?? null,
-                    'city_name' => $locationData['city_name'] ?? null,
-                    'latitude' => $locationData['latitude'] ?? null,
-                    'longitude' => $locationData['longitude'] ?? null,
-                    'timezone' => $locationData['timezone'] ?? null,
-                ]);
+                $this->createEvent($eventType, $trackable, $additionalData);
             } catch (Throwable $throwable) {
                 Log::error('Failed to track event', [
                     'event_type' => $eventType->value,
@@ -110,6 +54,22 @@ class TrackService
                 ]);
             }
         });
+    }
+
+    /**
+     * Create a tracking event synchronously and return it.
+     * Use this when you need the TrackingEvent ID immediately (e.g., for linking to reports).
+     *
+     * @param  array<string, mixed>  $additionalData
+     */
+    public function eventSync(
+        TrackingEventType $eventType,
+        ?Model $trackable = null,
+        array $additionalData = [],
+        bool $isModerationAction = false,
+        ?string $reason = null
+    ): TrackingEvent {
+        return $this->createEvent($eventType, $trackable, $additionalData, $isModerationAction, $reason);
     }
 
     /**
@@ -157,5 +117,78 @@ class TrackService
         }
 
         return $eventData;
+    }
+
+    /**
+     * Create and persist a tracking event record.
+     *
+     * @param  array<string, mixed>  $additionalData
+     */
+    private function createEvent(
+        TrackingEventType $eventType,
+        ?Model $trackable,
+        array $additionalData,
+        bool $isModerationAction = false,
+        ?string $reason = null
+    ): TrackingEvent {
+        $request = request();
+        $visitorData = $this->getVisitorData();
+
+        // Get location data for the current IP
+        $ip = $request->ip();
+        $locationData = [];
+        if ($ip) {
+            $locationData = $this->geolocationService->getLocationFromIP($ip);
+        }
+
+        // Extract contextual information based on the event type and trackable model
+        $eventData = $this->extractEventData($eventType, $trackable, $additionalData);
+
+        // For authentication events (login, logout, register), the user is both the visitor and visitable
+        $visitorId = Auth::id();
+        $visitorType = Auth::check() ? Auth::user()::class : null;
+
+        // For events where trackable user should be the visitor
+        // - Authentication events: Auth might be cleared (logout and account deletion)
+        // - Ban received events: Track from the banned user's perspective (not the moderator's)
+        $userAsVisitorEvents = [
+            TrackingEventType::LOGIN,
+            TrackingEventType::LOGOUT,
+            TrackingEventType::REGISTER,
+            TrackingEventType::ACCOUNT_DELETE,
+            TrackingEventType::USER_BANNED,
+            TrackingEventType::USER_UNBANNED,
+        ];
+        if (in_array($eventType, $userAsVisitorEvents) && $trackable instanceof User) {
+            $visitorId = $trackable->getKey();
+            $visitorType = $trackable->getMorphClass();
+        }
+
+        // Record the event
+        return TrackingEvent::query()->create([
+            'event_name' => $eventType->value,
+            'event_data' => $eventData,
+            'is_moderation_action' => $isModerationAction,
+            'reason' => $reason,
+            'url' => $request->getPathInfo(),
+            'referer' => $request->header('referer'),
+            'languages' => $request->getLanguages(),
+            'useragent' => $request->userAgent(),
+            'device' => $visitorData['device'],
+            'platform' => $visitorData['platform'],
+            'browser' => $visitorData['browser'],
+            'ip' => $ip,
+            'visitable_type' => $trackable?->getMorphClass(),
+            'visitable_id' => $trackable?->getKey(),
+            'visitor_type' => $visitorType,
+            'visitor_id' => $visitorId,
+            'country_code' => $locationData['country_code'] ?? null,
+            'country_name' => $locationData['country_name'] ?? null,
+            'region_name' => $locationData['region_name'] ?? null,
+            'city_name' => $locationData['city_name'] ?? null,
+            'latitude' => $locationData['latitude'] ?? null,
+            'longitude' => $locationData['longitude'] ?? null,
+            'timezone' => $locationData['timezone'] ?? null,
+        ]);
     }
 }
