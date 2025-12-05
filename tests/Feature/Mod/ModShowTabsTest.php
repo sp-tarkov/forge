@@ -98,6 +98,7 @@ describe('addons tab', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         $mod = Mod::factory()->addonsEnabled()->create();
         $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'version' => '1.0.0',
             'spt_version_constraint' => '1.0.0',
         ]);
 
@@ -107,11 +108,13 @@ describe('addons tab', function (): void {
             'published_at' => now(),
             'disabled' => false,
         ]);
-        $addonVersion = AddonVersion::factory()->recycle($addon)->create([
+        // AddonVersionObserver auto-resolves compatible mod versions via AddonVersionService
+        // using mod_version_constraint to match against mod versions
+        AddonVersion::factory()->recycle($addon)->create([
+            'mod_version_constraint' => '^1.0.0',
             'published_at' => now(),
             'disabled' => false,
         ]);
-        $addonVersion->compatibleModVersions()->attach($modVersion->id);
 
         Livewire::withoutLazyLoading()
             ->test(AddonsTab::class, ['modId' => $mod->id])

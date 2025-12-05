@@ -1,4 +1,4 @@
-@props(['comment', 'descendantsCount' => null])
+@props(['comment', 'permissions', 'descendantsCount' => null])
 
 <div
     x-data="{
@@ -34,10 +34,10 @@
             size="sm"
         />
         <flux:menu class="action-comments">
-            @if (CachedGate::allows('modOwnerSoftDelete', $comment) || CachedGate::allows('modOwnerRestore', $comment))
+            @if ($permissions->can($comment->id, 'modOwnerSoftDelete') || $permissions->can($comment->id, 'modOwnerRestore'))
                 <flux:menu.group heading="Author Actions">
                     @if ($comment->isDeleted())
-                        @if (CachedGate::allows('modOwnerRestore', $comment))
+                        @if ($permissions->can($comment->id, 'modOwnerRestore'))
                             <flux:menu.item
                                 wire:click="confirmModOwnerRestoreComment({{ $comment->id }})"
                                 icon:trailing="arrow-path"
@@ -46,7 +46,7 @@
                             </flux:menu.item>
                         @endif
                     @else
-                        @if (CachedGate::allows('modOwnerSoftDelete', $comment))
+                        @if ($permissions->can($comment->id, 'modOwnerSoftDelete'))
                             <flux:menu.item
                                 wire:click="confirmModOwnerSoftDeleteComment({{ $comment->id }})"
                                 icon:trailing="eye-slash"
@@ -58,9 +58,9 @@
                 </flux:menu.group>
             @endif
 
-            @if (CachedGate::allows('viewActions', $comment))
+            @if ($permissions->can($comment->id, 'viewActions'))
                 <flux:menu.group heading="Administrator Actions">
-                    @if (CachedGate::allows('pin', $comment))
+                    @if ($permissions->can($comment->id, 'pin'))
                         @if ($comment->isPinned())
                             <flux:menu.item
                                 wire:click="confirmUnpinComment({{ $comment->id }})"
@@ -81,7 +81,7 @@
                     @endif
 
                     @if ($comment->isDeleted())
-                        @if (CachedGate::allows('restore', $comment))
+                        @if ($permissions->can($comment->id, 'restore'))
                             <flux:menu.item
                                 wire:click="confirmRestoreComment({{ $comment->id }})"
                                 icon:trailing="arrow-path"
@@ -89,7 +89,7 @@
                                 Restore Comment
                             </flux:menu.item>
                         @endif
-                        @if (CachedGate::allows('hardDelete', $comment))
+                        @if ($permissions->can($comment->id, 'hardDelete'))
                             <flux:menu.item
                                 wire:click="confirmHardDeleteComment({{ $comment->id }})"
                                 icon:trailing="trash"
@@ -99,7 +99,7 @@
                             </flux:menu.item>
                         @endif
                     @else
-                        @if (CachedGate::allows('softDelete', $comment))
+                        @if ($permissions->can($comment->id, 'softDelete'))
                             @unless ($comment->isSpam())
                                 <flux:menu.item
                                     wire:click="confirmSoftDeleteComment({{ $comment->id }})"
@@ -109,7 +109,7 @@
                                 </flux:menu.item>
                             @endunless
                         @endif
-                        @if (CachedGate::allows('hardDelete', $comment))
+                        @if ($permissions->can($comment->id, 'hardDelete'))
                             <flux:menu.item
                                 wire:click="confirmHardDeleteComment({{ $comment->id }})"
                                 icon:trailing="trash"
@@ -120,7 +120,7 @@
                         @endif
                     @endif
 
-                    @if (CachedGate::allows('markAsSpam', $comment))
+                    @if ($permissions->can($comment->id, 'markAsSpam'))
                         <flux:menu.item
                             wire:click="confirmMarkAsSpam({{ $comment->id }})"
                             icon:trailing="shield-exclamation"
@@ -130,7 +130,7 @@
                         </flux:menu.item>
                     @endif
 
-                    @if (CachedGate::allows('markAsHam', $comment))
+                    @if ($permissions->can($comment->id, 'markAsHam'))
                         <flux:menu.item
                             wire:click="confirmMarkAsClean({{ $comment->id }})"
                             icon:trailing="shield-check"
@@ -139,7 +139,7 @@
                         </flux:menu.item>
                     @endif
 
-                    @if (CachedGate::allows('checkForSpam', $comment))
+                    @if ($permissions->can($comment->id, 'checkForSpam'))
                         <flux:menu.item
                             wire:click="confirmCheckForSpam({{ $comment->id }})"
                             icon:trailing="magnifying-glass"

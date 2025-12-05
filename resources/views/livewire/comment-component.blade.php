@@ -130,7 +130,7 @@
                 wire:key="ribbon-comment-{{ $comment->id }}"
                 :comment-id="$comment->id"
                 :spam-status="$comment->spam_status->value"
-                :can-see-ribbon="CachedGate::allows('seeRibbon', $comment)"
+                :can-see-ribbon="$permissions->can($comment->id, 'seeRibbon')"
             />
             <div
                 wire:key="comment-{{ $comment->id }}"
@@ -138,6 +138,7 @@
             >
                 <x-comment.display
                     :comment="$comment"
+                    :permissions="$permissions"
                     :manager="$this"
                     :commentable="$commentable"
                 />
@@ -157,7 +158,7 @@
                                         wire:key="ribbon-reply-{{ $reply->id }}"
                                         :comment-id="$reply->id"
                                         :spam-status="$reply->spam_status->value"
-                                        :can-see-ribbon="CachedGate::allows('seeRibbon', $reply)"
+                                        :can-see-ribbon="$permissions->can($reply->id, 'seeRibbon')"
                                     />
                                     <div
                                         id="reply-container-{{ $reply->id }}"
@@ -166,6 +167,7 @@
                                     >
                                         <x-comment.display
                                             :comment="$reply"
+                                            :permissions="$permissions"
                                             :manager="$this"
                                             :is-reply="true"
                                             :commentable="$commentable"

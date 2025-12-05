@@ -148,6 +148,41 @@ describe('CachedGate', function (): void {
                 ->and($results[$comment1->id])->toBeTrue()
                 ->and($results[$comment2->id])->toBeTrue();
         });
+
+        it('can batch check multiple abilities for multiple models', function (): void {
+            $user = User::factory()->create();
+            $comment1 = Comment::factory()->create([
+                'user_id' => $user->id,
+                'created_at' => now(),
+                'spam_status' => SpamStatus::CLEAN,
+            ]);
+            $otherUser = User::factory()->create();
+            $comment2 = Comment::factory()->create([
+                'user_id' => $otherUser->id,
+                'created_at' => now(),
+                'spam_status' => SpamStatus::CLEAN,
+            ]);
+
+            $this->actingAs($user);
+
+            $results = CachedGate::batchCheckMultiple(
+                ['view', 'update', 'delete'],
+                [$comment1, $comment2]
+            );
+
+            // Results should be nested by model ID, then by ability
+            expect($results)->toHaveKeys([$comment1->id, $comment2->id])
+                ->and($results[$comment1->id])->toHaveKeys(['view', 'update', 'delete'])
+                ->and($results[$comment2->id])->toHaveKeys(['view', 'update', 'delete'])
+                // User can view both comments
+                ->and($results[$comment1->id]['view'])->toBeTrue()
+                ->and($results[$comment2->id]['view'])->toBeTrue()
+                // User can only update/delete their own comment
+                ->and($results[$comment1->id]['update'])->toBeTrue()
+                ->and($results[$comment1->id]['delete'])->toBeTrue()
+                ->and($results[$comment2->id]['update'])->toBeFalse()
+                ->and($results[$comment2->id]['delete'])->toBeFalse();
+        });
     });
 
     describe('cache management', function (): void {

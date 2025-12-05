@@ -7,6 +7,7 @@ namespace App\Livewire;
 use App\Contracts\Commentable;
 use App\Enums\SpamStatus;
 use App\Enums\TrackingEventType;
+use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Jobs\CheckCommentForSpam;
 use App\Livewire\Concerns\RendersMarkdownPreview;
@@ -15,6 +16,7 @@ use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\User;
 use App\Rules\DoesNotContainLogFile;
+use App\Support\BatchPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -36,6 +38,28 @@ class CommentComponent extends Component
     use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithPagination;
+
+    /**
+     * List of abilities to batch-check for each comment.
+     *
+     * @var array<int, string>
+     */
+    protected const array COMMENT_ABILITIES = [
+        'seeRibbon',
+        'update',
+        'delete',
+        'viewActions',
+        'modOwnerSoftDelete',
+        'modOwnerRestore',
+        'pin',
+        'softDelete',
+        'hardDelete',
+        'restore',
+        'markAsSpam',
+        'markAsHam',
+        'checkForSpam',
+        'showOwnerPinAction',
+    ];
 
     /**
      * The commentable model.
@@ -1101,10 +1125,67 @@ class CommentComponent extends Component
             }
         }
 
+        // Batch compute permissions for all visible comments (root + descendants)
+        $permissions = $this->computePermissionsForVisibleComments($visibleRootComments);
+
         return view('livewire.comment-component', [
             'rootComments' => $rootComments,
             'visibleRootComments' => $visibleRootComments,
+            'permissions' => $permissions,
         ]);
+    }
+
+    /**
+     * Compute permissions for all visible comments in batch.
+     *
+     * @param  Collection<int, Comment>  $rootComments
+     */
+    protected function computePermissionsForVisibleComments(Collection $rootComments): BatchPermissions
+    {
+        // Collect all comments: root + all loaded descendants
+        $allComments = [];
+
+        foreach ($rootComments as $rootComment) {
+            $allComments[] = $rootComment;
+
+            // Add loaded descendants if they exist
+            $descendants = $this->loadedDescendants[$rootComment->id] ?? null;
+            if ($descendants !== null) {
+                foreach ($descendants as $descendant) {
+                    $allComments[] = $descendant;
+                }
+            }
+        }
+
+        // Set the commentable relation on all comments to prevent N+1 in policies.
+        // The policy accesses $comment->commentable which would trigger a query for each comment.
+        // Since we already have the commentable model, we can set the relation directly.
+        $this->setCommentableRelationOnComments($allComments);
+
+        // Batch compute permissions using CachedGate
+        $permissionsArray = CachedGate::batchCheckMultiple(self::COMMENT_ABILITIES, $allComments);
+
+        return new BatchPermissions($permissionsArray);
+    }
+
+    /**
+     * Set the commentable relation on all comments to prevent N+1 queries in policies.
+     *
+     * @param  array<Comment>  $comments
+     */
+    protected function setCommentableRelationOnComments(array $comments): void
+    {
+        $commentable = $this->commentable;
+
+        // Eager-load additionalAuthors if this is a Mod to prevent N+1 in policy checks
+        if ($commentable instanceof Mod && ! $commentable->relationLoaded('additionalAuthors')) {
+            $commentable->load('additionalAuthors');
+        }
+
+        // Set the commentable relation on each comment
+        foreach ($comments as $comment) {
+            $comment->setRelation('commentable', $commentable);
+        }
     }
 
     /**
