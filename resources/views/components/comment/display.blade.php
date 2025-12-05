@@ -1,9 +1,9 @@
-@props(['comment', 'manager', 'isReply' => false, 'commentable' => null])
+@props(['comment', 'permissions', 'manager', 'isReply' => false, 'commentable' => null])
 
 <div
     class="relative"
     x-data="{
-        canEdit: {{ CachedGate::allows('update', $comment) ? 'true' : 'false' }},
+        canEdit: {{ $permissions->can($comment->id, 'update') ? 'true' : 'false' }},
         createdAt: new Date('{{ $comment->created_at->toISOString() }}'),
         init() {
             this.updateCanEdit();
@@ -60,9 +60,10 @@
                     {{ __('Replying to') }} @<x-user-name :user="$comment->parent->user" />
                 </a>
             @endif
-            @if (CachedGate::allows('viewActions', $comment))
+            @if ($permissions->can($comment->id, 'viewActions'))
                 <x-comment.action-menu
                     :comment="$comment"
+                    :permissions="$permissions"
                     :descendants-count="$comment->isRoot() ? $manager->getDescendantCount($comment->id) : null"
                 />
             @endif
@@ -92,6 +93,7 @@
 
     <x-comment.actions
         :comment="$comment"
+        :permissions="$permissions"
         :manager="$manager"
         :show-replies-toggle="$comment->isRoot()"
     />

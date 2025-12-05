@@ -10,6 +10,7 @@ use App\Http\Controllers\FileRedirectController;
 use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
+use App\Livewire\Admin\ModerationActions;
 use App\Livewire\Admin\SptVersionManagement;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
@@ -26,6 +27,7 @@ use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Livewire\Page\User\Banned;
 use App\Livewire\Page\User\Show as UserShow;
 use App\Models\Mod;
+use App\Models\Report;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
@@ -137,6 +139,14 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::get('/chat/{conversationHash?}', Chat::class)
             ->where(['conversationHash' => '[a-zA-Z0-9]+'])
             ->name('chat');
+
+        Route::get('/report-centre', fn (): View|Factory => view('report-centre'))
+            ->can('viewAny', Report::class)
+            ->name('report-centre');
+
+        Route::get('/moderation-actions', ModerationActions::class)
+            ->can('viewAny', Report::class)
+            ->name('moderation-actions');
 
         // Authenticated, verified, administrator routes
         Route::middleware('can:admin')->group(function (): void {

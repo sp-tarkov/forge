@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Page\Mod\Show;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -9,9 +10,11 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Livewire;
 
 describe('Addon Parent Mod Visibility', function (): void {
     beforeEach(function (): void {
+        $this->withoutDefer();
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
@@ -79,17 +82,21 @@ describe('Addon Parent Mod Visibility', function (): void {
         AddonVersion::factory()->create(['addon_id' => $hiddenAddon->id]);
 
         // Visit the mod with versions - should see its addon
-        $response = $this->actingAs($this->user)->get(route('mod.show', [$modWithVersions->id, $modWithVersions->slug]));
-        $response->assertSuccessful();
-        $response->assertSee($visibleAddon->name);
+        $this->actingAs($this->user);
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $modWithVersions->id, 'slug' => $modWithVersions->slug])
+            ->assertSuccessful()
+            ->assertSee($visibleAddon->name);
 
         // Visit the mod without versions as owner - should not see addon in public listing
         $modOwner = User::factory()->create();
         $modWithoutVersions->update(['owner_id' => $modOwner->id]);
         $hiddenAddon->update(['owner_id' => $modOwner->id]);
 
-        $response = $this->actingAs($modOwner)->get(route('mod.show', [$modWithoutVersions->id, $modWithoutVersions->slug]));
-        $response->assertSuccessful();
+        $this->actingAs($modOwner);
+        Livewire::withoutLazyLoading()
+            ->test(Show::class, ['modId' => $modWithoutVersions->id, 'slug' => $modWithoutVersions->slug])
+            ->assertSuccessful();
         // The addon should not be visible in the public listing even to the owner
         // because the parent mod has no published versions
     });

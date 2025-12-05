@@ -30,7 +30,7 @@ class BlockedUsers extends Component
                 return;
             }
 
-            $blockingService = app(UserBlockingService::class);
+            $blockingService = resolve(UserBlockingService::class);
             $blockingService->unblockUser($currentUser, $blockedUser);
 
             $this->dispatch('user-unblocked', userId: $userId);

@@ -22,6 +22,8 @@ class ReportFactory extends Factory
 
     /**
      * Define the model's default state.
+     *
+     * @return array<string, mixed>
      */
     public function definition(): array
     {
@@ -33,5 +35,35 @@ class ReportFactory extends Factory
             'context' => fake()->optional()->sentence(),
             'status' => ReportStatus::PENDING,
         ];
+    }
+
+    /**
+     * Indicate that the report has been assigned to a moderator.
+     */
+    public function assigned(?User $user = null): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'assignee_id' => $user !== null ? $user->id : User::factory(),
+        ]);
+    }
+
+    /**
+     * Indicate that the report has been resolved.
+     */
+    public function resolved(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => ReportStatus::RESOLVED,
+        ]);
+    }
+
+    /**
+     * Indicate that the report has been dismissed.
+     */
+    public function dismissed(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => ReportStatus::DISMISSED,
+        ]);
     }
 }

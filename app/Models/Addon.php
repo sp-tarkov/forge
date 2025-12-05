@@ -442,23 +442,24 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      */
     public function getAllCompatibleModVersions(?int $selectedModVersionId = null): Collection
     {
-        // Collect all compatible mod versions from all addon versions
-        $allCompatibleModVersions = new Collection();
-        foreach ($this->versions as $version) {
-            $allCompatibleModVersions = $allCompatibleModVersions->merge($version->compatibleModVersions);
-        }
-
-        // Remove duplicates and sort by version numbers (descending)
-        $sorted = $allCompatibleModVersions
-            ->unique('id')
-            ->sortByDesc(fn (ModVersion $version): string => sprintf('%05d.%05d.%05d',
-                $version->version_major ?? 0,
-                $version->version_minor ?? 0,
-                $version->version_patch ?? 0
-            ));
-
-        // Return as Eloquent Collection
-        return new Collection($sorted->values()->all());
+        // Query directly for unique compatible mod versions (more efficient than loading all and deduplicating)
+        return ModVersion::query()
+            ->select([
+                'mod_versions.id',
+                'mod_versions.mod_id',
+                'mod_versions.version',
+                'mod_versions.version_major',
+                'mod_versions.version_minor',
+                'mod_versions.version_patch',
+            ])
+            ->join('addon_resolved_mod_versions', 'mod_versions.id', '=', 'addon_resolved_mod_versions.mod_version_id')
+            ->join('addon_versions', 'addon_versions.id', '=', 'addon_resolved_mod_versions.addon_version_id')
+            ->where('addon_versions.addon_id', $this->id)
+            ->distinct()
+            ->orderByDesc('mod_versions.version_major')
+            ->orderByDesc('mod_versions.version_minor')
+            ->orderByDesc('mod_versions.version_patch')
+            ->get();
     }
 
     /**

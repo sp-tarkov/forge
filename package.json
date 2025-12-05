@@ -1,10 +1,16 @@
 {
     "private": true,
     "type": "module",
+    "overrides": {
+        "prettier-plugin-multiline-arrays": {
+            "prettier": "$prettier"
+        }
+    },
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "format": "prettier --write \"resources/**/*.{js,css,blade.php}\""
+        "format": "prettier --write \"resources/**/*.{js,css,blade.php}\"",
+        "postinstall": "npx playwright install || true"
     },
     "devDependencies": {
         "@shufo/prettier-plugin-blade": "^1.16.1",
@@ -13,10 +19,11 @@
         "@tailwindcss/typography": "^0.5.16",
         "autoprefixer": "^10.4.21",
         "axios": "^1.8.4",
-        "chokidar": "^4.0.3",
+        "chokidar": "^5.0.0",
         "concurrently": "^9.1.2",
         "laravel-echo": "^2.2.0",
         "laravel-vite-plugin": "^2.0.0",
+        "playwright": "^1.57.0",
         "postcss": "^8.5.3",
         "prettier": "^3.5.3",
         "prettier-plugin-tailwindcss": "^0.7.1",
@@ -29,7 +36,6 @@
         "@alpinejs/focus": "^3.14.9",
         "@alpinejs/persist": "^3.14.9",
         "highlight.js": "^11.11.1",
-        "jstz": "^2.1.1",
-        "playwright": "^1.56.1"
+        "jstz": "^2.1.1"
     }
 }

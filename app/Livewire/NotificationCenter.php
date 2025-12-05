@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Notifications\NewChatMessageNotification;
+use App\Notifications\NewCommentNotification;
+use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -25,14 +28,6 @@ class NotificationCenter extends Component
      * Current count of unread notifications for the authenticated user. Updated when notifications are read or deleted.
      */
     public int $unreadCount = 0;
-
-    /**
-     * Custom pagination view for the notification list.
-     */
-    public function paginationView(): string
-    {
-        return 'livewire.pagination.tailwind-narrow';
-    }
 
     /**
      * Initialize the component when it's first mounted.
@@ -91,6 +86,40 @@ class NotificationCenter extends Component
     }
 
     /**
+     * Delete all notifications for the current user.
+     */
+    public function deleteAll(): void
+    {
+        Auth::user()->notifications()->delete();
+        $this->loadUnreadCount();
+    }
+
+    /**
+     * Review a notification - marks it as read and redirects to its review URL.
+     */
+    public function reviewNotification(string $notificationId): void
+    {
+        $notification = Auth::user()->notifications()->find($notificationId);
+
+        if (! $notification) {
+            return;
+        }
+
+        // Mark as read if not already
+        if (! $notification->read_at) {
+            $notification->markAsRead();
+            $this->loadUnreadCount();
+        }
+
+        // Get the appropriate review URL based on notification type
+        $url = $this->getReviewUrl($notification);
+
+        if ($url) {
+            $this->redirect($url, navigate: true);
+        }
+    }
+
+    /**
      * Render the notification center component.
      *
      * Retrieve paginated notifications, ordered by creation date, and passes them to the view.
@@ -101,7 +130,7 @@ class NotificationCenter extends Component
         $notifications = Auth::user()
             ->notifications()
             ->orderBy('created_at', 'desc')
-            ->paginate(10, pageName: 'notificationPage');
+            ->paginate(8, pageName: 'notificationPage');
 
         return view('livewire.notification-center', [
             'notifications' => $notifications,
@@ -114,5 +143,18 @@ class NotificationCenter extends Component
     private function loadUnreadCount(): void
     {
         $this->unreadCount = Auth::user()->unreadNotifications()->count();
+    }
+
+    /**
+     * Get the review URL for a notification based on its type.
+     */
+    private function getReviewUrl(DatabaseNotification $notification): ?string
+    {
+        return match ($notification->type) {
+            ReportSubmittedNotification::class => $notification->data['reportable_url'] ?? null,
+            NewChatMessageNotification::class => $notification->data['conversation_url'] ?? null,
+            NewCommentNotification::class => $notification->data['comment_url'] ?? null,
+            default => null,
+        };
     }
 }

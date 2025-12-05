@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Mod\Show\AddonsTab;
 use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -11,6 +12,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function (): void {
+    $this->withoutDefer();
+});
 
 it('sorts addons by download count in descending order', function (): void {
     $user = User::factory()->create();
@@ -87,10 +92,11 @@ it('sorts addons by download count in descending order', function (): void {
     $addon2->refresh();
     $addon3->refresh();
 
-    // Load the mod show page as authenticated user
+    // Load the addons tab as authenticated user
     $this->actingAs($user);
 
-    Livewire::test('page.mod.show', ['modId' => $mod->id, 'slug' => $mod->slug])
+    Livewire::withoutLazyLoading()
+        ->test(AddonsTab::class, ['modId' => $mod->id])
         ->assertSuccessful()
         ->assertSeeInOrder([
             'High Downloads Addon',    // 1000 downloads
@@ -170,10 +176,11 @@ it('maintains download count sorting when filtering by mod version', function ()
             'disabled' => false,
         ]);
 
-    // Load the mod show page with version filter as authenticated user
+    // Load the addons tab with version filter as authenticated user
     $this->actingAs($user);
 
-    Livewire::test('page.mod.show', ['modId' => $mod->id, 'slug' => $mod->slug])
+    Livewire::withoutLazyLoading()
+        ->test(AddonsTab::class, ['modId' => $mod->id])
         ->set('selectedModVersionId', $modVersion->id)
         ->assertSuccessful()
         ->assertSeeInOrder([
@@ -263,13 +270,13 @@ it('shows addons sorted by downloads to unauthenticated users', function (): voi
     expect($addon2->downloads)->toBe(5000);
     expect($addon3->downloads)->toBe(250);
 
-    // Load the mod show page as guest (unauthenticated)
-    $response = Livewire::test('page.mod.show', ['modId' => $mod->id, 'slug' => $mod->slug])
-        ->assertSuccessful();
-
-    $response->assertSeeInOrder([
-        'Most Downloads',    // 5000 downloads
-        'Some Downloads',    // 250 downloads
-        'Few Downloads',     // 5 downloads
-    ]);
+    // Load the addons tab as guest (unauthenticated)
+    Livewire::withoutLazyLoading()
+        ->test(AddonsTab::class, ['modId' => $mod->id])
+        ->assertSuccessful()
+        ->assertSeeInOrder([
+            'Most Downloads',    // 5000 downloads
+            'Some Downloads',    // 250 downloads
+            'Few Downloads',     // 5 downloads
+        ]);
 });

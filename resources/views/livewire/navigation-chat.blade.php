@@ -32,12 +32,15 @@
             role="menu"
         >
             @if ($conversations->count() > 0)
+                {{-- Header --}}
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-300 dark:border-gray-700">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                        {{ __('Recent Conversations') }}
+                    </h3>
+                </div>
+
                 <div class="flex flex-col divide-y divide-slate-300 dark:divide-gray-700">
                     <div class="flex flex-col py-2">
-                        <div class="px-3 pb-2">
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                                {{ __('Recent Conversations') }}</p>
-                        </div>
                         @foreach ($conversations as $conversation)
                             @if ($conversation->other_user)
                                 <button
@@ -101,7 +104,7 @@
                     <div class="flex flex-col py-1.5">
                         <button
                             x-on:click="$wire.showNewConversation = true; chatDropdownOpen = false"
-                            class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
+                            class="flex items-center gap-2 bg-gray-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
                             role="menuitem"
                         >
                             <flux:icon.plus class="w-4 h-4" />
@@ -111,7 +114,7 @@
                             href="{{ route('chat') }}"
                             wire:navigate
                             x-on:click="chatDropdownOpen = false"
-                            class="flex items-center gap-2 bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
+                            class="flex items-center gap-2 bg-gray-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-800/5 hover:text-black focus-visible:bg-slate-800/10 focus-visible:text-black focus-visible:outline-hidden dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-slate-100/5 dark:hover:text-white dark:focus-visible:bg-slate-100/10 dark:focus-visible:text-white"
                             role="menuitem"
                         >
                             <flux:icon.arrow-right class="w-4 h-4" />

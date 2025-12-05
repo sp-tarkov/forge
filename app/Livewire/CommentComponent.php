@@ -7,6 +7,7 @@ namespace App\Livewire;
 use App\Contracts\Commentable;
 use App\Enums\SpamStatus;
 use App\Enums\TrackingEventType;
+use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Jobs\CheckCommentForSpam;
 use App\Livewire\Concerns\RendersMarkdownPreview;
@@ -15,6 +16,7 @@ use App\Models\CommentReaction;
 use App\Models\Mod;
 use App\Models\User;
 use App\Rules\DoesNotContainLogFile;
+use App\Support\BatchPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -36,6 +38,28 @@ class CommentComponent extends Component
     use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithPagination;
+
+    /**
+     * List of abilities to batch-check for each comment.
+     *
+     * @var array<int, string>
+     */
+    protected const array COMMENT_ABILITIES = [
+        'seeRibbon',
+        'update',
+        'delete',
+        'viewActions',
+        'modOwnerSoftDelete',
+        'modOwnerRestore',
+        'pin',
+        'softDelete',
+        'hardDelete',
+        'restore',
+        'markAsSpam',
+        'markAsHam',
+        'checkForSpam',
+        'showOwnerPinAction',
+    ];
 
     /**
      * The commentable model.
@@ -150,6 +174,11 @@ class CommentComponent extends Component
     public bool $showRestoreModal = false;
 
     public ?int $restoringCommentId = null;
+
+    /**
+     * Reason/note for moderation actions.
+     */
+    public string $moderationReason = '';
 
     /**
      * Spam check tracking state.
@@ -374,7 +403,7 @@ class CommentComponent extends Component
             $comment->update(['deleted_at' => now()]);
         }
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::event(TrackingEventType::COMMENT_SOFT_DELETE, $comment);
 
         // Clear cached computed properties.
         unset($this->commentCount);
@@ -461,11 +490,17 @@ class CommentComponent extends Component
 
         $comment->update(['pinned_at' => now()]);
 
-        Track::event(TrackingEventType::COMMENT_PIN, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_PIN,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         flash()->success('Comment successfully pinned!');
         $this->showPinModal = false;
         $this->pinningCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -484,11 +519,17 @@ class CommentComponent extends Component
 
         $comment->update(['pinned_at' => null]);
 
-        Track::event(TrackingEventType::COMMENT_UNPIN, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_UNPIN,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         flash()->success('Comment successfully unpinned!');
         $this->showUnpinModal = false;
         $this->pinningCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -520,7 +561,12 @@ class CommentComponent extends Component
 
         $comment->update(['deleted_at' => now()]);
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_SOFT_DELETE,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         $this->updateCachedDescendant($comment);
 
@@ -529,6 +575,7 @@ class CommentComponent extends Component
 
         $this->showSoftDeleteModal = false;
         $this->softDeletingCommentId = null;
+        $this->moderationReason = '';
 
         flash()->success('Comment successfully deleted!');
     }
@@ -562,7 +609,7 @@ class CommentComponent extends Component
 
         $comment->update(['deleted_at' => now()]);
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::event(TrackingEventType::COMMENT_SOFT_DELETE, $comment);
 
         $this->updateCachedDescendant($comment);
 
@@ -644,6 +691,13 @@ class CommentComponent extends Component
 
         $comment->update(['deleted_at' => null]);
 
+        Track::eventSync(
+            TrackingEventType::COMMENT_RESTORE,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
+
         $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
@@ -651,6 +705,7 @@ class CommentComponent extends Component
 
         $this->showRestoreModal = false;
         $this->restoringCommentId = null;
+        $this->moderationReason = '';
 
         flash()->success('Comment successfully restored!');
     }
@@ -697,6 +752,13 @@ class CommentComponent extends Component
 
         $comment->markAsSpamByModerator(auth()->id());
 
+        Track::eventSync(
+            TrackingEventType::COMMENT_MARK_SPAM,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
+
         $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
@@ -705,6 +767,7 @@ class CommentComponent extends Component
         flash()->success('Comment marked as spam!');
         $this->showMarkAsSpamModal = false;
         $this->spamActionCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -723,6 +786,13 @@ class CommentComponent extends Component
 
         $comment->markAsHam();
 
+        Track::eventSync(
+            TrackingEventType::COMMENT_MARK_CLEAN,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
+
         $this->updateCachedDescendant($comment);
 
         // Dispatch event to update the ribbon component.
@@ -731,6 +801,7 @@ class CommentComponent extends Component
         flash()->success('Comment marked as clean!');
         $this->showMarkAsCleanModal = false;
         $this->spamActionCommentId = null;
+        $this->moderationReason = '';
     }
 
     /**
@@ -852,11 +923,17 @@ class CommentComponent extends Component
         // Delete the comment itself.
         $comment->delete();
 
-        Track::event(TrackingEventType::COMMENT_DELETE, $comment);
+        Track::eventSync(
+            TrackingEventType::COMMENT_HARD_DELETE,
+            $comment,
+            isModerationAction: true,
+            reason: $this->moderationReason ?: null
+        );
 
         $this->showHardDeleteModal = false;
         $this->hardDeletingCommentId = null;
         $this->hardDeleteDescendantCount = 0;
+        $this->moderationReason = '';
 
         flash()->success('Comment thread permanently deleted!');
     }
@@ -1036,10 +1113,79 @@ class CommentComponent extends Component
 
         $visibleRootComments = $rootComments->getCollection();
 
+        // Auto-expand and load descendants for root comments on the current page that have replies.
+        // This ensures replies are shown by default, but only for the visible page (not all comments).
+        foreach ($visibleRootComments as $rootComment) {
+            $commentId = $rootComment->id;
+            $hasDescendants = ($this->descendantCounts[$commentId] ?? 0) > 0;
+
+            if ($hasDescendants && ! isset($this->loadedDescendants[$commentId])) {
+                $this->showDescendants[$commentId] = true;
+                $this->loadDescendants($commentId);
+            }
+        }
+
+        // Batch compute permissions for all visible comments (root + descendants)
+        $permissions = $this->computePermissionsForVisibleComments($visibleRootComments);
+
         return view('livewire.comment-component', [
             'rootComments' => $rootComments,
             'visibleRootComments' => $visibleRootComments,
+            'permissions' => $permissions,
         ]);
+    }
+
+    /**
+     * Compute permissions for all visible comments in batch.
+     *
+     * @param  Collection<int, Comment>  $rootComments
+     */
+    protected function computePermissionsForVisibleComments(Collection $rootComments): BatchPermissions
+    {
+        // Collect all comments: root + all loaded descendants
+        $allComments = [];
+
+        foreach ($rootComments as $rootComment) {
+            $allComments[] = $rootComment;
+
+            // Add loaded descendants if they exist
+            $descendants = $this->loadedDescendants[$rootComment->id] ?? null;
+            if ($descendants !== null) {
+                foreach ($descendants as $descendant) {
+                    $allComments[] = $descendant;
+                }
+            }
+        }
+
+        // Set the commentable relation on all comments to prevent N+1 in policies.
+        // The policy accesses $comment->commentable which would trigger a query for each comment.
+        // Since we already have the commentable model, we can set the relation directly.
+        $this->setCommentableRelationOnComments($allComments);
+
+        // Batch compute permissions using CachedGate
+        $permissionsArray = CachedGate::batchCheckMultiple(self::COMMENT_ABILITIES, $allComments);
+
+        return new BatchPermissions($permissionsArray);
+    }
+
+    /**
+     * Set the commentable relation on all comments to prevent N+1 queries in policies.
+     *
+     * @param  array<Comment>  $comments
+     */
+    protected function setCommentableRelationOnComments(array $comments): void
+    {
+        $commentable = $this->commentable;
+
+        // Eager-load additionalAuthors if this is a Mod to prevent N+1 in policy checks
+        if ($commentable instanceof Mod && ! $commentable->relationLoaded('additionalAuthors')) {
+            $commentable->load('additionalAuthors');
+        }
+
+        // Set the commentable relation on each comment
+        foreach ($comments as $comment) {
+            $comment->setRelation('commentable', $commentable);
+        }
     }
 
     /**
@@ -1060,12 +1206,6 @@ class CommentComponent extends Component
     protected function initializeDescendantCounts(): void
     {
         $this->descendantCounts = $this->commentable->getDescendantCounts();
-        foreach ($this->descendantCounts as $commentId => $count) {
-            if ($count > 0) {
-                $this->showDescendants[$commentId] = true;
-                $this->loadDescendants($commentId);
-            }
-        }
     }
 
     /**

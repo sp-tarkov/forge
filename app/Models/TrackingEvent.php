@@ -8,9 +8,11 @@ use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
 use Database\Factories\TrackingEventFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
@@ -18,6 +20,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string|null $event_name
  * @property array<string, mixed>|null $event_data
+ * @property bool $is_moderation_action
+ * @property string|null $reason
  * @property string|null $url
  * @property string|null $referer
  * @property array<int, string>|null $languages
@@ -44,6 +48,7 @@ use Illuminate\Support\Carbon;
  * @property-read null|string $event_url attribute
  * @property Model|null $visitable
  * @property User|null $user
+ * @property-read Collection<int, Report> $reports
  */
 class TrackingEvent extends Model
 {
@@ -72,6 +77,18 @@ class TrackingEvent extends Model
     }
 
     /**
+     * Get the reports this action was taken for.
+     *
+     * @return BelongsToMany<Report, $this>
+     */
+    public function reports(): BelongsToMany
+    {
+        return $this->belongsToMany(Report::class, 'report_actions')
+            ->withPivot(['moderator_id'])
+            ->withTimestamps();
+    }
+
+    /**
      * Get the TrackingEventType enum instance for this event.
      */
     public function getEventType(): ?TrackingEventType
@@ -88,6 +105,7 @@ class TrackingEvent extends Model
     {
         return [
             'event_data' => 'array',
+            'is_moderation_action' => 'boolean',
             'languages' => 'array',
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',

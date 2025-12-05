@@ -1,4 +1,4 @@
-@props(['comment', 'manager', 'showRepliesToggle' => false])
+@props(['comment', 'permissions', 'manager', 'showRepliesToggle' => false])
 
 <div class="flex items-center gap-6 mt-4 text-slate-400">
     @if (!$comment->isDeleted())
@@ -109,7 +109,7 @@
             </div>
         @endverified
 
-        @if (CachedGate::allows('update', $comment))
+        @if ($permissions->can($comment->id, 'update'))
             <button
                 type="button"
                 wire:click="toggleEditForm({{ $comment->id }})"
@@ -121,7 +121,7 @@
             </button>
         @endif
 
-        @if (CachedGate::allows('delete', $comment))
+        @if ($permissions->can($comment->id, 'delete'))
             <button
                 type="button"
                 wire:click="confirmDeleteComment({{ $comment->id }})"
@@ -153,7 +153,7 @@
         @endverified
     @endif
 
-    @if (CachedGate::allows('showOwnerPinAction', $comment))
+    @if ($permissions->can($comment->id, 'showOwnerPinAction'))
         <button
             type="button"
             wire:click="{{ $comment->isPinned() ? 'unpinComment' : 'pinComment' }}({{ $comment->id }})"

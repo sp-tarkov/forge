@@ -7,13 +7,12 @@ namespace App\Livewire\Admin;
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -24,49 +23,64 @@ class VisitorAnalytics extends Component
     /**
      * User-based filters.
      */
+    #[Url]
     public string $filter = 'all';
 
+    #[Url]
     public string $userSearch = '';
 
     /**
      * Date range filters.
      */
+    #[Url]
     public ?string $dateFrom = null;
 
+    #[Url]
     public ?string $dateTo = null;
 
     /**
      * Event-specific filters.
      */
+    #[Url]
     public string $eventFilter = '';
 
     /**
      * Technical filters.
      */
+    #[Url]
     public string $ipFilter = '';
 
+    #[Url]
     public string $browserFilter = '';
 
+    #[Url]
     public string $platformFilter = '';
 
+    #[Url]
     public string $deviceFilter = '';
 
+    #[Url]
     public string $refererFilter = '';
 
     /**
      * Geographic filters.
      */
+    #[Url]
     public string $countryFilter = '';
 
+    #[Url]
     public string $regionFilter = '';
 
+    #[Url]
     public string $cityFilter = '';
 
     /**
      * Sorting configuration.
      */
+    #[Url]
     public string $sortBy = 'created_at';
 
+    #[Url]
     public string $sortDirection = 'desc';
 
     /**
@@ -97,10 +111,13 @@ class VisitorAnalytics extends Component
     /**
      * Get paginated tracking events based on current filters.
      *
-     * @return LengthAwarePaginator<int, TrackingEvent>
+     * Uses simplePaginate() instead of paginate() to avoid expensive COUNT(*) query
+     * on millions of rows. This trades "total results" display for much faster queries.
+     *
+     * @return Paginator<int, TrackingEvent>
      */
     #[Computed]
-    public function events(): LengthAwarePaginator
+    public function events(): Paginator
     {
         $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
@@ -133,7 +150,7 @@ class VisitorAnalytics extends Component
 
         return $query
             ->orderBy('tracking_events.'.$this->sortBy, $this->sortDirection)
-            ->paginate(50);
+            ->simplePaginate(50);
     }
 
     /**
@@ -201,33 +218,6 @@ class VisitorAnalytics extends Component
         }
 
         return $filters;
-    }
-
-    /**
-     * Get analytics statistics based on all current filters.
-     *
-     * @return array<string, mixed>
-     */
-    public function getStats(): array
-    {
-        $baseQuery = TrackingEvent::query();
-
-        $this->applyFilters($baseQuery);
-
-        return [
-            'total_events' => (clone $baseQuery)->count(),
-            'unique_users' => (clone $baseQuery)->distinct('ip')->count('ip'),
-            'authenticated_events' => (clone $baseQuery)->whereNotNull('visitor_id')->count(),
-            'anonymous_events' => (clone $baseQuery)->whereNull('visitor_id')->count(),
-            'top_events' => $this->getTopEvents(clone $baseQuery),
-            'top_browsers' => $this->getTopBrowsers(clone $baseQuery),
-            'top_platforms' => $this->getTopPlatforms(clone $baseQuery),
-            'top_countries' => $this->getTopCountries(clone $baseQuery),
-            'unique_countries' => (clone $baseQuery)
-                ->whereNotNull('country_code')
-                ->distinct(['country_code'])
-                ->count('country_code'),
-        ];
     }
 
     /**
@@ -425,12 +415,11 @@ class VisitorAnalytics extends Component
      */
     public function render(): View
     {
-        return view('livewire.admin.visitor-analytics', [
-            'stats' => $this->getStats(),
-        ])->layout('components.layouts.base', [
-            'title' => 'Event Analytics - The Forge',
-            'description' => 'View detailed event analytics and user activity statistics.',
-        ]);
+        return view('livewire.admin.visitor-analytics')
+            ->layout('components.layouts.base', [
+                'title' => 'Event Analytics - The Forge',
+                'description' => 'View detailed event analytics and user activity statistics.',
+            ]);
     }
 
     /**
@@ -552,75 +541,5 @@ class VisitorAnalytics extends Component
                     ->orWhere('email', 'like', '%'.$this->userSearch.'%');
             })->orWhere('tracking_events.visitor_id', 'like', '%'.$this->userSearch.'%');
         }
-    }
-
-    /**
-     * Get top events' statistics.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
-     */
-    private function getTopEvents(Builder $query): Collection
-    {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
-
-        return $query
-            ->select('event_name', DB::raw('COUNT(*) as count'))
-            ->whereIn('event_name', $validEventNames)
-            ->groupBy('event_name')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
-    }
-
-    /**
-     * Get top browsers' statistics.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
-     */
-    private function getTopBrowsers(Builder $query): Collection
-    {
-        return $query
-            ->select('browser', DB::raw('COUNT(*) as count'))
-            ->whereNotNull('browser')
-            ->groupBy('browser')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
-    }
-
-    /**
-     * Get top platforms statistics.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
-     */
-    private function getTopPlatforms(Builder $query): Collection
-    {
-        return $query
-            ->select('platform', DB::raw('COUNT(*) as count'))
-            ->whereNotNull('platform')
-            ->groupBy('platform')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
-    }
-
-    /**
-     * Get top countries' statistics.
-     *
-     * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
-     */
-    private function getTopCountries(Builder $query): Collection
-    {
-        return $query
-            ->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))
-            ->whereNotNull('country_code')
-            ->groupBy('country_name', 'country_code')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get();
     }
 }

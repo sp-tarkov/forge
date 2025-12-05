@@ -94,7 +94,30 @@
                         placeholder="{{ __('Please provide a reason for this ban...') }}"
                         rows="3"
                     />
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {{ __('This reason will be visible to the banned user.') }}
+                    </p>
                 </div>
+
+                @if ($this->availableReports->isNotEmpty())
+                    <div>
+                        <flux:select
+                            wire:model="selectedReportId"
+                            label="{{ __('Link to Report (optional)') }}"
+                        >
+                            <flux:select.option value="0">{{ __('No report') }}</flux:select.option>
+                            @foreach ($this->availableReports as $report)
+                                <flux:select.option value="{{ $report->id }}">
+                                    #{{ $report->id }} - {{ $report->reason->label() }} -
+                                    {{ $report->reporter->name }} - {{ $report->created_at->diffForHumans() }}
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('Selecting a report will automatically resolve it after banning.') }}
+                        </p>
+                    </div>
+                @endif
             </div>
 
             {{-- Footer Actions --}}

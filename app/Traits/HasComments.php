@@ -42,7 +42,6 @@ trait HasComments
             ->with([
                 'user:id,name,email,user_role_id,profile_photo_path,created_at',
                 'user.role:id,name,color_class,icon',
-                'reactions:id,comment_id,user_id',
                 'parent:id,user_id',
                 'parent.user:id,name,user_role_id',
                 'parent.user.role:id,name,color_class,icon',
@@ -118,7 +117,6 @@ trait HasComments
             ->with([
                 'user:id,name,email,user_role_id,profile_photo_path,created_at',
                 'user.role:id,name,color_class,icon',
-                'reactions:id,comment_id,user_id',
                 'parent:id,user_id',
                 'parent.user:id,name,user_role_id',
                 'parent.user.role:id,name,color_class,icon',

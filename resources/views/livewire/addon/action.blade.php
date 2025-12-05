@@ -141,12 +141,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will prevent visitors on the site from seeing the addon.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('addon-action-disable-{{ $this->addonId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('addon-action-disable-{{ $this->addonId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -199,12 +208,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will allow visitors on the site to see the addon.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('addon-action-enable-{{ $this->addonId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('addon-action-enable-{{ $this->addonId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -276,6 +294,15 @@
                         </div>
                     </div>
                 </div>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
@@ -292,14 +319,14 @@
 
                 <div class="flex gap-3">
                     <flux:button
-                        x-on:click="$flux.modal('addon-action-delete-{{ $this->addonId }}').close()"
+                        x-on:click="$wire.moderationReason = ''; $flux.modal('addon-action-delete-{{ $this->addonId }}').close()"
                         variant="outline"
                         size="sm"
                     >
                         {{ __('Cancel') }}
                     </flux:button>
                     <flux:button
-                        x-on:click="$flux.modal('addon-action-delete-{{ $this->addonId }}').close(); $wire.$parent.deleteAddon({{ $this->addonId }}, '{{ $routeName }}')"
+                        x-on:click="$flux.modal('addon-action-delete-{{ $this->addonId }}').close(); $wire.$parent.deleteAddon({{ $this->addonId }}, '{{ $routeName }}', $wire.moderationReason)"
                         variant="primary"
                         size="sm"
                         icon="trash"
@@ -390,12 +417,21 @@
                         @endif
                     </div>
                 </flux:field>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('addon-action-publish-{{ $this->addonId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('addon-action-publish-{{ $this->addonId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -448,12 +484,21 @@
                 <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
                     This will remove the published date and prevent visitors on the site from discovering the addon.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('addon-action-unpublish-{{ $this->addonId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('addon-action-unpublish-{{ $this->addonId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -507,12 +552,21 @@
                     This will restore the addon's association with its parent mod and make it visible in the mod's addon
                     list.
                 </flux:text>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('addon-action-attach-{{ $this->addonId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('addon-action-attach-{{ $this->addonId }}').close()"
                     variant="outline"
                     size="sm"
                 >
@@ -582,12 +636,21 @@
                         </div>
                     </div>
                 </div>
+
+                @if ($this->showModerationReason)
+                    <flux:textarea
+                        wire:model="moderationReason"
+                        label="{{ __('Reason (optional)') }}"
+                        placeholder="{{ __('Enter reason for this action...') }}"
+                        rows="3"
+                    />
+                @endif
             </div>
 
             {{-- Footer Actions --}}
             <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                 <flux:button
-                    x-on:click="$flux.modal('addon-action-detach-{{ $this->addonId }}').close()"
+                    x-on:click="$wire.moderationReason = ''; $flux.modal('addon-action-detach-{{ $this->addonId }}').close()"
                     variant="outline"
                     size="sm"
                 >

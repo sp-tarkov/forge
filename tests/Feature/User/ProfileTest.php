@@ -29,6 +29,10 @@ describe('profile page access', function (): void {
 });
 
 describe('mod visibility on profile', function (): void {
+    beforeEach(function (): void {
+        Livewire::withoutLazyLoading();
+    });
+
     it('shows mods on a profile page', function (): void {
         $user = User::factory()->create();
 
@@ -199,6 +203,10 @@ describe('mod visibility on profile', function (): void {
 });
 
 describe('addon visibility on profile', function (): void {
+    beforeEach(function (): void {
+        Livewire::withoutLazyLoading();
+    });
+
     it('shows addons where the user is an additional author', function (): void {
         $profileUser = User::factory()->create();
         $owner = User::factory()->create();
@@ -443,6 +451,7 @@ describe('addon visibility on profile', function (): void {
 
 describe('profile wall comments', function (): void {
     beforeEach(function (): void {
+        Livewire::withoutLazyLoading();
         config()->set('honeypot.enabled', false);
     });
 

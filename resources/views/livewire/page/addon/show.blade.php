@@ -233,71 +233,27 @@
                 </div>
 
                 {{-- Addon Description --}}
-                <div
-                    x-show="selectedTab === 'description'"
-                    class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
-                >
-                    {{--
-                        !DANGER ZONE!
-
-                        This field is cleaned by the backend, so we can trust it. Other fields are not. Only write out
-                        fields like this when you're absolutely sure that the data is safe. Which is almost never.
-                     --}}
-                    {!! $addon->description_html !!}
+                <div x-show="selectedTab === 'description'">
+                    <livewire:addon.show.description-tab
+                        wire:key="addon-description-tab-{{ $addon->id }}"
+                        :addon-id="$addon->id"
+                    />
                 </div>
 
                 {{-- Addon Versions --}}
                 <div x-show="selectedTab === 'versions'">
-                    @forelse($versions as $version)
-                        <x-addon.version-card
-                            wire:key="addon-show-version-{{ $addon->id }}-{{ $version->id }}"
-                            :version="$version"
-                            :addon="$addon"
-                        />
-                    @empty
-                        <div
-                            class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-                            <div class="text-center py-8">
-                                <flux:icon.archive-box class="mx-auto h-12 w-12 text-gray-400" />
-                                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                    {{ __('No Versions Yet') }}</h3>
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ __('This addon doesn\'t have any versions yet.') }}</p>
-                                @cachedCan('create', [App\Models\AddonVersion::class, $addon])
-                                    <div class="mt-6">
-                                        <flux:button href="{{ route('addon.version.create', ['addon' => $addon->id]) }}">
-                                            {{ __('Create First Version') }}
-                                        </flux:button>
-                                    </div>
-                                @endcachedCan
-                            </div>
-                        </div>
-                    @endforelse
-                    {{ $versions->links() }}
+                    <livewire:addon.show.versions-tab
+                        wire:key="addon-versions-tab-{{ $addon->id }}"
+                        :addon-id="$addon->id"
+                    />
                 </div>
 
                 {{-- Comments --}}
                 @if (!$addon->comments_disabled || auth()->user()?->isModOrAdmin() || $addon->isAuthorOrOwner(auth()->user()))
-                    <div
-                        id="comments"
-                        x-show="selectedTab === 'comments'"
-                    >
-                        @if ($addon->comments_disabled && (auth()->user()?->isModOrAdmin() || $addon->isAuthorOrOwner(auth()->user())))
-                            <div class="mb-6">
-                                <flux:callout
-                                    icon="exclamation-triangle"
-                                    color="orange"
-                                    inline="inline"
-                                >
-                                    <flux:callout.text>
-                                        {{ __('Comments have been disabled for this addon and are not visible to normal users. As :role, you can still view and manage all comments.', ['role' => auth()->user()?->isModOrAdmin() ? 'an administrator or moderator' : 'the addon owner or author']) }}
-                                    </flux:callout.text>
-                                </flux:callout>
-                            </div>
-                        @endif
-                        <livewire:comment-component
-                            wire:key="comment-component-{{ $addon->id }}"
-                            :commentable="$addon"
+                    <div x-show="selectedTab === 'comments'">
+                        <livewire:addon.show.comments-tab
+                            wire:key="addon-comments-tab-{{ $addon->id }}"
+                            :addon-id="$addon->id"
                         />
                     </div>
                 @endif

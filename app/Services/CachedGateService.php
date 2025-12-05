@@ -99,6 +99,31 @@ class CachedGateService
     }
 
     /**
+     * Check multiple abilities for multiple models at once.
+     *
+     * Returns a nested array indexed by model key, then by ability name.
+     *
+     * @param  array<string>  $abilities
+     * @param  array<Model>  $models
+     * @return array<int|string, array<string, bool>>
+     */
+    public function batchCheckMultiple(array $abilities, array $models): array
+    {
+        $results = [];
+
+        foreach ($models as $model) {
+            $key = $model->getKey();
+            $results[$key] = [];
+
+            foreach ($abilities as $ability) {
+                $results[$key][$ability] = $this->allows($ability, $model);
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      * Authorize or throw an exception (equivalent to Gate::authorize).
      *
      * @throws AuthorizationException

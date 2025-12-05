@@ -99,4 +99,17 @@ class ReportPolicy
 
         return $user->isAdmin();
     }
+
+    /**
+     * Determine whether the user can unresolve the model.
+     */
+    public function unresolve(User $user, Report $report): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isAdmin();
+    }
 }

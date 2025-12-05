@@ -75,5 +75,9 @@ class ForgeDefinition implements Definition
         $definition->addAttribute('div', 'role', 'Text');
         $definition->addAttribute('iframe', 'allow', 'Text');
         $definition->addAttribute('iframe', 'allowfullscreen', 'Bool');
+
+        // YouTube lite embed support
+        $definition->addAttribute('div', 'data-video-id', 'Text');
+        $definition->addAttribute('div', 'data-embed-url', 'URI');
     }
 }

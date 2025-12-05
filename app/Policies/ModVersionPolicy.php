@@ -96,7 +96,8 @@ class ModVersionPolicy
             return true;
         }
 
-        if ($modVersion->mod->disabled || $modVersion->disabled) {
+        // Deny if the mod is unpublished, disabled, or the version is disabled.
+        if (! $modVersion->mod->isPublished() || $modVersion->mod->disabled || $modVersion->disabled) {
             return false;
         }
 

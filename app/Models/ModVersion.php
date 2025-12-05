@@ -348,6 +348,9 @@ class ModVersion extends Model implements Trackable
     protected static function booted(): void
     {
         static::saving(function (ModVersion $modVersion): void {
+            // Strip the "v" prefix from the version string if present.
+            $modVersion->version = mb_ltrim($modVersion->version, 'vV');
+
             // Extract the version sections from the version string.
             try {
                 $version = new Version($modVersion->version);

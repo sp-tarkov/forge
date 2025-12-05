@@ -56,7 +56,7 @@ return [
                 'pre[class],code[class],'.
                 'table,thead,tbody,tr,th[align],td[align],'.
                 'dl,dt,dd,'.
-                'sup[id],ins,mark,div[class|id|role],'.
+                'sup[id],ins,mark,div[class|id|role|data-video-id|data-embed-url],'.
                 'span,'.
                 'iframe[width|height|src|title|frameborder|scrolling|allowfullscreen|allow]',
             'HTML.SafeIframe' => true,
@@ -73,6 +73,7 @@ return [
             'Attr.AllowedClasses' => [
                 'external-link', 'language-js', 'tabset', 'tab-title', 'tab-content', 'tab-panel', 'footnotes',
                 'footnote-ref', 'footnote-backref', 'doc-endnotes', 'doc-endnote', 'doc-noteref', 'doc-backlink',
+                'youtube-lite',
             ],
             'Attr.AllowedFrameTargets' => ['_blank'],
         ],
@@ -84,8 +85,13 @@ return [
                 'ul,ol,li,'.
                 'blockquote,'.
                 'pre[class],code[class],'.
-                'span,'.
+                'span,div[class|data-video-id|data-embed-url],'.
                 'iframe[width|height|src|title|frameborder|scrolling|allowfullscreen|allow]',
+            'Attr.AllowedClasses' => [
+                'youtube-lite', 'language-js', 'language-json', 'language-php', 'language-python',
+                'language-bash', 'language-sh', 'language-html', 'language-css', 'language-xml',
+                'language-yaml', 'language-sql', 'language-typescript', 'language-c', 'language-cpp',
+            ],
             'HTML.SafeIframe' => true,
             'HTML.ForbiddenElements' => '',
             'HTML.TargetBlank' => true,
@@ -110,7 +116,7 @@ return [
                 'pre[class],code[class],'.
                 'table,thead,tbody,tr,th[align],td[align],'.
                 'dl,dt,dd,'.
-                'sup[id],ins,mark,'.
+                'sup[id],ins,mark,div[class|role|data-video-id|data-embed-url],'.
                 'span,'.
                 'iframe[width|height|src|title|frameborder|scrolling|allowfullscreen|allow]',
             'HTML.SafeIframe' => true,
@@ -126,6 +132,7 @@ return [
             'Attr.AllowedClasses' => [
                 'external-link', 'language-js', 'footnotes', 'footnote-ref', 'footnote-backref', 'doc-endnotes',
                 'doc-endnote', 'doc-noteref', 'doc-backlink',
+                'youtube-lite',
             ],
         ],
     ],

@@ -429,6 +429,7 @@ describe('Comment Reply Tests', function (): void {
             ->waitForText('Reply To Comment')
             ->type('@reply-body-'.$comment->id, $replyText)
             ->press('Post Reply')
+            ->waitForText($replyText) // Wait for the reply to appear in the comments
             ->assertDontSee('Reply To Comment')
             ->assertNoJavaScriptErrors();
     });

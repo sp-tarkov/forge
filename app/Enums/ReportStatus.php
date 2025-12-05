@@ -7,7 +7,9 @@ namespace App\Enums;
 enum ReportStatus: string
 {
     case PENDING = 'pending';
+
     case RESOLVED = 'resolved';
+
     case DISMISSED = 'dismissed';
 
     public function label(): string

@@ -17,7 +17,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class ProcessCommentNotification implements ShouldQueue
@@ -86,23 +86,37 @@ class ProcessCommentNotification implements ShouldQueue
             return;
         }
 
-        DB::transaction(function () use ($subscribersToNotify, $freshComment): void {
-            // Send notifications to subscribers who haven't been notified yet
-            Notification::send($subscribersToNotify, new NewCommentNotification($freshComment));
-
-            // Record that notifications have been sent
-            foreach ($subscribersToNotify as $user) {
-                $notificationType = $user->email_comment_notifications_enabled
-                    ? NotificationType::ALL
-                    : NotificationType::DATABASE;
-
-                NotificationLog::recordSent(
-                    $freshComment,
-                    $user->id,
-                    NewCommentNotification::class,
-                    $notificationType
-                );
+        foreach ($subscribersToNotify as $user) {
+            if (NotificationLog::hasBeenSent($freshComment, $user->id, NewCommentNotification::class)) {
+                continue;
             }
-        });
+
+            try {
+                DB::transaction(function () use ($user, $freshComment): void {
+                    $notificationType = $user->email_comment_notifications_enabled
+                        ? NotificationType::ALL
+                        : NotificationType::DATABASE;
+
+                    // Record the notification log entry first
+                    NotificationLog::recordSent(
+                        $freshComment,
+                        $user->id,
+                        NewCommentNotification::class,
+                        $notificationType
+                    );
+
+                    // Send the notification - if this fails, the transaction rolls back and the log entry is not
+                    // committed, allowing retry to work
+                    $user->notify(new NewCommentNotification($freshComment));
+                });
+            } catch (Throwable $e) {
+                Log::error('Failed to send comment notification', [
+                    'comment_id' => $freshComment->id,
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+        }
     }
 }

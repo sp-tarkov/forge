@@ -253,6 +253,66 @@ it('can mark reports as dismissed', function (): void {
     expect($report->fresh()->status)->toBe(ReportStatus::DISMISSED);
 });
 
+it('can unresolve a resolved report as admin', function (): void {
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::RESOLVED,
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    Livewire::test(ReportCentre::class)
+        ->set('filterUnresolved', false)
+        ->call('markAsUnresolved', $report->id);
+
+    expect($report->fresh()->status)->toBe(ReportStatus::PENDING);
+});
+
+it('can unresolve a dismissed report as admin', function (): void {
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::DISMISSED,
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    Livewire::test(ReportCentre::class)
+        ->set('filterUnresolved', false)
+        ->call('markAsUnresolved', $report->id);
+
+    expect($report->fresh()->status)->toBe(ReportStatus::PENDING);
+});
+
+it('cannot unresolve a report as moderator', function (): void {
+    $moderator = User::factory()->moderator()->create();
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::RESOLVED,
+    ]);
+
+    $this->actingAs($moderator);
+
+    Livewire::test(ReportCentre::class)
+        ->set('filterUnresolved', false)
+        ->call('markAsUnresolved', $report->id)
+        ->assertForbidden();
+});
+
 it('can delete reports as admin', function (): void {
     $reporter = User::factory()->create();
     $mod = Mod::factory()->create();
@@ -363,4 +423,101 @@ it('paginates reports correctly', function (): void {
 
     // Should show pagination with 20 reports per page (default behavior will show pagination)
     expect($component->get('reports')->count())->toBeLessThanOrEqual(20);
+});
+
+it('can pick up a report', function (): void {
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::PENDING,
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    Livewire::test(ReportCentre::class)
+        ->call('pickUp', $report->id);
+
+    expect($report->fresh()->assignee_id)->toBe($this->adminUser->id);
+});
+
+it('can release a picked up report', function (): void {
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::PENDING,
+        'assignee_id' => $this->adminUser->id,
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    Livewire::test(ReportCentre::class)
+        ->call('release', $report->id);
+
+    expect($report->fresh()->assignee_id)->toBeNull();
+});
+
+it('displays assigned moderator on report', function (): void {
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+    $assignee = User::factory()->create(['name' => 'Assigned Moderator']);
+
+    Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::PENDING,
+        'assignee_id' => $assignee->id,
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    Livewire::test(ReportCentre::class)
+        ->assertSee('Assigned Moderator');
+});
+
+it('can open action modal', function (): void {
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::PENDING,
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    Livewire::test(ReportCentre::class)
+        ->call('openActionModal', $report->id, 'disable_mod')
+        ->assertSet('activeReportId', $report->id)
+        ->assertSet('selectedAction', 'disable_mod')
+        ->assertSet('showActionModal', true);
+});
+
+it('can open link existing action modal', function (): void {
+    $reporter = User::factory()->create();
+    $mod = Mod::factory()->create();
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::PENDING,
+    ]);
+
+    $this->actingAs($this->adminUser);
+
+    Livewire::test(ReportCentre::class)
+        ->call('openLinkActionModal', $report->id)
+        ->assertSet('activeReportId', $report->id)
+        ->assertSet('showLinkActionModal', true);
 });

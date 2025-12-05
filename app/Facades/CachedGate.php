@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool denies(string $ability, mixed $arguments = [])
  * @method static array<string, bool> batchCheck(array<string> $abilities, mixed $arguments = [])
  * @method static array<int|string, bool> batchCheckModels(string $ability, array<Model> $models)
+ * @method static array<int|string, array<string, bool>> batchCheckMultiple(array<string> $abilities, array<Model> $models)
  * @method static void authorize(string $ability, mixed $arguments = [])
  * @method static void clearCache()
  * @method static void clearForModel(Model $model)

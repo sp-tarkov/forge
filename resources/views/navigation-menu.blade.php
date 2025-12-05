@@ -132,6 +132,11 @@
                             </flux:menu>
                         </flux:dropdown>
 
+                        {{-- Notifications Dropdown --}}
+                        @auth
+                            <livewire:navigation-notifications />
+                        @endauth
+
                         {{-- Chat Dropdown --}}
                         @auth
                             <livewire:navigation-chat />
@@ -194,6 +199,25 @@
                                         wire:navigate
                                     >{{ __('API Tokens') }}</flux:menu.item>
                                 </flux:menu.submenu>
+
+                                @if (auth()->user()->isModOrAdmin())
+                                    {{-- Moderation Submenu --}}
+                                    <flux:menu.submenu
+                                        heading="{{ __('Moderation') }}"
+                                        icon="flag"
+                                    >
+                                        <flux:menu.item
+                                            icon="document-text"
+                                            href="{{ route('report-centre') }}"
+                                            wire:navigate
+                                        >{{ __('Report Centre') }}</flux:menu.item>
+                                        <flux:menu.item
+                                            icon="shield-check"
+                                            href="{{ route('moderation-actions') }}"
+                                            wire:navigate
+                                        >{{ __('Moderation Actions') }}</flux:menu.item>
+                                    </flux:menu.submenu>
+                                @endif
 
                                 @if (auth()->user()->isAdmin())
                                     {{-- Staff Submenu --}}
@@ -318,6 +342,21 @@
                     <div class="text-base font-medium text-gray-900 dark:text-gray-100">{{ auth()->user()->name }}</div>
                     <div class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ auth()->user()->email }}</div>
                 </div>
+                {{-- Mobile Notifications Button --}}
+                <a
+                    href="{{ route('dashboard') }}"
+                    wire:navigate
+                    class="relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
+                >
+                    <flux:icon.bell class="h-5 w-5" />
+                    @if (auth()->user()->unreadNotifications()->count() > 0)
+                        <span
+                            class="absolute top-1 left-2 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white"
+                        >
+                            {{ auth()->user()->unreadNotifications()->count() > 9 ? '9+' : auth()->user()->unreadNotifications()->count() }}
+                        </span>
+                    @endif
+                </a>
                 {{-- Mobile Chat Button --}}
                 <a
                     href="{{ route('chat') }}"
@@ -349,6 +388,16 @@
                     href="{{ route('api-tokens.index') }}"
                     :active="request()->routeIs('api-tokens.index')"
                 >{{ __('API Token') }}</x-responsive-nav-link>
+                @if (auth()->user()->isModOrAdmin())
+                    <x-responsive-nav-link
+                        href="{{ route('report-centre') }}"
+                        :active="request()->routeIs('report-centre')"
+                    >{{ __('Report Centre') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('moderation-actions') }}"
+                        :active="request()->routeIs('moderation-actions')"
+                    >{{ __('Moderation Actions') }}</x-responsive-nav-link>
+                @endif
                 @if (auth()->user()->isAdmin())
                     <x-responsive-nav-link
                         href="{{ route('admin.spt-versions') }}"

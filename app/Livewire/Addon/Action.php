@@ -58,6 +58,11 @@ class Action extends Component
     public ?string $publishedAt = null;
 
     /**
+     * The reason for moderation actions.
+     */
+    public string $moderationReason = '';
+
+    /**
      * The route name of the current page on initialization of the component.
      */
     #[Locked]
@@ -83,8 +88,22 @@ class Action extends Component
     public function addon(): Addon
     {
         return Addon::query()->withoutGlobalScopes()->select(['id', 'name', 'slug', 'disabled', 'published_at', 'owner_id', 'contains_ai_content', 'detached_at', 'mod_id'])
-            ->with('owner:id,name')
+            ->with(['owner:id,name', 'additionalAuthors:id'])
             ->findOrFail($this->addonId);
+    }
+
+    /**
+     * Determine if the moderation reason field should be shown.
+     * Only show for mod/admin users who are NOT an owner or additional author.
+     */
+    #[Computed]
+    public function showModerationReason(): bool
+    {
+        $user = Auth::user();
+
+        return $user
+            && $user->isModOrAdmin()
+            && ! $this->addon->isAuthorOrOwner($user);
     }
 
     /**
@@ -99,7 +118,16 @@ class Action extends Component
         $addon->disabled = true;
         $addon->save();
 
-        Track::event(TrackingEventType::ADDON_DISABLE, $addon);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_DISABLE,
+            $addon,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->addonDisabled = true;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
@@ -109,6 +137,7 @@ class Action extends Component
 
         flash()->success('Addon successfully disabled!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -124,7 +153,16 @@ class Action extends Component
         $addon->disabled = false;
         $addon->save();
 
-        Track::event(TrackingEventType::ADDON_ENABLE, $addon);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_ENABLE,
+            $addon,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->addonDisabled = false;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
@@ -134,6 +172,7 @@ class Action extends Component
 
         flash()->success('Addon successfully enabled!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -150,7 +189,16 @@ class Action extends Component
         $addon->published_at = $publishedDate;
         $addon->save();
 
-        Track::event(TrackingEventType::ADDON_PUBLISH, $addon);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_PUBLISH,
+            $addon,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->addonPublished = true;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
@@ -160,6 +208,7 @@ class Action extends Component
 
         flash()->success('Addon successfully published!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -175,7 +224,16 @@ class Action extends Component
         $addon->published_at = null;
         $addon->save();
 
-        Track::event(TrackingEventType::ADDON_UNPUBLISH, $addon);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_UNPUBLISH,
+            $addon,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->addonPublished = false;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
@@ -185,6 +243,7 @@ class Action extends Component
 
         flash()->success('Addon successfully unpublished!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -204,13 +263,23 @@ class Action extends Component
         // Update search index to reflect the attachment
         $addon->refresh()->searchable();
 
-        Track::event(TrackingEventType::ADDON_ATTACH, $addon);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_ATTACH,
+            $addon,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->addonDetached = false;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         flash()->success('Addon successfully attached!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 
@@ -230,13 +299,23 @@ class Action extends Component
         // Update search index to reflect the detachment
         $addon->refresh()->searchable();
 
-        Track::event(TrackingEventType::ADDON_DETACH, $addon);
+        // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
+        $user = Auth::user();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+
+        Track::eventSync(
+            TrackingEventType::ADDON_DETACH,
+            $addon,
+            isModerationAction: $isModerationAction,
+            reason: $isModerationAction ? ($this->moderationReason ?: null) : null
+        );
 
         $this->addonDetached = true;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) auth()->id()));
 
         flash()->success('Addon successfully detached!');
 
+        $this->moderationReason = '';
         $this->menuOpen = false;
     }
 

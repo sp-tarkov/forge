@@ -7,10 +7,15 @@ namespace App\Enums;
 enum ReportReason: string
 {
     case SPAM = 'spam';
+
     case INAPPROPRIATE_CONTENT = 'inappropriate_content';
+
     case HARASSMENT = 'harassment';
+
     case MISINFORMATION = 'misinformation';
+
     case COPYRIGHT_VIOLATION = 'copyright_violation';
+
     case OTHER = 'other';
 
     public function label(): string

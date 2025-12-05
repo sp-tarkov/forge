@@ -15,6 +15,34 @@ use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
+describe('version prefix stripping', function (): void {
+    it('strips lowercase v prefix from version on save', function (): void {
+        $modVersion = ModVersion::factory()->create(['version' => 'v1.2.3']);
+
+        expect($modVersion->version)->toBe('1.2.3');
+    });
+
+    it('strips uppercase V prefix from version on save', function (): void {
+        $modVersion = ModVersion::factory()->create(['version' => 'V1.2.3']);
+
+        expect($modVersion->version)->toBe('1.2.3');
+    });
+
+    it('does not modify version without v prefix', function (): void {
+        $modVersion = ModVersion::factory()->create(['version' => '1.2.3']);
+
+        expect($modVersion->version)->toBe('1.2.3');
+    });
+
+    it('strips v prefix on update', function (): void {
+        $modVersion = ModVersion::factory()->create(['version' => '1.0.0']);
+
+        $modVersion->update(['version' => 'v2.0.0']);
+
+        expect($modVersion->fresh()->version)->toBe('2.0.0');
+    });
+});
+
 describe('SPT version resolution', function (): void {
     beforeEach(function (): void {
         $this->withoutDefer();
@@ -264,6 +292,25 @@ describe('mod version downloads', function (): void {
         // Try to access with wrong slug
         $this->get(sprintf('/mod/download/%s/%s/%s', $mod->id, 'wrong-slug', $modVersion->version))
             ->assertNotFound();
+    });
+
+    it('returns 403 when mod is unpublished', function (): void {
+        $spt = SptVersion::factory()->create();
+        $mod = Mod::factory()->create([
+            'slug' => 'unpublished-mod',
+            'published_at' => null,
+        ]);
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+        ]);
+
+        // Build URL manually since downloadUrl() can't access the unpublished mod via relationship
+        $downloadUrl = sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion->version);
+
+        // Attempt to download a version of an unpublished mod should be forbidden
+        $this->get($downloadUrl)
+            ->assertForbidden();
     });
 });
 
