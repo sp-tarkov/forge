@@ -17,47 +17,49 @@ function highlightCodeBlocks(container = document) {
 }
 
 // Initial highlighting on page load
-highlightCodeBlocks();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+        highlightCodeBlocks();
+    });
+} else {
+    highlightCodeBlocks();
+}
+
+// Function to register Livewire hooks
+function registerLivewireHooks() {
+    // Fires when elements are added during DOM morphing (e.g., lazy-loaded content)
+    Livewire.hook("morph.added", ({ el }) => {
+        if (el.nodeType === Node.ELEMENT_NODE) {
+            const hasCodeBlocks = el.tagName === "CODE" || el.querySelector?.("pre code");
+
+            if (hasCodeBlocks) {
+                queueMicrotask(() => {
+                    highlightCodeBlocks(el);
+                });
+            }
+        }
+    });
+
+    // Fires after a component's DOM has been morphed (e.g., after lazy-load completes)
+    Livewire.hook("morphed", ({ el }) => {
+        queueMicrotask(() => {
+            highlightCodeBlocks(el);
+        });
+    });
+}
+
+// Register Livewire hooks - handle both cases:
+// 1. Livewire already started (scripts loaded after Livewire.start())
+// 2. Livewire not yet started (livewire:init will fire later)
+if (window.Livewire) {
+    registerLivewireHooks();
+} else {
+    document.addEventListener("livewire:init", registerLivewireHooks);
+}
 
 // Listen for content updates (e.g., Livewire updates, markdown preview)
 document.addEventListener("content-updated", () => {
     highlightCodeBlocks();
-});
-
-// Use MutationObserver to detect when code blocks are added to the DOM.
-// This is more reliable than Livewire hooks for lazy-loaded content.
-const codeBlockObserver = new MutationObserver((mutations) => {
-    let shouldHighlight = false;
-
-    for (const mutation of mutations) {
-        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    // Check if the added node contains unhighlighted code blocks
-                    if (
-                        (node.tagName === "CODE" && !node.classList?.contains("hljs")) ||
-                        node.querySelector?.("pre code:not(.hljs)")
-                    ) {
-                        shouldHighlight = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if (shouldHighlight) break;
-    }
-
-    if (shouldHighlight) {
-        requestAnimationFrame(() => {
-            highlightCodeBlocks();
-        });
-    }
-});
-
-// Start observing the document body for added nodes
-codeBlockObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
 });
 
 // Export for manual usage if needed
