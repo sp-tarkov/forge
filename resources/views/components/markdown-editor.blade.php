@@ -15,7 +15,7 @@
         activeTab: 'write',
         previewHtml: '',
         isLoadingPreview: false,
-        content: @entangle($wireModel).live,
+        content: $wire.entangle('{{ $wireModel }}').live,
         containsLogFile: false,
         logFilePattern: null,
         containsUpdateRequest: false,

@@ -1,5 +1,5 @@
 <div x-data="{
-    menuLoaded: @entangle('menuOpen').live
+    menuLoaded: $wire.entangle('menuOpen').live
 }">
     <flux:dropdown
         position="bottom"

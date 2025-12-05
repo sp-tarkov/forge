@@ -1,9 +1,9 @@
 <div
     x-data="{
-        open: @entangle('showDropdown').live,
-        search: @entangle('search').live,
-        highlightIndex: @entangle('highlightIndex').live,
-        selectedModId: @entangle('selectedModId').live,
+        open: $wire.entangle('showDropdown').live,
+        search: $wire.entangle('search').live,
+        highlightIndex: $wire.entangle('highlightIndex').live,
+        selectedModId: $wire.entangle('selectedModId').live,
     }"
     x-on:click.away="$wire.closeDropdown()"
     class="relative"
