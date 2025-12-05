@@ -64,8 +64,7 @@ const youtubeLiteObserver = new MutationObserver((mutations) => {
                 if (node.nodeType === Node.ELEMENT_NODE) {
                     // Check if the added node contains uninitialized youtube-lite elements
                     if (
-                        (node.classList?.contains("youtube-lite") &&
-                            !node.hasAttribute("data-youtube-initialized")) ||
+                        (node.classList?.contains("youtube-lite") && !node.hasAttribute("data-youtube-initialized")) ||
                         node.querySelector?.(".youtube-lite:not([data-youtube-initialized])")
                     ) {
                         shouldInitialize = true;
