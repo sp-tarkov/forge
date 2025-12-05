@@ -150,24 +150,46 @@ if (document.readyState === "loading") {
     initializeTabs();
 }
 
-// Listen for Livewire events to reinitialize tabs when content is updated
-if (window.Livewire) {
-    // Livewire 3 events
-    document.addEventListener("livewire:navigated", () => {
-        initializeTabs();
-    });
+// Use MutationObserver to detect when .tabset elements are added to the DOM.
+// This is more reliable than Livewire hooks for lazy-loaded content.
+const tabsetObserver = new MutationObserver((mutations) => {
+    let shouldInitialize = false;
 
-    document.addEventListener("livewire:init", () => {
-        Livewire.hook("commit", ({ component, commit, respond, succeed, fail }) => {
-            succeed(() => {
-                // After a successful Livewire update, reinitialize tabs
-                requestAnimationFrame(() => {
-                    initializeTabs(component.el);
-                });
-            });
+    for (const mutation of mutations) {
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Check if the added node contains uninitialized tabsets
+                    if (
+                        node.classList?.contains("tabset") ||
+                        node.querySelector?.(".tabset:not([data-tabs-initialized])")
+                    ) {
+                        shouldInitialize = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (shouldInitialize) break;
+    }
+
+    if (shouldInitialize) {
+        requestAnimationFrame(() => {
+            initializeTabs();
         });
-    });
-}
+    }
+});
+
+// Start observing the document body for added nodes
+tabsetObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+});
+
+// Listen for Livewire navigation events
+document.addEventListener("livewire:navigated", () => {
+    initializeTabs();
+});
 
 // Also listen for any custom events that might indicate content has been updated
 document.addEventListener("content-updated", () => {

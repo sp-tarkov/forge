@@ -53,22 +53,47 @@ if (document.readyState === "loading") {
     initializeYouTubeLite();
 }
 
-// Listen for Livewire events to reinitialize after content updates
-if (window.Livewire) {
-    document.addEventListener("livewire:navigated", () => {
-        initializeYouTubeLite();
-    });
+// Use MutationObserver to detect when youtube-lite elements are added to the DOM.
+// This is more reliable than Livewire hooks for lazy-loaded content.
+const youtubeLiteObserver = new MutationObserver((mutations) => {
+    let shouldInitialize = false;
 
-    document.addEventListener("livewire:init", () => {
-        Livewire.hook("commit", ({ component, succeed }) => {
-            succeed(() => {
-                requestAnimationFrame(() => {
-                    initializeYouTubeLite(component.el);
-                });
-            });
+    for (const mutation of mutations) {
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Check if the added node contains uninitialized youtube-lite elements
+                    if (
+                        (node.classList?.contains("youtube-lite") &&
+                            !node.hasAttribute("data-youtube-initialized")) ||
+                        node.querySelector?.(".youtube-lite:not([data-youtube-initialized])")
+                    ) {
+                        shouldInitialize = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (shouldInitialize) break;
+    }
+
+    if (shouldInitialize) {
+        requestAnimationFrame(() => {
+            initializeYouTubeLite();
         });
-    });
-}
+    }
+});
+
+// Start observing the document body for added nodes
+youtubeLiteObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+});
+
+// Listen for Livewire navigation events
+document.addEventListener("livewire:navigated", () => {
+    initializeYouTubeLite();
+});
 
 // Listen for custom content-updated events
 document.addEventListener("content-updated", () => {

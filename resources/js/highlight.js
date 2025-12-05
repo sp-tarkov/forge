@@ -24,18 +24,41 @@ document.addEventListener("content-updated", () => {
     highlightCodeBlocks();
 });
 
-// Listen for Livewire events
-if (window.Livewire) {
-    document.addEventListener("livewire:init", () => {
-        Livewire.hook("commit", ({ component, commit, respond, succeed, fail }) => {
-            succeed(() => {
-                requestAnimationFrame(() => {
-                    highlightCodeBlocks(component.el);
-                });
-            });
+// Use MutationObserver to detect when code blocks are added to the DOM.
+// This is more reliable than Livewire hooks for lazy-loaded content.
+const codeBlockObserver = new MutationObserver((mutations) => {
+    let shouldHighlight = false;
+
+    for (const mutation of mutations) {
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Check if the added node contains unhighlighted code blocks
+                    if (
+                        (node.tagName === "CODE" && !node.classList?.contains("hljs")) ||
+                        node.querySelector?.("pre code:not(.hljs)")
+                    ) {
+                        shouldHighlight = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (shouldHighlight) break;
+    }
+
+    if (shouldHighlight) {
+        requestAnimationFrame(() => {
+            highlightCodeBlocks();
         });
-    });
-}
+    }
+});
+
+// Start observing the document body for added nodes
+codeBlockObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+});
 
 // Export for manual usage if needed
 window.highlightCodeBlocks = highlightCodeBlocks;
