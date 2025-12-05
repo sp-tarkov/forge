@@ -54,7 +54,7 @@
             <div
                 id="filters-container"
                 class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
-                x-data="{ searchValue: @entangle('search').defer }"
+                x-data="{ searchValue: $wire.entangle('search') }"
             >
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>

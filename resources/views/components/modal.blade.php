@@ -12,7 +12,7 @@
 @endphp
 
 <div
-    x-data="{ show: @entangle($attributes->wire('model')) }"
+    x-data="{ show: $wire.entangle('{{ $attributes->wire('model')->value() }}') }"
     x-on:close.stop="show = false"
     x-on:keydown.escape.window="show = false"
     x-show="show"

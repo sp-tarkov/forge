@@ -47,7 +47,7 @@
             @if (count($selectedUsers) < $maxUsers)
                 <div
                     class="relative"
-                    x-data="{ open: @entangle('showDropdown') }"
+                    x-data="{ open: $wire.entangle('showDropdown') }"
                     @click.away="$wire.closeDropdown()"
                 >
                     <flux:input

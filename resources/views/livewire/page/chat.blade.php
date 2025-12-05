@@ -502,7 +502,7 @@
                         class="p-4 border-t border-gray-300 dark:border-gray-800 bg-gray-100 dark:bg-gray-900"
                         wire:key="message-input-area"
                         x-data="{
-                            message: @entangle('messageText'),
+                            message: $wire.entangle('messageText'),
                             maxLength: 500,
                             buttonHeight: '46px',
                             typingTimer: null,
