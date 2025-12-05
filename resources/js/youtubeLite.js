@@ -53,42 +53,37 @@ if (document.readyState === "loading") {
     initializeYouTubeLite();
 }
 
-// Use MutationObserver to detect when youtube-lite elements are added to the DOM.
-// This is more reliable than Livewire hooks for lazy-loaded content.
-const youtubeLiteObserver = new MutationObserver((mutations) => {
-    let shouldInitialize = false;
+// Function to register Livewire hooks
+function registerLivewireHooks() {
+    // Fires when elements are added during DOM morphing (e.g., lazy-loaded content)
+    Livewire.hook("morph.added", ({ el }) => {
+        if (el.nodeType === Node.ELEMENT_NODE) {
+            const hasYouTubeLite = el.classList?.contains("youtube-lite") || el.querySelector?.(".youtube-lite");
 
-    for (const mutation of mutations) {
-        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    // Check if the added node contains uninitialized youtube-lite elements
-                    if (
-                        (node.classList?.contains("youtube-lite") &&
-                            !node.hasAttribute("data-youtube-initialized")) ||
-                        node.querySelector?.(".youtube-lite:not([data-youtube-initialized])")
-                    ) {
-                        shouldInitialize = true;
-                        break;
-                    }
-                }
+            if (hasYouTubeLite) {
+                queueMicrotask(() => {
+                    initializeYouTubeLite(el);
+                });
             }
         }
-        if (shouldInitialize) break;
-    }
+    });
 
-    if (shouldInitialize) {
-        requestAnimationFrame(() => {
-            initializeYouTubeLite();
+    // Fires after a component's DOM has been morphed (e.g., after lazy-load completes)
+    Livewire.hook("morphed", ({ el }) => {
+        queueMicrotask(() => {
+            initializeYouTubeLite(el);
         });
-    }
-});
+    });
+}
 
-// Start observing the document body for added nodes
-youtubeLiteObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-});
+// Register Livewire hooks - handle both cases:
+// 1. Livewire already started (scripts loaded after Livewire.start())
+// 2. Livewire not yet started (livewire:init will fire later)
+if (window.Livewire) {
+    registerLivewireHooks();
+} else {
+    document.addEventListener("livewire:init", registerLivewireHooks);
+}
 
 // Listen for Livewire navigation events
 document.addEventListener("livewire:navigated", () => {
@@ -99,3 +94,6 @@ document.addEventListener("livewire:navigated", () => {
 document.addEventListener("content-updated", () => {
     initializeYouTubeLite();
 });
+
+// Export for use in Livewire component scripts
+window.initializeYouTubeLite = initializeYouTubeLite;

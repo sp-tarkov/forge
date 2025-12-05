@@ -14,6 +14,12 @@ function initializeTabs(container = document) {
     } else if (container.classList && container.classList.contains("user-markdown")) {
         // If the container itself is a user-markdown area
         tabsets = container.querySelectorAll(".tabset:not([data-tabs-initialized])");
+    } else {
+        // Try to find tabsets directly in the container
+        const directTabsets = container.querySelectorAll
+            ? container.querySelectorAll(".tabset:not([data-tabs-initialized])")
+            : [];
+        tabsets = [...directTabsets];
     }
 
     if (tabsets.length === 0) {
@@ -146,45 +152,44 @@ if (document.readyState === "loading") {
         initializeTabs();
     });
 } else {
-    // DOM is already loaded, initialize immediately
     initializeTabs();
 }
 
-// Use MutationObserver to detect when .tabset elements are added to the DOM.
-// This is more reliable than Livewire hooks for lazy-loaded content.
-const tabsetObserver = new MutationObserver((mutations) => {
-    let shouldInitialize = false;
+// Function to register Livewire hooks
+function registerLivewireHooks() {
+    // Fires when elements are added during DOM morphing (e.g., lazy-loaded content)
+    Livewire.hook("morph.added", ({ el }) => {
+        // Check if the added element contains tabsets
+        if (el.nodeType === Node.ELEMENT_NODE) {
+            const hasTabset =
+                el.classList?.contains("tabset") ||
+                el.classList?.contains("user-markdown") ||
+                el.querySelector?.(".tabset");
 
-    for (const mutation of mutations) {
-        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    // Check if the added node contains uninitialized tabsets
-                    if (
-                        node.classList?.contains("tabset") ||
-                        node.querySelector?.(".tabset:not([data-tabs-initialized])")
-                    ) {
-                        shouldInitialize = true;
-                        break;
-                    }
-                }
+            if (hasTabset) {
+                queueMicrotask(() => {
+                    initializeTabs(el);
+                });
             }
         }
-        if (shouldInitialize) break;
-    }
+    });
 
-    if (shouldInitialize) {
-        requestAnimationFrame(() => {
-            initializeTabs();
+    // Fires after a component's DOM has been morphed (e.g., after lazy-load completes)
+    Livewire.hook("morphed", ({ el }) => {
+        queueMicrotask(() => {
+            initializeTabs(el);
         });
-    }
-});
+    });
+}
 
-// Start observing the document body for added nodes
-tabsetObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-});
+// Register Livewire hooks - handle both cases:
+// 1. Livewire already started (scripts loaded after Livewire.start())
+// 2. Livewire not yet started (livewire:init will fire later)
+if (window.Livewire) {
+    registerLivewireHooks();
+} else {
+    document.addEventListener("livewire:init", registerLivewireHooks);
+}
 
 // Listen for Livewire navigation events
 document.addEventListener("livewire:navigated", () => {
@@ -195,3 +200,6 @@ document.addEventListener("livewire:navigated", () => {
 document.addEventListener("content-updated", () => {
     initializeTabs();
 });
+
+// Export for use in Livewire component scripts
+window.initializeTabs = initializeTabs;
