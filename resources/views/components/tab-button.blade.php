@@ -3,9 +3,9 @@
     :aria-selected="selectedTab == '{{ $tabValue }}'"
     :class="{
         'font-extrabold': selectedTab == '{{ $tabValue }}',
-        'font-light': selectedTab != '{{ $tabValue }}',
-        'tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm text-gray-800 dark:text-white bg-cyan-500 dark:bg-cyan-700 hover:bg-cyan-400 dark:hover:bg-cyan-600 focus:z-10 last:rounded-r-xl first:rounded-l-xl flex items-center justify-center gap-1': true
+        'font-light': selectedTab != '{{ $tabValue }}'
     }"
+    class="tab group relative min-w-0 flex-1 overflow-hidden py-4 px-4 text-center text-sm text-gray-800 dark:text-white bg-cyan-500 dark:bg-cyan-700 hover:bg-cyan-400 dark:hover:bg-cyan-600 focus:z-10 last:rounded-r-xl first:rounded-l-xl flex items-center justify-center gap-1"
     {{ $attributes }}
 >
     {{ __($displayLabel) }}
