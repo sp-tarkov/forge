@@ -108,7 +108,7 @@ jobs:
         run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Rector Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .rector/cache
           key: ${{ runner.os }}-rector-${{ github.run_id }}
