@@ -245,6 +245,11 @@
                                             href="{{ route('admin.user-management') }}"
                                             wire:navigate
                                         >{{ __('User Management') }}</flux:menu.item>
+                                        <flux:menu.item
+                                            icon="user-group"
+                                            href="{{ route('admin.role-management') }}"
+                                            wire:navigate
+                                        >{{ __('Role Management') }}</flux:menu.item>
                                     </flux:menu.submenu>
                                 @endif
 
@@ -415,6 +420,10 @@
                         href="{{ route('admin.user-management') }}"
                         :active="request()->routeIs('admin.user-management')"
                     >{{ __('User Management') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('admin.role-management') }}"
+                        :active="request()->routeIs('admin.role-management')"
+                    >{{ __('Role Management') }}</x-responsive-nav-link>
                 @endif
                 <form
                     method="POST"
