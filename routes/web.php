@@ -11,6 +11,7 @@ use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Livewire\Admin\ModerationActions;
+use App\Livewire\Admin\RoleManagement;
 use App\Livewire\Admin\SptVersionManagement;
 use App\Livewire\Admin\UserManagement;
 use App\Livewire\Admin\VisitorAnalytics;
@@ -152,6 +153,7 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::middleware('can:admin')->group(function (): void {
             Route::get('/admin/visitor-analytics', VisitorAnalytics::class)->name('admin.visitor-analytics');
             Route::get('/admin/user-management', UserManagement::class)->name('admin.user-management');
+            Route::get('/admin/role-management', RoleManagement::class)->name('admin.role-management');
             Route::get('/admin/spt-versions', SptVersionManagement::class)->name('admin.spt-versions');
         });
     });
