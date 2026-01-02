@@ -42,9 +42,11 @@
                 <div class="pb-3">
                     <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">
                         {{ $mod->name }}
-                        <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
-                            {{ $version->version }}
-                        </span>
+                        @if ($version)
+                            <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
+                                {{ $version->version }}
+                            </span>
+                        @endif
                     </h3>
                     <p class="no-underline mb-2 text-sm italic text-slate-600 dark:text-gray-200">
                         {{ __('Created by :owner', ['owner' => $mod->owner?->name ?? '']) }}
