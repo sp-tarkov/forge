@@ -19,8 +19,7 @@ it('displays user role with color and icon', function (): void {
 });
 
 it('displays moderator role with color and icon', function (): void {
-    $role = UserRole::factory()->moderator()->create();
-    $user = User::factory()->create(['user_role_id' => $role->id]);
+    $user = User::factory()->moderator()->create();
 
     expect($user->role->color_class)->toBe('orange')
         ->and($user->role->icon)->toBe('wrench')

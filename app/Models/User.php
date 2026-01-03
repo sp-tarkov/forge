@@ -441,11 +441,11 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
-     * Check if the user has the role of an moderator or administrator.
+     * Check if the user has the role of a moderator, senior moderator, or staff.
      */
     public function isModOrAdmin(): bool
     {
-        return $this->isMod() || $this->isAdmin();
+        return $this->isMod() || $this->isSeniorMod() || $this->isAdmin();
     }
 
     /**
@@ -457,6 +457,17 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         $roleName = $this->rememberRoleName();
 
         return $roleName === 'moderator';
+    }
+
+    /**
+     * Check if the user has the role of a senior moderator.
+     */
+    public function isSeniorMod(): bool
+    {
+        // Cache role lookup for performance
+        $roleName = $this->rememberRoleName();
+
+        return $roleName === 'senior moderator';
     }
 
     /**

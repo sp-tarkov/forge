@@ -41,6 +41,20 @@ class UserRoleFactory extends Factory
     }
 
     /**
+     * Define the "senior moderator" role.
+     */
+    public function seniorModerator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Senior Moderator',
+            'short_name' => 'Sr. Mod',
+            'description' => 'A senior moderator can moderate content and ban users.',
+            'color_class' => 'orange',
+            'icon' => 'shield-exclamation',
+        ]);
+    }
+
+    /**
      * Define the "moderator" role.
      */
     public function moderator(): static
@@ -48,7 +62,7 @@ class UserRoleFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'name' => 'Moderator',
             'short_name' => 'Mod',
-            'description' => 'A moderator has the ability to moderate user content.',
+            'description' => 'A moderator can moderate user content.',
             'color_class' => 'orange',
             'icon' => 'wrench',
         ]);

@@ -612,16 +612,11 @@ describe('ReportComponent', function (): void {
         it('sends notifications to moderators and administrators when report is submitted', function (): void {
             Notification::fake();
 
-            // Create user roles
-            $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-            $adminRole = UserRole::factory()->create(['name' => 'staff']);
-            $userRole = UserRole::factory()->create(['name' => 'user']);
-
             // Create users with different roles
-            $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
-            $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
-            $regularUser = User::factory()->create(['user_role_id' => $userRole->id]);
-            $reporter = User::factory()->create(['user_role_id' => $userRole->id]);
+            $moderator = User::factory()->moderator()->create();
+            $admin = User::factory()->admin()->create();
+            $regularUser = User::factory()->create();
+            $reporter = User::factory()->create();
 
             $mod = Mod::factory()->create();
 
@@ -646,8 +641,7 @@ describe('ReportComponent', function (): void {
         it('sends notification with correct report data', function (): void {
             Notification::fake();
 
-            $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-            $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+            $moderator = User::factory()->moderator()->create();
             $reporter = User::factory()->create();
             $mod = Mod::factory()->create();
 
@@ -697,8 +691,7 @@ describe('ReportComponent', function (): void {
         it('sends notifications for different reportable types', function (): void {
             Notification::fake();
 
-            $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-            $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+            $moderator = User::factory()->moderator()->create();
             $reporter = User::factory()->create();
 
             $mod = Mod::factory()->create();

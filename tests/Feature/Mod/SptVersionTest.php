@@ -144,9 +144,7 @@ describe('SPT version publish date visibility', function (): void {
     });
 
     it('shows all SPT versions to moderators', function (): void {
-        // Create moderator role and user
-        $moderatorRole = UserRole::factory()->create(['name' => 'Moderator']);
-        $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+        $moderator = User::factory()->moderator()->create();
 
         // Create published and unpublished versions
         $published = SptVersion::factory()->create(['version' => '1.0.0']);

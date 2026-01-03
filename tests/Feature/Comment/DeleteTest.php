@@ -287,8 +287,7 @@ describe('comment hierarchy', function (): void {
 
 describe('moderator and admin visibility', function (): void {
     it('shows deleted comment text to moderators in red', function (): void {
-        $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-        $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+        $moderator = User::factory()->moderator()->create();
         $commentAuthor = User::factory()->create();
         $mod = createPublishedMod();
 
@@ -474,8 +473,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('prevents moderators who are not mod owners from using mod owner soft delete action', function (): void {
-        $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-        $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+        $moderator = User::factory()->moderator()->create();
         $commenter = User::factory()->create();
         $mod = createPublishedMod();
 
@@ -663,8 +661,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('prevents mod owners from soft deleting comments made by moderators', function (): void {
-        $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-        $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+        $moderator = User::factory()->moderator()->create();
         $modOwner = User::factory()->create();
         $mod = createPublishedMod();
         $mod->owner_id = $modOwner->id;
@@ -710,8 +707,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('prevents profile owners from soft deleting comments made by moderators', function (): void {
-        $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-        $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+        $moderator = User::factory()->moderator()->create();
         $profileOwner = User::factory()->create();
 
         $comment = Comment::factory()->create([
@@ -910,8 +906,7 @@ describe('mod owner restore', function (): void {
     });
 
     it('prevents mod owners from restoring deleted comments made by moderators', function (): void {
-        $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-        $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+        $moderator = User::factory()->moderator()->create();
         $modOwner = User::factory()->create();
         $mod = createPublishedMod();
         $mod->owner_id = $modOwner->id;
@@ -959,8 +954,7 @@ describe('mod owner restore', function (): void {
     });
 
     it('prevents profile owners from restoring deleted comments made by moderators', function (): void {
-        $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-        $moderator = User::factory()->create(['user_role_id' => $moderatorRole->id]);
+        $moderator = User::factory()->moderator()->create();
         $profileOwner = User::factory()->create();
 
         $comment = Comment::factory()->create([

@@ -104,10 +104,7 @@ it('allows administrators to view banned user profile with ban information', fun
 });
 
 it('allows moderators to view banned user profile with ban information', function (): void {
-    $moderatorRole = UserRole::factory()->create(['name' => 'Moderator']);
-    $moderator = User::factory()->create();
-    $moderator->assignRole($moderatorRole);
-
+    $moderator = User::factory()->moderator()->create();
     $bannedUser = User::factory()->create();
     $bannedUser->ban([
         'comment' => 'Spam posting',

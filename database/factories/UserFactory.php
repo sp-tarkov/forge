@@ -84,6 +84,20 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user should be a senior moderator.
+     */
+    public function seniorModerator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_role_id' => \App\Models\UserRole::query()
+                ->firstOrCreate(
+                    ['name' => 'Senior Moderator'],
+                    \App\Models\UserRole::factory()->seniorModerator()->make()->toArray()
+                )->id,
+        ]);
+    }
+
+    /**
      * Indicate that the user should be a staff member.
      */
     public function admin(): static

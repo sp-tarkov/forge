@@ -29,6 +29,11 @@ class BlockingPolicy
             return Response::deny('You cannot block staff members.');
         }
 
+        // Cannot block senior moderators
+        if ($target->isSeniorMod()) {
+            return Response::deny('You cannot block senior moderators.');
+        }
+
         // Cannot block moderators
         if ($target->isMod()) {
             return Response::deny('You cannot block moderators.');

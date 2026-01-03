@@ -125,28 +125,42 @@ class UserPolicy
     /**
      * Determine whether the user can ban another user.
      *
-     * Only administrators can ban users, with the following restrictions:
-     * - Cannot ban other administrators
-     * - Cannot ban themselves
+     * Staff can ban any non-staff user.
+     * Senior Moderators can ban regular users and Moderators, but not:
+     * - Staff members
+     * - Other Senior Moderators
+     * - Themselves
      */
     public function ban(User $user, User $targetUser): bool
     {
-        // Only administrators can ban users
-        if (! $user->isAdmin()) {
-            return false;
-        }
-
-        // Cannot ban other administrators
-        if ($targetUser->isAdmin()) {
-            return false;
-        }
-
         // Cannot ban yourself
         if ($user->id === $targetUser->id) {
             return false;
         }
 
-        return true;
+        // Staff can ban anyone except other staff
+        if ($user->isAdmin()) {
+            return ! $targetUser->isAdmin();
+        }
+
+        // Senior Moderators can ban regular users and Moderators only
+        if ($user->isSeniorMod()) {
+            // Cannot ban Staff
+            if ($targetUser->isAdmin()) {
+                return false;
+            }
+
+            // Cannot ban other Senior Moderators
+            if ($targetUser->isSeniorMod()) {
+                return false;
+            }
+
+            // Can ban Moderators and regular users
+            return true;
+        }
+
+        // Moderators and regular users cannot ban
+        return false;
     }
 
     /**

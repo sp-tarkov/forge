@@ -12,7 +12,6 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserBlock;
-use App\Models\UserRole;
 use App\Policies\UserPolicy;
 use App\Services\UserBlockingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,20 +58,25 @@ describe('User Blocking System', function (): void {
 
         it('prevents blocking administrators', function (): void {
             $user = User::factory()->create();
-            // Create admin role first
-            $adminRole = UserRole::query()->firstOrCreate(['id' => 1], ['name' => 'staff']);
-            $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
+            $admin = User::factory()->admin()->create();
 
             $this->actingAs($user);
 
             expect($user->can('block', $admin))->toBeFalse();
         });
 
+        it('prevents blocking senior moderators', function (): void {
+            $user = User::factory()->create();
+            $seniorMod = User::factory()->seniorModerator()->create();
+
+            $this->actingAs($user);
+
+            expect($user->can('block', $seniorMod))->toBeFalse();
+        });
+
         it('prevents blocking moderators', function (): void {
             $user = User::factory()->create();
-            // Create moderator role
-            $modRole = UserRole::query()->firstOrCreate(['id' => 2], ['name' => 'moderator']);
-            $moderator = User::factory()->create(['user_role_id' => $modRole->id]);
+            $moderator = User::factory()->moderator()->create();
 
             $this->actingAs($user);
 
