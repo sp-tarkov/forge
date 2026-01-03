@@ -84,15 +84,15 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the user should be an administrator.
+     * Indicate that the user should be a staff member.
      */
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
             'user_role_id' => \App\Models\UserRole::query()
                 ->firstOrCreate(
-                    ['name' => 'Administrator'],
-                    \App\Models\UserRole::factory()->administrator()->make()->toArray()
+                    ['name' => 'Staff'],
+                    \App\Models\UserRole::factory()->staff()->make()->toArray()
                 )->id,
         ]);
     }

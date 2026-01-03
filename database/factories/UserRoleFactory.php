@@ -27,14 +27,14 @@ class UserRoleFactory extends Factory
     }
 
     /**
-     * Define the "administrator" role.
+     * Define the "staff" role.
      */
-    public function administrator(): static
+    public function staff(): static
     {
         return $this->state(fn (array $attributes) => [
-            'name' => 'Administrator',
-            'short_name' => 'Admin',
-            'description' => 'An administrator has full access to the site.',
+            'name' => 'Staff',
+            'short_name' => 'Staff',
+            'description' => 'A staff member has full access to the site.',
             'color_class' => 'red',
             'icon' => 'shield-check',
         ]);

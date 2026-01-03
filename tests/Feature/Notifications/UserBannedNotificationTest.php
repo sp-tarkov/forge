@@ -151,7 +151,7 @@ describe('BanAction Integration', function (): void {
     it('sends notification when user is banned with duration', function (): void {
         Notification::fake();
 
-        $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'Staff']);
         $admin = User::factory()->create();
         $admin->assignRole($adminRole);
 
@@ -174,7 +174,7 @@ describe('BanAction Integration', function (): void {
     it('sends notification when user is banned permanently', function (): void {
         Notification::fake();
 
-        $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'Staff']);
         $admin = User::factory()->create();
         $admin->assignRole($adminRole);
 
@@ -195,7 +195,7 @@ describe('BanAction Integration', function (): void {
     it('sends notification regardless of user email preferences', function (): void {
         Notification::fake();
 
-        $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'Staff']);
         $admin = User::factory()->create();
         $admin->assignRole($adminRole);
 

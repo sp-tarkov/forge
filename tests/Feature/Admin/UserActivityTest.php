@@ -16,7 +16,7 @@ describe('UserActivity Component', function (): void {
     beforeEach(function (): void {
         // Create user roles if they don't exist
         UserRole::query()->firstOrCreate(['id' => 1], ['name' => 'Moderator']);
-        UserRole::query()->firstOrCreate(['id' => 2], ['name' => 'Administrator']);
+        UserRole::query()->firstOrCreate(['id' => 2], ['name' => 'Staff']);
 
         // Create a user with tracking events that have IP and browser info
         $this->user = User::factory()->create();

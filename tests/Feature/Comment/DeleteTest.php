@@ -309,7 +309,7 @@ describe('moderator and admin visibility', function (): void {
     });
 
     it('shows deleted comment text to administrators in red', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
         $commentAuthor = User::factory()->create();
         $mod = createPublishedMod();
@@ -497,7 +497,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('prevents admins who are not mod owners from using mod owner soft delete action', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
         $commenter = User::factory()->create();
         $mod = createPublishedMod();
@@ -520,7 +520,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('allows administrators who are mod owners to use mod owner soft delete', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $adminModOwner = User::factory()->create(['user_role_id' => $adminRole->id]);
         $commenter = User::factory()->create();
         $mod = createPublishedMod();
@@ -614,7 +614,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('allows administrator profile owners to soft delete comments on their profile', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $adminProfileOwner = User::factory()->create(['user_role_id' => $adminRole->id]);
         $commenter = User::factory()->create();
 
@@ -638,7 +638,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('prevents mod owners from soft deleting comments made by administrators', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
         $modOwner = User::factory()->create();
         $mod = createPublishedMod();
@@ -688,7 +688,7 @@ describe('mod owner soft deletion', function (): void {
     });
 
     it('prevents profile owners from soft deleting comments made by administrators', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
         $profileOwner = User::factory()->create();
 
@@ -860,7 +860,7 @@ describe('mod owner restore', function (): void {
     });
 
     it('allows administrator profile owners to restore comments on their profiles', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $adminProfileOwner = User::factory()->create(['user_role_id' => $adminRole->id]);
         $commenter = User::factory()->create();
 
@@ -884,7 +884,7 @@ describe('mod owner restore', function (): void {
     });
 
     it('prevents mod owners from restoring deleted comments made by administrators', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
         $modOwner = User::factory()->create();
         $mod = createPublishedMod();
@@ -936,7 +936,7 @@ describe('mod owner restore', function (): void {
     });
 
     it('prevents profile owners from restoring deleted comments made by administrators', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
         $profileOwner = User::factory()->create();
 

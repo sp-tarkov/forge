@@ -26,12 +26,12 @@ class UserSeeder extends Seeder
         $this->initializeFaker();
         $counts = $this->getDefaultCounts();
 
-        // Administrator Users
-        $administratorRole = UserRole::factory()->administrator()->create();
-        $this->testAccount = User::factory()->for($administratorRole, 'role')->create([
+        // Staff Users
+        $staffRole = UserRole::factory()->staff()->create();
+        $this->testAccount = User::factory()->for($staffRole, 'role')->create([
             'email' => 'test@example.com',
         ]);
-        User::factory($counts['administrator'] - 1)->for($administratorRole, 'role')->create();
+        User::factory($counts['staff'] - 1)->for($staffRole, 'role')->create();
 
         $this->command->outputComponents()->info("Test account created: {$this->testAccount->email}");
 

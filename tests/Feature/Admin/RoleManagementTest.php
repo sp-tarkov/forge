@@ -71,7 +71,7 @@ describe('RoleManagement Page Display', function (): void {
         $roles = $component->get('roles');
 
         expect($roles->count())->toBeGreaterThanOrEqual(2);
-        expect($roles->pluck('name')->toArray())->toContain('Administrator', 'Moderator');
+        expect($roles->pluck('name')->toArray())->toContain('Staff', 'Moderator');
     });
 });
 
@@ -209,7 +209,7 @@ describe('RoleManagement Role Assignment', function (): void {
     it('can change role from one to another', function (): void {
         $admin = User::factory()->admin()->create();
         $moderator = User::factory()->moderator()->create();
-        $adminRole = UserRole::query()->where('name', 'Administrator')->first();
+        $adminRole = UserRole::query()->where('name', 'Staff')->first();
 
         Livewire::actingAs($admin)
             ->test(RoleManagement::class)
@@ -357,7 +357,7 @@ describe('RoleManagement Computed Properties', function (): void {
         $roles = $component->get('roles');
 
         expect($roles->count())->toBeGreaterThanOrEqual(2);
-        expect($roles->pluck('name')->toArray())->toContain('Administrator', 'Moderator');
+        expect($roles->pluck('name')->toArray())->toContain('Staff', 'Moderator');
     });
 
     it('returns selected user property when user is selected', function (): void {

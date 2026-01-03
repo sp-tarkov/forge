@@ -195,7 +195,7 @@ class AddonPolicy
 
         // User must be owner/author of parent mod, moderator, or admin
         if (! ($user->isModOrAdmin() || $addon->mod->isAuthorOrOwner($user))) {
-            return Response::deny(__('You must be an owner or author of the parent mod, or a moderator/administrator to attach this addon.'));
+            return Response::deny(__('You must be an owner or author of the parent mod, or a moderator/staff member to attach this addon.'));
         }
 
         return Response::allow();
@@ -223,7 +223,7 @@ class AddonPolicy
 
         // User must be owner/author of parent mod, moderator, or admin
         if (! ($user->isModOrAdmin() || $addon->mod->isAuthorOrOwner($user))) {
-            return Response::deny(__('You must be an owner or author of the parent mod, or a moderator/administrator to detach this addon.'));
+            return Response::deny(__('You must be an owner or author of the parent mod, or a moderator/staff member to detach this addon.'));
         }
 
         return Response::allow();

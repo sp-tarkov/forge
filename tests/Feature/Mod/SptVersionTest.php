@@ -126,7 +126,7 @@ describe('SPT version publish date visibility', function (): void {
 
     it('shows all SPT versions to administrators', function (): void {
         // Create admin role and user
-        $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'Staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
 
         // Create published and unpublished versions
@@ -461,8 +461,8 @@ describe('Mod filtering with SPT version caching', function (): void {
         Cache::flush();
 
         // Create UserRoles if they don't exist
-        UserRole::query()->firstOrCreate(['name' => 'Administrator'], [
-            'short_name' => 'Admin',
+        UserRole::query()->firstOrCreate(['name' => 'Staff'], [
+            'short_name' => 'Staff',
             'description' => 'Full access',
             'color_class' => 'sky',
         ]);

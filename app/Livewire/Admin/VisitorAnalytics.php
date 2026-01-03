@@ -101,7 +101,7 @@ class VisitorAnalytics extends Component
      */
     public function mount(): void
     {
-        abort_unless(auth()->user()?->isAdmin(), 403, 'Access denied. Administrator privileges required.');
+        abort_unless(auth()->user()?->isAdmin(), 403, 'Access denied. Staff privileges required.');
 
         // Set default date range (last month)
         $this->dateTo = now()->format('Y-m-d');

@@ -104,7 +104,7 @@ enum TrackingEventType: string
     /** Account management events */
     case ACCOUNT_DELETE = 'account_delete';
 
-    /** Moderator/Administrator actions */
+    /** Moderator/Staff actions */
     case USER_BAN = 'user_ban';
 
     case USER_UNBAN = 'user_unban';

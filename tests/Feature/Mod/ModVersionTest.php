@@ -851,7 +851,7 @@ describe('Published Version Visibility', function (): void {
             'spt_version_constraint' => '', // Empty constraint means no SPT versions
         ]);
 
-        // Administrator should have access and see warnings about regular user visibility
+        // Staff should have access and see warnings about regular user visibility
         $this->actingAs($admin)
             ->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]))
             ->assertOk()

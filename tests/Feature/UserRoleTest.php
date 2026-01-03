@@ -10,12 +10,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('displays user role with color and icon', function (): void {
-    $role = UserRole::factory()->administrator()->create();
+    $role = UserRole::factory()->staff()->create();
     $user = User::factory()->create(['user_role_id' => $role->id]);
 
     expect($user->role->color_class)->toBe('red')
         ->and($user->role->icon)->toBe('shield-check')
-        ->and($user->role->name)->toBe('Administrator');
+        ->and($user->role->name)->toBe('Staff');
 });
 
 it('displays moderator role with color and icon', function (): void {
@@ -40,7 +40,7 @@ it('allows creating custom roles with different colors and icons', function (): 
 });
 
 it('includes icon in api role resource', function (): void {
-    $role = UserRole::factory()->administrator()->create();
+    $role = UserRole::factory()->staff()->create();
 
     $resource = new RoleResource($role);
     $array = $resource->toArray(request());

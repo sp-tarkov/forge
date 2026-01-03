@@ -77,7 +77,7 @@ class UserManagement extends Component
      */
     public function mount(): void
     {
-        abort_unless(auth()->user()?->isAdmin(), 403, 'Access denied. Administrator privileges required.');
+        abort_unless(auth()->user()?->isAdmin(), 403, 'Access denied. Staff privileges required.');
     }
 
     /**
@@ -154,7 +154,7 @@ class UserManagement extends Component
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
-            flash()->error('Cannot ban other administrators.');
+            flash()->error('Cannot ban other staff members.');
 
             return;
         }
@@ -221,7 +221,7 @@ class UserManagement extends Component
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
-            flash()->error('Cannot ban other administrators.');
+            flash()->error('Cannot ban other staff members.');
             $this->closeBanModal();
 
             return;

@@ -26,7 +26,7 @@ class BlockingPolicy
 
         // Cannot block admins
         if ($target->isAdmin()) {
-            return Response::deny('You cannot block administrators.');
+            return Response::deny('You cannot block staff members.');
         }
 
         // Cannot block moderators

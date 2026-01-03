@@ -60,7 +60,7 @@ describe('User Blocking System', function (): void {
         it('prevents blocking administrators', function (): void {
             $user = User::factory()->create();
             // Create admin role first
-            $adminRole = UserRole::query()->firstOrCreate(['id' => 1], ['name' => 'administrator']);
+            $adminRole = UserRole::query()->firstOrCreate(['id' => 1], ['name' => 'staff']);
             $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
 
             $this->actingAs($user);

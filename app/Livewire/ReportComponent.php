@@ -175,7 +175,7 @@ class ReportComponent extends Component
             60, // Seconds
             fn () => User::query()
                 ->whereHas('role', function (Builder $query): void {
-                    $query->whereIn('name', ['moderator', 'administrator']);
+                    $query->whereIn('name', ['moderator', 'staff']);
                 })
                 ->pluck('id')
                 ->toArray()

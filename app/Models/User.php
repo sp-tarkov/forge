@@ -460,14 +460,14 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
-     * Check if the user has the role of an administrator.
+     * Check if the user has the role of a staff member.
      */
     public function isAdmin(): bool
     {
         // Cache role lookup for performance
         $roleName = $this->rememberRoleName();
 
-        return $roleName === 'administrator';
+        return $roleName === 'staff';
     }
 
     /**

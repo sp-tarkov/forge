@@ -11,7 +11,7 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 it('shows ban button for admin viewing regular user', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -26,7 +26,7 @@ it('shows ban button for admin viewing regular user', function (): void {
 });
 
 it('shows unban button for admin viewing banned user', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -64,7 +64,7 @@ it('does not show ban buttons for regular users', function (): void {
 });
 
 it('does not allow admin to ban other admin', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
 
     $admin1 = User::factory()->create();
     $admin1->assignRole($adminRole);
@@ -79,7 +79,7 @@ it('does not allow admin to ban other admin', function (): void {
 });
 
 it('does not allow admin to ban themselves', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -90,7 +90,7 @@ it('does not allow admin to ban themselves', function (): void {
 });
 
 it('allows admin to ban user with duration', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -112,7 +112,7 @@ it('allows admin to ban user with duration', function (): void {
 });
 
 it('allows admin to ban user permanently', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -131,7 +131,7 @@ it('allows admin to ban user permanently', function (): void {
 });
 
 it('allows admin to unban user', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -148,7 +148,7 @@ it('allows admin to unban user', function (): void {
 });
 
 it('opens ban modal when clicking ban button', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -162,7 +162,7 @@ it('opens ban modal when clicking ban button', function (): void {
 });
 
 it('opens unban modal when clicking unban button', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -177,7 +177,7 @@ it('opens unban modal when clicking unban button', function (): void {
 });
 
 it('requires duration selection for ban', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 

@@ -614,7 +614,7 @@ describe('ReportComponent', function (): void {
 
             // Create user roles
             $moderatorRole = UserRole::factory()->create(['name' => 'moderator']);
-            $adminRole = UserRole::factory()->create(['name' => 'administrator']);
+            $adminRole = UserRole::factory()->create(['name' => 'staff']);
             $userRole = UserRole::factory()->create(['name' => 'user']);
 
             // Create users with different roles
