@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.369.5",
+            "version": "3.369.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "7cb482768899d510e8bcb3e9ef685d2ed0afcbfe"
+                "reference": "b1e1846a4b6593b6916764d86fc0890a31727370"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7cb482768899d510e8bcb3e9ef685d2ed0afcbfe",
-                "reference": "7cb482768899d510e8bcb3e9ef685d2ed0afcbfe",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/b1e1846a4b6593b6916764d86fc0890a31727370",
+                "reference": "b1e1846a4b6593b6916764d86fc0890a31727370",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.5"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.6"
             },
-            "time": "2025-12-30T19:07:16+00:00"
+            "time": "2026-01-02T19:09:23+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -4450,16 +4450,16 @@
         },
         {
             "name": "mchev/banhammer",
-            "version": "v2.4.2",
+            "version": "v2.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mchev/banhammer.git",
-                "reference": "cba7fb6b3307c8a48c39f5c633586fbff4578eee"
+                "reference": "eeb650c641c44c2fbfa2d8d5f645ce4fa693a4c8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mchev/banhammer/zipball/cba7fb6b3307c8a48c39f5c633586fbff4578eee",
-                "reference": "cba7fb6b3307c8a48c39f5c633586fbff4578eee",
+                "url": "https://api.github.com/repos/mchev/banhammer/zipball/eeb650c641c44c2fbfa2d8d5f645ce4fa693a4c8",
+                "reference": "eeb650c641c44c2fbfa2d8d5f645ce4fa693a4c8",
                 "shasum": ""
             },
             "require": {
@@ -4506,7 +4506,7 @@
             ],
             "support": {
                 "issues": "https://github.com/mchev/banhammer/issues",
-                "source": "https://github.com/mchev/banhammer/tree/v2.4.2"
+                "source": "https://github.com/mchev/banhammer/tree/v2.4.3"
             },
             "funding": [
                 {
@@ -4514,7 +4514,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-07-28T14:11:40+00:00"
+            "time": "2026-01-04T18:42:56+00:00"
         },
         {
             "name": "meilisearch/meilisearch-php",
