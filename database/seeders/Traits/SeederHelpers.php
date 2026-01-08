@@ -149,7 +149,7 @@ trait SeederHelpers
     {
         return [
             'license' => 20,
-            'administrator' => 5,
+            'staff' => 5,
             'moderator' => 5,
             'user' => 100,
             'mod' => 200,

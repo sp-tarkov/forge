@@ -27,16 +27,30 @@ class UserRoleFactory extends Factory
     }
 
     /**
-     * Define the "administrator" role.
+     * Define the "staff" role.
      */
-    public function administrator(): static
+    public function staff(): static
     {
         return $this->state(fn (array $attributes) => [
-            'name' => 'Administrator',
-            'short_name' => 'Admin',
-            'description' => 'An administrator has full access to the site.',
+            'name' => 'Staff',
+            'short_name' => 'Staff',
+            'description' => 'A staff member has full access to the site.',
             'color_class' => 'red',
             'icon' => 'shield-check',
+        ]);
+    }
+
+    /**
+     * Define the "senior moderator" role.
+     */
+    public function seniorModerator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Senior Moderator',
+            'short_name' => 'Sr. Mod',
+            'description' => 'A senior moderator can moderate content and ban users.',
+            'color_class' => 'orange',
+            'icon' => 'shield-exclamation',
         ]);
     }
 
@@ -48,7 +62,7 @@ class UserRoleFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'name' => 'Moderator',
             'short_name' => 'Mod',
-            'description' => 'A moderator has the ability to moderate user content.',
+            'description' => 'A moderator can moderate user content.',
             'color_class' => 'orange',
             'icon' => 'wrench',
         ]);

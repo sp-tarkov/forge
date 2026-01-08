@@ -7,7 +7,7 @@
                 inline="inline"
             >
                 <flux:callout.text>
-                    {{ __('Comments have been disabled for this addon and are not visible to normal users. As :role, you can still view and manage all comments.', ['role' => auth()->user()?->isModOrAdmin() ? 'an administrator or moderator' : 'the addon owner or author']) }}
+                    {{ __('Comments have been disabled for this addon and are not visible to normal users. As :role, you can still view and manage all comments.', ['role' => auth()->user()?->isModOrAdmin() ? 'a staff member or moderator' : 'the addon owner or author']) }}
                 </flux:callout.text>
             </flux:callout>
         </div>

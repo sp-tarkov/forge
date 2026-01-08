@@ -232,28 +232,30 @@
                                                             </flux:button>
                                                         @endcan
                                                     @endif
-                                                    @if ($report->reportable->owner->isBanned())
-                                                        @can('unban', $report->reportable->owner)
-                                                            <flux:button
-                                                                size="xs"
-                                                                variant="filled"
-                                                                icon="shield-check"
-                                                                wire:click="openActionModal({{ $report->id }}, 'unban_user')"
-                                                            >
-                                                                Unban Owner
-                                                            </flux:button>
-                                                        @endcan
-                                                    @else
-                                                        @can('ban', $report->reportable->owner)
-                                                            <flux:button
-                                                                size="xs"
-                                                                variant="danger"
-                                                                icon="no-symbol"
-                                                                wire:click="openActionModal({{ $report->id }}, 'ban_user')"
-                                                            >
-                                                                Ban Owner
-                                                            </flux:button>
-                                                        @endcan
+                                                    @if ($report->reportable->owner)
+                                                        @if ($report->reportable->owner->isBanned())
+                                                            @can('unban', $report->reportable->owner)
+                                                                <flux:button
+                                                                    size="xs"
+                                                                    variant="filled"
+                                                                    icon="shield-check"
+                                                                    wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                                >
+                                                                    Unban Owner
+                                                                </flux:button>
+                                                            @endcan
+                                                        @else
+                                                            @can('ban', $report->reportable->owner)
+                                                                <flux:button
+                                                                    size="xs"
+                                                                    variant="danger"
+                                                                    icon="no-symbol"
+                                                                    wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                                >
+                                                                    Ban Owner
+                                                                </flux:button>
+                                                            @endcan
+                                                        @endif
                                                     @endif
                                                 @elseif ($report->reportable_type === 'App\Models\Addon')
                                                     @if ($report->reportable->disabled)
@@ -279,28 +281,30 @@
                                                             </flux:button>
                                                         @endcan
                                                     @endif
-                                                    @if ($report->reportable->owner->isBanned())
-                                                        @can('unban', $report->reportable->owner)
-                                                            <flux:button
-                                                                size="xs"
-                                                                variant="filled"
-                                                                icon="shield-check"
-                                                                wire:click="openActionModal({{ $report->id }}, 'unban_user')"
-                                                            >
-                                                                Unban Owner
-                                                            </flux:button>
-                                                        @endcan
-                                                    @else
-                                                        @can('ban', $report->reportable->owner)
-                                                            <flux:button
-                                                                size="xs"
-                                                                variant="danger"
-                                                                icon="no-symbol"
-                                                                wire:click="openActionModal({{ $report->id }}, 'ban_user')"
-                                                            >
-                                                                Ban Owner
-                                                            </flux:button>
-                                                        @endcan
+                                                    @if ($report->reportable->owner)
+                                                        @if ($report->reportable->owner->isBanned())
+                                                            @can('unban', $report->reportable->owner)
+                                                                <flux:button
+                                                                    size="xs"
+                                                                    variant="filled"
+                                                                    icon="shield-check"
+                                                                    wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                                >
+                                                                    Unban Owner
+                                                                </flux:button>
+                                                            @endcan
+                                                        @else
+                                                            @can('ban', $report->reportable->owner)
+                                                                <flux:button
+                                                                    size="xs"
+                                                                    variant="danger"
+                                                                    icon="no-symbol"
+                                                                    wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                                >
+                                                                    Ban Owner
+                                                                </flux:button>
+                                                            @endcan
+                                                        @endif
                                                     @endif
                                                 @elseif ($report->reportable_type === 'App\Models\Comment')
                                                     @can('softDelete', $report->reportable)
@@ -810,7 +814,7 @@
                                     {{ __('Information') }}
                                 </flux:text>
                                 <flux:text class="text-amber-700 dark:text-amber-300 text-sm mt-1">
-                                    {{ __('This will soft delete the comment. It can be restored by an administrator if needed.') }}
+                                    {{ __('This will soft delete the comment. It can be restored by a staff member if needed.') }}
                                 </flux:text>
                             </div>
                         </div>
@@ -960,7 +964,7 @@
                         @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon')
                             {{ __('This action can be reversed by disabling again') }}
                         @elseif ($selectedAction === 'delete_comment')
-                            {{ __('This action can be reversed by an administrator') }}
+                            {{ __('This action can be reversed by a staff member') }}
                         @elseif ($selectedAction === 'restore_comment')
                             {{ __('This action can be reversed by soft-deleting again') }}
                         @else

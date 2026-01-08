@@ -81,7 +81,7 @@ it('shows banned page without expiry date for permanent bans', function (): void
 });
 
 it('allows administrators to view banned user profile with ban information', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -104,10 +104,7 @@ it('allows administrators to view banned user profile with ban information', fun
 });
 
 it('allows moderators to view banned user profile with ban information', function (): void {
-    $moderatorRole = UserRole::factory()->create(['name' => 'Moderator']);
-    $moderator = User::factory()->create();
-    $moderator->assignRole($moderatorRole);
-
+    $moderator = User::factory()->moderator()->create();
     $bannedUser = User::factory()->create();
     $bannedUser->ban([
         'comment' => 'Spam posting',
@@ -127,7 +124,7 @@ it('allows moderators to view banned user profile with ban information', functio
 });
 
 it('shows permanent ban type to admins when no expiry date', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -147,7 +144,7 @@ it('shows permanent ban type to admins when no expiry date', function (): void {
 });
 
 it('shows banned date information to admins', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 
@@ -164,7 +161,7 @@ it('shows banned date information to admins', function (): void {
 });
 
 it('does not show ban information to admins viewing non-banned users', function (): void {
-    $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+    $adminRole = UserRole::factory()->create(['name' => 'Staff']);
     $admin = User::factory()->create();
     $admin->assignRole($adminRole);
 

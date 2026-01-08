@@ -59,7 +59,7 @@
             @endif
 
             @if ($permissions->can($comment->id, 'viewActions'))
-                <flux:menu.group heading="Administrator Actions">
+                <flux:menu.group heading="Staff Actions">
                     @if ($permissions->can($comment->id, 'pin'))
                         @if ($comment->isPinned())
                             <flux:menu.item

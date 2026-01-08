@@ -38,7 +38,7 @@ describe('ModFilter with SPT version publish dates', function (): void {
     });
 
     it('includes mods with unpublished SPT versions for administrators', function (): void {
-        $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'Staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
 
         $category = ModCategory::factory()->create();

@@ -325,7 +325,7 @@
                                         value="true"
                                         wire:model.blur="commentsDisabled"
                                         label="Disable Comments"
-                                        description="When enabled, normal users will not be able to view or create comments on this addon. Administrators and moderators will still have full access."
+                                        description="When enabled, normal users will not be able to view or create comments on this addon. Staff and moderators will still have full access."
                                     />
                                 </flux:checkbox.group>
                             </flux:field>

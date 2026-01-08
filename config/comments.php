@@ -30,7 +30,7 @@ return [
     | Rate Limiting
     |--------------------------------------------------------------------------
     |
-    | Configuration for comment creation rate limiting. Administrators and
+    | Configuration for comment creation rate limiting. Staff and
     | moderators are automatically exempt from these limits.
     |
     */

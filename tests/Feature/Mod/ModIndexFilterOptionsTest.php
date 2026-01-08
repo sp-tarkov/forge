@@ -51,7 +51,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         SptVersion::factory()->unpublished()->create(['version' => '4.0.0']);
 
         // Create admin user
-        $adminRole = UserRole::factory()->create(['name' => 'Administrator']);
+        $adminRole = UserRole::factory()->create(['name' => 'Staff']);
         $admin = User::factory()->create(['user_role_id' => $adminRole->id]);
 
         // Create category needed for the component

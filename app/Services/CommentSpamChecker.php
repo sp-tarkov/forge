@@ -250,7 +250,7 @@ class CommentSpamChecker
         ];
 
         if ($comment->user->isModOrAdmin()) {
-            $payload['user_role'] = 'administrator';
+            $payload['user_role'] = 'staff';
         }
 
         // Add test flag for non-production environments
