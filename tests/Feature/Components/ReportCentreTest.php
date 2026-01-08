@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
 use App\Livewire\ReportCentre;
+use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\Report;
@@ -520,4 +521,56 @@ it('can open link existing action modal', function (): void {
         ->call('openLinkActionModal', $report->id)
         ->assertSet('activeReportId', $report->id)
         ->assertSet('showLinkActionModal', true);
+});
+
+it('renders without error when mod owner is deleted', function (): void {
+    $reporter = User::factory()->create();
+    $owner = User::factory()->create();
+    $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Mod::class,
+        'reportable_id' => $mod->id,
+        'status' => ReportStatus::PENDING,
+        'assignee_id' => $this->adminUser->id,
+    ]);
+
+    // Delete the owner to simulate a deleted user
+    $owner->forceDelete();
+
+    $this->actingAs($this->adminUser);
+
+    // The component should render without throwing "Call to member function isBanned() on null"
+    Livewire::test(ReportCentre::class)
+        ->assertSuccessful()
+        ->assertSee($mod->name);
+});
+
+it('renders without error when addon owner is deleted', function (): void {
+    $reporter = User::factory()->create();
+    $owner = User::factory()->create();
+    $mod = Mod::factory()->create();
+    $addon = Addon::factory()->create([
+        'owner_id' => $owner->id,
+        'mod_id' => $mod->id,
+    ]);
+
+    $report = Report::factory()->create([
+        'reporter_id' => $reporter->id,
+        'reportable_type' => Addon::class,
+        'reportable_id' => $addon->id,
+        'status' => ReportStatus::PENDING,
+        'assignee_id' => $this->adminUser->id,
+    ]);
+
+    // Delete the owner to simulate a deleted user
+    $owner->forceDelete();
+
+    $this->actingAs($this->adminUser);
+
+    // The component should render without throwing "Call to member function isBanned() on null"
+    Livewire::test(ReportCentre::class)
+        ->assertSuccessful()
+        ->assertSee($addon->name);
 });
