@@ -140,7 +140,8 @@ describe('mod deletion from mod detail page', function (): void {
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
-            ->call('deleteMod', $mod->id);
+            ->call('deleteMod', $mod->id, 'mod.show')
+            ->assertRedirect(route('mods'));
 
         expect(Mod::query()->find($mod->id))->toBeNull();
     });

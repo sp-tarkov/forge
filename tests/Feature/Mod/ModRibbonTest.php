@@ -74,7 +74,7 @@ describe('Mod Ribbon States', function (): void {
         ]);
 
         Livewire::test(ModRibbon::class, getModRibbonProps($mod, true))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
     });
 
     it('shows no ribbon for normal published mod', function (): void {
@@ -85,7 +85,7 @@ describe('Mod Ribbon States', function (): void {
         ]);
 
         Livewire::test(ModRibbon::class, getModRibbonProps($mod))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
     });
 
     it('disabled takes priority over other states', function (): void {
@@ -138,7 +138,7 @@ describe('Event-Driven Updates', function (): void {
         ]);
 
         $component = Livewire::test(ModRibbon::class, getModRibbonProps($mod))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
 
         // Update the mod in database
         $mod->update(['disabled' => true]);

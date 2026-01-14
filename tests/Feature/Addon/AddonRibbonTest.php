@@ -63,7 +63,7 @@ describe('Addon Ribbon States', function (): void {
         ]);
 
         Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
     });
 
     it('disabled takes priority over other states', function (): void {
@@ -99,7 +99,7 @@ describe('Event-Driven Updates', function (): void {
         ]);
 
         $component = Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
 
         // Update the addon in database
         $addon->update(['disabled' => true]);

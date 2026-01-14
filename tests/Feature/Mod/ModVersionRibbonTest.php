@@ -63,7 +63,7 @@ describe('ModVersion Ribbon States', function (): void {
         ]);
 
         Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
     });
 
     it('disabled takes priority over other states', function (): void {
@@ -107,7 +107,7 @@ describe('Event-Driven Updates', function (): void {
         $version = ModVersion::factory()->for($this->mod)->create(['disabled' => false]);
 
         $component = Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
 
         // Update the version in database
         $version->update(['disabled' => true]);

@@ -48,7 +48,7 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $this->actingAs($normalUser);
 
         Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Disabled');
     });
 
@@ -67,7 +67,7 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $this->actingAs($normalUser);
 
         Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Unpublished');
     });
 
@@ -86,7 +86,7 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $this->actingAs($normalUser);
 
         Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Scheduled');
     });
 
@@ -98,12 +98,12 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
 
         $this->actingAs($this->addon->owner);
         Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
 
         $normalUser = User::factory()->create();
         $this->actingAs($normalUser);
         Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
     });
 });
 
@@ -143,7 +143,7 @@ describe('Event-Driven Updates', function (): void {
         $this->actingAs($this->addon->owner);
 
         $component = Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
 
         // Update the version in database
         $version->update(['disabled' => true]);

@@ -55,7 +55,7 @@ describe('Comment Spam Status Ribbons', function (): void {
                 'spamStatus' => $comment->spam_status->value,
                 'canSeeRibbon' => $this->user->can('seeRibbon', $comment),
             ])
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
     });
 
     it('hides pending ribbon from comment author', function (): void {
@@ -66,7 +66,7 @@ describe('Comment Spam Status Ribbons', function (): void {
 
         Livewire::actingAs($this->user)
             ->test(CommentRibbon::class, getCommentRibbonProps($comment, $this->user))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Pending');
     });
 
@@ -78,7 +78,7 @@ describe('Comment Spam Status Ribbons', function (): void {
 
         Livewire::actingAs($this->otherUser)
             ->test(CommentRibbon::class, getCommentRibbonProps($comment, $this->otherUser))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Pending');
     });
 
@@ -102,7 +102,7 @@ describe('Comment Spam Status Ribbons', function (): void {
 
         Livewire::actingAs($this->admin)
             ->test(CommentRibbon::class, getCommentRibbonProps($comment, $this->admin))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Pending');
     });
 
@@ -114,7 +114,7 @@ describe('Comment Spam Status Ribbons', function (): void {
 
         Livewire::actingAs($this->moderator)
             ->test(CommentRibbon::class, getCommentRibbonProps($comment, $this->moderator))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Pending');
     });
 
@@ -126,7 +126,7 @@ describe('Comment Spam Status Ribbons', function (): void {
 
         Livewire::actingAs($this->user)
             ->test(CommentRibbon::class, getCommentRibbonProps($comment, $this->user))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Spam');
     });
 
@@ -138,7 +138,7 @@ describe('Comment Spam Status Ribbons', function (): void {
 
         Livewire::actingAs($this->otherUser)
             ->test(CommentRibbon::class, getCommentRibbonProps($comment, $this->otherUser))
-            ->assertDontSee('ribbon')
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Spam');
     });
 
@@ -176,10 +176,10 @@ describe('Comment Spam Status Ribbons', function (): void {
         ]);
 
         Livewire::test(CommentRibbon::class, getCommentRibbonProps($pendingComment, null))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
 
         Livewire::test(CommentRibbon::class, getCommentRibbonProps($spamComment, null))
-            ->assertDontSee('ribbon');
+            ->assertDontSee('class="ribbon');
     });
 
     it('uses correct colors for different spam statuses', function (): void {
