@@ -16,7 +16,6 @@ return [
     */
 
     'component_locations' => [
-        resource_path('views/components'),
         resource_path('views/livewire'),
     ],
 
@@ -46,7 +45,7 @@ return [
     |
     */
 
-    'component_layout' => 'components.layouts.base',
+    'component_layout' => 'layouts::base',
 
     /*
     |---------------------------------------------------------------------------
@@ -71,8 +70,8 @@ return [
     */
 
     'make_command' => [
-        'type' => 'class', // Options: 'sfc', 'mfc', 'class'
-        'emoji' => false, // Options: true, false
+        'type' => 'sfc', // Options: 'sfc', 'mfc', 'class'
+        'emoji' => true, // Options: true, false
     ],
 
     /*

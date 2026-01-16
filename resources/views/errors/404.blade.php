@@ -1,4 +1,4 @@
-<x-layouts.base title="Page Not Found - {{ config('app.name') }}">
+<x-layouts::base title="Page Not Found - {{ config('app.name') }}">
     <div class="min-h-[60vh] flex items-center justify-center px-4">
         <div class="max-w-2xl w-full">
             <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 md:p-12">
@@ -49,4 +49,4 @@
             </div>
         </div>
     </div>
-</x-layouts.base>
+</x-layouts::base>

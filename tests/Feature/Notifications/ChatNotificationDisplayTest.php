@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NotificationCenter;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -32,7 +31,7 @@ it('displays chat message notifications with correct details', function (): void
     $recipient->notify(new NewChatMessageNotification($conversation, collect([$message])));
 
     Livewire::actingAs($recipient)
-        ->test(NotificationCenter::class)
+        ->test('notification-center')
         ->assertSee('John Doe')
         ->assertSee('sent you a')
         ->assertSee('new message')
@@ -58,7 +57,7 @@ it('displays multiple message count correctly', function (): void {
     $recipient->notify(new NewChatMessageNotification($conversation, $messages));
 
     Livewire::actingAs($recipient)
-        ->test(NotificationCenter::class)
+        ->test('notification-center')
         ->assertSee('Jane Smith')
         ->assertSee('sent you')
         ->assertSee('3 new messages')
@@ -83,7 +82,7 @@ it('shows correct unread state for chat notifications', function (): void {
     $notificationId = $recipient->notifications()->first()->id;
 
     $component = Livewire::actingAs($recipient)
-        ->test(NotificationCenter::class);
+        ->test('notification-center');
 
     // Check initial unread state - blue left border indicates unread
     $component->assertSeeHtml('bg-blue-500') // Unread indicator bar
@@ -114,7 +113,7 @@ it('redirects to conversation when notification is reviewed', function (): void 
     $notificationId = $recipient->notifications()->first()->id;
 
     Livewire::actingAs($recipient)
-        ->test(NotificationCenter::class)
+        ->test('notification-center')
         ->call('reviewNotification', $notificationId)
         ->assertRedirect($conversation->url);
 });
@@ -138,7 +137,7 @@ it('correctly handles notifications when sender name is provided', function (): 
     $recipient->notify(new NewChatMessageNotification($conversation, collect([$message])));
 
     Livewire::actingAs($recipient)
-        ->test(NotificationCenter::class)
+        ->test('notification-center')
         ->assertSee('John Smith')
         ->assertSee('sent you a')
         ->assertSee('new message')

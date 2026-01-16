@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\FikaCompatibility;
-use App\Livewire\Page\Mod\Edit;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -360,7 +359,7 @@ describe('mod GUID validation', function (): void {
         $this->actingAs($user);
 
         // Attempt to edit the second mod to use the first mod's GUID
-        Livewire::test(Edit::class, ['modId' => $modToEdit->id])
+        Livewire::test('pages::mod.edit', ['modId' => $modToEdit->id])
             ->set('name', 'Updated Mod')
             ->set('guid', $existingMod->guid)
             ->set('teaser', 'Updated teaser')
@@ -388,7 +387,7 @@ describe('mod GUID validation', function (): void {
         $this->actingAs($user);
 
         // Edit the mod keeping the same GUID
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->set('name', 'Updated Mod Name')
             ->set('guid', $mod->guid)
             ->set('teaser', 'Updated teaser')

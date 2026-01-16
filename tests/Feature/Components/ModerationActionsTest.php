@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
-use App\Livewire\Admin\ModerationActions;
 use App\Models\Mod;
 use App\Models\TrackingEvent;
 use App\Models\User;
@@ -21,21 +20,21 @@ beforeEach(function (): void {
 it('requires moderator or admin access', function (): void {
     $this->actingAs($this->regularUser);
 
-    Livewire::test(ModerationActions::class)
+    Livewire::test('pages::admin.moderation-actions')
         ->assertStatus(403);
 });
 
 it('allows moderator access', function (): void {
     $this->actingAs($this->modUser);
 
-    Livewire::test(ModerationActions::class)
+    Livewire::test('pages::admin.moderation-actions')
         ->assertStatus(200);
 });
 
 it('allows admin access', function (): void {
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ModerationActions::class)
+    Livewire::test('pages::admin.moderation-actions')
         ->assertStatus(200);
 });
 
@@ -51,7 +50,7 @@ it('displays moderation actions', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ModerationActions::class)
+    Livewire::test('pages::admin.moderation-actions')
         ->assertSee('Disabled mod');
 });
 
@@ -76,7 +75,7 @@ it('can filter by event type', function (): void {
     $this->actingAs($this->adminUser);
 
     // Without filter, should have 2 actions
-    $component = Livewire::test(ModerationActions::class);
+    $component = Livewire::test('pages::admin.moderation-actions');
     expect($component->instance()->actions->total())->toBe(2);
 
     // With filter, should have 1 action
@@ -109,7 +108,7 @@ it('can filter by moderator', function (): void {
     $this->actingAs($this->adminUser);
 
     // Without filter, should have 2 actions
-    $component = Livewire::test(ModerationActions::class);
+    $component = Livewire::test('pages::admin.moderation-actions');
     expect($component->instance()->actions->total())->toBe(2);
 
     // With filter, should have 1 action from admin user
@@ -124,7 +123,7 @@ it('can filter by moderator', function (): void {
 it('can reset filters', function (): void {
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ModerationActions::class)
+    Livewire::test('pages::admin.moderation-actions')
         ->set('eventTypeFilter', TrackingEventType::MOD_DISABLE->value)
         ->set('moderatorFilter', (string) $this->adminUser->id)
         ->set('reportLinkedOnly', true)
@@ -147,14 +146,14 @@ it('displays moderator name on actions', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ModerationActions::class)
+    Livewire::test('pages::admin.moderation-actions')
         ->assertSee('Admin Moderator');
 });
 
 it('displays active filters', function (): void {
     $this->actingAs($this->adminUser);
 
-    $component = Livewire::test(ModerationActions::class)
+    $component = Livewire::test('pages::admin.moderation-actions')
         ->set('eventTypeFilter', TrackingEventType::MOD_DISABLE->value)
         ->set('reportLinkedOnly', true);
 
@@ -167,7 +166,7 @@ it('displays active filters', function (): void {
 it('shows empty state when no actions exist', function (): void {
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ModerationActions::class)
+    Livewire::test('pages::admin.moderation-actions')
         ->assertSee('No moderation actions found');
 });
 
@@ -185,7 +184,7 @@ it('paginates actions correctly', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    $component = Livewire::test(ModerationActions::class);
+    $component = Livewire::test('pages::admin.moderation-actions');
 
     expect($component->instance()->actions->count())->toBeLessThanOrEqual(25);
     expect($component->instance()->actions->total())->toBe(30);

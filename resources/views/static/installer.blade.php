@@ -1,4 +1,4 @@
-<x-layouts.base>
+<x-layouts::base>
     <x-slot name="title">
         {{ __('SPT Installer') }}
     </x-slot>
@@ -418,4 +418,4 @@
             </div>
         </div>
     </div>
-</x-layouts.base>
+</x-layouts::base>

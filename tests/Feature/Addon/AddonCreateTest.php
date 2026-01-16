@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Addon\Create;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\Mod;
@@ -48,17 +47,9 @@ describe('Addon Create Form', function (): void {
             $mod = Mod::factory()->for($user, 'owner')->create();
             $this->actingAs($user);
 
-            // Test that the component can be instantiated and mounted
-            $component = new Create();
-
-            // The component should exist
-            expect($component)->toBeInstanceOf(Create::class);
-
-            // Mount with mod model
-            $component->mount($mod);
-
-            // The component should have the mod loaded
-            expect($component)->toBeObject();
+            // Test that the component can be mounted and rendered
+            Livewire::test('pages::addon.create', ['mod' => $mod])
+                ->assertOk();
         });
     });
 

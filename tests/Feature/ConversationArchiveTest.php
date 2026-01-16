@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NavigationChat;
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,7 +42,7 @@ it('hides archived conversations from the chat list', function (): void {
 
     // Test shows both conversations
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conv1->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conv1->hash_id])
         ->assertSee($user2->name)
         ->assertSee($user3->name);
 
@@ -53,7 +51,7 @@ it('hides archived conversations from the chat list', function (): void {
 
     // Test shows only conv2
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conv2->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conv2->hash_id])
         ->assertDontSee($user2->name)
         ->assertSee($user3->name);
 });
@@ -70,7 +68,7 @@ it('hides archived conversations from navigation dropdown', function (): void {
 
     // Before archiving - conversation is visible
     Livewire::actingAs($user1)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->assertSee($user2->name);
 
     // Archive the conversation
@@ -78,7 +76,7 @@ it('hides archived conversations from navigation dropdown', function (): void {
 
     // After archiving - conversation is hidden
     Livewire::actingAs($user1)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->assertDontSee($user2->name);
 });
 
@@ -101,7 +99,7 @@ it('unarchives conversation when a new message is sent', function (): void {
 
     // User2 sends a new message
     Livewire::actingAs($user2)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->set('messageText', 'New message')
         ->call('sendMessage');
 
@@ -130,12 +128,12 @@ it('shows conversation to other user when one user archives', function (): void 
     $otherConv->messages()->create(['user_id' => $user1->id, 'content' => 'Other message']);
 
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $otherConv->hash_id])
+        ->test('pages::chat', ['conversationHash' => $otherConv->hash_id])
         ->assertDontSee($user2->name);
 
     // User2 still sees it
     Livewire::actingAs($user2)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->assertSee($user1->name);
 });
 
@@ -150,7 +148,7 @@ it('archives conversation through the UI', function (): void {
     ]);
 
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->assertSee($user2->name)
         ->call('openArchiveModal')
         ->assertSet('showArchiveModal', true)
@@ -166,6 +164,6 @@ it('archives conversation through the UI', function (): void {
     $otherConv->messages()->create(['user_id' => $user1->id, 'content' => 'Other message']);
 
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $otherConv->hash_id])
+        ->test('pages::chat', ['conversationHash' => $otherConv->hash_id])
         ->assertDontSee($user2->name);
 });

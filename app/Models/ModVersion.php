@@ -306,7 +306,6 @@ class ModVersion extends Model implements Trackable
         $this->loadMissing('sptVersions');
 
         foreach ($this->sptVersions as $sptVersion) {
-            /** @phpstan-ignore property.notFound */
             $pivot = $sptVersion->pivot;
             if ($pivot->pinned_to_spt_publish) {
                 if (! $sptVersion->is_published) {
@@ -329,7 +328,6 @@ class ModVersion extends Model implements Trackable
         $latestDate = null;
 
         foreach ($this->sptVersions as $sptVersion) {
-            /** @phpstan-ignore property.notFound */
             $pivot = $sptVersion->pivot;
             if ($pivot->pinned_to_spt_publish && ! $sptVersion->is_published) {
                 if (is_null($latestDate) || $sptVersion->publish_date > $latestDate) {

@@ -29,7 +29,7 @@ return new class extends Migration
             ->where('virus_total_link', '!=', '')
             ->each(function (ModVersion $modVersion) {
                 $modVersion->virusTotalLinks()->create([
-                    'url' => $modVersion->virus_total_link, // @phpstan-ignore property.notFound
+                    'url' => $modVersion->virus_total_link,
                     'label' => '',
                 ]);
             });

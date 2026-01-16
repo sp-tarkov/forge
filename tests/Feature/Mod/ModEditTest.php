@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Edit;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
@@ -25,7 +24,7 @@ describe('Mod Edit Form', function (): void {
             $mod = Mod::factory()->recycle($user)->create();
             $this->actingAs($user);
 
-            Livewire::test(Edit::class, ['modId' => $mod->id])
+            Livewire::test('pages::mod.edit', ['modId' => $mod->id])
                 ->set('name', '')
                 ->set('guid', '')
                 ->set('teaser', '')
@@ -41,7 +40,7 @@ describe('Mod Edit Form', function (): void {
             $mod = Mod::factory()->recycle($user)->create();
             $this->actingAs($user);
 
-            Livewire::test(Edit::class, ['modId' => $mod->id])
+            Livewire::test('pages::mod.edit', ['modId' => $mod->id])
                 ->set('name', 'Test Mod')
                 ->set('guid', 'invalid guid!')
                 ->set('teaser', 'Test teaser')
@@ -64,7 +63,7 @@ describe('Mod Edit Form', function (): void {
             $this->actingAs($user);
 
             // Attempt to edit the second mod to use the first mod's GUID
-            Livewire::test(Edit::class, ['modId' => $modToEdit->id])
+            Livewire::test('pages::mod.edit', ['modId' => $modToEdit->id])
                 ->set('name', 'Updated Mod')
                 ->set('guid', $existingMod->guid)
                 ->set('teaser', 'Updated teaser')
@@ -88,7 +87,7 @@ describe('Mod Edit Form', function (): void {
             $this->actingAs($user);
 
             // Edit the mod keeping the same GUID
-            Livewire::test(Edit::class, ['modId' => $mod->id])
+            Livewire::test('pages::mod.edit', ['modId' => $mod->id])
                 ->set('name', 'Updated Mod Name')
                 ->set('guid', $mod->guid)
                 ->set('teaser', 'Updated teaser')
@@ -147,7 +146,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         $this->actingAs($owner);
 
         // Test the form functionality using Livewire component test (more reliable)
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Updated Mod Name')
             ->set('guid', 'com.test.updatedmod')
@@ -203,7 +202,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->assertNoJavascriptErrors();
 
         // Test the form functionality using Livewire component test
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Updated by Author')
             ->set('guid', 'com.author.collaborativemod')
@@ -281,7 +280,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Comprehensive Update')
             ->set('guid', 'com.comprehensive.update')
@@ -315,7 +314,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', '')
             ->set('teaser', '')
@@ -333,7 +332,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('guid', 'invalid guid!')
             ->call('save')
@@ -349,7 +348,7 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $this->actingAs($owner);
 
         // Test using Livewire component test
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->assertSee('Mod Information')
             ->set('name', 'Successfully Updated Mod')
             ->set('guid', 'com.success.updated')
@@ -403,7 +402,7 @@ describe('GUID Requirements for Mod Editing', function (): void {
             'spt_version_constraint' => '~3.9.0',
         ]);
 
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->set('guid', '') // Empty GUID
             ->call('save')
             ->assertHasNoErrors()
@@ -430,7 +429,7 @@ describe('GUID Requirements for Mod Editing', function (): void {
             'spt_version_constraint' => '>=4.0.0',
         ]);
 
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->set('guid', '') // Try to save with empty GUID
             ->call('save')
             ->assertHasErrors(['guid' => 'required']);
@@ -451,7 +450,7 @@ describe('GUID Requirements for Mod Editing', function (): void {
             'spt_version_constraint' => '~3.9.0',
         ]);
 
-        $component = Livewire::test(Edit::class, ['modId' => $modWithoutSpt4->id]);
+        $component = Livewire::test('pages::mod.edit', ['modId' => $modWithoutSpt4->id]);
         expect($component->get('isGuidRequired'))->toBeFalse();
 
         // Mod with versions targeting SPT 4.x
@@ -466,7 +465,7 @@ describe('GUID Requirements for Mod Editing', function (): void {
             'spt_version_constraint' => '>=4.0.0',
         ]);
 
-        $component = Livewire::test(Edit::class, ['modId' => $modWithSpt4->id]);
+        $component = Livewire::test('pages::mod.edit', ['modId' => $modWithSpt4->id]);
         expect($component->get('isGuidRequired'))->toBeTrue();
     });
 });

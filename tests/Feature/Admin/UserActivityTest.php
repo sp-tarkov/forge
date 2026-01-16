@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
-use App\Livewire\UserActivity;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -45,7 +44,7 @@ describe('UserActivity Component', function (): void {
             $admin = User::factory()->admin()->create();
 
             Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('192.168.1.100');
         });
 
@@ -53,7 +52,7 @@ describe('UserActivity Component', function (): void {
             $moderator = User::factory()->moderator()->create();
 
             Livewire::actingAs($moderator)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertDontSee('192.168.1.100');
         });
 
@@ -61,12 +60,12 @@ describe('UserActivity Component', function (): void {
             $regularUser = User::factory()->create();
 
             Livewire::actingAs($regularUser)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertDontSee('192.168.1.100');
         });
 
         it('hides IP address from unauthenticated users', function (): void {
-            Livewire::test(UserActivity::class, ['user' => $this->user])
+            Livewire::test('user-activity', ['user' => $this->user])
                 ->assertDontSee('192.168.1.100');
         });
     });
@@ -76,7 +75,7 @@ describe('UserActivity Component', function (): void {
             $admin = User::factory()->admin()->create();
 
             Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('Chrome');
         });
 
@@ -84,7 +83,7 @@ describe('UserActivity Component', function (): void {
             $moderator = User::factory()->moderator()->create();
 
             Livewire::actingAs($moderator)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('Chrome');
         });
 
@@ -92,12 +91,12 @@ describe('UserActivity Component', function (): void {
             $regularUser = User::factory()->create();
 
             Livewire::actingAs($regularUser)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertDontSee('Chrome');
         });
 
         it('hides browser from unauthenticated users', function (): void {
-            Livewire::test(UserActivity::class, ['user' => $this->user])
+            Livewire::test('user-activity', ['user' => $this->user])
                 ->assertDontSee('Chrome');
         });
     });
@@ -107,7 +106,7 @@ describe('UserActivity Component', function (): void {
             $admin = User::factory()->admin()->create();
 
             Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('United States');
         });
 
@@ -115,7 +114,7 @@ describe('UserActivity Component', function (): void {
             $moderator = User::factory()->moderator()->create();
 
             Livewire::actingAs($moderator)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertDontSee('United States');
         });
 
@@ -123,12 +122,12 @@ describe('UserActivity Component', function (): void {
             $regularUser = User::factory()->create();
 
             Livewire::actingAs($regularUser)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertDontSee('United States');
         });
 
         it('hides country from unauthenticated users', function (): void {
-            Livewire::test(UserActivity::class, ['user' => $this->user])
+            Livewire::test('user-activity', ['user' => $this->user])
                 ->assertDontSee('United States');
         });
     });
@@ -154,14 +153,14 @@ describe('UserActivity Component', function (): void {
 
         it('shows private events to the user themselves', function (): void {
             Livewire::actingAs($this->user)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee($this->privateEvent->event_display_name)
                 ->assertSee($this->publicEvent->event_display_name);
         });
 
         it('shows tooltip for private events when viewing own activity', function (): void {
             Livewire::actingAs($this->user)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('This activity is private and only visible to you.');
         });
 
@@ -169,7 +168,7 @@ describe('UserActivity Component', function (): void {
             $admin = User::factory()->admin()->create();
 
             Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee($this->privateEvent->event_display_name)
                 ->assertSee($this->publicEvent->event_display_name);
         });
@@ -178,7 +177,7 @@ describe('UserActivity Component', function (): void {
             $admin = User::factory()->admin()->create();
 
             Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('This activity is private and only visible to you.');
         });
 
@@ -186,7 +185,7 @@ describe('UserActivity Component', function (): void {
             $moderator = User::factory()->moderator()->create();
 
             Livewire::actingAs($moderator)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee($this->privateEvent->event_display_name)
                 ->assertSee($this->publicEvent->event_display_name);
         });
@@ -195,7 +194,7 @@ describe('UserActivity Component', function (): void {
             $moderator = User::factory()->moderator()->create();
 
             Livewire::actingAs($moderator)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('This activity is private and only visible to you.');
         });
 
@@ -203,26 +202,26 @@ describe('UserActivity Component', function (): void {
             $regularUser = User::factory()->create();
 
             Livewire::actingAs($regularUser)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertDontSee($this->privateEvent->event_display_name)
                 ->assertSee($this->publicEvent->event_display_name);
         });
 
         it('hides private events from unauthenticated users', function (): void {
-            Livewire::test(UserActivity::class, ['user' => $this->user])
+            Livewire::test('user-activity', ['user' => $this->user])
                 ->assertDontSee($this->privateEvent->event_display_name)
                 ->assertSee($this->publicEvent->event_display_name);
         });
 
         it('contains correct tooltip text for private events', function (): void {
             Livewire::actingAs($this->user)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee('This activity is private and only visible to you.');
         });
 
         it('correctly identifies private event types via isEventPrivate method', function (): void {
             $component = Livewire::actingAs($this->user)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->isEventPrivate($this->privateEvent))->toBeTrue();
@@ -249,13 +248,13 @@ describe('UserActivity Component', function (): void {
 
             // Regular users should not see reporting events from other users
             Livewire::actingAs($regularUser)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertDontSee($modReport->event_display_name)
                 ->assertDontSee($commentReport->event_display_name);
 
             // User should see their own reporting events with lock icon tooltip
             Livewire::actingAs($this->user)
-                ->test(UserActivity::class, ['user' => $this->user])
+                ->test('user-activity', ['user' => $this->user])
                 ->assertSee($modReport->event_display_name)
                 ->assertSee($commentReport->event_display_name)
                 ->assertSee('This activity is private and only visible to you.');
@@ -266,16 +265,16 @@ describe('UserActivity Component', function (): void {
         it('mounts with a user', function (): void {
             $user = User::factory()->create();
 
-            $component = Livewire::test(UserActivity::class, ['user' => $user]);
+            $component = Livewire::test('user-activity', ['user' => $user]);
 
             expect($component->get('user')->id)->toBe($user->id);
         });
 
-        it('renders the correct view', function (): void {
+        it('renders successfully', function (): void {
             $user = User::factory()->create();
 
-            Livewire::test(UserActivity::class, ['user' => $user])
-                ->assertViewIs('livewire.user-activity');
+            Livewire::test('user-activity', ['user' => $user])
+                ->assertOk();
         });
     });
 
@@ -293,7 +292,7 @@ describe('UserActivity Component', function (): void {
                 ]);
             }
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
+            $component = Livewire::test('user-activity', ['user' => $testUser]);
 
             expect($component->get('recentActivity'))->toHaveCount(15);
         });
@@ -321,7 +320,7 @@ describe('UserActivity Component', function (): void {
                 'created_at' => now()->subHours(2),
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
+            $component = Livewire::test('user-activity', ['user' => $testUser]);
             $recentActivity = $component->get('recentActivity');
 
             // Check that events are in descending order
@@ -341,7 +340,7 @@ describe('UserActivity Component', function (): void {
                 'event_name' => TrackingEventType::COMMENT_CREATE->value,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
+            $component = Livewire::test('user-activity', ['user' => $testUser]);
             $recentActivity = $component->get('recentActivity');
 
             // Check that visitable relationship is loaded
@@ -359,7 +358,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $testUser->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             expect($component->getEventType($loginEvent))->toBe(TrackingEventType::LOGIN);
@@ -372,7 +371,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $testUser->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             expect($component->getEventType($unknownEvent))->toBeNull();
@@ -385,7 +384,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $testUser->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             expect($component->getEventType($nullEvent))->toBeNull();
@@ -399,7 +398,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $this->user->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->getEventIcon($loginEvent))->toBe('arrow-right-end-on-rectangle');
@@ -411,7 +410,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $this->user->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->getEventIcon($unknownEvent))->toBe('document-text');
@@ -424,7 +423,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $testUser->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             expect($component->getEventIcon($nullEvent))->toBe('document-text');
@@ -438,7 +437,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $this->user->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->getEventColor($loginEvent))->toBe('blue');
@@ -450,7 +449,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $this->user->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->getEventColor($unknownEvent))->toBe('gray');
@@ -463,7 +462,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $testUser->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             expect($component->getEventColor($nullEvent))->toBe('gray');
@@ -478,7 +477,7 @@ describe('UserActivity Component', function (): void {
                 'event_data' => ['snapshot' => ['comment_body' => 'Test comment']],
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->hasContext($event))->toBeTrue();
@@ -491,7 +490,7 @@ describe('UserActivity Component', function (): void {
                 'event_data' => ['some' => 'data'],
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->hasContext($loginEvent))->toBeFalse();
@@ -508,7 +507,7 @@ describe('UserActivity Component', function (): void {
                 'visitable_id' => null,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             expect($component->hasContext($event))->toBeFalse();
@@ -521,7 +520,7 @@ describe('UserActivity Component', function (): void {
                 'url' => '/some/url',
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->hasContext($unknownEvent))->toBeTrue();
@@ -540,7 +539,7 @@ describe('UserActivity Component', function (): void {
                 TrackingEventType::COMMENT_REPORT,
             ];
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             foreach ($privateEventTypes as $eventType) {
@@ -564,7 +563,7 @@ describe('UserActivity Component', function (): void {
                 TrackingEventType::COMMENT_UNLIKE,
             ];
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             foreach ($publicEventTypes as $eventType) {
@@ -585,7 +584,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $this->user->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user])
+            $component = Livewire::test('user-activity', ['user' => $this->user])
                 ->instance();
 
             expect($component->isEventPrivate($unknownEvent))->toBeFalse();
@@ -598,7 +597,7 @@ describe('UserActivity Component', function (): void {
                 'visitor_id' => $testUser->id,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             expect($component->isEventPrivate($nullEvent))->toBeFalse();
@@ -631,7 +630,7 @@ describe('UserActivity Component', function (): void {
             ]));
 
             $component = Livewire::actingAs($testUser)
-                ->test(UserActivity::class, ['user' => $testUser]);
+                ->test('user-activity', ['user' => $testUser]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -662,7 +661,7 @@ describe('UserActivity Component', function (): void {
                 'event_name' => $type->value,
             ]));
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
+            $component = Livewire::test('user-activity', ['user' => $testUser]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -704,7 +703,7 @@ describe('UserActivity Component', function (): void {
             ]));
 
             $component = Livewire::actingAs($otherUser)
-                ->test(UserActivity::class, ['user' => $testUser]);
+                ->test('user-activity', ['user' => $testUser]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -738,7 +737,7 @@ describe('UserActivity Component', function (): void {
             ]));
 
             $component = Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $testUser]);
+                ->test('user-activity', ['user' => $testUser]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -771,7 +770,7 @@ describe('UserActivity Component', function (): void {
             ]));
 
             $component = Livewire::actingAs($moderator)
-                ->test(UserActivity::class, ['user' => $testUser]);
+                ->test('user-activity', ['user' => $testUser]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -787,7 +786,7 @@ describe('UserActivity Component', function (): void {
                 'event_name' => TrackingEventType::MOD_CREATE->value,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $this->user]);
+            $component = Livewire::test('user-activity', ['user' => $this->user]);
 
             // First access
             $firstAccess = $component->get('recentActivity');
@@ -803,7 +802,7 @@ describe('UserActivity Component', function (): void {
         it('handles user with no tracking events', function (): void {
             $userWithNoEvents = User::factory()->create();
 
-            $component = Livewire::test(UserActivity::class, ['user' => $userWithNoEvents]);
+            $component = Livewire::test('user-activity', ['user' => $userWithNoEvents]);
 
             expect($component->get('recentActivity'))->toHaveCount(0);
         });
@@ -820,7 +819,7 @@ describe('UserActivity Component', function (): void {
                 'event_name' => TrackingEventType::COMMENT_CREATE->value,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
+            $component = Livewire::test('user-activity', ['user' => $testUser]);
 
             // Should not throw an error
             expect($component->get('recentActivity'))->toHaveCount(1);
@@ -835,7 +834,7 @@ describe('UserActivity Component', function (): void {
                 'event_data' => null,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser])
+            $component = Livewire::test('user-activity', ['user' => $testUser])
                 ->instance();
 
             // Should handle gracefully without throwing errors
@@ -869,7 +868,7 @@ describe('UserActivity Component', function (): void {
                 'event_name' => TrackingEventType::COMMENT_EDIT->value,
             ]);
 
-            $component = Livewire::test(UserActivity::class, ['user' => $testUser]);
+            $component = Livewire::test('user-activity', ['user' => $testUser]);
             $recentActivity = $component->get('recentActivity');
 
             expect($recentActivity->count())->toBeGreaterThanOrEqual(2);
@@ -909,7 +908,7 @@ describe('UserActivity Component', function (): void {
 
             // Admin should be able to see this event without errors
             $component = Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $testUser]);
+                ->test('user-activity', ['user' => $testUser]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -942,7 +941,7 @@ describe('UserActivity Component', function (): void {
 
             // Other user should not see this activity
             $component = Livewire::actingAs($otherUser)
-                ->test(UserActivity::class, ['user' => $modOwner]);
+                ->test('user-activity', ['user' => $modOwner]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -973,7 +972,7 @@ describe('UserActivity Component', function (): void {
 
             // Owner should see their own activity
             $component = Livewire::actingAs($modOwner)
-                ->test(UserActivity::class, ['user' => $modOwner]);
+                ->test('user-activity', ['user' => $modOwner]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -1005,7 +1004,7 @@ describe('UserActivity Component', function (): void {
 
             // Admin should see the activity
             $component = Livewire::actingAs($admin)
-                ->test(UserActivity::class, ['user' => $modOwner]);
+                ->test('user-activity', ['user' => $modOwner]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -1037,7 +1036,7 @@ describe('UserActivity Component', function (): void {
 
             // Moderator should see the activity
             $component = Livewire::actingAs($moderator)
-                ->test(UserActivity::class, ['user' => $modOwner]);
+                ->test('user-activity', ['user' => $modOwner]);
 
             $recentActivity = $component->get('recentActivity');
 
@@ -1069,7 +1068,7 @@ describe('UserActivity Component', function (): void {
 
             // Other user should not see this activity
             $component = Livewire::actingAs($otherUser)
-                ->test(UserActivity::class, ['user' => $modOwner]);
+                ->test('user-activity', ['user' => $modOwner]);
 
             $recentActivity = $component->get('recentActivity');
 

@@ -45,7 +45,6 @@
         "barryvdh/laravel-debugbar": "^3.16.0",
         "driftingly/rector-laravel": "^2.0.7",
         "fakerphp/faker": "^1.24.1",
-        "larastan/larastan": "^3.7.2",
         "laravel/boost": "^1.3",
         "laravel/pail": "^1.2.3",
         "laravel/pint": "^1.25.1",
@@ -70,9 +69,6 @@
         }
     },
     "scripts": {
-        "phpstan": [
-            "./vendor/bin/phpstan analyse --configuration phpstan.neon --error-format=table --memory-limit=2G"
-        ],
         "rector": [
             "./vendor/bin/rector process --dry-run --config=rector.php"
         ],
@@ -95,7 +91,6 @@
             "composer rector-fix",
             "composer prettier",
             "composer pint",
-            "composer phpstan",
             "composer spell",
             "composer coverage",
             "@php artisan test --parallel"

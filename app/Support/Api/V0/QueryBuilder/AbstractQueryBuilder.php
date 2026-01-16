@@ -312,10 +312,7 @@ abstract class AbstractQueryBuilder
             return;
         }
 
-        /** @phpstan-var TModel&Searchable $model */
-
         // Get the search results with their relevance ordering and ranking scores
-        /** @phpstan-var array{hits: list<array{id: int|string, ...}>, ...} $searchResults */
         $searchResults = $model->search($this->searchQuery)->options(['showRankingScore' => true])->raw();
 
         if (empty($searchResults['hits'])) {

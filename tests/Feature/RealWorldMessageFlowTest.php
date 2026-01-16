@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NavigationChat;
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +14,7 @@ it('shows unread badge in complete user flow from conversation creation to first
     $bob = User::factory()->create(['name' => 'Bob']);
 
     // Step 1: Alice opens new conversation modal and starts conversation with Bob
-    $aliceNav = Livewire::actingAs($alice)->test(NavigationChat::class);
+    $aliceNav = Livewire::actingAs($alice)->test('navigation-chat');
     $aliceNav->call('openNewConversationModal')
         ->set('searchUser', 'Bob')
         ->assertSee('Bob')
@@ -35,11 +33,11 @@ it('shows unread badge in complete user flow from conversation creation to first
     expect($conversation->last_message_id)->toBeNull();
 
     // Bob should NOT see the conversation yet (no messages)
-    $bobNav = Livewire::actingAs($bob)->test(NavigationChat::class);
+    $bobNav = Livewire::actingAs($bob)->test('navigation-chat');
     $bobNav->assertDontSee('Alice');
 
     // Step 2: Alice sends the first message
-    $aliceChat = Livewire::actingAs($alice)->test(Chat::class, ['conversationHash' => $conversation->hash_id]);
+    $aliceChat = Livewire::actingAs($alice)->test('pages::chat', ['conversationHash' => $conversation->hash_id]);
     $aliceChat->set('messageText', 'Hello Bob!')
         ->call('sendMessage')
         ->assertSet('messageText', ''); // Message input should be cleared
@@ -51,7 +49,7 @@ it('shows unread badge in complete user flow from conversation creation to first
     expect($conversation->last_message_at)->not->toBeNull();
 
     // Step 3: Bob refreshes and should now see the conversation with unread badge
-    $bobNavRefreshed = Livewire::actingAs($bob)->test(NavigationChat::class);
+    $bobNavRefreshed = Livewire::actingAs($bob)->test('navigation-chat');
     $bobNavRefreshed->assertSee('Alice')  // Should see Alice's name
         ->assertSee('Hello Bob!')  // Should see message preview
         ->assertSee('1');  // Should see unread count badge
@@ -60,7 +58,7 @@ it('shows unread badge in complete user flow from conversation creation to first
     expect($conversation->getUnreadCountForUser($bob))->toBe(1);
 
     // Step 4: Bob opens the conversation
-    $bobChat = Livewire::actingAs($bob)->test(Chat::class, ['conversationHash' => $conversation->hash_id]);
+    $bobChat = Livewire::actingAs($bob)->test('pages::chat', ['conversationHash' => $conversation->hash_id]);
     $bobChat->assertSee('Hello Bob!')
         ->assertSee('Alice');
 
@@ -68,10 +66,9 @@ it('shows unread badge in complete user flow from conversation creation to first
     expect($conversation->getUnreadCountForUser($bob))->toBe(0);
 
     // Verify the navigation component gets correct unread count
-    $bobNavAfterRead = Livewire::actingAs($bob)->test(NavigationChat::class);
-    // Check that the unread count property is 0
-    $unreadCount = $bobNavAfterRead->viewData('unreadCount');
-    expect($unreadCount)->toBe(0);
+    $bobNavAfterRead = Livewire::actingAs($bob)->test('navigation-chat');
+    // Check via rendered output since the unread count is computed inline
+    $bobNavAfterRead->assertDontSee('class="absolute -top-1 -right-1 flex h-4 w-4');
 });
 
 it('correctly handles multiple conversations with different unread states', function (): void {
@@ -95,24 +92,25 @@ it('correctly handles multiple conversations with different unread states', func
     ]);
 
     // Bob checks his navigation - should see 1 unread conversation
-    $bobNav = Livewire::actingAs($bob)->test(NavigationChat::class);
+    $bobNav = Livewire::actingAs($bob)->test('navigation-chat');
     $bobNav->assertSee('Alice')
         ->assertSee('1');  // Unread badge
 
     // Charlie checks his navigation - should also see 1 unread conversation
-    $charlieNav = Livewire::actingAs($charlie)->test(NavigationChat::class);
+    $charlieNav = Livewire::actingAs($charlie)->test('navigation-chat');
     $charlieNav->assertSee('Alice')
         ->assertSee('1');  // Unread badge
 
     // Bob reads his conversation
     Livewire::actingAs($bob)
-        ->test(Chat::class, ['conversationHash' => $convWithBob->hash_id]);
+        ->test('pages::chat', ['conversationHash' => $convWithBob->hash_id]);
 
-    // Bob's navigation should no longer show unread
-    $bobNavAfter = Livewire::actingAs($bob)->test(NavigationChat::class);
-    expect($bobNavAfter->viewData('unreadCount'))->toBe(0);
+    // Bob's navigation should no longer show unread badge
+    $bobNavAfter = Livewire::actingAs($bob)->test('navigation-chat');
+    // The unread badge should not be visible for Bob after reading
+    $bobNavAfter->assertDontSee('bg-red-600');
 
-    // Charlie still has unread
-    $charlieNavStill = Livewire::actingAs($charlie)->test(NavigationChat::class);
-    expect($charlieNavStill->viewData('unreadCount'))->toBe(1);
+    // Charlie still has unread - check via rendered badge
+    $charlieNavStill = Livewire::actingAs($charlie)->test('navigation-chat');
+    $charlieNavStill->assertSee('bg-red-600');
 });

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Ribbon\ModVersion as ModVersionRibbon;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
@@ -35,7 +34,7 @@ describe('ModVersion Ribbon States', function (): void {
     it('shows disabled ribbon when mod version is disabled', function (): void {
         $version = ModVersion::factory()->for($this->mod)->create(['disabled' => true]);
 
-        Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertSee('ribbon red')
             ->assertSee('Disabled');
     });
@@ -43,7 +42,7 @@ describe('ModVersion Ribbon States', function (): void {
     it('shows unpublished ribbon when publishedAt is null', function (): void {
         $version = ModVersion::factory()->for($this->mod)->create(['published_at' => null]);
 
-        Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished');
     });
@@ -51,7 +50,7 @@ describe('ModVersion Ribbon States', function (): void {
     it('shows scheduled ribbon when publishedAt is in future', function (): void {
         $version = ModVersion::factory()->for($this->mod)->create(['published_at' => now()->addDays(7)]);
 
-        Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertSee('ribbon emerald')
             ->assertSee('Scheduled');
     });
@@ -62,7 +61,7 @@ describe('ModVersion Ribbon States', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertDontSee('class="ribbon');
     });
 
@@ -72,7 +71,7 @@ describe('ModVersion Ribbon States', function (): void {
             'published_at' => null,
         ]);
 
-        Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertSee('ribbon red')
             ->assertSee('Disabled')
             ->assertDontSee('Unpublished');
@@ -84,7 +83,7 @@ describe('ModVersion Ribbon States', function (): void {
             'published_at' => null,
         ]);
 
-        Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished')
             ->assertDontSee('Disabled');
@@ -96,7 +95,7 @@ describe('ModVersion Ribbon States', function (): void {
             'published_at' => now()->addDays(7),
         ]);
 
-        Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertSee('ribbon emerald')
             ->assertSee('Scheduled');
     });
@@ -106,7 +105,7 @@ describe('Event-Driven Updates', function (): void {
     it('refreshes version when mod-version-updated event is triggered', function (): void {
         $version = ModVersion::factory()->for($this->mod)->create(['disabled' => false]);
 
-        $component = Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version))
+        $component = Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version))
             ->assertDontSee('class="ribbon');
 
         // Update the version in database
@@ -121,7 +120,7 @@ describe('Event-Driven Updates', function (): void {
     it('responds to mod-version-updated events with correct ID', function (): void {
         $version = ModVersion::factory()->for($this->mod)->create(['disabled' => false]);
 
-        $component = Livewire::test(ModVersionRibbon::class, getModVersionRibbonProps($version));
+        $component = Livewire::test('ribbon.mod-version', getModVersionRibbonProps($version));
 
         // Verify the component has the refreshVersion method (tests the On attribute functionality)
         expect(method_exists($component->instance(), 'refreshVersion'))->toBeTrue();

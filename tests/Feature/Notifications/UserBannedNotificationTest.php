@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\User\BanAction;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Notifications\UserBannedNotification;
@@ -158,7 +157,7 @@ describe('BanAction Integration', function (): void {
         $user = User::factory()->create();
 
         Livewire::actingAs($admin)
-            ->test(BanAction::class, ['user' => $user])
+            ->test('user.ban-action', ['user' => $user])
             ->set('duration', '24_hours')
             ->set('reason', 'Testing ban notification')
             ->call('ban');
@@ -181,7 +180,7 @@ describe('BanAction Integration', function (): void {
         $user = User::factory()->create();
 
         Livewire::actingAs($admin)
-            ->test(BanAction::class, ['user' => $user])
+            ->test('user.ban-action', ['user' => $user])
             ->set('duration', 'permanent')
             ->call('ban');
 
@@ -205,7 +204,7 @@ describe('BanAction Integration', function (): void {
         ]);
 
         Livewire::actingAs($admin)
-            ->test(BanAction::class, ['user' => $user])
+            ->test('user.ban-action', ['user' => $user])
             ->set('duration', '7_days')
             ->call('ban');
 

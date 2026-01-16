@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Enums\SpamStatus;
 use App\Jobs\CheckCommentForSpam;
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -35,7 +34,7 @@ describe('Comment Spam Ribbon Updates', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('markCommentAsSpam', $comment->id)
             ->assertDispatched('comment-updated', $comment->id, spam: true);
 
@@ -60,7 +59,7 @@ describe('Comment Spam Ribbon Updates', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('markCommentAsHam', $comment->id)
             ->assertDispatched('comment-updated', $comment->id, spam: false);
 
@@ -82,7 +81,7 @@ describe('Comment Spam Ribbon Updates', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('softDeleteComment', $comment->id)
             ->assertDispatched('comment-updated', $comment->id, deleted: true);
 
@@ -104,7 +103,7 @@ describe('Comment Spam Ribbon Updates', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('restoreComment', $comment->id)
             ->assertDispatched('comment-updated', $comment->id, deleted: false);
 
@@ -152,7 +151,7 @@ describe('Comment Spam Ribbon Updates', function (): void {
         $this->actingAs($moderator);
 
         // Test the polling mechanism
-        $component = Livewire::test(CommentComponent::class, ['commentable' => $mod]);
+        $component = Livewire::test('comment-component', ['commentable' => $mod]);
 
         // Start spam check which should set up polling state
         $component->call('checkCommentForSpam', $comment->id)

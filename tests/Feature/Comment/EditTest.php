@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -25,7 +24,7 @@ describe('basic editing', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'This is an updated comment.')
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();
@@ -47,7 +46,7 @@ describe('basic editing', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', "Trying to edit someone else's comment")
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -70,7 +69,7 @@ describe('time-based restrictions', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'This is an updated comment.')
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -87,7 +86,7 @@ describe('time-based restrictions', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Too late to edit')
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -107,7 +106,7 @@ describe('edit tracking', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Edited content')
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();
@@ -128,7 +127,7 @@ describe('edit tracking', function (): void {
         ]);
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // Check for edited indicator - normalize whitespace
         $html = preg_replace('/\s+/', ' ', (string) $component->html());
@@ -153,7 +152,7 @@ describe('edit tracking', function (): void {
         ]);
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->assertSee($originalText)
             ->assertDontSee($editedText);
 
@@ -183,7 +182,7 @@ describe('moderator permissions', function (): void {
         ]);
 
         Livewire::actingAs($moderator)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Moderator trying to edit')
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -204,7 +203,7 @@ describe('moderator permissions', function (): void {
         ]);
 
         Livewire::actingAs($moderator)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Moderator editing own comment')
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();
@@ -229,7 +228,7 @@ describe('moderator permissions', function (): void {
 
         // Moderator should not be able to edit old comments from other users
         Livewire::actingAs($moderator)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$oldComment->id.'.body', 'Moderator trying to edit old comment')
             ->call('updateComment', $oldComment->id)
             ->assertForbidden();
@@ -253,7 +252,7 @@ describe('administrator permissions', function (): void {
         ]);
 
         Livewire::actingAs($admin)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Admin trying to edit')
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -274,7 +273,7 @@ describe('administrator permissions', function (): void {
         ]);
 
         Livewire::actingAs($admin)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Admin editing own comment')
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();
@@ -299,7 +298,7 @@ describe('cross-mod security', function (): void {
 
         // Try to edit it from mod2's comment manager
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod2])
+            ->test('comment-component', ['commentable' => $mod2])
             ->set('formStates.edit-'.$comment->id.'.body', 'Cross-mod edit attempt')
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -314,7 +313,7 @@ describe('regular user restrictions', function (): void {
         $comment = Comment::factory()->create(['user_id' => $otherUser->id, 'commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'This is an updated comment.')
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -335,7 +334,7 @@ describe('regular user restrictions', function (): void {
 
         // Regular user shouldn't be able to edit old comments even if they try
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$oldComment->id.'.body', 'Attempting privilege escalation')
             ->call('updateComment', $oldComment->id)
             ->assertForbidden();
@@ -355,7 +354,7 @@ describe('concurrent editing', function (): void {
 
         // The first edit succeeds
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'First edit')
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();
@@ -365,7 +364,7 @@ describe('concurrent editing', function (): void {
 
         // The second edit should fail due to time constraint
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Second edit')
             ->call('updateComment', $comment->id)
             ->assertForbidden();
@@ -384,7 +383,7 @@ describe('concurrent editing', function (): void {
 
         // User starts editing their own comment
         $component1 = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'First edit');
 
         // User submits first edit successfully
@@ -396,7 +395,7 @@ describe('concurrent editing', function (): void {
 
         // User makes another edit on the same comment
         $component2 = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', 'Second edit');
 
         // Second edit should also succeed (within time limit)
@@ -422,7 +421,7 @@ describe('security', function (): void {
         ]);
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // Try to force to show an edit form for a comment user can't edit
         $component->set('formStates.edit-'.$comment->id.'.body', 'Forced edit attempt')
@@ -444,7 +443,7 @@ describe('body trimming during edit', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', '  Edited comment with spaces  ')
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();
@@ -465,7 +464,7 @@ describe('body trimming during edit', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.edit-'.$comment->id.'.body', "\t\n  Edited with tabs and newlines\n\t  ")
             ->call('updateComment', $comment->id)
             ->assertHasNoErrors();

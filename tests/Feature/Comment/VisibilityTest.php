@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\SpamStatus;
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -43,7 +42,7 @@ describe('guest visibility', function (): void {
         ]);
 
         // Test as guest
-        Livewire::test(CommentComponent::class, ['commentable' => $this->mod])
+        Livewire::test('comment-component', ['commentable' => $this->mod])
             ->assertSee('This is a clean comment')
             ->assertDontSee('This is a pending comment')
             ->assertDontSee('This is a spam comment');
@@ -72,7 +71,7 @@ describe('comment author visibility', function (): void {
 
         // Test as comment author
         Livewire::actingAs($this->author)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('My pending comment')
             ->assertDontSee('Other user pending comment')
             ->assertSee('Clean comment visible to all');
@@ -99,7 +98,7 @@ describe('comment author visibility', function (): void {
 
         // Test as comment author
         Livewire::actingAs($this->author)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('My spam comment')
             ->assertDontSee('Other user spam comment')
             ->assertSee('Clean comment visible to all');
@@ -126,7 +125,7 @@ describe('moderator visibility', function (): void {
 
         // Test as moderator
         Livewire::actingAs($this->moderator)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('Clean comment')
             ->assertSee('Pending comment')
             ->assertSee('Spam comment');
@@ -174,7 +173,7 @@ describe('regular user visibility', function (): void {
 
         // Test as the author
         Livewire::actingAs($this->author)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('My pending comment')
             ->assertSee('My spam comment')
             ->assertDontSee('Other pending comment')
@@ -208,16 +207,16 @@ describe('comment counting', function (): void {
 
         // Test as author - should see 3 comments (2 own non-clean + 1 clean)
         Livewire::actingAs($this->author)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('(3)');
 
         // Test as other user - should see 2 comments (1 own pending + 1 clean)
         Livewire::actingAs($this->otherUser)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('(2)');
 
         // Test as guest - should only see the clean comment, no discussion count
-        $guestComponent = Livewire::test(CommentComponent::class, ['commentable' => $this->mod]);
+        $guestComponent = Livewire::test('comment-component', ['commentable' => $this->mod]);
 
         // Guests should only see clean comments, but they don't see the main discussion header with count
         // (The discussion header is only shown to authenticated users)
@@ -227,7 +226,7 @@ describe('comment counting', function (): void {
 
         // Test as moderator - should see all 4 comments
         Livewire::actingAs($this->moderator)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('(4)');
     });
 });
@@ -266,7 +265,7 @@ describe('nested comments', function (): void {
 
         // Test as author - should see parent, own pending reply, and clean reply
         Livewire::actingAs($this->author)
-            ->test(CommentComponent::class, ['commentable' => $this->mod])
+            ->test('comment-component', ['commentable' => $this->mod])
             ->assertSee('Parent comment')
             ->assertSee('My pending reply')
             ->assertDontSee('Other pending reply')

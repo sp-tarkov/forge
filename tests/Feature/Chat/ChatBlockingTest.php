@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Events\UserBlocked;
 use App\Events\UserUnblocked;
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\ConversationArchive;
 use App\Models\Message;
@@ -23,7 +22,7 @@ describe('Chat blocking UI', function (): void {
     it('shows block option in conversation dropdown menu', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->assertSee('Block User');
     });
 
@@ -31,14 +30,14 @@ describe('Chat blocking UI', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $this->userA->block($this->userB);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->assertSee('Unblock User');
     });
 
     it('shows block modal when block option is clicked', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->call('openBlockModal')
             ->assertSet('showBlockModal', true)
             ->assertSee('What happens when you block someone');
@@ -47,7 +46,7 @@ describe('Chat blocking UI', function (): void {
     it('blocks user when confirm is clicked', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->set('blockReason', 'Test reason')
             ->call('confirmBlock');
 
@@ -58,7 +57,7 @@ describe('Chat blocking UI', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $this->userA->block($this->userB);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->call('confirmBlock');
 
         expect($this->userA->fresh()->hasBlocked($this->userB))->toBeFalse();
@@ -79,7 +78,7 @@ describe('Conversation archiving', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $this->userA->block($this->userB);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->call('archiveConversation');
 
         expect($conversation->isArchivedBy($this->userA))->toBeTrue();
@@ -111,7 +110,7 @@ describe('Conversation archiving', function (): void {
         $conversation->archiveFor($this->userA);
         $this->userB->block($this->userA);
 
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->call('startConversation', $this->userB->id)
             ->assertNoRedirect();
 
@@ -125,7 +124,7 @@ describe('Message sending', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $this->userA->block($this->userB);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->assertSee("You can't send messages in this conversation")
             ->assertDontSee('Type a message...');
     });
@@ -134,7 +133,7 @@ describe('Message sending', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $this->userB->block($this->userA);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->assertSee("You can't send messages in this conversation");
     });
 
@@ -142,7 +141,7 @@ describe('Message sending', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $this->userA->block($this->userB);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->set('messageText', 'Test message')
             ->call('sendMessage');
 
@@ -154,7 +153,7 @@ describe('Message sending', function (): void {
         $this->userA->block($this->userB);
         $this->userA->unblock($this->userB);
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->set('messageText', 'Test message')
             ->call('sendMessage');
 
@@ -169,7 +168,7 @@ describe('Conversation search', function (): void {
 
         $blockerUser->block($this->userA);
 
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->set('showNewConversation', true)
             ->set('searchUser', 'User')
             ->assertDontSee('Blocker User')
@@ -183,7 +182,7 @@ describe('Conversation search', function (): void {
         $this->userA->block($blockedUser);
 
         // Blocker CAN see blocked users in search (to unarchive conversations)
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->set('showNewConversation', true)
             ->set('searchUser', 'User')
             ->assertSee('Blocked User')
@@ -197,7 +196,7 @@ describe('Conversation search', function (): void {
         $this->userA->block($blockedUser);
 
         // UserA CAN see blocked user in search (new behavior for unarchiving)
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->set('showNewConversation', true)
             ->set('searchUser', 'Blocked')
             ->assertSee('Blocked Person');
@@ -210,7 +209,7 @@ describe('Conversation search', function (): void {
         $blockerUser->block($this->userA);
 
         // UserA should not be able to see the blocker in search
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->set('showNewConversation', true)
             ->set('searchUser', 'Blocker')
             ->assertDontSee('Blocker Person');
@@ -219,7 +218,7 @@ describe('Conversation search', function (): void {
     it('prevents creating conversations with blocked users', function (): void {
         $this->userB->block($this->userA);
 
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->call('startConversation', $this->userB->id);
 
         // A conversation gets created, but the user can't send messages
@@ -234,7 +233,7 @@ describe('Real-time updates', function (): void {
     it('updates UI when user is blocked in real-time', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
 
-        $component = Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id]);
+        $component = Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id]);
 
         // Simulate receiving block event
         $component->call('handleUserBlocked', $this->userB->id);
@@ -247,7 +246,7 @@ describe('Real-time updates', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $this->userA->block($this->userB);
 
-        $component = Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id]);
+        $component = Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id]);
 
         // Simulate receiving unblock event
         $component->call('handleUserUnblocked', $this->userB->id);
@@ -261,7 +260,7 @@ describe('Real-time updates', function (): void {
 
         Event::fake();
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->call('confirmBlock');
 
         Event::assertDispatched(UserBlocked::class, fn ($event): bool => $event->blocker->id === $this->userA->id
@@ -274,7 +273,7 @@ describe('Real-time updates', function (): void {
 
         Event::fake();
 
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->call('confirmBlock');
 
         Event::assertDispatched(UserUnblocked::class, fn ($event): bool => $event->unblocker->id === $this->userA->id
@@ -291,7 +290,7 @@ describe('Edge cases', function (): void {
         $this->userA->block($this->userB);
 
         // Try to start a conversation
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->call('startConversation', $this->userB->id);
 
         // Conversation should be created but messaging disabled
@@ -372,7 +371,7 @@ describe('Archived conversation with blocked users', function (): void {
         expect($blocker->can('unarchive', $conversation))->toBeTrue();
 
         // Test via Livewire component
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->set('searchUser', 'UniqueBlockedUser')
             ->call('startConversation', $blocked->id)
             ->assertSet('selectedConversation.id', $conversation->id);
@@ -449,7 +448,7 @@ describe('Archived conversation with blocked users', function (): void {
         expect($searchResults)->toHaveCount(1);
 
         // Unarchive via startConversation
-        Livewire::test(Chat::class)
+        Livewire::test('pages::chat')
             ->call('startConversation', $blocked->id)
             ->assertSet('selectedConversation.id', $conversation->id);
 
@@ -528,7 +527,7 @@ describe('User status display when blocked', function (): void {
 
         // Load chat page as blocker
         $this->actingAs($blocker);
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->assertSee('Not available')
             ->assertDontSee('Online')
             ->assertDontSee('Last seen');
@@ -554,7 +553,7 @@ describe('User status display when blocked', function (): void {
 
         // Load chat page as blocked user
         $this->actingAs($blocked);
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->assertSee('Not available')
             ->assertDontSee('Online')
             ->assertDontSee('Last seen');
@@ -581,7 +580,7 @@ describe('User status display when blocked', function (): void {
 
         // Load chat page as blocker
         $this->actingAs($blocker);
-        Livewire::test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        Livewire::test('pages::chat', ['conversationHash' => $conversation->hash_id])
             ->assertSee('Last seen')
             ->assertDontSee('Not available');
     });

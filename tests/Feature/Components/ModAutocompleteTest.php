@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Components\ModAutocomplete;
 use App\Models\Mod;
 use Livewire\Livewire;
 
@@ -15,7 +14,7 @@ describe('Mod Autocomplete Component', function (): void {
         $mod3 = Mod::factory()->create(['name' => 'Gamma Mod']);
 
         // Test the autocomplete component
-        $component = Livewire::test(ModAutocomplete::class)
+        $component = Livewire::test('form.mod-autocomplete')
             ->set('search', 'Beta');
 
         // Check that only matching mod is in filtered results
@@ -31,7 +30,7 @@ describe('Mod Autocomplete Component', function (): void {
         $mod3 = Mod::factory()->create(['name' => 'Another Alpha Mod']);
 
         // Test excluding a mod
-        $component = Livewire::test(ModAutocomplete::class, ['excludeModId' => $mod1->id])
+        $component = Livewire::test('form.mod-autocomplete', ['excludeModId' => $mod1->id])
             ->set('search', 'Alpha');
 
         // Check that excluded mod is not in results
@@ -43,7 +42,7 @@ describe('Mod Autocomplete Component', function (): void {
     it('selects a mod and updates the display', function (): void {
         $mod = Mod::factory()->create(['name' => 'Test Mod']);
 
-        $component = Livewire::test(ModAutocomplete::class)
+        $component = Livewire::test('form.mod-autocomplete')
             ->set('search', 'Test')
             ->call('selectMod', $mod->id, 'Test Mod');
 
@@ -56,7 +55,7 @@ describe('Mod Autocomplete Component', function (): void {
     it('clears selection when clear button is clicked', function (): void {
         $mod = Mod::factory()->create(['name' => 'Test Mod']);
 
-        $component = Livewire::test(ModAutocomplete::class)
+        $component = Livewire::test('form.mod-autocomplete')
             ->set('selectedModId', (string) $mod->id)
             ->set('selectedModName', 'Test Mod')
             ->set('search', 'Test Mod')
@@ -70,7 +69,7 @@ describe('Mod Autocomplete Component', function (): void {
     it('shows dropdown when searching', function (): void {
         Mod::factory()->create(['name' => 'Test Mod']);
 
-        $component = Livewire::test(ModAutocomplete::class)
+        $component = Livewire::test('form.mod-autocomplete')
             ->set('search', 'Test');
 
         expect($component->get('showDropdown'))->toBeTrue();
@@ -82,7 +81,7 @@ describe('Mod Autocomplete Component', function (): void {
         Mod::factory()->create(['name' => 'Another Mod']);
         Mod::factory()->create(['name' => 'Amazing Mod']);
 
-        $component = Livewire::test(ModAutocomplete::class)
+        $component = Livewire::test('form.mod-autocomplete')
             ->set('search', 'A')
             ->set('showDropdown', true);
 
@@ -103,7 +102,7 @@ describe('Mod Autocomplete Component', function (): void {
         $mod1 = Mod::factory()->create(['name' => 'Alpha Mod']);
         $mod2 = Mod::factory()->create(['name' => 'Another Mod']);
 
-        $component = Livewire::test(ModAutocomplete::class)
+        $component = Livewire::test('form.mod-autocomplete')
             ->set('search', 'A')
             ->set('showDropdown', true)
             ->set('highlightIndex', 1)
@@ -119,7 +118,7 @@ describe('Mod Autocomplete Component', function (): void {
             Mod::factory()->create(['name' => 'Test Mod '.$i]);
         }
 
-        $component = Livewire::test(ModAutocomplete::class)
+        $component = Livewire::test('form.mod-autocomplete')
             ->set('search', 'Test');
 
         $filteredMods = $component->get('filteredMods');
@@ -129,7 +128,7 @@ describe('Mod Autocomplete Component', function (): void {
     it('loads pre-selected mod on mount', function (): void {
         $mod = Mod::factory()->create(['name' => 'Preselected Mod']);
 
-        $component = Livewire::test(ModAutocomplete::class, [
+        $component = Livewire::test('form.mod-autocomplete', [
             'selectedModId' => (string) $mod->id,
         ]);
 
@@ -141,7 +140,7 @@ describe('Mod Autocomplete Component', function (): void {
     it('dispatches events when mod is selected or cleared', function (): void {
         $mod = Mod::factory()->create(['name' => 'Event Test Mod']);
 
-        $component = Livewire::test(ModAutocomplete::class);
+        $component = Livewire::test('form.mod-autocomplete');
 
         // Test selection event
         $component->call('selectMod', $mod->id, 'Event Test Mod')

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Ribbon\Addon as AddonRibbon;
 use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\User;
@@ -35,7 +34,7 @@ describe('Addon Ribbon States', function (): void {
     it('shows disabled ribbon when addon is disabled', function (): void {
         $addon = Addon::factory()->for($this->mod)->create(['disabled' => true]);
 
-        Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
+        Livewire::test('ribbon.addon', getAddonRibbonProps($addon))
             ->assertSee('ribbon red')
             ->assertSee('Disabled');
     });
@@ -43,7 +42,7 @@ describe('Addon Ribbon States', function (): void {
     it('shows unpublished ribbon when publishedAt is null', function (): void {
         $addon = Addon::factory()->for($this->mod)->create(['published_at' => null]);
 
-        Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
+        Livewire::test('ribbon.addon', getAddonRibbonProps($addon))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished');
     });
@@ -51,7 +50,7 @@ describe('Addon Ribbon States', function (): void {
     it('shows scheduled ribbon when publishedAt is in future', function (): void {
         $addon = Addon::factory()->for($this->mod)->create(['published_at' => now()->addDays(7)]);
 
-        Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
+        Livewire::test('ribbon.addon', getAddonRibbonProps($addon))
             ->assertSee('ribbon emerald')
             ->assertSee('Scheduled');
     });
@@ -62,7 +61,7 @@ describe('Addon Ribbon States', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
+        Livewire::test('ribbon.addon', getAddonRibbonProps($addon))
             ->assertDontSee('class="ribbon');
     });
 
@@ -72,7 +71,7 @@ describe('Addon Ribbon States', function (): void {
             'published_at' => null,
         ]);
 
-        Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
+        Livewire::test('ribbon.addon', getAddonRibbonProps($addon))
             ->assertSee('ribbon red')
             ->assertSee('Disabled')
             ->assertDontSee('Unpublished');
@@ -85,7 +84,7 @@ describe('Addon Ribbon States', function (): void {
             'published_at' => null,
         ]);
 
-        Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
+        Livewire::test('ribbon.addon', getAddonRibbonProps($addon))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished');
     });
@@ -98,7 +97,7 @@ describe('Event-Driven Updates', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        $component = Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon))
+        $component = Livewire::test('ribbon.addon', getAddonRibbonProps($addon))
             ->assertDontSee('class="ribbon');
 
         // Update the addon in database
@@ -116,7 +115,7 @@ describe('Event-Driven Updates', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        $component = Livewire::test(AddonRibbon::class, getAddonRibbonProps($addon));
+        $component = Livewire::test('ribbon.addon', getAddonRibbonProps($addon));
 
         // Verify the component has the refreshAddon method (tests the On attribute functionality)
         expect(method_exists($component->instance(), 'refreshAddon'))->toBeTrue();

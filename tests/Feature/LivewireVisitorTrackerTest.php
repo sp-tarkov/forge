@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Events\PeakVisitorUpdated;
-use App\Livewire\VisitorTracker;
 use App\Models\Visitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -24,13 +23,13 @@ it('initializes with current peak data', function (): void {
         'peak_date' => Date::parse('2025-01-01'),
     ]);
 
-    Livewire::test(VisitorTracker::class)
+    Livewire::test('visitor-tracker')
         ->assertSet('peakCount', 100)
         ->assertSet('peakDate', 'Jan 1, 2025');
 });
 
 it('initializes with zero when no peak exists', function (): void {
-    Livewire::test(VisitorTracker::class)
+    Livewire::test('visitor-tracker')
         ->assertSet('peakCount', 0)
         ->assertSet('peakDate', null);
 });
@@ -44,7 +43,7 @@ it('updates peak when new count is higher', function (): void {
         'peak_date' => Date::yesterday(),
     ]);
 
-    $component = Livewire::test(VisitorTracker::class);
+    $component = Livewire::test('visitor-tracker');
 
     // Call updatePeak with higher count
     $component->call('updatePeak', 75);
@@ -75,7 +74,7 @@ it('does not update peak when new count is lower', function (): void {
         'peak_date' => $peakDate,
     ]);
 
-    $component = Livewire::test(VisitorTracker::class);
+    $component = Livewire::test('visitor-tracker');
 
     // Call updatePeak with lower count
     $component->call('updatePeak', 75);
@@ -103,8 +102,8 @@ it('handles concurrent peak updates with mutex lock', function (): void {
     ]);
 
     // Simulate concurrent updates
-    $component1 = Livewire::test(VisitorTracker::class);
-    $component2 = Livewire::test(VisitorTracker::class);
+    $component1 = Livewire::test('visitor-tracker');
+    $component2 = Livewire::test('visitor-tracker');
 
     // Both try to update at same time with same count
     $component1->call('updatePeak', 75);
@@ -124,7 +123,7 @@ it('creates peak record if it does not exist', function (): void {
     // No peak record initially
     expect(Visitor::query()->count())->toBe(0);
 
-    $component = Livewire::test(VisitorTracker::class);
+    $component = Livewire::test('visitor-tracker');
 
     // Call updatePeak
     $component->call('updatePeak', 25);
@@ -151,13 +150,13 @@ it('uses cache for initial peak data', function (): void {
     ]);
 
     // First component load should cache the data
-    Livewire::test(VisitorTracker::class);
+    Livewire::test('visitor-tracker');
 
     // Modify database directly (bypassing cache)
     Visitor::query()->update(['peak_count' => 200]);
 
     // Second component should still get cached value
-    Livewire::test(VisitorTracker::class)
+    Livewire::test('visitor-tracker')
         ->assertSet('peakCount', 100)  // Cached value, not 200
         ->assertSet('peakDate', 'Jan 1, 2025');
 
@@ -165,7 +164,7 @@ it('uses cache for initial peak data', function (): void {
     Cache::forget('peak_visitor_data');
 
     // Now should get fresh value
-    Livewire::test(VisitorTracker::class)
+    Livewire::test('visitor-tracker')
         ->assertSet('peakCount', 200)
         ->assertSet('peakDate', 'Jan 1, 2025');
 });

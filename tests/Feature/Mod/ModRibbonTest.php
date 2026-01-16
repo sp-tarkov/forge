@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Ribbon\Mod as ModRibbon;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,7 +34,7 @@ describe('Mod Ribbon States', function (): void {
     it('shows disabled ribbon when mod is disabled', function (): void {
         $mod = Mod::factory()->create(['disabled' => true]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertSee('ribbon red')
             ->assertSee('Disabled');
     });
@@ -43,7 +42,7 @@ describe('Mod Ribbon States', function (): void {
     it('shows unpublished ribbon when publishedAt is null', function (): void {
         $mod = Mod::factory()->create(['published_at' => null]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished');
     });
@@ -51,7 +50,7 @@ describe('Mod Ribbon States', function (): void {
     it('shows scheduled ribbon when publishedAt is in future', function (): void {
         $mod = Mod::factory()->create(['published_at' => now()->addDays(7)]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertSee('ribbon emerald')
             ->assertSee('Scheduled');
     });
@@ -62,7 +61,7 @@ describe('Mod Ribbon States', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod, false))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod, false))
             ->assertSee('ribbon sky')
             ->assertSee('Featured!');
     });
@@ -73,7 +72,7 @@ describe('Mod Ribbon States', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod, true))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod, true))
             ->assertDontSee('class="ribbon');
     });
 
@@ -84,7 +83,7 @@ describe('Mod Ribbon States', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertDontSee('class="ribbon');
     });
 
@@ -95,7 +94,7 @@ describe('Mod Ribbon States', function (): void {
             'featured' => true,
         ]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertSee('ribbon red')
             ->assertSee('Disabled')
             ->assertDontSee('Unpublished')
@@ -109,7 +108,7 @@ describe('Mod Ribbon States', function (): void {
             'featured' => true,
         ]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished')
             ->assertDontSee('Featured');
@@ -122,7 +121,7 @@ describe('Mod Ribbon States', function (): void {
             'featured' => true,
         ]);
 
-        Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertSee('ribbon emerald')
             ->assertSee('Scheduled')
             ->assertDontSee('Featured');
@@ -137,7 +136,7 @@ describe('Event-Driven Updates', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        $component = Livewire::test(ModRibbon::class, getModRibbonProps($mod))
+        $component = Livewire::test('ribbon.mod', getModRibbonProps($mod))
             ->assertDontSee('class="ribbon');
 
         // Update the mod in database
@@ -156,7 +155,7 @@ describe('Event-Driven Updates', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        $component = Livewire::test(ModRibbon::class, getModRibbonProps($mod));
+        $component = Livewire::test('ribbon.mod', getModRibbonProps($mod));
 
         // Verify the component has the refreshMod method (tests the On attribute functionality)
         expect(method_exists($component->instance(), 'refreshMod'))->toBeTrue();

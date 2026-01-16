@@ -10,35 +10,16 @@ use App\Http\Controllers\FileRedirectController;
 use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
-use App\Livewire\Admin\ModerationActions;
-use App\Livewire\Admin\RoleManagement;
-use App\Livewire\Admin\SptVersionManagement;
-use App\Livewire\Admin\UserManagement;
-use App\Livewire\Admin\VisitorAnalytics;
-use App\Livewire\Page\Addon\GuidelinesAcknowledgment as AddonGuidelinesAcknowledgment;
-use App\Livewire\Page\Chat;
-use App\Livewire\Page\Homepage;
-use App\Livewire\Page\Mod\Create as ModCreate;
-use App\Livewire\Page\Mod\Edit as ModEdit;
-use App\Livewire\Page\Mod\GuidelinesAcknowledgment as ModGuidelinesAcknowledgment;
-use App\Livewire\Page\Mod\Index as ModIndex;
-use App\Livewire\Page\Mod\Show as ModShow;
-use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
-use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
-use App\Livewire\Page\User\Banned;
-use App\Livewire\Page\User\Show as UserShow;
 use App\Models\Mod;
 use App\Models\Report;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth.banned')->group(function (): void {
 
-    Route::get('/', Homepage::class)
+    Route::livewire('/', 'pages::homepage')
         ->name('home');
 
-    Route::get('/mods', ModIndex::class)
+    Route::livewire('/mods', 'pages::mod.index')
         ->can('viewAny', Mod::class)
         ->name('mods');
 
@@ -50,7 +31,7 @@ Route::middleware('auth.banned')->group(function (): void {
         ->where(['hubId' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
         ->name('files.redirect');
 
-    Route::get('/mod/{modId}/{slug}', ModShow::class)
+    Route::livewire('/mod/{modId}/{slug}', 'pages::mod.show')
         ->where(['modId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
         ->name('mod.show');
 
@@ -58,7 +39,7 @@ Route::middleware('auth.banned')->group(function (): void {
         ->where(['mod' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
         ->name('mod.version.download');
 
-    Route::get('/addon/{addonId}/{slug}', App\Livewire\Page\Addon\Show::class)
+    Route::livewire('/addon/{addonId}/{slug}', 'pages::addon.show')
         ->where(['addonId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
         ->name('addon.show');
 
@@ -66,11 +47,11 @@ Route::middleware('auth.banned')->group(function (): void {
         ->where(['addon' => '[0-9]+', 'slug' => '[a-z0-9-]+'])
         ->name('addon.version.download');
 
-    Route::get('/user/{userId}/{slug}', UserShow::class)
+    Route::livewire('/user/{userId}/{slug}', 'pages::user.show')
         ->where(['userId' => '[0-9]+'])
         ->name('user.show');
 
-    Route::get('/user-banned', Banned::class)
+    Route::livewire('/user-banned', 'pages::user.banned')
         ->name('user.banned');
 
     // Socialite OAuth Login
@@ -97,64 +78,64 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {
 
         // Authenticated and verified routes
-        Route::get('/dashboard', fn (): View|Factory => view('dashboard'))->name('dashboard');
+        Route::livewire('/dashboard', 'pages::dashboard')->name('dashboard');
 
-        Route::get('/mod/guidelines', ModGuidelinesAcknowledgment::class)
+        Route::livewire('/mod/guidelines', 'pages::mod.guidelines-acknowledgment')
             ->name('mod.guidelines');
 
-        Route::get('/mod/create', ModCreate::class)
+        Route::livewire('/mod/create', 'pages::mod.create')
             ->name('mod.create');
 
-        Route::get('/mod/{modId}/edit', ModEdit::class)
+        Route::livewire('/mod/{modId}/edit', 'pages::mod.edit')
             ->where(['modId' => '[0-9]+'])
             ->name('mod.edit');
 
-        Route::get('/mod/{mod}/version/create', ModVersionCreate::class)
+        Route::livewire('/mod/{mod}/version/create', 'pages::mod-version.create')
             ->where(['mod' => '[0-9]+'])
             ->name('mod.version.create');
 
-        Route::get('/mod/{mod}/version/{modVersion}/edit', ModVersionEdit::class)
+        Route::livewire('/mod/{mod}/version/{modVersion}/edit', 'pages::mod-version.edit')
             ->where(['mod' => '[0-9]+', 'modVersion' => '[0-9]+'])
             ->name('mod.version.edit');
 
-        Route::get('/addon/guidelines/{mod}', AddonGuidelinesAcknowledgment::class)
+        Route::livewire('/addon/guidelines/{mod}', 'pages::addon.guidelines-acknowledgment')
             ->where(['mod' => '[0-9]+'])
             ->name('addon.guidelines');
 
-        Route::get('/addon/create/{mod}', App\Livewire\Page\Addon\Create::class)
+        Route::livewire('/addon/create/{mod}', 'pages::addon.create')
             ->where(['mod' => '[0-9]+'])
             ->name('addon.create');
 
-        Route::get('/addon/{addonId}/edit', App\Livewire\Page\Addon\Edit::class)
+        Route::livewire('/addon/{addonId}/edit', 'pages::addon.edit')
             ->where(['addonId' => '[0-9]+'])
             ->name('addon.edit');
 
-        Route::get('/addon/{addon}/version/create', App\Livewire\Page\AddonVersion\Create::class)
+        Route::livewire('/addon/{addon}/version/create', 'pages::addon-version.create')
             ->where(['addon' => '[0-9]+'])
             ->name('addon.version.create');
 
-        Route::get('/addon/{addon}/version/{addonVersion}/edit', App\Livewire\Page\AddonVersion\Edit::class)
+        Route::livewire('/addon/{addon}/version/{addonVersion}/edit', 'pages::addon-version.edit')
             ->where(['addon' => '[0-9]+', 'addonVersion' => '[0-9]+'])
             ->name('addon.version.edit');
 
-        Route::get('/chat/{conversationHash?}', Chat::class)
+        Route::livewire('/chat/{conversationHash?}', 'pages::chat')
             ->where(['conversationHash' => '[a-zA-Z0-9]+'])
             ->name('chat');
 
-        Route::get('/report-centre', fn (): View|Factory => view('report-centre'))
+        Route::livewire('/report-centre', 'pages::admin.report-centre')
             ->can('viewAny', Report::class)
             ->name('report-centre');
 
-        Route::get('/moderation-actions', ModerationActions::class)
+        Route::livewire('/moderation-actions', 'pages::admin.moderation-actions')
             ->can('viewAny', Report::class)
             ->name('moderation-actions');
 
         // Authenticated, verified, administrator routes
         Route::middleware('can:admin')->group(function (): void {
-            Route::get('/admin/visitor-analytics', VisitorAnalytics::class)->name('admin.visitor-analytics');
-            Route::get('/admin/user-management', UserManagement::class)->name('admin.user-management');
-            Route::get('/admin/role-management', RoleManagement::class)->name('admin.role-management');
-            Route::get('/admin/spt-versions', SptVersionManagement::class)->name('admin.spt-versions');
+            Route::livewire('/admin/visitor-analytics', 'pages::admin.visitor-analytics')->name('admin.visitor-analytics');
+            Route::livewire('/admin/user-management', 'pages::admin.user-management')->name('admin.user-management');
+            Route::livewire('/admin/role-management', 'pages::admin.role-management')->name('admin.role-management');
+            Route::livewire('/admin/spt-versions', 'pages::admin.spt-version-management')->name('admin.spt-versions');
         });
     });
 

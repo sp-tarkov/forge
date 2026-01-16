@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -22,7 +21,7 @@ describe('guest restrictions', function (): void {
             'body' => 'Test comment',
         ]);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('Test comment')
             ->assertDontSee('Reply');
     });
@@ -34,7 +33,7 @@ describe('guest restrictions', function (): void {
             'commentable_type' => $mod::class,
         ]);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$parentComment->id.'.body', 'This is a reply.')
             ->call('createReply', $parentComment->id)
             ->assertForbidden();
@@ -51,7 +50,7 @@ describe('authenticated user replies', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$parentComment->id.'.body', 'This is a reply.')
             ->call('createReply', $parentComment->id)
             ->assertHasNoErrors();
@@ -74,7 +73,7 @@ describe('authenticated user replies', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$parentComment->id.'.body', 'This is a reply.')
             ->call('createReply', $parentComment->id)
             ->assertForbidden();
@@ -96,7 +95,7 @@ describe('reply validation', function (): void {
         $nonExistentCommentId = 99999;
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$nonExistentCommentId.'.body', 'Reply to non-existent comment')
             ->call('createReply', $nonExistentCommentId)
             ->assertNotFound();
@@ -115,7 +114,7 @@ describe('reply validation', function (): void {
 
         // Try to reply to it from mod2's comment manager
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod2])
+            ->test('comment-component', ['commentable' => $mod2])
             ->set('formStates.reply-'.$comment->id.'.body', 'Cross-mod reply attempt')
             ->call('createReply', $comment->id)
             ->assertNotFound(); // Returns 404 because comment not found in mod2
@@ -138,7 +137,7 @@ describe('reply validation', function (): void {
 
         foreach ($testCases as $testCase) {
             Livewire::actingAs($user)
-                ->test(CommentComponent::class, ['commentable' => $mod])
+                ->test('comment-component', ['commentable' => $mod])
                 ->set('formStates.reply-'.$parentComment->id.'.body', $testCase)
                 ->call('createReply', $parentComment->id)
                 ->assertHasErrors(['formStates.reply-'.$parentComment->id.'.body']);
@@ -155,7 +154,7 @@ describe('reply validation', function (): void {
 
         // This should pass validation because it trims to "Hello" (5 chars)
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$parentComment->id.'.body', '   Hello   ')
             ->call('createReply', $parentComment->id)
             ->assertHasNoErrors();
@@ -184,7 +183,7 @@ describe('comment hierarchy', function (): void {
 
         // Create a valid reply
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$rootComment->id.'.body', 'Valid reply')
             ->call('createReply', $rootComment->id)
             ->assertHasNoErrors();
@@ -198,7 +197,7 @@ describe('comment hierarchy', function (): void {
 
         // Can also reply to replies (nested comments are allowed but displayed flat)
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$reply->id.'.body', 'Reply to reply')
             ->call('createReply', $reply->id)
             ->assertHasNoErrors();
@@ -215,7 +214,7 @@ describe('rate limiting', function (): void {
         ]);
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // The first reply should succeed
         $component->set('formStates.reply-'.$parentComment->id.'.body', 'First reply')
@@ -244,7 +243,7 @@ describe('rate limiting', function (): void {
         ]);
 
         $component = Livewire::actingAs($admin)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // First reply should succeed
         $component->set('formStates.reply-'.$parentComment->id.'.body', 'First admin reply')
@@ -273,7 +272,7 @@ describe('rate limiting', function (): void {
         ]);
 
         $component = Livewire::actingAs($moderator)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // First reply should succeed
         $component->set('formStates.reply-'.$parentComment->id.'.body', 'First moderator reply')
@@ -310,7 +309,7 @@ describe('user wall replies', function (): void {
 
         // Reply to the comment
         Livewire::actingAs($replier)
-            ->test(CommentComponent::class, ['commentable' => $profileOwner])
+            ->test('comment-component', ['commentable' => $profileOwner])
             ->set('formStates.reply-'.$comment->id.'.body', 'I agree!')
             ->call('createReply', $comment->id)
             ->assertHasNoErrors();
