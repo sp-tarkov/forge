@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Create;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -19,7 +18,7 @@ describe('Markdown Editor Preview', function (): void {
 
             $markdown = '# Hello World'."\n\n".'This is **bold** text.';
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
             expect($html)->toContain('<h1>')
@@ -33,11 +32,12 @@ describe('Markdown Editor Preview', function (): void {
 
             $markdown = '<script>alert("XSS")</script>'."\n\n".'Safe content';
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
+            // Script tags should be escaped (not executable)
             expect($html)->not->toContain('<script>')
-                ->and($html)->not->toContain('alert(')
+                ->and($html)->toContain('&lt;script&gt;')  // Escaped, not raw
                 ->and($html)->toContain('Safe content');
         });
 
@@ -45,7 +45,7 @@ describe('Markdown Editor Preview', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown('', 'description');
 
             expect($html)->toContain('Nothing to preview.');
@@ -55,7 +55,7 @@ describe('Markdown Editor Preview', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown("   \n\n   ", 'description');
 
             expect($html)->toContain('Nothing to preview.');
@@ -71,7 +71,7 @@ describe('Markdown Editor Preview', function (): void {
 | Cell 1   | Cell 2   |
 MD;
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
             expect($html)->toContain('<table>')
@@ -89,7 +89,7 @@ echo "Hello World";
 ```
 MD;
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
             expect($html)->toContain('<code>')
@@ -102,7 +102,7 @@ MD;
 
             $markdown = '[Link text](https://example.com)';
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
             expect($html)->toContain('<a')
@@ -120,7 +120,7 @@ MD;
 - Item 3
 MD;
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
             expect($html)->toContain('<ul>')
@@ -134,7 +134,7 @@ MD;
 
             $markdown = ':smile: :rocket:';
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
             // Emoji extension should convert :smile: to unicode emoji or HTML
@@ -148,7 +148,7 @@ MD;
             // Test that description config allows more HTML than default
             $markdownWithHeadings = '# Heading 1'."\n".'## Heading 2';
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
 
             // Description config allows headings
             $htmlDescription = $component->instance()->previewMarkdown($markdownWithHeadings, 'description');
@@ -164,7 +164,7 @@ MD;
 
             $markdown = '~~strikethrough text~~';
 
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
             expect($html)->toContain('<del>')
@@ -174,7 +174,7 @@ MD;
 
     describe('Authorization', function (): void {
         it('requires authentication to access component', function (): void {
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->assertForbidden();
         });
     });
@@ -184,7 +184,7 @@ MD;
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);
 
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->assertSee('Write')
                 ->assertSee('Preview')
                 ->assertStatus(200);
@@ -194,7 +194,7 @@ MD;
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);
 
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('description', '# Test Description')
                 ->assertSet('description', '# Test Description');
         });

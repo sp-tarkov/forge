@@ -32,7 +32,7 @@ class CommentSubscriptionController extends Controller
 
         CommentSubscription::unsubscribe($user, $commentable);
 
-        return response()->view('comment-unsubscribed', [
+        return response()->view('static.comment-unsubscribed', [
             'commentable' => $commentable,
             'user' => $user,
         ]);

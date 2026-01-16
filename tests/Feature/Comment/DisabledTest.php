@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Create;
-use App\Livewire\Page\Mod\Edit;
-use App\Livewire\Page\Mod\Show;
 use App\Models\Comment;
 use App\Models\License;
 use App\Models\Mod;
@@ -136,7 +133,7 @@ describe('Mod Create Form', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Create::class)
+        Livewire::test('pages::mod.create')
             ->set('honeypotData.nameFieldName', 'name')
             ->set('honeypotData.validFromFieldName', 'valid_from')
             ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -168,7 +165,7 @@ describe('Mod Create Form', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Create::class)
+        Livewire::test('pages::mod.create')
             ->set('honeypotData.nameFieldName', 'name')
             ->set('honeypotData.validFromFieldName', 'valid_from')
             ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -206,7 +203,7 @@ describe('Mod Edit Form', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->set('commentsDisabled', true)
             ->call('save')
             ->assertHasNoErrors();
@@ -227,7 +224,7 @@ describe('Mod Edit Form', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(Edit::class, ['modId' => $mod->id])
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
             ->set('commentsDisabled', false)
             ->call('save')
             ->assertHasNoErrors();
@@ -240,7 +237,7 @@ describe('Mod Edit Form', function (): void {
         $this->mod->update(['comments_disabled' => true]);
         $this->actingAs($this->user);
 
-        $component = Livewire::test(Edit::class, ['modId' => $this->mod->id]);
+        $component = Livewire::test('pages::mod.edit', ['modId' => $this->mod->id]);
 
         expect($component->get('commentsDisabled'))->toBeTrue();
     });
@@ -257,7 +254,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->user);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSeeText('Comment')
             ->assertSee('comment-component');
     });
@@ -267,7 +264,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->otherUser);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertDontSeeText('Comment')
             ->assertDontSee('comment-component');
     });
@@ -277,7 +274,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->moderator);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSeeText('Comment')
             ->assertSee('comment-component');
     });
@@ -287,7 +284,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->admin);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSeeText('Comment')
             ->assertSee('comment-component');
     });
@@ -297,7 +294,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->user);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSeeText('Comment')
             ->assertSee('comment-component');
     });
@@ -309,7 +306,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($author);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSeeText('Comment')
             ->assertSee('comment-component');
     });
@@ -319,7 +316,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->admin);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSee('Comments have been disabled for this mod')
             ->assertSee('not visible to normal users');
     });
@@ -329,7 +326,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->moderator);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSee('Comments have been disabled for this mod')
             ->assertSee('not visible to normal users');
     });
@@ -339,7 +336,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->user);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSee('Comments have been disabled for this mod')
             ->assertSee('not visible to normal users')
             ->assertSee('mod owner or author');
@@ -352,7 +349,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($author);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSee('Comments have been disabled for this mod')
             ->assertSee('not visible to normal users')
             ->assertSee('mod owner or author');
@@ -362,7 +359,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->mod->update(['comments_disabled' => true]);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertDontSee('Comments', false)
             ->assertDontSee('comment-component');
     });
@@ -372,7 +369,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->otherUser);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertDontSee('Post Comment')
             ->assertDontSee('comment-component');
     });
@@ -381,7 +378,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->user);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertSeeText('Comment')
             ->assertSee('comment-component')
             ->assertDontSee('Comments have been disabled for this mod');
@@ -392,7 +389,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->user);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertDontSee('Post Comment')
             ->assertSee('Comments have been disabled for this mod')
             ->assertSee('Comments are disabled.');
@@ -405,7 +402,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($author);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertDontSee('Post Comment')
             ->assertSee('Comments have been disabled for this mod')
             ->assertSee('Comments are disabled.');
@@ -416,7 +413,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->admin);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertDontSee('Post Comment')
             ->assertSee('Comments have been disabled for this mod')
             ->assertSee('Comments are disabled.');
@@ -426,7 +423,7 @@ describe('Mod Show Page Comment Visibility', function (): void {
         $this->actingAs($this->user);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
+            ->test('pages::mod.show', ['modId' => $this->mod->id, 'slug' => $this->mod->slug])
             ->assertDontSee('Enable Comments')
             ->assertDontSee('Disable Comments');
     });

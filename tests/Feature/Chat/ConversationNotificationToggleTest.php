@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\ConversationSubscription;
 use App\Models\User;
@@ -20,7 +19,7 @@ it('can toggle notification preferences for a conversation', function (): void {
     $conversation = Conversation::findOrCreateBetween($user, $otherUser, $user);
 
     Livewire::actingAs($user)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->assertSee('Disable Notifications')
         ->call('toggleNotifications')
         ->assertSee('Enable Notifications');
@@ -36,7 +35,7 @@ it('can toggle notification preferences for a conversation', function (): void {
 
     // Toggle back on
     Livewire::actingAs($user)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->call('toggleNotifications');
 
     $subscription->refresh();
@@ -53,7 +52,7 @@ it('shows correct notification status in dropdown', function (): void {
 
     // Should show "Disable Notifications" initially (using global preference)
     Livewire::actingAs($user)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->assertSee('Disable Notifications')
         ->assertDontSee('Enable Notifications');
 
@@ -65,7 +64,7 @@ it('shows correct notification status in dropdown', function (): void {
 
     // Should now show "Enable Notifications"
     Livewire::actingAs($user)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->assertSee('Enable Notifications')
         ->assertDontSee('Disable Notifications');
 });
@@ -84,11 +83,11 @@ it('respects global preference when no conversation-specific preference exists',
 
     // User with global enabled should see "Disable" option
     Livewire::actingAs($userWithGlobalEnabled)
-        ->test(Chat::class, ['conversationHash' => $conversation1->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation1->hash_id])
         ->assertSee('Disable Notifications');
 
     // User with global disabled should see "Enable" option
     Livewire::actingAs($userWithGlobalDisabled)
-        ->test(Chat::class, ['conversationHash' => $conversation2->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation2->hash_id])
         ->assertSee('Enable Notifications');
 });

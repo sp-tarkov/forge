@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Index;
 use App\Models\ModCategory;
 use App\Models\SptVersion;
 use App\Models\User;
@@ -33,7 +32,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         ModCategory::factory()->create();
 
         // Test the component as a guest
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Get the available versions
         $availableVersions = $component->get('availableSptVersions');
@@ -58,7 +57,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         ModCategory::factory()->create();
 
         // Test the component as an admin
-        $component = Livewire::actingAs($admin)->test(Index::class);
+        $component = Livewire::actingAs($admin)->test('pages::mod.index');
 
         // Get the available versions
         $availableVersions = $component->get('availableSptVersions');
@@ -79,7 +78,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         ModCategory::factory()->create();
 
         // Test the component as a guest
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Get the available versions
         $availableVersions = $component->get('availableSptVersions');
@@ -97,7 +96,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         ModCategory::factory()->create();
 
         // Test the component as a guest
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Get the available versions
         $availableVersions = $component->get('availableSptVersions');
@@ -115,7 +114,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         ModCategory::factory()->create();
 
         // First load - should not see the version
-        $component1 = Livewire::test(Index::class);
+        $component1 = Livewire::test('pages::mod.index');
         $versions1 = $component1->get('availableSptVersions')->pluck('version')->toArray();
         expect($versions1)->not->toContain('4.0.0');
 
@@ -127,7 +126,7 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         Cache::forget('active-spt-versions');
 
         // Second load - should now see the version
-        $component2 = Livewire::test(Index::class);
+        $component2 = Livewire::test('pages::mod.index');
         $versions2 = $component2->get('availableSptVersions')->pluck('version')->toArray();
         expect($versions2)->toContain('4.0.0');
     });

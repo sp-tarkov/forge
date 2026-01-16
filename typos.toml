@@ -7,12 +7,10 @@ Monolog = "Monolog"
 
 [files]
 extend-exclude = [
-    "/app/Jobs/Import/DataTransferObjects/HubMod.php",
     "/public/vendor/",
     "/public/robots.txt",
     "/package-lock.json",
     "/sonar-project.properties",
-    "/phpstan.neon",
     "/artisan",
     "/pint.json",
     "/rector.php",

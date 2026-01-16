@@ -2,10 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Mod\Show\AddonsTab;
-use App\Livewire\Mod\Show\CommentsTab;
-use App\Livewire\Mod\Show\DescriptionTab;
-use App\Livewire\Mod\Show\VersionsTab;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -28,7 +24,7 @@ describe('description tab', function (): void {
         ]);
 
         Livewire::withoutLazyLoading()
-            ->test(DescriptionTab::class, ['modId' => $mod->id])
+            ->test('mod.show.description-tab', ['modId' => $mod->id])
             ->assertSee('Test Description')
             ->assertSuccessful();
     });
@@ -36,11 +32,12 @@ describe('description tab', function (): void {
     it('displays a placeholder while lazy loading', function (): void {
         $mod = Mod::factory()->create();
 
-        $component = new DescriptionTab;
-        $component->modId = $mod->id;
+        $component = Livewire::test('mod.show.description-tab', ['modId' => $mod->id])
+            ->instance();
         $placeholder = $component->placeholder();
 
-        expect($placeholder->name())->toBe('livewire.mod.show.description-tab-placeholder');
+        // Verify the placeholder renders skeleton content for the description tab
+        expect($placeholder->render())->toContain('data-flux-skeleton');
     });
 });
 
@@ -54,7 +51,7 @@ describe('versions tab', function (): void {
         ]);
 
         Livewire::withoutLazyLoading()
-            ->test(VersionsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
             ->assertSee('Version 2.0.0')
             ->assertSuccessful();
     });
@@ -69,7 +66,7 @@ describe('versions tab', function (): void {
         ]);
 
         Livewire::withoutLazyLoading()
-            ->test(VersionsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
             ->assertSuccessful();
     });
 
@@ -77,7 +74,7 @@ describe('versions tab', function (): void {
         $mod = Mod::factory()->create();
 
         Livewire::withoutLazyLoading()
-            ->test(VersionsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
             ->assertSee('No Versions Yet')
             ->assertSuccessful();
     });
@@ -85,11 +82,12 @@ describe('versions tab', function (): void {
     it('displays a placeholder while lazy loading', function (): void {
         $mod = Mod::factory()->create();
 
-        $component = new VersionsTab;
-        $component->modId = $mod->id;
+        $component = Livewire::test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->instance();
         $placeholder = $component->placeholder();
 
-        expect($placeholder->name())->toBe('livewire.mod.show.versions-tab-placeholder');
+        // Verify the placeholder renders skeleton content for the versions tab
+        expect($placeholder->render())->toContain('data-flux-skeleton');
     });
 });
 
@@ -117,7 +115,7 @@ describe('addons tab', function (): void {
         ]);
 
         Livewire::withoutLazyLoading()
-            ->test(AddonsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.addons-tab', ['modId' => $mod->id])
             ->assertSee('Test Addon')
             ->assertSuccessful();
     });
@@ -126,7 +124,7 @@ describe('addons tab', function (): void {
         $mod = Mod::factory()->addonsDisabled()->create();
 
         Livewire::withoutLazyLoading()
-            ->test(AddonsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.addons-tab', ['modId' => $mod->id])
             ->assertSee('Addons Disabled')
             ->assertSuccessful();
     });
@@ -135,7 +133,7 @@ describe('addons tab', function (): void {
         $mod = Mod::factory()->addonsEnabled()->create();
 
         Livewire::withoutLazyLoading()
-            ->test(AddonsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.addons-tab', ['modId' => $mod->id])
             ->assertSee('No Addons Yet')
             ->assertSuccessful();
     });
@@ -181,7 +179,7 @@ describe('addons tab', function (): void {
 
         // Filter by version 1 - should only show addon 1
         Livewire::withoutLazyLoading()
-            ->test(AddonsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.addons-tab', ['modId' => $mod->id])
             ->set('selectedModVersionId', $modVersion1->id)
             ->assertSee('Addon For V1')
             ->assertDontSee('Addon For V2');
@@ -190,11 +188,12 @@ describe('addons tab', function (): void {
     it('displays a placeholder while lazy loading', function (): void {
         $mod = Mod::factory()->create();
 
-        $component = new AddonsTab;
-        $component->modId = $mod->id;
+        $component = Livewire::test('mod.show.addons-tab', ['modId' => $mod->id])
+            ->instance();
         $placeholder = $component->placeholder();
 
-        expect($placeholder->name())->toBe('livewire.mod.show.addons-tab-placeholder');
+        // Verify the placeholder renders skeleton content for the addons tab
+        expect($placeholder->render())->toContain('data-flux-skeleton');
     });
 });
 
@@ -205,7 +204,7 @@ describe('comments tab', function (): void {
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
         Livewire::withoutLazyLoading()
-            ->test(CommentsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.comments-tab', ['modId' => $mod->id])
             ->assertSuccessful();
     });
 
@@ -220,7 +219,7 @@ describe('comments tab', function (): void {
 
         Livewire::withoutLazyLoading()
             ->actingAs($owner)
-            ->test(CommentsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.comments-tab', ['modId' => $mod->id])
             ->assertSee('Comments have been disabled for this mod')
             ->assertSuccessful();
     });
@@ -233,7 +232,7 @@ describe('comments tab', function (): void {
 
         Livewire::withoutLazyLoading()
             ->actingAs($admin)
-            ->test(CommentsTab::class, ['modId' => $mod->id])
+            ->test('mod.show.comments-tab', ['modId' => $mod->id])
             ->assertSee('Comments have been disabled for this mod')
             ->assertSuccessful();
     });
@@ -241,11 +240,12 @@ describe('comments tab', function (): void {
     it('displays a placeholder while lazy loading', function (): void {
         $mod = Mod::factory()->create();
 
-        $component = new CommentsTab;
-        $component->modId = $mod->id;
+        $component = Livewire::test('mod.show.comments-tab', ['modId' => $mod->id])
+            ->instance();
         $placeholder = $component->placeholder();
 
-        expect($placeholder->name())->toBe('livewire.mod.show.comments-tab-placeholder');
+        // Verify the placeholder renders skeleton content for the comments tab
+        expect($placeholder->render())->toContain('data-flux-skeleton');
     });
 });
 
@@ -260,10 +260,10 @@ describe('mod show page integration', function (): void {
             'slug' => $mod->slug,
         ]));
 
-        $response->assertSeeLivewire(DescriptionTab::class)
-            ->assertSeeLivewire(VersionsTab::class)
-            ->assertSeeLivewire(AddonsTab::class)
-            ->assertSeeLivewire(CommentsTab::class);
+        $response->assertSeeLivewire('mod.show.description-tab')
+            ->assertSeeLivewire('mod.show.versions-tab')
+            ->assertSeeLivewire('mod.show.addons-tab')
+            ->assertSeeLivewire('mod.show.comments-tab');
     });
 
     it('hides addons tab when addons are disabled', function (): void {
@@ -276,10 +276,10 @@ describe('mod show page integration', function (): void {
             'slug' => $mod->slug,
         ]));
 
-        $response->assertSeeLivewire(DescriptionTab::class)
-            ->assertSeeLivewire(VersionsTab::class)
-            ->assertDontSeeLivewire(AddonsTab::class)
-            ->assertSeeLivewire(CommentsTab::class);
+        $response->assertSeeLivewire('mod.show.description-tab')
+            ->assertSeeLivewire('mod.show.versions-tab')
+            ->assertDontSeeLivewire('mod.show.addons-tab')
+            ->assertSeeLivewire('mod.show.comments-tab');
     });
 
     it('hides comments tab for guests when comments are disabled', function (): void {
@@ -292,9 +292,9 @@ describe('mod show page integration', function (): void {
             'slug' => $mod->slug,
         ]));
 
-        $response->assertSeeLivewire(DescriptionTab::class)
-            ->assertSeeLivewire(VersionsTab::class)
-            ->assertDontSeeLivewire(CommentsTab::class);
+        $response->assertSeeLivewire('mod.show.description-tab')
+            ->assertSeeLivewire('mod.show.versions-tab')
+            ->assertDontSeeLivewire('mod.show.comments-tab');
     });
 
     it('shows comments tab to mod owners when comments are disabled', function (): void {
@@ -311,6 +311,6 @@ describe('mod show page integration', function (): void {
             'slug' => $mod->slug,
         ]));
 
-        $response->assertSeeLivewire(CommentsTab::class);
+        $response->assertSeeLivewire('mod.show.comments-tab');
     });
 });

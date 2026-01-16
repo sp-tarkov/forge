@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NavigationChat;
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,13 +18,13 @@ it('shows unread badge for other user when first message is sent', function (): 
 
     // User1 sends a message
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->set('messageText', 'Hello there!')
         ->call('sendMessage');
 
     // Check that User2 sees unread badge in navigation
     Livewire::actingAs($user2)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->assertSee($user1->name)
         ->assertSee('1'); // Should see unread count badge
 
@@ -59,7 +57,7 @@ it('shows correct unread count in navigation dropdown', function (): void {
 
     // User2's navigation should show unread count
     Livewire::actingAs($user2)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->assertSee('3'); // Should see badge with count 3
 });
 
@@ -83,6 +81,6 @@ it('shows unread badge on main navigation button', function (): void {
 
     // User2 should see total unread count on navigation button
     Livewire::actingAs($user2)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->assertSee('2'); // Total unread conversations
 });

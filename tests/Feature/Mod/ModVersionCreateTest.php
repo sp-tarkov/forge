@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\ModVersion\Create as ModVersionCreate;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
@@ -47,7 +46,7 @@ describe('Mod Version Create Form', function (): void {
 
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
 
-            Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -61,7 +60,7 @@ describe('Mod Version Create Form', function (): void {
 
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
 
-            Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -102,7 +101,7 @@ describe('Mod Version Create Form', function (): void {
             ]);
 
             // Test creating mod version with dependencies
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -162,7 +161,7 @@ describe('Mod Version Create Form', function (): void {
             // Create the mod that will own the version
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Initially should have no dependencies
             expect($component->get('dependencies'))->toHaveCount(0);
@@ -198,7 +197,7 @@ describe('Mod Version Create Form', function (): void {
             $dependencyMod2 = Mod::factory()->create(['name' => 'Second Dependency']);
             $dependencyMod3 = Mod::factory()->create(['name' => 'Third Dependency']);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add three dependencies
             $component->call('addDependency');
@@ -250,7 +249,7 @@ describe('Mod Version Create Form', function (): void {
             $dependencyMod1 = Mod::factory()->create(['name' => 'First Dependency']);
             $dependencyMod2 = Mod::factory()->create(['name' => 'Second Dependency']);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add two dependencies
             $component->call('addDependency');
@@ -292,7 +291,7 @@ describe('Mod Version Create Form', function (): void {
             $dependencyMod2 = Mod::factory()->create(['name' => 'Second Dependency']);
             $dependencyMod3 = Mod::factory()->create(['name' => 'Third Dependency']);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add three dependencies
             $component->call('addDependency');
@@ -338,7 +337,7 @@ describe('Mod Version Create Form', function (): void {
             $dependencyMod1 = Mod::factory()->create(['name' => 'First Dependency']);
             $dependencyMod2 = Mod::factory()->create(['name' => 'Second Dependency']);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add two dependencies
             $component->call('addDependency');
@@ -374,7 +373,7 @@ describe('Mod Version Create Form', function (): void {
             $dependencyMod1 = Mod::factory()->create(['name' => 'First Dependency']);
             $dependencyMod2 = Mod::factory()->create(['name' => 'Second Dependency']);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add two dependencies
             $component->call('addDependency');
@@ -406,7 +405,7 @@ describe('Mod Version Create Form', function (): void {
             // Create the mod that will own the version
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add three dependencies
             $component->call('addDependency');
@@ -451,7 +450,7 @@ describe('Mod Version Create Form', function (): void {
             ]);
 
             // Test that matching versions are updated when constraint changes
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('dependencies.0.modId', (string) $dependencyMod->id)
                 ->set('dependencies.0.constraint', '^1.0.0');
 
@@ -477,7 +476,7 @@ describe('Mod Version Create Form', function (): void {
 
             // Test that the current mod is not available in the dependency selection
             // The blade template uses Mod::where('id', '!=', $mod->id) to exclude self
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Create a version for the mod to match against
             ModVersion::factory()->create([
@@ -527,7 +526,7 @@ describe('Mod Version Create Form', function (): void {
             // Create a dependency mod
             $dependencyMod = Mod::factory()->create(['name' => 'Test Dependency']);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add a dependency
             $component->call('addDependency');
@@ -557,7 +556,7 @@ describe('Mod Version Create Form', function (): void {
             // Create the mod that will own the version
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add a dependency
             $component->call('addDependency');
@@ -597,7 +596,7 @@ describe('Mod Version Create Form', function (): void {
                 'published_at' => now(),
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add a dependency
             $component->call('addDependency');
@@ -641,7 +640,7 @@ describe('Mod Version Create Form', function (): void {
                 'published_at' => now(),
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add a dependency
             $component->call('addDependency');
@@ -678,7 +677,7 @@ describe('Mod Version Create Form', function (): void {
             // Create the mod that will own the version
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod]);
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
 
             // Add a dependency but leave it empty
             $component->call('addDependency');
@@ -718,7 +717,7 @@ describe('Mod Version Create Form', function (): void {
             $dependencyMod = Mod::factory()->create();
 
             // Test creating mod version with invalid dependency constraint
-            Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -805,7 +804,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -834,7 +833,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -859,7 +858,7 @@ describe('Mod Version Create Form', function (): void {
             $mod = Mod::factory()->create(['owner_id' => $user->id]);
             SptVersion::factory()->create(['version' => '3.11.0']);
 
-            Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -892,7 +891,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -919,7 +918,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp));
@@ -954,7 +953,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -997,7 +996,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -1038,7 +1037,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -1096,7 +1095,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -1146,7 +1145,7 @@ describe('Mod Version Create Form', function (): void {
                 'category_id' => $this->category->id,
             ]);
 
-            $component = Livewire::test(ModVersionCreate::class, ['mod' => $mod])
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))

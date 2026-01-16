@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -16,7 +15,7 @@ describe('guest permissions', function (): void {
     it('should not allow a guest to create a comment', function (): void {
         $mod = Mod::factory()->create();
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'This is a test comment.')
             ->call('createComment')
             ->assertForbidden();
@@ -29,7 +28,7 @@ describe('authenticated user permissions', function (): void {
         $mod = Mod::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'This is a test comment.')
             ->call('createComment')
             ->assertHasNoErrors();
@@ -47,7 +46,7 @@ describe('authenticated user permissions', function (): void {
         $mod = Mod::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'This is a test comment.')
             ->call('createComment')
             ->assertForbidden();
@@ -67,7 +66,7 @@ describe('unpublished mod restrictions', function (): void {
         $mod = Mod::factory()->create(['published_at' => null, 'owner_id' => $user->id]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'Comment on unpublished mod')
             ->call('createComment')
             ->assertForbidden();
@@ -78,7 +77,7 @@ describe('unpublished mod restrictions', function (): void {
         $mod = Mod::factory()->create(['published_at' => now()->addDays(1)]); // Future publication
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'Comment on unpublished mod')
             ->call('createComment')
             ->assertForbidden();
@@ -90,7 +89,7 @@ describe('unpublished mod restrictions', function (): void {
         $mod = Mod::factory()->create(['published_at' => null]);
 
         Livewire::actingAs($moderator)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'Moderator comment on unpublished mod')
             ->call('createComment')
             ->assertForbidden();
@@ -102,7 +101,7 @@ describe('unpublished mod restrictions', function (): void {
         $mod = Mod::factory()->create(['published_at' => null]);
 
         Livewire::actingAs($admin)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'Admin comment on unpublished mod')
             ->call('createComment')
             ->assertForbidden();
@@ -115,7 +114,7 @@ describe('comment validation', function (): void {
         $mod = Mod::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', '')
             ->call('createComment')
             ->assertHasErrors(['newCommentBody' => 'required']);
@@ -126,7 +125,7 @@ describe('comment validation', function (): void {
         $mod = Mod::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'Hi')
             ->call('createComment')
             ->assertHasErrors(['newCommentBody' => 'min']);
@@ -146,7 +145,7 @@ describe('comment validation', function (): void {
 
         foreach ($testCases as $testCase) {
             Livewire::actingAs($user)
-                ->test(CommentComponent::class, ['commentable' => $mod])
+                ->test('comment-component', ['commentable' => $mod])
                 ->set('newCommentBody', $testCase)
                 ->call('createComment')
                 ->assertHasErrors(['newCommentBody']);
@@ -159,7 +158,7 @@ describe('comment validation', function (): void {
 
         // This should pass validation because it trims to "Hello" (5 chars)
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', '   Hello   ')
             ->call('createComment')
             ->assertHasNoErrors();
@@ -180,7 +179,7 @@ describe('comment validation', function (): void {
         $longText = str_repeat('a', 10001);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', $longText)
             ->call('createComment')
             ->assertHasErrors(['newCommentBody' => 'max']);
@@ -195,7 +194,7 @@ describe('special content handling', function (): void {
         $unicodeContent = 'Hello 你好 مرحبا émojis: 😀🎉🚀 special: ñáéíóú';
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', $unicodeContent)
             ->call('createComment')
             ->assertHasNoErrors();
@@ -211,7 +210,7 @@ describe('special content handling', function (): void {
         $markdownContent = '**bold** _italic_ `code` [link](http://example.com) # heading';
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', $markdownContent)
             ->call('createComment')
             ->assertHasNoErrors();
@@ -227,7 +226,7 @@ describe('rate limiting', function (): void {
         $mod = Mod::factory()->create();
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // First comment should succeed
         $component->set('newCommentBody', 'First comment')
@@ -254,7 +253,7 @@ describe('rate limiting', function (): void {
         $mod = Mod::factory()->create();
 
         $component = Livewire::actingAs($admin)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // First comment should succeed
         $component->set('newCommentBody', 'First admin comment')
@@ -279,7 +278,7 @@ describe('rate limiting', function (): void {
         $mod = Mod::factory()->create();
 
         $component = Livewire::actingAs($moderator)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // First comment should succeed
         $component->set('newCommentBody', 'First moderator comment')
@@ -308,7 +307,7 @@ describe('security', function (): void {
         $sqlInjectionAttempt = "'; DROP TABLE comments; --";
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', $sqlInjectionAttempt)
             ->call('createComment')
             ->assertHasNoErrors();
@@ -324,7 +323,7 @@ describe('security', function (): void {
         $mod = Mod::factory()->create();
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // Count comments before
         $commentCountBefore = Comment::query()->count();
@@ -355,7 +354,7 @@ describe('user profile comments', function (): void {
         $commenter = User::factory()->create();
 
         Livewire::actingAs($commenter)
-            ->test(CommentComponent::class, ['commentable' => $profileOwner])
+            ->test('comment-component', ['commentable' => $profileOwner])
             ->set('newCommentBody', 'Nice profile!')
             ->call('createComment')
             ->assertHasNoErrors();
@@ -372,7 +371,7 @@ describe('user profile comments', function (): void {
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $user])
+            ->test('comment-component', ['commentable' => $user])
             ->set('newCommentBody', 'Welcome to my profile!')
             ->call('createComment')
             ->assertHasNoErrors();
@@ -390,7 +389,7 @@ describe('user profile comments', function (): void {
         $commenter = User::factory()->create();
 
         $component = Livewire::actingAs($commenter)
-            ->test(CommentComponent::class, ['commentable' => $profileOwner]);
+            ->test('comment-component', ['commentable' => $profileOwner]);
 
         // First comment should succeed
         $component->set('newCommentBody', 'First comment')

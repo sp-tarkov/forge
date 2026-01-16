@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\CommentSubscription;
 use App\Models\Mod;
@@ -23,7 +22,7 @@ describe('Auto-subscribe on comment', function (): void {
 
         // Create a comment via Livewire component
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'This is my first comment')
             ->call('createComment')
             ->assertHasNoErrors();
@@ -59,7 +58,7 @@ describe('Auto-subscribe on comment', function (): void {
 
         // Reply to the comment via Livewire component
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('formStates.reply-'.$parentComment->id.'.body', 'This is my reply')
             ->set('formStates.reply-'.$parentComment->id.'.visible', true)
             ->call('createReply', $parentComment->id)
@@ -97,7 +96,7 @@ describe('Auto-subscribe on comment', function (): void {
 
         // Create a comment
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', 'Another comment')
             ->call('createComment')
             ->assertHasNoErrors();
@@ -124,7 +123,7 @@ describe('Auto-subscribe on comment', function (): void {
 
         // Create a comment and check the subscription state
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->assertSet('isSubscribed', false)
             ->set('newCommentBody', 'Test comment')
             ->call('createComment')
@@ -148,7 +147,7 @@ describe('Auto-subscribe on comment', function (): void {
 
         // Create a comment
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->set('newCommentBody', "I'm back!")
             ->call('createComment')
             ->assertHasNoErrors();
@@ -166,7 +165,7 @@ describe('Auto-subscribe on comment', function (): void {
 
         // Create a comment on the user profile
         Livewire::actingAs($commenter)
-            ->test(CommentComponent::class, ['commentable' => $profileUser])
+            ->test('comment-component', ['commentable' => $profileUser])
             ->set('newCommentBody', 'Nice profile!')
             ->call('createComment')
             ->assertHasNoErrors();

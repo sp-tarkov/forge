@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Admin\RoleManagement;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Support\Facades\Cache;
@@ -44,7 +43,7 @@ describe('RoleManagement Page Display', function (): void {
         $admin = User::factory()->admin()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->assertStatus(200)
             ->assertSee('Assign Role to User')
             ->assertSee('Users with Roles');
@@ -55,7 +54,7 @@ describe('RoleManagement Page Display', function (): void {
         $moderator = User::factory()->moderator()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->assertSee($moderator->name)
             ->assertSee($admin->name);
     });
@@ -66,7 +65,7 @@ describe('RoleManagement Page Display', function (): void {
         User::factory()->moderator()->create();
 
         $component = Livewire::actingAs($admin)
-            ->test(RoleManagement::class);
+            ->test('pages::admin.role-management');
 
         $roles = $component->get('roles');
 
@@ -81,7 +80,7 @@ describe('RoleManagement User Search', function (): void {
         $targetUser = User::factory()->create(['name' => 'SearchableUser']);
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('userSearch', 'SearchableUser')
             ->assertSet('showUserDropdown', true);
     });
@@ -91,7 +90,7 @@ describe('RoleManagement User Search', function (): void {
         $targetUser = User::factory()->create(['email' => 'searchable@example.com']);
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('userSearch', 'searchable@example')
             ->assertSet('showUserDropdown', true);
     });
@@ -101,7 +100,7 @@ describe('RoleManagement User Search', function (): void {
         User::factory()->create(['name' => 'TestSearchUser']);
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('userSearch', 'TestSearch')
             ->assertSet('showUserDropdown', true);
     });
@@ -110,7 +109,7 @@ describe('RoleManagement User Search', function (): void {
         $admin = User::factory()->admin()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('userSearch', 'a')
             ->assertSet('showUserDropdown', false);
     });
@@ -120,7 +119,7 @@ describe('RoleManagement User Search', function (): void {
         User::factory()->create(['name' => 'TestUser']);
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('userSearch', 'TestUser')
             ->assertSet('showUserDropdown', true)
             ->set('userSearch', '')
@@ -134,7 +133,7 @@ describe('RoleManagement Role Assignment', function (): void {
         $targetUser = User::factory()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $targetUser->id)
             ->assertSet('showAssignModal', true)
             ->assertSet('selectedUserId', $targetUser->id);
@@ -149,7 +148,7 @@ describe('RoleManagement Role Assignment', function (): void {
         );
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $targetUser->id)
             ->set('selectedRoleId', $moderatorRole->id)
             ->call('assignRole')
@@ -163,7 +162,7 @@ describe('RoleManagement Role Assignment', function (): void {
         $targetUser = User::factory()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $targetUser->id)
             ->call('assignRole')
             ->assertHasErrors(['selectedRoleId']);
@@ -178,7 +177,7 @@ describe('RoleManagement Role Assignment', function (): void {
         );
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('userSearch', 'Test')
             ->call('showAssignRoleModal', $targetUser->id)
             ->set('selectedRoleId', $moderatorRole->id)
@@ -198,7 +197,7 @@ describe('RoleManagement Role Assignment', function (): void {
         Cache::put(sprintf('user_%d_role_name', $targetUser->id), 'test', 3600);
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $targetUser->id)
             ->set('selectedRoleId', $moderatorRole->id)
             ->call('assignRole');
@@ -212,7 +211,7 @@ describe('RoleManagement Role Assignment', function (): void {
         $adminRole = UserRole::query()->where('name', 'Staff')->first();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $moderator->id)
             ->set('selectedRoleId', $adminRole->id)
             ->call('assignRole');
@@ -227,7 +226,7 @@ describe('RoleManagement Role Removal', function (): void {
         $moderator = User::factory()->moderator()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showRemoveRoleModal', $moderator->id)
             ->assertSet('showRemoveModal', true)
             ->assertSet('userToRemoveRoleId', $moderator->id);
@@ -238,7 +237,7 @@ describe('RoleManagement Role Removal', function (): void {
         $moderator = User::factory()->moderator()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showRemoveRoleModal', $moderator->id)
             ->call('removeRole')
             ->assertSet('showRemoveModal', false);
@@ -250,7 +249,7 @@ describe('RoleManagement Role Removal', function (): void {
         $admin = User::factory()->admin()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showRemoveRoleModal', $admin->id)
             ->call('removeRole');
 
@@ -265,7 +264,7 @@ describe('RoleManagement Role Removal', function (): void {
         Cache::put(sprintf('user_%d_role_name', $moderator->id), 'moderator', 3600);
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showRemoveRoleModal', $moderator->id)
             ->call('removeRole');
 
@@ -279,7 +278,7 @@ describe('RoleManagement Modal Control', function (): void {
         $targetUser = User::factory()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $targetUser->id)
             ->call('closeAssignModal')
             ->assertSet('showAssignModal', false)
@@ -292,7 +291,7 @@ describe('RoleManagement Modal Control', function (): void {
         $moderator = User::factory()->moderator()->create();
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showRemoveRoleModal', $moderator->id)
             ->call('closeRemoveModal')
             ->assertSet('showRemoveModal', false)
@@ -307,7 +306,7 @@ describe('RoleManagement Role Filtering', function (): void {
         $moderatorRole = UserRole::query()->where('name', 'Moderator')->first();
 
         $component = Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('roleFilter', $moderatorRole->id);
 
         $usersWithRoles = $component->get('usersWithRoles');
@@ -326,7 +325,7 @@ describe('RoleManagement Role Filtering', function (): void {
         );
 
         Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->set('roleFilter', $moderatorRole->id)
             ->assertSet('paginators', ['page' => 1]);
     });
@@ -338,7 +337,7 @@ describe('RoleManagement Computed Properties', function (): void {
         User::factory()->moderator()->count(3)->create();
 
         $component = Livewire::actingAs($admin)
-            ->test(RoleManagement::class);
+            ->test('pages::admin.role-management');
 
         $usersWithRoles = $component->get('usersWithRoles');
 
@@ -352,7 +351,7 @@ describe('RoleManagement Computed Properties', function (): void {
         User::factory()->moderator()->create();
 
         $component = Livewire::actingAs($admin)
-            ->test(RoleManagement::class);
+            ->test('pages::admin.role-management');
 
         $roles = $component->get('roles');
 
@@ -365,7 +364,7 @@ describe('RoleManagement Computed Properties', function (): void {
         $targetUser = User::factory()->create();
 
         $component = Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $targetUser->id);
 
         expect($component->get('selectedUser')->id)->toBe($targetUser->id);
@@ -376,7 +375,7 @@ describe('RoleManagement Computed Properties', function (): void {
         $moderator = User::factory()->moderator()->create();
 
         $component = Livewire::actingAs($admin)
-            ->test(RoleManagement::class)
+            ->test('pages::admin.role-management')
             ->call('showRemoveRoleModal', $moderator->id);
 
         expect($component->get('userToRemoveRole')->id)->toBe($moderator->id);

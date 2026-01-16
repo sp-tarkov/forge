@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Ribbon\AddonVersion as AddonVersionRibbon;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -37,7 +36,7 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $version = AddonVersion::factory()->for($this->addon)->create(['disabled' => true]);
         $this->actingAs($this->addon->owner);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
             ->assertSee('ribbon red')
             ->assertSee('Disabled');
     });
@@ -47,8 +46,8 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $normalUser = User::factory()->create();
         $this->actingAs($normalUser);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon')
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Disabled');
     });
 
@@ -56,7 +55,7 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $version = AddonVersion::factory()->for($this->addon)->create(['published_at' => null]);
         $this->actingAs($this->addon->owner);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished');
     });
@@ -66,8 +65,8 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $normalUser = User::factory()->create();
         $this->actingAs($normalUser);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon')
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Unpublished');
     });
 
@@ -75,7 +74,7 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $version = AddonVersion::factory()->for($this->addon)->create(['published_at' => now()->addDays(7)]);
         $this->actingAs($this->addon->owner);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
             ->assertSee('ribbon emerald')
             ->assertSee('Scheduled');
     });
@@ -85,8 +84,8 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         $normalUser = User::factory()->create();
         $this->actingAs($normalUser);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon')
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
+            ->assertDontSee('class="ribbon')
             ->assertDontSee('Scheduled');
     });
 
@@ -97,13 +96,13 @@ describe('Addon Version Ribbon Permission-Based Visibility', function (): void {
         ]);
 
         $this->actingAs($this->addon->owner);
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
+            ->assertDontSee('class="ribbon');
 
         $normalUser = User::factory()->create();
         $this->actingAs($normalUser);
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
+            ->assertDontSee('class="ribbon');
     });
 });
 
@@ -115,7 +114,7 @@ describe('Addon Version Ribbon States', function (): void {
         ]);
         $this->actingAs($this->addon->owner);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
             ->assertSee('ribbon red')
             ->assertSee('Disabled')
             ->assertDontSee('Unpublished');
@@ -128,7 +127,7 @@ describe('Addon Version Ribbon States', function (): void {
         ]);
         $this->actingAs($this->addon->owner);
 
-        Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
+        Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
             ->assertSee('ribbon amber')
             ->assertSee('Unpublished');
     });
@@ -142,8 +141,8 @@ describe('Event-Driven Updates', function (): void {
         ]);
         $this->actingAs($this->addon->owner);
 
-        $component = Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version))
-            ->assertDontSee('ribbon');
+        $component = Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version))
+            ->assertDontSee('class="ribbon');
 
         // Update the version in database
         $version->update(['disabled' => true]);
@@ -160,7 +159,7 @@ describe('Event-Driven Updates', function (): void {
             'published_at' => now()->subDays(1),
         ]);
 
-        $component = Livewire::test(AddonVersionRibbon::class, getAddonVersionRibbonProps($version));
+        $component = Livewire::test('ribbon.addon-version', getAddonVersionRibbonProps($version));
 
         // Verify the component has the refreshVersion method (tests the On attribute functionality)
         expect(method_exists($component->instance(), 'refreshVersion'))->toBeTrue();

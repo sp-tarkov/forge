@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,7 +16,7 @@ it('can send a message in a conversation', function (): void {
     $conversation = Conversation::findOrCreateBetween($user1, $user2, $user1);
 
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->assertOk()
         ->set('messageText', 'Hello, this is a test message!')
         ->call('sendMessage')
@@ -39,7 +38,7 @@ it('refreshes messages after sending', function (): void {
     $conversation = Conversation::findOrCreateBetween($user1, $user2, $user1);
 
     $component = Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->assertOk();
 
     // Send first message
@@ -80,7 +79,7 @@ it('maintains selected conversation when switching and then loading more message
 
     // Start with conversation 1
     $component = Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conv1->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conv1->hash_id])
         ->assertOk()
         ->assertSet('selectedConversation.id', $conv1->id)
         ->assertSet('conversationHash', $conv1->hash_id)
@@ -123,7 +122,7 @@ it('maintains selected conversation when loading more messages', function (): vo
 
     // Test loading more messages doesn't switch conversations
     $component = Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conv1->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conv1->hash_id])
         ->assertOk()
         ->assertSet('selectedConversation.id', $conv1->id)
         ->assertSet('pagesLoaded', 1)
@@ -160,7 +159,7 @@ it('shows conversations list properly', function (): void {
 
     // Test with a specific conversation selected
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conv1->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conv1->hash_id])
         ->assertOk()
         ->assertSee($user2->name)
         ->assertSee($user3->name)

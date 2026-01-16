@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Create;
 use App\Models\CommentSubscription;
 use App\Models\License;
 use App\Models\Mod;
@@ -35,7 +34,7 @@ describe('Mod Create Form', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);
 
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->assertStatus(200);
         });
     });
@@ -45,7 +44,7 @@ describe('Mod Create Form', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);
 
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -58,7 +57,7 @@ describe('Mod Create Form', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);
 
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -83,7 +82,7 @@ describe('Mod Create Form', function (): void {
             $this->actingAs($user);
 
             // Attempt to create a new mod with the same GUID
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -111,7 +110,7 @@ describe('Mod Create Form', function (): void {
             $this->actingAs($user);
 
             // Create a new mod with a unique GUID
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -141,7 +140,7 @@ describe('Mod Create Form', function (): void {
             $this->actingAs($user);
 
             // Attempt to create a new mod with a different case GUID - should be allowed
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -171,7 +170,7 @@ describe('Mod Create Form', function (): void {
         });
 
         it('subscribes user to comment notifications when checkbox is checked', function (): void {
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -194,7 +193,7 @@ describe('Mod Create Form', function (): void {
         });
 
         it('does not subscribe user when checkbox is unchecked', function (): void {
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -217,7 +216,7 @@ describe('Mod Create Form', function (): void {
         });
 
         it('defaults to subscribing the user', function (): void {
-            $component = Livewire::test(Create::class);
+            $component = Livewire::test('pages::mod.create');
 
             // Assert that the default value is true
             expect($component->instance()->subscribeToComments)->toBeTrue();
@@ -234,7 +233,7 @@ describe('Mod Create Form', function (): void {
         it('allows creating a mod without GUID', function (): void {
             $this->actingAs($this->user);
 
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -261,7 +260,7 @@ describe('Mod Create Form', function (): void {
         it('validates GUID format when provided', function (): void {
             $this->actingAs($this->user);
 
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -279,7 +278,7 @@ describe('Mod Create Form', function (): void {
                 ->assertHasErrors(['guid']);
 
             // Valid format should work
-            Livewire::test(Create::class)
+            Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))

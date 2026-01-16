@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Show;
 use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -78,7 +77,7 @@ describe('Mod Addon Toggle', function (): void {
             ->create();
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -94,7 +93,7 @@ describe('Mod Addon Toggle', function (): void {
         ]);
 
         $component = Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ]);
@@ -117,7 +116,7 @@ describe('Mod Addon Toggle', function (): void {
         $this->actingAs($owner);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])

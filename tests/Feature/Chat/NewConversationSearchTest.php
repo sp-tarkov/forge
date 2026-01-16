@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NavigationChat;
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\Mod;
 use App\Models\User;
@@ -18,7 +16,7 @@ it('displays the search input with correct binding in new conversation modal', f
     // Create other users to search for
     $otherUser = User::factory()->create(['name' => 'John Doe']);
 
-    Livewire::test(Chat::class)
+    Livewire::test('pages::chat')
         ->assertSet('searchUser', '') // Initially empty
         ->set('showNewConversation', true) // Open the modal
         ->assertSee('Start typing to search for users')
@@ -29,7 +27,7 @@ it('displays the search input with correct binding in new conversation modal', f
 });
 
 it('shows no results message with actual search term when no users found', function (): void {
-    Livewire::test(Chat::class)
+    Livewire::test('pages::chat')
         ->assertSet('searchUser', '')
         ->set('showNewConversation', true) // Open the modal
         ->set('searchUser', 'NonexistentUser')
@@ -39,7 +37,7 @@ it('shows no results message with actual search term when no users found', funct
 });
 
 it('shows empty state message when search input is empty', function (): void {
-    Livewire::test(Chat::class)
+    Livewire::test('pages::chat')
         ->assertSet('searchUser', '')
         ->set('showNewConversation', true) // Open the modal
         ->assertSee('Start typing to search for users')
@@ -49,7 +47,7 @@ it('shows empty state message when search input is empty', function (): void {
 it('clears search results when search input is cleared', function (): void {
     $otherUser = User::factory()->create(['name' => 'Jane Smith']);
 
-    Livewire::test(Chat::class)
+    Livewire::test('pages::chat')
         ->set('showNewConversation', true) // Open the modal
         ->set('searchUser', 'Jane')
         ->assertSee('Jane Smith')
@@ -75,7 +73,7 @@ it('displays mod count for users with published mods', function (): void {
         'published_at' => null,
     ]);
 
-    Livewire::test(Chat::class)
+    Livewire::test('pages::chat')
         ->set('showNewConversation', true) // Open the modal
         ->set('searchUser', 'Mod Creator')
         ->assertSee('Mod Creator')
@@ -89,7 +87,7 @@ it('excludes users who have blocked the current user from search', function (): 
     // blockerUser blocks the current user
     $blockerUser->block($this->user);
 
-    Livewire::test(Chat::class)
+    Livewire::test('pages::chat')
         ->set('showNewConversation', true)
         ->set('searchUser', 'User')
         ->assertDontSee('Blocker User')
@@ -104,7 +102,7 @@ it('excludes mutually blocked users from search', function (): void {
     $this->user->block($mutuallyBlockedUser);
     $mutuallyBlockedUser->block($this->user);
 
-    Livewire::test(Chat::class)
+    Livewire::test('pages::chat')
         ->set('showNewConversation', true)
         ->set('searchUser', 'lock') // Should match "Blocked" in the name
         ->assertDontSee('Mutually Blocked')
@@ -118,7 +116,7 @@ it('prevents starting conversations with users who blocked current user', functi
     // blockerUser blocks the current user
     $blockerUser->block($this->user);
 
-    Livewire::test(NavigationChat::class)
+    Livewire::test('navigation-chat')
         ->call('startConversation', $blockerUser->id)
         ->assertSet('showNewConversation', false)
         ->assertNoRedirect();
@@ -133,7 +131,7 @@ it('prevents starting conversations with users current user has blocked', functi
     // Current user blocks blockedUser
     $this->user->block($blockedUser);
 
-    Livewire::test(NavigationChat::class)
+    Livewire::test('navigation-chat')
         ->call('startConversation', $blockedUser->id)
         ->assertSet('showNewConversation', false)
         ->assertNoRedirect();
@@ -145,7 +143,7 @@ it('prevents starting conversations with users current user has blocked', functi
 it('allows starting conversations with non-blocked users', function (): void {
     $normalUser = User::factory()->create(['name' => 'Normal User']);
 
-    Livewire::test(NavigationChat::class)
+    Livewire::test('navigation-chat')
         ->call('startConversation', $normalUser->id)
         ->assertRedirect()
         ->assertSet('showNewConversation', false);

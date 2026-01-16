@@ -1,4 +1,4 @@
-<x-layouts.base variant="simple">
+<x-layouts::base variant="simple">
     <x-slot:title>
         {{ __('Register an account') }}
     </x-slot>
@@ -205,4 +205,4 @@
             </div>
         @endif
     </x-authentication-card>
-</x-layouts.base>
+</x-layouts::base>

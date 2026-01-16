@@ -2,12 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Mod\Action;
-use App\Livewire\Mod\VersionAction;
-use App\Livewire\Page\Homepage;
-use App\Livewire\Page\Mod\Index as ModIndex;
-use App\Livewire\Page\Mod\Show as ModShow;
-use App\Livewire\User\Show\ModsTab as UserModsTab;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -37,7 +31,7 @@ describe('action component visibility', function (): void {
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ]))
-            ->assertDontSeeLivewire(Action::class);
+            ->assertDontSeeLivewire('mod.action');
     });
 
     it('displays on mod detail pages for administrators', function (): void {
@@ -52,13 +46,13 @@ describe('action component visibility', function (): void {
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ]))
-            ->assertSeeLivewire(Action::class);
+            ->assertSeeLivewire('mod.action');
     });
 
     it('mounts the component with the provided mod', function (): void {
         $mod = Mod::factory()->create();
 
-        Livewire::test(Action::class, [
+        Livewire::test('mod.action', [
             'modId' => $mod->id,
             'modName' => $mod->name,
             'modFeatured' => (bool) $mod->featured,
@@ -78,7 +72,7 @@ describe('mod deletion from homepage', function (): void {
         $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
-            ->test(Homepage::class)
+            ->test('pages::homepage')
             ->call('deleteMod', $mod->id);
 
         expect(Mod::query()->find($mod->id))->toBeNull();
@@ -92,7 +86,7 @@ describe('mod deletion from homepage', function (): void {
         $user = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(Homepage::class)
+            ->test('pages::homepage')
             ->call('deleteMod', $mod->id)
             ->assertForbidden();
     });
@@ -107,7 +101,7 @@ describe('mod deletion from mod listing', function (): void {
         $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
-            ->test(ModIndex::class)
+            ->test('pages::mod.index')
             ->call('deleteMod', $mod->id);
 
         expect(Mod::query()->find($mod->id))->toBeNull();
@@ -121,7 +115,7 @@ describe('mod deletion from mod listing', function (): void {
         $user = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(ModIndex::class)
+            ->test('pages::mod.index')
             ->call('deleteMod', $mod->id)
             ->assertForbidden();
     });
@@ -136,11 +130,12 @@ describe('mod deletion from mod detail page', function (): void {
         $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
-            ->test(ModShow::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
-            ->call('deleteMod', $mod->id);
+            ->call('deleteMod', $mod->id, 'mod.show')
+            ->assertRedirect(route('mods'));
 
         expect(Mod::query()->find($mod->id))->toBeNull();
     });
@@ -153,7 +148,7 @@ describe('mod deletion from mod detail page', function (): void {
         $user = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(ModShow::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -173,7 +168,7 @@ describe('mod deletion from user profile', function (): void {
         $userProfile = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(UserModsTab::class, [
+            ->test('user.show.mods-tab', [
                 'userId' => $userProfile->id,
             ])
             ->call('deleteMod', $mod->id)
@@ -192,7 +187,7 @@ describe('mod deletion from user profile', function (): void {
         $userProfile = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(UserModsTab::class, [
+            ->test('user.show.mods-tab', [
                 'userId' => $userProfile->id,
             ])
             ->call('deleteMod', $mod->id)
@@ -208,7 +203,7 @@ describe('mod publishing functionality', function (): void {
         $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -229,7 +224,7 @@ describe('mod publishing functionality', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => Date::now()]);
 
         Livewire::actingAs($owner)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -252,7 +247,7 @@ describe('mod publishing functionality', function (): void {
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -265,7 +260,7 @@ describe('mod publishing functionality', function (): void {
 
         // Test unauthorized unpublish
         Livewire::actingAs($otherUser)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -286,7 +281,7 @@ describe('mod publishing functionality', function (): void {
 
         // Test author can publish
         Livewire::actingAs($author)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -302,7 +297,7 @@ describe('mod publishing functionality', function (): void {
 
         // Test author can unpublish
         Livewire::actingAs($author)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -323,7 +318,7 @@ describe('mod featuring functionality', function (): void {
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => false]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => false,
@@ -342,7 +337,7 @@ describe('mod featuring functionality', function (): void {
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => true]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => false,
@@ -361,7 +356,7 @@ describe('mod featuring functionality', function (): void {
         $mod = Mod::factory()->create(['featured' => true, 'contains_ai_content' => true]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => true,
@@ -380,7 +375,7 @@ describe('mod featuring functionality', function (): void {
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => true]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => false,
@@ -396,7 +391,7 @@ describe('mod featuring functionality', function (): void {
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => false]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => false,
@@ -417,7 +412,7 @@ describe('mod version publishing functionality', function (): void {
         $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
-            ->test(VersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,
@@ -443,7 +438,7 @@ describe('mod version publishing functionality', function (): void {
         expect($policy->unpublish($owner, $version))->toBeTrue();
 
         $component = Livewire::actingAs($owner)
-            ->test(VersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,
@@ -470,7 +465,7 @@ describe('mod version publishing functionality', function (): void {
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
-            ->test(VersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,
@@ -483,7 +478,7 @@ describe('mod version publishing functionality', function (): void {
 
         // Test unauthorized unpublish
         Livewire::actingAs($otherUser)
-            ->test(VersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,
@@ -505,7 +500,7 @@ describe('mod version publishing functionality', function (): void {
 
         // Test author can publish
         Livewire::actingAs($author)
-            ->test(VersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,
@@ -521,7 +516,7 @@ describe('mod version publishing functionality', function (): void {
 
         // Test author can unpublish
         Livewire::actingAs($author)
-            ->test(VersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,

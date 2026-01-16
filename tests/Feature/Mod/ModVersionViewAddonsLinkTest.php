@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Show;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -43,7 +42,7 @@ describe('Mod Version View Addons Link', function (): void {
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -74,7 +73,7 @@ describe('Mod Version View Addons Link', function (): void {
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -105,7 +104,7 @@ describe('Mod Version View Addons Link', function (): void {
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -136,7 +135,7 @@ describe('Mod Version View Addons Link', function (): void {
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -167,7 +166,7 @@ describe('Mod Version View Addons Link', function (): void {
             ->create(['mod_version_constraint' => '^1.0.0', 'published_at' => now()]);
 
         Livewire::withoutLazyLoading()
-            ->test(Show::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])

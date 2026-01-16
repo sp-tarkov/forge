@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\BlockButton;
-use App\Livewire\BlockedUsers;
 use App\Models\Comment;
 use App\Models\Conversation;
 use App\Models\ConversationArchive;
@@ -392,7 +390,7 @@ describe('User Blocking System', function (): void {
 
             $this->actingAs($currentUser);
 
-            Livewire::test(BlockButton::class, ['user' => $targetUser])
+            Livewire::test('block-button', ['user' => $targetUser])
                 ->assertSee('Block User')
                 ->call('toggleBlockModal')
                 ->assertSet('showModal', true)
@@ -402,7 +400,7 @@ describe('User Blocking System', function (): void {
 
             expect($currentUser->fresh()->hasBlocked($targetUser))->toBeTrue();
 
-            Livewire::test(BlockButton::class, ['user' => $targetUser])
+            Livewire::test('block-button', ['user' => $targetUser])
                 ->assertSee('Unblock')
                 ->call('toggleBlockModal')
                 ->call('confirmBlock')
@@ -421,7 +419,7 @@ describe('User Blocking System', function (): void {
 
             $this->actingAs($currentUser);
 
-            Livewire::test(BlockedUsers::class)
+            Livewire::test('blocked-users')
                 ->assertSee('Blocked User 1')
                 ->assertSee('Blocked User 2')
                 ->assertSee('Reason 1')
@@ -436,7 +434,7 @@ describe('User Blocking System', function (): void {
 
             $this->actingAs($currentUser);
 
-            Livewire::test(BlockedUsers::class)
+            Livewire::test('blocked-users')
                 ->assertSee($blockedUser->name)
                 ->call('unblockUser', $blockedUser->id)
                 ->assertDispatched('user-unblocked');
