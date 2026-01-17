@@ -18,7 +18,6 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Mchev\Banhammer\Models\Ban;
-use stdClass;
 
 new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class extends Component {
     use WithPagination;
@@ -564,22 +563,21 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
             <div
                 id="filters-container"
                 class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
-                x-data="{ searchValue: $wire.entangle('search') }"
+                x-data="{
+                    search: $wire.entangle('search').live,
+                    clearSearch() {
+                        this.search = '';
+                    }
+                }"
             >
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
                     <flux:button
                         wire:click="resetFilters"
+                        x-on:click="clearSearch()"
                         variant="outline"
                         size="sm"
                         icon="x-mark"
-                        x-on:click="
-                            $nextTick(() => {
-                                if ($refs.searchInput) {
-                                    $refs.searchInput.value = '';
-                                }
-                            })
-                        "
                     >
                         Clear All
                     </flux:button>
@@ -587,21 +585,18 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                     {{-- Search Filter --}}
-                    <div>
+                    <div wire:ignore.self>
                         <flux:label
                             for="search"
                             class="text-xs"
                         >Search</flux:label>
-                        <div wire:ignore>
-                            <flux:input
-                                type="text"
-                                wire:model.live.debounce.300ms="search"
-                                id="search"
-                                x-ref="searchInput"
-                                placeholder="Name, email, or ID..."
-                                size="sm"
-                            />
-                        </div>
+                        <flux:input
+                            type="text"
+                            x-model.debounce.300ms="search"
+                            id="search"
+                            placeholder="Name, email, or ID..."
+                            size="sm"
+                        />
                     </div>
 
                     {{-- Role Filter --}}
