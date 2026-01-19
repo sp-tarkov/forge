@@ -1,4 +1,4 @@
-<x-layouts.static-toc>
+<x-layouts::static-toc>
     <x-slot name="pageTitle">{{ __('Privacy Policy') }}</x-slot>
 
     <x-slot name="pageDescription">{{ __('Privacy Policy for The Forge') }}</x-slot>
@@ -477,4 +477,4 @@
             >DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
-</x-layouts.static-toc>
+</x-layouts::static-toc>
