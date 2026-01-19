@@ -73,6 +73,16 @@ class ModFactory extends Factory
     }
 
     /**
+     * Indicate that the mod has profile binding notice disabled.
+     */
+    public function profileBindingNoticeDisabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'profile_binding_notice_disabled' => true,
+        ]);
+    }
+
+    /**
      * Configure the model factory.
      */
     public function configure(): static

@@ -6,6 +6,7 @@ use App\Enums\Api\V0\ApiErrorCode;
 use App\Enums\FikaCompatibility;
 use App\Models\License;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -281,5 +282,64 @@ describe('Mod Show API', function (): void {
         // The thumbnail should be returned as a full URL, not just the path
         $response->assertJsonPath('data.thumbnail', $mod->thumbnailUrl);
         expect($response->json('data.thumbnail'))->toContain('thumbnails/test-image.jpg');
+    });
+
+    it('returns shows_profile_binding_notice true when category enables it and mod has not disabled it', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $category = ModCategory::factory()->showsProfileBindingNotice()->create();
+        $mod = Mod::factory()
+            ->for($category, 'category')
+            ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create();
+
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d?fields=shows_profile_binding_notice', $mod->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.shows_profile_binding_notice', true);
+    });
+
+    it('returns shows_profile_binding_notice false when category enables it but mod has disabled it', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $category = ModCategory::factory()->showsProfileBindingNotice()->create();
+        $mod = Mod::factory()
+            ->for($category, 'category')
+            ->profileBindingNoticeDisabled()
+            ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create();
+
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d?fields=shows_profile_binding_notice', $mod->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.shows_profile_binding_notice', false);
+    });
+
+    it('returns shows_profile_binding_notice false when category does not enable it', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $category = ModCategory::factory()->create(['shows_profile_binding_notice' => false]);
+        $mod = Mod::factory()
+            ->for($category, 'category')
+            ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create();
+
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d?fields=shows_profile_binding_notice', $mod->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.shows_profile_binding_notice', false);
+    });
+
+    it('returns shows_profile_binding_notice false when mod has no category', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mod = Mod::factory()
+            ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
+            ->create(['category_id' => null]);
+
+        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d?fields=shows_profile_binding_notice', $mod->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.shows_profile_binding_notice', false);
     });
 });
