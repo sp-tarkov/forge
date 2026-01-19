@@ -43,6 +43,7 @@ class UserFactory extends Factory
             'profile_photo_path' => null,
             'timezone' => fake()->timezone(),
             'email_comment_notifications_enabled' => true,
+            'email_reply_notifications_enabled' => true,
             'email_chat_notifications_enabled' => true,
         ];
     }

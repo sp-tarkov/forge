@@ -10,6 +10,7 @@ use App\Models\CommentSubscription;
 use App\Models\Mod;
 use App\Models\NotificationLog;
 use App\Models\User;
+use App\Notifications\CommentReplyNotification;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
@@ -31,7 +32,7 @@ describe('Comment Notifications', function (): void {
         Bus::assertDispatched(CheckCommentForSpam::class, fn ($job) => $job->comment->is($comment));
     });
 
-    it('automatically subscribes commenter but not mod owner', function (): void {
+    it('does not auto-subscribe commenter when commenting', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
 
@@ -43,14 +44,14 @@ describe('Comment Notifications', function (): void {
             'user_id' => $commenter->id,
         ]);
 
-        // Assert that the commenter is subscribed
-        expect(CommentSubscription::isSubscribed($commenter, $mod))->toBeTrue();
+        // Assert that the commenter is NOT subscribed (no auto-subscribe)
+        expect(CommentSubscription::isSubscribed($commenter, $mod))->toBeFalse();
 
-        // Assert that the owner is NOT automatically subscribed
+        // Assert that the owner is also NOT automatically subscribed
         expect(CommentSubscription::isSubscribed($owner, $mod))->toBeFalse();
     });
 
-    it('automatically subscribes commenter but not profile owner', function (): void {
+    it('does not auto-subscribe commenter on user profile', function (): void {
         $user = User::factory()->create();
 
         // Create a comment from another user on the profile
@@ -61,8 +62,8 @@ describe('Comment Notifications', function (): void {
             'user_id' => $commenter->id,
         ]);
 
-        // Assert that the commenter is subscribed
-        expect(CommentSubscription::isSubscribed($commenter, $user))->toBeTrue();
+        // Assert that the commenter is NOT subscribed (no auto-subscribe)
+        expect(CommentSubscription::isSubscribed($commenter, $user))->toBeFalse();
 
         // Assert that the profile owner is NOT automatically subscribed
         expect(CommentSubscription::isSubscribed($user, $user))->toBeFalse();
@@ -416,5 +417,283 @@ describe('Comment Notifications', function (): void {
 
         // Now subscriber2 should have a log entry
         expect(NotificationLog::hasBeenSent($comment, $subscriber2->id, NewCommentNotification::class))->toBeTrue();
+    });
+});
+
+describe('Reply Notifications', function (): void {
+    it('sends reply notification to parent comment author', function (): void {
+        Notification::fake();
+
+        $parentAuthor = User::factory()->create(['email_reply_notifications_enabled' => true]);
+        $mod = Mod::factory()->create();
+
+        // Create a parent comment
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $parentAuthor->id,
+        ]);
+
+        // Create a reply to the parent comment
+        $replier = User::factory()->create();
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $replier->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        // Process the notification
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        // Assert reply notification was sent to parent author
+        Notification::assertSentTo($parentAuthor, CommentReplyNotification::class);
+
+        // Assert the replier did not receive a notification
+        Notification::assertNotSentTo($replier, CommentReplyNotification::class);
+    });
+
+    it('respects email_reply_notifications_enabled preference', function (): void {
+        Notification::fake();
+
+        // User with reply notifications disabled
+        $parentAuthor = User::factory()->create(['email_reply_notifications_enabled' => false]);
+        $mod = Mod::factory()->create();
+
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $parentAuthor->id,
+        ]);
+
+        $replier = User::factory()->create();
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $replier->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        // Assert database notification was sent but not email
+        Notification::assertSentTo($parentAuthor, CommentReplyNotification::class, fn ($notification, $channels): bool => in_array('database', $channels) && ! in_array('mail', $channels));
+    });
+
+    it('sends email for reply notification when enabled', function (): void {
+        Notification::fake();
+
+        $parentAuthor = User::factory()->create(['email_reply_notifications_enabled' => true]);
+        $mod = Mod::factory()->create();
+
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $parentAuthor->id,
+        ]);
+
+        $replier = User::factory()->create();
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $replier->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        // Assert both database and email notification were sent
+        Notification::assertSentTo($parentAuthor, CommentReplyNotification::class, fn ($notification, $channels): bool => in_array('database', $channels) && in_array('mail', $channels));
+    });
+
+    it('does not send reply notification to self', function (): void {
+        Notification::fake();
+
+        $user = User::factory()->create(['email_reply_notifications_enabled' => true]);
+        $mod = Mod::factory()->create();
+
+        // Create a parent comment
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $user->id,
+        ]);
+
+        // Same user replies to their own comment
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $user->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        // User should NOT receive a notification for replying to their own comment
+        Notification::assertNotSentTo($user, CommentReplyNotification::class);
+    });
+
+    it('does not send duplicate notification to reply recipient who is also page subscriber', function (): void {
+        Notification::fake();
+
+        $parentAuthor = User::factory()->create([
+            'email_reply_notifications_enabled' => true,
+            'email_comment_notifications_enabled' => true,
+        ]);
+        $mod = Mod::factory()->create();
+
+        // Parent author is also subscribed to the page
+        CommentSubscription::subscribe($parentAuthor, $mod);
+
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $parentAuthor->id,
+        ]);
+
+        $replier = User::factory()->create();
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $replier->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        // Should receive reply notification (not new comment notification)
+        Notification::assertSentTo($parentAuthor, CommentReplyNotification::class);
+        Notification::assertSentToTimes($parentAuthor, CommentReplyNotification::class, 1);
+
+        // Should NOT receive new comment notification (already got reply notification)
+        Notification::assertNotSentTo($parentAuthor, NewCommentNotification::class);
+    });
+
+    it('sends both reply and subscriber notifications to different users', function (): void {
+        Notification::fake();
+
+        $parentAuthor = User::factory()->create(['email_reply_notifications_enabled' => true]);
+        $subscriber = User::factory()->create(['email_comment_notifications_enabled' => true]);
+        $mod = Mod::factory()->create();
+
+        // Subscribe only the subscriber, not the parent author
+        CommentSubscription::subscribe($subscriber, $mod);
+
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $parentAuthor->id,
+        ]);
+
+        $replier = User::factory()->create();
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $replier->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        // Parent author gets reply notification
+        Notification::assertSentTo($parentAuthor, CommentReplyNotification::class);
+        Notification::assertNotSentTo($parentAuthor, NewCommentNotification::class);
+
+        // Subscriber gets new comment notification
+        Notification::assertSentTo($subscriber, NewCommentNotification::class);
+        Notification::assertNotSentTo($subscriber, CommentReplyNotification::class);
+    });
+
+    it('does not send reply notification for top-level comments', function (): void {
+        Notification::fake();
+
+        $mod = Mod::factory()->create();
+
+        // Create a top-level comment (no parent)
+        $commenter = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $commenter->id,
+            'parent_id' => null,
+        ]);
+
+        $job = new ProcessCommentNotification($comment);
+        $job->handle();
+
+        // No reply notification should be sent
+        Notification::assertNothingSent();
+    });
+
+    it('records correct notification type for reply notifications', function (): void {
+        Notification::fake();
+
+        $parentAuthor = User::factory()->create(['email_reply_notifications_enabled' => true]);
+        $mod = Mod::factory()->create();
+
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $parentAuthor->id,
+        ]);
+
+        $replier = User::factory()->create();
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $replier->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        // Check that the correct notification type was recorded
+        $log = NotificationLog::query()
+            ->where('user_id', $parentAuthor->id)
+            ->where('notifiable_id', $reply->id)
+            ->first();
+
+        expect($log)->not->toBeNull()
+            ->and($log->notification_type)->toBe(NotificationType::ALL)
+            ->and($log->notification_class)->toBe(CommentReplyNotification::class);
+    });
+
+    it('does not create duplicate reply notifications on job retry', function (): void {
+        Notification::fake();
+
+        $parentAuthor = User::factory()->create(['email_reply_notifications_enabled' => true]);
+        $mod = Mod::factory()->create();
+
+        $parentComment = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $parentAuthor->id,
+        ]);
+
+        $replier = User::factory()->create();
+        $reply = Comment::factory()->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $replier->id,
+            'parent_id' => $parentComment->id,
+        ]);
+
+        $job = new ProcessCommentNotification($reply);
+        $job->handle();
+
+        Notification::assertSentToTimes($parentAuthor, CommentReplyNotification::class, 1);
+
+        // Process again (simulate retry)
+        $job->handle();
+
+        // Still only one notification
+        Notification::assertSentToTimes($parentAuthor, CommentReplyNotification::class, 1);
     });
 });

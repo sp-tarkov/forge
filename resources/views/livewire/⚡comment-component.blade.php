@@ -1396,12 +1396,6 @@ new class extends Component
             ]);
         }
 
-        // User is automatically subscribed when they create a comment (via Observer).
-        $user = Auth::user();
-        if ($user) {
-            $this->isSubscribed = true;
-        }
-
         return $comment;
     }
 

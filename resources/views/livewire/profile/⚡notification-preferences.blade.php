@@ -8,12 +8,15 @@ use Livewire\Component;
 new class extends Component {
     public bool $emailCommentNotificationsEnabled = true;
 
+    public bool $emailReplyNotificationsEnabled = true;
+
     public bool $emailChatNotificationsEnabled = true;
 
     public function mount(): void
     {
         $user = Auth::user();
         $this->emailCommentNotificationsEnabled = $user->email_comment_notifications_enabled ?? true;
+        $this->emailReplyNotificationsEnabled = $user->email_reply_notifications_enabled ?? true;
         $this->emailChatNotificationsEnabled = $user->email_chat_notifications_enabled ?? true;
     }
 
@@ -22,6 +25,7 @@ new class extends Component {
         $user = Auth::user();
         $user->update([
             'email_comment_notifications_enabled' => $this->emailCommentNotificationsEnabled,
+            'email_reply_notifications_enabled' => $this->emailReplyNotificationsEnabled,
             'email_chat_notifications_enabled' => $this->emailChatNotificationsEnabled,
         ]);
 
@@ -58,6 +62,25 @@ new class extends Component {
             </div>
             <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {{ __('Receive email notifications when someone comments on content you are subscribed to.') }}
+            </div>
+
+            <div class="flex items-center mt-6">
+                <input
+                    type="checkbox"
+                    wire:model.live="emailReplyNotificationsEnabled"
+                    wire:change="updateNotificationPreferences"
+                    id="email-reply-notifications"
+                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-900 dark:border-gray-700"
+                />
+                <label
+                    for="email-reply-notifications"
+                    class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                >
+                    {{ __('Reply Email Notifications') }}
+                </label>
+            </div>
+            <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {{ __('Receive email notifications when someone replies directly to your comments.') }}
             </div>
 
             <div class="flex items-center mt-6">

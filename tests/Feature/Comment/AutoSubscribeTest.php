@@ -12,8 +12,8 @@ beforeEach(function (): void {
     config()->set('honeypot.enabled', false);
 });
 
-describe('Auto-subscribe on comment', function (): void {
-    it('automatically subscribes user when they create a root comment', function (): void {
+describe('No auto-subscribe on comment', function (): void {
+    it('does not auto-subscribe user when they create a root comment', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
@@ -27,8 +27,8 @@ describe('Auto-subscribe on comment', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        // Should now be subscribed
-        expect(CommentSubscription::isSubscribed($user, $mod))->toBeTrue();
+        // Should NOT be subscribed (no auto-subscribe)
+        expect(CommentSubscription::isSubscribed($user, $mod))->toBeFalse();
 
         // Verify comment was created
         $comment = Comment::query()
@@ -41,7 +41,7 @@ describe('Auto-subscribe on comment', function (): void {
             ->and($comment->body)->toBe('This is my first comment');
     });
 
-    it('automatically subscribes user when they reply to a comment', function (): void {
+    it('does not auto-subscribe user when they reply to a comment', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
         $otherUser = User::factory()->create();
@@ -64,8 +64,8 @@ describe('Auto-subscribe on comment', function (): void {
             ->call('createReply', $parentComment->id)
             ->assertHasNoErrors();
 
-        // Should now be subscribed
-        expect(CommentSubscription::isSubscribed($user, $mod))->toBeTrue();
+        // Should NOT be subscribed (no auto-subscribe)
+        expect(CommentSubscription::isSubscribed($user, $mod))->toBeFalse();
 
         // Verify reply was created
         $reply = Comment::query()
@@ -77,7 +77,7 @@ describe('Auto-subscribe on comment', function (): void {
             ->and($reply->body)->toBe('This is my reply');
     });
 
-    it('does not duplicate subscription if user is already subscribed', function (): void {
+    it('maintains existing subscription if user is already subscribed', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
@@ -101,7 +101,7 @@ describe('Auto-subscribe on comment', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        // Should still be subscribed
+        // Should still be subscribed (subscription unchanged)
         expect(CommentSubscription::isSubscribed($user, $mod))->toBeTrue();
 
         // Count should remain the same (no duplicates)
@@ -114,7 +114,7 @@ describe('Auto-subscribe on comment', function (): void {
         expect($subscriptionCountAfter)->toBe(1);
     });
 
-    it('maintains subscription state in component after auto-subscribe', function (): void {
+    it('maintains subscription state in component correctly', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
@@ -122,19 +122,19 @@ describe('Auto-subscribe on comment', function (): void {
         expect(CommentSubscription::isSubscribed($user, $mod))->toBeFalse();
 
         // Create a comment and check the subscription state
-        $component = Livewire::actingAs($user)
+        Livewire::actingAs($user)
             ->test('comment-component', ['commentable' => $mod])
             ->assertSet('isSubscribed', false)
             ->set('newCommentBody', 'Test comment')
             ->call('createComment')
             ->assertHasNoErrors()
-            ->assertSet('isSubscribed', true);  // Component state should be updated
+            ->assertSet('isSubscribed', false);  // Should remain not subscribed
 
-        // Should now be subscribed in database
-        expect(CommentSubscription::isSubscribed($user, $mod))->toBeTrue();
+        // Should NOT be subscribed in database (no auto-subscribe)
+        expect(CommentSubscription::isSubscribed($user, $mod))->toBeFalse();
     });
 
-    it('resubscribes user who previously unsubscribed when they comment', function (): void {
+    it('does not resubscribe user who previously unsubscribed when they comment', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
@@ -152,11 +152,11 @@ describe('Auto-subscribe on comment', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        // Should be resubscribed
-        expect(CommentSubscription::isSubscribed($user, $mod))->toBeTrue();
+        // Should remain unsubscribed (no auto-subscribe)
+        expect(CommentSubscription::isSubscribed($user, $mod))->toBeFalse();
     });
 
-    it('subscribes user when commenting on user profile', function (): void {
+    it('does not subscribe user when commenting on user profile', function (): void {
         $profileUser = User::factory()->create();
         $commenter = User::factory()->create();
 
@@ -170,8 +170,8 @@ describe('Auto-subscribe on comment', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        // Should now be subscribed
-        expect(CommentSubscription::isSubscribed($commenter, $profileUser))->toBeTrue();
+        // Should NOT be subscribed (no auto-subscribe)
+        expect(CommentSubscription::isSubscribed($commenter, $profileUser))->toBeFalse();
 
         // Verify comment was created
         $comment = Comment::query()
