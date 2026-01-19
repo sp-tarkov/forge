@@ -142,9 +142,10 @@ describe('comment observer behavior', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $user->id]);
 
-        $comment = $mod->comments()->create([
+        $comment = Comment::factory()->withVersion('This is a test comment')->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
             'user_id' => $user->id,
-            'body' => 'This is a test comment',
         ]);
 
         // Process jobs synchronously for testing
@@ -172,13 +173,12 @@ describe('comment component filtering', function (): void {
         ]);
 
         // Create spam comment and manually set it to spam
-        $spamComment = Comment::factory()->make([
+        $spamComment = Comment::factory()->withVersion('This is spam')->create([
             'commentable_type' => Mod::class,
             'commentable_id' => $mod->id,
             'user_id' => $user->id,
-            'body' => 'This is spam',
         ]);
-        $spamComment->save();
+        // Update spam status after creation to avoid observer resetting it
         $spamComment->update(['spam_status' => SpamStatus::SPAM]);
 
         // Check that only clean comments are displayed

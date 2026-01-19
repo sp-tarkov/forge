@@ -33,12 +33,14 @@ describe('authenticated user permissions', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => 'This is a test comment.',
-            'user_id' => $user->id,
-            'commentable_id' => $mod->id,
-            'commentable_type' => $mod::class,
-        ]);
+        $comment = Comment::query()
+            ->where('user_id', $user->id)
+            ->where('commentable_id', $mod->id)
+            ->where('commentable_type', $mod::class)
+            ->first();
+
+        expect($comment)->not->toBeNull()
+            ->and($comment->body)->toBe('This is a test comment.');
     });
 
     it('should not allow an unverified user to create a comment', function (): void {
@@ -51,12 +53,13 @@ describe('authenticated user permissions', function (): void {
             ->call('createComment')
             ->assertForbidden();
 
-        $this->assertDatabaseMissing('comments', [
-            'body' => 'This is a test comment.',
-            'user_id' => $user->id,
-            'commentable_id' => $mod->id,
-            'commentable_type' => $mod::class,
-        ]);
+        $comment = Comment::query()
+            ->where('user_id', $user->id)
+            ->where('commentable_id', $mod->id)
+            ->where('commentable_type', $mod::class)
+            ->first();
+
+        expect($comment)->toBeNull();
     });
 });
 
@@ -199,7 +202,7 @@ describe('special content handling', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        $comment = Comment::query()->latest()->first();
+        $comment = Comment::query()->where('user_id', $user->id)->latest()->first();
         expect($comment->body)->toBe($unicodeContent);
     });
 
@@ -215,7 +218,7 @@ describe('special content handling', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        $comment = Comment::query()->latest()->first();
+        $comment = Comment::query()->where('user_id', $user->id)->latest()->first();
         expect($comment->body)->toBe($markdownContent);
     });
 });
@@ -313,7 +316,7 @@ describe('security', function (): void {
             ->assertHasNoErrors();
 
         // Verify the comment was created with the exact content (properly escaped)
-        $comment = Comment::query()->latest()->first();
+        $comment = Comment::query()->where('user_id', $user->id)->latest()->first();
         expect($comment->body)->toBe($sqlInjectionAttempt)
             ->and(Comment::query()->count())->toBeGreaterThan(0);
     });
@@ -359,12 +362,14 @@ describe('user profile comments', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => 'Nice profile!',
-            'user_id' => $commenter->id,
-            'commentable_id' => $profileOwner->id,
-            'commentable_type' => User::class,
-        ]);
+        $comment = Comment::query()
+            ->where('user_id', $commenter->id)
+            ->where('commentable_id', $profileOwner->id)
+            ->where('commentable_type', User::class)
+            ->first();
+
+        expect($comment)->not->toBeNull()
+            ->and($comment->body)->toBe('Nice profile!');
     });
 
     it('should allow users to comment on their own profile', function (): void {
@@ -376,12 +381,14 @@ describe('user profile comments', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => 'Welcome to my profile!',
-            'user_id' => $user->id,
-            'commentable_id' => $user->id,
-            'commentable_type' => User::class,
-        ]);
+        $comment = Comment::query()
+            ->where('user_id', $user->id)
+            ->where('commentable_id', $user->id)
+            ->where('commentable_type', User::class)
+            ->first();
+
+        expect($comment)->not->toBeNull()
+            ->and($comment->body)->toBe('Welcome to my profile!');
     });
 
     it('should enforce rate limiting on user wall comments', function (): void {
@@ -429,50 +436,31 @@ describe('mod publication logic', function (): void {
 });
 
 describe('body trimming', function (): void {
-    it('should trim whitespace when creating a comment', function (): void {
+    it('should trim whitespace when creating a comment via Livewire', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
-        $comment = $mod->comments()->create([
-            'body' => '  This is a comment with leading and trailing spaces  ',
-            'user_id' => $user->id,
-        ]);
+        Livewire::actingAs($user)
+            ->test('comment-component', ['commentable' => $mod])
+            ->set('newCommentBody', '  This is a comment with leading and trailing spaces  ')
+            ->call('createComment')
+            ->assertHasNoErrors();
 
+        $comment = Comment::query()->where('user_id', $user->id)->latest()->first();
         expect($comment->body)->toBe('This is a comment with leading and trailing spaces');
-    });
-
-    it('should trim whitespace when updating a comment', function (): void {
-        $comment = Comment::factory()->create([
-            'body' => 'Original comment body',
-        ]);
-
-        $comment->update([
-            'body' => '  Updated comment with spaces  ',
-        ]);
-
-        expect($comment->fresh()->body)->toBe('Updated comment with spaces');
-    });
-
-    it('should trim whitespace when directly setting the body attribute', function (): void {
-        $comment = Comment::factory()->create([
-            'body' => 'Original comment body',
-        ]);
-
-        $comment->body = '  Direct assignment with spaces  ';
-        $comment->save();
-
-        expect($comment->fresh()->body)->toBe('Direct assignment with spaces');
     });
 
     it('should handle newlines and tabs properly', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
-        $comment = $mod->comments()->create([
-            'body' => "\t\n  This comment has tabs and newlines\n\t  ",
-            'user_id' => $user->id,
-        ]);
+        Livewire::actingAs($user)
+            ->test('comment-component', ['commentable' => $mod])
+            ->set('newCommentBody', "\t\n  This comment has tabs and newlines\n\t  ")
+            ->call('createComment')
+            ->assertHasNoErrors();
 
+        $comment = Comment::query()->where('user_id', $user->id)->latest()->first();
         expect($comment->body)->toBe('This comment has tabs and newlines');
     });
 
@@ -480,23 +468,13 @@ describe('body trimming', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
-        $comment = $mod->comments()->create([
-            'body' => '  This  has  multiple  spaces  between  words  ',
-            'user_id' => $user->id,
-        ]);
+        Livewire::actingAs($user)
+            ->test('comment-component', ['commentable' => $mod])
+            ->set('newCommentBody', '  This  has  multiple  spaces  between  words  ')
+            ->call('createComment')
+            ->assertHasNoErrors();
 
+        $comment = Comment::query()->where('user_id', $user->id)->latest()->first();
         expect($comment->body)->toBe('This  has  multiple  spaces  between  words');
-    });
-
-    it('should handle empty strings after trimming', function (): void {
-        $user = User::factory()->create();
-        $mod = Mod::factory()->create();
-
-        $comment = $mod->comments()->create([
-            'body' => '   ',
-            'user_id' => $user->id,
-        ]);
-
-        expect($comment->body)->toBe('');
     });
 });

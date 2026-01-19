@@ -68,7 +68,7 @@ class NotificationSeeder extends Seeder
             $commenter = $commenters->random();
             $createdAt = fake()->dateTimeBetween('-30 days', 'now');
 
-            $comment = Comment::create([
+            $comment = Comment::factory()->create([
                 'user_id' => $commenter->id,
                 'commentable_type' => get_class($commentable),
                 'commentable_id' => $commentable->id,

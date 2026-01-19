@@ -6,6 +6,7 @@ namespace App\Livewire\Forms;
 
 use App\Models\Comment;
 use App\Rules\DoesNotContainLogFile;
+use Illuminate\Support\Facades\DB;
 use Livewire\Form;
 
 class CommentEditForm extends Form
@@ -37,14 +38,23 @@ class CommentEditForm extends Form
     }
 
     /**
-     * Edit a comment.
+     * Edit a comment by creating a new version.
      */
     public function submit(Comment $comment): void
     {
         $this->validate();
 
-        $comment->body = $this->body;
-        $comment->edited_at = now();
-        $comment->save();
+        DB::transaction(function () use ($comment): void {
+            // Create new version with updated content
+            $nextVersionNumber = ($comment->versions()->max('version_number') ?? 0) + 1;
+            $comment->versions()->create([
+                'body' => mb_trim($this->body),
+                'version_number' => $nextVersionNumber,
+                'created_at' => now(),
+            ]);
+
+            $comment->edited_at = now();
+            $comment->save();
+        });
     }
 }

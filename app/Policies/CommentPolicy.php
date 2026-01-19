@@ -126,17 +126,25 @@ class CommentPolicy
     public function update(User $user, Comment $comment): bool
     {
         // Only the comment author can edit their own comment
-        if ($user->id !== $comment->user_id) {
+        return $user->id === $comment->user_id;
+    }
+
+    /**
+     * Determine whether the user can view the comment's version history.
+     */
+    public function viewVersionHistory(?User $user, Comment $comment): bool
+    {
+        if ($user === null) {
             return false;
         }
 
-        // The user can update the comment if it is not older than the configured time limit.
-        $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
-        if ($comment->created_at->diffInMinutes(now()) > $editTimeLimit) {
-            return false;
+        // Author can view own history
+        if ($user->id === $comment->user_id) {
+            return true;
         }
 
-        return true;
+        // Mods, senior mods, admins can view all
+        return $user->isModOrAdmin();
     }
 
     /**

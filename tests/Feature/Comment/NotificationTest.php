@@ -11,7 +11,6 @@ use App\Models\Mod;
 use App\Models\NotificationLog;
 use App\Models\User;
 use App\Notifications\NewCommentNotification;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
@@ -206,8 +205,8 @@ describe('Comment Notifications', function (): void {
             'user_id' => $commenter->id,
         ]);
 
-        // Verify the job was dispatched by the observer with a 5-minute delay
-        Bus::assertDispatched(ProcessCommentNotification::class, fn ($job): bool => $job->comment->is($comment) && $job->delay instanceof Carbon);
+        // Verify the job was dispatched by the observer (no delay since we have versioning for edit history)
+        Bus::assertDispatched(ProcessCommentNotification::class, fn ($job): bool => $job->comment->is($comment));
 
         // Now manually process the notification job (simulating after the 5-minute delay)
         $job = new ProcessCommentNotification($comment);
@@ -319,15 +318,10 @@ describe('Comment Notifications', function (): void {
             'user_id' => $commenter->id,
         ]);
 
-        // Assert that ProcessCommentNotification job was dispatched
+        // Assert that ProcessCommentNotification job was dispatched (no delay since we have versioning)
         Bus::assertDispatched(ProcessCommentNotification::class, fn ($job) =>
             // Verify it's for the correct comment
             $job->comment->is($comment));
-
-        // Also verify the job has a delay set (the delay is set in the constructor)
-        Bus::assertDispatched(ProcessCommentNotification::class, fn ($job): bool =>
-            // The delay property should be a Carbon instance set to 5 minutes from creation
-            $job->delay instanceof Carbon);
     });
 
     it('does not create duplicate notifications on job retry after partial success', function (): void {

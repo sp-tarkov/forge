@@ -11,6 +11,7 @@ use App\Jobs\CheckCommentForSpam;
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Comment;
 use App\Models\CommentReaction;
+use App\Models\CommentVersion;
 use App\Models\Mod;
 use App\Models\User;
 use App\Rules\DoesNotContainLogFile;
@@ -56,6 +57,7 @@ new class extends Component
         'markAsHam',
         'checkForSpam',
         'showOwnerPinAction',
+        'viewVersionHistory',
     ];
 
     /**
@@ -183,6 +185,13 @@ new class extends Component
      * @var array<int, array{inProgress: bool, startedAt: string|null}>
      */
     public array $spamCheckStates = [];
+
+    // Version history modal properties
+    public bool $showVersionModal = false;
+
+    public ?int $viewingVersionId = null;
+
+    public ?int $viewingVersionCommentId = null;
 
     /**
      * Mount the component.
@@ -334,10 +343,21 @@ new class extends Component
 
         $this->validateComment($fieldKey);
 
+        // Create new version with updated content
+        $nextVersionNumber = ($comment->versions()->max('version_number') ?? 0) + 1;
+        $comment->versions()->create([
+            'body' => mb_trim($body),
+            'version_number' => $nextVersionNumber,
+            'created_at' => now(),
+        ]);
+
         $comment->update([
-            'body' => $body,
             'edited_at' => now(),
         ]);
+
+        // Reload the latestVersion relationship
+        $comment->unsetRelation('latestVersion');
+        $comment->load('latestVersion');
 
         Track::event(TrackingEventType::COMMENT_EDIT, $comment);
 
@@ -936,6 +956,46 @@ new class extends Component
     }
 
     /**
+     * Show version history modal for a specific version.
+     */
+    public function openVersionModal(int $commentId, int $versionId): void
+    {
+        $comment = Comment::query()->findOrFail($commentId);
+        $this->validateCommentBelongsToCommentable($comment);
+        $this->authorize('viewVersionHistory', $comment);
+
+        $this->viewingVersionId = $versionId;
+        $this->viewingVersionCommentId = $commentId;
+        $this->showVersionModal = true;
+    }
+
+    /**
+     * Get the version being viewed in the modal.
+     */
+    #[Computed]
+    public function viewingVersion(): ?CommentVersion
+    {
+        if (! $this->viewingVersionId) {
+            return null;
+        }
+
+        return CommentVersion::find($this->viewingVersionId);
+    }
+
+    /**
+     * Get the comment for the version being viewed in the modal.
+     */
+    #[Computed]
+    public function viewingVersionComment(): ?Comment
+    {
+        if (! $this->viewingVersionCommentId) {
+            return null;
+        }
+
+        return Comment::with('user')->find($this->viewingVersionCommentId);
+    }
+
+    /**
      * Toggle subscription to comment notifications for this commentable.
      */
     public function toggleSubscription(): void
@@ -1311,12 +1371,21 @@ new class extends Component
     {
         $comment = $this->commentable->comments()->create([
             'user_id' => Auth::id(),
-            'body' => $body,
             'parent_id' => $parentId,
             'user_ip' => request()->ip() ?? '',
             'user_agent' => request()->userAgent() ?? '',
             'referrer' => request()->header('referer') ?? '',
         ]);
+
+        // Create initial version with the body content
+        $comment->versions()->create([
+            'body' => mb_trim($body),
+            'version_number' => 1,
+            'created_at' => now(),
+        ]);
+
+        // Load the version for immediate display
+        $comment->load('latestVersion');
 
         // Load parent relationship for replies to ensure it's available when rendering
         if ($parentId) {
@@ -2348,4 +2417,29 @@ new class extends Component
             </div>
         </flux:modal>
     @endif
+
+    {{-- Version History Modal --}}
+    <flux:modal
+        wire:model="showVersionModal"
+        class="max-w-2xl"
+    >
+        @if ($this->viewingVersion && $this->viewingVersionComment)
+            <div class="space-y-4">
+                <flux:heading size="lg">
+                    {{ __('Version :number', ['number' => $this->viewingVersion->version_number]) }}
+                </flux:heading>
+
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ __('By') }} {{ $this->viewingVersionComment->user->name }}
+                    {{ __('on') }} {{ $this->viewingVersion->created_at->format('F j, Y \a\t g:i A') }}
+                </div>
+
+                <flux:separator />
+
+                <div class="user-markdown text-gray-900 dark:text-slate-200">
+                    {!! $this->viewingVersion->body_html !!}
+                </div>
+            </div>
+        @endif
+    </flux:modal>
 </div>

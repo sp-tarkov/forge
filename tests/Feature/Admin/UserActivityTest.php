@@ -21,10 +21,9 @@ describe('UserActivity Component', function (): void {
         $this->user = User::factory()->create();
 
         // Create a comment for the trackable relationship
-        $this->comment = Comment::factory()->create([
-            'user_id' => $this->user->id,
-            'body' => 'Test comment for tracking',
-        ]);
+        $this->comment = Comment::factory()
+            ->withVersion('Test comment for tracking')
+            ->create(['user_id' => $this->user->id]);
 
         // Create a tracking event with IP and browser data for this user
         $this->trackingEvent = TrackingEvent::factory()->create([
@@ -331,7 +330,7 @@ describe('UserActivity Component', function (): void {
 
         it('eager loads trackable relationships', function (): void {
             $testUser = User::factory()->create();
-            $comment = Comment::factory()->create(['user_id' => $testUser->id]);
+            $comment = Comment::factory()->withVersion()->create(['user_id' => $testUser->id]);
             TrackingEvent::factory()->create([
                 'visitor_id' => $testUser->id,
                 'visitor_type' => User::class,
@@ -851,7 +850,7 @@ describe('UserActivity Component', function (): void {
 
             // Create different types of trackable models
             $mod = Mod::factory()->create();
-            $comment = Comment::factory()->create();
+            $comment = Comment::factory()->withVersion()->create();
 
             // Create events for each
             $commentEvent1 = TrackingEvent::factory()->create([

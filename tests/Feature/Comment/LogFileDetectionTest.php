@@ -115,11 +115,13 @@ describe('creating comments with log content', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => 'This is a normal comment without log content.',
-            'user_id' => $user->id,
-            'commentable_id' => $mod->id,
-        ]);
+        $comment = Comment::query()
+            ->where('user_id', $user->id)
+            ->where('commentable_id', $mod->id)
+            ->first();
+
+        expect($comment)->not->toBeNull()
+            ->and($comment->body)->toBe('This is a normal comment without log content.');
     });
 
     it('should allow creating a comment with markdown content', function (): void {
@@ -134,10 +136,12 @@ describe('creating comments with log content', function (): void {
             ->call('createComment')
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => $markdownContent,
-            'user_id' => $user->id,
-        ]);
+        $comment = Comment::query()
+            ->where('user_id', $user->id)
+            ->first();
+
+        expect($comment)->not->toBeNull()
+            ->and($comment->body)->toBe($markdownContent);
     });
 });
 
@@ -175,11 +179,13 @@ describe('replying to comments with log content', function (): void {
             ->call('createReply', $parentComment->id)
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => 'This is a valid reply',
-            'parent_id' => $parentComment->id,
-            'user_id' => $user->id,
-        ]);
+        $reply = Comment::query()
+            ->where('parent_id', $parentComment->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        expect($reply)->not->toBeNull()
+            ->and($reply->body)->toBe('This is a valid reply');
     });
 });
 

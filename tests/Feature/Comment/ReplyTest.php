@@ -55,13 +55,15 @@ describe('authenticated user replies', function (): void {
             ->call('createReply', $parentComment->id)
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => 'This is a reply.',
-            'user_id' => $user->id,
-            'commentable_id' => $mod->id,
-            'commentable_type' => $mod::class,
-            'parent_id' => $parentComment->id,
-        ]);
+        $reply = Comment::query()
+            ->where('user_id', $user->id)
+            ->where('commentable_id', $mod->id)
+            ->where('commentable_type', $mod::class)
+            ->where('parent_id', $parentComment->id)
+            ->first();
+
+        expect($reply)->not->toBeNull()
+            ->and($reply->body)->toBe('This is a reply.');
     });
 
     it('should not allow an unverified user to reply to a comment', function (): void {
@@ -78,13 +80,13 @@ describe('authenticated user replies', function (): void {
             ->call('createReply', $parentComment->id)
             ->assertForbidden();
 
-        $this->assertDatabaseMissing('comments', [
-            'body' => 'This is a reply.',
-            'user_id' => $user->id,
-            'commentable_id' => $mod->id,
-            'commentable_type' => $mod::class,
-            'parent_id' => $parentComment->id,
-        ]);
+        $reply = Comment::query()
+            ->where('user_id', $user->id)
+            ->where('commentable_id', $mod->id)
+            ->where('parent_id', $parentComment->id)
+            ->first();
+
+        expect($reply)->toBeNull();
     });
 });
 
@@ -314,12 +316,14 @@ describe('user wall replies', function (): void {
             ->call('createReply', $comment->id)
             ->assertHasNoErrors();
 
-        $this->assertDatabaseHas('comments', [
-            'body' => 'I agree!',
-            'user_id' => $replier->id,
-            'commentable_id' => $profileOwner->id,
-            'commentable_type' => User::class,
-            'parent_id' => $comment->id,
-        ]);
+        $reply = Comment::query()
+            ->where('user_id', $replier->id)
+            ->where('commentable_id', $profileOwner->id)
+            ->where('commentable_type', User::class)
+            ->where('parent_id', $comment->id)
+            ->first();
+
+        expect($reply)->not->toBeNull()
+            ->and($reply->body)->toBe('I agree!');
     });
 });

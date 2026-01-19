@@ -32,10 +32,7 @@ class ProcessCommentNotification implements ShouldQueue
      */
     public function __construct(
         public Comment $comment
-    ) {
-        // Delay job by 5 minutes to allow for comment deletion
-        $this->delay(now()->addMinutes(5));
-    }
+    ) {}
 
     /**
      * Execute the job.
