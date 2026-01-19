@@ -327,7 +327,46 @@ new #[Layout('layouts::base')] class extends Component {
         // Initialize with one empty VirusTotal link
         $this->virusTotalLinks = [['url' => '', 'label' => '']];
 
+        // Pre-populate dependencies from the most recent version
+        $this->populateDependenciesFromPreviousVersion();
+
         $this->authorize('create', [ModVersion::class, $this->mod]);
+    }
+
+    /**
+     * Populate dependencies from the most recent version of this mod.
+     */
+    private function populateDependenciesFromPreviousVersion(): void
+    {
+        // Get the most recent version (regardless of publish status) with its dependencies
+        $previousVersion = $this->mod
+            ->versions()
+            ->withoutGlobalScope(PublishedScope::class)
+            ->with('dependencies.dependentMod')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->first();
+
+        if ($previousVersion === null || $previousVersion->dependencies->isEmpty()) {
+            return;
+        }
+
+        foreach ($previousVersion->dependencies as $dependency) {
+            $uniqueId = uniqid();
+            $index = count($this->dependencies);
+
+            $this->dependencies[] = [
+                'id' => $uniqueId,
+                'modId' => (string) $dependency->dependent_mod_id,
+                'constraint' => $dependency->constraint,
+            ];
+
+            // Populate the matching versions for this dependency
+            $this->updateMatchingDependencyVersions($index);
+        }
     }
 
     /**

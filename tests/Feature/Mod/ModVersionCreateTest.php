@@ -1171,4 +1171,297 @@ describe('Mod Version Create Form', function (): void {
             expect($mod->versions()->count())->toBe(1);
         });
     });
+
+    describe('Dependency Pre-population', function (): void {
+        it('starts with empty dependencies when mod has no previous versions', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // Ensure mod has no versions
+            expect($mod->versions()->count())->toBe(0);
+
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            // Should have no dependencies
+            expect($component->get('dependencies'))->toHaveCount(0);
+            expect($component->get('matchingDependencyVersions'))->toHaveCount(0);
+        });
+
+        it('pre-populates dependencies from previous version', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // Create dependency mods with versions
+            $dependencyMod1 = Mod::factory()->create(['name' => 'Dependency One']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod1->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $dependencyMod2 = Mod::factory()->create(['name' => 'Dependency Two']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod2->id,
+                'version' => '2.0.0',
+                'published_at' => now(),
+            ]);
+
+            // Create a previous version with dependencies
+            $previousVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $previousVersion->dependencies()->create([
+                'dependent_mod_id' => $dependencyMod1->id,
+                'constraint' => '~1.0.0',
+            ]);
+
+            $previousVersion->dependencies()->create([
+                'dependent_mod_id' => $dependencyMod2->id,
+                'constraint' => '^2.0.0',
+            ]);
+
+            // Create the component for adding a new version
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            // Should have pre-populated dependencies
+            expect($component->get('dependencies'))->toHaveCount(2);
+
+            $dependencies = $component->get('dependencies');
+
+            // Check first dependency
+            expect($dependencies[0]['modId'])->toBe((string) $dependencyMod1->id);
+            expect($dependencies[0]['constraint'])->toBe('~1.0.0');
+
+            // Check second dependency
+            expect($dependencies[1]['modId'])->toBe((string) $dependencyMod2->id);
+            expect($dependencies[1]['constraint'])->toBe('^2.0.0');
+        });
+
+        it('pre-populates matching versions for dependencies', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // Create dependency mod with multiple versions
+            $dependencyMod = Mod::factory()->create(['name' => 'Dependency']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '1.1.0',
+                'published_at' => now(),
+            ]);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '2.0.0',
+                'published_at' => now(),
+            ]);
+
+            // Create a previous version with a dependency
+            $previousVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $previousVersion->dependencies()->create([
+                'dependent_mod_id' => $dependencyMod->id,
+                'constraint' => '^1.0.0', // Matches 1.0.0 and 1.1.0
+            ]);
+
+            // Create the component for adding a new version
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            // Should have pre-populated matching versions
+            expect($component->get('matchingDependencyVersions'))->toHaveCount(1);
+            expect($component->get('matchingDependencyVersions')[0])->toHaveCount(2);
+
+            $versions = collect($component->get('matchingDependencyVersions')[0])->pluck('version')->toArray();
+            expect($versions)->toContain('1.0.0');
+            expect($versions)->toContain('1.1.0');
+            expect($versions)->not->toContain('2.0.0');
+        });
+
+        it('uses most recent version for pre-population regardless of publish status', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // Create dependency mods
+            $dependencyMod1 = Mod::factory()->create(['name' => 'Dependency One']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod1->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $dependencyMod2 = Mod::factory()->create(['name' => 'Dependency Two']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod2->id,
+                'version' => '2.0.0',
+                'published_at' => now(),
+            ]);
+
+            // Create an older published version with one dependency
+            $olderVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDays(10),
+            ]);
+            $olderVersion->dependencies()->create([
+                'dependent_mod_id' => $dependencyMod1->id,
+                'constraint' => '~1.0.0',
+            ]);
+
+            // Create a newer unpublished version with different dependency
+            $newerVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '2.0.0',
+                'published_at' => null, // Unpublished
+            ]);
+            $newerVersion->dependencies()->create([
+                'dependent_mod_id' => $dependencyMod2->id,
+                'constraint' => '^2.0.0',
+            ]);
+
+            // Create the component for adding a new version
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            // Should have pre-populated dependencies from the newer (unpublished) version
+            expect($component->get('dependencies'))->toHaveCount(1);
+
+            $dependencies = $component->get('dependencies');
+            expect($dependencies[0]['modId'])->toBe((string) $dependencyMod2->id);
+            expect($dependencies[0]['constraint'])->toBe('^2.0.0');
+        });
+
+        it('starts with empty dependencies when previous version has no dependencies', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // Create a previous version without dependencies
+            ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            // Create the component for adding a new version
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            // Should have no dependencies
+            expect($component->get('dependencies'))->toHaveCount(0);
+        });
+
+        it('allows removing pre-populated dependencies', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // Create dependency mod
+            $dependencyMod = Mod::factory()->create(['name' => 'Dependency']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            // Create a previous version with a dependency
+            $previousVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $previousVersion->dependencies()->create([
+                'dependent_mod_id' => $dependencyMod->id,
+                'constraint' => '~1.0.0',
+            ]);
+
+            // Create the component
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            // Verify pre-populated
+            expect($component->get('dependencies'))->toHaveCount(1);
+
+            // Remove the pre-populated dependency
+            $component->call('removeDependency', 0);
+
+            // Should have no dependencies
+            expect($component->get('dependencies'))->toHaveCount(0);
+        });
+
+        it('allows adding new dependencies alongside pre-populated ones', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            // Create dependency mods
+            $dependencyMod1 = Mod::factory()->create(['name' => 'Existing Dependency']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod1->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $dependencyMod2 = Mod::factory()->create(['name' => 'New Dependency']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod2->id,
+                'version' => '2.0.0',
+                'published_at' => now(),
+            ]);
+
+            // Create a previous version with a dependency
+            $previousVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $previousVersion->dependencies()->create([
+                'dependent_mod_id' => $dependencyMod1->id,
+                'constraint' => '~1.0.0',
+            ]);
+
+            // Create the component
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            // Verify pre-populated
+            expect($component->get('dependencies'))->toHaveCount(1);
+
+            // Add a new dependency
+            $component->call('addDependency');
+            $component->call('updateDependencyModId', 1, (string) $dependencyMod2->id);
+            $component->call('updateDependencyConstraint', 1, '^2.0.0');
+
+            // Should now have two dependencies
+            expect($component->get('dependencies'))->toHaveCount(2);
+
+            $dependencies = $component->get('dependencies');
+
+            // Check original pre-populated dependency
+            expect($dependencies[0]['modId'])->toBe((string) $dependencyMod1->id);
+            expect($dependencies[0]['constraint'])->toBe('~1.0.0');
+
+            // Check newly added dependency
+            expect($dependencies[1]['modId'])->toBe((string) $dependencyMod2->id);
+            expect($dependencies[1]['constraint'])->toBe('^2.0.0');
+        });
+    });
 });
