@@ -6,6 +6,8 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use App\Models\Dependency;
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
@@ -79,6 +81,20 @@ new #[Layout('layouts::base')] class extends Component {
     public array $matchingModVersions = [];
 
     /**
+     * The mod dependencies for this addon version.
+     *
+     * @var array<int, array{id: ?int, modId: string, constraint: string}>
+     */
+    public array $dependencies = [];
+
+    /**
+     * The matching versions for each dependency constraint.
+     *
+     * @var array<int, array<int, array{mod_name: string, version: string}>>
+     */
+    public array $matchingDependencyVersions = [];
+
+    /**
      * The DirectDownloadLink rule instance (for content length extraction).
      */
     private DirectDownloadLink $downloadLinkRule;
@@ -126,6 +142,96 @@ new #[Layout('layouts::base')] class extends Component {
     {
         unset($this->virusTotalLinks[$index]);
         $this->virusTotalLinks = array_values($this->virusTotalLinks);
+    }
+
+    /**
+     * Add a new dependency.
+     */
+    public function addDependency(): void
+    {
+        $this->dependencies[] = ['id' => null, 'modId' => '', 'constraint' => ''];
+    }
+
+    /**
+     * Remove a dependency.
+     */
+    public function removeDependency(int $index): void
+    {
+        unset($this->dependencies[$index]);
+        unset($this->matchingDependencyVersions[$index]);
+        $this->dependencies = array_values($this->dependencies);
+        $this->matchingDependencyVersions = array_values($this->matchingDependencyVersions);
+    }
+
+    /**
+     * Update the mod ID for a dependency via JavaScript event.
+     */
+    #[Renderless]
+    public function updateDependencyModId(int $index, ?int $modId): void
+    {
+        if (isset($this->dependencies[$index])) {
+            $this->dependencies[$index]['modId'] = $modId !== null ? (string) $modId : '';
+            $this->updateMatchingDependencyVersions($index);
+        }
+    }
+
+    /**
+     * Update the matching dependency versions when the constraint changes.
+     */
+    public function updatedDependencies(mixed $value, string $path): void
+    {
+        if (str_ends_with($path, '.constraint')) {
+            $index = (int) explode('.', $path)[0];
+            $this->updateMatchingDependencyVersions($index);
+        }
+    }
+
+    /**
+     * Update matching dependency versions for a specific dependency.
+     */
+    private function updateMatchingDependencyVersions(int $index): void
+    {
+        if (!isset($this->dependencies[$index])) {
+            return;
+        }
+
+        $dependency = $this->dependencies[$index];
+        $modId = $dependency['modId'];
+        $constraint = $dependency['constraint'];
+
+        if (empty($modId) || empty($constraint)) {
+            $this->matchingDependencyVersions[$index] = [];
+
+            return;
+        }
+
+        try {
+            $mod = Mod::query()->find($modId);
+            if (!$mod) {
+                $this->matchingDependencyVersions[$index] = [];
+
+                return;
+            }
+
+            $modVersions = ModVersion::query()->where('mod_id', $modId)->where('disabled', false)->whereNotNull('published_at')->get();
+
+            $validVersions = $modVersions->pluck('version')->toArray();
+            $compatibleVersions = Semver::satisfiedBy($validVersions, $constraint);
+
+            $this->matchingDependencyVersions[$index] = $modVersions
+                ->whereIn('version', $compatibleVersions)
+                ->sortByDesc('version')
+                ->map(
+                    fn(ModVersion $version): array => [
+                        'mod_name' => $mod->name,
+                        'version' => $version->version,
+                    ],
+                )
+                ->values()
+                ->all();
+        } catch (\Exception) {
+            $this->matchingDependencyVersions[$index] = [];
+        }
     }
 
     /**
@@ -188,6 +294,11 @@ new #[Layout('layouts::base')] class extends Component {
         $rules['virusTotalLinks.*.url'] = 'required|string|url|starts_with:https://www.virustotal.com/';
         $rules['virusTotalLinks.*.label'] = 'nullable|string|max:255';
 
+        // Dependencies validation (optional)
+        $rules['dependencies'] = 'array';
+        $rules['dependencies.*.modId'] = 'required_with:dependencies.*.constraint|exists:mods,id';
+        $rules['dependencies.*.constraint'] = ['required_with:dependencies.*.modId', new SemverConstraintRule()];
+
         // Build custom messages
         $messages = [
             'virusTotalLinks.required' => 'At least one VirusTotal link is required.',
@@ -196,6 +307,9 @@ new #[Layout('layouts::base')] class extends Component {
             'virusTotalLinks.*.url.url' => 'Please enter a valid URL (e.g., https://www.virustotal.com/...).',
             'virusTotalLinks.*.url.starts_with' => 'The URL must start with https://www.virustotal.com/',
             'virusTotalLinks.*.label.max' => 'The label must not exceed 255 characters.',
+            'dependencies.*.modId.required_with' => 'Please select a mod for this dependency.',
+            'dependencies.*.modId.exists' => 'The selected mod does not exist.',
+            'dependencies.*.constraint.required_with' => 'Please enter a version constraint for this dependency.',
         ];
 
         // Validate all fields
@@ -229,6 +343,16 @@ new #[Layout('layouts::base')] class extends Component {
                 $addonVersion->virusTotalLinks()->create([
                     'url' => $virusTotalLink['url'],
                     'label' => !empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
+                ]);
+            }
+        }
+
+        // Create dependencies (on mods)
+        foreach ($this->dependencies as $dependency) {
+            if (!empty($dependency['modId']) && !empty($dependency['constraint'])) {
+                $addonVersion->dependencies()->create([
+                    'dependent_mod_id' => (int) $dependency['modId'],
+                    'constraint' => $dependency['constraint'],
                 ]);
             }
         }
@@ -343,6 +467,90 @@ new #[Layout('layouts::base')] class extends Component {
                                         </div>
                                     </div>
                                 @endif
+                            </flux:field>
+
+                            {{-- Mod Dependencies --}}
+                            <flux:field class="col-span-6">
+                                <flux:label badge="Optional">{{ __('Mod Dependencies') }}</flux:label>
+                                <flux:description>
+                                    {{ __('Specify mods that this addon version depends on. Use semantic version constraints to define compatible versions.') }}
+                                </flux:description>
+
+                                <div class="space-y-4">
+                                    @foreach ($dependencies as $index => $dependency)
+                                        <div
+                                            wire:key="dependency-{{ $dependency['id'] ?? $index }}"
+                                            class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                        >
+                                            <div class="flex justify-between items-start mb-3">
+                                                <span
+                                                    class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Dependency #:num', ['num' => $index + 1]) }}</span>
+                                                <flux:button
+                                                    size="xs"
+                                                    variant="outline"
+                                                    wire:click="removeDependency({{ $index }})"
+                                                    type="button"
+                                                >
+                                                    {{ __('Remove') }}
+                                                </flux:button>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <flux:field>
+                                                    <flux:label>{{ __('Mod') }}</flux:label>
+                                                    <livewire:form.mod-autocomplete
+                                                        :key="'autocomplete-' . ($dependency['id'] ?? $index)"
+                                                        :selected-mod-id="$dependencies[$index]['modId'] ?? ''"
+                                                        placeholder="Type to search for a mod..."
+                                                        label="Select dependency mod"
+                                                        @mod-selected="updateDependencyModId({{ $index }}, $event.detail.modId)"
+                                                    />
+                                                    <flux:error name="dependencies.{{ $index }}.modId" />
+                                                </flux:field>
+
+                                                <flux:field>
+                                                    <flux:label>{{ __('Version Constraint') }}</flux:label>
+                                                    <flux:input
+                                                        type="text"
+                                                        wire:model.live.debounce="dependencies.{{ $index }}.constraint"
+                                                        placeholder="~1.0.0"
+                                                    />
+                                                    <flux:error name="dependencies.{{ $index }}.constraint" />
+                                                </flux:field>
+                                            </div>
+
+                                            @if (isset($matchingDependencyVersions[$index]) && count($matchingDependencyVersions[$index]) > 0)
+                                                <div class="mt-3">
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                                        {{ __('Matching Versions:') }}</p>
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach ($matchingDependencyVersions[$index] as $version)
+                                                            <span
+                                                                class="inline-flex items-center rounded-md bg-gray-100 dark:bg-gray-800 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400"
+                                                            >
+                                                                {{ $version['mod_name'] }} v{{ $version['version'] }}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @elseif(!empty($dependencies[$index]['modId']) && !empty($dependencies[$index]['constraint']))
+                                                <div class="mt-3">
+                                                    <p class="text-sm text-yellow-600 dark:text-yellow-400">
+                                                        {{ __('No matching versions found for this constraint.') }}</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+
+                                    <flux:button
+                                        size="sm"
+                                        variant="outline"
+                                        wire:click="addDependency"
+                                        type="button"
+                                    >
+                                        {{ __('+ Add Dependency') }}
+                                    </flux:button>
+                                </div>
                             </flux:field>
 
                             {{-- VirusTotal Links --}}

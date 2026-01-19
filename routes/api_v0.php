@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V0\AddonController;
+use App\Http\Controllers\Api\V0\AddonDependencyController;
 use App\Http\Controllers\Api\V0\AddonVersionController;
 use App\Http\Controllers\Api\V0\AuthController;
 use App\Http\Controllers\Api\V0\ModCategoryController;
@@ -43,6 +44,7 @@ Route::middleware(['auth:sanctum', 'abilities:read'])->group(function (): void {
     Route::get('/addons', [AddonController::class, 'index'])->name('api.v0.addons');
     Route::get('/addon/{addonId}', [AddonController::class, 'show'])->where('addonId', '[0-9]+')->name('api.v0.addons.show');
     Route::get('/addon/{addonId}/versions', [AddonVersionController::class, 'index'])->where('addonId', '[0-9]+')->name('api.v0.addons.versions');
+    Route::get('/addons/dependencies', [AddonDependencyController::class, 'resolve'])->name('api.v0.addons.dependencies');
 
     // Mod Categories
     Route::get('/mod-categories', [ModCategoryController::class, 'index'])->name('api.v0.mod-categories');
