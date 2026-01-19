@@ -172,4 +172,43 @@ class UserPolicy
     {
         return $this->ban($user, $targetUser);
     }
+
+    /**
+     * Determine if the user can initiate a chat with another user.
+     * This is used for showing the "Chat" button on profiles.
+     */
+    public function initiateChat(User $user, User $target): bool
+    {
+        // Cannot message yourself
+        if ($user->id === $target->id) {
+            return false;
+        }
+
+        // Cannot message users who haven't verified their email
+        if ($target->email_verified_at === null) {
+            return false;
+        }
+
+        // Cannot message banned users
+        if ($target->isBanned()) {
+            return false;
+        }
+
+        // Staff members (mod, sr mod, admin) can always initiate chat
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        // Cannot message if blocked by the target user
+        if ($user->isBlockedBy($target)) {
+            return false;
+        }
+
+        // Cannot message users you have blocked (to avoid confusion)
+        if ($user->hasBlocked($target)) {
+            return false;
+        }
+
+        return true;
+    }
 }

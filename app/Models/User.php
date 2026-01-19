@@ -880,6 +880,9 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             ->withCount(['mods' => function (Builder $query): void {
                 $query->whereNotNull('published_at')->where('published_at', '<=', now());
             }])
+            // Prioritize exact matches, then starts-with matches, then contains matches
+            ->orderByRaw('CASE WHEN LOWER(name) = LOWER(?) THEN 0 WHEN LOWER(name) LIKE LOWER(?) THEN 1 ELSE 2 END', [$search, $search.'%'])
+            ->orderBy('name')
             ->limit(10);
     }
 }

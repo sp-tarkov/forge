@@ -212,6 +212,12 @@ new #[Layout('layouts::base')] class extends Component {
                                 size="xs"
                             />
 
+                            {{-- Chat Button --}}
+                            <x-start-chat-button
+                                :user="$user"
+                                size="xs"
+                            />
+
                             {{-- Block/Unblock Button --}}
                             <livewire:block-button
                                 :user="$user"
@@ -236,12 +242,16 @@ new #[Layout('layouts::base')] class extends Component {
                         </div>
 
                         {{-- Desktop buttons (sm size) --}}
-                        <div class="hidden md:flex md:flex-wrap md:gap-0 md:space-x-4">
+                        <div
+                            class="hidden md:grid md:grid-cols-2 md:gap-2 md:[&>*]:w-full md:[&_button]:w-full lg:flex lg:flex-wrap lg:gap-0 lg:space-x-4 lg:[&>*]:w-auto lg:[&_button]:w-auto">
                             {{-- Follow Buttons --}}
                             <livewire:user.follow-buttons
                                 :profile-user-id="$user->id"
                                 :is-following="auth()->user()->isFollowing($user->id)"
                             />
+
+                            {{-- Chat Button --}}
+                            <x-start-chat-button :user="$user" />
 
                             {{-- Block/Unblock Button --}}
                             <livewire:block-button :user="$user" />

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AddonVersionController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Chat\StartConversationController;
 use App\Http\Controllers\ChatSubscriptionController;
 use App\Http\Controllers\CommentSubscriptionController;
 use App\Http\Controllers\FileRedirectController;
@@ -121,6 +122,9 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::livewire('/chat/{conversationHash?}', 'pages::chat')
             ->where(['conversationHash' => '[a-zA-Z0-9]+'])
             ->name('chat');
+
+        Route::get('/chat/start/{user}', StartConversationController::class)
+            ->name('chat.start');
 
         Route::livewire('/report-centre', 'pages::admin.report-centre')
             ->can('viewAny', Report::class)
