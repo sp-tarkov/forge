@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Mod\Show\AddonsTab;
 use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -96,7 +95,7 @@ it('sorts addons by download count in descending order', function (): void {
     $this->actingAs($user);
 
     Livewire::withoutLazyLoading()
-        ->test(AddonsTab::class, ['modId' => $mod->id])
+        ->test('mod.show.addons-tab', ['modId' => $mod->id])
         ->assertSuccessful()
         ->assertSeeInOrder([
             'High Downloads Addon',    // 1000 downloads
@@ -180,7 +179,7 @@ it('maintains download count sorting when filtering by mod version', function ()
     $this->actingAs($user);
 
     Livewire::withoutLazyLoading()
-        ->test(AddonsTab::class, ['modId' => $mod->id])
+        ->test('mod.show.addons-tab', ['modId' => $mod->id])
         ->set('selectedModVersionId', $modVersion->id)
         ->assertSuccessful()
         ->assertSeeInOrder([
@@ -272,7 +271,7 @@ it('shows addons sorted by downloads to unauthenticated users', function (): voi
 
     // Load the addons tab as guest (unauthenticated)
     Livewire::withoutLazyLoading()
-        ->test(AddonsTab::class, ['modId' => $mod->id])
+        ->test('mod.show.addons-tab', ['modId' => $mod->id])
         ->assertSuccessful()
         ->assertSeeInOrder([
             'Most Downloads',    // 5000 downloads

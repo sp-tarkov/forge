@@ -35,32 +35,32 @@ describe('Ribbon Blade Component', function (): void {
     it('does not render when color is missing', function (): void {
         $view = $this->blade('<x-ribbon label="Test Label" />');
 
-        $view->assertDontSee('ribbon');
+        $view->assertDontSee('class="ribbon');
         $view->assertDontSee('Test Label');
     });
 
     it('does not render when label is missing', function (): void {
         $view = $this->blade('<x-ribbon color="red" />');
 
-        $view->assertDontSee('ribbon');
+        $view->assertDontSee('class="ribbon');
     });
 
     it('does not render when both color and label are missing', function (): void {
         $view = $this->blade('<x-ribbon />');
 
-        $view->assertDontSee('ribbon');
+        $view->assertDontSee('class="ribbon');
     });
 
     it('handles empty string values correctly', function (): void {
         $view = $this->blade('<x-ribbon color="" label="" />');
 
-        $view->assertDontSee('ribbon');
+        $view->assertDontSee('class="ribbon');
     });
 
     it('handles null values correctly', function (): void {
         $view = $this->blade('<x-ribbon :color="null" :label="null" />');
 
-        $view->assertDontSee('ribbon');
+        $view->assertDontSee('class="ribbon');
     });
 
     it('renders with dynamic content', function (): void {

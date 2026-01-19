@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
-use App\Livewire\ReportComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\Report;
@@ -29,7 +28,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ]);
@@ -48,7 +47,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                     'variant' => 'button',
@@ -62,7 +61,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ]);
@@ -78,7 +77,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ]);
@@ -98,7 +97,7 @@ describe('ReportComponent', function (): void {
             ]);
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ]);
@@ -117,7 +116,7 @@ describe('ReportComponent', function (): void {
             ]);
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ]);
@@ -128,7 +127,7 @@ describe('ReportComponent', function (): void {
         it('prevents guests from reporting', function (): void {
             $mod = Mod::factory()->create();
 
-            $component = Livewire::test(ReportComponent::class, [
+            $component = Livewire::test('report-component', [
                 'reportableId' => $mod->id,
                 'reportableType' => $mod::class,
             ]);
@@ -141,7 +140,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ]);
@@ -154,7 +153,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create(['user_id' => $user->id]);
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ]);
@@ -168,7 +167,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create(['user_id' => $otherUser->id]);
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ]);
@@ -183,7 +182,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create(['user_id' => $user->id]);
 
             $component = Livewire::actingAs($moderator)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ]);
@@ -198,7 +197,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create(['user_id' => $user->id]);
 
             $component = Livewire::actingAs($admin)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ]);
@@ -215,7 +214,7 @@ describe('ReportComponent', function (): void {
             expect(Report::query()->count())->toBe(0);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -240,7 +239,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -261,7 +260,7 @@ describe('ReportComponent', function (): void {
 
             expect(function (): void {
                 Livewire::actingAs($user)
-                    ->test(ReportComponent::class, [
+                    ->test('report-component', [
                         'reportableId' => $mod->id,
                         'reportableType' => $mod::class,
                     ])
@@ -278,7 +277,7 @@ describe('ReportComponent', function (): void {
             $longContext = str_repeat('a', 1001);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -296,7 +295,7 @@ describe('ReportComponent', function (): void {
             $maxContext = str_repeat('a', 1000);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -314,7 +313,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -331,7 +330,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -355,7 +354,7 @@ describe('ReportComponent', function (): void {
             ]);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -369,7 +368,7 @@ describe('ReportComponent', function (): void {
         it('prevents guests from submitting reports', function (): void {
             $mod = Mod::factory()->create();
 
-            Livewire::test(ReportComponent::class, [
+            Livewire::test('report-component', [
                 'reportableId' => $mod->id,
                 'reportableType' => $mod::class,
             ])
@@ -385,7 +384,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create(['user_id' => $user->id]);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ])
@@ -402,7 +401,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create(['user_id' => $otherUser->id]);
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ])
@@ -435,7 +434,7 @@ describe('ReportComponent', function (): void {
                 $mod = Mod::factory()->create(); // Create new mod for each test to avoid duplicate reporting
 
                 $component = Livewire::actingAs($user)
-                    ->test(ReportComponent::class, [
+                    ->test('report-component', [
                         'reportableId' => $mod->id,
                         'reportableType' => $mod::class,
                     ])
@@ -458,7 +457,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ]);
@@ -480,7 +479,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -502,7 +501,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -520,7 +519,7 @@ describe('ReportComponent', function (): void {
             $comment = Comment::factory()->create();
 
             Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ])
@@ -538,7 +537,7 @@ describe('ReportComponent', function (): void {
             $reportedUser = User::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $reportedUser->id,
                     'reportableType' => $reportedUser::class,
                 ])
@@ -560,7 +559,7 @@ describe('ReportComponent', function (): void {
             $mod2 = Mod::factory()->create();
 
             $component1 = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod1->id,
                     'reportableType' => $mod1::class,
                 ])
@@ -569,7 +568,7 @@ describe('ReportComponent', function (): void {
                 ->set('showReportModal', true);
 
             $component2 = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod2->id,
                     'reportableType' => $mod2::class,
                 ])
@@ -591,7 +590,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             $component = Livewire::actingAs($user)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -621,7 +620,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -646,7 +645,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -673,7 +672,7 @@ describe('ReportComponent', function (): void {
             $mod = Mod::factory()->create();
 
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -700,7 +699,7 @@ describe('ReportComponent', function (): void {
 
             // Test mod report
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $mod->id,
                     'reportableType' => $mod::class,
                 ])
@@ -709,7 +708,7 @@ describe('ReportComponent', function (): void {
 
             // Test comment report
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $comment->id,
                     'reportableType' => $comment::class,
                 ])
@@ -718,7 +717,7 @@ describe('ReportComponent', function (): void {
 
             // Test user report
             Livewire::actingAs($reporter)
-                ->test(ReportComponent::class, [
+                ->test('report-component', [
                     'reportableId' => $reportedUser->id,
                     'reportableType' => $reportedUser::class,
                 ])

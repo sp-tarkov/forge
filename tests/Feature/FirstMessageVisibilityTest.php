@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NavigationChat;
-use App\Livewire\Page\Chat;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +35,7 @@ it('shows conversation to other user after first message is sent', function (): 
 
     // User2 should see the conversation in navigation with unread badge
     Livewire::actingAs($user2)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->assertSee('Alice')  // Should see user1's name
         ->assertSee('1');      // Should see unread count
 });
@@ -49,7 +47,7 @@ it('correctly tracks unread count after first message via Chat component', funct
     // User1 starts conversation and sends message through Chat component
     // Start conversation through NavigationChat or Chat component
     Livewire::actingAs($user1)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->call('startConversation', $user2->id);
 
     // Get the created conversation
@@ -61,7 +59,7 @@ it('correctly tracks unread count after first message via Chat component', funct
 
     // Send first message through Chat component
     Livewire::actingAs($user1)
-        ->test(Chat::class, ['conversationHash' => $conversation->hash_id])
+        ->test('pages::chat', ['conversationHash' => $conversation->hash_id])
         ->set('messageText', 'Hello Bob!')
         ->call('sendMessage');
 
@@ -75,7 +73,7 @@ it('correctly tracks unread count after first message via Chat component', funct
 
     // User2's navigation should show the conversation with unread badge
     Livewire::actingAs($user2)
-        ->test(NavigationChat::class)
+        ->test('navigation-chat')
         ->assertSee('Alice')
         ->assertSee('1');
 });

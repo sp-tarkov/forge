@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NavigationChat;
 use App\Models\Conversation;
 use App\Models\User;
 use Livewire\Livewire;
@@ -18,7 +17,7 @@ beforeEach(function (): void {
 it('filters search results to show only verified non-banned users', function (): void {
     $this->actingAs($this->user1);
 
-    Livewire::test(NavigationChat::class)
+    Livewire::test('navigation-chat')
         ->set('searchUser', mb_substr((string) $this->user2->name, 0, 3))
         ->assertSee($this->user2->name)
         ->set('searchUser', mb_substr((string) $this->bannedUser->name, 0, 3))
@@ -88,7 +87,7 @@ it('shows conversation to both users after first message is sent', function (): 
 it('redirects creator to conversation page when starting new conversation', function (): void {
     $this->actingAs($this->user1);
 
-    Livewire::test(NavigationChat::class)
+    Livewire::test('navigation-chat')
         ->set('searchUser', $this->user2->name)
         ->call('startConversation', $this->user2->id)
         ->assertRedirect(route('chat', ['conversationHash' => Conversation::query()->first()->hash_id]));

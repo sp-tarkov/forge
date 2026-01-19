@@ -11,9 +11,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 
-/**
- * @phpstan-type Arguments array<string, mixed>
- */
 class ArtisanCallJob implements ShouldQueue
 {
     use Dispatchable;

@@ -10,7 +10,7 @@ use App\Http\Resources\Api\V0\ModResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\Mod;
 use App\Models\ModVersion;
-use App\Services\ModDependencyService;
+use App\Services\DependencyService;
 use Composer\Semver\Semver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ModDependencyController extends Controller
 {
-    public function __construct(protected ModDependencyService $dependencyService) {}
+    public function __construct(protected DependencyService $dependencyService) {}
 
     /**
      * Get Mod Dependencies

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Chat;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -30,7 +29,7 @@ describe('Chat Page Tests', function (): void {
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(Chat::class)
+            ->test('pages::chat')
             ->assertOk();
     });
 });

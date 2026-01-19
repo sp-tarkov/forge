@@ -18,6 +18,7 @@ use Override;
  * @property int|null $hub_id
  * @property string $title
  * @property string $slug
+ * @property bool $shows_profile_binding_notice
  * @property string|null $description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -68,6 +69,7 @@ class ModCategory extends Model
     {
         return [
             'hub_id' => 'integer',
+            'shows_profile_binding_notice' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

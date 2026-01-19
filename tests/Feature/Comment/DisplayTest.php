@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -15,7 +14,7 @@ describe('comment display', function (): void {
         Comment::factory()->count(5)->create(['commentable_id' => $mod->id, 'commentable_type' => $mod::class]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->assertSeeHtml('<span class="font-normal text-slate-400">(5)</span>');
     });
 
@@ -30,7 +29,7 @@ describe('comment display', function (): void {
         ]);
 
         $test = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         $test->assertViewHas('rootComments', fn ($paginator): bool => $paginator->total() === 15);
 

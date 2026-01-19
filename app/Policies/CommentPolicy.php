@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Contracts\Commentable;
+use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -126,17 +127,25 @@ class CommentPolicy
     public function update(User $user, Comment $comment): bool
     {
         // Only the comment author can edit their own comment
-        if ($user->id !== $comment->user_id) {
+        return $user->id === $comment->user_id;
+    }
+
+    /**
+     * Determine whether the user can view the comment's version history.
+     */
+    public function viewVersionHistory(?User $user, Comment $comment): bool
+    {
+        if ($user === null) {
             return false;
         }
 
-        // The user can update the comment if it is not older than the configured time limit.
-        $editTimeLimit = config('comments.editing.edit_time_limit_minutes', 5);
-        if ($comment->created_at->diffInMinutes(now()) > $editTimeLimit) {
-            return false;
+        // Author can view own history
+        if ($user->id === $comment->user_id) {
+            return true;
         }
 
-        return true;
+        // Mods, senior mods, admins can view all
+        return $user->isModOrAdmin();
     }
 
     /**
@@ -247,8 +256,55 @@ class CommentPolicy
             return false;
         }
 
-        // Must be moderator or admin
-        return $user->isModOrAdmin();
+        // Moderators and admins can always view actions
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        // For mod comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Mod::class) {
+            /** @var Mod $mod */
+            $mod = $comment->commentable;
+
+            // Check if the user is the mod owner
+            if ($mod->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the mod authors
+            if ($mod->additionalAuthors->contains($user)) {
+                return true;
+            }
+        }
+
+        // For addon comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Addon::class) {
+            /** @var Addon $addon */
+            $addon = $comment->commentable;
+
+            // Check if the user is the addon owner
+            if ($addon->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the addon authors
+            if ($addon->additionalAuthors->contains($user)) {
+                return true;
+            }
+        }
+
+        // For user profile comments, check if the user owns the profile
+        if ($comment->commentable_type === User::class) {
+            /** @var User $profileUser */
+            $profileUser = $comment->commentable;
+
+            // Check if the user owns the profile being commented on
+            if ($profileUser->id === $user->id) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -301,6 +357,22 @@ class CommentPolicy
             }
         }
 
+        // For addon comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Addon::class) {
+            /** @var Addon $addon */
+            $addon = $comment->commentable;
+
+            // Check if the user is the addon owner
+            if ($addon->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the addon authors
+            if ($addon->additionalAuthors->contains($user)) {
+                return true;
+            }
+        }
+
         // For user profile comments, check if the user owns the profile
         if ($comment->commentable_type === User::class) {
             /** @var User $profileUser */
@@ -342,6 +414,22 @@ class CommentPolicy
 
             // Check if the user is one of the mod authors
             if ($mod->additionalAuthors->contains($user)) {
+                return true;
+            }
+        }
+
+        // For addon comments, check if the user is an author or the owner
+        if ($comment->commentable_type === Addon::class) {
+            /** @var Addon $addon */
+            $addon = $comment->commentable;
+
+            // Check if the user is the addon owner
+            if ($addon->owner_id === $user->id) {
+                return true;
+            }
+
+            // Check if the user is one of the addon authors
+            if ($addon->additionalAuthors->contains($user)) {
                 return true;
             }
         }

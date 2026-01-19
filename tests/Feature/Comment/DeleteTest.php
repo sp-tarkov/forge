@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -46,7 +45,7 @@ describe('hard deletion', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('deleteComment', $comment)
             ->assertSuccessful();
 
@@ -68,7 +67,7 @@ describe('hard deletion', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('deleteComment', $comment)
             ->assertSuccessful();
 
@@ -92,7 +91,7 @@ describe('soft deletion', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('deleteComment', $comment)
             ->assertSuccessful();
 
@@ -127,7 +126,7 @@ describe('soft deletion', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('deleteComment', $parentComment)
             ->assertSuccessful();
 
@@ -156,7 +155,7 @@ describe('deletion permissions', function (): void {
 
         $this->actingAs($otherUser);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('deleteComment', $comment)
             ->assertForbidden();
 
@@ -179,7 +178,7 @@ describe('deletion permissions', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('deleteComment', $comment)
             ->assertForbidden();
     });
@@ -198,7 +197,7 @@ describe('deleted comment display', function (): void {
             'deleted_at' => now()->subMinutes(5),
         ]);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('[deleted at')
             ->assertDontSee('This is my comment');
     });
@@ -217,7 +216,7 @@ describe('deleted comment display', function (): void {
 
         $this->actingAs($user);
 
-        $response = Livewire::test(CommentComponent::class, ['commentable' => $mod]);
+        $response = Livewire::test('comment-component', ['commentable' => $mod]);
 
         // Check that the specific action buttons are not present for deleted comments
         $response->assertDontSee('wire:click="toggleEditForm('.$comment->id.')"', false)
@@ -239,12 +238,12 @@ describe('deleted comment display', function (): void {
 
         // Author should see delete button
         $this->actingAs($author);
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('Remove');
 
         // Other user should not see delete button
         $this->actingAs($otherUser);
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertDontSee('Remove');
     });
 });
@@ -272,7 +271,7 @@ describe('comment hierarchy', function (): void {
 
         $this->actingAs($user);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('deleteComment', $parentComment)
             ->assertSuccessful();
 
@@ -301,7 +300,7 @@ describe('moderator and admin visibility', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('Comment was deleted on')
             ->assertSee('This comment will be deleted')
             ->assertSee('class="deleted"', false); // Check for deleted class that applies red styling
@@ -323,7 +322,7 @@ describe('moderator and admin visibility', function (): void {
 
         $this->actingAs($admin);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('Comment was deleted on')
             ->assertSee('This admin-viewable deleted comment')
             ->assertSee('class="deleted"', false); // Check for deleted class that applies red styling
@@ -344,7 +343,7 @@ describe('moderator and admin visibility', function (): void {
 
         $this->actingAs($regularUser);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('[deleted at')
             ->assertDontSee('This comment should not be visible to regular users')
             ->assertDontSee('Comment was deleted on');
@@ -362,7 +361,7 @@ describe('moderator and admin visibility', function (): void {
             'deleted_at' => now(),
         ]);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('[deleted at')
             ->assertDontSee('This comment should not be visible to guests')
             ->assertDontSee('Comment was deleted on');
@@ -386,7 +385,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertSet('showModOwnerSoftDeleteModal', true)
             ->assertSet('modOwnerSoftDeletingCommentId', $comment->id)
@@ -414,7 +413,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($modAuthor);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertSet('showModOwnerSoftDeleteModal', true)
             ->call('modOwnerSoftDeleteComment')
@@ -442,7 +441,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod2])
+        Livewire::test('comment-component', ['commentable' => $mod2])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -464,7 +463,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($regularUser);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -486,7 +485,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($moderator);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -509,7 +508,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($admin);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -534,7 +533,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($adminModOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertSet('showModOwnerSoftDeleteModal', true)
             ->call('modOwnerSoftDeleteComment')
@@ -561,7 +560,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
     });
@@ -579,7 +578,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($profileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $profileOwner])
+        Livewire::test('comment-component', ['commentable' => $profileOwner])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertSet('showModOwnerSoftDeleteModal', true)
             ->call('modOwnerSoftDeleteComment')
@@ -603,7 +602,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($otherUser);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $profileOwner])
+        Livewire::test('comment-component', ['commentable' => $profileOwner])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -625,7 +624,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($adminProfileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $adminProfileOwner])
+        Livewire::test('comment-component', ['commentable' => $adminProfileOwner])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertSet('showModOwnerSoftDeleteModal', true)
             ->call('modOwnerSoftDeleteComment')
@@ -652,7 +651,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -676,7 +675,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -698,7 +697,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($profileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $profileOwner])
+        Livewire::test('comment-component', ['commentable' => $profileOwner])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -719,7 +718,7 @@ describe('mod owner soft deletion', function (): void {
 
         $this->actingAs($profileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $profileOwner])
+        Livewire::test('comment-component', ['commentable' => $profileOwner])
             ->call('confirmModOwnerSoftDeleteComment', $comment->id)
             ->assertForbidden();
 
@@ -746,7 +745,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertSet('showModOwnerRestoreModal', true)
             ->assertSet('modOwnerRestoringCommentId', $comment->id)
@@ -775,7 +774,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($modAuthor);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->call('modOwnerRestoreComment')
             ->assertSuccessful();
@@ -798,7 +797,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($profileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $profileOwner])
+        Livewire::test('comment-component', ['commentable' => $profileOwner])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertSet('showModOwnerRestoreModal', true)
             ->call('modOwnerRestoreComment')
@@ -826,7 +825,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($regularUser);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertForbidden();
 
@@ -850,7 +849,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertForbidden();
     });
@@ -870,7 +869,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($adminProfileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $adminProfileOwner])
+        Livewire::test('comment-component', ['commentable' => $adminProfileOwner])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->call('modOwnerRestoreComment')
             ->assertSuccessful();
@@ -897,7 +896,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertForbidden();
 
@@ -922,7 +921,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($modOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertForbidden();
 
@@ -945,7 +944,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($profileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $profileOwner])
+        Livewire::test('comment-component', ['commentable' => $profileOwner])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertForbidden();
 
@@ -967,7 +966,7 @@ describe('mod owner restore', function (): void {
 
         $this->actingAs($profileOwner);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $profileOwner])
+        Livewire::test('comment-component', ['commentable' => $profileOwner])
             ->call('confirmModOwnerRestoreComment', $comment->id)
             ->assertForbidden();
 

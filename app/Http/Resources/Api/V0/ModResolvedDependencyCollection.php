@@ -17,8 +17,6 @@ use Override;
  * The underlying collection contains ModVersion models (the dependent versions).
  *
  * @property EloquentCollection<int, ModVersion>|MissingValue $collection
- *
- * @phpstan-param EloquentCollection<int, ModVersion>|MissingValue $resource
  */
 class ModResolvedDependencyCollection extends ResourceCollection
 {

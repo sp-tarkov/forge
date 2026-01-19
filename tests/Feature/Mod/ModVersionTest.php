@@ -312,6 +312,92 @@ describe('mod version downloads', function (): void {
         $this->get($downloadUrl)
             ->assertForbidden();
     });
+
+    it('allows mod owner to download unpublished mod version', function (): void {
+        $spt = SptVersion::factory()->create();
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create([
+            'owner_id' => $owner->id,
+            'slug' => 'unpublished-mod',
+            'published_at' => null,
+        ]);
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+            'published_at' => null,
+        ]);
+
+        $downloadUrl = sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion->version);
+
+        $this->actingAs($owner)
+            ->get($downloadUrl)
+            ->assertStatus(307);
+    });
+
+    it('allows mod author to download unpublished mod version', function (): void {
+        $spt = SptVersion::factory()->create();
+        $owner = User::factory()->create();
+        $author = User::factory()->create();
+        $mod = Mod::factory()->create([
+            'owner_id' => $owner->id,
+            'slug' => 'unpublished-mod',
+            'published_at' => null,
+        ]);
+        $mod->additionalAuthors()->attach($author);
+
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+            'published_at' => null,
+        ]);
+
+        $downloadUrl = sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion->version);
+
+        $this->actingAs($author)
+            ->get($downloadUrl)
+            ->assertStatus(307);
+    });
+
+    it('allows mod owner to download disabled mod version', function (): void {
+        $spt = SptVersion::factory()->create();
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create([
+            'owner_id' => $owner->id,
+        ]);
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+            'disabled' => true,
+        ]);
+
+        $downloadUrl = sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion->version);
+
+        $this->actingAs($owner)
+            ->get($downloadUrl)
+            ->assertStatus(307);
+    });
+
+    it('denies other users from downloading unpublished mod version', function (): void {
+        $spt = SptVersion::factory()->create();
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $mod = Mod::factory()->create([
+            'owner_id' => $owner->id,
+            'slug' => 'unpublished-mod',
+            'published_at' => null,
+        ]);
+        $modVersion = ModVersion::factory()->recycle($mod)->create([
+            'spt_version_constraint' => $spt->version,
+            'link' => 'https://refringe.com',
+            'published_at' => null,
+        ]);
+
+        $downloadUrl = sprintf('/mod/download/%s/%s/%s', $mod->id, $mod->slug, $modVersion->version);
+
+        $this->actingAs($otherUser)
+            ->get($downloadUrl)
+            ->assertForbidden();
+    });
 });
 
 describe('Published Version Visibility', function (): void {

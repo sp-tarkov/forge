@@ -1,4 +1,4 @@
-<x-layouts.base variant="simple">
+<x-layouts::base variant="simple">
     <x-slot:title>
         {{ __('Confirm your password') }}
     </x-slot>

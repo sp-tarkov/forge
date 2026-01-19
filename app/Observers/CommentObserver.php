@@ -4,44 +4,19 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Contracts\Commentable;
 use App\Facades\CachedGate;
 use App\Jobs\CheckCommentForSpam;
 use App\Jobs\ProcessCommentNotification;
 use App\Models\Comment;
-use Illuminate\Database\Eloquent\Model;
-use InvalidArgumentException;
 
 class CommentObserver
 {
-    /**
-     * Handle the Comment "saving" event.
-     */
-    public function saving(Comment $comment): void
-    {
-        $maxLength = config('comments.validation.max_length', 10000);
-
-        throw_if(
-            mb_strlen($comment->body) > $maxLength,
-            InvalidArgumentException::class,
-            sprintf('Comment body cannot exceed %d characters.', $maxLength)
-        );
-    }
-
     /**
      * Handle the Comment "created" event.
      */
     public function created(Comment $comment): void
     {
         $comment->updateRootId();
-
-        // Subscribe the commenter to future comments.
-        /** @var Commentable<Model>|null $commentable */
-        $commentable = $comment->commentable;
-
-        if ($commentable !== null) {
-            $commentable->subscribeUser($comment->user);
-        }
 
         // Dispatch the spam check job.
         dispatch(new CheckCommentForSpam($comment));

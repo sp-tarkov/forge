@@ -10,6 +10,7 @@ use App\Models\Mod;
 use App\Models\User;
 use App\Rules\DoesNotContainLogFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Form;
 
 class CommentReplyForm extends Form
@@ -51,10 +52,18 @@ class CommentReplyForm extends Form
 
         $parentComment = Comment::query()->findOrFail($parentCommentId);
 
-        $commentable->comments()->create([
-            'body' => $this->body,
-            'user_id' => Auth::id(),
-            'parent_id' => $parentComment->id,
-        ]);
+        DB::transaction(function () use ($commentable, $parentComment): void {
+            $comment = $commentable->comments()->create([
+                'user_id' => Auth::id(),
+                'parent_id' => $parentComment->id,
+            ]);
+
+            // Create initial version with the body content
+            $comment->versions()->create([
+                'body' => mb_trim($this->body),
+                'version_number' => 1,
+                'created_at' => now(),
+            ]);
+        });
     }
 }

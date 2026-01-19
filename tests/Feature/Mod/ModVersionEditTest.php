@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\FikaCompatibility;
-use App\Livewire\Page\ModVersion\Edit as ModVersionEdit;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
@@ -49,7 +48,7 @@ describe('Mod Version Edit Form', function (): void {
                 'mod_id' => $mod->id,
             ]);
 
-            Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+            Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->set('version', '')
                 ->set('description', '')
                 ->set('link', '')
@@ -68,7 +67,7 @@ describe('Mod Version Edit Form', function (): void {
                 'mod_id' => $mod->id,
             ]);
 
-            Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+            Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->set('version', 'invalid-version')
                 ->set('description', 'Test description')
                 ->set('link', 'https://example.com/download.zip')
@@ -93,7 +92,7 @@ describe('Mod Version Edit Form', function (): void {
             // Create a dependency mod
             $dependencyMod = Mod::factory()->create(['name' => 'Test Dependency']);
 
-            $component = Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion]);
+            $component = Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion]);
 
             // Add a dependency
             $component->call('addDependency');
@@ -143,7 +142,7 @@ describe('Mod Version Edit Form', function (): void {
 
             // Test editing mod version to update dependencies
             // Note: Edit component loads existing values in mount(), so we don't need to set all fields
-            Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+            Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -205,7 +204,7 @@ describe('Mod Version Edit Form', function (): void {
                 'spt_version_constraint' => '~3.9.0', // Initially targeting SPT 3.x
             ]);
 
-            $component = Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+            $component = Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp));
@@ -253,7 +252,7 @@ describe('Mod Version Edit Form', function (): void {
                 'spt_version_constraint' => '>=4.0.0',
             ]);
 
-            $component = Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+            $component = Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp));
@@ -293,7 +292,7 @@ describe('Mod Version Edit Form', function (): void {
                 'spt_version_constraint' => '>=4.0.0',
             ]);
 
-            $component = Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+            $component = Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
                 ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
@@ -330,7 +329,7 @@ describe('Mod Version Edit Form', function (): void {
                 'fika_compatibility' => FikaCompatibility::Incompatible,
             ]);
 
-            Livewire::test(ModVersionEdit::class, ['mod' => $mod, 'modVersion' => $modVersion])
+            Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->assertSet('fikaCompatibilityStatus', 'incompatible')
                 ->set('fikaCompatibilityStatus', 'compatible')
                 ->set('virusTotalLinks', [

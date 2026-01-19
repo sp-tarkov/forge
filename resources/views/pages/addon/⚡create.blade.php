@@ -1,0 +1,637 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Enums\TrackingEventType;
+use App\Facades\Track;
+use App\Models\Addon;
+use App\Models\Mod;
+use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Renderless;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
+use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
+use Stevebauman\Purify\Facades\Purify;
+
+new #[Layout('layouts::base')] class extends Component {
+    use UsesSpamProtection;
+    use WithFileUploads;
+
+    /**
+     * The honeypot data to be validated.
+     */
+    public HoneypotData $honeypotData;
+
+    /**
+     * The thumbnail of the addon.
+     */
+    public ?UploadedFile $thumbnail = null;
+
+    /**
+     * The name of the addon.
+     */
+    public string $name = '';
+
+    /**
+     * The teaser of the addon.
+     */
+    public string $teaser = '';
+
+    /**
+     * The description of the addon.
+     */
+    public string $description = '';
+
+    /**
+     * The license of the addon.
+     */
+    public string $license = '';
+
+    /**
+     * The source code links of the addon.
+     *
+     * @var array<int, array{url: string, label: string|null}>
+     */
+    public array $sourceCodeLinks = [['url' => '', 'label' => '']];
+
+    /**
+     * The published at date of the addon.
+     */
+    public ?string $publishedAt = null;
+
+    /**
+     * Whether the addon contains AI content.
+     */
+    public bool $containsAiContent = false;
+
+    /**
+     * Whether the addon contains ads.
+     */
+    public bool $containsAds = false;
+
+    /**
+     * Whether comments are disabled for the addon.
+     */
+    public bool $commentsDisabled = false;
+
+    /**
+     * Whether to subscribe to comment notifications for the addon.
+     */
+    public bool $subscribeToComments = true;
+
+    /**
+     * The selected author user IDs.
+     *
+     * @var array<int>
+     */
+    public array $authorIds = [];
+
+    /**
+     * The parent mod for this addon.
+     */
+    public Mod $mod;
+
+    /**
+     * Mount the component.
+     */
+    public function mount(Mod $mod): void
+    {
+        $this->honeypotData = new HoneypotData();
+
+        $this->mod = $mod;
+
+        $this->authorize('create', [Addon::class, $this->mod]);
+    }
+
+    /**
+     * Update the author IDs from the child component.
+     *
+     * @param  array<int>  $ids
+     */
+    #[On('updateAuthorIds')]
+    public function updateAuthorIds(array $ids): void
+    {
+        $this->authorIds = $ids;
+    }
+
+    /**
+     * Save the addon.
+     */
+    public function save(): void
+    {
+        $this->authorize('create', [Addon::class, $this->mod]);
+
+        // Validate the honeypot data.
+        $this->protectAgainstSpam();
+
+        // Validate the form.
+        $validated = $this->validate();
+        if (!$validated) {
+            return;
+        }
+
+        // Parse the published at date in the user's timezone, falling back to UTC if the user has no timezone, and
+        // convert it to UTC for DB storage. Zero out seconds for consistency with datetime-local input format.
+        if ($this->publishedAt !== null) {
+            $userTimezone = auth()->user()->timezone ?? 'UTC';
+            $this->publishedAt = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0)->toDateTimeString();
+        }
+
+        // Create a new addon instance.
+        $addon = new Addon([
+            'mod_id' => $this->mod->id,
+            'owner_id' => auth()->user()->id,
+            'name' => $this->name,
+            'slug' => Str::slug($this->name),
+            'teaser' => $this->teaser,
+            'description' => $this->description,
+            'license_id' => $this->license,
+            'contains_ai_content' => $this->containsAiContent,
+            'contains_ads' => $this->containsAds,
+            'comments_disabled' => $this->commentsDisabled,
+            'published_at' => $this->publishedAt,
+        ]);
+
+        // Set the thumbnail if a file was uploaded.
+        if ($this->thumbnail !== null) {
+            $addon->thumbnail = $this->thumbnail->storePublicly(path: 'addons', options: config('filesystems.asset_upload', 'public'));
+
+            // Calculate and store the hash of the uploaded thumbnail
+            $addon->thumbnail_hash = md5($this->thumbnail->get());
+        }
+
+        // Save the addon.
+        $addon->save();
+
+        // Add authors
+        if (!empty($this->authorIds)) {
+            $addon->additionalAuthors()->attach($this->authorIds);
+        }
+
+        // Add source code links
+        foreach ($this->sourceCodeLinks as $link) {
+            if (!empty($link['url'])) {
+                $addon->sourceCodeLinks()->create([
+                    'url' => $link['url'],
+                    'label' => $link['label'] ?? '',
+                ]);
+            }
+        }
+
+        // Subscribe the owner to comment notifications if requested.
+        if ($this->subscribeToComments) {
+            $addon->subscribeUser(auth()->user());
+        }
+
+        Track::event(TrackingEventType::ADDON_CREATE, $addon);
+
+        Session::flash('success', 'Addon has been Successfully Created');
+
+        $this->redirect($addon->detail_url);
+    }
+
+    /**
+     * Remove the uploaded thumbnail.
+     */
+    public function removeThumbnail(): void
+    {
+        $this->thumbnail = null;
+    }
+
+    /**
+     * Add a new source code link input.
+     */
+    public function addSourceCodeLink(): void
+    {
+        if (count($this->sourceCodeLinks) < 4) {
+            $this->sourceCodeLinks[] = ['url' => '', 'label' => ''];
+        }
+    }
+
+    /**
+     * Remove a source code link input.
+     */
+    public function removeSourceCodeLink(int $index): void
+    {
+        if (count($this->sourceCodeLinks) > 1) {
+            array_splice($this->sourceCodeLinks, $index, 1);
+            $this->sourceCodeLinks = array_values($this->sourceCodeLinks);
+        }
+    }
+
+    /**
+     * Render markdown content to HTML for preview.
+     */
+    #[Renderless]
+    public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
+    {
+        if (empty(mb_trim($content))) {
+            return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
+        }
+
+        $html = Markdown::convert($content)->getContent();
+
+        return Purify::config($purifyConfig)->clean($html);
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    protected function rules(): array
+    {
+        return [
+            'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'name' => 'required|string|max:75',
+            'teaser' => 'required|string|max:255',
+            'description' => 'required|string',
+            'license' => 'required|exists:licenses,id',
+            'sourceCodeLinks' => 'required|array|min:1|max:4',
+            'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
+            'sourceCodeLinks.*.label' => 'string|max:50',
+            'publishedAt' => 'nullable|date',
+            'containsAiContent' => 'boolean',
+            'containsAds' => 'boolean',
+            'commentsDisabled' => 'boolean',
+            'subscribeToComments' => 'boolean',
+            'authorIds' => 'array|max:10',
+            'authorIds.*' => 'exists:users,id|distinct',
+        ];
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return [
+            'sourceCodeLinks.required' => 'At least one source code link is required.',
+            'sourceCodeLinks.min' => 'At least one source code link is required.',
+            'sourceCodeLinks.max' => 'You can add a maximum of 4 source code links.',
+            'sourceCodeLinks.*.url.required' => 'Please enter a valid URL for the source code.',
+            'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
+            'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
+            'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
+        ];
+    }
+};
+?>
+
+<x-slot:title>
+    {!! __('Create a New Addon for :mod - The Forge', ['mod' => $mod->name]) !!}
+</x-slot>
+
+<x-slot:description>
+    {!! __('Create a new addon for :mod to share with the community.', ['mod' => $mod->name]) !!}
+</x-slot>
+
+<x-slot:header>
+    <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <flux:icon.puzzle-piece class="w-5 h-5" />
+        {{ __('Create Addon') }}: {{ $mod->name }}
+    </h2>
+</x-slot>
+
+<div>
+    <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="md:grid md:grid-cols-3 md:gap-6">
+            <div class="md:col-span-1 flex justify-between">
+                <div class="px-4 sm:px-0">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Addon Information</h3>
+                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
+                        Create an addon that extends <strong>{{ $mod->name }}</strong>. Addons are supplemental
+                        modifications like music packs, trader avatars, or preset configurations.
+                    </p>
+                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
+                        After creating the addon, you'll be able to submit addon versions/files with version
+                        constraints to specify which mod versions they're compatible with.
+                    </p>
+                    <p class="my-2 text-sm/6 text-sm text-gray-600 dark:text-gray-400">
+                        Please ensure you follow the <a
+                            href="{{ route('static.community-standards') }}"
+                            target="_blank"
+                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                        >Community Standards</a>
+                        and the <a
+                            href="{{ route('static.content-guidelines') }}"
+                            target="_blank"
+                            class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                        >Content Guidelines</a>.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5 md:mt-0 md:col-span-2">
+                <form wire:submit="save">
+                    <div class="px-4 py-5 bg-white dark:bg-gray-900 sm:p-6 shadow-sm sm:rounded-tl-md sm:rounded-tr-md">
+                        <div class="grid grid-cols-6 gap-8">
+                            @csrf
+
+                            {{-- Thumbnail --}}
+                            <flux:field class="col-span-6">
+                                <flux:label>{{ __('Thumbnail') }}</flux:label>
+                                <flux:description>
+                                    {{ __('Optionally upload an image to use as the addon\'s thumbnail. This will be displayed on the addon page and in search results. The image should be square, JPG or PNG, and no larger than 2MB. ') }}
+                                </flux:description>
+                                <flux:input
+                                    type="file"
+                                    wire:model.blur="thumbnail"
+                                    accept="image/*"
+                                />
+                                <flux:error name="thumbnail" />
+                                <div
+                                    wire:loading
+                                    wire:target="thumbnail"
+                                    class="mt-2"
+                                >
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-cyan-500 h-2.5 rounded-full animate-pulse"></div>
+                                    </div>
+                                </div>
+                                @if ($thumbnail)
+                                    <div class="mt-2 flex items-center gap-2">
+                                        <div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">Preview:</p>
+                                            <img
+                                                src="{{ $thumbnail->temporaryUrl() }}"
+                                                class="h-20 w-20 object-cover rounded"
+                                                alt="Thumbnail preview"
+                                            >
+                                        </div>
+                                        <flux:button
+                                            size="sm"
+                                            variant="outline"
+                                            wire:click="removeThumbnail"
+                                            type="button"
+                                        >
+                                            {{ __('Remove Thumbnail') }}
+                                        </flux:button>
+                                    </div>
+                                @endif
+                            </flux:field>
+
+                            {{-- Name --}}
+                            <flux:field
+                                class="col-span-6"
+                                x-data="{ count: 0, text: '' }"
+                            >
+                                <flux:label>{{ __('Name') }}</flux:label>
+                                <flux:description>
+                                    {{ __('Make it catchy, short, and sweet. Displayed on the addon page and in search results.') }}
+                                </flux:description>
+                                <flux:input
+                                    type="text"
+                                    wire:model.blur="name"
+                                    maxlength="75"
+                                    x-model="text"
+                                    @input="count = text.length"
+                                />
+                                <div
+                                    class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                                    x-text="`Max Length: ${count}/75`"
+                                ></div>
+                                <flux:error name="name" />
+                            </flux:field>
+
+                            {{-- Teaser --}}
+                            <flux:field
+                                class="col-span-6"
+                                x-data="{ count: 0, text: '' }"
+                            >
+                                <flux:label>{{ __('Teaser') }}</flux:label>
+                                <flux:description>
+                                    {{ __('Describe the addon in a few words. This will be displayed on the addon card in search results and the top of the addon page.') }}
+                                </flux:description>
+                                <flux:input
+                                    type="text"
+                                    wire:model.blur="teaser"
+                                    maxlength="255"
+                                    x-model="text"
+                                    @input="count = text.length"
+                                />
+                                <div
+                                    class="mt-1 text-sm text-gray-500 dark:text-gray-400"
+                                    x-text="`Max Length: ${count}/255`"
+                                ></div>
+                                <flux:error name="teaser" />
+                            </flux:field>
+
+                            {{-- Description --}}
+                            <flux:field class="col-span-6">
+                                <x-markdown-editor
+                                    wire-model="description"
+                                    name="description"
+                                    :label="__('Description')"
+                                    :description="__(
+                                        'Explain the addon in detail. This will be displayed on the addon page. Use markdown for formatting.',
+                                    )"
+                                    placeholder="My addon is a *great addon* that does something..."
+                                    rows="6"
+                                    purify-config="description"
+                                />
+                            </flux:field>
+
+                            {{-- License --}}
+                            <flux:field class="col-span-6">
+                                <flux:label>{{ __('License') }}</flux:label>
+                                <flux:description>
+                                    {{ __('Choose which license your addon is released under. This will be displayed on the addon page.') }}
+                                </flux:description>
+                                <flux:select
+                                    wire:model.blur="license"
+                                    placeholder="Choose license..."
+                                >
+                                    @foreach (\App\Models\License::orderBy('name')->get() as $license)
+                                        <flux:select.option value="{{ $license->id }}">{{ $license->name }}
+                                        </flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:error name="license" />
+                            </flux:field>
+
+                            {{-- Source Code Links --}}
+                            <flux:field class="col-span-6">
+                                <flux:label>{{ __('Source Code Links') }}</flux:label>
+                                <flux:description>{!! __(
+                                    'Provide links to the source code for your addon. The source code for addons is required to be publicly available. You can add up to 4 links (e.g., main repository, mirror, documentation). We recommend using services like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.',
+                                ) !!}</flux:description>
+
+                                <div class="space-y-3">
+                                    @foreach ($sourceCodeLinks as $index => $link)
+                                        <div class="flex gap-2 items-center">
+                                            <div class="flex-1">
+                                                <flux:input
+                                                    type="url"
+                                                    wire:model.blur="sourceCodeLinks.{{ $index }}.url"
+                                                    placeholder="https://github.com/username/addon-name"
+                                                />
+                                            </div>
+                                            <div class="w-40">
+                                                <flux:input
+                                                    type="text"
+                                                    wire:model.blur="sourceCodeLinks.{{ $index }}.label"
+                                                    placeholder="Label (optional)"
+                                                />
+                                            </div>
+                                            @if (count($sourceCodeLinks) > 1)
+                                                <flux:button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    wire:click="removeSourceCodeLink({{ $index }})"
+                                                    type="button"
+                                                    icon="x-mark"
+                                                />
+                                            @endif
+                                        </div>
+                                        @error('sourceCodeLinks.' . $index . '.url')
+                                            <flux:error>{{ $message }}</flux:error>
+                                        @enderror
+                                    @endforeach
+
+                                    @if (count($sourceCodeLinks) < 4)
+                                        <flux:button
+                                            variant="ghost"
+                                            size="sm"
+                                            wire:click="addSourceCodeLink"
+                                            type="button"
+                                            icon="plus"
+                                        >
+                                            {{ __('Add another link') }}
+                                        </flux:button>
+                                    @endif
+                                </div>
+
+                                <flux:error name="sourceCodeLinks" />
+                            </flux:field>
+
+                            {{-- Additional Authors --}}
+                            <div class="col-span-6">
+                                <livewire:form.user-select
+                                    :selected-users="$authorIds"
+                                    :max-users="10"
+                                    :exclude-users="[auth()->user()->id]"
+                                    label="Additional Authors"
+                                    description="Add other users as co-authors of this addon. You are automatically listed as the owner and don't need to add yourself here."
+                                    placeholder="Search for users by name or email..."
+                                />
+                            </div>
+
+                            {{-- Published At --}}
+                            <flux:field
+                                class="col-span-6"
+                                x-data="{
+                                    now() {
+                                        // Format: YYYY-MM-DDTHH:MM
+                                        const pad = n => n.toString().padStart(2, '0');
+                                        const d = new Date();
+                                        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                                    }
+                                }"
+                            >
+                                <flux:label badge="Optional">{{ __('Publish Date') }}</flux:label>
+                                <flux:description>
+                                    {!! __(
+                                        'Select the date and time the addon will be published. If the addon is not published, it will not be discoverable by other users. Leave blank to keep the addon unpublished.',
+                                    ) !!}
+                                    @if (auth()->user()->timezone === null)
+                                        <flux:callout
+                                            icon="exclamation-triangle"
+                                            color="orange"
+                                            inline="inline"
+                                            class="my-2"
+                                        >
+                                            <flux:callout.text>
+                                                You have not selected a timezone for your account. You may continue, but
+                                                the published date will be interpreted as a UTC date. Alternatively, you
+                                                can <a
+                                                    href="/user/profile"
+                                                    class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors"
+                                                >edit your profile</a> to set a specific timezone.
+                                            </flux:callout.text>
+                                        </flux:callout>
+                                    @else
+                                        {{ __('Your timezone is set to :timezone.', ['timezone' => auth()->user()->timezone]) }}
+                                    @endif
+                                </flux:description>
+                                <div class="flex gap-2 items-center">
+                                    <flux:input
+                                        type="datetime-local"
+                                        wire:model.defer="publishedAt"
+                                    />
+                                    @if (auth()->user()->timezone !== null)
+                                        <flux:button
+                                            size="sm"
+                                            variant="outline"
+                                            @click="$wire.set('publishedAt', now())"
+                                        >Now</flux:button>
+                                    @endif
+                                </div>
+                                <flux:error name="publishedAt" />
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Disclosure">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="containsAiContent"
+                                        label="Contains AI Content"
+                                        description="This addon contains content that was generated by AI."
+                                    />
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="containsAds"
+                                        label="Contains Ads"
+                                        description="This addon contains advertisements for products, services, or other content."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Comments">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="commentsDisabled"
+                                        label="Disable Comments"
+                                        description="When enabled, normal users will not be able to view or create comments on this addon. Staff and moderators will still have full access."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
+                            <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Notifications">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="subscribeToComments"
+                                        label="Subscribe to Comment Notifications"
+                                        description="When enabled, you will receive notifications when users comment on this addon. You can unsubscribe later from individual notifications."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
+                            <x-honeypot livewire-model="honeypotData" />
+
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
+                        <flux:button
+                            variant="primary"
+                            size="sm"
+                            class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
+                            type="submit"
+                        >{{ __('Create Addon') }}</flux:button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

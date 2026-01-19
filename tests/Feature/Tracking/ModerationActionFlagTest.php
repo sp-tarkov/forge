@@ -3,12 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
-use App\Livewire\Addon\Action as AddonAction;
-use App\Livewire\Addon\VersionAction as AddonVersionAction;
-use App\Livewire\Mod\Action as ModAction;
-use App\Livewire\Mod\VersionAction as ModVersionAction;
-use App\Livewire\Page\Homepage;
-use App\Livewire\Page\Mod\Show as ModShow;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -34,7 +28,7 @@ describe('mod deletion - owner vs moderator', function (): void {
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
         Livewire::actingAs($owner)
-            ->test(ModShow::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -59,7 +53,7 @@ describe('mod deletion - owner vs moderator', function (): void {
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
         Livewire::actingAs($admin)
-            ->test(ModShow::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -85,7 +79,7 @@ describe('mod publishing - owner vs moderator', function (): void {
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -110,7 +104,7 @@ describe('mod publishing - owner vs moderator', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => now()]);
 
         Livewire::actingAs($owner)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -137,7 +131,7 @@ describe('mod disable/enable - always moderation actions', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'disabled' => false]);
 
         Livewire::actingAs($moderator)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -164,7 +158,7 @@ describe('mod disable/enable - always moderation actions', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'disabled' => true]);
 
         Livewire::actingAs($admin)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -192,7 +186,7 @@ describe('mod featuring - always moderation actions', function (): void {
         $mod = Mod::factory()->create(['featured' => false, 'contains_ai_content' => false]);
 
         Livewire::actingAs($admin)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => false,
@@ -221,7 +215,7 @@ describe('mod version publishing - owner vs moderator', function (): void {
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
-            ->test(ModVersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,
@@ -247,7 +241,7 @@ describe('mod version publishing - owner vs moderator', function (): void {
         $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => now()]);
 
         Livewire::actingAs($owner)
-            ->test(ModVersionAction::class, [
+            ->test('mod.version-action', [
                 'versionId' => $version->id,
                 'modId' => $mod->id,
                 'versionNumber' => $version->version,
@@ -278,7 +272,7 @@ describe('addon publishing - owner vs moderator', function (): void {
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
-            ->test(AddonAction::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -305,7 +299,7 @@ describe('addon publishing - owner vs moderator', function (): void {
         $addon = Addon::factory()->create(['owner_id' => $owner->id, 'mod_id' => $mod->id, 'published_at' => now()]);
 
         Livewire::actingAs($owner)
-            ->test(AddonAction::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -334,7 +328,7 @@ describe('addon disable - always moderation action', function (): void {
         $addon = Addon::factory()->create(['owner_id' => $owner->id, 'mod_id' => $mod->id, 'disabled' => false]);
 
         Livewire::actingAs($admin)
-            ->test(AddonAction::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => false,
@@ -366,7 +360,7 @@ describe('addon version actions - owner vs moderator', function (): void {
         $version = AddonVersion::factory()->create(['addon_id' => $addon->id, 'disabled' => false]);
 
         Livewire::actingAs($admin)
-            ->test(AddonVersionAction::class, [
+            ->test('addon.version-action', [
                 'versionId' => $version->id,
                 'addonId' => $addon->id,
                 'versionNumber' => $version->version,
@@ -396,7 +390,7 @@ describe('addon version actions - owner vs moderator', function (): void {
         $version = AddonVersion::factory()->create(['addon_id' => $addon->id, 'disabled' => false]);
 
         Livewire::actingAs($admin)
-            ->test(AddonVersionAction::class, [
+            ->test('addon.version-action', [
                 'versionId' => $version->id,
                 'addonId' => $addon->id,
                 'versionNumber' => $version->version,
@@ -433,7 +427,7 @@ describe('homepage unfeature - always moderation action', function (): void {
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
         Livewire::actingAs($admin)
-            ->test(Homepage::class)
+            ->test('pages::homepage')
             ->call('unfeatureMod', $mod->id, 'No longer featured');
 
         $event = TrackingEvent::query()
@@ -457,7 +451,7 @@ describe('additional author actions - not moderation actions', function (): void
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($additionalAuthor)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -486,7 +480,7 @@ describe('additional author actions - not moderation actions', function (): void
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($additionalAuthorMod)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -515,7 +509,7 @@ describe('mod/admin on their own content - not moderation actions', function ():
         $publishDate = Date::now()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($admin)
-            ->test(ModAction::class, [
+            ->test('mod.action', [
                 'modId' => $mod->id,
                 'modName' => $mod->name,
                 'modFeatured' => (bool) $mod->featured,
@@ -542,7 +536,7 @@ describe('mod/admin on their own content - not moderation actions', function ():
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
         Livewire::actingAs($moderator)
-            ->test(ModShow::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])

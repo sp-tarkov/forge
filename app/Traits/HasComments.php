@@ -45,6 +45,7 @@ trait HasComments
                 'parent:id,user_id',
                 'parent.user:id,name,user_role_id',
                 'parent.user.role:id,name,color_class,icon',
+                'latestVersion',
             ])
             ->withCount('reactions')
             ->orderByRaw('pinned_at IS NULL, pinned_at DESC')
@@ -120,6 +121,7 @@ trait HasComments
                 'parent:id,user_id',
                 'parent.user:id,name,user_role_id',
                 'parent.user.role:id,name,color_class,icon',
+                'latestVersion',
             ])
             ->withCount('reactions')
             ->visibleToUser($user)

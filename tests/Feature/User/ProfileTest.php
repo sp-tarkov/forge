@@ -478,12 +478,14 @@ describe('profile wall comments', function (): void {
             ->call('createComment')
             ->assertSet('newCommentBody', '');
 
-        $this->assertDatabaseHas('comments', [
-            'commentable_type' => User::class,
-            'commentable_id' => $profileUser->id,
-            'user_id' => $commenter->id,
-            'body' => 'Great profile!',
-        ]);
+        $comment = Comment::query()
+            ->where('commentable_type', User::class)
+            ->where('commentable_id', $profileUser->id)
+            ->where('user_id', $commenter->id)
+            ->first();
+
+        expect($comment)->not->toBeNull()
+            ->and($comment->body)->toBe('Great profile!');
     });
 
     it('shows existing comments on user profile wall', function (): void {

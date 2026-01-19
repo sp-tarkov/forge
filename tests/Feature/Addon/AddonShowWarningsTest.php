@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Addon\Show;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -38,7 +37,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subHour(), // Version published in the past
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         $warnings = $component->instance()->getWarningMessages();
 
@@ -67,7 +66,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->addDay(), // Version scheduled for future
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         $warnings = $component->instance()->getWarningMessages();
 
@@ -95,7 +94,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => null, // Version not published
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         $warnings = $component->instance()->getWarningMessages();
 
@@ -123,7 +122,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         $warnings = $component->instance()->getWarningMessages();
 
@@ -151,7 +150,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         $warnings = $component->instance()->getWarningMessages();
 
@@ -183,11 +182,9 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        // Create component instance directly to avoid Livewire lifecycle issues
-        $component = new Show();
-        $component->addon = $addon;
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
-        $warnings = $component->getWarningMessages();
+        $warnings = $component->instance()->getWarningMessages();
 
         expect($warnings)->toHaveKey('disabled');
     });
@@ -213,7 +210,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         $warnings = $component->instance()->getWarningMessages();
 
@@ -236,7 +233,7 @@ describe('Addon Show Page Warnings', function (): void {
 
         // No versions created
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         $warnings = $component->instance()->getWarningMessages();
 
@@ -292,7 +289,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         expect($component->instance()->shouldShowWarnings())->toBeTrue()
             ->and($component->instance()->getWarningMessages())->toHaveKey('unpublished');
@@ -322,7 +319,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         expect($component->instance()->shouldShowWarnings())->toBeTrue()
             ->and($component->instance()->getWarningMessages())->toHaveKey('unpublished');
@@ -350,7 +347,7 @@ describe('Addon Show Page Warnings', function (): void {
                 'published_at' => now()->subDay(),
             ]);
 
-        $component = Livewire::test(Show::class, ['addonId' => $addon->id, 'slug' => $addon->slug]);
+        $component = Livewire::test('pages::addon.show', ['addonId' => $addon->id, 'slug' => $addon->slug]);
 
         expect($component->instance()->shouldShowWarnings())->toBeTrue()
             ->and($component->instance()->getWarningMessages())->toHaveKey('parent_mod_not_visible');

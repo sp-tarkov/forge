@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -35,7 +36,6 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $user_id
  * @property int $commentable_id
  * @property string $commentable_type
- * @property string $body
  * @property string $user_ip
  * @property string $user_agent
  * @property string $referrer
@@ -50,6 +50,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property Carbon|null $pinned_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property string $body
  * @property string $body_html
  * @property-read User $user
  * @property-read Model $commentable
@@ -65,6 +66,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read int $visit_logs_count
  * @property-read Collection<int, Report> $reports
  * @property-read int $reports_count
+ * @property-read Collection<int, CommentVersion> $versions
+ * @property-read int $versions_count
+ * @property-read CommentVersion|null $latestVersion
  */
 #[ObservedBy([CommentObserver::class])]
 class Comment extends Model implements Reportable, Trackable
@@ -145,6 +149,42 @@ class Comment extends Model implements Reportable, Trackable
     public function reactions(): HasMany
     {
         return $this->hasMany(CommentReaction::class);
+    }
+
+    /**
+     * All versions of this comment, newest first.
+     *
+     * @return HasMany<CommentVersion, $this>
+     */
+    public function versions(): HasMany
+    {
+        return $this->hasMany(CommentVersion::class)->orderByDesc('version_number');
+    }
+
+    /**
+     * The latest version of this comment.
+     *
+     * @return HasOne<CommentVersion, $this>
+     */
+    public function latestVersion(): HasOne
+    {
+        return $this->hasOne(CommentVersion::class)->latestOfMany('version_number');
+    }
+
+    /**
+     * Check if this comment has been edited (has more than one version).
+     */
+    public function hasBeenEdited(): bool
+    {
+        return $this->edited_at !== null;
+    }
+
+    /**
+     * Get the count of versions for this comment.
+     */
+    public function getVersionCount(): int
+    {
+        return $this->versions()->count();
     }
 
     /**
@@ -429,14 +469,14 @@ class Comment extends Model implements Reportable, Trackable
     }
 
     /**
-     * Mutator for the body attribute - automatically trims whitespace.
+     * Get the comment body from the latest version.
      *
-     * @return Attribute<string, string>
+     * @return Attribute<string, never>
      */
     protected function body(): Attribute
     {
         return Attribute::make(
-            set: fn (string $value): string => mb_trim($value),
+            get: fn (): string => $this->latestVersion?->body ?? '',
         );
     }
 

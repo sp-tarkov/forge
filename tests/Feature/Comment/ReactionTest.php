@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\CommentComponent;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
@@ -19,7 +18,7 @@ describe('reaction permissions', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->call('toggleReaction', $comment)
             ->assertForbidden();
 
@@ -34,7 +33,7 @@ describe('reaction permissions', function (): void {
             'commentable_type' => $mod::class,
         ]);
 
-        Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        Livewire::test('comment-component', ['commentable' => $mod])
             ->call('toggleReaction', $comment)
             ->assertForbidden();
     });
@@ -50,7 +49,7 @@ describe('reaction permissions', function (): void {
         ]);
 
         Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod])
+            ->test('comment-component', ['commentable' => $mod])
             ->call('toggleReaction', $comment)
             ->assertForbidden();
 
@@ -74,7 +73,7 @@ describe('guest visibility', function (): void {
             $user->commentReactions()->create(['comment_id' => $comment->id]);
         }
 
-        $component = Livewire::test(CommentComponent::class, ['commentable' => $mod])
+        $component = Livewire::test('comment-component', ['commentable' => $mod])
             ->assertSee('Test comment')
             ->assertDontSee('wire:click="toggleReaction"', false);
 
@@ -96,7 +95,7 @@ describe('reaction toggling', function (): void {
         ]);
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // Add reaction
         $component->call('toggleReaction', $comment)
@@ -125,7 +124,7 @@ describe('reaction toggling', function (): void {
         ]);
 
         $component = Livewire::actingAs($user)
-            ->test(CommentComponent::class, ['commentable' => $mod]);
+            ->test('comment-component', ['commentable' => $mod]);
 
         // Try to create multiple reactions rapidly
         $component->call('toggleReaction', $comment);

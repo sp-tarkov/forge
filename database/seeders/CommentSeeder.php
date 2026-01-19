@@ -143,6 +143,7 @@ class CommentSeeder extends Seeder
         }
 
         return Comment::factory()
+            ->withVersion()
             ->recycle([$commentable])
             ->recycle($allUsers)
             ->create($commentData);
@@ -187,6 +188,7 @@ class CommentSeeder extends Seeder
         }
 
         return Comment::factory()
+            ->withVersion()
             ->reply($parentComment)
             ->recycle($allUsers)
             ->create($replyData);

@@ -131,6 +131,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
         return [
             'detail_url' => ['slug'],
             'fika_compatibility' => [],
+            'shows_profile_binding_notice' => ['category_id', 'profile_binding_notice_disabled'],
         ];
     }
 

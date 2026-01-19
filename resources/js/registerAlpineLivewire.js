@@ -5,4 +5,7 @@ import collapse from "@alpinejs/collapse";
 Alpine.plugin(focus);
 Alpine.plugin(collapse);
 
+// Register Alpine components before Livewire starts
+import "./visitorTracker";
+
 Livewire.start();

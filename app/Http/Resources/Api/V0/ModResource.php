@@ -133,6 +133,10 @@ class ModResource extends JsonResource
             $data['contains_ai_content'] = (bool) $this->resource->contains_ai_content;
         }
 
+        if ($this->shouldInclude('shows_profile_binding_notice')) {
+            $data['shows_profile_binding_notice'] = (bool) $this->resource->shows_profile_binding_notice;
+        }
+
         if ($this->shouldInclude('category_id')) {
             $data['category_id'] = $this->resource->category_id;
         }

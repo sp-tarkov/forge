@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\Dependency;
 use App\Models\Mod;
-use App\Models\ModDependency;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
@@ -580,8 +580,8 @@ describe('Mod Update Check Endpoint', function (): void {
             $modBv1->sptVersions()->syncWithoutDetaching([$sptVersion->id]);
 
             // ModB depends on ModA ^1.0.0 (incompatible with 2.0.0)
-            ModDependency::factory()->create([
-                'mod_version_id' => $modBv1->id,
+            Dependency::factory()->create([
+                'dependable_id' => $modBv1->id,
                 'dependent_mod_id' => $modA->id,
                 'constraint' => '^1.0.0',
             ]);
@@ -656,8 +656,8 @@ describe('Mod Update Check Endpoint', function (): void {
             $modBv1->sptVersions()->syncWithoutDetaching([$sptVersion->id]);
 
             // ModB depends on ModA ^1.0.0 (compatible with 1.5.0)
-            ModDependency::factory()->create([
-                'mod_version_id' => $modBv1->id,
+            Dependency::factory()->create([
+                'dependable_id' => $modBv1->id,
                 'dependent_mod_id' => $modA->id,
                 'constraint' => '^1.0.0',
             ]);

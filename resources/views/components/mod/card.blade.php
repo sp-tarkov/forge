@@ -21,27 +21,38 @@
     <a
         href="{{ $mod->detail_url }}"
         wire:navigate
-        class="flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black hover:shadow-gray-400 dark:hover:shadow-black transition-shadow ease-out duration-300"
+        class="@container flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:bg-gray-50 dark:hover:bg-black transition-colors ease-out duration-300"
     >
-        <div class="h-auto md:h-full md:flex">
-            <div class="relative h-auto md:h-full md:shrink-0 overflow-hidden">
-                @if ($mod->thumbnail)
-                    <img
-                        src="{{ $mod->thumbnailUrl }}"
-                        alt="{{ $mod->name }}"
-                        class="h-48 w-full object-cover md:h-full md:w-48 transform group-hover:scale-110 transition-transform duration-200"
-                    >
-                @else
-                    <div class="h-48 w-full md:h-full md:w-48 {{ $placeholderBg }} flex items-center justify-center">
-                        <flux:icon.cube-transparent class="w-24 h-24 text-gray-400 dark:text-gray-600" />
-                    </div>
-                @endif
+        <div class="flex flex-row flex-1">
+            <div class="relative shrink-0 m-3 @lg:m-4 mr-0 rounded-lg">
+                {{-- Default stripe background --}}
+                <div
+                    class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f9fafb,#f9fafb_4px,#ffffff_4px,#ffffff_8px)] dark:bg-[repeating-linear-gradient(45deg,#020509,#020509_4px,#030712_4px,#030712_8px)] transition-opacity duration-200 group-hover:opacity-0">
+                </div>
+                {{-- Hover stripe background --}}
+                <div
+                    class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f0f1f3,#f0f1f3_4px,#f9fafb_4px,#f9fafb_8px)] dark:bg-[repeating-linear-gradient(45deg,#000000,#000000_4px,#010203_4px,#010203_8px)] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                </div>
+                {{-- Thumbnail content --}}
+                <div class="relative overflow-hidden rounded-t-lg">
+                    @if ($mod->thumbnail)
+                        <img
+                            src="{{ $mod->thumbnailUrl }}"
+                            alt="{{ $mod->name }}"
+                            class="size-32 @lg:size-48 object-cover transform group-hover:scale-105 transition-transform duration-200"
+                        >
+                    @else
+                        <div class="size-32 @lg:size-48 flex items-center justify-center">
+                            <flux:icon.cube-transparent class="size-16 @lg:size-24 text-gray-400 dark:text-gray-600" />
+                        </div>
+                    @endif
+                </div>
             </div>
 
-            <div class="flex flex-col w-full justify-between p-5">
+            <div class="flex flex-col w-full justify-between p-3 @lg:p-4">
                 <div class="pb-3">
-                    <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white group-hover:underline">
-                        {{ $mod->name }}
+                    <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white">
+                        <span class="group-hover:underline">{{ $mod->name }}</span>
                         @if ($version)
                             <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
                                 {{ $version->version }}

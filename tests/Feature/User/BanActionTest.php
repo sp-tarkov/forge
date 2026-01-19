@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\User\BanAction;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +17,7 @@ it('shows ban button for admin viewing regular user', function (): void {
     $user = User::factory()->create();
 
     $component = Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user]);
+        ->test('user.ban-action', ['user' => $user]);
 
     expect($admin->can('ban', $user))->toBeTrue();
     expect($user->isBanned())->toBeFalse();
@@ -34,7 +33,7 @@ it('shows unban button for admin viewing banned user', function (): void {
     $user->ban();
 
     $component = Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user]);
+        ->test('user.ban-action', ['user' => $user]);
 
     expect($admin->can('ban', $user))->toBeTrue();
     expect($user->isBanned())->toBeTrue();
@@ -46,7 +45,7 @@ it('does not show ban buttons for moderators', function (): void {
     $user = User::factory()->create();
 
     $component = Livewire::actingAs($moderator)
-        ->test(BanAction::class, ['user' => $user]);
+        ->test('user.ban-action', ['user' => $user]);
 
     expect($moderator->can('ban', $user))->toBeFalse();
 });
@@ -56,7 +55,7 @@ it('does not show ban buttons for regular users', function (): void {
     $targetUser = User::factory()->create();
 
     $component = Livewire::actingAs($regularUser)
-        ->test(BanAction::class, ['user' => $targetUser]);
+        ->test('user.ban-action', ['user' => $targetUser]);
 
     expect($regularUser->can('ban', $targetUser))->toBeFalse();
 });
@@ -71,7 +70,7 @@ it('does not allow admin to ban other admin', function (): void {
     $admin2->assignRole($adminRole);
 
     $component = Livewire::actingAs($admin1)
-        ->test(BanAction::class, ['user' => $admin2]);
+        ->test('user.ban-action', ['user' => $admin2]);
 
     expect($admin1->can('ban', $admin2))->toBeFalse();
 });
@@ -82,7 +81,7 @@ it('does not allow admin to ban themselves', function (): void {
     $admin->assignRole($adminRole);
 
     $component = Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $admin]);
+        ->test('user.ban-action', ['user' => $admin]);
 
     expect($admin->can('ban', $admin))->toBeFalse();
 });
@@ -95,7 +94,7 @@ it('allows admin to ban user with duration', function (): void {
     $user = User::factory()->create();
 
     Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user])
+        ->test('user.ban-action', ['user' => $user])
         ->set('duration', '24_hours')
         ->set('reason', 'Testing ban functionality')
         ->call('ban');
@@ -117,7 +116,7 @@ it('allows admin to ban user permanently', function (): void {
     $user = User::factory()->create();
 
     Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user])
+        ->test('user.ban-action', ['user' => $user])
         ->set('duration', 'permanent')
         ->call('ban');
 
@@ -139,7 +138,7 @@ it('allows admin to unban user', function (): void {
     expect($user->isBanned())->toBeTrue();
 
     Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user])
+        ->test('user.ban-action', ['user' => $user])
         ->call('unban');
 
     expect($user->fresh()->isBanned())->toBeFalse();
@@ -153,7 +152,7 @@ it('opens ban modal when clicking ban button', function (): void {
     $user = User::factory()->create();
 
     Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user])
+        ->test('user.ban-action', ['user' => $user])
         ->assertSet('showBanModal', false)
         ->set('showBanModal', true)
         ->assertSet('showBanModal', true);
@@ -168,7 +167,7 @@ it('opens unban modal when clicking unban button', function (): void {
     $user->ban();
 
     Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user])
+        ->test('user.ban-action', ['user' => $user])
         ->assertSet('showUnbanModal', false)
         ->set('showUnbanModal', true)
         ->assertSet('showUnbanModal', true);
@@ -182,7 +181,7 @@ it('requires duration selection for ban', function (): void {
     $user = User::factory()->create();
 
     Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user])
+        ->test('user.ban-action', ['user' => $user])
         ->call('ban')
         ->assertHasErrors(['duration']);
 });
@@ -192,7 +191,7 @@ it('provides correct duration options', function (): void {
     $user = User::factory()->create();
 
     $component = Livewire::actingAs($admin)
-        ->test(BanAction::class, ['user' => $user]);
+        ->test('user.ban-action', ['user' => $user]);
 
     $expectedOptions = [
         '1_hour' => '1 Hour',
@@ -210,7 +209,7 @@ it('shows ban button for senior moderator viewing regular user', function (): vo
     $user = User::factory()->create();
 
     $component = Livewire::actingAs($seniorMod)
-        ->test(BanAction::class, ['user' => $user]);
+        ->test('user.ban-action', ['user' => $user]);
 
     expect($seniorMod->can('ban', $user))->toBeTrue();
     $component->assertSee('Ban User');
@@ -248,14 +247,14 @@ it('allows senior moderator to ban and unban user', function (): void {
     $user = User::factory()->create();
 
     Livewire::actingAs($seniorMod)
-        ->test(BanAction::class, ['user' => $user])
+        ->test('user.ban-action', ['user' => $user])
         ->set('duration', '24_hours')
         ->call('ban');
 
     expect($user->fresh()->isBanned())->toBeTrue();
 
     Livewire::actingAs($seniorMod)
-        ->test(BanAction::class, ['user' => $user->fresh()])
+        ->test('user.ban-action', ['user' => $user->fresh()])
         ->call('unban');
 
     expect($user->fresh()->isBanned())->toBeFalse();
@@ -266,7 +265,7 @@ it('allows senior moderator to ban moderator', function (): void {
     $moderator = User::factory()->moderator()->create();
 
     Livewire::actingAs($seniorMod)
-        ->test(BanAction::class, ['user' => $moderator])
+        ->test('user.ban-action', ['user' => $moderator])
         ->set('duration', '7_days')
         ->call('ban');
 

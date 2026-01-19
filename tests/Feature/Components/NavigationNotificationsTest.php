@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\NavigationNotifications;
 use App\Models\User;
 use App\Notifications\NewCommentNotification;
 use App\Notifications\ReportSubmittedNotification;
@@ -18,7 +17,7 @@ beforeEach(function (): void {
 it('renders the component for authenticated users', function (): void {
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertStatus(200)
         ->assertSee('Notifications');
 });
@@ -39,14 +38,14 @@ it('displays unread count when there are unread notifications', function (): voi
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSet('unreadCount', 1);
 });
 
 it('shows empty state when no unread notifications', function (): void {
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSet('unreadCount', 0)
         ->assertSee('No new notifications');
 });
@@ -68,7 +67,7 @@ it('can mark a single notification as read', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSet('unreadCount', 1)
         ->call('markAsRead', $notificationId)
         ->assertSet('unreadCount', 0);
@@ -94,7 +93,7 @@ it('can mark all notifications as read', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSet('unreadCount', 3)
         ->call('markAllAsRead')
         ->assertSet('unreadCount', 0);
@@ -119,7 +118,7 @@ it('can delete a single notification', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSet('unreadCount', 1)
         ->call('deleteNotification', $notificationId)
         ->assertSet('unreadCount', 0);
@@ -145,7 +144,7 @@ it('can delete all notifications', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSet('unreadCount', 3)
         ->call('deleteAll')
         ->assertSet('unreadCount', 0);
@@ -171,7 +170,7 @@ it('redirects to review url when reviewing a comment notification', function ():
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->call('reviewNotification', $notificationId)
         ->assertRedirect($commentUrl);
 
@@ -197,7 +196,7 @@ it('redirects to review url when reviewing a report notification', function (): 
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->call('reviewNotification', $notificationId)
         ->assertRedirect($reportableUrl);
 });
@@ -219,7 +218,7 @@ it('marks notification as read when reviewing', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSet('unreadCount', 1)
         ->call('reviewNotification', $notificationId)
         ->assertSet('unreadCount', 0);
@@ -253,7 +252,7 @@ it('only shows unread notifications in the list', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSee('Unread User')
         ->assertDontSee('Read User');
 });
@@ -277,9 +276,13 @@ it('limits displayed notifications to 10', function (): void {
 
     $this->actingAs($this->user);
 
-    $component = Livewire::test(NavigationNotifications::class);
+    $component = Livewire::test('navigation-notifications');
 
-    expect($component->viewData('notifications')->count())->toBe(10);
+    // In SFC components, notifications are fetched inline via fetchNotifications()
+    // We verify the component limits to 10 by checking the instance
+    $instance = $component->instance();
+    $fetchNotifications = new ReflectionMethod($instance, 'fetchNotifications');
+    expect($fetchNotifications->invoke($instance)->count())->toBe(10);
 });
 
 it('displays different notification types with correct styling', function (): void {
@@ -311,7 +314,7 @@ it('displays different notification types with correct styling', function (): vo
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSee('Comment User')
         ->assertSee('commented on')
         ->assertSee('Reporter User')
@@ -321,7 +324,7 @@ it('displays different notification types with correct styling', function (): vo
 it('does not show mark all as read button when no unread notifications', function (): void {
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertDontSee('Mark all read');
 });
 
@@ -340,7 +343,7 @@ it('shows mark all as read button when there are unread notifications', function
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSee('Mark all read');
 });
 
@@ -359,7 +362,7 @@ it('shows delete all button when there are notifications', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSee('Delete all');
 });
 
@@ -394,7 +397,7 @@ it('users can only see their own notifications', function (): void {
 
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->assertSee('My Notification')
         ->assertDontSee('Other User Notification');
 });
@@ -402,7 +405,7 @@ it('users can only see their own notifications', function (): void {
 it('handles gracefully when reviewing non-existent notification', function (): void {
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->call('reviewNotification', 'non-existent-id')
         ->assertStatus(200); // Should not error
 });
@@ -410,7 +413,7 @@ it('handles gracefully when reviewing non-existent notification', function (): v
 it('handles gracefully when marking non-existent notification as read', function (): void {
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->call('markAsRead', 'non-existent-id')
         ->assertStatus(200); // Should not error
 });
@@ -418,7 +421,7 @@ it('handles gracefully when marking non-existent notification as read', function
 it('handles gracefully when deleting non-existent notification', function (): void {
     $this->actingAs($this->user);
 
-    Livewire::test(NavigationNotifications::class)
+    Livewire::test('navigation-notifications')
         ->call('deleteNotification', 'non-existent-id')
         ->assertStatus(200); // Should not error
 });

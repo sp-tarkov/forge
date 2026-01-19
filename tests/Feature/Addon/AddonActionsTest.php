@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Addon\Action;
-use App\Livewire\Page\Addon\Show as AddonShow;
-use App\Livewire\Page\Mod\Show as ModShow;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\Mod;
@@ -33,7 +30,7 @@ describe('action component mounting', function (): void {
             ->recycle([$mod, $user, $license])
             ->create());
 
-        Livewire::test(Action::class, [
+        Livewire::test('addon.action', [
             'addonId' => $addon->id,
             'addonName' => $addon->name,
             'addonDisabled' => (bool) $addon->disabled,
@@ -52,7 +49,7 @@ describe('action component visibility', function (): void {
 
         $this->actingAs($owner)
             ->get(route('addon.show', [$addon->id, $addon->slug]))
-            ->assertSeeLivewire(Action::class);
+            ->assertSeeLivewire('addon.action');
     });
 
     it('displays on addon detail pages for administrators', function (): void {
@@ -63,7 +60,7 @@ describe('action component visibility', function (): void {
 
         $this->actingAs($user)
             ->get(route('addon.show', [$addon->id, $addon->slug]))
-            ->assertSeeLivewire(Action::class);
+            ->assertSeeLivewire('addon.action');
     });
 
     it('does not display on addon detail pages for normal users', function (): void {
@@ -75,7 +72,7 @@ describe('action component visibility', function (): void {
 
         $this->actingAs($user)
             ->get(route('addon.show', [$addon->id, $addon->slug]))
-            ->assertDontSeeLivewire(Action::class);
+            ->assertDontSeeLivewire('addon.action');
     });
 });
 
@@ -87,7 +84,7 @@ describe('addon deletion from addon detail page', function (): void {
         $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
-            ->test(AddonShow::class, [
+            ->test('pages::addon.show', [
                 'addonId' => $addon->id,
                 'slug' => $addon->slug,
             ])
@@ -126,7 +123,7 @@ describe('addon deletion from addon detail page', function (): void {
         $user = User::factory()->create(['user_role_id' => null]);
 
         Livewire::actingAs($user)
-            ->test(AddonShow::class, [
+            ->test('pages::addon.show', [
                 'addonId' => $addon->id,
                 'slug' => $addon->slug,
             ])
@@ -143,7 +140,7 @@ describe('addon deletion from mod show page', function (): void {
         $user = User::factory()->admin()->create();
 
         Livewire::actingAs($user)
-            ->test(ModShow::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -182,7 +179,7 @@ describe('addon deletion from mod show page', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
 
         Livewire::actingAs($user)
-            ->test(ModShow::class, [
+            ->test('pages::mod.show', [
                 'modId' => $mod->id,
                 'slug' => $mod->slug,
             ])
@@ -200,7 +197,7 @@ describe('addon publishing functionality', function (): void {
         $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
 
         Livewire::actingAs($owner)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -222,7 +219,7 @@ describe('addon publishing functionality', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id, 'published_at' => Date::now()]);
 
         Livewire::actingAs($owner)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -246,7 +243,7 @@ describe('addon publishing functionality', function (): void {
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -259,7 +256,7 @@ describe('addon publishing functionality', function (): void {
 
         // Test unauthorized unpublish
         Livewire::actingAs($otherUser)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -281,7 +278,7 @@ describe('addon publishing functionality', function (): void {
 
         // Test author can publish
         Livewire::actingAs($author)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -297,7 +294,7 @@ describe('addon publishing functionality', function (): void {
 
         // Test author can unpublish
         Livewire::actingAs($author)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => (bool) $addon->disabled,
@@ -319,7 +316,7 @@ describe('addon enable/disable functionality', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'disabled' => false]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => false,
@@ -339,7 +336,7 @@ describe('addon enable/disable functionality', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'disabled' => true]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => true,
@@ -359,7 +356,7 @@ describe('addon enable/disable functionality', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'disabled' => false]);
 
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => false,
@@ -377,7 +374,7 @@ describe('addon enable/disable functionality', function (): void {
 
         // Test moderator can disable
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => false,
@@ -392,7 +389,7 @@ describe('addon enable/disable functionality', function (): void {
 
         // Test moderator can enable
         Livewire::actingAs($user)
-            ->test(Action::class, [
+            ->test('addon.action', [
                 'addonId' => $addon->id,
                 'addonName' => $addon->name,
                 'addonDisabled' => true,

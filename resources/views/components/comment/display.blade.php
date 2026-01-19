@@ -1,20 +1,6 @@
 @props(['comment', 'permissions', 'manager', 'isReply' => false, 'commentable' => null])
 
-<div
-    class="relative"
-    x-data="{
-        canEdit: {{ $permissions->can($comment->id, 'update') ? 'true' : 'false' }},
-        createdAt: new Date('{{ $comment->created_at->toISOString() }}'),
-        init() {
-            this.updateCanEdit();
-            setInterval(() => { this.updateCanEdit(); }, 30000);
-        },
-        updateCanEdit() {
-            const diffInMinutes = (new Date() - this.createdAt) / (1000 * 60);
-            this.canEdit = diffInMinutes <= 5;
-        }
-    }"
->
+<div class="relative">
     <div
         id="{{ $manager->getCommentHashId($comment->id) }}"
         class="flex items-center justify-between"
@@ -35,10 +21,14 @@
             <span class="ml-2 text-xs text-slate-400 relative top-0.5">
                 <x-time :datetime="$comment->created_at" />
                 @if ($comment->edited_at)
-                    <span
-                        class="text-gray-500 dark:text-gray-400"
-                        title="{{ $comment->edited_at->format('Y-m-d H:i:s') }}"
-                    >*</span>
+                    @can('viewVersionHistory', $comment)
+                        <x-comment.version-history :comment="$comment" />
+                    @else
+                        <span
+                            class="ml-1 italic text-gray-500 dark:text-gray-400"
+                            title="{{ $comment->edited_at->format('Y-m-d H:i:s') }}"
+                        >{{ __('edited') }}</span>
+                    @endcan
                 @endif
             </span>
             @if ($comment->isPinned())

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Show;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -84,7 +83,7 @@ describe('Addon Parent Mod Visibility', function (): void {
         // Visit the mod with versions - should see its addon
         $this->actingAs($this->user);
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $modWithVersions->id, 'slug' => $modWithVersions->slug])
+            ->test('pages::mod.show', ['modId' => $modWithVersions->id, 'slug' => $modWithVersions->slug])
             ->assertSuccessful()
             ->assertSee($visibleAddon->name);
 
@@ -95,7 +94,7 @@ describe('Addon Parent Mod Visibility', function (): void {
 
         $this->actingAs($modOwner);
         Livewire::withoutLazyLoading()
-            ->test(Show::class, ['modId' => $modWithoutVersions->id, 'slug' => $modWithoutVersions->slug])
+            ->test('pages::mod.show', ['modId' => $modWithoutVersions->id, 'slug' => $modWithoutVersions->slug])
             ->assertSuccessful();
         // The addon should not be visible in the public listing even to the owner
         // because the parent mod has no published versions

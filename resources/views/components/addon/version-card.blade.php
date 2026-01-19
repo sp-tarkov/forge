@@ -179,6 +179,25 @@
                 </div>
             </div>
         @endif
+
+        {{-- Display mod dependencies --}}
+        @if ($version->latestResolvedDependencies->isNotEmpty())
+            <p class="mt-3 text-gray-700 dark:text-gray-400">
+                {{ __('Dependencies:') }}
+            </p>
+            <ul>
+                @foreach ($version->latestResolvedDependencies as $resolvedDependency)
+                    <li>
+                        <a
+                            href="{{ $resolvedDependency->mod->detail_url }}"
+                            class="hover:underline text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white"
+                        >
+                            {{ $resolvedDependency->mod->name }}&nbsp;({{ $resolvedDependency->version }})
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </div>
     <div class="pt-3 user-markdown text-gray-700 dark:text-gray-400">
         {{--

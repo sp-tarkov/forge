@@ -69,6 +69,9 @@ class AppServiceProvider extends ServiceProvider
         // Register custom Blade directives.
         $this->registerBladeDirectives();
 
+        // Register layouts directory as anonymous Blade component path.
+        Blade::anonymousComponentPath(resource_path('views/layouts'), 'layouts');
+
         // Register Livewire component overrides.
         $this->registerLivewireOverrides();
 

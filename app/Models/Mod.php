@@ -57,6 +57,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $disabled
  * @property bool $comments_disabled
  * @property bool $addons_disabled
+ * @property bool $profile_binding_notice_disabled
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
@@ -64,6 +65,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read string $description_html
  * @property-read bool $addons_enabled
  * @property-read bool $fika_compatibility
+ * @property-read bool $shows_profile_binding_notice
  * @property-read User|null $owner
  * @property-read License|null $license
  * @property-read ModCategory|null $category
@@ -580,6 +582,23 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Get whether this mod should display a profile binding notice.
+     * Returns true if the category enables the notice AND the mod hasn't disabled it.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function showsProfileBindingNotice(): Attribute
+    {
+        return Attribute::get(function (): bool {
+            if ($this->profile_binding_notice_disabled) {
+                return false;
+            }
+
+            return $this->category !== null && $this->category->shows_profile_binding_notice;
+        });
+    }
+
+    /**
      * Build the URL to the mod's thumbnail.
      *
      * @return Attribute<string, never>
@@ -619,6 +638,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'disabled' => 'boolean',
             'comments_disabled' => 'boolean',
             'addons_disabled' => 'boolean',
+            'profile_binding_notice_disabled' => 'boolean',
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

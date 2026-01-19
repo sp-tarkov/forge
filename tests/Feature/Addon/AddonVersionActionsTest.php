@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Addon\Show as AddonShow;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
@@ -25,7 +24,7 @@ describe('addon version deletion from addon detail page', function (): void {
         $version = AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         Livewire::actingAs($owner)
-            ->test(AddonShow::class, [
+            ->test('pages::addon.show', [
                 'addonId' => $addon->id,
                 'slug' => $addon->slug,
             ])
@@ -40,7 +39,7 @@ describe('addon version deletion from addon detail page', function (): void {
         $version = AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         Livewire::actingAs($admin)
-            ->test(AddonShow::class, [
+            ->test('pages::addon.show', [
                 'addonId' => $addon->id,
                 'slug' => $addon->slug,
             ])
@@ -56,7 +55,7 @@ describe('addon version deletion from addon detail page', function (): void {
         $version = AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         Livewire::actingAs($author)
-            ->test(AddonShow::class, [
+            ->test('pages::addon.show', [
                 'addonId' => $addon->id,
                 'slug' => $addon->slug,
             ])
@@ -97,7 +96,7 @@ describe('addon version deletion from addon detail page', function (): void {
         $version = $addon->versions->first();
 
         Livewire::actingAs($user)
-            ->test(AddonShow::class, [
+            ->test('pages::addon.show', [
                 'addonId' => $addon->id,
                 'slug' => $addon->slug,
             ])
@@ -113,7 +112,7 @@ describe('addon version deletion from addon detail page', function (): void {
         $version = AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
         Livewire::actingAs($moderator)
-            ->test(AddonShow::class, [
+            ->test('pages::addon.show', [
                 'addonId' => $addon->id,
                 'slug' => $addon->slug,
             ])

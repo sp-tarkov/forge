@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
-use App\Livewire\ReportCentre;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
@@ -24,7 +23,7 @@ beforeEach(function (): void {
 it('requires moderator or admin access', function (): void {
     $this->actingAs($this->regularUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertStatus(403);
 });
 
@@ -46,7 +45,7 @@ it('displays reports with user avatars', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Test Reporter')
         ->assertSee('reports')
         ->assertSee('Spam')
@@ -70,7 +69,7 @@ it('displays user avatar when profile photo exists', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    $component = Livewire::test(ReportCentre::class);
+    $component = Livewire::test('pages::admin.report-centre');
 
     // Check that the avatar component has the src attribute set
     $component->assertSeeHtml('src="');
@@ -90,7 +89,7 @@ it('displays username and report type in correct format', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Reporter')
         ->assertSee('reports')
         ->assertSee('Inappropriate Content');
@@ -113,7 +112,7 @@ it('shows deleted content message when reportable is null', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Content has been deleted');
 });
 
@@ -133,7 +132,7 @@ it('displays mod content preview correctly', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Awesome Mod')
         ->assertSee('Mod') // Content type label
         ->assertSee('This is a really long teaser that should be truncated');
@@ -155,7 +154,7 @@ it('displays user content preview correctly', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Reported User')
         ->assertSee('User') // Content type label
         ->assertSee('This user has a long about section');
@@ -182,7 +181,7 @@ it('displays comment content preview correctly', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Comment Author')
         ->assertSee('Comment') // Content type label
         ->assertSee('This is a long comment that contains HTML tags');
@@ -210,7 +209,7 @@ it('displays comment content when comment exists', function (): void {
     $this->actingAs($this->adminUser);
 
     // Should display the comment content properly
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Comment')
         ->assertSee('Comment Author')
         ->assertSee('Test comment that should be displayed properly');
@@ -229,7 +228,7 @@ it('can mark reports as resolved', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->call('markAsResolved', $report->id);
 
     expect($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
@@ -248,7 +247,7 @@ it('can mark reports as dismissed', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->call('markAsDismissed', $report->id);
 
     expect($report->fresh()->status)->toBe(ReportStatus::DISMISSED);
@@ -267,7 +266,7 @@ it('can unresolve a resolved report as admin', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->set('filterUnresolved', false)
         ->call('markAsUnresolved', $report->id);
 
@@ -287,7 +286,7 @@ it('can unresolve a dismissed report as admin', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->set('filterUnresolved', false)
         ->call('markAsUnresolved', $report->id);
 
@@ -308,7 +307,7 @@ it('cannot unresolve a report as moderator', function (): void {
 
     $this->actingAs($moderator);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->set('filterUnresolved', false)
         ->call('markAsUnresolved', $report->id)
         ->assertForbidden();
@@ -326,7 +325,7 @@ it('can delete reports as admin', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->call('deleteReport', $report->id);
 
     expect(Report::query()->find($report->id))->toBeNull();
@@ -359,7 +358,7 @@ it('displays pending reports count in badge', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    $component = Livewire::test(ReportCentre::class);
+    $component = Livewire::test('pages::admin.report-centre');
 
     // Check for pending reports count - normalize whitespace
     $html = preg_replace('/\s+/', ' ', $component->html());
@@ -379,7 +378,7 @@ it('displays singular pending report text correctly', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    $component = Livewire::test(ReportCentre::class);
+    $component = Livewire::test('pages::admin.report-centre');
 
     // Check for singular pending report - normalize whitespace
     $html = preg_replace('/\s+/', ' ', $component->html());
@@ -400,7 +399,7 @@ it('displays no pending reports message', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('No Pending Reports');
 });
 
@@ -420,7 +419,7 @@ it('paginates reports correctly', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    $component = Livewire::test(ReportCentre::class);
+    $component = Livewire::test('pages::admin.report-centre');
 
     // Should show pagination with 20 reports per page (default behavior will show pagination)
     expect($component->get('reports')->count())->toBeLessThanOrEqual(20);
@@ -439,7 +438,7 @@ it('can pick up a report', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->call('pickUp', $report->id);
 
     expect($report->fresh()->assignee_id)->toBe($this->adminUser->id);
@@ -459,7 +458,7 @@ it('can release a picked up report', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->call('release', $report->id);
 
     expect($report->fresh()->assignee_id)->toBeNull();
@@ -480,7 +479,7 @@ it('displays assigned moderator on report', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSee('Assigned Moderator');
 });
 
@@ -497,7 +496,7 @@ it('can open action modal', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->call('openActionModal', $report->id, 'disable_mod')
         ->assertSet('activeReportId', $report->id)
         ->assertSet('selectedAction', 'disable_mod')
@@ -517,7 +516,7 @@ it('can open link existing action modal', function (): void {
 
     $this->actingAs($this->adminUser);
 
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->call('openLinkActionModal', $report->id)
         ->assertSet('activeReportId', $report->id)
         ->assertSet('showLinkActionModal', true);
@@ -542,7 +541,7 @@ it('renders without error when mod owner is deleted', function (): void {
     $this->actingAs($this->adminUser);
 
     // The component should render without throwing "Call to member function isBanned() on null"
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSuccessful()
         ->assertSee($mod->name);
 });
@@ -570,7 +569,7 @@ it('renders without error when addon owner is deleted', function (): void {
     $this->actingAs($this->adminUser);
 
     // The component should render without throwing "Call to member function isBanned() on null"
-    Livewire::test(ReportCentre::class)
+    Livewire::test('pages::admin.report-centre')
         ->assertSuccessful()
         ->assertSee($addon->name);
 });

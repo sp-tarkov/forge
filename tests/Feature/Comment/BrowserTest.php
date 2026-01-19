@@ -477,7 +477,9 @@ describe('Comment Editing Tests', function (): void {
             ->on()->desktop()
             ->inDarkMode();
 
-        $page->assertNotPresent('@edit-button-'.$comment->id)
+        // First assert the comment is visible (page is loaded), then check edit button is not present
+        $page->assertSee('This comment belongs to user1.')
+            ->assertNotPresent('@edit-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
     });
 

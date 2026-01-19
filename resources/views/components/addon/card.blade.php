@@ -22,40 +22,42 @@
         @endif
 
         <div class="p-4 sm:p-6">
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                {{-- Thumbnail - centered on mobile, left-aligned on desktop --}}
-                @if ($addon->thumbnail)
+            <div class="flex flex-row gap-3 sm:gap-4">
+                {{-- Thumbnail with striped background --}}
+                <div class="relative flex-shrink-0 rounded-lg">
+                    {{-- Default stripe background --}}
+                    <div
+                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f9fafb,#f9fafb_4px,#ffffff_4px,#ffffff_8px)] dark:bg-[repeating-linear-gradient(45deg,#020509,#020509_4px,#030712_4px,#030712_8px)] transition-opacity duration-200 group-hover:opacity-0">
+                    </div>
+                    {{-- Hover stripe background --}}
+                    <div
+                        class="absolute inset-0 rounded-lg bg-[repeating-linear-gradient(45deg,#f0f1f3,#f0f1f3_4px,#f9fafb_4px,#f9fafb_8px)] dark:bg-[repeating-linear-gradient(45deg,#000000,#000000_4px,#010203_4px,#010203_8px)] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    </div>
+                    {{-- Thumbnail content --}}
                     <a
                         href="{{ route('addon.show', [$addon->id, $addon->slug]) }}"
                         wire:navigate
-                        class="flex-shrink-0 block overflow-hidden rounded-lg mx-auto sm:mx-0"
+                        class="relative block overflow-hidden rounded-t-lg"
                     >
-                        <img
-                            src="{{ $addon->thumbnailUrl }}"
-                            alt="{{ $addon->name }}"
-                            class="w-20 h-20 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover transform group-hover:scale-110 transition-transform duration-200"
-                        >
+                        @if ($addon->thumbnail)
+                            <img
+                                src="{{ $addon->thumbnailUrl }}"
+                                alt="{{ $addon->name }}"
+                                class="size-20 object-cover transform group-hover:scale-105 transition-transform duration-200"
+                            >
+                        @else
+                            <div class="size-20 flex items-center justify-center">
+                                <flux:icon.puzzle-piece class="size-10 text-gray-400 dark:text-gray-600" />
+                            </div>
+                        @endif
                     </a>
-                @else
-                    <a
-                        href="{{ route('addon.show', [$addon->id, $addon->slug]) }}"
-                        wire:navigate
-                        class="flex-shrink-0 block mx-auto sm:mx-0"
-                    >
-                        <div
-                            class="w-20 h-20 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                            <flux:icon.puzzle-piece
-                                class="w-10 h-10 sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400 dark:text-gray-600"
-                            />
-                        </div>
-                    </a>
-                @endif
+                </div>
 
                 {{-- Content - centered text on mobile, left-aligned on desktop --}}
                 <div class="flex-1 min-w-0">
                     {{-- Header with Title and Version --}}
                     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
-                        <div class="flex-1 min-w-0 text-center sm:text-left">
+                        <div class="flex-1 min-w-0">
                             <a
                                 href="{{ route('addon.show', [$addon->id, $addon->slug]) }}"
                                 wire:navigate
@@ -86,8 +88,7 @@
                     </div>
 
                     {{-- Info and versions row --}}
-                    <div
-                        class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 text-center sm:text-left">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                         {{-- Left side: Created by and Downloads --}}
                         <div class="flex-1">
                             {{-- Created by info --}}
@@ -130,7 +131,7 @@
                                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                         {{ __('Compatible Mod Versions') }}:
                                     </p>
-                                    <div class="flex flex-wrap gap-1 justify-center sm:justify-end">
+                                    <div class="flex flex-wrap gap-1 sm:justify-end">
                                         @foreach ($compatibleModVersionsToShow()->take(3) as $modVersion)
                                             @if ($modVersion->id === $latestModVersionId())
                                                 <span
@@ -201,7 +202,7 @@
             {{-- Addon Teaser/Description - Full width below image --}}
             @if ($addon->teaser)
                 <div class="mt-4 pt-3 border-t-2 border-gray-300 dark:border-gray-800">
-                    <p class="text-gray-900 dark:text-gray-200 text-sm text-center sm:text-left">
+                    <p class="text-gray-900 dark:text-gray-200 text-sm">
                         {{ $addon->teaser }}
                     </p>
                 </div>

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Homepage;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -27,7 +26,7 @@ describe('homepage featured mods', function (): void {
         });
 
         // Assert that the featured mods are the ones that are actually featured
-        $featured = Livewire::test(Homepage::class)
+        $featured = Livewire::test('pages::homepage')
             ->assertViewHas('featured', fn ($featured) => $featured->every(fn ($mod) => $mod->featured));
     });
 });
@@ -41,7 +40,7 @@ describe('homepage mod visibility', function (): void {
             ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         });
 
-        $homepage = Livewire::test(Homepage::class)
+        $homepage = Livewire::test('pages::homepage')
             ->assertViewHas('featured', fn (Collection $featured) => $featured->every(fn (Mod $mod) => $mod->featured))
             ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 3)
             ->assertViewHas('newest', fn (Collection $latest) => $latest->every(fn (Mod $mod): bool => ! $mod->disabled))
@@ -57,7 +56,7 @@ describe('homepage mod visibility', function (): void {
         $mod = Mod::factory()->create(['featured' => true]);
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
-        $homepage = Livewire::test(Homepage::class)
+        $homepage = Livewire::test('pages::homepage')
             ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 1)
             ->assertViewHas('newest', fn (Collection $featured): bool => $featured->count() === 1)
             ->assertViewHas('updated', fn (Collection $featured): bool => $featured->count() === 1);
@@ -75,7 +74,7 @@ describe('homepage mod visibility', function (): void {
             ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         });
 
-        $homepage = Livewire::test(Homepage::class)
+        $homepage = Livewire::test('pages::homepage')
             ->assertViewHas('featured', fn (Collection $featured): bool => $featured->count() === 2)
             ->assertViewHas('newest', fn (Collection $newest): bool => $newest->count() === 4)
             ->assertViewHas('updated', fn (Collection $updated): bool => $updated->count() === 4);

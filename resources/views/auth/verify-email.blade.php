@@ -1,4 +1,4 @@
-<x-layouts.base variant="simple">
+<x-layouts::base variant="simple">
     <x-slot:title>
         {{ __('Verify your email address') }}
     </x-slot>

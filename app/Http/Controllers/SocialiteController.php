@@ -72,7 +72,6 @@ class SocialiteController extends Controller
 
     protected function findOrCreateUser(string $provider, ProviderUser $providerUser): ?User
     {
-        // Socialite returns the user as an interface, so we let PHPStan know the actual concrete class.
         /** @var \Laravel\Socialite\Two\User $providerUser */
 
         // Validate that we have an email from the provider

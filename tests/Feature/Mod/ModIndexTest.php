@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Page\Mod\Index;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -21,7 +20,7 @@ describe('basic functionality', function (): void {
         ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => '3.11.4']);
 
         // Test the component loads without error
-        Livewire::test(Index::class)
+        Livewire::test('pages::mod.index')
             ->assertOk()
             ->assertSee('Test Mod 1');
     });
@@ -33,7 +32,7 @@ describe('version filter toggling', function (): void {
         $sptVersion1 = SptVersion::factory()->create(['version' => '3.11.4']);
         $sptVersion2 = SptVersion::factory()->create(['version' => '3.11.3']);
 
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Initial state should be default versions (array), All Versions unchecked
         $initialVersions = $component->get('sptVersions');
@@ -58,7 +57,7 @@ describe('version filter toggling', function (): void {
         // Create some SPT versions that will be in the defaults
         $sptVersion1 = SptVersion::factory()->create(['version' => '3.11.4']);
 
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Start with default versions (array)
         $initialVersions = $component->get('sptVersions');
@@ -84,7 +83,7 @@ describe('version filter toggling', function (): void {
         // Create some SPT versions
         $sptVersion1 = SptVersion::factory()->create(['version' => '3.11.4']);
 
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Start with default versions
         $initialVersions = $component->get('sptVersions');
@@ -112,7 +111,7 @@ describe('all versions behavior', function (): void {
         // Create some SPT versions
         $sptVersion1 = SptVersion::factory()->create(['version' => '3.11.4']);
 
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Start with default versions (not 'all')
         $initialVersions = $component->get('sptVersions');
@@ -144,7 +143,7 @@ describe('all versions behavior', function (): void {
         // Create some SPT versions
         $sptVersion1 = SptVersion::factory()->create(['version' => '3.11.4']);
 
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Start with defaults - All Versions should be unchecked, some specific versions should be checked
         $initialVersions = $component->get('sptVersions');
@@ -172,7 +171,7 @@ describe('bug scenarios', function (): void {
         $sptVersion1 = SptVersion::factory()->create(['version' => '3.11.0']);
         $sptVersion2 = SptVersion::factory()->create(['version' => '3.11.4']);
 
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // 1. Start with default versions
         $initialVersions = $component->get('sptVersions');
@@ -218,7 +217,7 @@ describe('URL parameter handling', function (): void {
 
         // Mount component WITHOUT versions in URL (like receiving a shared link)
         $component = Livewire::withQueryParams(['query' => 'test'])
-            ->test(Index::class);
+            ->test('pages::mod.index');
 
         // Should always use default versions (latest minor) when no URL parameter
         $versions = $component->get('sptVersions');
@@ -237,7 +236,7 @@ describe('URL parameter handling', function (): void {
         $component = Livewire::withQueryParams([
             'query' => 'test',
             'versions' => ['3.10.5'],
-        ])->test(Index::class);
+        ])->test('pages::mod.index');
 
         // Should use URL-provided versions
         $versions = $component->get('sptVersions');
@@ -254,7 +253,7 @@ describe('URL parameter handling', function (): void {
         // Mount component with an array passed to query parameter (simulating malformed URL)
         $component = Livewire::withQueryParams([
             'query' => ['search_targets' => ['foo', 'bar']],
-        ])->test(Index::class);
+        ])->test('pages::mod.index');
 
         // Should normalize the query to empty string and not throw error
         expect($component->get('query'))->toBe('');
@@ -273,7 +272,7 @@ describe('URL parameter handling', function (): void {
         // Mount component with an array passed to featured parameter
         $component = Livewire::withQueryParams([
             'featured' => ['invalid' => 'value'],
-        ])->test(Index::class);
+        ])->test('pages::mod.index');
 
         // Should normalize to default value
         expect($component->get('featured'))->toBe('include');
@@ -292,7 +291,7 @@ describe('URL parameter handling', function (): void {
         // Mount component with an array passed to category parameter
         $component = Livewire::withQueryParams([
             'category' => ['invalid' => 'value'],
-        ])->test(Index::class);
+        ])->test('pages::mod.index');
 
         // Should normalize to empty string
         expect($component->get('category'))->toBe('');
@@ -310,7 +309,7 @@ describe('checkbox state validation', function (): void {
         $sptVersion2 = SptVersion::factory()->create(['version' => '3.11.4']);
         $sptVersion3 = SptVersion::factory()->create(['version' => '3.10.5']);
 
-        $component = Livewire::test(Index::class);
+        $component = Livewire::test('pages::mod.index');
 
         // Helper to check what the blade @checked directives would evaluate to
         $checkboxStates = function () use ($component) {

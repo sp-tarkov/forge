@@ -119,11 +119,11 @@ class ModDependencyTreeQueryBuilder extends AbstractQueryBuilder
         if (! empty($this->modVersionIds)) {
             $query->whereExists(function (\Illuminate\Database\Query\Builder $query): void {
                 $query->select(DB::raw(1))
-                    ->from('mod_resolved_dependencies')
-                    ->join('mod_dependencies', 'mod_resolved_dependencies.dependency_id', '=', 'mod_dependencies.id')
-                    ->join('mod_versions', 'mod_resolved_dependencies.resolved_mod_version_id', '=', 'mod_versions.id')
-                    ->whereColumn('mod_dependencies.dependent_mod_id', 'mods.id')
-                    ->whereIn('mod_resolved_dependencies.mod_version_id', $this->modVersionIds)
+                    ->from('resolved_dependencies')
+                    ->join('dependencies', 'resolved_dependencies.dependency_id', '=', 'dependencies.id')
+                    ->join('mod_versions', 'resolved_dependencies.resolved_mod_version_id', '=', 'mod_versions.id')
+                    ->whereColumn('dependencies.dependent_mod_id', 'mods.id')
+                    ->whereIn('resolved_dependencies.dependable_id', $this->modVersionIds)
                     ->whereNotNull('mod_versions.published_at')
                     ->where('mod_versions.published_at', '<=', now())
                     ->where('mod_versions.disabled', false);

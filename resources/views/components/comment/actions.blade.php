@@ -114,7 +114,6 @@
                 type="button"
                 wire:click="toggleEditForm({{ $comment->id }})"
                 data-test="edit-button-{{ $comment->id }}"
-                x-show="canEdit"
                 class="hover:underline cursor-pointer text-xs"
             >
                 {{ __('Edit') }}

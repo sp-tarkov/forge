@@ -27,7 +27,10 @@ class UserSeeder extends Seeder
         $counts = $this->getDefaultCounts();
 
         // Staff Users
-        $staffRole = UserRole::factory()->staff()->create();
+        $staffRole = UserRole::query()->firstOrCreate(
+            ['name' => 'Staff'],
+            UserRole::factory()->staff()->make()->toArray()
+        );
         $this->testAccount = User::factory()->for($staffRole, 'role')->create([
             'email' => 'test@example.com',
         ]);
@@ -36,7 +39,10 @@ class UserSeeder extends Seeder
         $this->command->outputComponents()->info("Test account created: {$this->testAccount->email}");
 
         // Moderator Users
-        $moderatorRole = UserRole::factory()->moderator()->create();
+        $moderatorRole = UserRole::query()->firstOrCreate(
+            ['name' => 'Moderator'],
+            UserRole::factory()->moderator()->make()->toArray()
+        );
         User::factory($counts['moderator'])->for($moderatorRole, 'role')->create();
 
         // Regular Users

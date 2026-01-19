@@ -96,6 +96,11 @@ class ModVersionPolicy
             return true;
         }
 
+        // Authors/owners can always download their own mod versions.
+        if ($user && $modVersion->mod->isAuthorOrOwner($user)) {
+            return true;
+        }
+
         // Deny if the mod is unpublished, disabled, or the version is disabled.
         if (! $modVersion->mod->isPublished() || $modVersion->mod->disabled || $modVersion->disabled) {
             return false;

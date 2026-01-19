@@ -38,4 +38,14 @@ class ModCategoryFactory extends Factory
             'hub_id' => $hubId,
         ]);
     }
+
+    /**
+     * Indicate that the category shows profile binding notice.
+     */
+    public function showsProfileBindingNotice(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'shows_profile_binding_notice' => true,
+        ]);
+    }
 }
