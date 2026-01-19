@@ -19,6 +19,7 @@ class ModVersionController extends Controller
     public function show(Request $request, int $modId, string $slug, string $version): RedirectResponse
     {
         $modVersion = ModVersion::query()
+            ->withoutGlobalScope(PublishedScope::class)
             ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
             ->where('mod_versions.mod_id', $modId)
             ->where('mod_versions.version', $version)
