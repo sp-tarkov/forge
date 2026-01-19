@@ -1,4 +1,4 @@
-<x-layouts.static-toc>
+<x-layouts::static-toc>
     <x-slot name="pageTitle">{{ __('Contact Us') }}</x-slot>
 
     <x-slot name="pageDescription">{{ __('Get in touch with The Forge staff and community') }}</x-slot>
@@ -272,4 +272,4 @@
             <small>If misused, you will be blocked from future communication.</small>
         </div>
     </div>
-</x-layouts.static-toc>
+</x-layouts::static-toc>

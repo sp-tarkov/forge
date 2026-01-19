@@ -1,4 +1,4 @@
-<x-layouts.static-toc>
+<x-layouts::static-toc>
     <x-slot name="pageTitle">{{ __('DMCA Copyright Notice') }}</x-slot>
 
     <x-slot
@@ -218,4 +218,4 @@
             govern your use of The Forge.</em></p>
 
     <p><em>Last updated: August 26, 2025</em></p>
-</x-layouts.static-toc>
+</x-layouts::static-toc>

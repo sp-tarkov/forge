@@ -1,4 +1,4 @@
-<x-layouts.static-toc>
+<x-layouts::static-toc>
     <x-slot name="pageTitle">{{ __('Terms of Service') }}</x-slot>
 
     <x-slot name="pageDescription">{{ __('Terms of Service for The Forge') }}</x-slot>
@@ -442,4 +442,4 @@
             >DMCA Copyright Notice</a> to govern your use of The Forge.</em></p>
 
     <p><em>Last updated: 2025-08-26</em></p>
-</x-layouts.static-toc>
+</x-layouts::static-toc>

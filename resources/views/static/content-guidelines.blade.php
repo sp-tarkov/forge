@@ -1,4 +1,4 @@
-<x-layouts.static-toc>
+<x-layouts::static-toc>
     <x-slot name="pageTitle">{{ __('Content Guidelines') }}</x-slot>
 
     <x-slot name="pageDescription">{{ __('Content Guidelines for The Forge') }}</x-slot>
@@ -640,4 +640,4 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
             content on The Forge.</em></p>
 
     <p><em>Last updated: October 02, 2025</em></p>
-</x-layouts.static-toc>
+</x-layouts::static-toc>
