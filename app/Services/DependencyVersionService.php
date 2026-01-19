@@ -4,39 +4,39 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\AddonVersion;
 use App\Models\ModVersion;
 use Composer\Semver\Semver;
 
 class DependencyVersionService
 {
     /**
-     * Resolve the dependencies for a mod version.
+     * Resolve the dependencies for a mod version or addon version.
      */
-    public function resolve(ModVersion $modVersion): void
+    public function resolve(ModVersion|AddonVersion $dependable): void
     {
         // Refresh the dependencies relationship to get the latest state
-        $modVersion->load('dependencies');
+        $dependable->load('dependencies');
 
-        $dependencies = $this->satisfyConstraint($modVersion);
-        $modVersion->resolvedDependencies()->sync($dependencies);
+        $dependencies = $this->satisfyConstraint($dependable);
+        $dependable->resolvedDependencies()->sync($dependencies);
     }
 
     /**
-     * Satisfies all dependency constraints of a ModVersion.
+     * Satisfies all dependency constraints of a ModVersion or AddonVersion.
      *
      * @return array<int, array<string, int>>
      */
-    private function satisfyConstraint(ModVersion $modVersion): array
+    private function satisfyConstraint(ModVersion|AddonVersion $dependable): array
     {
-
         // Eager-load the dependencies and their mod versions if not already loaded.
-        if (! $modVersion->relationLoaded('dependencies')) {
-            $modVersion->load('dependencies.dependentMod.versions');
+        if (! $dependable->relationLoaded('dependencies')) {
+            $dependable->load('dependencies.dependentMod.versions');
         }
 
-        // Iterate over each ModVersion dependency.
+        // Iterate over each dependency.
         $dependencies = [];
-        foreach ($modVersion->dependencies as $dependency) {
+        foreach ($dependable->dependencies as $dependency) {
             // Skip if the dependency is being deleted or doesn't exist
             if (! $dependency->exists || ! $dependency->id) {
                 continue;

@@ -7,10 +7,10 @@ namespace App\Http\Controllers\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\Api\V0\ApiResponse;
-use App\Models\ModDependency;
+use App\Models\Dependency;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use App\Services\ModDependencyService;
+use App\Services\DependencyService;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ModUpdateController extends Controller
 {
-    public function __construct(protected ModDependencyService $dependencyService) {}
+    public function __construct(protected DependencyService $dependencyService) {}
 
     /**
      * Get Mod Updates
@@ -385,7 +385,10 @@ class ModUpdateController extends Controller
         }
 
         // Check outgoing dependencies (what this update needs)
-        $candidateDependencies = ModDependency::query()->where('mod_version_id', $candidate->id)->get();
+        $candidateDependencies = Dependency::query()
+            ->where('dependable_id', $candidate->id)
+            ->where('dependable_type', ModVersion::class)
+            ->get();
 
         foreach ($candidateDependencies as $dep) {
             $satisfyingVersion = $this->dependencyService->findSatisfyingVersion(

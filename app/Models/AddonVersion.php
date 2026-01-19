@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Override;
@@ -48,6 +49,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Addon $addon
  * @property-read Collection<int, ModVersion> $compatibleModVersions
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
+ * @property-read Collection<int, Dependency> $dependencies
+ * @property-read Collection<int, ModVersion> $resolvedDependencies
+ * @property-read Collection<int, ModVersion> $latestResolvedDependencies
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonVersionObserver::class])]
@@ -93,6 +97,58 @@ class AddonVersion extends Model
     {
         return $this->morphMany(VirusTotalLink::class, 'linkable')
             ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
+    }
+
+    /**
+     * The relationship between an addon version and its dependencies.
+     *
+     * @return MorphMany<Dependency, $this>
+     */
+    public function dependencies(): MorphMany
+    {
+        return $this->morphMany(Dependency::class, 'dependable');
+    }
+
+    /**
+     * The relationship between an addon version and its resolved dependencies.
+     *
+     * @return BelongsToMany<ModVersion, $this>
+     */
+    public function resolvedDependencies(): BelongsToMany
+    {
+        return $this->belongsToMany(ModVersion::class, 'resolved_dependencies', 'dependable_id', 'resolved_mod_version_id')
+            ->wherePivot('dependable_type', self::class)
+            ->withPivotValue('dependable_type', self::class)
+            ->withPivot('dependency_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * The relationship between an addon version and each of its resolved dependencies' latest versions.
+     *
+     * @return BelongsToMany<ModVersion, $this>
+     */
+    public function latestResolvedDependencies(): BelongsToMany
+    {
+        return $this->belongsToMany(ModVersion::class, 'resolved_dependencies', 'dependable_id', 'resolved_mod_version_id')
+            ->wherePivot('dependable_type', self::class)
+            ->withPivot('dependency_id')
+            ->join('mod_versions as latest_versions', function (JoinClause $join): void {
+                $join->on('latest_versions.id', '=', 'mod_versions.id')
+                    ->whereRaw("
+                        (latest_versions.version_major, latest_versions.version_minor, latest_versions.version_patch, CASE WHEN latest_versions.version_labels = '' THEN 0 ELSE 1 END, latest_versions.version_labels) = (
+                        SELECT mv.version_major, mv.version_minor, mv.version_patch, CASE WHEN mv.version_labels = '' THEN 0 ELSE 1 END, mv.version_labels
+                        FROM resolved_dependencies rd
+                        JOIN mod_versions mv ON rd.resolved_mod_version_id = mv.id
+                        WHERE rd.dependable_id = resolved_dependencies.dependable_id
+                        AND rd.dependable_type = ?
+                        AND mv.mod_id = mod_versions.mod_id
+                        ORDER BY mv.version_major DESC, mv.version_minor DESC, mv.version_patch DESC, CASE WHEN mv.version_labels = '' THEN 0 ELSE 1 END, mv.version_labels
+                        LIMIT 1)
+                    ", [self::class]);
+            })
+            ->distinct()
+            ->withTimestamps();
     }
 
     /**

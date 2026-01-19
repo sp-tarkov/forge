@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Dependency;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
-use App\Models\ModDependency;
 use App\Models\ModVersion;
 use App\Models\User;
 use Database\Seeders\Traits\SeederHelpers;
@@ -149,7 +149,7 @@ class ModSeeder extends Seeder
      */
     private function seedModDependencies(): void
     {
-        ModDependency::withoutEvents(function () {
+        Dependency::withoutEvents(function () {
             progress(
                 label: 'Adding Mod Dependencies...',
                 steps: $this->modVersions,
@@ -162,7 +162,7 @@ class ModSeeder extends Seeder
                     // Choose 1-3 random mods to be dependencies.
                     $dependencyMods = $this->mods->random(rand(1, 3));
                     foreach ($dependencyMods as $dependencyMod) {
-                        ModDependency::factory()->recycle([$modVersion, $dependencyMod])->create();
+                        Dependency::factory()->recycle([$modVersion, $dependencyMod])->create();
                     }
                 }
             );

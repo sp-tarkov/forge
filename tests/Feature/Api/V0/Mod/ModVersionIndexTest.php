@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\Dependency;
 use App\Models\Mod;
-use App\Models\ModDependency;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
@@ -299,8 +299,8 @@ describe('Mod Version Index API', function (): void {
         ModVersion::factory()->create(['mod_id' => $childMod2->id, 'spt_version_constraint' => '3.8.0', 'version' => '1.1.0']);
 
         // Define the dependencies with a semver constraint.
-        ModDependency::factory()->create(['mod_version_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod1->id, 'constraint' => '^1.0.0']);
-        ModDependency::factory()->create(['mod_version_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod2->id, 'constraint' => '^1.0.0']);
+        Dependency::factory()->create(['dependable_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod1->id, 'constraint' => '^1.0.0']);
+        Dependency::factory()->create(['dependable_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod2->id, 'constraint' => '^1.0.0']);
 
         $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?include=dependencies', $parentMod->id));
 

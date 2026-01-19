@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Models\Dependency;
 use App\Models\Mod;
-use App\Models\ModDependency;
-use App\Models\ModResolvedDependency;
 use App\Models\ModVersion;
+use App\Models\ResolvedDependency;
 use App\Models\SptVersion;
 use App\Services\DependencyVersionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,12 +28,12 @@ describe('Mod Version Dependencies', function (): void {
             $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a dependency
-            ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '^1.0', // Should resolve to dependentVersion1
             ]);
 
             // Check that the resolved dependency has been created
-            expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first())
+            expect(ResolvedDependency::query()->where('dependable_id', $modVersion->id)->first())
                 ->not()->toBeNull()
                 ->resolved_mod_version_id->toBe($dependentVersion1->id);
         });
@@ -48,11 +48,11 @@ describe('Mod Version Dependencies', function (): void {
             $dependentVersion3 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a dependency
-            ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '^1.0', // Should resolve to dependentVersion1 and dependentVersion2
             ]);
 
-            $resolvedDependencies = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->get();
+            $resolvedDependencies = ResolvedDependency::query()->where('dependable_id', $modVersion->id)->get();
 
             expect($resolvedDependencies->count())->toBe(2)
                 ->and($resolvedDependencies->pluck('resolved_mod_version_id'))
@@ -69,12 +69,12 @@ describe('Mod Version Dependencies', function (): void {
             ModVersion::factory()->recycle($dependentMod)->create(['version' => '3.0.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a dependency
-            ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '^1.0', // No versions match
             ]);
 
             // Check that no resolved dependencies were created
-            expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+            expect(ResolvedDependency::query()->where('dependable_id', $modVersion->id)->exists())->toBeFalse();
         });
 
         it('updates resolved dependencies when constraint changes', function (): void {
@@ -86,17 +86,17 @@ describe('Mod Version Dependencies', function (): void {
             $dependentVersion2 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a dependency with an initial constraint
-            $dependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            $dependency = Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '^1.0', // Should resolve to dependentVersion1
             ]);
 
-            $resolvedDependency = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first();
+            $resolvedDependency = ResolvedDependency::query()->where('dependable_id', $modVersion->id)->first();
             expect($resolvedDependency->resolved_mod_version_id)->toBe($dependentVersion1->id);
 
             // Update the constraint
             $dependency->update(['constraint' => '^2.0']); // Should now resolve to dependentVersion2
 
-            $resolvedDependency = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first();
+            $resolvedDependency = ResolvedDependency::query()->where('dependable_id', $modVersion->id)->first();
             expect($resolvedDependency->resolved_mod_version_id)->toBe($dependentVersion2->id);
         });
 
@@ -108,18 +108,18 @@ describe('Mod Version Dependencies', function (): void {
             $dependentVersion1 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a dependency
-            $dependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            $dependency = Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '^1.0',
             ]);
 
-            $resolvedDependency = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->first();
+            $resolvedDependency = ResolvedDependency::query()->where('dependable_id', $modVersion->id)->first();
             expect($resolvedDependency)->not()->toBeNull();
 
             // Delete the dependency
             $dependency->delete();
 
             // Check that the resolved dependency is removed
-            expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+            expect(ResolvedDependency::query()->where('dependable_id', $modVersion->id)->exists())->toBeFalse();
         });
 
         it('handles mod versions with no dependencies gracefully', function (): void {
@@ -131,7 +131,7 @@ describe('Mod Version Dependencies', function (): void {
 
             // Check that the service was called and that no resolved dependencies were created.
             $serviceSpy->shouldHaveReceived('resolve');
-            expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+            expect(ResolvedDependency::query()->where('dependable_id', $modVersion->id)->exists())->toBeFalse();
         });
 
         it('resolves the correct versions with a complex semver constraint', function (): void {
@@ -147,11 +147,11 @@ describe('Mod Version Dependencies', function (): void {
             $dependentVersion5 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.5.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a complex SemVer constraint
-            ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '>1.0 <2.0 || >=2.5.0 <3.0', // Should resolve to dependentVersion2, dependentVersion3, and dependentVersion5
             ]);
 
-            $resolvedDependencies = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->pluck('resolved_mod_version_id');
+            $resolvedDependencies = ResolvedDependency::query()->where('dependable_id', $modVersion->id)->pluck('resolved_mod_version_id');
 
             expect($resolvedDependencies)->toContain($dependentVersion2->id)
                 ->toContain($dependentVersion3->id)
@@ -174,15 +174,15 @@ describe('Mod Version Dependencies', function (): void {
             $dependentVersion2_2 = ModVersion::factory()->recycle($dependentMod2)->create(['version' => '1.5.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create two dependencies with overlapping constraints
-            ModDependency::factory()->recycle([$modVersion, $dependentMod1])->create([
+            Dependency::factory()->recycle([$modVersion, $dependentMod1])->create([
                 'constraint' => '>=1.0 <2.0', // Matches both versions of dependentMod1
             ]);
 
-            ModDependency::factory()->recycle([$modVersion, $dependentMod2])->create([
+            Dependency::factory()->recycle([$modVersion, $dependentMod2])->create([
                 'constraint' => '>=1.5.0 <2.0.0', // Matches only the second version of dependentMod2
             ]);
 
-            $resolvedDependencies = ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->get();
+            $resolvedDependencies = ResolvedDependency::query()->where('dependable_id', $modVersion->id)->get();
 
             expect($resolvedDependencies->pluck('resolved_mod_version_id'))
                 ->toContain($dependentVersion1_1->id)
@@ -198,12 +198,12 @@ describe('Mod Version Dependencies', function (): void {
             $dependentMod = Mod::factory()->create();
 
             // Create a dependency where the dependent mod has no versions.
-            ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '>=1.0.0',
             ]);
 
             // Verify that no versions were resolved.
-            expect(ModResolvedDependency::query()->where('mod_version_id', $modVersion->id)->exists())->toBeFalse();
+            expect(ResolvedDependency::query()->where('dependable_id', $modVersion->id)->exists())->toBeFalse();
         });
 
         it('calls DependencyVersionService when a Mod is updated', function (): void {
@@ -253,7 +253,7 @@ describe('Mod Version Dependencies', function (): void {
 
             $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
             $dependentMod = Mod::factory()->create();
-            $modDependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            $modDependency = Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '^1.0',
             ]);
 
@@ -269,7 +269,7 @@ describe('Mod Version Dependencies', function (): void {
 
             $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
             $dependentMod = Mod::factory()->create();
-            $modDependency = ModDependency::factory()->recycle([$modVersion, $dependentMod])->create([
+            $modDependency = Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
                 'constraint' => '^1.0',
             ]);
 
@@ -293,28 +293,28 @@ describe('Mod Version Dependencies', function (): void {
             $dependencyVersion = ModVersion::factory()->recycle($dependencyMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
             // Manually create ONE dependency
-            $dependency = ModDependency::factory()->make([
-                'mod_version_id' => $mainModVersion->id,
+            $dependency = Dependency::factory()->make([
+                'dependable_id' => $mainModVersion->id,
                 'dependent_mod_id' => $dependencyMod->id,
                 'constraint' => '^2.0.0',
             ]);
             $dependency->saveQuietly(); // Skip observer
 
             // Create TWO identical resolved dependency records (simulating a data integrity issue)
-            ModResolvedDependency::factory()->make([
-                'mod_version_id' => $mainModVersion->id,
+            ResolvedDependency::factory()->make([
+                'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dependency->id,
                 'resolved_mod_version_id' => $dependencyVersion->id,
             ])->saveQuietly();
 
-            ModResolvedDependency::factory()->make([
-                'mod_version_id' => $mainModVersion->id,
+            ResolvedDependency::factory()->make([
+                'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dependency->id,
                 'resolved_mod_version_id' => $dependencyVersion->id,
             ])->saveQuietly();
 
             // Verify we have 2 duplicate resolved dependency records
-            expect(ModResolvedDependency::query()->where('mod_version_id', $mainModVersion->id)->count())->toBe(2);
+            expect(ResolvedDependency::query()->where('dependable_id', $mainModVersion->id)->count())->toBe(2);
 
             // latestResolvedDependencies should still return ONLY 1 unique entry (not duplicates)
             $mainModVersion->load('latestResolvedDependencies');
@@ -339,10 +339,10 @@ describe('Mod Version Dependencies', function (): void {
             $dependencyVersion2 = ModVersion::factory()->recycle($dependencyMod)->create(['version' => '2.0.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a single dependency
-            $dependency = ModDependency::factory()->recycle([$mainModVersion, $dependencyMod])->create(['constraint' => '>=1.0.0']);
+            $dependency = Dependency::factory()->recycle([$mainModVersion, $dependencyMod])->create(['constraint' => '>=1.0.0']);
 
             // The observer should create 2 resolved dependencies (one for each matching version)
-            expect(ModResolvedDependency::query()->where('mod_version_id', $mainModVersion->id)->count())->toBe(2);
+            expect(ResolvedDependency::query()->where('dependable_id', $mainModVersion->id)->count())->toBe(2);
 
             // latestResolvedDependencies should return ONLY 1 entry (the latest version)
             $mainModVersion->load('latestResolvedDependencies');
@@ -370,8 +370,8 @@ describe('Mod Version Dependencies', function (): void {
             $mod = Mod::factory()->create();
             $mainModVersion = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
-            ModDependency::factory()->recycle([$mainModVersion, $dependentMod1])->create(['constraint' => '>=1.0.0']);
-            ModDependency::factory()->recycle([$mainModVersion, $dependentMod2])->create(['constraint' => '>=1.0.0']);
+            Dependency::factory()->recycle([$mainModVersion, $dependentMod1])->create(['constraint' => '>=1.0.0']);
+            Dependency::factory()->recycle([$mainModVersion, $dependentMod2])->create(['constraint' => '>=1.0.0']);
 
             // Test resolvedDependencies returns all resolved versions
             $mainModVersion->load('resolvedDependencies');
