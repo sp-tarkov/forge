@@ -28,8 +28,8 @@ class ModController extends Controller
      * Retrieves a paginated list of mods, allowing filtering, sorting, and relationship inclusion.
      *
      * Fields available:<br /><code>hub_id, guid, name, slug, teaser, thumbnail, downloads, detail_url,
-     * fika_compatibility, featured, contains_ai_content, contains_ads, category_id, published_at, created_at,
-     * updated_at</code>
+     * fika_compatibility, featured, contains_ai_content, contains_ads, shows_profile_binding_notice, category_id,
+     * published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -76,6 +76,7 @@ class ModController extends Controller
      *              "featured": true,
      *              "contains_ads": true,
      *              "contains_ai_content": false,
+     *              "shows_profile_binding_notice": false,
      *              "published_at": "2025-01-09T17:48:53.000000Z",
      *              "created_at": "2024-12-11T14:48:53.000000Z",
      *              "updated_at": "2025-04-10T13:50:00.000000Z"
@@ -107,6 +108,7 @@ class ModController extends Controller
      *              "featured": false,
      *              "contains_ads": true,
      *              "contains_ai_content": true,
+     *              "shows_profile_binding_notice": false,
      *              "published_at": "2024-08-30T14:48:53.000000Z",
      *              "created_at": "2024-06-22T04:48:53.000000Z",
      *              "updated_at": "2025-04-10T13:50:21.000000Z"
@@ -182,6 +184,7 @@ class ModController extends Controller
      *              "featured": true,
      *              "contains_ads": true,
      *              "contains_ai_content": false,
+     *              "shows_profile_binding_notice": false,
      *              "published_at": "2025-01-09T17:48:53.000000Z",
      *              "created_at": "2024-12-11T14:48:53.000000Z",
      *              "updated_at": "2025-04-10T13:50:00.000000Z"
@@ -251,6 +254,7 @@ class ModController extends Controller
      *              "featured": true,
      *              "contains_ads": true,
      *              "contains_ai_content": false,
+     *              "shows_profile_binding_notice": false,
      *              "versions": [
      *                  {
      *                      "id": 1,
@@ -359,8 +363,8 @@ class ModController extends Controller
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
      * Fields available:<br /><code>hub_id, guid, name, slug, teaser, description, thumbnail, downloads,
-     * detail_url, fika_compatibility, featured, contains_ai_content, contains_ads, published_at, created_at,
-     * updated_at</code>
+     * detail_url, fika_compatibility, featured, contains_ai_content, contains_ads, shows_profile_binding_notice,
+     * published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -407,6 +411,7 @@ class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
+     *          "shows_profile_binding_notice": false,
      *          "published_at": "2024-08-30T14:48:53.000000Z",
      *          "created_at": "2024-06-22T04:48:53.000000Z",
      *          "updated_at": "2025-04-10T13:50:21.000000Z"
@@ -456,6 +461,7 @@ class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
+     *          "shows_profile_binding_notice": false,
      *          "license": {
      *              "id": 2,
      *              "name": "GNU General Public License v3.0",
@@ -490,6 +496,7 @@ class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
+     *          "shows_profile_binding_notice": false,
      *          "owner": {
      *              "id": 1,
      *              "name": "ModOwner",
