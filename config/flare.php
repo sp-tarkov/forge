@@ -131,7 +131,7 @@ return [
     'sampler' => [
         'class' => RateSampler::class,
         'config' => [
-            'rate' => 0.1,
+            'rate' => 0.005,
         ],
     ],
 ];
