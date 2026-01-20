@@ -65,7 +65,6 @@ class SptVersion extends Model
         return self::query()
             ->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count', 'spt_versions.publish_date'])
             ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
-            ->where('spt_versions.version', '!=', '0.0.0')
             ->where(function (Builder $query) use ($lastThreeMinorVersions): void {
                 foreach ($lastThreeMinorVersions as $minorVersion) {
                     $query->orWhere(function (Builder $subQuery) use ($minorVersion): void {
@@ -97,7 +96,6 @@ class SptVersion extends Model
         return self::query()
             ->selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
             ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
-            ->where('version', '!=', '0.0.0')
             ->groupBy('version_major', 'version_minor')
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
@@ -171,7 +169,6 @@ class SptVersion extends Model
             ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
             ->where('version_major', $latestVersion->version_major)
             ->where('version_minor', $latestVersion->version_minor)
-            ->where('version', '!=', '0.0.0')
             ->orderBy('version_patch', 'desc')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
             ->orderBy('version_labels')
@@ -192,7 +189,6 @@ class SptVersion extends Model
 
         return Cache::flexible($cacheKey, [5 * 60, 60 * 60], fn () => self::query()
             ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
-            ->where('version', '!=', '0.0.0')
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')

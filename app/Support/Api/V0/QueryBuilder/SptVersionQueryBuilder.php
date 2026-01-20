@@ -101,8 +101,7 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
      */
     protected function getBaseQuery(): Builder
     {
-        return SptVersion::query()
-            ->where('version', '!=', '0.0.0'); // Always exclude the base version.
+        return SptVersion::query();
     }
 
     /**

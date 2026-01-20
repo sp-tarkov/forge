@@ -236,63 +236,6 @@ describe('legacy versions filtering', function (): void {
         expect($filteredMods->pluck('id')->toArray())->not->toContain($modActive->id);
     });
 
-    it('shows 0.0.0 versions in legacy filter only for admins', function (): void {
-        // Create an administrator
-        $this->actingAs(User::factory()->admin()->create());
-
-        // Create active SPT versions to establish proper context
-        $activeSptVersions = [
-            SptVersion::factory()->create(['version' => '3.11.4']),
-            SptVersion::factory()->create(['version' => '3.11.0']),
-            SptVersion::factory()->create(['version' => '3.10.5']),
-            SptVersion::factory()->create(['version' => '3.9.8']),
-        ];
-
-        // Create fallback SPT version
-        $fallbackSptVersion = SptVersion::factory()->create(['version' => '0.0.0']);
-
-        // Create mod with fallback version
-        $modFallback = Mod::factory()->create();
-        $modVersionFallback = ModVersion::factory()->recycle($modFallback)->create([
-            'spt_version_constraint' => '0.0.0',
-            'disabled' => false,
-            'published_at' => now(),
-        ]);
-
-        // Apply the legacy filter
-        $filters = ['sptVersions' => ['legacy']];
-        $filteredMods = new ModFilter($filters)->apply()->get();
-
-        // Assert that the fallback mod is returned for admin
-        expect($filteredMods->pluck('id')->toArray())->toContain($modFallback->id);
-    });
-
-    it('does not show 0.0.0 versions in legacy filter for regular users', function (): void {
-        // Create active SPT versions to establish proper context
-        $activeSptVersions = [
-            SptVersion::factory()->create(['version' => '3.11.4']),
-            SptVersion::factory()->create(['version' => '3.11.0']),
-            SptVersion::factory()->create(['version' => '3.10.5']),
-            SptVersion::factory()->create(['version' => '3.9.8']),
-        ];
-
-        // Create fallback SPT version
-        $fallbackSptVersion = SptVersion::factory()->create(['version' => '0.0.0']);
-
-        // Create mod with fallback version
-        $modFallback = Mod::factory()->create();
-        $modVersionFallback = ModVersion::factory()->recycle($modFallback)->create([
-            'spt_version_constraint' => '0.0.0',
-        ]);
-
-        // Apply the legacy filter as regular user (not authenticated)
-        $filters = ['sptVersions' => ['legacy']];
-        $filteredMods = new ModFilter($filters)->apply()->get();
-
-        // Assert that the 0.0.0 mod is not returned for regular user
-        expect($filteredMods->pluck('id')->toArray())->not->toContain($modFallback->id);
-    });
-
     it('combines legacy and normal version filters with OR logic', function (): void {
         // Create active SPT versions to establish proper context
         $activeSptVersions = [

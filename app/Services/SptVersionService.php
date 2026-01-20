@@ -40,7 +40,7 @@ class SptVersionService
     }
 
     /**
-     * Satisfies the version constraint of a given ModVersion. Returns the ID of the satisfying SptVersion.
+     * Satisfies the version constraint of a given ModVersion. Returns the IDs of the satisfying SptVersions.
      *
      * @return array<int>
      */
@@ -48,26 +48,15 @@ class SptVersionService
     {
         return match ($modVersion->spt_version_constraint) {
             null, '' => [],
-            '0.0.0' => $this->getLegacyVersionId(),
             default => $this->resolveSemverConstraint($modVersion->spt_version_constraint),
         };
     }
 
     /**
-     * Get the ID of the legacy 0.0.0 version if it exists.
-     *
-     * @return array<int>
-     */
-    private function getLegacyVersionId(): array
-    {
-        return SptVersion::query()
-            ->where('version', '0.0.0')
-            ->pluck('id')
-            ->toArray();
-    }
-
-    /**
      * Resolve a SemVer constraint to matching version IDs.
+     *
+     * When a constraint doesn't match any SPT versions, returns an empty array.
+     * Mod versions with unresolvable constraints will show "Unknown SPT Version" on the front-end.
      *
      * @return array<int, int>
      */
@@ -77,7 +66,6 @@ class SptVersionService
         $satisfyingVersions = Semver::satisfiedBy($availableVersions->keys()->all(), $constraint);
 
         return collect($satisfyingVersions)
-            ->whenEmpty(fn (Collection $collection): Collection => $this->handleLegacyFallback($availableVersions))
             ->map(fn (string $version): ?int => $availableVersions[$version] ?? null)
             ->filter()
             ->values()
@@ -94,18 +82,5 @@ class SptVersionService
         return SptVersion::query()
             ->orderBy('version', 'desc')
             ->pluck('id', 'version');
-    }
-
-    /**
-     * Handle legacy constraint fallback when no satisfying versions are found.
-     *
-     * @param  Collection<string, int>  $availableVersions
-     * @return Collection<int, string>
-     */
-    private function handleLegacyFallback(Collection $availableVersions): Collection
-    {
-        return $availableVersions->has('0.0.0')
-            ? collect(['0.0.0'])
-            : collect([]);
     }
 }

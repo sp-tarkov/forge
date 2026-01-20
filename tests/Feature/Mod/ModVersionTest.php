@@ -1043,4 +1043,28 @@ describe('Published Version Visibility', function (): void {
         expect($disabledVersion->isPubliclyVisible())->toBeFalse();
         expect($versionWithoutSpt->isPubliclyVisible())->toBeFalse();
     });
+
+    it('is not publicly visible when constraint does not resolve even if legacy 0.0.0 version exists', function (): void {
+        // Create the legacy 0.0.0 SPT version that exists in production
+        SptVersion::factory()->state(['version' => '0.0.0'])->create();
+
+        $mod = Mod::factory()->create();
+
+        // Create a mod version with a constraint that doesn't match any real SPT version
+        // It should NOT be visible, even with the 0.0.0 fallback available
+        $modVersion = ModVersion::factory()->create([
+            'mod_id' => $mod->id,
+            'published_at' => now(),
+            'disabled' => false,
+            'spt_version_constraint' => '~3.6.0', // No 3.6.x versions exist
+        ]);
+
+        // The mod version should NOT have any SPT versions linked
+        expect($modVersion->sptVersions)->toHaveCount(0);
+        expect($modVersion->latestSptVersion)->toBeNull();
+        expect($modVersion->isPubliclyVisible())->toBeFalse();
+
+        // The mod should also NOT be publicly visible
+        expect($mod->isPubliclyVisible())->toBeFalse();
+    });
 });

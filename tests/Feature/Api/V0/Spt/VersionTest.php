@@ -184,15 +184,4 @@ describe('SPT Version API', function (): void {
                 ]);
         }
     });
-
-    it('never returns the base version 0.0.0 in the listing', function (): void {
-        $normal = SptVersion::factory()->state(['version' => '3.8.0'])->create();
-        $base = SptVersion::factory()->state(['version' => '0.0.0'])->create();
-
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions');
-        $response->assertOk();
-        $versions = collect($response->json('data'))->pluck('version')->all();
-        expect($versions)->toContain($normal->version)
-            ->and($versions)->not->toContain($base->version);
-    });
 });

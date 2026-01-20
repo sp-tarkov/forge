@@ -171,7 +171,6 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                 ->whereColumn('mod_versions.mod_id', 'mods.id')
                 ->whereNotNull('spt_versions.version')
-                ->where('spt_versions.version', '!=', '0.0.0')
                 ->where('mod_versions.disabled', false)
                 ->whereNotNull('mod_versions.published_at')
                 ->where('mod_versions.published_at', '<=', now());
