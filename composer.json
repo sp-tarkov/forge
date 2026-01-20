@@ -17,7 +17,7 @@
         "http-interop/http-factory-guzzle": "^1.2",
         "knuckleswtf/scribe": "^5.6",
         "laravel/framework": "^12.48",
-        "laravel/horizon": "^5.42",
+        "laravel/horizon": "^5.43",
         "laravel/jetstream": "^5.4",
         "laravel/octane": "^2.13",
         "laravel/reverb": "^1.7",
@@ -36,7 +36,7 @@
         "shetabit/visitor": "^4.4.1",
         "socialiteproviders/discord": "^4.2",
         "spatie/laravel-discord-alerts": "^1.8",
-        "spatie/laravel-flare": "^2.6",
+        "spatie/laravel-flare": "^2.7",
         "spatie/laravel-honeypot": "^4.6.1",
         "sqids/sqids": "^0.5.0",
         "stevebauman/purify": "^6.3.1"
