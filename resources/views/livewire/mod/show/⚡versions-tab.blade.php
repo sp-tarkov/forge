@@ -50,7 +50,7 @@ new #[Lazy] class extends Component {
 
         return $this->mod
             ->versions()
-            ->with(['latestSptVersion', 'sptVersions', 'latestResolvedDependencies.mod:id,name,slug'])
+            ->with(['latestSptVersion', 'sptVersions', 'latestDependenciesResolved.mod:id,name,slug'])
             ->unless($user?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {
                 $query->publiclyVisible();
             })

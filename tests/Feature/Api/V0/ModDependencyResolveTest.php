@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\Dependency;
+use App\Models\DependencyResolved;
 use App\Models\Mod;
 use App\Models\ModVersion;
-use App\Models\ResolvedDependency;
 use App\Models\SptVersion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -216,7 +216,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'constraint' => '^2.0.0',
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dependency->id,
                 'resolved_mod_version_id' => $dependencyModVersion->id,
@@ -304,7 +304,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'constraint' => '^2.0.0',
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dependency->id,
                 'resolved_mod_version_id' => $dependencyModVersion->id,
@@ -362,7 +362,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $level1Mod->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $level1Version->id,
@@ -373,7 +373,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $level2Mod->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $level1Version->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $level2Version->id,
@@ -429,7 +429,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $sharedDep->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod1Version->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $sharedDepVersion->id,
@@ -440,7 +440,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $sharedDep->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod2Version->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $sharedDepVersion->id,
@@ -506,7 +506,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $sharedDep->id,
                 'constraint' => '^1.0.0',
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod1Version->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $sharedDepVersion1->id,
@@ -518,7 +518,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $sharedDep->id,
                 'constraint' => '^2.0.0',
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod2Version->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $sharedDepVersion2->id,
@@ -611,17 +611,17 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $sharedDep->id,
                 'constraint' => '^1.0.0',
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod1Version->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $sharedDepVersion1_0->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod1Version->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $sharedDepVersion1_5->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod1Version->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $sharedDepVersion1_8->id,
@@ -633,12 +633,12 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $sharedDep->id,
                 'constraint' => '^1.5.0',
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod2Version->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $sharedDepVersion1_5->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod2Version->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $sharedDepVersion1_8->id,
@@ -695,7 +695,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependable_id' => $mainModVersion->id,
                 'dependent_mod_id' => $level1Dep->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $level1Version->id,
@@ -706,7 +706,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependable_id' => $level1Version->id,
                 'dependent_mod_id' => $nestedDep->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $level1Version->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $nestedVersion->id,
@@ -783,7 +783,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependable_id' => $mod1Version->id,
                 'dependent_mod_id' => $sharedDep->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod1Version->id,
                 'dependency_id' => $dep1Shared->id,
                 'resolved_mod_version_id' => $sharedDepVersion->id,
@@ -793,7 +793,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependable_id' => $mod1Version->id,
                 'dependent_mod_id' => $uniqueDep1->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod1Version->id,
                 'dependency_id' => $dep1Unique->id,
                 'resolved_mod_version_id' => $uniqueDep1Version->id,
@@ -804,7 +804,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependable_id' => $mod2Version->id,
                 'dependent_mod_id' => $sharedDep->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod2Version->id,
                 'dependency_id' => $dep2Shared->id,
                 'resolved_mod_version_id' => $sharedDepVersion->id,
@@ -814,7 +814,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependable_id' => $mod2Version->id,
                 'dependent_mod_id' => $uniqueDep2->id,
             ]);
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mod2Version->id,
                 'dependency_id' => $dep2Unique->id,
                 'resolved_mod_version_id' => $uniqueDep2Version->id,
@@ -877,7 +877,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
 
             // Only resolve version 2.0.0
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dependency->id,
                 'resolved_mod_version_id' => $resolvedVersion->id,
@@ -965,7 +965,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $modB->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $modAVersion->id,
                 'dependency_id' => $depAB->id,
                 'resolved_mod_version_id' => $modBVersion->id,
@@ -977,7 +977,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $modA->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $modBVersion->id,
                 'dependency_id' => $depBToA->id,
                 'resolved_mod_version_id' => $modAVersion->id,
@@ -1115,7 +1115,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $publishedDep->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $publishedDepVersion->id,
@@ -1173,7 +1173,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $publishedDep->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $publishedDepVersion->id,
@@ -1184,7 +1184,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $disabledDep->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $disabledDepVersion->id,
@@ -1239,7 +1239,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
             ]);
 
             // Only resolve the published version
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dependency->id,
                 'resolved_mod_version_id' => $publishedVersion->id,
@@ -1294,7 +1294,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $level1Mod->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $mainModVersion->id,
                 'dependency_id' => $dep1->id,
                 'resolved_mod_version_id' => $level1Version->id,
@@ -1305,7 +1305,7 @@ describe('Mod Dependencies Resolution Endpoint', function (): void {
                 'dependent_mod_id' => $level2Mod->id,
             ]);
 
-            ResolvedDependency::factory()->create([
+            DependencyResolved::factory()->create([
                 'dependable_id' => $level1Version->id,
                 'dependency_id' => $dep2->id,
                 'resolved_mod_version_id' => $level2Version->id,

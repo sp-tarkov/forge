@@ -11,6 +11,8 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Http\Responses\PasswordResetLinkRequestResponse;
 use App\Http\Responses\VerifyEmailResponse;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -46,6 +48,15 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
+        // Register Fortify views
+        Fortify::loginView(fn (): Factory|View => view('auth.login'));
+        Fortify::registerView(fn (): Factory|View => view('auth.register'));
+        Fortify::requestPasswordResetLinkView(fn (): Factory|View => view('auth.forgot-password'));
+        Fortify::resetPasswordView(fn (Request $request): Factory|View => view('auth.reset-password', ['request' => $request]));
+        Fortify::verifyEmailView(fn (): Factory|View => view('auth.verify-email'));
+        Fortify::confirmPasswordView(fn (): Factory|View => view('auth.confirm-password'));
+        Fortify::twoFactorChallengeView(fn (): Factory|View => view('auth.two-factor-challenge'));
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\Carbon;
-use Database\Factories\ResolvedDependencyFactory;
+use Database\Factories\DependencyResolvedFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,15 +23,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property-read Dependency|null $dependency
  * @property-read ModVersion|null $resolvedModVersion
  */
-class ResolvedDependency extends Model
+class DependencyResolved extends Model
 {
-    /** @use HasFactory<ResolvedDependencyFactory> */
+    /** @use HasFactory<DependencyResolvedFactory> */
     use HasFactory;
 
     /**
      * The table associated with the model.
      */
-    protected $table = 'resolved_dependencies';
+    protected $table = 'dependencies_resolved';
 
     /**
      * The polymorphic relationship between the resolved dependency and the parent version.

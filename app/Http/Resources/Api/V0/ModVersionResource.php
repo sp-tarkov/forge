@@ -114,8 +114,8 @@ class ModVersionResource extends JsonResource
             $data['updated_at'] = $this->resource->updated_at?->toISOString();
         }
 
-        $data['dependencies'] = new ModResolvedDependencyCollection(
-            $this->whenLoaded('resolvedDependencies')
+        $data['dependencies'] = new ModDependencyResolvedCollection(
+            $this->whenLoaded('dependenciesResolved')
         );
 
         $data['virus_total_links'] = VirusTotalLinkResource::collection(

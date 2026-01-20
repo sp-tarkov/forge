@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Dependency;
+use App\Models\DependencyResolved;
 use App\Models\ModVersion;
-use App\Models\ResolvedDependency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<ResolvedDependency>
+ * @extends Factory<DependencyResolved>
  */
-class ResolvedDependencyFactory extends Factory
+class DependencyResolvedFactory extends Factory
 {
-    protected $model = ResolvedDependency::class;
+    protected $model = DependencyResolved::class;
 
     public function definition(): array
     {

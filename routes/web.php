@@ -13,6 +13,7 @@ use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Models\Mod;
 use App\Models\Report;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth.banned')->group(function (): void {
@@ -76,10 +77,14 @@ Route::middleware('auth.banned')->group(function (): void {
         ->name('chat.unsubscribe');
 
     // Authenticated routes
-    Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function (): void {
+    Route::middleware(['auth', AuthenticateSession::class, 'verified'])->group(function (): void {
 
         // Authenticated and verified routes
         Route::livewire('/dashboard', 'pages::dashboard')->name('dashboard');
+
+        // Profile routes
+        Route::view('/user/profile', 'profile.show')->name('profile.show');
+        Route::view('/user/api-tokens', 'api.index')->name('api-tokens.index');
 
         Route::livewire('/mod/guidelines', 'pages::mod.guidelines-acknowledgment')
             ->name('mod.guidelines');

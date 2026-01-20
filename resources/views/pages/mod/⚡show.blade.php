@@ -167,7 +167,7 @@ new #[Layout('layouts::base')] class extends Component {
     protected function getMod(int $modId): Mod
     {
         return Mod::query()
-            ->with(['sourceCodeLinks', 'category', 'owner', 'additionalAuthors', 'license', 'latestVersion.latestSptVersion', 'latestVersion.latestResolvedDependencies.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id', 'latestVersion.latestResolvedDependencies.mod.owner.role'])
+            ->with(['sourceCodeLinks', 'category', 'owner', 'additionalAuthors', 'license', 'latestVersion.latestSptVersion', 'latestVersion.latestDependenciesResolved.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id', 'latestVersion.latestDependenciesResolved.mod.owner.role'])
             ->findOrFail($modId);
     }
 
@@ -541,9 +541,9 @@ new #[Layout('layouts::base')] class extends Component {
             @endif
 
             {{-- Required Dependencies --}}
-            @if ($mod->latestVersion?->latestResolvedDependencies->isNotEmpty())
+            @if ($mod->latestVersion?->latestDependenciesResolved->isNotEmpty())
                 @php
-                    $dependencyCount = $mod->latestVersion->latestResolvedDependencies->count();
+                    $dependencyCount = $mod->latestVersion->latestDependenciesResolved->count();
                 @endphp
                 <div
                     class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
@@ -559,7 +559,7 @@ new #[Layout('layouts::base')] class extends Component {
                         role="list"
                         class="divide-y divide-gray-200 dark:divide-gray-800"
                     >
-                        @foreach ($mod->latestVersion->latestResolvedDependencies as $dependency)
+                        @foreach ($mod->latestVersion->latestDependenciesResolved as $dependency)
                             <li class="py-3 first:pt-0 last:pb-0">
                                 <a
                                     href="{{ route('mod.show', [$dependency->mod->id, $dependency->mod->slug]) }}"

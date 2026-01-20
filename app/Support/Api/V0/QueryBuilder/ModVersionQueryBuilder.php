@@ -62,8 +62,8 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     {
         return [
             'dependencies' => [
-                'resolvedDependencies',
-                'resolvedDependencies.mod',
+                'dependenciesResolved',
+                'dependenciesResolved.mod',
             ],
             'virus_total_links' => 'virusTotalLinks',
         ];

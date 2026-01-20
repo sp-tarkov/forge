@@ -141,11 +141,11 @@ describe('Mod Version Create Form', function (): void {
             expect($dependency2->constraint)->toBe('^2.0.0');
 
             // Verify resolved dependencies were created by the observer
-            $modVersion->load('resolvedDependencies');
-            expect($modVersion->resolvedDependencies)->toHaveCount(2); // Should match versions 1.0.0 and 2.0.0
+            $modVersion->load('dependenciesResolved');
+            expect($modVersion->dependenciesResolved)->toHaveCount(2); // Should match versions 1.0.0 and 2.0.0
 
             // Check specific resolved versions
-            $resolvedVersionIds = $modVersion->resolvedDependencies->pluck('id')->toArray();
+            $resolvedVersionIds = $modVersion->dependenciesResolved->pluck('id')->toArray();
             expect($resolvedVersionIds)->toContain($dependencyVersion1->id); // ~1.0.0 matches 1.0.0
             expect($resolvedVersionIds)->not->toContain($dependencyVersion2->id); // ~1.0.0 does not match 1.1.0
             expect($resolvedVersionIds)->toContain($dependencyVersion3->id); // ^2.0.0 matches 2.0.0
@@ -768,12 +768,12 @@ describe('Mod Version Create Form', function (): void {
             ]);
 
             // The observer should have automatically resolved dependencies
-            $modVersion->load('resolvedDependencies');
+            $modVersion->load('dependenciesResolved');
 
             // ~1.0.0 matches only 1.0.x versions, not 1.1.x
-            expect($modVersion->resolvedDependencies)->toHaveCount(1);
+            expect($modVersion->dependenciesResolved)->toHaveCount(1);
 
-            $resolvedVersionIds = $modVersion->resolvedDependencies->pluck('id')->toArray();
+            $resolvedVersionIds = $modVersion->dependenciesResolved->pluck('id')->toArray();
             expect($resolvedVersionIds)->toContain($version1->id);
             expect($resolvedVersionIds)->not->toContain($version2->id);
             expect($resolvedVersionIds)->not->toContain($version3->id);

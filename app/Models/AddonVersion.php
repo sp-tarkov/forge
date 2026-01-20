@@ -50,8 +50,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, ModVersion> $compatibleModVersions
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
  * @property-read Collection<int, Dependency> $dependencies
- * @property-read Collection<int, ModVersion> $resolvedDependencies
- * @property-read Collection<int, ModVersion> $latestResolvedDependencies
+ * @property-read Collection<int, ModVersion> $dependenciesResolved
+ * @property-read Collection<int, ModVersion> $latestDependenciesResolved
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonVersionObserver::class])]
@@ -114,9 +114,9 @@ class AddonVersion extends Model
      *
      * @return BelongsToMany<ModVersion, $this>
      */
-    public function resolvedDependencies(): BelongsToMany
+    public function dependenciesResolved(): BelongsToMany
     {
-        return $this->belongsToMany(ModVersion::class, 'resolved_dependencies', 'dependable_id', 'resolved_mod_version_id')
+        return $this->belongsToMany(ModVersion::class, 'dependencies_resolved', 'dependable_id', 'resolved_mod_version_id')
             ->wherePivot('dependable_type', self::class)
             ->withPivotValue('dependable_type', self::class)
             ->withPivot('dependency_id')
@@ -128,9 +128,9 @@ class AddonVersion extends Model
      *
      * @return BelongsToMany<ModVersion, $this>
      */
-    public function latestResolvedDependencies(): BelongsToMany
+    public function latestDependenciesResolved(): BelongsToMany
     {
-        return $this->belongsToMany(ModVersion::class, 'resolved_dependencies', 'dependable_id', 'resolved_mod_version_id')
+        return $this->belongsToMany(ModVersion::class, 'dependencies_resolved', 'dependable_id', 'resolved_mod_version_id')
             ->wherePivot('dependable_type', self::class)
             ->withPivot('dependency_id')
             ->join('mod_versions as latest_versions', function (JoinClause $join): void {
@@ -138,9 +138,9 @@ class AddonVersion extends Model
                     ->whereRaw("
                         (latest_versions.version_major, latest_versions.version_minor, latest_versions.version_patch, CASE WHEN latest_versions.version_labels = '' THEN 0 ELSE 1 END, latest_versions.version_labels) = (
                         SELECT mv.version_major, mv.version_minor, mv.version_patch, CASE WHEN mv.version_labels = '' THEN 0 ELSE 1 END, mv.version_labels
-                        FROM resolved_dependencies rd
+                        FROM dependencies_resolved rd
                         JOIN mod_versions mv ON rd.resolved_mod_version_id = mv.id
-                        WHERE rd.dependable_id = resolved_dependencies.dependable_id
+                        WHERE rd.dependable_id = dependencies_resolved.dependable_id
                         AND rd.dependable_type = ?
                         AND mv.mod_id = mod_versions.mod_id
                         ORDER BY mv.version_major DESC, mv.version_minor DESC, mv.version_patch DESC, CASE WHEN mv.version_labels = '' THEN 0 ELSE 1 END, mv.version_labels
