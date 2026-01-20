@@ -109,7 +109,7 @@
 
     <div class="flex-grow bg-gray-100 dark:bg-gray-800">
         @if ($variant !== 'simple')
-            <livewire:navigation-menu />
+            <x-navigation-menu />
         @endif
 
         @if (filled($header) && $variant !== 'simple')

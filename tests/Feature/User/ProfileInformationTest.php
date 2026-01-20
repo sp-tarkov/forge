@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Profile\UpdateProfileForm;
 use App\Models\User;
-use Laravel\Jetstream\Http\Livewire\UpdateProfileInformationForm;
 use Livewire\Livewire;
 
 describe('profile information', function (): void {
     it('shows current profile information', function (): void {
         $this->actingAs($user = User::factory()->create(['about' => 'My about content']));
 
-        $testable = Livewire::test(UpdateProfileInformationForm::class);
+        $testable = Livewire::test(UpdateProfileForm::class);
 
         expect($testable->state['name'])->toEqual($user->name)
             ->and($testable->state['email'])->toEqual($user->email)
@@ -20,7 +20,7 @@ describe('profile information', function (): void {
     it('can update profile information', function (): void {
         $this->actingAs($user = User::factory()->create());
 
-        Livewire::test(UpdateProfileInformationForm::class)
+        Livewire::test(UpdateProfileForm::class)
             ->set('state', [
                 'name' => 'Test Name',
                 'email' => 'test@example.com',

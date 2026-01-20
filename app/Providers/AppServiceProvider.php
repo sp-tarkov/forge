@@ -9,8 +9,6 @@ use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Http\Controllers\VisitorsPresenceBroadcastingController;
-use App\Livewire\Profile\ApiTokenManager as CustomApiTokenManager;
-use App\Livewire\Profile\UpdatePasswordForm;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
@@ -30,7 +28,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Mchev\Banhammer\Middleware\AuthBanned;
-use Override;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\LaravelFlare\Facades\Flare;
@@ -39,15 +36,6 @@ use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    #[Override]
-    public function register(): void
-    {
-        //
-    }
-
     /**
      * Bootstrap any application services.
      */
@@ -71,9 +59,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Register layouts directory as anonymous Blade component path.
         Blade::anonymousComponentPath(resource_path('views/layouts'), 'layouts');
-
-        // Register Livewire component overrides.
-        $this->registerLivewireOverrides();
 
         // Add auth.banned to Livewire persistent middleware to ensure banned users are blocked on all requests.
         Livewire::addPersistentMiddleware([
@@ -162,15 +147,6 @@ class AppServiceProvider extends ServiceProvider
     private function registerMixins(): void
     {
         Date::mixin(new CarbonMixin);
-    }
-
-    /**
-     * Register Livewire component overrides.
-     */
-    private function registerLivewireOverrides(): void
-    {
-        Livewire::component('api.api-token-manager', CustomApiTokenManager::class);
-        Livewire::component('profile.update-password-form', UpdatePasswordForm::class);
     }
 
     /**

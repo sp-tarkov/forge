@@ -2,19 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Profile\ApiTokenManager;
 use App\Models\User;
 use Illuminate\Support\Str;
-use Laravel\Jetstream\Features;
 use Livewire\Livewire;
 
 describe('API token permissions', function (): void {
     it('can update api token permissions', function (): void {
-        if (Features::hasTeamFeatures()) {
-            $this->actingAs($user = User::factory()->withPersonalTeam()->create());
-        } else {
-            $this->actingAs($user = User::factory()->create());
-        }
+        $this->actingAs($user = User::factory()->create());
 
         $token = $user->tokens()->create([
             'name' => 'Test Token',
@@ -22,7 +16,7 @@ describe('API token permissions', function (): void {
             'abilities' => ['create', 'read'],
         ]);
 
-        Livewire::test(ApiTokenManager::class)
+        Livewire::test('profile.api-token-manager')
             ->set(['managingPermissionsFor' => $token])
             ->set(['updateApiTokenForm' => [
                 'permissions' => [
@@ -36,14 +30,10 @@ describe('API token permissions', function (): void {
             ->can('delete')->toBeTrue()
             ->can('read')->toBeTrue()
             ->can('missing-permission')->toBeFalse();
-    })->skip(fn (): bool => ! Features::hasApiFeatures(), 'API support is not enabled.');
+    });
 
     it('always maintains the read permission when updating a token', function (): void {
-        if (Features::hasTeamFeatures()) {
-            $this->actingAs($user = User::factory()->withPersonalTeam()->create());
-        } else {
-            $this->actingAs($user = User::factory()->create());
-        }
+        $this->actingAs($user = User::factory()->create());
 
         $token = $user->tokens()->create([
             'name' => 'Test Token',
@@ -51,7 +41,7 @@ describe('API token permissions', function (): void {
             'abilities' => ['read', 'create'],
         ]);
 
-        Livewire::test(ApiTokenManager::class)
+        Livewire::test('profile.api-token-manager')
             ->set(['managingPermissionsFor' => $token])
             ->set(['updateApiTokenForm' => [
                 'permissions' => [
@@ -63,5 +53,5 @@ describe('API token permissions', function (): void {
         expect($user->fresh()->tokens->first())
             ->can('update')->toBeTrue()
             ->can('read')->toBeTrue();
-    })->skip(fn (): bool => ! Features::hasApiFeatures(), 'API support is not enabled.');
+    });
 });

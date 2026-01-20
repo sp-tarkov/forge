@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Laravel\Fortify\Features;
-use Laravel\Jetstream\Jetstream;
 
 describe('registration', function (): void {
     it('can render registration screen', function (): void {
@@ -19,7 +18,7 @@ describe('registration', function (): void {
             'password' => 'password',
             'password_confirmation' => 'password',
             'timezone' => 'America/New_York',
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+            'terms' => true,
         ]);
 
         $this->assertAuthenticated();

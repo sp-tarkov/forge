@@ -3,15 +3,12 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Laravel\Jetstream\Features;
 
 describe('password confirmation', function (): void {
     it('can render confirm password screen', function (): void {
-        $user = Features::hasTeamFeatures()
-                        ? User::factory()->withPersonalTeam()->create()
-                        : User::factory()->create();
+        $this->actingAs(User::factory()->create());
 
-        $response = $this->actingAs($user)->get('/user/confirm-password');
+        $response = $this->get('/user/confirm-password');
 
         $response->assertStatus(200);
     });

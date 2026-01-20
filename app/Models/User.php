@@ -11,6 +11,7 @@ use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
+use App\Traits\HasProfilePhoto;
 use App\Traits\HasReports;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
@@ -32,7 +33,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
@@ -787,7 +787,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     protected function profilePhotoDisk(): string
     {
-        return config('filesystems.asset_upload', config('jetstream.profile_photo_disk', 'public'));
+        return config('filesystems.asset_upload', 'public');
     }
 
     /**

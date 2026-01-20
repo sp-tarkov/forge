@@ -1,3 +1,210 @@
+<?php
+
+declare(strict_types=1);
+
+use Detection\MobileDetect;
+use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use Livewire\Component;
+
+new class extends Component {
+    /**
+     * List of additional operating systems.
+     *
+     * @var array<string, string>
+     */
+    private const array OPERATING_SYSTEMS = [
+        'Windows' => 'Windows',
+        'Windows NT' => 'Windows NT',
+        'OS X' => 'Mac OS X',
+        'Debian' => 'Debian',
+        'Ubuntu' => 'Ubuntu',
+        'Macintosh' => 'PPC',
+        'OpenBSD' => 'OpenBSD',
+        'Linux' => 'Linux',
+        'ChromeOS' => 'CrOS',
+    ];
+
+    /**
+     * List of additional browsers.
+     *
+     * @var array<string, string>
+     */
+    private const array BROWSERS = [
+        'Opera Mini' => 'Opera Mini',
+        'Opera' => 'Opera|OPR',
+        'Edge' => 'Edge|Edg',
+        'Coc Coc' => 'coc_coc_browser',
+        'UCBrowser' => 'UCBrowser',
+        'Vivaldi' => 'Vivaldi',
+        'Chrome' => 'Chrome',
+        'Firefox' => 'Firefox',
+        'Safari' => 'Safari',
+        'IE' => 'MSIE|IEMobile|MSIEMobile|Trident/[.0-9]+',
+        'Netscape' => 'Netscape',
+        'Mozilla' => 'Mozilla',
+        'WeChat' => 'MicroMessenger',
+    ];
+
+    /**
+     * Indicates if logout is being confirmed.
+     */
+    public bool $confirmingLogout = false;
+
+    /**
+     * The user's current password.
+     */
+    public string $password = '';
+
+    /**
+     * Confirm that the user would like to log out from other browser sessions.
+     */
+    public function confirmLogout(): void
+    {
+        $this->password = '';
+
+        $this->dispatch('confirming-logout-other-browser-sessions');
+
+        $this->confirmingLogout = true;
+    }
+
+    /**
+     * Log out from other browser sessions.
+     */
+    public function logoutOtherBrowserSessions(StatefulGuard $guard): void
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        $this->resetErrorBag();
+
+        if (!Hash::check($this->password, Auth::user()->password)) {
+            throw ValidationException::withMessages([
+                'password' => [__('This password does not match our records.')],
+            ]);
+        }
+
+        $guard->logoutOtherDevices($this->password);
+
+        $this->deleteOtherSessionRecords();
+
+        request()
+            ->session()
+            ->put([
+                'password_hash_' . Auth::getDefaultDriver() => Auth::user()->getAuthPassword(),
+            ]);
+
+        $this->confirmingLogout = false;
+
+        $this->dispatch('loggedOut');
+    }
+
+    /**
+     * Get the current sessions.
+     *
+     * @return Collection<int, object{is_desktop: bool, platform: string|null, browser: string|null, ip_address: string|null, is_current_device: bool, last_active: string}>
+     */
+    public function getSessionsProperty(): Collection
+    {
+        if (config('session.driver') !== 'database') {
+            return collect();
+        }
+
+        return collect(
+            DB::connection(config('session.connection'))
+                ->table(config('session.table', 'sessions'))
+                ->where('user_id', Auth::user()->getAuthIdentifier())
+                ->orderBy('last_activity', 'desc')
+                ->get(),
+        )->map(fn(\stdClass $session): object => $this->parseSession($session));
+    }
+
+    /**
+     * Delete the other browser session records from storage.
+     */
+    protected function deleteOtherSessionRecords(): void
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        DB::connection(config('session.connection'))
+            ->table(config('session.table', 'sessions'))
+            ->where('user_id', Auth::user()->getAuthIdentifier())
+            ->where('id', '!=', request()->session()->getId())
+            ->delete();
+    }
+
+    /**
+     * Parse session data into a structured object.
+     *
+     * @return object{is_desktop: bool, platform: string|null, browser: string|null, ip_address: string|null, is_current_device: bool, last_active: string}
+     */
+    private function parseSession(\stdClass $session): object
+    {
+        $userAgent = $session->user_agent ?? '';
+        $detector = new MobileDetect(userAgent: $userAgent);
+
+        return (object) [
+            'is_desktop' => !$detector->isMobile() && !$detector->isTablet(),
+            'platform' => $this->detectPlatform($userAgent),
+            'browser' => $this->detectBrowser($userAgent),
+            'ip_address' => $session->ip_address,
+            'is_current_device' => $session->id === request()->session()->getId(),
+            'last_active' => Date::createFromTimestamp($session->last_activity)->diffForHumans(),
+        ];
+    }
+
+    /**
+     * Detect the platform from user agent.
+     */
+    private function detectPlatform(string $userAgent): ?string
+    {
+        $rules = array_merge(MobileDetect::getOperatingSystems(), self::OPERATING_SYSTEMS);
+
+        return $this->matchAgainst($userAgent, $rules);
+    }
+
+    /**
+     * Detect the browser from user agent.
+     */
+    private function detectBrowser(string $userAgent): ?string
+    {
+        $rules = array_merge(self::BROWSERS, MobileDetect::getBrowsers());
+
+        return $this->matchAgainst($userAgent, $rules);
+    }
+
+    /**
+     * Match user agent against detection rules.
+     *
+     * @param  array<string, string>  $rules
+     */
+    private function matchAgainst(string $userAgent, array $rules): ?string
+    {
+        foreach ($rules as $key => $regex) {
+            if (empty($regex)) {
+                continue;
+            }
+
+            $regex = str_replace('/', '\\/', $regex);
+
+            if (preg_match('/' . $regex . '/i', $userAgent)) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+};
+?>
+
 <x-action-section>
     <x-slot:title>
         {{ __('Browser Sessions') }}
@@ -18,7 +225,7 @@
                 @foreach ($this->sessions as $session)
                     <div class="flex items-center">
                         <div>
-                            @if ($session->agent->isDesktop())
+                            @if ($session->is_desktop)
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -53,8 +260,8 @@
 
                         <div class="ms-3">
                             <div class="text-sm text-gray-600 dark:text-gray-400">
-                                {{ $session->agent->platform() ? $session->agent->platform() : __('Unknown') }} -
-                                {{ $session->agent->browser() ? $session->agent->browser() : __('Unknown') }}
+                                {{ $session->platform ?? __('Unknown') }} -
+                                {{ $session->browser ?? __('Unknown') }}
                             </div>
 
                             <div>

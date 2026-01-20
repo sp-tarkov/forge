@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Profile\TwoFactorAuthenticationForm;
 use App\Models\User;
 use Laravel\Fortify\Features;
-use Laravel\Jetstream\Http\Livewire\TwoFactorAuthenticationForm;
 use Livewire\Livewire;
 
 describe('two factor authentication', function (): void {
