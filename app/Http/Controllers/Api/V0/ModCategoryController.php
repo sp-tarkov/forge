@@ -109,7 +109,7 @@ class ModCategoryController extends Controller
 
             // Filter by slugs
             if (isset($filters['slug'])) {
-                $slugs = explode(',', $filters['slug']);
+                $slugs = explode(',', (string) $filters['slug']);
                 $query->whereIn('slug', $slugs);
             }
 
