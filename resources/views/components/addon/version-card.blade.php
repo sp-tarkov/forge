@@ -181,12 +181,12 @@
         @endif
 
         {{-- Display mod dependencies --}}
-        @if ($version->latestResolvedDependencies->isNotEmpty())
+        @if ($version->latestDependenciesResolved->isNotEmpty())
             <p class="mt-3 text-gray-700 dark:text-gray-400">
                 {{ __('Dependencies:') }}
             </p>
             <ul>
-                @foreach ($version->latestResolvedDependencies as $resolvedDependency)
+                @foreach ($version->latestDependenciesResolved as $resolvedDependency)
                     <li>
                         <a
                             href="{{ $resolvedDependency->mod->detail_url }}"

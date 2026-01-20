@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property Carbon|null $updated_at
  * @property-read ModVersion|AddonVersion $dependable
  * @property-read Mod $dependentMod
- * @property-read Collection<int, ResolvedDependency> $resolvedDependencies
+ * @property-read Collection<int, DependencyResolved> $dependenciesResolved
  */
 #[ObservedBy([DependencyObserver::class])]
 class Dependency extends Model
@@ -62,11 +62,11 @@ class Dependency extends Model
     /**
      * The relationship between the dependency and the resolved dependencies.
      *
-     * @return HasMany<ResolvedDependency, $this>
+     * @return HasMany<DependencyResolved, $this>
      */
-    public function resolvedDependencies(): HasMany
+    public function dependenciesResolved(): HasMany
     {
-        return $this->hasMany(ResolvedDependency::class, 'dependency_id');
+        return $this->hasMany(DependencyResolved::class, 'dependency_id');
     }
 
     /**

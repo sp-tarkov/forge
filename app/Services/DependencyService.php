@@ -201,15 +201,15 @@ class DependencyService
         $processedVersionIds = $processedVersionIds->push($modVersionId);
 
         // Get the latest resolved version for each dependency by semantic version
-        $dependencies = DB::table('resolved_dependencies')
+        $dependencies = DB::table('dependencies_resolved')
             ->select(
                 'dependencies.dependent_mod_id',
                 'dependencies.constraint',
                 DB::raw('MAX(resolved_versions.id) as latest_version_id')
             )
-            ->join('dependencies', 'resolved_dependencies.dependency_id', '=', 'dependencies.id')
+            ->join('dependencies', 'dependencies_resolved.dependency_id', '=', 'dependencies.id')
             ->join('mod_versions as resolved_versions', function (JoinClause $join): void {
-                $join->on('resolved_dependencies.resolved_mod_version_id', '=', 'resolved_versions.id')
+                $join->on('dependencies_resolved.resolved_mod_version_id', '=', 'resolved_versions.id')
                     ->whereNotNull('resolved_versions.published_at')
                     ->where('resolved_versions.published_at', '<=', now())
                     ->where('resolved_versions.disabled', false);
@@ -230,7 +230,7 @@ class DependencyService
                                  CASE WHEN mv.version_labels = "" THEN 0 ELSE 1 END, mv.version_labels
                     ) as rn
                 FROM mod_versions mv
-                INNER JOIN resolved_dependencies rd ON mv.id = rd.resolved_mod_version_id
+                INNER JOIN dependencies_resolved rd ON mv.id = rd.resolved_mod_version_id
                 WHERE rd.dependable_id = '.$modVersionId.'
                     AND rd.dependable_type = "'.addslashes(ModVersion::class).'"
                     AND mv.published_at IS NOT NULL
@@ -240,8 +240,8 @@ class DependencyService
                 $join->on('resolved_versions.id', '=', 'ranked.id')
                     ->where('ranked.rn', '=', 1);
             })
-            ->where('resolved_dependencies.dependable_id', $modVersionId)
-            ->where('resolved_dependencies.dependable_type', ModVersion::class)
+            ->where('dependencies_resolved.dependable_id', $modVersionId)
+            ->where('dependencies_resolved.dependable_type', ModVersion::class)
             ->groupBy('dependencies.dependent_mod_id', 'dependencies.constraint')
             ->get();
 
@@ -307,15 +307,15 @@ class DependencyService
     public function buildAddonDependencyTree(int $addonVersionId, Collection $processedVersionIds, Collection $constraintsByModId): ?array
     {
         // Get the latest resolved version for each dependency by semantic version
-        $dependencies = DB::table('resolved_dependencies')
+        $dependencies = DB::table('dependencies_resolved')
             ->select(
                 'dependencies.dependent_mod_id',
                 'dependencies.constraint',
                 DB::raw('MAX(resolved_versions.id) as latest_version_id')
             )
-            ->join('dependencies', 'resolved_dependencies.dependency_id', '=', 'dependencies.id')
+            ->join('dependencies', 'dependencies_resolved.dependency_id', '=', 'dependencies.id')
             ->join('mod_versions as resolved_versions', function (JoinClause $join): void {
-                $join->on('resolved_dependencies.resolved_mod_version_id', '=', 'resolved_versions.id')
+                $join->on('dependencies_resolved.resolved_mod_version_id', '=', 'resolved_versions.id')
                     ->whereNotNull('resolved_versions.published_at')
                     ->where('resolved_versions.published_at', '<=', now())
                     ->where('resolved_versions.disabled', false);
@@ -336,7 +336,7 @@ class DependencyService
                                  CASE WHEN mv.version_labels = "" THEN 0 ELSE 1 END, mv.version_labels
                     ) as rn
                 FROM mod_versions mv
-                INNER JOIN resolved_dependencies rd ON mv.id = rd.resolved_mod_version_id
+                INNER JOIN dependencies_resolved rd ON mv.id = rd.resolved_mod_version_id
                 WHERE rd.dependable_id = '.$addonVersionId.'
                     AND rd.dependable_type = "'.addslashes(AddonVersion::class).'"
                     AND mv.published_at IS NOT NULL
@@ -346,8 +346,8 @@ class DependencyService
                 $join->on('resolved_versions.id', '=', 'ranked.id')
                     ->where('ranked.rn', '=', 1);
             })
-            ->where('resolved_dependencies.dependable_id', $addonVersionId)
-            ->where('resolved_dependencies.dependable_type', AddonVersion::class)
+            ->where('dependencies_resolved.dependable_id', $addonVersionId)
+            ->where('dependencies_resolved.dependable_type', AddonVersion::class)
             ->groupBy('dependencies.dependent_mod_id', 'dependencies.constraint')
             ->get();
 

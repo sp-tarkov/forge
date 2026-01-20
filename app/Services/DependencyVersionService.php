@@ -19,7 +19,7 @@ class DependencyVersionService
         $dependable->load('dependencies');
 
         $dependencies = $this->satisfyConstraint($dependable);
-        $dependable->resolvedDependencies()->sync($dependencies);
+        $dependable->dependenciesResolved()->sync($dependencies);
     }
 
     /**

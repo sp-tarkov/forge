@@ -158,7 +158,7 @@ describe('Mod Version Edit Form', function (): void {
 
             // Refresh and verify dependencies were updated
             $modVersion->refresh();
-            $modVersion->load('dependencies', 'resolvedDependencies');
+            $modVersion->load('dependencies', 'dependenciesResolved');
 
             expect($modVersion->dependencies)->toHaveCount(1);
 
@@ -167,8 +167,8 @@ describe('Mod Version Edit Form', function (): void {
             expect($dependency->constraint)->toBe('^2.0.0');
 
             // Verify resolved dependencies were updated
-            expect($modVersion->resolvedDependencies)->toHaveCount(1);
-            expect($modVersion->resolvedDependencies->first()->mod_id)->toBe($dependencyMod2->id);
+            expect($modVersion->dependenciesResolved)->toHaveCount(1);
+            expect($modVersion->dependenciesResolved->first()->mod_id)->toBe($dependencyMod2->id);
         });
     });
 
