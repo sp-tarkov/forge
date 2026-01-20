@@ -309,6 +309,12 @@ new class extends Component {
                                 icon:trailing="pencil-square"
                             >Edit Addon</flux:menu.item>
                         @endcachedCan
+                        @cachedCan('create', [App\Models\AddonVersion::class, $this->addon])
+                            <flux:menu.item
+                                href="{{ route('addon.version.create', $this->addonId) }}"
+                                icon:trailing="arrow-up-tray"
+                            >Upload New Version</flux:menu.item>
+                        @endcachedCan
                         @if ($this->addonPublished)
                             @cachedCan('unpublish', $this->addon)
                                 <flux:modal.trigger name="addon-action-unpublish-{{ $this->addonId }}">

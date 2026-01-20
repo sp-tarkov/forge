@@ -403,6 +403,128 @@ describe('mod featuring functionality', function (): void {
     });
 });
 
+describe('upload new version menu item visibility', function (): void {
+    it('shows upload new version for mod owners with MFA enabled', function (): void {
+        $owner = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+        Livewire::actingAs($owner)
+            ->test('mod.action', [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => (bool) $mod->featured,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version')
+            ->assertSee(route('mod.version.create', $mod->id));
+    });
+
+    it('shows upload new version for mod authors with MFA enabled', function (): void {
+        $owner = User::factory()->create();
+        $author = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        $mod->additionalAuthors()->attach($author);
+
+        Livewire::actingAs($author)
+            ->test('mod.action', [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => (bool) $mod->featured,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version')
+            ->assertSee(route('mod.version.create', $mod->id));
+    });
+
+    it('hides upload new version for mod owners without MFA enabled', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+        Livewire::actingAs($owner)
+            ->test('mod.action', [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => (bool) $mod->featured,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertDontSee('Upload New Version');
+    });
+
+    it('hides upload new version for administrators who are not owners or authors', function (): void {
+        $owner = User::factory()->create();
+        $admin = User::factory()->admin()->withMfa()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+        Livewire::actingAs($admin)
+            ->test('mod.action', [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => (bool) $mod->featured,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertDontSee('Upload New Version');
+    });
+
+    it('hides upload new version for moderators who are not owners or authors', function (): void {
+        $owner = User::factory()->create();
+        $moderator = User::factory()->moderator()->withMfa()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+
+        Livewire::actingAs($moderator)
+            ->test('mod.action', [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => (bool) $mod->featured,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertDontSee('Upload New Version');
+    });
+
+    it('shows upload new version for administrators who are also owners', function (): void {
+        $adminOwner = User::factory()->admin()->withMfa()->create();
+        $mod = Mod::factory()->create(['owner_id' => $adminOwner->id]);
+
+        Livewire::actingAs($adminOwner)
+            ->test('mod.action', [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => (bool) $mod->featured,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version');
+    });
+
+    it('shows upload new version for moderators who are also authors', function (): void {
+        $owner = User::factory()->create();
+        $modAuthor = User::factory()->moderator()->withMfa()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        $mod->additionalAuthors()->attach($modAuthor);
+
+        Livewire::actingAs($modAuthor)
+            ->test('mod.action', [
+                'modId' => $mod->id,
+                'modName' => $mod->name,
+                'modFeatured' => (bool) $mod->featured,
+                'modDisabled' => (bool) $mod->disabled,
+                'modPublished' => (bool) $mod->published_at,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version');
+    });
+});
+
 describe('mod version publishing functionality', function (): void {
     it('allows mod owners to publish a version with specified date', function (): void {
         $owner = User::factory()->create();

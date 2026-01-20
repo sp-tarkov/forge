@@ -306,6 +306,12 @@ new class extends Component {
                         icon:trailing="pencil-square"
                     >Edit Mod</flux:menu.item>
                     @endcachedCan
+                    @cachedCan('create', [App\Models\ModVersion::class, $this->mod])
+                    <flux:menu.item
+                        href="{{ route('mod.version.create', $this->modId) }}"
+                        icon:trailing="arrow-up-tray"
+                    >Upload New Version</flux:menu.item>
+                    @endcachedCan
                     @if ($this->modPublished)
                         @cachedCan('unpublish', $this->mod)
                         <flux:modal.trigger name="mod-action-unpublish-{{ $this->modId }}">

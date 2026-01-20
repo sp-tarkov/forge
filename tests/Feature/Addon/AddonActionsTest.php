@@ -309,6 +309,135 @@ describe('addon publishing functionality', function (): void {
     });
 });
 
+describe('upload new version menu item visibility', function (): void {
+    it('shows upload new version for addon owners with MFA enabled', function (): void {
+        $owner = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
+
+        Livewire::actingAs($owner)
+            ->test('addon.action', [
+                'addonId' => $addon->id,
+                'addonName' => $addon->name,
+                'addonDisabled' => (bool) $addon->disabled,
+                'addonPublished' => (bool) $addon->published_at,
+                'addonDetached' => false,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version')
+            ->assertSee(route('addon.version.create', $addon->id));
+    });
+
+    it('shows upload new version for addon authors with MFA enabled', function (): void {
+        $owner = User::factory()->create();
+        $author = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
+        $addon->additionalAuthors()->attach($author);
+
+        Livewire::actingAs($author)
+            ->test('addon.action', [
+                'addonId' => $addon->id,
+                'addonName' => $addon->name,
+                'addonDisabled' => (bool) $addon->disabled,
+                'addonPublished' => (bool) $addon->published_at,
+                'addonDetached' => false,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version')
+            ->assertSee(route('addon.version.create', $addon->id));
+    });
+
+    it('hides upload new version for addon owners without MFA enabled', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
+
+        Livewire::actingAs($owner)
+            ->test('addon.action', [
+                'addonId' => $addon->id,
+                'addonName' => $addon->name,
+                'addonDisabled' => (bool) $addon->disabled,
+                'addonPublished' => (bool) $addon->published_at,
+                'addonDetached' => false,
+            ])
+            ->call('loadMenu')
+            ->assertDontSee('Upload New Version');
+    });
+
+    it('hides upload new version for administrators who are not owners or authors', function (): void {
+        $owner = User::factory()->create();
+        $admin = User::factory()->admin()->withMfa()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
+
+        Livewire::actingAs($admin)
+            ->test('addon.action', [
+                'addonId' => $addon->id,
+                'addonName' => $addon->name,
+                'addonDisabled' => (bool) $addon->disabled,
+                'addonPublished' => (bool) $addon->published_at,
+                'addonDetached' => false,
+            ])
+            ->call('loadMenu')
+            ->assertDontSee('Upload New Version');
+    });
+
+    it('hides upload new version for moderators who are not owners or authors', function (): void {
+        $owner = User::factory()->create();
+        $moderator = User::factory()->moderator()->withMfa()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
+
+        Livewire::actingAs($moderator)
+            ->test('addon.action', [
+                'addonId' => $addon->id,
+                'addonName' => $addon->name,
+                'addonDisabled' => (bool) $addon->disabled,
+                'addonPublished' => (bool) $addon->published_at,
+                'addonDetached' => false,
+            ])
+            ->call('loadMenu')
+            ->assertDontSee('Upload New Version');
+    });
+
+    it('shows upload new version for administrators who are also owners', function (): void {
+        $adminOwner = User::factory()->admin()->withMfa()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $adminOwner->id]);
+
+        Livewire::actingAs($adminOwner)
+            ->test('addon.action', [
+                'addonId' => $addon->id,
+                'addonName' => $addon->name,
+                'addonDisabled' => (bool) $addon->disabled,
+                'addonPublished' => (bool) $addon->published_at,
+                'addonDetached' => false,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version');
+    });
+
+    it('shows upload new version for moderators who are also authors', function (): void {
+        $owner = User::factory()->create();
+        $modAuthor = User::factory()->moderator()->withMfa()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
+        $addon->additionalAuthors()->attach($modAuthor);
+
+        Livewire::actingAs($modAuthor)
+            ->test('addon.action', [
+                'addonId' => $addon->id,
+                'addonName' => $addon->name,
+                'addonDisabled' => (bool) $addon->disabled,
+                'addonPublished' => (bool) $addon->published_at,
+                'addonDetached' => false,
+            ])
+            ->call('loadMenu')
+            ->assertSee('Upload New Version');
+    });
+});
+
 describe('addon enable/disable functionality', function (): void {
     it('allows administrators to disable addons', function (): void {
         $user = User::factory()->admin()->create();
