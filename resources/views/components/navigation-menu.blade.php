@@ -34,15 +34,49 @@
                     </a>
                 </div>
                 <div class="hidden lg:ml-6 lg:block">
-                    <div class="flex space-x-4">
+                    <div class="flex items-center space-x-4">
                         <x-nav-link
                             href="{{ route('static.installer') }}"
                             :active="request()->routeIs('static.installer')"
                         >{{ __('Install') }}</x-nav-link>
-                        <x-nav-link
-                            href="{{ route('mods') }}"
-                            :active="request()->routeIs('mods')"
-                        >{{ __('Mods') }}</x-nav-link>
+                        <flux:dropdown align="start">
+                            <button
+                                type="button"
+                                class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
+                            >
+                                {{ __('Mods') }}
+                                <flux:icon.chevron-down class="size-3 ml-1" />
+                            </button>
+                            <flux:menu>
+                                <flux:menu.item
+                                    href="{{ route('mods') }}"
+                                    wire:navigate
+                                    icon="squares-2x2"
+                                >{{ __('Browse All Mods') }}</flux:menu.item>
+                                @auth
+                                    <flux:menu.item
+                                        href="{{ route('mods.recently-created') }}"
+                                        wire:navigate
+                                        icon="sparkles"
+                                    >
+                                        <span class="flex items-center justify-between w-full gap-2">
+                                            {{ __('Recently Created') }}
+                                            <livewire:navigation-created-mods-badge />
+                                        </span>
+                                    </flux:menu.item>
+                                    <flux:menu.item
+                                        href="{{ route('mods.recently-updated') }}"
+                                        wire:navigate
+                                        icon="arrow-path"
+                                    >
+                                        <span class="flex items-center justify-between w-full gap-2">
+                                            {{ __('Recently Updated') }}
+                                            <livewire:navigation-updated-mods-badge />
+                                        </span>
+                                    </flux:menu.item>
+                                @endauth
+                            </flux:menu>
+                        </flux:dropdown>
                         <a
                             href="https://wiki.sp-tarkov.com/"
                             target="_blank"
@@ -325,6 +359,26 @@
                 href="{{ route('mods') }}"
                 :active="request()->routeIs('mods')"
             >{{ __('Mods') }}</x-responsive-nav-link>
+            @auth
+                <x-responsive-nav-link
+                    href="{{ route('mods.recently-created') }}"
+                    :active="request()->routeIs('mods.recently-created')"
+                >
+                    <span class="flex items-center justify-between w-full">
+                        {{ __('Recently Created') }}
+                        <livewire:navigation-created-mods-badge />
+                    </span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link
+                    href="{{ route('mods.recently-updated') }}"
+                    :active="request()->routeIs('mods.recently-updated')"
+                >
+                    <span class="flex items-center justify-between w-full">
+                        {{ __('Recently Updated') }}
+                        <livewire:navigation-updated-mods-badge />
+                    </span>
+                </x-responsive-nav-link>
+            @endauth
             <a
                 href="https://wiki.sp-tarkov.com/"
                 target="_blank"

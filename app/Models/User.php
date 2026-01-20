@@ -54,6 +54,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $cover_photo_path
  * @property string|null $remember_token
  * @property Carbon|null $last_seen_at
+ * @property Carbon|null $mods_updated_viewed_at
+ * @property Carbon|null $mods_created_viewed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property string|null $two_factor_secret
@@ -804,6 +806,8 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
             'user_role_id' => 'integer',
             'email_verified_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'mods_updated_viewed_at' => 'datetime',
+            'mods_created_viewed_at' => 'datetime',
             'password' => 'hashed',
             'email_comment_notifications_enabled' => 'boolean',
             'email_reply_notifications_enabled' => 'boolean',
