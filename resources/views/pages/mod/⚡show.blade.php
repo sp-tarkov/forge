@@ -385,7 +385,10 @@ new #[Layout('layouts::base')] class extends Component {
                     <div
                         class="grow flex flex-col justify-center items-center sm:items-start text-gray-900 dark:text-gray-200">
                         <div class="flex justify-between items-center space-x-3">
-                            <h2 class="pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white">
+                            <h2 @class([
+                                'pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white',
+                                'sm:pr-12' => Gate::check('update', $mod),
+                            ])>
                                 {{ $mod->name }}
                                 @if ($displayVersion)
                                     <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
