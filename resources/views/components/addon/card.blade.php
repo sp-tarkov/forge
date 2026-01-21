@@ -9,7 +9,7 @@
     />
 
     <div
-        class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black transition-all duration-200">
+        class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black">
         {{-- Detached indicator if applicable --}}
         @if ($addon->isDetached() && auth()->user()?->isModOrAdmin())
             <div

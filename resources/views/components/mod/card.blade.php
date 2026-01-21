@@ -21,7 +21,7 @@
     <a
         href="{{ $mod->detail_url }}"
         wire:navigate
-        class="@container flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:bg-gray-50 dark:hover:bg-black transition-colors ease-out duration-300"
+        class="@container flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:bg-gray-50 dark:hover:bg-black"
     >
         <div class="flex flex-row flex-1">
             <div class="relative shrink-0 m-3 @lg:m-4 mr-0 rounded-lg">
