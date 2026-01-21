@@ -45,7 +45,7 @@
             @if ($comment->parent_id && $comment->parent)
                 <a
                     href="#{{ $manager->getCommentHashId($comment->parent_id) }}"
-                    class="underline hover:text-cyan-400 ml-2 text-xs text-slate-400"
+                    class="ml-2 text-xs text-slate-400 underline [&_span]:underline hover:text-cyan-400"
                 >
                     {{ __('Replying to') }} @<x-user-name :user="$comment->parent->user" />
                 </a>
