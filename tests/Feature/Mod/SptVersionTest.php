@@ -196,28 +196,24 @@ describe('SPT version methods with publish dates', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         SptVersion::factory()->unpublished()->create(['version' => '2.0.0']);
         SptVersion::factory()->scheduled()->create(['version' => '3.0.0']);
-        SptVersion::factory()->create(['version' => '0.0.0']); // This should be excluded
 
         $versions = SptVersion::allValidVersions();
 
         expect($versions)->toContain('1.0.0');
         expect($versions)->not->toContain('2.0.0');
         expect($versions)->not->toContain('3.0.0');
-        expect($versions)->not->toContain('0.0.0');
     });
 
     it('allValidVersions with includeUnpublished returns all versions including unpublished', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
         SptVersion::factory()->unpublished()->create(['version' => '2.0.0']);
         SptVersion::factory()->scheduled()->create(['version' => '3.0.0']);
-        SptVersion::factory()->create(['version' => '0.0.0']); // This should be excluded
 
         $versions = SptVersion::allValidVersions(includeUnpublished: true);
 
         expect($versions)->toContain('1.0.0');
         expect($versions)->toContain('2.0.0');
         expect($versions)->toContain('3.0.0');
-        expect($versions)->not->toContain('0.0.0');
     });
 
     it('getLatest only considers published versions', function (): void {

@@ -108,7 +108,6 @@ class ModFilter
                 ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
                 ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                 ->whereColumn('mod_versions.mod_id', 'mods.id')
-                ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('spt_versions.version', '!=', '0.0.0'))
                 ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
                 ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))
                 ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')
@@ -153,7 +152,6 @@ class ModFilter
                             ->from('mod_version_spt_version')
                             ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                             ->whereColumn('mod_version_spt_version.mod_version_id', 'latest_versions.id')
-                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->where('spt_versions.version', '!=', '0.0.0'))
                             ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
                                 ->where('spt_versions.publish_date', '<=', now()));
                     })
@@ -265,7 +263,6 @@ class ModFilter
                     ->where(function (QueryBuilder $query) use ($normalVersions, $showDisabled): void {
                         // Include normal versions
                         $query->whereIn('spt_versions.version', $normalVersions)
-                            ->where('spt_versions.version', '!=', '0.0.0')
                             ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
                                 ->where('spt_versions.publish_date', '<=', now()));
 
@@ -274,8 +271,7 @@ class ModFilter
                         $query->orWhere(function (QueryBuilder $q) use ($activeSptVersions, $showDisabled): void {
                             $q->whereNotIn('spt_versions.version', $activeSptVersions);
                             if (! $showDisabled) {
-                                $q->where('spt_versions.version', '!=', '0.0.0')
-                                    ->whereNotNull('spt_versions.publish_date')
+                                $q->whereNotNull('spt_versions.publish_date')
                                     ->where('spt_versions.publish_date', '<=', now());
                             }
                         });
@@ -299,7 +295,6 @@ class ModFilter
                     ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                     ->whereColumn('mod_versions.mod_id', 'mods.id')
                     ->whereIn('spt_versions.version', $normalVersions)
-                    ->where('spt_versions.version', '!=', '0.0.0')
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')
@@ -323,7 +318,6 @@ class ModFilter
             ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
             ->whereColumn('mod_versions.mod_id', 'mods.id')
             ->whereIn('spt_versions.version', $normalVersions)
-            ->where('spt_versions.version', '!=', '0.0.0')
             ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
             ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
     }
@@ -342,15 +336,8 @@ class ModFilter
             ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
             ->whereColumn('mod_versions.mod_id', 'mods.id')
             ->whereNotIn('spt_versions.version', $activeSptVersions)
-            ->when(
-                $showDisabled,
-                // Admin can see 0.0.0 versions in legacy filter
-                fn (QueryBuilder $query): QueryBuilder => $query,
-                // Regular users cannot see 0.0.0 versions and unpublished SPT versions
-                fn (QueryBuilder $query) => $query->where('spt_versions.version', '!=', '0.0.0')
-                    ->whereNotNull('spt_versions.publish_date')
-                    ->where('spt_versions.publish_date', '<=', now())
-            )
+            ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')
+                ->where('spt_versions.publish_date', '<=', now()))
             ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
             ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
     }

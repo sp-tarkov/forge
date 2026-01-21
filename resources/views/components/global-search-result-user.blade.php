@@ -4,7 +4,6 @@
     class="{{ $linkClass }}"
     role="listitem"
     tabindex="0"
-    class="flex flex-col"
 >
     <div class="h-6 w-6 self-center">
         <flux:avatar

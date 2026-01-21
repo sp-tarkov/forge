@@ -82,6 +82,14 @@ Route::middleware('auth.banned')->group(function (): void {
         // Authenticated and verified routes
         Route::livewire('/dashboard', 'pages::dashboard')->name('dashboard');
 
+        Route::livewire('/mods/recently-updated', 'pages::mod.recently-updated')
+            ->can('viewAny', Mod::class)
+            ->name('mods.recently-updated');
+
+        Route::livewire('/mods/recently-created', 'pages::mod.recently-created')
+            ->can('viewAny', Mod::class)
+            ->name('mods.recently-created');
+
         // Profile routes
         Route::view('/user/profile', 'profile.show')->name('profile.show');
         Route::view('/user/api-tokens', 'api.index')->name('api-tokens.index');

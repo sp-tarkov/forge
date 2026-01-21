@@ -169,8 +169,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 ->from('mod_version_spt_version')
                 ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                 ->whereColumn('mod_version_spt_version.mod_version_id', 'mod_versions.id')
-                ->whereNotNull('spt_versions.version')
-                ->where('spt_versions.version', '!=', '0.0.0');
+                ->whereNotNull('spt_versions.version');
 
             // Get all mod versions compatible with specific SPT versions.
             if ($compatibleVersions !== null) {

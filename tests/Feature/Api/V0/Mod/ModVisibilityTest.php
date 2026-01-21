@@ -184,6 +184,33 @@ describe('Mod Visibility', function (): void {
         $response->assertJsonCount(1, 'data');
     });
 
+    it('excludes mods with unresolved version constraints even when legacy 0.0.0 version exists', function (): void {
+        // Create the legacy 0.0.0 version that exists in production
+        SptVersion::factory()->state(['version' => '0.0.0'])->create();
+
+        $modWithSptVersion = Mod::factory()->create();
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        ModVersion::factory()->create([
+            'mod_id' => $modWithSptVersion->id,
+            'spt_version_constraint' => '^3.8.0',
+        ]);
+
+        // This mod has a specific constraint that doesn't match any real SPT version
+        // It should NOT be visible, even with the 0.0.0 fallback available
+        $modWithUnresolvedConstraint = Mod::factory()->create();
+        ModVersion::factory()->create([
+            'mod_id' => $modWithUnresolvedConstraint->id,
+            'spt_version_constraint' => '~3.6.0', // No 3.6.x versions exist
+        ]);
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
+
+        $response->assertSuccessful();
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('data.0.id', $modWithSptVersion->id);
+        $response->assertJsonCount(1, 'data');
+    });
+
     it('excludes unpublished mods from the index', function (): void {
         $publishedMod = Mod::factory()->create();
         SptVersion::factory()->state(['version' => '3.8.0'])->create();

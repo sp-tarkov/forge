@@ -52,7 +52,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
      */
     private static function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
     {
-        if ($rawVersion === '0.0.0' || $rawLatestVersion === false) {
+        if ($rawLatestVersion === false) {
             return 'gray';
         }
 
@@ -125,20 +125,8 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
         // Sort the releases by the tag_name using Semver::sort
         $sortedVersions = Semver::sort($releases->pluck('tag_name')->toArray());
         $latestVersion = end($sortedVersions);
-        $now = Date::now('UTC')->toDateTimeString();
 
-        // Ensure a "dummy" version exists so we can resolve outdated mods to it.
-        $versionData[] = [
-            'version' => '0.0.0',
-            'version_major' => 0,
-            'version_minor' => 0,
-            'version_patch' => 0,
-            'version_labels' => '',
-            'link' => '',
-            'color_class' => 'gray',
-            'created_at' => $now,
-            'updated_at' => $now,
-        ];
+        $versionData = [];
 
         $releases->each(function (GitHubSptVersion $release) use ($latestVersion, &$versionData): void {
             try {
