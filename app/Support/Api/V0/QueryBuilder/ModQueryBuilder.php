@@ -35,6 +35,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'featured' => 'filterByFeatured',
             'contains_ads' => 'filterByContainsAds',
             'contains_ai_content' => 'filterByContainsAiContent',
+            'cheat_notice' => 'filterByCheatNotice',
             'category_id' => 'filterByCategoryId',
             'category_slug' => 'filterByCategorySlug',
             'created_between' => 'filterByCreatedBetween',
@@ -95,6 +96,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'featured',
             'contains_ai_content',
             'contains_ads',
+            'cheat_notice',
             'category_id',
             'published_at',
             'created_at',
@@ -319,6 +321,20 @@ class ModQueryBuilder extends AbstractQueryBuilder
         }
 
         $query->where('mods.contains_ai_content', self::parseBooleanInput($value));
+    }
+
+    /**
+     * Filter by cheat notice status.
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByCheatNotice(Builder $query, ?string $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $query->where('mods.cheat_notice', self::parseBooleanInput($value));
     }
 
     /**

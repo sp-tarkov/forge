@@ -58,6 +58,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $comments_disabled
  * @property bool $addons_disabled
  * @property bool $profile_binding_notice_disabled
+ * @property bool $cheat_notice
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
@@ -639,6 +640,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'comments_disabled' => 'boolean',
             'addons_disabled' => 'boolean',
             'profile_binding_notice_disabled' => 'boolean',
+            'cheat_notice' => 'boolean',
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

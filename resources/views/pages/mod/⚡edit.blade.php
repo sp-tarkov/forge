@@ -114,6 +114,11 @@ new #[Layout('layouts::base')] class extends Component {
     public bool $disableProfileBindingNotice = false;
 
     /**
+     * Whether to show the cheat notice.
+     */
+    public bool $cheatNotice = false;
+
+    /**
      * Whether addons are disabled for the mod.
      */
     public bool $addonsDisabled = false;
@@ -163,6 +168,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->containsAds = (bool) $this->mod->contains_ads;
         $this->commentsDisabled = (bool) $this->mod->comments_disabled;
         $this->disableProfileBindingNotice = (bool) $this->mod->profile_binding_notice_disabled;
+        $this->cheatNotice = (bool) $this->mod->cheat_notice;
         $this->addonsDisabled = (bool) $this->mod->addons_disabled;
 
         // Load existing authors
@@ -262,6 +268,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->mod->contains_ads = $this->containsAds;
         $this->mod->comments_disabled = $this->commentsDisabled;
         $this->mod->profile_binding_notice_disabled = $this->disableProfileBindingNotice;
+        $this->mod->cheat_notice = $this->cheatNotice;
         $this->mod->addons_disabled = $this->addonsDisabled;
         $this->mod->published_at = $publishedAtCarbon;
 
@@ -359,6 +366,7 @@ new #[Layout('layouts::base')] class extends Component {
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
             'disableProfileBindingNotice' => 'boolean',
+            'cheatNotice' => 'boolean',
             'addonsDisabled' => 'boolean',
         ];
     }
@@ -768,6 +776,12 @@ new #[Layout('layouts::base')] class extends Component {
                                             description="Check this option if you can confirm that your mod does not make permanent changes to user profiles. Mods in the category you've selected typically do. Leave this unchecked if you are not sure."
                                         />
                                     @endif
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="cheatNotice"
+                                        label="Show Cheat Warning"
+                                        description="Enable this if your mod provides functionality similar to traditional multiplayer cheats (ESP, wallhacks, aimbots, etc.). This will display a prominent warning on the mod page. Required for cheat-like mods per our Content Guidelines."
+                                    />
                                 </flux:checkbox.group>
                             </flux:field>
 

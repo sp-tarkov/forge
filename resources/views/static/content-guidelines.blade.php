@@ -75,7 +75,7 @@
         />
     </x-slot>
 
-    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> October 02, 2025</p>
+    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> January 21, 2026</p>
 
     <h2 id="overview">1. Overview</h2>
     <p>These Content Guidelines establish the technical and quality standards for all files, mods, and content submitted
@@ -472,14 +472,24 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
     </ul>
 
     <h3 id="anti-cheat-policy">7.2 Anti-Cheat and Exploit Policy</h3>
-    <p><strong>Prohibited Modifications:</strong></p>
-    <p>The Forge strictly prohibits content that could be used to gain unfair advantages in multiplayer environments or
-        that resembles traditional cheating tools, even when designed for single-player use.</p>
+    <p><strong>Strictly Prohibited Modifications:</strong></p>
+    <p>The Forge strictly prohibits content that could be used to gain unfair advantages in live multiplayer
+        environments.</p>
     <ul>
         <li>Any mod usable in live Escape From Tarkov multiplayer is prohibited to prevent cheating migration</li>
-        <li>Traditional "hacks" like ESP, wallhacks, and aimbots are forbidden regardless of stated purpose</li>
-        <li>Mods that appear to be cheating tools are prohibited even if designed exclusively for SPT use</li>
-        <li>Exploits that could be adapted for multiplayer use present unacceptable risks</li>
+        <li>"Sunset" cheats, which are mods originally developed as live game cheats that have been repurposed for SPT
+            after detection or obsolescence, are strictly forbidden regardless of their current stated purpose</li>
+    </ul>
+    <p><strong>Cheat-Like Mods:</strong></p>
+    <p>Mods that provide functionality similar to traditional multiplayer cheats (such as ESP, wallhacks, aimbots, or
+        similar visual or gameplay advantages) may be permitted under the following strict conditions:</p>
+    <ul>
+        <li>The mod must be designed for an SPT version that differs from the current live EFT version, ensuring
+            technical incompatibility with live servers</li>
+        <li>The mod must have been originally developed for SPT use and not repurposed from live game cheats</li>
+        <li>The mod author must enable the "Cheat-Like Mod Warning" option when submitting, which displays a prominent
+            warning notice on the mod page informing users of the mod's nature and the risks of using similar software
+            on live servers</li>
     </ul>
     <p><strong>Allowed Development Tools:</strong></p>
     <ul>
@@ -639,5 +649,5 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
             >Community Standards</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern
             content on The Forge.</em></p>
 
-    <p><em>Last updated: October 02, 2025</em></p>
+    <p><em>Last updated: January 21, 2026</em></p>
 </x-layouts::static-toc>

@@ -162,6 +162,14 @@ new #[Layout('layouts::base')] class extends Component {
     }
 
     /**
+     * Check if the mod should display the cheat notice.
+     */
+    public function requiresCheatNotice(): bool
+    {
+        return $this->mod->cheat_notice;
+    }
+
+    /**
      * Get the mod by ID.
      */
     protected function getMod(int $modId): Mod
@@ -206,6 +214,7 @@ new #[Layout('layouts::base')] class extends Component {
             'shouldShowWarnings' => $this->shouldShowWarnings(),
             'warningMessages' => $this->getWarningMessages(),
             'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
+            'requiresCheatNotice' => $this->requiresCheatNotice(),
             'versionCount' => $this->getVersionCount(),
             'commentCount' => $this->getCommentCount(),
             'addonCount' => $this->getAddonCount(),
@@ -417,6 +426,31 @@ new #[Layout('layouts::base')] class extends Component {
                 />
             @endif
 
+            {{-- Mobile Cheat Notice Warning --}}
+            @if ($requiresCheatNotice)
+                <div
+                    class="lg:hidden p-3 sm:p-4 bg-red-600 dark:bg-red-700 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <div class="flex gap-3 items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <flux:icon.exclamation-triangle
+                                variant="mini"
+                                class="size-5 text-white"
+                            />
+                        </div>
+                        <div class="text-sm font-medium text-white">
+                            <strong>Warning:</strong> This mod provides functionality similar to traditional multiplayer
+                            cheats but was designed exclusively for use with SPT. Attempting to use this software on
+                            live EFT servers will not work and will result in an immediate and permanent ban from EFT
+                            and SPT. See our <a
+                                href="{{ route('static.content-guidelines') }}#anti-cheat-policy"
+                                target="_blank"
+                                class="underline text-white hover:text-red-200"
+                            >Content Guidelines</a> for more information.
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Tabs --}}
             <div
                 x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'description' }"
@@ -577,7 +611,8 @@ new #[Layout('layouts::base')] class extends Component {
                                         <div
                                             class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <flux:icon.cube-transparent
-                                                class="w-6 h-6 text-gray-400 dark:text-gray-600" />
+                                                class="w-6 h-6 text-gray-400 dark:text-gray-600"
+                                            />
                                         </div>
                                     @endif
 
@@ -620,6 +655,31 @@ new #[Layout('layouts::base')] class extends Component {
                                 target="_blank"
                                 class="underline text-black hover:text-orange-800 dark:text-white dark:hover:text-white"
                             >More information.</a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Desktop Cheat Notice Warning --}}
+            @if ($requiresCheatNotice)
+                <div
+                    class="hidden lg:block p-3 sm:p-4 bg-red-600 dark:bg-red-700 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+                    <div class="flex gap-3 items-start">
+                        <div class="flex-shrink-0 pt-0.5">
+                            <flux:icon.exclamation-triangle
+                                variant="mini"
+                                class="size-5 text-white"
+                            />
+                        </div>
+                        <div class="text-sm font-medium text-white">
+                            <strong>Warning:</strong> This mod provides functionality similar to traditional multiplayer
+                            cheats but was designed exclusively for use with SPT. Attempting to use this software on
+                            live EFT servers will not work and will result in an immediate and permanent ban from EFT
+                            and SPT. See our <a
+                                href="{{ route('static.content-guidelines') }}#anti-cheat-policy"
+                                target="_blank"
+                                class="underline text-white hover:text-red-200"
+                            >Content Guidelines</a> for more information.
                         </div>
                     </div>
                 </div>
