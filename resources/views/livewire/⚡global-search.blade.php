@@ -42,9 +42,9 @@ new class extends Component {
      */
     public function toggleTypeVisibility(string $type): void
     {
-        $typeProperty = 'is'.ucfirst($type).'CatVisible';
+        $typeProperty = 'is' . ucfirst($type) . 'CatVisible';
         if (property_exists($this, $typeProperty)) {
-            $this->$typeProperty = ! $this->$typeProperty;
+            $this->$typeProperty = !$this->$typeProperty;
         }
     }
 
@@ -71,8 +71,7 @@ new class extends Component {
     #[Computed]
     public function totalCount(): int
     {
-        return (int) collect($this->results)
-            ->reduce(fn (int $carry, Collection $result): int => $carry + $result->count(), 0);
+        return (int) collect($this->results)->reduce(fn(int $carry, Collection $result): int => $carry + $result->count(), 0);
     }
 
     /**
@@ -96,17 +95,15 @@ new class extends Component {
         $prefix = config('scout.prefix');
 
         $queries = [
-            (new SearchQuery)
-                ->setIndexUid($prefix.(new Mod)->getTable())
+            new SearchQuery()
+                ->setIndexUid($prefix . new Mod()->getTable())
                 ->setQuery($query)
                 ->setShowRankingScore(true),
-            (new SearchQuery)
-                ->setIndexUid($prefix.(new Addon)->getTable())
+            new SearchQuery()
+                ->setIndexUid($prefix . new Addon()->getTable())
                 ->setQuery($query)
                 ->setShowRankingScore(true),
-            (new SearchQuery)
-                ->setIndexUid($prefix.(new User)->getTable())
-                ->setQuery($query),
+            new SearchQuery()->setIndexUid($prefix . new User()->getTable())->setQuery($query),
         ];
 
         /** @var array{results: array<int, array{hits: array<int, mixed>}>} $response */
@@ -128,13 +125,7 @@ new class extends Component {
     protected function processModResults(array $hits): Collection
     {
         return collect($hits)
-            ->sortBy([
-                ['latestVersionMajor', 'desc'],
-                ['latestVersionMinor', 'desc'],
-                ['latestVersionPatch', 'desc'],
-                ['latestVersionLabel', 'asc'],
-                ['_rankingScore', 'desc'],
-            ])
+            ->sortBy([['latestVersionMajor', 'desc'], ['latestVersionMinor', 'desc'], ['latestVersionPatch', 'desc'], ['latestVersionLabel', 'asc'], ['_rankingScore', 'desc']])
             ->values();
     }
 
@@ -205,7 +196,10 @@ new class extends Component {
                 </div>
 
                 {{-- Results Content --}}
-                <div wire:loading.delay.remove wire:target="query">
+                <div
+                    wire:loading.delay.remove
+                    wire:target="query"
+                >
                     @if ($this->hasResults)
                         <h2 class="sr-only select-none">{{ __('Search Results') }}</h2>
                         <div
@@ -216,7 +210,7 @@ new class extends Component {
                             @foreach ($this->results as $type => $typeResults)
                                 @if ($typeResults->count())
                                     @php
-                                        $visibilityProperty = 'is'.Str::ucfirst($type).'CatVisible';
+                                        $visibilityProperty = 'is' . Str::ucfirst($type) . 'CatVisible';
                                         $isVisible = $this->$visibilityProperty;
                                     @endphp
                                     <h4
@@ -229,11 +223,10 @@ new class extends Component {
                                         />
                                     </h4>
                                     <div
-                                        class="max-h-0 transform divide-y divide-dashed divide-gray-200 overflow-hidden transition-all duration-400 dark:divide-gray-800 {{ $isVisible ? 'max-h-screen' : '' }}"
-                                    >
+                                        class="max-h-0 transform divide-y divide-dashed divide-gray-200 overflow-hidden transition-all duration-400 dark:divide-gray-800 {{ $isVisible ? 'max-h-screen' : '' }}">
                                         @foreach ($typeResults as $hit)
                                             <x-dynamic-component
-                                                :component="'global-search-result-'.Str::lower($type)"
+                                                :component="'global-search-result-' . Str::lower($type)"
                                                 :result="$hit"
                                                 link-class="group/global-search-link flex flex-row gap-3 py-1.5 px-4 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-800"
                                             />
@@ -245,7 +238,8 @@ new class extends Component {
                     @elseif (Str::length($this->query) > 0)
                         {{-- No Results --}}
                         <div class="px-6 py-14 text-center sm:px-14">
-                            <flux:icon.document-magnifying-glass class="mx-auto size-6 text-gray-400 dark:text-gray-500" />
+                            <flux:icon.document-magnifying-glass
+                                class="mx-auto size-6 text-gray-400 dark:text-gray-500" />
                             <p class="mt-4 text-sm text-gray-900 dark:text-gray-200">
                                 {{ __("We couldn't find any content with that query. Please try again.") }}
                             </p>
