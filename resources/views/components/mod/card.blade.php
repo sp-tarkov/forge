@@ -67,6 +67,11 @@
                             class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 mb-2 text-xs font-medium text-nowrap">
                             {{ $version->latestSptVersion->version_formatted }}
                         </p>
+                    @elseif ($version && $version->spt_version_constraint === '')
+                        <p
+                            class="badge-version gray inline-flex items-center rounded-md px-2 py-1 mb-2 text-xs font-medium text-nowrap">
+                            {{ __('Legacy SPT Version') }}
+                        </p>
                     @endif
                     <p class="text-slate-500 dark:text-gray-300">
                         {{ Str::limit($mod->teaser) }}

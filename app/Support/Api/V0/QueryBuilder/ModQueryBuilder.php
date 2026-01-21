@@ -43,6 +43,7 @@ class ModQueryBuilder extends AbstractQueryBuilder
             'published_between' => 'filterByPublishedBetween',
             'spt_version' => 'filterBySptVersion',
             'fika_compatibility' => 'filterByFikaCompatibility',
+            'include_legacy' => 'filterByIncludeLegacy',
         ];
     }
 
@@ -455,5 +456,34 @@ class ModQueryBuilder extends AbstractQueryBuilder
                 ->unless($showDisabled, fn (Builder $q): Builder => $q->where('disabled', false))
                 ->where('fika_compatibility', FikaCompatibility::Compatible->value);
         });
+    }
+
+    /**
+     * Filter to include or exclude legacy mods (mods with versions that have no SPT constraint).
+     *
+     * @param  Builder<Mod>  $query
+     */
+    protected function filterByIncludeLegacy(Builder $query, ?string $value): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $includeLegacy = self::parseBooleanInput($value);
+
+        if ($includeLegacy) {
+            // Include legacy mods: mods with versions that have empty spt_version_constraint
+            $query->orWhereExists(function (\Illuminate\Database\Query\Builder $subQuery): void {
+                $subQuery->select(DB::raw(1))
+                    ->from('mod_versions')
+                    ->whereColumn('mod_versions.mod_id', 'mods.id')
+                    ->where('mod_versions.disabled', false)
+                    ->whereNotNull('mod_versions.published_at')
+                    ->where('mod_versions.published_at', '<=', now())
+                    ->where('mod_versions.spt_version_constraint', '');
+            });
+        }
+
+        // If false or not set, the default getBaseQuery() already excludes legacy mods
     }
 }

@@ -46,7 +46,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $description
  * @property string $link
  * @property int|null $content_length
- * @property string|null $spt_version_constraint
+ * @property string $spt_version_constraint
  * @property int $downloads
  * @property bool $disabled
  * @property FikaCompatibility $fika_compatibility
@@ -302,6 +302,29 @@ class ModVersion extends Model implements Trackable
     }
 
     /**
+     * Check if this mod version is a legacy version (no SPT version constraint).
+     */
+    public function isLegacy(): bool
+    {
+        return $this->spt_version_constraint === '';
+    }
+
+    /**
+     * Check if this legacy mod version is publicly visible.
+     * Legacy versions must be published and enabled, but don't require SPT versions.
+     */
+    public function isLegacyPubliclyVisible(): bool
+    {
+        if (! $this->isLegacy()) {
+            return false;
+        }
+
+        return ! is_null($this->published_at)
+            && $this->published_at <= now()
+            && ! $this->disabled;
+    }
+
+    /**
      * Check if this mod version is pinned to an unpublished SPT version.
      */
     public function isPinnedToUnpublishedSptVersion(): bool
@@ -434,5 +457,21 @@ class ModVersion extends Model implements Trackable
             ->where('published_at', '<=', now())
             ->where('disabled', false)
             ->whereHas('latestSptVersion');
+    }
+
+    /**
+     * Query scope for legacy mod versions that are publicly visible.
+     * These are versions that have an empty SPT version constraint, are published, and are enabled.
+     *
+     * @param  Builder<ModVersion>  $query
+     * @return Builder<ModVersion>
+     */
+    #[Scope]
+    protected function legacyPubliclyVisible(Builder $query): Builder
+    {
+        return $query->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->where('disabled', false)
+            ->where('spt_version_constraint', '');
     }
 }

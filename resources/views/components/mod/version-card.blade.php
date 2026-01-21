@@ -78,7 +78,14 @@
                                 </flux:tooltip>
                             @endif
                         </div>
+                    @elseif ($version->spt_version_constraint === '')
+                        <span
+                            class="badge-version gray inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium text-nowrap"
+                        >
+                            {{ __('Legacy SPT Version') }}
+                        </span>
                     @else
+                        {{-- Has constraint but no matching SPT versions (invalid) --}}
                         <span
                             class="badge-version bg-gray-100 text-gray-700 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium text-nowrap"
                         >

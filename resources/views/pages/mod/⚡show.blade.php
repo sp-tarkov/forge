@@ -108,17 +108,20 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function getVersionCount(): int
     {
-        return $this->mod
-            ->versions()
-            ->when(
-                !auth()
-                    ->user()
-                    ?->can('viewAny', [ModVersion::class, $this->mod]),
-                function (Builder $query): void {
-                    $query->publiclyVisible();
-                },
-            )
-            ->count();
+        $canViewAny =
+            auth()
+                ->user()
+                ?->can('viewAny', [ModVersion::class, $this->mod]) ?? false;
+
+        if ($canViewAny) {
+            return $this->mod->versions()->count();
+        }
+
+        // Count both modern and legacy publicly visible versions
+        $modernCount = $this->mod->versions()->publiclyVisible()->count();
+        $legacyCount = $this->mod->versions()->legacyPubliclyVisible()->count();
+
+        return $modernCount + $legacyCount;
     }
 
     /**
@@ -175,7 +178,7 @@ new #[Layout('layouts::base')] class extends Component {
     protected function getMod(int $modId): Mod
     {
         return Mod::query()
-            ->with(['sourceCodeLinks', 'category', 'owner', 'additionalAuthors', 'license', 'latestVersion.latestSptVersion', 'latestVersion.latestDependenciesResolved.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id', 'latestVersion.latestDependenciesResolved.mod.owner.role'])
+            ->with(['sourceCodeLinks', 'category', 'owner', 'additionalAuthors', 'license', 'latestVersion.latestSptVersion', 'latestVersion.latestDependenciesResolved.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id', 'latestVersion.latestDependenciesResolved.mod.owner.role', 'latestLegacyVersion'])
             ->findOrFail($modId);
     }
 
@@ -198,8 +201,27 @@ new #[Layout('layouts::base')] class extends Component {
      */
     private function hasPublicVersions(): bool
     {
-        // Use the scope to check for publicly visible versions
-        return $this->mod->versions()->publiclyVisible()->exists();
+        // Check for modern versions with SPT compatibility
+        $hasModernVersion = $this->mod->versions()->publiclyVisible()->exists();
+
+        if ($hasModernVersion) {
+            return true;
+        }
+
+        // Check for legacy versions (no SPT constraint)
+        return $this->mod->versions()->legacyPubliclyVisible()->exists();
+    }
+
+    /**
+     * Get the display version - prefers modern version but falls back to legacy.
+     */
+    public function getDisplayVersion(): ?ModVersion
+    {
+        if ($this->mod->latestVersion) {
+            return $this->mod->latestVersion;
+        }
+
+        return $this->mod->latestLegacyVersion;
     }
 
     /**
@@ -209,8 +231,11 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function with(): array
     {
+        $displayVersion = $this->getDisplayVersion();
+
         return [
             'mod' => $this->mod,
+            'displayVersion' => $displayVersion,
             'shouldShowWarnings' => $this->shouldShowWarnings(),
             'warningMessages' => $this->getWarningMessages(),
             'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
@@ -362,9 +387,9 @@ new #[Layout('layouts::base')] class extends Component {
                         <div class="flex justify-between items-center space-x-3">
                             <h2 class="pb-1 sm:pb-2 text-3xl font-bold text-gray-900 dark:text-white">
                                 {{ $mod->name }}
-                                @if ($mod->latestVersion)
+                                @if ($displayVersion)
                                     <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
-                                        {{ $mod->latestVersion->version }}
+                                        {{ $displayVersion->version }}
                                     </span>
                                 @endif
                             </h2>
@@ -384,12 +409,18 @@ new #[Layout('layouts::base')] class extends Component {
                         <p title="{{ __('Exactly') }} {{ $mod->downloads }}">{{ Number::downloads($mod->downloads) }}
                             {{ __(Str::plural('Download', $mod->downloads)) }}</p>
                         <p class="mt-2 flex flex-wrap gap-2 items-center">
-                            @if ($mod->latestVersion?->latestSptVersion)
+                            @if ($displayVersion?->latestSptVersion)
                                 <span
-                                    class="badge-version {{ $mod->latestVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
+                                    class="badge-version {{ $displayVersion->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
                                 >
-                                    {{ $mod->latestVersion->latestSptVersion->version_formatted }}
+                                    {{ $displayVersion->latestSptVersion->version_formatted }}
                                     {{ __('Compatible') }}
+                                </span>
+                            @elseif ($displayVersion && $displayVersion->spt_version_constraint === '')
+                                <span
+                                    class="badge-version gray inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap"
+                                >
+                                    {{ __('Legacy SPT Version') }}
                                 </span>
                             @else
                                 <span
@@ -411,18 +442,18 @@ new #[Layout('layouts::base')] class extends Component {
             </div>
 
             {{-- Mobile Download Button --}}
-            @if ($mod->latestVersion)
+            @if ($displayVersion)
                 <x-mod.download-button
                     name="download-show-mobile"
                     :mod-id="$mod->id"
-                    :latest-version-id="$mod->latestVersion->id"
-                    :download-url="$mod->downloadUrl()"
-                    :version-string="$mod->latestVersion->version"
-                    :spt-version-formatted="$mod->latestVersion->latestSptVersion?->version_formatted"
-                    :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
-                    :version-description-html="$mod->latestVersion->description_html"
-                    :version-updated-at="$mod->latestVersion->updated_at"
-                    :file-size="$mod->latestVersion->formatted_file_size"
+                    :latest-version-id="$displayVersion->id"
+                    :download-url="$displayVersion->downloadUrl()"
+                    :version-string="$displayVersion->version"
+                    :spt-version-formatted="$displayVersion->latestSptVersion?->version_formatted ?? ($displayVersion->spt_version_constraint === '' ? __('Legacy') : null)"
+                    :spt-version-color-class="$displayVersion->latestSptVersion?->color_class ?? ($displayVersion->spt_version_constraint === '' ? 'gray' : null)"
+                    :version-description-html="$displayVersion->description_html"
+                    :version-updated-at="$displayVersion->updated_at"
+                    :file-size="$displayVersion->formatted_file_size"
                 />
             @endif
 
@@ -559,25 +590,25 @@ new #[Layout('layouts::base')] class extends Component {
         <div class="col-span-1 flex flex-col gap-6">
 
             {{-- Desktop Download Button --}}
-            @if ($mod->latestVersion)
+            @if ($displayVersion)
                 <x-mod.download-button
                     name="download-show-desktop"
                     :mod-id="$mod->id"
-                    :latest-version-id="$mod->latestVersion->id"
-                    :download-url="$mod->downloadUrl()"
-                    :version-string="$mod->latestVersion->version"
-                    :spt-version-formatted="$mod->latestVersion->latestSptVersion?->version_formatted"
-                    :spt-version-color-class="$mod->latestVersion->latestSptVersion?->color_class"
-                    :version-description-html="$mod->latestVersion->description_html"
-                    :version-updated-at="$mod->latestVersion->updated_at"
-                    :file-size="$mod->latestVersion->formatted_file_size"
+                    :latest-version-id="$displayVersion->id"
+                    :download-url="$displayVersion->downloadUrl()"
+                    :version-string="$displayVersion->version"
+                    :spt-version-formatted="$displayVersion->latestSptVersion?->version_formatted ?? ($displayVersion->spt_version_constraint === '' ? __('Legacy') : null)"
+                    :spt-version-color-class="$displayVersion->latestSptVersion?->color_class ?? ($displayVersion->spt_version_constraint === '' ? 'gray' : null)"
+                    :version-description-html="$displayVersion->description_html"
+                    :version-updated-at="$displayVersion->updated_at"
+                    :file-size="$displayVersion->formatted_file_size"
                 />
             @endif
 
             {{-- Required Dependencies --}}
-            @if ($mod->latestVersion?->latestDependenciesResolved->isNotEmpty())
+            @if ($displayVersion?->latestDependenciesResolved->isNotEmpty())
                 @php
-                    $dependencyCount = $mod->latestVersion->latestDependenciesResolved->count();
+                    $dependencyCount = $displayVersion->latestDependenciesResolved->count();
                 @endphp
                 <div
                     class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
@@ -593,7 +624,7 @@ new #[Layout('layouts::base')] class extends Component {
                         role="list"
                         class="divide-y divide-gray-200 dark:divide-gray-800"
                     >
-                        @foreach ($mod->latestVersion->latestDependenciesResolved as $dependency)
+                        @foreach ($displayVersion->latestDependenciesResolved as $dependency)
                             <li class="py-3 first:pt-0 last:pb-0">
                                 <a
                                     href="{{ route('mod.show', [$dependency->mod->id, $dependency->mod->slug]) }}"
@@ -795,10 +826,10 @@ new #[Layout('layouts::base')] class extends Component {
                             @endforeach
                         </li>
                     @endif
-                    @if ($mod->latestVersion?->virusTotalLinks->isNotEmpty())
+                    @if ($displayVersion?->virusTotalLinks->isNotEmpty())
                         <li class="px-4 py-4 last:pb-0 sm:px-0">
                             <h3 class="font-bold">{{ __('Latest Version VirusTotal Results') }}</h3>
-                            @foreach ($mod->latestVersion->virusTotalLinks as $virusTotalLink)
+                            @foreach ($displayVersion->virusTotalLinks as $virusTotalLink)
                                 <p class="truncate">
                                     @if ($virusTotalLink->label !== '')
                                         <span

@@ -255,25 +255,34 @@ class ModFilter
             return $this->builder->whereExists(function (QueryBuilder $subQuery) use ($normalVersions, $showDisabled): void {
                 $subQuery->select(DB::raw(1))
                     ->from('mod_versions')
-                    ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
-                    ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
                     ->whereColumn('mod_versions.mod_id', 'mods.id')
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
                     ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))
                     ->where(function (QueryBuilder $query) use ($normalVersions, $showDisabled): void {
-                        // Include normal versions
-                        $query->whereIn('spt_versions.version', $normalVersions)
-                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
-                                ->where('spt_versions.publish_date', '<=', now()));
+                        // True legacy versions (empty constraint)
+                        $query->where('mod_versions.spt_version_constraint', '');
 
-                        // Include legacy versions
+                        // OR normal versions with specific SPT versions
+                        $query->orWhereExists(function (QueryBuilder $sptQuery) use ($normalVersions, $showDisabled): void {
+                            $sptQuery->select(DB::raw(1))
+                                ->from('mod_version_spt_version')
+                                ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                                ->whereColumn('mod_version_spt_version.mod_version_id', 'mod_versions.id')
+                                ->whereIn('spt_versions.version', $normalVersions)
+                                ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
+                                    ->where('spt_versions.publish_date', '<=', now()));
+                        });
+
+                        // OR older SPT versions (legacy SPT compatibility)
                         $activeSptVersions = $this->getActiveSptVersions($showDisabled);
-                        $query->orWhere(function (QueryBuilder $q) use ($activeSptVersions, $showDisabled): void {
-                            $q->whereNotIn('spt_versions.version', $activeSptVersions);
-                            if (! $showDisabled) {
-                                $q->whereNotNull('spt_versions.publish_date')
-                                    ->where('spt_versions.publish_date', '<=', now());
-                            }
+                        $query->orWhereExists(function (QueryBuilder $oldSptQuery) use ($activeSptVersions, $showDisabled): void {
+                            $oldSptQuery->select(DB::raw(1))
+                                ->from('mod_version_spt_version')
+                                ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                                ->whereColumn('mod_version_spt_version.mod_version_id', 'mod_versions.id')
+                                ->whereNotIn('spt_versions.version', $activeSptVersions)
+                                ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
+                                    ->where('spt_versions.publish_date', '<=', now()));
                         });
                     });
             });
@@ -323,7 +332,8 @@ class ModFilter
     }
 
     /**
-     * Build the query for legacy versions (versions not in the current active list).
+     * Build the query for legacy versions.
+     * Includes both true legacy versions (empty spt_version_constraint) and versions with older SPT compatibility.
      */
     private function legacyVersions(QueryBuilder $query, bool $showDisabled): void
     {
@@ -332,14 +342,23 @@ class ModFilter
 
         $query->select(DB::raw(1))
             ->from('mod_versions')
-            ->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')
-            ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
             ->whereColumn('mod_versions.mod_id', 'mods.id')
-            ->whereNotIn('spt_versions.version', $activeSptVersions)
-            ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')
-                ->where('spt_versions.publish_date', '<=', now()))
-            ->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))
-            ->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'));
+            ->unless($showDisabled, fn (QueryBuilder $q) => $q->where('mod_versions.disabled', false))
+            ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('mod_versions.published_at'))
+            ->where(function (QueryBuilder $q) use ($activeSptVersions, $showDisabled): void {
+                // True legacy: empty SPT version constraint
+                $q->where('mod_versions.spt_version_constraint', '')
+                // OR older SPT versions (existing behavior)
+                    ->orWhereExists(function (QueryBuilder $sptQuery) use ($activeSptVersions, $showDisabled): void {
+                        $sptQuery->select(DB::raw(1))
+                            ->from('mod_version_spt_version')
+                            ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                            ->whereColumn('mod_version_spt_version.mod_version_id', 'mod_versions.id')
+                            ->whereNotIn('spt_versions.version', $activeSptVersions)
+                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')
+                                ->where('spt_versions.publish_date', '<=', now()));
+                    });
+            });
     }
 
     /**

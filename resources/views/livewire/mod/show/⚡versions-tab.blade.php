@@ -52,7 +52,12 @@ new #[Lazy] class extends Component {
             ->versions()
             ->with(['latestSptVersion', 'sptVersions', 'latestDependenciesResolved.mod:id,name,slug'])
             ->unless($user?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {
-                $query->publiclyVisible();
+                // Include both modern versions (with SPT tags) and legacy versions (empty constraint)
+                $query->where(function (Builder $q): void {
+                    $q->publiclyVisible()->orWhere(function (Builder $legacy): void {
+                        $legacy->legacyPubliclyVisible();
+                    });
+                });
             })
             ->withCount([
                 'compatibleAddonVersions as compatible_addons_count' => function (Builder $query) use ($user): void {
