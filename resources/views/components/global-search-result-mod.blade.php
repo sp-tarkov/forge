@@ -4,7 +4,6 @@
     class="{{ $linkClass }}"
     role="listitem"
     tabindex="0"
-    class="flex flex-col"
 >
     @empty($result['thumbnail'])
         <div class="h-6 w-6 self-center flex items-center justify-center">
