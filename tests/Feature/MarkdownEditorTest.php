@@ -35,9 +35,9 @@ describe('Markdown Editor Preview', function (): void {
             $component = Livewire::test('pages::mod.create');
             $html = $component->instance()->previewMarkdown($markdown, 'description');
 
-            // Script tags should be escaped (not executable)
+            // Script tags should be stripped entirely (not executable)
             expect($html)->not->toContain('<script>')
-                ->and($html)->toContain('&lt;script&gt;')  // Escaped, not raw
+                ->and($html)->not->toContain('alert')  // Script content removed
                 ->and($html)->toContain('Safe content');
         });
 
@@ -169,6 +169,119 @@ MD;
 
             expect($html)->toContain('<del>')
                 ->and($html)->toContain('strikethrough text');
+        });
+
+        it('renders tabset structure with proper HTML elements', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $markdown = <<<'MD'
+## Image Gallery {.tabset}
+
+### Screenshots
+
+Here are some screenshots.
+
+### Videos
+
+Here are some videos.
+
+{.endtabset}
+MD;
+
+            $component = Livewire::test('pages::mod.create');
+            $html = $component->instance()->previewMarkdown($markdown, 'description');
+
+            // Verify the tabset container structure
+            expect($html)->toContain('class="tabset"')
+                // Verify tab panels are created
+                ->and($html)->toContain('class="tab-panel"')
+                // Verify tab titles are created
+                ->and($html)->toContain('class="tab-title"')
+                ->and($html)->toContain('Screenshots')
+                ->and($html)->toContain('Videos')
+                // Verify tab content wrappers are created
+                ->and($html)->toContain('class="tab-content"')
+                ->and($html)->toContain('Here are some screenshots.')
+                ->and($html)->toContain('Here are some videos.');
+        });
+
+        it('renders multiple tabsets independently', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $markdown = <<<'MD'
+## First Tabset {.tabset}
+
+### Tab A
+
+Content A
+
+### Tab B
+
+Content B
+
+{.endtabset}
+
+Some content between tabsets.
+
+## Second Tabset {.tabset}
+
+### Tab C
+
+Content C
+
+### Tab D
+
+Content D
+
+{.endtabset}
+MD;
+
+            $component = Livewire::test('pages::mod.create');
+            $html = $component->instance()->previewMarkdown($markdown, 'description');
+
+            // Count the tabset containers
+            expect(mb_substr_count($html, 'class="tabset"'))->toBe(2)
+                // Verify all four tab titles are present
+                ->and($html)->toContain('Tab A')
+                ->and($html)->toContain('Tab B')
+                ->and($html)->toContain('Tab C')
+                ->and($html)->toContain('Tab D')
+                // Verify all content is present
+                ->and($html)->toContain('Content A')
+                ->and($html)->toContain('Content B')
+                ->and($html)->toContain('Content C')
+                ->and($html)->toContain('Content D')
+                // Verify the content between tabsets is rendered
+                ->and($html)->toContain('Some content between tabsets.');
+        });
+
+        it('assigns unique IDs to tab panels', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $markdown = <<<'MD'
+## Test Tabset {.tabset}
+
+### Panel One
+
+First panel content.
+
+### Panel Two
+
+Second panel content.
+
+{.endtabset}
+MD;
+
+            $component = Livewire::test('pages::mod.create');
+            $html = $component->instance()->previewMarkdown($markdown, 'description');
+
+            // Verify tab panels have id attributes (used by JavaScript for tab switching)
+            // IDs follow the format: tabset-{instance}-panel-{index}
+            expect($html)->toMatch('/id="tabset-\d+-panel-1"/')
+                ->and($html)->toMatch('/id="tabset-\d+-panel-2"/');
         });
     });
 

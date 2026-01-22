@@ -10,7 +10,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
-use League\CommonMark\GithubFlavoredMarkdownConverter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
@@ -18,11 +17,13 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use Stevebauman\Purify\Facades\Purify;
 
 new #[Layout('layouts::base')] class extends Component {
     use UsesSpamProtection;
     use WithFileUploads;
+    use RendersMarkdownPreview;
 
     /**
      * The honeypot data to be validated.
@@ -126,22 +127,6 @@ new #[Layout('layouts::base')] class extends Component {
         $this->honeypotData = new HoneypotData();
 
         $this->authorize('create', Mod::class);
-    }
-
-    /**
-     * Preview markdown content.
-     */
-    #[Renderless]
-    public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
-    {
-        if (empty(mb_trim($content))) {
-            return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
-        }
-
-        $converter = new GithubFlavoredMarkdownConverter();
-        $html = $converter->convert($content)->getContent();
-
-        return Purify::config($purifyConfig)->clean($html);
     }
 
     /**
