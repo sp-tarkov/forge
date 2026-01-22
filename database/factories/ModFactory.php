@@ -83,6 +83,16 @@ class ModFactory extends Factory
     }
 
     /**
+     * Indicate that the mod should show the cheat notice.
+     */
+    public function withCheatNotice(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'cheat_notice' => true,
+        ]);
+    }
+
+    /**
      * Configure the model factory.
      */
     public function configure(): static

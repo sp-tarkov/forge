@@ -250,10 +250,11 @@ new class extends Component {
     <flux:dropdown
         position="bottom"
         align="end"
-        class="absolute top-1.5 right-1.5"
+        class="absolute top-4 right-4 sm:top-6 sm:right-6"
     >
         <flux:button
             icon="cog-8-tooth"
+            size="sm"
             x-on:click="if (!menuLoaded) { $wire.loadMenu(); }"
         />
         <flux:menu>

@@ -58,6 +58,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $comments_disabled
  * @property bool $addons_disabled
  * @property bool $profile_binding_notice_disabled
+ * @property bool $cheat_notice
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $published_at
@@ -342,11 +343,38 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        // Check if mod has at least one publicly visible version with ANY SPT version
-        return $this->versions()
+        // Check for modern versions with SPT compatibility
+        $hasModernVersion = $this->versions()
             ->publiclyVisible()
             ->whereHas('latestSptVersion')
             ->exists();
+
+        if ($hasModernVersion) {
+            return true;
+        }
+
+        // Check for legacy versions (no SPT constraint)
+        return $this->versions()
+            ->legacyPubliclyVisible()
+            ->exists();
+    }
+
+    /**
+     * Check if the mod has only legacy versions (no versions with SPT compatibility).
+     */
+    public function hasOnlyLegacyVersions(): bool
+    {
+        // Has at least one legacy version that's publicly visible
+        $hasLegacyVersion = $this->versions()
+            ->legacyPubliclyVisible()
+            ->exists();
+
+        // Has no versions with SPT versions
+        $hasModernVersion = $this->versions()
+            ->publiclyVisible()
+            ->exists();
+
+        return $hasLegacyVersion && ! $hasModernVersion;
     }
 
     /**
@@ -359,6 +387,25 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         return $this->hasOne(ModVersion::class)
             ->where('disabled', false)
             ->whereHas('latestSptVersion')
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels');
+    }
+
+    /**
+     * The relationship between a mod and its latest legacy version.
+     *
+     * @return HasOne<ModVersion, $this>
+     */
+    public function latestLegacyVersion(): HasOne
+    {
+        return $this->hasOne(ModVersion::class)
+            ->where('disabled', false)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->where('spt_version_constraint', '')
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
@@ -639,6 +686,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'comments_disabled' => 'boolean',
             'addons_disabled' => 'boolean',
             'profile_binding_notice_disabled' => 'boolean',
+            'cheat_notice' => 'boolean',
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

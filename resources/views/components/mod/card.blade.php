@@ -4,6 +4,7 @@
     'section' => 'default',
     'homepageFeatured' => false,
     'placeholderBg' => 'bg-gray-100 dark:bg-gray-800',
+    'showActions' => null,
 ])
 
 <div {{ $attributes->merge(['class' => 'mod-list-component relative mx-auto max-w-2xl h-full w-full']) }}>
@@ -21,9 +22,9 @@
     <a
         href="{{ $mod->detail_url }}"
         wire:navigate
-        class="@container flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:bg-gray-50 dark:hover:bg-black transition-colors ease-out duration-300"
+        class="@container flex flex-col group h-full w-full bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden hover:bg-gray-50 dark:hover:bg-black"
     >
-        <div class="flex flex-row flex-1">
+        <div class="flex flex-row @lg:flex-1">
             <div class="relative shrink-0 m-3 @lg:m-4 mr-0 rounded-lg">
                 {{-- Default stripe background --}}
                 <div
@@ -49,9 +50,12 @@
                 </div>
             </div>
 
-            <div class="flex flex-col w-full justify-between p-3 @lg:p-4">
-                <div class="pb-3">
-                    <h3 class="my-1 text-lg leading-tight font-medium text-black dark:text-white">
+            <div class="flex flex-col w-full p-3 @lg:p-4 @lg:pl-0 @lg:justify-between">
+                <div class="@lg:pb-3">
+                    <h3 @class([
+                        'text-lg leading-tight font-medium text-black dark:text-white',
+                        'pr-10 lg:pr-12' => $showActions ?? Gate::check('update', $mod),
+                    ])>
                         <span class="group-hover:underline">{{ $mod->name }}</span>
                         @if ($version)
                             <span class="font-light text-nowrap text-gray-600 dark:text-gray-400">
@@ -59,32 +63,40 @@
                             </span>
                         @endif
                     </h3>
-                    <p class="no-underline mb-2 text-sm italic text-slate-600 dark:text-gray-200">
+                    <p class="no-underline text-sm italic text-slate-600 dark:text-gray-200 mt-0.5 @lg:mt-0 @lg:mb-2">
                         {{ __('Created by :owner', ['owner' => $mod->owner?->name ?? '']) }}
                     </p>
                     @if ($version?->latestSptVersion)
                         <p
-                            class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 mb-2 text-xs font-medium text-nowrap">
+                            class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 mt-1.5 @lg:mt-0 @lg:mb-2 text-xs font-medium text-nowrap">
                             {{ $version->latestSptVersion->version_formatted }}
                         </p>
+                    @elseif ($version && $version->spt_version_constraint === '')
+                        <p
+                            class="badge-version gray inline-flex items-center rounded-md px-2 py-1 mt-1.5 @lg:mt-0 @lg:mb-2 text-xs font-medium text-nowrap">
+                            {{ __('Legacy SPT Version') }}
+                        </p>
                     @endif
-                    <p class="text-slate-500 dark:text-gray-300">
+                    {{-- Description: hidden at small, shown at @lg --}}
+                    <p class="hidden @lg:block text-slate-500 dark:text-gray-300">
                         {{ Str::limit($mod->teaser) }}
                     </p>
                 </div>
 
-                <div class="text-slate-700 dark:text-gray-300 text-sm">
-                    <div class="flex items-end w-full text-sm">
+                {{-- Date/downloads --}}
+                <div class="text-slate-700 dark:text-gray-300 text-sm mt-2 @lg:mt-0">
+                    <div class="flex items-center w-full text-sm">
                         @if (($mod->updated_at || $mod->created_at) && $version)
-                            <div class="flex items-end w-full">
+                            <div class="flex items-center w-full">
                                 <div class="flex items-center gap-1">
                                     <flux:icon.calendar class="size-5" />
-                                    <x-time :datetime="$version->created_at" />
+                                    <span class="pt-0.5"><x-time :datetime="$version->created_at" /></span>
                                 </div>
                             </div>
                         @endif
                         <div class="flex justify-end items-center gap-1">
                             <span
+                                class="pt-0.5"
                                 title="{{ Number::format($mod->downloads) }} {{ __(Str::plural('Download', $mod->downloads)) }}"
                             >
                                 {{ Number::downloads($mod->downloads) }}
@@ -94,6 +106,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        {{-- Description: shown at small breakpoint only, full width below thumbnail row --}}
+        <div class="@lg:hidden px-3 pb-3">
+            <p class="text-slate-500 dark:text-gray-300">
+                {{ Str::limit($mod->teaser) }}
+            </p>
         </div>
     </a>
 

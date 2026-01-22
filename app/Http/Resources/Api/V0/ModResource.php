@@ -137,6 +137,10 @@ class ModResource extends JsonResource
             $data['shows_profile_binding_notice'] = (bool) $this->resource->shows_profile_binding_notice;
         }
 
+        if ($this->shouldInclude('cheat_notice')) {
+            $data['cheat_notice'] = (bool) $this->resource->cheat_notice;
+        }
+
         if ($this->shouldInclude('category_id')) {
             $data['category_id'] = $this->resource->category_id;
         }

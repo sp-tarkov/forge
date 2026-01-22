@@ -10,7 +10,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
-use League\CommonMark\GithubFlavoredMarkdownConverter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
@@ -18,11 +17,13 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use Stevebauman\Purify\Facades\Purify;
 
 new #[Layout('layouts::base')] class extends Component {
     use UsesSpamProtection;
     use WithFileUploads;
+    use RendersMarkdownPreview;
 
     /**
      * The honeypot data to be validated.
@@ -109,6 +110,11 @@ new #[Layout('layouts::base')] class extends Component {
     public bool $disableProfileBindingNotice = false;
 
     /**
+     * Whether to show the cheat notice.
+     */
+    public bool $cheatNotice = false;
+
+    /**
      * Whether addons are disabled for the mod.
      */
     public bool $addonsDisabled = false;
@@ -121,22 +127,6 @@ new #[Layout('layouts::base')] class extends Component {
         $this->honeypotData = new HoneypotData();
 
         $this->authorize('create', Mod::class);
-    }
-
-    /**
-     * Preview markdown content.
-     */
-    #[Renderless]
-    public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
-    {
-        if (empty(mb_trim($content))) {
-            return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
-        }
-
-        $converter = new GithubFlavoredMarkdownConverter();
-        $html = $converter->convert($content)->getContent();
-
-        return Purify::config($purifyConfig)->clean($html);
     }
 
     /**
@@ -202,6 +192,7 @@ new #[Layout('layouts::base')] class extends Component {
             'comments_disabled' => $this->commentsDisabled,
             'addons_disabled' => $this->addonsDisabled,
             'profile_binding_notice_disabled' => $this->disableProfileBindingNotice,
+            'cheat_notice' => $this->cheatNotice,
             'published_at' => $this->publishedAt,
         ]);
 
@@ -299,6 +290,7 @@ new #[Layout('layouts::base')] class extends Component {
             'authorIds' => 'array|max:10',
             'authorIds.*' => 'exists:users,id|distinct',
             'disableProfileBindingNotice' => 'boolean',
+            'cheatNotice' => 'boolean',
         ];
     }
 
@@ -670,6 +662,12 @@ new #[Layout('layouts::base')] class extends Component {
                                             description="Check this option if you can confirm that your mod does not make permanent changes to user profiles. Mods in the category you've selected typically do. Leave this unchecked if you are not sure."
                                         />
                                     @endif
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="cheatNotice"
+                                        label="Show Cheat Warning"
+                                        description="Enable this if your mod provides functionality similar to traditional multiplayer cheats (ESP, wallhacks, aimbots, etc.). This will display a prominent warning on the mod page. Required for cheat-like mods per our Content Guidelines."
+                                    />
                                 </flux:checkbox.group>
                             </flux:field>
 

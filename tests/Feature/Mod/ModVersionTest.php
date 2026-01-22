@@ -851,7 +851,7 @@ describe('Published Version Visibility', function (): void {
         expect($returnedIds)->not->toContain($mod->id);
     });
 
-    it('denies regular users access to mods with mixed SPT version scenarios', function (): void {
+    it('allows regular users access to mods with legacy versions', function (): void {
         // Create a published mod with mixed version scenarios
         $mod = Mod::factory()->create([
             'published_at' => now(),
@@ -866,21 +866,21 @@ describe('Published Version Visibility', function (): void {
         ]);
         $unpublishedVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
-        // Published version with no SPT tags
+        // Published version with no SPT tags (legacy version)
         $publishedVersionNoSpt = ModVersion::factory()->create([
             'mod_id' => $mod->id,
             'published_at' => now(),
             'disabled' => false,
-            'spt_version_constraint' => '', // Empty constraint means no SPT versions
+            'spt_version_constraint' => '', // Empty constraint means legacy version
         ]);
 
-        // Regular user should be denied access to the mod detail page
+        // Regular user should have access because the mod has a publicly visible legacy version
         $this->actingAs($this->user)
             ->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]))
-            ->assertForbidden();
+            ->assertOk();
     });
 
-    it('allows mod owners to access mods with mixed SPT version scenarios and shows warnings', function (): void {
+    it('allows mod owners to access mods with legacy versions without warnings', function (): void {
         // Create a mod owner (regular user, not admin)
         $owner = User::factory()->create();
         $mod = Mod::factory()->create([
@@ -897,22 +897,22 @@ describe('Published Version Visibility', function (): void {
         ]);
         $unpublishedVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
-        // Published version with no SPT tags
+        // Published version with no SPT tags (legacy version)
         $publishedVersionNoSpt = ModVersion::factory()->create([
             'mod_id' => $mod->id,
             'published_at' => now(),
             'disabled' => false,
-            'spt_version_constraint' => '', // Empty constraint means no SPT versions
+            'spt_version_constraint' => '', // Empty constraint means legacy version
         ]);
 
-        // Mod owner should have access and see warnings
+        // Mod owner should have access and NOT see warning because mod has publicly visible legacy version
         $this->actingAs($owner)
             ->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]))
             ->assertOk()
-            ->assertSee('This mod has no valid published SPT versions'); // Warning message should appear
+            ->assertDontSee('This mod has no valid published SPT versions');
     });
 
-    it('shows warnings to administrators even when they can see unpublished versions', function (): void {
+    it('allows administrators to access mods with legacy versions without warnings', function (): void {
         // Create an administrator role
         $admin = User::factory()->admin()->create();
 
@@ -929,19 +929,19 @@ describe('Published Version Visibility', function (): void {
         ]);
         $unpublishedVersionWithSpt->sptVersions()->sync($this->sptVersion->id);
 
-        // Published version with no SPT tags (regular users only see this)
+        // Published version with no SPT tags (legacy version)
         $publishedVersionNoSpt = ModVersion::factory()->create([
             'mod_id' => $mod->id,
             'published_at' => now(),
             'disabled' => false,
-            'spt_version_constraint' => '', // Empty constraint means no SPT versions
+            'spt_version_constraint' => '', // Empty constraint means legacy version
         ]);
 
-        // Staff should have access and see warnings about regular user visibility
+        // Staff should have access and NOT see warning because mod has publicly visible legacy version
         $this->actingAs($admin)
             ->get(route('mod.show', ['modId' => $mod->id, 'slug' => $mod->slug]))
             ->assertOk()
-            ->assertSee('This mod has no valid published SPT versions'); // Warning about regular user visibility
+            ->assertDontSee('This mod has no valid published SPT versions');
     });
 
     it('excludes mods with mixed SPT version scenarios from search indexing', function (): void {

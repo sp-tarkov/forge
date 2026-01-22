@@ -246,7 +246,7 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * Return data for the view.
      *
-     * @return array<string, LengthAwarePaginator<int, Mod>>
+     * @return array<string, mixed>
      */
     public function with(): array
     {
@@ -265,9 +265,19 @@ new #[Layout('layouts::base')] class extends Component {
 
         $paginatedMods = $filters->apply()->paginate($this->perPage);
 
+        // Determine if we should load legacy versions
+        $includeLegacy = $this->sptVersions === 'all' || (is_array($this->sptVersions) && in_array('legacy', $this->sptVersions)) || $this->sptVersions === 'legacy';
+
+        // Eager load appropriate version relationship
+        if ($includeLegacy) {
+            $paginatedMods->load(['latestVersion', 'latestLegacyVersion']);
+        } else {
+            $paginatedMods->load('latestVersion');
+        }
+
         $this->redirectOutOfBoundsPage($paginatedMods);
 
-        return ['mods' => $paginatedMods];
+        return ['mods' => $paginatedMods, 'includeLegacy' => $includeLegacy];
     }
 
     /**
@@ -900,9 +910,15 @@ new #[Layout('layouts::base')] class extends Component {
             <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 @foreach ($mods as $mod)
                     <div wire:key="mod-index-{{ $mod->id }}">
+                        @php
+                            $displayVersion = $mod->latestVersion;
+                            if ($includeLegacy && !$displayVersion && $mod->latestLegacyVersion) {
+                                $displayVersion = $mod->latestLegacyVersion;
+                            }
+                        @endphp
                         <x-mod.card
                             :mod="$mod"
-                            :version="$mod->latestVersion"
+                            :version="$displayVersion"
                         />
                     </div>
                 @endforeach

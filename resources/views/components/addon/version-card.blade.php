@@ -1,7 +1,7 @@
-@props(['version', 'addon'])
+@props(['version', 'addon', 'showActions' => null])
 
 <div
-    {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black transition-all duration-200']) }}>
+    {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black']) }}>
 
     <livewire:ribbon.addon-version
         wire:key="addon-version-show-ribbon-{{ $version->id }}"
@@ -40,23 +40,28 @@
                         />
                     </flux:tooltip>
                 </a>
-                <div class="mt-3 flex flex-row justify-start items-center gap-2.5">
-                    @if ($version->formatted_file_size)
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ $version->formatted_file_size }}
+                <div class="mt-3 flex flex-row flex-wrap justify-start items-center gap-2.5">
+                    <div class="flex items-center gap-2.5">
+                        @if ($version->formatted_file_size)
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                {{ $version->formatted_file_size }}
+                            </p>
+                        @endif
+                        <p
+                            class="text-sm text-gray-800 dark:text-gray-300"
+                            title="{{ __('Exactly') }} {{ $version->downloads }}"
+                        >
+                            {{ Number::downloads($version->downloads) }}
+                            {{ __(Str::plural('Download', $version->downloads)) }}
                         </p>
-                    @endif
-                    <p
-                        class="text-sm text-gray-800 dark:text-gray-300"
-                        title="{{ __('Exactly') }} {{ $version->downloads }}"
-                    >
-                        {{ Number::downloads($version->downloads) }}
-                        {{ __(Str::plural('Download', $version->downloads)) }}
-                    </p>
+                    </div>
                 </div>
             </div>
-            <div class="flex flex-col items-start text-gray-700 dark:text-gray-400 sm:items-end mt-4 sm:mt-0">
-                <p class="text-left sm:text-right">{{ __('Released') }}
+            <div @class([
+                'flex flex-col items-start text-gray-700 dark:text-gray-400 sm:items-end mt-4 sm:mt-0',
+                'sm:pr-10' => $showActions ?? Gate::check('update', $version),
+            ])>
+                <p class="text-left sm:text-right text-nowrap">{{ __('Released') }}
                     {{ $version->published_at?->dynamicFormat() ?? $version->created_at->dynamicFormat() }}</p>
                 @if ($version->virusTotalLinks->isNotEmpty())
                     <div
