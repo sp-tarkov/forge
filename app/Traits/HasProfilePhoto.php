@@ -71,7 +71,7 @@ trait HasProfilePhoto
      */
     protected function defaultProfilePhotoUrl(): string
     {
-        $name = mb_trim(collect(explode(' ', $this->name))->map(fn ($segment): string => mb_substr($segment, 0, 1))->join(' '));
+        $name = mb_trim(collect(explode(' ', $this->name ?? ''))->map(fn ($segment): string => mb_substr($segment, 0, 1))->join(' '));
 
         return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
     }
