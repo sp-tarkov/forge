@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -156,8 +155,8 @@ new #[Layout('layouts::base')] class extends Component {
             'activeBan' => $this->getActiveBan(),
         ];
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {{ __(':name - User Profile - The Forge', ['name' => $user->name]) }}

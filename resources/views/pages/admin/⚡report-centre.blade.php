@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\ReportStatus;
 use App\Enums\TrackingEventType;
@@ -554,8 +553,8 @@ new #[Layout('layouts::base')] class extends Component {
 
         $user->unreadNotifications()->where('type', ReportSubmittedNotification::class)->get()->filter(fn(DatabaseNotification $notification): bool => ($notification->data['report_id'] ?? null) === $report->id)->each(fn(DatabaseNotification $notification) => $notification->markAsRead());
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {{ __('Report Centre - The Forge') }}

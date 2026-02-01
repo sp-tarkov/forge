@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -43,8 +42,8 @@ new class extends Component {
 
         $this->dispatch('user-follow-change');
     }
-};
-?>
+}
+@endphp
 
 @props(['isFollowing'])
 

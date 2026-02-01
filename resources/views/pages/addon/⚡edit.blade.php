@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
@@ -347,8 +346,8 @@ new #[Layout('layouts::base')] class extends Component {
             'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
         ];
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {!! __('Edit :addon Addon - The Forge', ['addon' => $addon->name]) !!}

@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use Livewire\Attributes\Computed;
@@ -29,8 +28,8 @@ new #[Lazy] class extends Component {
     {
         return Mod::query()->findOrFail($this->modId)->description_html;
     }
-};
-?>
+}
+@endphp
 
 @placeholder
     <div

@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
@@ -284,8 +283,8 @@ new class extends Component {
         $this->moderationReason = '';
         $this->menuOpen = false;
     }
-};
-?>
+}
+@endphp
 
 <div x-data="{
     menuLoaded: $wire.entangle('menuOpen').live

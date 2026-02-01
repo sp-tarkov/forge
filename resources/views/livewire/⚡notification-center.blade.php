@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Notifications\NewChatMessageNotification;
 use App\Notifications\NewCommentNotification;
@@ -142,8 +141,8 @@ new class extends Component {
         /** @var LengthAwarePaginator<int, DatabaseNotification> */
         return Auth::user()->notifications()->orderBy('created_at', 'desc')->paginate(8, pageName: 'notificationPage');
     }
-};
-?>
+}
+@endphp
 
 <div
     wire:poll.30s="$refresh"

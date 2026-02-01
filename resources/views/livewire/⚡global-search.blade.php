@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\Mod;
@@ -139,8 +138,8 @@ new class extends Component {
     {
         return collect($hits)->sortByDesc('_rankingScore')->values();
     }
-};
-?>
+}
+@endphp
 
 <div
     x-data="{ open: false }"

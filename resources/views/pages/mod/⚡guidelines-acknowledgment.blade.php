@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use Livewire\Attributes\Layout;
@@ -24,8 +23,8 @@ new #[Layout('layouts::base')] class extends Component {
 
         $this->redirect(route('mod.create'));
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {!! __('Content Guidelines - The Forge') !!}

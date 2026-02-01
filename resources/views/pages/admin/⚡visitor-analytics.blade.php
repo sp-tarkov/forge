@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
@@ -526,8 +525,8 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
             })->orWhere('tracking_events.visitor_id', 'like', '%'.$this->userSearch.'%');
         }
     }
-};
-?>
+}
+@endphp
 
 <div>
     <x-slot name="header">

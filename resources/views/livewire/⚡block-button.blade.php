@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use App\Services\UserBlockingService;
@@ -81,8 +80,8 @@ new class extends Component {
         $this->showModal = false;
         $this->blockReason = null;
     }
-};
-?>
+}
+@endphp
 
 <div>
     @auth

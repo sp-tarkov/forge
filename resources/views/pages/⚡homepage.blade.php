@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
@@ -117,7 +116,8 @@ new #[Layout('layouts::base')] class extends Component {
 
         return $query->get();
     }
-}; ?>
+}
+@endphp
 
 <x-slot:title>
     The Forge - Home of Single Player Tarkov Mods

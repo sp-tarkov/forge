@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Contracts\Commentable;
 use App\Enums\SpamStatus;
@@ -1482,8 +1481,8 @@ new class extends Component
 
         return $model->getKey();
     }
-};
-?>
+}
+@endphp
 
 <div
     x-data="{

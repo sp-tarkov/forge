@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Conversation;
 use App\Models\User;
@@ -442,8 +441,8 @@ new class extends Component {
 
         return User::query()->conversationSearch(Auth::user(), $this->searchUser)->get();
     }
-};
-?>
+}
+@endphp
 
 <div>
     <div

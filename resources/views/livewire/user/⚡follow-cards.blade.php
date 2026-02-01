@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -45,8 +44,8 @@ new class extends Component {
 
         $this->dispatch('auth-follow-change');
     }
-};
-?>
+}
+@endphp
 
 @props(['profileUser', 'authFollowIds' => collect()])
 

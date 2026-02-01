@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use App\Models\UserRole;
@@ -233,8 +232,8 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
     {
         return $this->userToRemoveRoleId ? User::query()->with('role')->find($this->userToRemoveRoleId) : null;
     }
-};
-?>
+}
+@endphp
 
 <div>
     <x-slot name="header">

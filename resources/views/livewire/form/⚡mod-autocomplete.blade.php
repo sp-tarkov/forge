@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use Illuminate\Support\Collection;
@@ -212,8 +211,8 @@ new class extends Component {
         $this->showDropdown = false;
         $this->highlightIndex = -1;
     }
-};
-?>
+}
+@endphp
 
 <div
     x-data="{

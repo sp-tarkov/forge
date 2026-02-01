@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Events\ConversationUpdated;
 use App\Events\MessageRead;
@@ -982,8 +981,8 @@ new #[Layout('layouts::base')] class extends Component {
 
         return User::query()->conversationSearch(Auth::user(), $this->searchUser)->get();
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {{ __('Forge Conversations') }}

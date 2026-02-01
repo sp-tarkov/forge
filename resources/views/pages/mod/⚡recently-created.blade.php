@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
@@ -107,7 +106,8 @@ new #[Layout('layouts::base')] class extends Component {
             $this->redirectRoute('mods.recently-created', ['page' => $paginatedMods->lastPage()]);
         }
     }
-}; ?>
+}
+@endphp
 
 <x-slot:title>
     {!! __('Recently Created Mods - The Forge') !!}

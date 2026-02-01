@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Models\Mod;
@@ -141,8 +140,8 @@ new class extends Component {
 
         return false;
     }
-};
-?>
+}
+@endphp
 
 <div class="space-y-6">
     <flux:heading size="lg">Recent Activity</flux:heading>

@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\ReportStatus;
 use App\Enums\TrackingEventType;
@@ -205,8 +204,8 @@ new class extends Component {
             default => now()->addHour(),
         };
     }
-};
-?>
+}
+@endphp
 
 <div>
     @if ($user->isBanned())

@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use Livewire\Attributes\Computed;
@@ -29,8 +28,8 @@ new #[Lazy] class extends Component {
     {
         return User::query()->findOrFail($this->userId);
     }
-};
-?>
+}
+@endphp
 
 @placeholder
     <div

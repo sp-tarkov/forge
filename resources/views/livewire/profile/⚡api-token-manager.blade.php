@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Arr;
@@ -220,8 +219,8 @@ new class extends Component {
 
         return array_values(array_unique($permissions));
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {{ __('Manage API Tokens - The Forge') }}

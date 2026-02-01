@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\AddonVersion;
@@ -161,8 +160,8 @@ new #[Layout('layouts::base')] class extends Component {
             'commentCount' => $this->getCommentCount(),
         ];
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {!! __(':addon - Addon Details - The Forge', ['addon' => $addon->name]) !!}

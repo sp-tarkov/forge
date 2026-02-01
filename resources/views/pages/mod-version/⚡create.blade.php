@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\FikaCompatibility;
 use App\Enums\TrackingEventType;
@@ -685,8 +684,8 @@ new #[Layout('layouts::base')] class extends Component {
             $this->matchingDependencyVersions[$index] = [];
         }
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {!! __('Create a New Version for :mod - The Forge', ['mod' => $mod->name]) !!}

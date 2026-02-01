@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Events\PeakVisitorUpdated;
 use App\Models\Visitor;
@@ -70,8 +69,8 @@ new class extends Component {
             }
         });
     }
-};
-?>
+}
+@endphp
 
 <div
     wire:ignore.self

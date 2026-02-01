@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\UpdateGitHubSptVersionsJob;
@@ -287,8 +286,8 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
             $query->where('color_class', $this->colorFilter);
         }
     }
-};
-?>
+}
+@endphp
 
 <div>
     <x-slot name="header">

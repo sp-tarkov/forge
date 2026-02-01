@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use Illuminate\Database\Eloquent\Builder;
@@ -68,7 +67,8 @@ new class extends Component {
             ->unless($showDisabled, fn(Builder $query) => $query->where('disabled', false))
             ->count();
     }
-}; ?>
+}
+@endphp
 
 <div>
     @if ($createdCount > 0)

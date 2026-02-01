@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
@@ -75,8 +74,8 @@ new class extends Component {
 
         $this->redirect(config('fortify.redirects.logout', '/'));
     }
-};
-?>
+}
+@endphp
 
 <x-action-section>
     <x-slot:title>

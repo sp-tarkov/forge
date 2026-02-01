@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\Mod;
@@ -32,8 +31,8 @@ new #[Layout('layouts::base')] class extends Component {
 
         $this->redirect(route('addon.create', ['mod' => $this->mod->id]));
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {!! __('Content Guidelines - The Forge') !!}

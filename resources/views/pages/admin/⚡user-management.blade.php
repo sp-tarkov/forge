@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
@@ -504,8 +503,8 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
             $query->where('created_at', '<=', $this->joinedTo . ' 23:59:59');
         }
     }
-};
-?>
+}
+@endphp
 
 @php
     use Illuminate\Support\Str;

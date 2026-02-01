@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Models\User;
@@ -63,8 +62,8 @@ new #[Lazy] class extends Component {
 
         return $query->paginate(10)->fragment('mods');
     }
-};
-?>
+}
+@endphp
 
 @placeholder
     <div

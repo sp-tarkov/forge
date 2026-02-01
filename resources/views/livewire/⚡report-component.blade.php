@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
@@ -167,8 +166,8 @@ new class extends Component {
                 ->toArray(),
         );
     }
-};
-?>
+}
+@endphp
 
 <div
     class="flex align-top{{ !$canReportItem && !$showReportModal ? ' hidden' : '' }}{{ $variant === 'link' ? ' border-t border-gray-200 dark:border-gray-800 py-4 mt-4' : '' }}">

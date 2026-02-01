@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -161,8 +160,8 @@ new class extends Component {
             default => 'Users:',
         };
     }
-};
-?>
+}
+@endphp
 
 <div
     class="w-full text-gray-600 bg-white shadow-md dark:shadow-gray-950 drop-shadow-xl dark:text-gray-200 dark:bg-gray-900 rounded-xl py-4">

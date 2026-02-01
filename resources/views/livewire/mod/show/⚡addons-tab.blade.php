@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\Mod;
@@ -173,8 +172,8 @@ new #[Lazy] class extends Component {
             ->paginate(perPage: 10, pageName: 'addonPage')
             ->fragment('addons');
     }
-};
-?>
+}
+@endphp
 
 @placeholder
     <div>

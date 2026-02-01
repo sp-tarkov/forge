@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\AddonVersion;
@@ -60,8 +59,8 @@ new #[Lazy] class extends Component {
             ->paginate(perPage: 6, pageName: 'versionPage')
             ->fragment('versions');
     }
-};
-?>
+}
+@endphp
 
 @placeholder
     <div class="space-y-4">

@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\User;
 use Livewire\Attributes\Locked;
@@ -81,8 +80,8 @@ new class extends Component {
     {
         $this->user->refresh();
     }
-};
-?>
+}
+@endphp
 
 <x-action-section>
     <x-slot:title>

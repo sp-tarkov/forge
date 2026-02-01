@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -17,7 +16,8 @@ new #[Layout('layouts::base')] class extends Component {
             'banExpiresAt' => session('ban_expires_at'),
         ];
     }
-}; ?>
+}
+@endphp
 
 <x-slot:title>
     {{ __('User Banned - :app', ['app' => config('app.name')]) }}

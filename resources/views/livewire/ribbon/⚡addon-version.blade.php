@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Addon;
 use App\Models\AddonVersion as AddonVersionModel;
@@ -122,8 +121,8 @@ new class extends Component {
 
         return null;
     }
-};
-?>
+}
+@endphp
 
 <div>
     @if ($this->ribbonData)

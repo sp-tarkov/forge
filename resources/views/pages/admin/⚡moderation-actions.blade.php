@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Models\Addon;
@@ -238,8 +237,8 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
             $query->whereHas('reports');
         }
     }
-};
-?>
+}
+@endphp
 
 <div>
     <x-slot name="header">

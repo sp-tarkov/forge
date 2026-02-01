@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Services\UserBlockingService;
 use Illuminate\Support\Facades\Auth;
@@ -39,8 +38,8 @@ new class extends Component {
     {
         return Auth::user()->blocking()->with('blocked')->paginate(20);
     }
-};
-?>
+}
+@endphp
 
 <x-action-section>
     <x-slot name="title">

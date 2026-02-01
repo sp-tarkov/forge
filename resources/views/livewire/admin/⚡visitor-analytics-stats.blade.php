@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
@@ -327,8 +326,8 @@ new #[Lazy] class extends Component {
     {
         return $query->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))->whereNotNull('country_code')->groupBy('country_name', 'country_code')->orderByDesc('count')->limit(10)->get();
     }
-};
-?>
+}
+@endphp
 
 @php
     $stats = $this->getStats();

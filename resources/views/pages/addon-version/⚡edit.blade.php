@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
@@ -409,8 +408,8 @@ new #[Layout('layouts::base')] class extends Component {
 
         $this->redirect($this->addonVersion->addon->detail_url);
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {!! __('Edit Addon Version for :addon - The Forge', ['addon' => $addonVersion->addon->name]) !!}

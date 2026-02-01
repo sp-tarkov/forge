@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Notifications\NewChatMessageNotification;
 use App\Notifications\NewCommentNotification;
@@ -138,8 +137,8 @@ new class extends Component {
         /** @var Collection<int, DatabaseNotification> */
         return Auth::user()->unreadNotifications()->orderBy('created_at', 'desc')->limit(10)->get();
     }
-};
-?>
+}
+@endphp
 
 <div
     wire:poll.30s="$refresh"

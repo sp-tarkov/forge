@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Addon as AddonModel;
 use Illuminate\Support\Facades\Date;
@@ -124,8 +123,8 @@ new class extends Component {
 
         return null;
     }
-};
-?>
+}
+@endphp
 
 <div>
     @if ($this->ribbonData)

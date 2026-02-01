@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
@@ -367,7 +366,8 @@ new #[Layout('layouts::base')] class extends Component {
             $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
         }
     }
-}; ?>
+}
+@endphp
 
 <x-slot:title>
     {!! __('Mods - Find the best SPT Mods - The Forge') !!}

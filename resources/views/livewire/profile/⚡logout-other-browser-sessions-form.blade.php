@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use Detection\MobileDetect;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -202,8 +201,8 @@ new class extends Component {
 
         return null;
     }
-};
-?>
+}
+@endphp
 
 <x-action-section>
     <x-slot:title>

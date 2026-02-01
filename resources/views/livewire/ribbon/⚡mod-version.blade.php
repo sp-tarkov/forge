@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Models\ModVersion as ModVersionModel;
@@ -116,8 +115,8 @@ new class extends Component {
 
         return null;
     }
-};
-?>
+}
+@endphp
 
 <div>
     @if ($this->ribbonData)

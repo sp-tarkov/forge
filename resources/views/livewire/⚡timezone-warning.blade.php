@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\TrackingEvent;
 use App\Models\User;
@@ -66,8 +65,8 @@ new class extends Component {
 
         $this->fallbackTimezone = $latestEvent?->timezone ?: 'UTC';
     }
-};
-?>
+}
+@endphp
 
 <div>
     @if ($this->shouldShowWarning)

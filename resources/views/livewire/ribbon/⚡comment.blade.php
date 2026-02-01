@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Enums\SpamStatus;
 use App\Facades\CachedGate;
@@ -69,8 +68,8 @@ new class extends Component {
             'label' => $status->label(),
         ];
     }
-};
-?>
+}
+@endphp
 
 <div>
     @if ($this->ribbonData)

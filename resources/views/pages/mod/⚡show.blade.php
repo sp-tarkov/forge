@@ -1,6 +1,5 @@
-<?php
-
-declare(strict_types=1);
+@php
+    declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Models\ModVersion;
@@ -246,8 +245,8 @@ new #[Layout('layouts::base')] class extends Component {
             'fikaStatus' => $this->mod->getOverallFikaCompatibility(),
         ];
     }
-};
-?>
+}
+@endphp
 
 <x-slot:title>
     {!! __(':mod - Mod Details - The Forge', ['mod' => $mod->name]) !!}
