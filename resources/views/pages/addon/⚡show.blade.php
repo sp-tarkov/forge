@@ -224,7 +224,7 @@ new #[Layout('layouts::base')] class extends Component {
                     @endforeach
                 </flux:callout.text>
                 @cachedCan('create', [App\Models\AddonVersion::class, $addon])
-                    @if (isset($warningMessages['no_versions']))
+                    @isset($warningMessages['no_versions'])
                         <x-slot
                             name="actions"
                             class="@md:h-full m-0!"
@@ -233,7 +233,7 @@ new #[Layout('layouts::base')] class extends Component {
                                 Version
                             </flux:button>
                         </x-slot>
-                    @endif
+                    @endisset
                 @endcachedCan
             </flux:callout>
         </div>

@@ -15,12 +15,12 @@
                 </div>
             </div>
 
-            @if (isset($actions))
+            @isset($actions)
                 <div
                     class="flex items-center justify-end px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 text-end sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md">
                     {{ $actions }}
                 </div>
-            @endif
+            @endisset
         </form>
     </div>
 </div>

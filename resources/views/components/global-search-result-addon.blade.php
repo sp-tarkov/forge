@@ -18,11 +18,11 @@
     @endempty
     <div class="grow flex flex-col">
         <p class="font-medium">{{ $result['name'] }}</p>
-        @if (isset($result['mod_name']))
+        @isset($result['mod_name'])
             <p class="text-xs text-gray-500 dark:text-gray-400">
                 Addon for: {{ $result['mod_name'] }}
             </p>
-        @endif
+        @endisset
     </div>
     @if (isset($result['is_detached']) && $result['is_detached'] && auth()->user()?->isModOrAdmin())
         <span

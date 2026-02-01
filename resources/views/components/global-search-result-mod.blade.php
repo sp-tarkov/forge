@@ -18,11 +18,11 @@
     @endempty
     <div class="grow flex flex-col">
         <p class="font-medium">{{ $result['name'] }}</p>
-        @if (isset($result['downloads']))
+        @isset($result['downloads'])
             <p class="text-xs text-gray-500 dark:text-gray-400">
                 {{ number_format($result['downloads']) }} downloads
             </p>
-        @endif
+        @endisset
     </div>
     <p
         class="ml-auto self-center badge-version {{ $result['latestVersionColorClass'] }} }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-nowrap">

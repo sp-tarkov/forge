@@ -511,11 +511,11 @@ new class extends Component {
                                                 color="auto"
                                                 color:seed="{{ $conversation->other_user->id }}"
                                             />
-                                            @if (isset($onlineUsers[$conversation->other_user->id]))
+                                            @isset($onlineUsers[$conversation->other_user->id])
                                                 <span
                                                     class="absolute bottom-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white dark:ring-gray-900 bg-green-400"
                                                 ></span>
-                                            @endif
+                                            @endisset
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center justify-between gap-2">

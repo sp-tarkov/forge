@@ -327,7 +327,7 @@ new #[Layout('layouts::base')] class extends Component {
                     @endforeach
                 </flux:callout.text>
                 @cachedCan('create', [App\Models\ModVersion::class, $mod])
-                    @if (isset($warningMessages['no_versions']))
+                    @isset($warningMessages['no_versions'])
                         <x-slot
                             name="actions"
                             class="@md:h-full m-0!"
@@ -335,7 +335,7 @@ new #[Layout('layouts::base')] class extends Component {
                             <flux:button href="{{ route('mod.version.create', ['mod' => $mod->id]) }}">Create Version
                             </flux:button>
                         </x-slot>
-                    @endif
+                    @endisset
                 @endcachedCan
             </flux:callout>
         </div>
