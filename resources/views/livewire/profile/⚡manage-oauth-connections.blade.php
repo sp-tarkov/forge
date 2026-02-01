@@ -104,17 +104,17 @@ new class extends Component {
             </div>
         @endif
 
-        @if (session()->has('status'))
+        @session('status')
             <div class="mt-3 font-medium text-sm text-green-600 dark:text-green-400">
-                {{ session('status') }}
+                {{ $value }}
             </div>
-        @endif
+        @endsession
 
-        @if (session()->has('error'))
+        @session('error')
             <div class="mt-3 font-medium text-sm text-red-600 dark:text-red-400">
-                {{ session('error') }}
+                {{ $value }}
             </div>
-        @endif
+        @endsession
 
         <div class="mt-5 space-y-6">
             @forelse ($user->oauthConnections as $connection)

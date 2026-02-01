@@ -539,24 +539,24 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
         @endif
 
         {{-- Flash Messages --}}
-        @if (session()->has('success'))
+        @session('success')
             <div
                 class="mb-6 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                 <div class="flex items-center">
                     <flux:icon.check-circle class="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
-                    <p class="text-green-800 dark:text-green-200 text-sm">{{ session('success') }}</p>
+                    <p class="text-green-800 dark:text-green-200 text-sm">{{ $value }}</p>
                 </div>
             </div>
-        @endif
+        @endsession
 
-        @if (session()->has('error'))
+        @session('error')
             <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
                 <div class="flex items-center">
                     <flux:icon.x-circle class="w-5 h-5 text-red-600 dark:text-red-400 mr-2" />
-                    <p class="text-red-800 dark:text-red-200 text-sm">{{ session('error') }}</p>
+                    <p class="text-red-800 dark:text-red-200 text-sm">{{ $value }}</p>
                 </div>
             </div>
-        @endif
+        @endsession
 
         <div class="space-y-6">
             {{-- Filters Section --}}
