@@ -734,7 +734,7 @@ new #[Layout('layouts::base')] class extends Component {
                         <div class="grid grid-cols-6 gap-6">
                             @csrf
 
-                            @if (empty($modCategoryId))
+                            @empty($modCategoryId)
                                 <div class="col-span-6">
                                     <flux:callout
                                         icon="information-circle"
@@ -784,7 +784,7 @@ new #[Layout('layouts::base')] class extends Component {
                                         </flux:callout.text>
                                     </flux:callout>
                                 </div>
-                            @endif
+                            @endempty
 
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Version Number') }}</flux:label>
