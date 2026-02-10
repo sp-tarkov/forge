@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
@@ -487,6 +488,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Overwritten to instead use the queued version of the VerifyEmail notification.
      */
+    #[Override]
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new VerifyEmail);
@@ -495,6 +497,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Overwritten to instead use the queued version of the ResetPassword notification.
      */
+    #[Override]
     public function sendPasswordResetNotification(#[SensitiveParameter] $token): void // @pest-ignore-type
     {
         $this->notify(new ResetPassword($token));
@@ -797,6 +800,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

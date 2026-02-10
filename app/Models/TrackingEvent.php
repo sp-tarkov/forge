@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
 use Database\Factories\TrackingEventFactory;
@@ -101,6 +102,7 @@ class TrackingEvent extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

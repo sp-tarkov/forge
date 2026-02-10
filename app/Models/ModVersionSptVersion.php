@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -54,6 +55,7 @@ class ModVersionSptVersion extends Pivot
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [
