@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
@@ -531,6 +532,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [
