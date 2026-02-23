@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use Carbon\Carbon;
 use Database\Factories\LicenseFactory;
 use Illuminate\Database\Eloquent\Collection;
@@ -40,6 +41,7 @@ class License extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

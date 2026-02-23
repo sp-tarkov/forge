@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use App\Observers\DependencyObserver;
 use Carbon\Carbon;
 use Database\Factories\DependencyFactory;
@@ -84,6 +85,7 @@ class Dependency extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [
