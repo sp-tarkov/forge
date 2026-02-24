@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use App\Enums\NotificationType;
 use Database\Factories\NotificationLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -90,6 +91,7 @@ class NotificationLog extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

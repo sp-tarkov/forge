@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
@@ -542,6 +543,7 @@ class Comment extends Model implements Reportable, Trackable
     /**
      * The attributes that should be cast to native types.
      */
+    #[Override]
     protected function casts(): array
     {
         return [

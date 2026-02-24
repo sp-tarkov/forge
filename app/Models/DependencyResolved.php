@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use Carbon\Carbon;
 use Database\Factories\DependencyResolvedFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -79,6 +80,7 @@ class DependencyResolved extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [
