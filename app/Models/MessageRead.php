@@ -16,8 +16,8 @@ use Override;
  * @property int $message_id
  * @property int $user_id
  * @property Carbon $read_at
- * @property Message $message
- * @property User $user
+ * @property-read Message $message
+ * @property-read User $user
  */
 class MessageRead extends Model
 {
