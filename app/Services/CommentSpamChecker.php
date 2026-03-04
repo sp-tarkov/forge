@@ -161,7 +161,7 @@ class CommentSpamChecker
         try {
             $akismetData = $this->prepareAkismetData($comment);
 
-            $response = $this->makeRequest('POST', '/1.1/submit-ham', $akismetData);
+            $this->makeRequest('POST', '/1.1/submit-ham', $akismetData);
         } catch (Throwable $throwable) {
             Log::error('Failed to mark comment as ham in Akismet', [
                 'comment_id' => $comment->id,
@@ -186,7 +186,7 @@ class CommentSpamChecker
         try {
             $akismetData = $this->prepareAkismetData($comment);
 
-            $response = $this->makeRequest('POST', '/1.1/submit-spam', $akismetData);
+            $this->makeRequest('POST', '/1.1/submit-spam', $akismetData);
         } catch (Throwable $throwable) {
             Log::error('Failed to mark comment as spam in Akismet', [
                 'comment_id' => $comment->id,
