@@ -37,6 +37,22 @@ describe('password update', function (): void {
         expect(Hash::check('password', $user->fresh()->password))->toBeTrue();
     });
 
+    it('rejects passwords exceeding maximum length', function (): void {
+        $this->actingAs($user = User::factory()->create());
+        $longPassword = str_repeat('a', 129);
+
+        Livewire::test(UpdatePasswordForm::class)
+            ->set('state', [
+                'current_password' => 'password',
+                'password' => $longPassword,
+                'password_confirmation' => $longPassword,
+            ])
+            ->call('updatePassword')
+            ->assertHasErrors(['password']);
+
+        expect(Hash::check('password', $user->fresh()->password))->toBeTrue();
+    });
+
     it('requires new passwords to match', function (): void {
         $this->actingAs($user = User::factory()->create());
 

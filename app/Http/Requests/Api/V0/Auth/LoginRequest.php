@@ -32,7 +32,7 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => ['required', 'string', 'email', 'exists:users,email'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string', 'max:128'],
             'token_name' => ['sometimes', 'string', 'max:255'],
             'abilities' => ['sometimes', 'array'],
             'abilities.*' => ['sometimes', 'string', Rule::in(self::ALLOWED_ABILITIES)],
