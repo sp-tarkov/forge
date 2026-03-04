@@ -111,11 +111,6 @@ class ProcessChatMessageNotification implements ShouldQueue
             // Send the notification
             $recipient->notify(new NewChatMessageNotification($conversation, $unreadMessages));
 
-            // Record that notification has been sent
-            $notificationType = $recipient->email_chat_notifications_enabled
-                ? NotificationType::ALL
-                : NotificationType::DATABASE;
-
             // Update or create the notification log
             NotificationLog::query()->updateOrCreate([
                 'notifiable_type' => Conversation::class,
@@ -123,7 +118,7 @@ class ProcessChatMessageNotification implements ShouldQueue
                 'user_id' => $recipient->id,
                 'notification_class' => NewChatMessageNotification::class,
             ], [
-                'notification_type' => $notificationType,
+                'notification_type' => NotificationType::ALL,
                 'updated_at' => now(),
             ]);
         });
