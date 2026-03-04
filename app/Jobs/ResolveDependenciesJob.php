@@ -23,10 +23,8 @@ class ResolveDependenciesJob implements ShouldQueue
     /**
      * Resolve the SPT versions for each of the mod versions.
      */
-    public function handle(): void
+    public function handle(DependencyVersionService $dependencyVersionService): void
     {
-        $dependencyVersionService = new DependencyVersionService;
-
         ModVersion::query()
             ->with('dependencies')
             ->chunk(100, function (Collection $modVersions) use ($dependencyVersionService): void {

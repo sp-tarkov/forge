@@ -23,10 +23,8 @@ class ResolveSptVersionsJob implements ShouldQueue
     /**
      * Resolve the SPT versions for each of the mod versions.
      */
-    public function handle(): void
+    public function handle(SptVersionService $sptVersionService): void
     {
-        $sptVersionService = new SptVersionService;
-
         ModVersion::query()
             ->chunk(100, function (Collection $modVersions) use ($sptVersionService): void {
                 foreach ($modVersions as $modVersion) {
