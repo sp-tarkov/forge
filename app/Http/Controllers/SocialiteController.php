@@ -20,7 +20,7 @@ class SocialiteController extends Controller
      */
     protected array $providers = ['discord'];
 
-    public function __construct(private SocialiteService $socialiteService) {}
+    public function __construct(private readonly SocialiteService $socialiteService) {}
 
     /**
      * Redirect the user to the provider's authentication page.

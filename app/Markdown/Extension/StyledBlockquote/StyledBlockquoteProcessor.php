@@ -9,7 +9,6 @@ use League\CommonMark\Event\DocumentParsedEvent;
 use League\CommonMark\Extension\CommonMark\Node\Block\BlockQuote;
 use League\CommonMark\Node\Block\Paragraph;
 use League\CommonMark\Node\Inline\Text;
-use League\CommonMark\Node\Node;
 
 class StyledBlockquoteProcessor
 {

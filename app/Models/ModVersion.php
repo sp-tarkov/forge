@@ -351,7 +351,7 @@ class ModVersion extends Model implements Trackable
                 $query->whereNull('publish_date')
                     ->orWhere('publish_date', '>', now());
             })
-            ->orderByDesc('publish_date')
+            ->latest('publish_date')
             ->first();
 
         return $sptVersion?->publish_date;

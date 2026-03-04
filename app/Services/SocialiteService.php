@@ -156,8 +156,8 @@ class SocialiteService
             Storage::disk($disk)->put($relativePath, $response->body());
 
             $user->forceFill(['profile_photo_path' => $relativePath])->save();
-        } catch (Throwable $e) {
-            Log::error('Failed to download and store avatar', ['url' => $avatarUrl, 'error' => $e->getMessage()]);
+        } catch (Throwable $throwable) {
+            Log::error('Failed to download and store avatar', ['url' => $avatarUrl, 'error' => $throwable->getMessage()]);
         }
     }
 }
