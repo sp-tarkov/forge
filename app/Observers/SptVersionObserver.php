@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Services\SptVersionService;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,7 +16,7 @@ class SptVersionObserver
     /**
      * Handle the SptVersion "saved" event.
      */
-    public function saved(): void
+    public function saved(SptVersion $sptVersion): void
     {
         // Clear all SPT version caches
         $this->clearSptVersionCaches();
@@ -26,7 +27,7 @@ class SptVersionObserver
     /**
      * Handle the SptVersion "deleted" event.
      */
-    public function deleted(): void
+    public function deleted(SptVersion $sptVersion): void
     {
         // Clear all SPT version caches
         $this->clearSptVersionCaches();
