@@ -346,15 +346,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsSpamFromApiResult(SpamCheckResult $result, bool $quiet = false): void
     {
-        $this->spam_status = $result->getSpamStatus();
-        $this->spam_metadata = $result->metadata;
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        $this->updateSpamState($result->getSpamStatus(), $result->metadata, $quiet);
     }
 
     /**
@@ -364,15 +356,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsClean(array $metadata = [], bool $quiet = false): void
     {
-        $this->spam_status = SpamStatus::CLEAN;
-        $this->spam_metadata = $metadata;
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        $this->updateSpamState(SpamStatus::CLEAN, $metadata, $quiet);
     }
 
     /**
@@ -390,15 +374,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsHam(bool $quiet = false): void
     {
-        $this->spam_status = SpamStatus::CLEAN;
-        $this->spam_metadata = ['manually_approved' => true, 'approved_at' => now()->toISOString()];
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        $this->updateSpamState(SpamStatus::CLEAN, ['manually_approved' => true, 'approved_at' => now()->toISOString()], $quiet);
     }
 
     /**
@@ -408,19 +384,11 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsSpamByModerator(int $moderatorId, bool $quiet = false): void
     {
-        $this->spam_status = SpamStatus::SPAM;
-        $this->spam_metadata = [
+        $this->updateSpamState(SpamStatus::SPAM, [
             'manually_marked' => true,
             'marked_by' => $moderatorId,
             'marked_at' => now()->toISOString(),
-        ];
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        ], $quiet);
     }
 
     /**
@@ -558,6 +526,20 @@ class Comment extends Model implements Reportable, Trackable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Update the spam state of this comment.
+     *
+     * @param  array<string, mixed>  $metadata
+     */
+    private function updateSpamState(SpamStatus $status, array $metadata, bool $quiet = false): void
+    {
+        $this->spam_status = $status;
+        $this->spam_metadata = $metadata;
+        $this->spam_checked_at = now();
+
+        $quiet ? $this->saveQuietly() : $this->save();
     }
 
     /**

@@ -510,28 +510,20 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     {
         $roleId = $userRole instanceof UserRole ? $userRole->id : $userRole;
 
-        // Check if the role exists before associating
         if (! UserRole::query()->where('id', $roleId)->exists()) {
-            $availableRoles = UserRole::query()->pluck('id')->toArray();
-            $userEmail = $this->email ?? 'unknown';
-            $userName = $this->name ?? 'unknown';
-
             Log::warning('Failed to assign role to user', [
                 'attempted_role_id' => $roleId,
                 'user_id' => $this->id,
-                'user_email' => $userEmail,
-                'user_name' => $userName,
-                'available_role_ids' => $availableRoles,
-                'role_exists_check' => UserRole::query()->where('id', $roleId)->exists(),
-                'total_roles_count' => UserRole::query()->count(),
+                'user_email' => $this->email,
+                'user_name' => $this->name,
+                'available_role_ids' => UserRole::query()->pluck('id')->toArray(),
             ]);
 
             return false;
         }
 
-        $this->role()->associate($roleId); // Associate by ID
+        $this->role()->associate($roleId);
 
-        // Forget cached role name after assignment
         Cache::forget(sprintf('user_%d_role_name', $this->id));
 
         return $this->save();
