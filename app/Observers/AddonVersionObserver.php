@@ -47,9 +47,6 @@ class AddonVersionObserver
      */
     protected function updateRelatedAddon(AddonVersion $addonVersion): void
     {
-        if ($addonVersion->addon()->exists()) {
-            $addon = $addonVersion->addon;
-            $addon->calculateDownloads();
-        }
+        $addonVersion->addon?->calculateDownloads();
     }
 }
