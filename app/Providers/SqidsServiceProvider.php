@@ -30,12 +30,4 @@ class SqidsServiceProvider extends ServiceProvider
         // Optionally, create an alias for easier access
         $this->app->alias(Sqids::class, 'sqids');
     }
-
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
-        //
-    }
 }
