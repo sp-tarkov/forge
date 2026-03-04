@@ -11,7 +11,6 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Livewire\Component;
 
@@ -41,10 +40,10 @@ class UpdatePasswordForm extends Component
     {
         $this->resetErrorBag();
 
+        /** @var User $user */
         $user = Auth::user();
 
         if ($user->password !== null) {
-            // User has a password, use the standard update process
             $updatesUserPasswords->update($user, $this->state);
 
             if (request()->hasSession()) {
@@ -52,36 +51,23 @@ class UpdatePasswordForm extends Component
                     'password_hash_'.Auth::getDefaultDriver() => $user->getAuthPassword(),
                 ]);
             }
-
-            $this->state = [
-                'current_password' => '',
-                'password' => '',
-                'password_confirmation' => '',
-            ];
-
-            Track::event(TrackingEventType::PASSWORD_CHANGE);
-
-            $this->dispatch('saved');
         } else {
-            // User has a null password. Allow them to set a new password without their current password.
-            Validator::make($this->state, [
-                'password' => $this->passwordRules(),
-            ])->validateWithBag('updatePassword');
+            $this->validate(
+                ['state.password' => $this->passwordRules()],
+                [],
+                ['state.password' => __('password')],
+            );
 
-            auth()->user()->forceFill([
+            $user->forceFill([
                 'password' => Hash::make($this->state['password']),
             ])->save();
-
-            $this->state = [
-                'current_password' => '',
-                'password' => '',
-                'password_confirmation' => '',
-            ];
-
-            Track::event(TrackingEventType::PASSWORD_CHANGE);
-
-            $this->dispatch('saved');
         }
+
+        $this->resetState();
+
+        Track::event(TrackingEventType::PASSWORD_CHANGE);
+
+        $this->dispatch('saved');
     }
 
     /**
@@ -98,5 +84,17 @@ class UpdatePasswordForm extends Component
     public function render(): View
     {
         return view('profile.update-password-form');
+    }
+
+    /**
+     * Reset the form state to empty values.
+     */
+    private function resetState(): void
+    {
+        $this->state = [
+            'current_password' => '',
+            'password' => '',
+            'password_confirmation' => '',
+        ];
     }
 }
