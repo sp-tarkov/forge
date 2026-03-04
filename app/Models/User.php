@@ -822,10 +822,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     }
 
     /**
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    /**
      * Filter out users blocked by the given user.
      *
      * @param  Builder<self>  $query
