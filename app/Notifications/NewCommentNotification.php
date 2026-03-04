@@ -21,9 +21,7 @@ class NewCommentNotification extends Notification
      */
     public function __construct(
         public Comment $comment
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.

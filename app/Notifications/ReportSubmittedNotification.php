@@ -22,9 +22,7 @@ class ReportSubmittedNotification extends Notification implements ShouldQueue
      */
     public function __construct(
         public Report $report
-    ) {
-        //
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
