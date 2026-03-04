@@ -204,7 +204,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
         }
 
         return $this->owner_id === $user->id ||
-               $this->additionalAuthors->contains('id', $user->id);
+               $this->additionalAuthors()->where('user_id', $user->id)->exists();
     }
 
     /**

@@ -329,18 +329,13 @@ class ModVersion extends Model implements Trackable
      */
     public function isPinnedToUnpublishedSptVersion(): bool
     {
-        $this->loadMissing('sptVersions');
-
-        foreach ($this->sptVersions as $sptVersion) {
-            $pivot = $sptVersion->pivot;
-            if ($pivot->pinned_to_spt_publish) {
-                if (! $sptVersion->is_published) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $this->sptVersions()
+            ->wherePivot('pinned_to_spt_publish', true)
+            ->where(function (Builder $query): void {
+                $query->whereNull('publish_date')
+                    ->orWhere('publish_date', '>', now());
+            })
+            ->exists();
     }
 
     /**
@@ -349,20 +344,17 @@ class ModVersion extends Model implements Trackable
      */
     public function getLatestPinnedSptPublishDate(): ?Carbon
     {
-        $this->loadMissing('sptVersions');
+        /** @var SptVersion|null $sptVersion */
+        $sptVersion = $this->sptVersions()
+            ->wherePivot('pinned_to_spt_publish', true)
+            ->where(function (Builder $query): void {
+                $query->whereNull('publish_date')
+                    ->orWhere('publish_date', '>', now());
+            })
+            ->orderByDesc('publish_date')
+            ->first();
 
-        $latestDate = null;
-
-        foreach ($this->sptVersions as $sptVersion) {
-            $pivot = $sptVersion->pivot;
-            if ($pivot->pinned_to_spt_publish && ! $sptVersion->is_published) {
-                if (is_null($latestDate) || $sptVersion->publish_date > $latestDate) {
-                    $latestDate = $sptVersion->publish_date;
-                }
-            }
-        }
-
-        return $latestDate;
+        return $sptVersion?->publish_date;
     }
 
     /**

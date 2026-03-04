@@ -549,7 +549,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        return $user->id === $this->owner?->id || $this->additionalAuthors->pluck('id')->contains($user->id);
+        return $user->id === $this->owner_id || $this->additionalAuthors()->where('user_id', $user->id)->exists();
     }
 
     /**
