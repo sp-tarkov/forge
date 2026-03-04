@@ -220,26 +220,26 @@ class DependencyService
                     ->where('mods.published_at', '<=', now())
                     ->where('mods.disabled', false);
             })
-            ->join(DB::raw('(
-                SELECT
-                    mv.mod_id,
-                    mv.id,
-                    ROW_NUMBER() OVER (
+            ->joinSub(
+                DB::table('mod_versions as mv')
+                    ->select('mv.mod_id', 'mv.id')
+                    ->selectRaw('ROW_NUMBER() OVER (
                         PARTITION BY mv.mod_id
                         ORDER BY mv.version_major DESC, mv.version_minor DESC, mv.version_patch DESC,
-                                 CASE WHEN mv.version_labels = "" THEN 0 ELSE 1 END, mv.version_labels
-                    ) as rn
-                FROM mod_versions mv
-                INNER JOIN dependencies_resolved rd ON mv.id = rd.resolved_mod_version_id
-                WHERE rd.dependable_id = '.$modVersionId.'
-                    AND rd.dependable_type = "'.addslashes(ModVersion::class).'"
-                    AND mv.published_at IS NOT NULL
-                    AND mv.published_at <= NOW()
-                    AND mv.disabled = 0
-            ) as ranked'), function (JoinClause $join): void {
-                $join->on('resolved_versions.id', '=', 'ranked.id')
-                    ->where('ranked.rn', '=', 1);
-            })
+                                 CASE WHEN mv.version_labels = ? THEN 0 ELSE 1 END, mv.version_labels
+                    ) as rn', [''])
+                    ->join('dependencies_resolved as rd', 'mv.id', '=', 'rd.resolved_mod_version_id')
+                    ->where('rd.dependable_id', $modVersionId)
+                    ->where('rd.dependable_type', ModVersion::class)
+                    ->whereNotNull('mv.published_at')
+                    ->where('mv.published_at', '<=', now())
+                    ->where('mv.disabled', false),
+                'ranked',
+                function (JoinClause $join): void {
+                    $join->on('resolved_versions.id', '=', 'ranked.id')
+                        ->where('ranked.rn', '=', 1);
+                }
+            )
             ->where('dependencies_resolved.dependable_id', $modVersionId)
             ->where('dependencies_resolved.dependable_type', ModVersion::class)
             ->groupBy('dependencies.dependent_mod_id', 'dependencies.constraint')
@@ -326,26 +326,26 @@ class DependencyService
                     ->where('mods.published_at', '<=', now())
                     ->where('mods.disabled', false);
             })
-            ->join(DB::raw('(
-                SELECT
-                    mv.mod_id,
-                    mv.id,
-                    ROW_NUMBER() OVER (
+            ->joinSub(
+                DB::table('mod_versions as mv')
+                    ->select('mv.mod_id', 'mv.id')
+                    ->selectRaw('ROW_NUMBER() OVER (
                         PARTITION BY mv.mod_id
                         ORDER BY mv.version_major DESC, mv.version_minor DESC, mv.version_patch DESC,
-                                 CASE WHEN mv.version_labels = "" THEN 0 ELSE 1 END, mv.version_labels
-                    ) as rn
-                FROM mod_versions mv
-                INNER JOIN dependencies_resolved rd ON mv.id = rd.resolved_mod_version_id
-                WHERE rd.dependable_id = '.$addonVersionId.'
-                    AND rd.dependable_type = "'.addslashes(AddonVersion::class).'"
-                    AND mv.published_at IS NOT NULL
-                    AND mv.published_at <= NOW()
-                    AND mv.disabled = 0
-            ) as ranked'), function (JoinClause $join): void {
-                $join->on('resolved_versions.id', '=', 'ranked.id')
-                    ->where('ranked.rn', '=', 1);
-            })
+                                 CASE WHEN mv.version_labels = ? THEN 0 ELSE 1 END, mv.version_labels
+                    ) as rn', [''])
+                    ->join('dependencies_resolved as rd', 'mv.id', '=', 'rd.resolved_mod_version_id')
+                    ->where('rd.dependable_id', $addonVersionId)
+                    ->where('rd.dependable_type', AddonVersion::class)
+                    ->whereNotNull('mv.published_at')
+                    ->where('mv.published_at', '<=', now())
+                    ->where('mv.disabled', false),
+                'ranked',
+                function (JoinClause $join): void {
+                    $join->on('resolved_versions.id', '=', 'ranked.id')
+                        ->where('ranked.rn', '=', 1);
+                }
+            )
             ->where('dependencies_resolved.dependable_id', $addonVersionId)
             ->where('dependencies_resolved.dependable_type', AddonVersion::class)
             ->groupBy('dependencies.dependent_mod_id', 'dependencies.constraint')
