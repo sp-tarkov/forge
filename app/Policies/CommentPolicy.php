@@ -87,7 +87,7 @@ class CommentPolicy
      * - Must have verified email address.
      * - The commentable must allow comments.
      *
-     * @param  Commentable<Mod|User>|null  $commentable>
+     * @param  Commentable<Mod|User>|null  $commentable
      */
     public function create(User $user, ?Commentable $commentable = null): bool
     {
