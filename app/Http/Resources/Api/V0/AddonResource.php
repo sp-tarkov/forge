@@ -127,10 +127,13 @@ class AddonResource extends JsonResource
         $data['versions'] = AddonVersionResource::collection($this->whenLoaded('versions', fn () =>
             // Limit versions in list view to the 6 most recent versions
             $this->resource->versions
-                ->sortByDesc('version_major')
-                ->sortByDesc('version_minor')
-                ->sortByDesc('version_patch')
-                ->sortBy('version_labels')
+                ->sortBy([
+                    ['version_major', 'desc'],
+                    ['version_minor', 'desc'],
+                    ['version_patch', 'desc'],
+                    [fn ($a, $b): int => ($a->version_labels === '' ? 0 : 1) <=> ($b->version_labels === '' ? 0 : 1), 'asc'],
+                    ['version_labels', 'asc'],
+                ])
                 ->take(6)));
 
         return $data;
