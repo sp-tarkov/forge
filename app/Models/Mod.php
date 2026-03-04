@@ -667,7 +667,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Get the URL to the mod's detail page.
      *
-     * @return Attribute<string, string>
+     * @return Attribute<string, never>
      */
     protected function detailUrl(): Attribute
     {
