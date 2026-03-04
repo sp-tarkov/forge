@@ -53,6 +53,16 @@ class ModFactory extends Factory
     }
 
     /**
+     * Indicate that the mod should be unpublished.
+     */
+    public function unpublished(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'published_at' => null,
+        ]);
+    }
+
+    /**
      * Indicate that the mod has addons enabled.
      */
     public function addonsEnabled(): static
