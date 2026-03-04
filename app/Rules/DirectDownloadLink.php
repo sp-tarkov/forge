@@ -51,8 +51,6 @@ class DirectDownloadLink implements ValidationRule
                 return;
             }
 
-            // Get headers (case-insensitive)
-            $headers = $response->headers();
             $contentType = mb_strtolower($response->header('content-type'));
             $contentDisposition = mb_strtolower($response->header('content-disposition'));
             $contentLength = $response->header('content-length');
