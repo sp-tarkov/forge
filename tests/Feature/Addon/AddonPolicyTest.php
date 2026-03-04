@@ -241,6 +241,26 @@ describe('Addon Policy', function (): void {
 
             expect($user->can('publish', $addon))->toBeFalse();
         });
+
+        it('prevents publishing addon when parent mod is unpublished', function (): void {
+            $owner = User::factory()->create(['email_verified_at' => now()]);
+            $mod = Mod::factory()->unpublished()->create();
+            $addon = Addon::factory()->for($mod)->for($owner, 'owner')->create(['published_at' => null]);
+
+            $this->actingAs($owner);
+
+            expect($owner->can('publish', $addon))->toBeFalse();
+        });
+
+        it('prevents publishing addon when parent mod has future publish date', function (): void {
+            $owner = User::factory()->create(['email_verified_at' => now()]);
+            $mod = Mod::factory()->create(['published_at' => now()->addDays(7)]);
+            $addon = Addon::factory()->for($mod)->for($owner, 'owner')->create(['published_at' => null]);
+
+            $this->actingAs($owner);
+
+            expect($owner->can('publish', $addon))->toBeFalse();
+        });
     });
 
     describe('Disable Policy', function (): void {

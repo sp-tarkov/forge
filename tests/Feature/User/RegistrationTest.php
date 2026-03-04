@@ -24,4 +24,20 @@ describe('registration', function (): void {
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
     })->skip(fn (): bool => ! Features::enabled(Features::registration()), 'Registration support is not enabled.');
+
+    it('rejects passwords exceeding maximum length', function (): void {
+        $longPassword = str_repeat('a', 129);
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => $longPassword,
+            'password_confirmation' => $longPassword,
+            'timezone' => 'America/New_York',
+            'terms' => true,
+        ]);
+
+        $response->assertSessionHasErrors('password');
+        $this->assertGuest();
+    })->skip(fn (): bool => ! Features::enabled(Features::registration()), 'Registration support is not enabled.');
 });

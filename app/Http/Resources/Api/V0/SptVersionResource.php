@@ -78,17 +78,17 @@ class SptVersionResource extends JsonResource
         }
 
         if ($this->shouldInclude('created_at')) {
-            $data['created_at'] = $this->resource->created_at;
+            $data['created_at'] = $this->resource->created_at?->toISOString();
         }
 
         if ($this->shouldInclude('updated_at')) {
-            $data['updated_at'] = $this->resource->updated_at;
+            $data['updated_at'] = $this->resource->updated_at?->toISOString();
         }
 
         return $data;
     }
 
-    public function shouldInclude(string $field): bool
+    protected function shouldInclude(string $field): bool
     {
         $requiredFields = SptVersionQueryBuilder::getRequiredFields();
 

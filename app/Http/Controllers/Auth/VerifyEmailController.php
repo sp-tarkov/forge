@@ -17,7 +17,7 @@ class VerifyEmailController extends Controller
      *
      * @return VerifyEmailResponse
      */
-    public function __invoke(VerifyEmailRequest $request)
+    public function __invoke(VerifyEmailRequest $request): VerifyEmailResponse
     {
         // Get user from route parameters since they might not be authenticated
         $user = User::query()->findOrFail($request->route('id'));

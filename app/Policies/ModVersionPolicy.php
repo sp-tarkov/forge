@@ -7,12 +7,9 @@ namespace App\Policies;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ModVersionPolicy
 {
-    use HandlesAuthorization;
-
     /**
      * Determine whether the user can view any mod versions.
      */

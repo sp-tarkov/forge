@@ -8,6 +8,7 @@ use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -45,8 +46,7 @@ new class extends Component {
         $notification = Auth::user()->notifications()->find($notificationId);
         if ($notification) {
             $notification->markAsRead();
-
-            // Update the unread notification count.
+            $this->clearUnreadCountCache();
             $this->loadUnreadCount();
         }
     }
@@ -59,6 +59,7 @@ new class extends Component {
         Auth::user()
             ->unreadNotifications()
             ->update(['read_at' => now()]);
+        $this->clearUnreadCountCache();
         $this->loadUnreadCount();
     }
 
@@ -72,6 +73,7 @@ new class extends Component {
             $wasUnread = !$notification->read_at;
             $notification->delete();
             if ($wasUnread) {
+                $this->clearUnreadCountCache();
                 $this->loadUnreadCount();
             }
         }
@@ -83,6 +85,7 @@ new class extends Component {
     public function deleteAll(): void
     {
         Auth::user()->notifications()->delete();
+        $this->clearUnreadCountCache();
         $this->loadUnreadCount();
     }
 
@@ -100,6 +103,7 @@ new class extends Component {
         // Mark as read if not already
         if (!$notification->read_at) {
             $notification->markAsRead();
+            $this->clearUnreadCountCache();
             $this->loadUnreadCount();
         }
 
@@ -112,11 +116,25 @@ new class extends Component {
     }
 
     /**
-     * Updates the unread notification count.
+     * Updates the unread notification count using a short-lived cache.
      */
     private function loadUnreadCount(): void
     {
-        $this->unreadCount = Auth::user()->unreadNotifications()->count();
+        $userId = Auth::id();
+
+        $this->unreadCount = Cache::remember(
+            "user:{$userId}:unread-notification-count",
+            30,
+            fn (): int => Auth::user()->unreadNotifications()->count(),
+        );
+    }
+
+    /**
+     * Clears the cached unread notification count so the next load fetches fresh data.
+     */
+    private function clearUnreadCountCache(): void
+    {
+        Cache::forget('user:'.Auth::id().':unread-notification-count');
     }
 
     /**

@@ -97,6 +97,18 @@ describe('Auth Register API', function (): void {
             ->assertJsonValidationErrorFor('password');
     });
 
+    it('returns validation error if registration password exceeds maximum length', function (): void {
+        $response = $this->postJson('/api/v0/auth/register', [
+            'name' => 'NewRegisterUser',
+            'email' => 'register@example.com',
+            'password' => str_repeat('a', 129),
+            'timezone' => 'America/New_York',
+        ]);
+        $response
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonValidationErrorFor('password');
+    });
+
     it('sends verification email upon registration', function (): void {
         Notification::fake();
 

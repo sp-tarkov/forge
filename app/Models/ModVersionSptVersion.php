@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Override;
 
 /**
  * @property int $id
@@ -54,6 +55,7 @@ class ModVersionSptVersion extends Pivot
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

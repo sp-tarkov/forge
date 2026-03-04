@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Override;
 use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
@@ -203,7 +204,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
         }
 
         return $this->owner_id === $user->id ||
-               $this->additionalAuthors->contains('id', $user->id);
+               $this->additionalAuthors()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -225,9 +226,13 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     /**
      * Build the URL to download the latest version of this addon.
      */
-    public function downloadUrl(bool $absolute = false): string
+    public function downloadUrl(bool $absolute = false): ?string
     {
         $this->load('latestVersion');
+
+        if ($this->latestVersion === null) {
+            return null;
+        }
 
         return route('addon.version.download', [
             $this->id,
@@ -531,6 +536,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

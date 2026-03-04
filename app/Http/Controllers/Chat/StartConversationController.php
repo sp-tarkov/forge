@@ -18,10 +18,9 @@ class StartConversationController extends Controller
      */
     public function __invoke(User $user): RedirectResponse
     {
-        $currentUser = Auth::user();
-
-        // Check if the user can initiate a chat
         abort_if(Gate::denies('initiateChat', $user), 403);
+
+        $currentUser = Auth::user();
 
         // Find or create the conversation
         $conversation = Conversation::findOrCreateBetween($currentUser, $user, creator: $currentUser);

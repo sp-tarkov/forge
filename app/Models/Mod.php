@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Override;
 use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
@@ -156,9 +157,13 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Build the URL to download the latest version of this mod.
      */
-    public function downloadUrl(bool $absolute = false): string
+    public function downloadUrl(bool $absolute = false): ?string
     {
         $this->load('latestVersion');
+
+        if ($this->latestVersion === null) {
+            return null;
+        }
 
         return route('mod.version.download', [
             $this->id,
@@ -544,7 +549,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        return $user->id === $this->owner?->id || $this->additionalAuthors->pluck('id')->contains($user->id);
+        return $user->id === $this->owner_id || $this->additionalAuthors()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -662,7 +667,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Get the URL to the mod's detail page.
      *
-     * @return Attribute<string, string>
+     * @return Attribute<string, never>
      */
     protected function detailUrl(): Attribute
     {
@@ -674,6 +679,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

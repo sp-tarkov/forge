@@ -16,7 +16,7 @@ class FileRedirectController extends Controller
     {
         $mod = Mod::query()->where('hub_content_id', $hubId)->first();
 
-        if (empty($mod)) {
+        if ($mod === null) {
             $mod = Mod::query()->where('hub_id', $hubId)->firstOrFail();
         }
 

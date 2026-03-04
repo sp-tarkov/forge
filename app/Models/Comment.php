@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Override;
 use Shetabit\Visitor\Models\Visit;
 use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
@@ -345,15 +346,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsSpamFromApiResult(SpamCheckResult $result, bool $quiet = false): void
     {
-        $this->spam_status = $result->getSpamStatus();
-        $this->spam_metadata = $result->metadata;
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        $this->updateSpamState($result->getSpamStatus(), $result->metadata, $quiet);
     }
 
     /**
@@ -363,15 +356,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsClean(array $metadata = [], bool $quiet = false): void
     {
-        $this->spam_status = SpamStatus::CLEAN;
-        $this->spam_metadata = $metadata;
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        $this->updateSpamState(SpamStatus::CLEAN, $metadata, $quiet);
     }
 
     /**
@@ -389,15 +374,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsHam(bool $quiet = false): void
     {
-        $this->spam_status = SpamStatus::CLEAN;
-        $this->spam_metadata = ['manually_approved' => true, 'approved_at' => now()->toISOString()];
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        $this->updateSpamState(SpamStatus::CLEAN, ['manually_approved' => true, 'approved_at' => now()->toISOString()], $quiet);
     }
 
     /**
@@ -407,19 +384,11 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function markAsSpamByModerator(int $moderatorId, bool $quiet = false): void
     {
-        $this->spam_status = SpamStatus::SPAM;
-        $this->spam_metadata = [
+        $this->updateSpamState(SpamStatus::SPAM, [
             'manually_marked' => true,
             'marked_by' => $moderatorId,
             'marked_at' => now()->toISOString(),
-        ];
-        $this->spam_checked_at = now();
-
-        if ($quiet) {
-            $this->saveQuietly();
-        } else {
-            $this->save();
-        }
+        ], $quiet);
     }
 
     /**
@@ -451,7 +420,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function getReportableUrl(): string
     {
-        return $this->getUrl();
+        return $this->getUrl() ?? '';
     }
 
     /**
@@ -541,7 +510,10 @@ class Comment extends Model implements Reportable, Trackable
 
     /**
      * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [
@@ -557,7 +529,21 @@ class Comment extends Model implements Reportable, Trackable
     }
 
     /**
-     * A recursive method to resolve the root_id of this comment by traversing the parent_id chain.
+     * Update the spam state of this comment.
+     *
+     * @param  array<string, mixed>  $metadata
+     */
+    private function updateSpamState(SpamStatus $status, array $metadata, bool $quiet = false): void
+    {
+        $this->spam_status = $status;
+        $this->spam_metadata = $metadata;
+        $this->spam_checked_at = now();
+
+        $quiet ? $this->saveQuietly() : $this->save();
+    }
+
+    /**
+     * Resolve the root_id of this comment by traversing the parent_id chain in a single query.
      */
     private function resolveRootId(): ?int
     {
@@ -565,6 +551,25 @@ class Comment extends Model implements Reportable, Trackable
             return $this->id;
         }
 
-        return $this->parent->resolveRootId();
+        $currentParentId = $this->parent_id;
+
+        while ($currentParentId !== null) {
+            $parent = self::query()
+                ->where('id', $currentParentId)
+                ->select(['id', 'parent_id'])
+                ->first();
+
+            if ($parent === null) {
+                return $currentParentId;
+            }
+
+            if ($parent->parent_id === null) {
+                return $parent->id;
+            }
+
+            $currentParentId = $parent->parent_id;
+        }
+
+        return null;
     }
 }

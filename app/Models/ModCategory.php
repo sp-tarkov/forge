@@ -43,10 +43,8 @@ class ModCategory extends Model
      * Boot the model.
      */
     #[Override]
-    protected static function boot(): void
+    protected static function booted(): void
     {
-        parent::boot();
-
         static::creating(function (ModCategory $modCategory): void {
             if (empty($modCategory->slug)) {
                 $modCategory->slug = Str::slug($modCategory->title);
@@ -65,6 +63,7 @@ class ModCategory extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

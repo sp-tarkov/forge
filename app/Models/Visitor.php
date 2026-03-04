@@ -9,6 +9,7 @@ use Database\Factories\VisitorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
+use Override;
 
 /**
  * Model for tracking peak visitor statistics.
@@ -84,6 +85,7 @@ class Visitor extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

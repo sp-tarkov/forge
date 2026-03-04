@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int $id
@@ -24,12 +25,6 @@ class ConversationArchive extends Model
 {
     /** @use HasFactory<ConversationArchiveFactory> */
     use HasFactory;
-
-    protected $fillable = [
-        'conversation_id',
-        'user_id',
-        'archived_at',
-    ];
 
     /**
      * Get the conversation that was archived.
@@ -56,6 +51,7 @@ class ConversationArchive extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

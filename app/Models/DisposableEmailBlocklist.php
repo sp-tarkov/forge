@@ -19,7 +19,7 @@ class DisposableEmailBlocklist extends Model
     protected $table = 'disposable_email_blocklist';
 
     /**
-     * Check if a domain is disposable
+     * Check if a domain is disposable.
      */
     public static function isDisposable(string $domain): bool
     {
@@ -27,7 +27,7 @@ class DisposableEmailBlocklist extends Model
     }
 
     /**
-     * Clear the cache for a specific domain
+     * Clear the cache for a specific domain.
      */
     public static function clearDomainCache(string $domain): void
     {
@@ -35,7 +35,7 @@ class DisposableEmailBlocklist extends Model
     }
 
     /**
-     * Clear all disposable email caches
+     * Clear all disposable email caches.
      */
     public static function clearAllCaches(): void
     {

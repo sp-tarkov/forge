@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Addon;
+use App\Models\AddonVersion;
 use App\Support\Api\V0\QueryBuilder\AddonQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -127,10 +128,13 @@ class AddonResource extends JsonResource
         $data['versions'] = AddonVersionResource::collection($this->whenLoaded('versions', fn () =>
             // Limit versions in list view to the 6 most recent versions
             $this->resource->versions
-                ->sortByDesc('version_major')
-                ->sortByDesc('version_minor')
-                ->sortByDesc('version_patch')
-                ->sortBy('version_labels')
+                ->sortBy([
+                    ['version_major', 'desc'],
+                    ['version_minor', 'desc'],
+                    ['version_patch', 'desc'],
+                    [fn (AddonVersion $a, AddonVersion $b): int => ($a->version_labels === '' ? 0 : 1) <=> ($b->version_labels === '' ? 0 : 1), 'asc'],
+                    ['version_labels', 'asc'],
+                ])
                 ->take(6)));
 
         return $data;

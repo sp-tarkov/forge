@@ -234,7 +234,7 @@ class Message extends Model
                     ? $conversation->user2_id
                     : $conversation->user1_id;
 
-                return $this->isReadBy(User::query()->find($otherUserId));
+                return $this->reads()->where('user_id', $otherUserId)->exists();
             }
 
             return false;

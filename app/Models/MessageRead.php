@@ -9,14 +9,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 
 /**
  * @property int $id
  * @property int $message_id
  * @property int $user_id
  * @property Carbon $read_at
- * @property Message $message
- * @property User $user
+ * @property-read Message $message
+ * @property-read User $user
  */
 class MessageRead extends Model
 {
@@ -50,6 +51,7 @@ class MessageRead extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

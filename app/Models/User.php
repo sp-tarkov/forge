@@ -36,6 +36,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
+use Override;
 use SensitiveParameter;
 use Shetabit\Visitor\Traits\Visitor;
 use Stevebauman\Purify\Facades\Purify;
@@ -487,6 +488,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Overwritten to instead use the queued version of the VerifyEmail notification.
      */
+    #[Override]
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new VerifyEmail);
@@ -495,6 +497,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Overwritten to instead use the queued version of the ResetPassword notification.
      */
+    #[Override]
     public function sendPasswordResetNotification(#[SensitiveParameter] $token): void // @pest-ignore-type
     {
         $this->notify(new ResetPassword($token));
@@ -507,28 +510,20 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     {
         $roleId = $userRole instanceof UserRole ? $userRole->id : $userRole;
 
-        // Check if the role exists before associating
         if (! UserRole::query()->where('id', $roleId)->exists()) {
-            $availableRoles = UserRole::query()->pluck('id')->toArray();
-            $userEmail = $this->email ?? 'unknown';
-            $userName = $this->name ?? 'unknown';
-
             Log::warning('Failed to assign role to user', [
                 'attempted_role_id' => $roleId,
                 'user_id' => $this->id,
-                'user_email' => $userEmail,
-                'user_name' => $userName,
-                'available_role_ids' => $availableRoles,
-                'role_exists_check' => UserRole::query()->where('id', $roleId)->exists(),
-                'total_roles_count' => UserRole::query()->count(),
+                'user_email' => $this->email,
+                'user_name' => $this->name,
+                'available_role_ids' => UserRole::query()->pluck('id')->toArray(),
             ]);
 
             return false;
         }
 
-        $this->role()->associate($roleId); // Associate by ID
+        $this->role()->associate($roleId);
 
-        // Forget cached role name after assignment
         Cache::forget(sprintf('user_%d_role_name', $this->id));
 
         return $this->save();
@@ -797,6 +792,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [
@@ -817,10 +813,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
         ];
     }
 
-    /**
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
     /**
      * Filter out users blocked by the given user.
      *

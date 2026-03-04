@@ -536,6 +536,7 @@ class Conversation extends Model
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [
@@ -546,7 +547,7 @@ class Conversation extends Model
     /**
      * Get the URL to the conversation.
      *
-     * @return Attribute<string, string>
+     * @return Attribute<string, never>
      */
     protected function url(): Attribute
     {

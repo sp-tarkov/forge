@@ -213,6 +213,22 @@ describe('Auth Login API', function (): void {
             ->assertJsonValidationErrorFor('email');
     });
 
+    it('returns validation error if password exceeds maximum length', function (): void {
+        User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $response = $this->postJson('/api/v0/auth/login', [
+            'email' => 'test@example.com',
+            'password' => str_repeat('a', 129),
+        ]);
+
+        $response
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonValidationErrorFor('password');
+    });
+
     it('returns validation error if abilities contains invalid value', function (): void {
         User::factory()->create([
             'email' => 'test@example.com',

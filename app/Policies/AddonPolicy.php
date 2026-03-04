@@ -163,14 +163,21 @@ class AddonPolicy
     /**
      * Determine whether the user can publish the model.
      */
-    public function publish(User $user, Addon $addon): bool
+    public function publish(User $user, Addon $addon): Response
     {
-        // Must have verified email address
         if (! $user->hasVerifiedEmail()) {
-            return false;
+            return Response::deny(__('You must verify your email address.'));
         }
 
-        return $addon->isAuthorOrOwner($user);
+        if (! $addon->isAuthorOrOwner($user)) {
+            return Response::deny(__('You are not authorized to publish this addon.'));
+        }
+
+        if (! $addon->mod?->isPublished()) {
+            return Response::deny(__('The parent mod must be published before its addons can be published.'));
+        }
+
+        return Response::allow();
     }
 
     /**

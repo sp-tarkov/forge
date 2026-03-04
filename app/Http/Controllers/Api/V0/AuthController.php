@@ -73,18 +73,15 @@ class AuthController extends Controller
 
         $user = User::query()->where('email', $validated['email'])->first();
 
-        if (! $user || is_null($user->password)) {
+        if ($user && is_null($user->password)) {
+            return ApiResponse::error(
+                'Password login is not available for accounts created via OAuth. Please use the original login method or set a password for your account.',
+                Response::HTTP_FORBIDDEN,
+                ApiErrorCode::PASSWORD_LOGIN_UNAVAILABLE,
+            );
+        }
 
-            // If the password is null, it's likely an OAuth user.
-            if ($user && is_null($user->password)) {
-                return ApiResponse::error(
-                    'Password login is not available for accounts created via OAuth. Please use the original login method or set a password for your account.',
-                    Response::HTTP_FORBIDDEN,
-                    ApiErrorCode::PASSWORD_LOGIN_UNAVAILABLE,
-                );
-            }
-
-            // User doesn't exist.
+        if (! $user) {
             return ApiResponse::error(
                 'Invalid credentials provided.',
                 Response::HTTP_UNAUTHORIZED,

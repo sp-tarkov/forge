@@ -13,6 +13,9 @@ use Illuminate\Contracts\Auth\Authenticatable;
  * channels and other authentication-aware features using their session ID as an identifier.
  *
  * Don't use this unless you know exactly what you're doing.
+ *
+ * @property-read string $id
+ * @property-read bool $is_guest
  */
 class Guest implements Authenticatable
 {

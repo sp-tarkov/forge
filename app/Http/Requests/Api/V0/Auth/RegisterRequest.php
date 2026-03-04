@@ -30,7 +30,7 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:36', 'unique:users,name'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', new NotDisposableEmail],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', 'max:128', 'min:8'],
             'timezone' => ['required', 'string', 'in:'.implode(',', DateTimeZone::listIdentifiers())],
         ];
     }

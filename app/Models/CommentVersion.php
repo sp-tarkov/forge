@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Override;
 use Stevebauman\Purify\Facades\Purify;
 
 /**
@@ -61,6 +62,7 @@ class CommentVersion extends Model
     /**
      * The attributes that should be cast to native types.
      */
+    #[Override]
     protected function casts(): array
     {
         return [

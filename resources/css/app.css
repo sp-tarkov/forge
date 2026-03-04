@@ -261,8 +261,48 @@ button {
     blockquote {
         @apply my-4 border-s-4 border-cyan-400 bg-gray-100 p-4 dark:border-cyan-600 dark:bg-gray-900;
 
+        > :first-child {
+            @apply mt-0;
+        }
+
+        > :last-child {
+            @apply mb-0;
+        }
+
         p {
-            @apply text-lg leading-relaxed font-medium text-gray-900 italic dark:text-white;
+            @apply my-2 leading-relaxed text-gray-900 italic dark:text-white;
+        }
+
+        &.is-info {
+            @apply border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950;
+
+            p {
+                @apply text-blue-900 dark:text-blue-100;
+            }
+        }
+
+        &.is-success {
+            @apply border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-950;
+
+            p {
+                @apply text-green-900 dark:text-green-100;
+            }
+        }
+
+        &.is-warning {
+            @apply border-yellow-400 bg-yellow-50 dark:border-yellow-600 dark:bg-yellow-950;
+
+            p {
+                @apply text-yellow-900 dark:text-yellow-100;
+            }
+        }
+
+        &.is-danger {
+            @apply border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-950;
+
+            p {
+                @apply text-red-900 dark:text-red-100;
+            }
         }
     }
 
