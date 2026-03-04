@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Override;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
@@ -27,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Override;
 use Shetabit\Visitor\Models\Visit;
 use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Override;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
@@ -37,6 +36,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
+use Override;
 use SensitiveParameter;
 use Shetabit\Visitor\Traits\Visitor;
 use Stevebauman\Purify\Facades\Purify;

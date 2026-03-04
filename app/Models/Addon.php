@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Override;
 use App\Contracts\Commentable;
 use App\Contracts\Reportable;
 use App\Contracts\Trackable;
@@ -32,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Override;
 use Shetabit\Visitor\Traits\Visitable;
 use Stevebauman\Purify\Facades\Purify;
 
