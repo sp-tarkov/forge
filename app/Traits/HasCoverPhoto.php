@@ -67,7 +67,7 @@ trait HasCoverPhoto
     }
 
     /**
-     * Get the default profile photo URL if no profile photo has been uploaded.
+     * Get the default cover photo URL if no cover photo has been uploaded.
      */
     protected function defaultCoverPhotoUrl(): string
     {
