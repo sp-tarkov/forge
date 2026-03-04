@@ -19,26 +19,29 @@ class DisposableEmailBlocklist extends Model
     protected $table = 'disposable_email_blocklist';
 
     /**
-     * Check if a domain is disposable
+     * Check if a domain is disposable.
      */
     public static function isDisposable(string $domain): bool
     {
-        return Cache::remember('disposable_email_'.$domain, 3600, fn () => self::query()->where('domain', $domain)->exists());
+        $version = (int) Cache::get('disposable_email_version', 0);
+
+        return Cache::remember("disposable_email_v{$version}_{$domain}", 3600, fn () => self::query()->where('domain', $domain)->exists());
     }
 
     /**
-     * Clear the cache for a specific domain
+     * Clear the cache for a specific domain.
      */
     public static function clearDomainCache(string $domain): void
     {
-        Cache::forget('disposable_email_'.$domain);
+        $version = (int) Cache::get('disposable_email_version', 0);
+        Cache::forget("disposable_email_v{$version}_{$domain}");
     }
 
     /**
-     * Clear all disposable email caches
+     * Invalidate all disposable email caches by incrementing the version key.
      */
     public static function clearAllCaches(): void
     {
-        Cache::flush();
+        Cache::increment('disposable_email_version');
     }
 }
