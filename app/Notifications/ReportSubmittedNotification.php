@@ -33,7 +33,7 @@ class ReportSubmittedNotification extends Notification implements ShouldQueue
     {
         $channels = ['database'];
 
-        if ($notifiable instanceof User) {
+        if ($notifiable instanceof User && $notifiable->email_comment_notifications_enabled) {
             $channels[] = 'mail';
         }
 
