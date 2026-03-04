@@ -56,10 +56,10 @@ class SptVersionObserver
      */
     private function resolveSptVersion(): void
     {
-        $modVersions = ModVersion::all();
-
-        foreach ($modVersions as $modVersion) {
-            $this->sptVersionService->resolve($modVersion);
-        }
+        ModVersion::query()->chunk(200, function ($modVersions): void {
+            foreach ($modVersions as $modVersion) {
+                $this->sptVersionService->resolve($modVersion);
+            }
+        });
     }
 }
