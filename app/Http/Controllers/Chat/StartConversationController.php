@@ -9,6 +9,7 @@ use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class StartConversationController extends Controller
 {
@@ -17,7 +18,7 @@ class StartConversationController extends Controller
      */
     public function __invoke(User $user): RedirectResponse
     {
-        $this->authorize('initiateChat', $user);
+        abort_if(Gate::denies('initiateChat', $user), 403);
 
         $currentUser = Auth::user();
 
