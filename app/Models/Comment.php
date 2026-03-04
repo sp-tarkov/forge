@@ -452,7 +452,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function getReportableUrl(): string
     {
-        return $this->getUrl();
+        return $this->getUrl() ?? '';
     }
 
     /**
