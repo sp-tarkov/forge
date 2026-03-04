@@ -12,6 +12,7 @@ use App\Models\ModCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\UrlParam;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @group Mod Categories
@@ -195,7 +196,7 @@ class ModCategoryController extends Controller
         $category = $query->first();
 
         if (! $category) {
-            return ApiResponse::error('The requested resource was not found.', 404, ApiErrorCode::NOT_FOUND);
+            return ApiResponse::error('Resource not found.', Response::HTTP_NOT_FOUND, ApiErrorCode::NOT_FOUND);
         }
 
         return ApiResponse::success(new ModCategoryResource($category));
