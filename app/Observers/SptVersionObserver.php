@@ -7,6 +7,7 @@ namespace App\Observers;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Services\SptVersionService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class SptVersionObserver
@@ -57,7 +58,7 @@ class SptVersionObserver
      */
     private function resolveSptVersion(): void
     {
-        ModVersion::query()->chunk(200, function ($modVersions): void {
+        ModVersion::query()->chunk(200, function (Collection $modVersions): void {
             foreach ($modVersions as $modVersion) {
                 $this->sptVersionService->resolve($modVersion);
             }

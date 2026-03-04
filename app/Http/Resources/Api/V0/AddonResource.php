@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V0;
 
 use App\Models\Addon;
+use App\Models\AddonVersion;
 use App\Support\Api\V0\QueryBuilder\AddonQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -131,7 +132,7 @@ class AddonResource extends JsonResource
                     ['version_major', 'desc'],
                     ['version_minor', 'desc'],
                     ['version_patch', 'desc'],
-                    [fn ($a, $b): int => ($a->version_labels === '' ? 0 : 1) <=> ($b->version_labels === '' ? 0 : 1), 'asc'],
+                    [fn (AddonVersion $a, AddonVersion $b): int => ($a->version_labels === '' ? 0 : 1) <=> ($b->version_labels === '' ? 0 : 1), 'asc'],
                     ['version_labels', 'asc'],
                 ])
                 ->take(6)));
