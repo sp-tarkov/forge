@@ -116,17 +116,8 @@ class ConversationPolicy
             return true;
         }
 
-        // Allow unarchiving if:
-        // 1. No blocking at all
-        // 2. User is the blocker (can unarchive conversations with users they blocked)
-        // But prevent if BOTH users block each other
-        if ($user->hasBlocked($otherUser) && $user->isBlockedBy($otherUser)) {
-            // Mutual blocking - cannot unarchive
-            return false;
-        }
-
-        // Also prevent if only the other user blocks us (we can't interact with them)
-        if (! $user->hasBlocked($otherUser) && $user->isBlockedBy($otherUser)) {
+        // Prevent unarchiving if the other user has blocked us
+        if ($user->isBlockedBy($otherUser)) {
             return false;
         }
 
