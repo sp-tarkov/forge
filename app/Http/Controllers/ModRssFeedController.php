@@ -37,7 +37,7 @@ class ModRssFeedController extends Controller
             ->get();
 
         // Generate RSS content
-        $rss = $this->generateRssFeed($mods, $filters);
+        $rss = $this->generateRssFeed($request, $mods, $filters);
 
         return response($rss, 200, [
             'Content-Type' => 'text/xml; charset=UTF-8',
@@ -96,14 +96,14 @@ class ModRssFeedController extends Controller
      * @param  Collection<int, Mod>  $mods
      * @param  array<string, string|array<int, string>>  $filters
      */
-    private function generateRssFeed(Collection $mods, array $filters): string
+    private function generateRssFeed(Request $request, Collection $mods, array $filters): string
     {
         /** @var string $siteUrl */
         $siteUrl = config('app.url');
         $feedTitle = 'The Forge - SPT Mods';
         $feedDescription = $this->generateFeedDescription($filters);
         /** @var array<string, mixed> $queryParams */
-        $queryParams = request()->query();
+        $queryParams = $request->query();
         $queryString = ! empty($queryParams) ? '?'.http_build_query($queryParams) : '';
         $currentUrl = url()->current().$queryString;
 
