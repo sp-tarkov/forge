@@ -226,9 +226,13 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     /**
      * Build the URL to download the latest version of this addon.
      */
-    public function downloadUrl(bool $absolute = false): string
+    public function downloadUrl(bool $absolute = false): ?string
     {
         $this->load('latestVersion');
+
+        if ($this->latestVersion === null) {
+            return null;
+        }
 
         return route('addon.version.download', [
             $this->id,

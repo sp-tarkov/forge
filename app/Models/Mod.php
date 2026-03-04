@@ -157,9 +157,13 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Build the URL to download the latest version of this mod.
      */
-    public function downloadUrl(bool $absolute = false): string
+    public function downloadUrl(bool $absolute = false): ?string
     {
         $this->load('latestVersion');
+
+        if ($this->latestVersion === null) {
+            return null;
+        }
 
         return route('mod.version.download', [
             $this->id,
