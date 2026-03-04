@@ -8,7 +8,7 @@ use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V0\ModCategoryResource;
 use App\Http\Responses\Api\V0\ApiResponse;
-use App\Models\ModCategory;
+use App\Support\Api\V0\QueryBuilder\ModCategoryQueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\UrlParam;
@@ -96,56 +96,19 @@ class ModCategoryController extends Controller
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 100).', required: false, example: 50)]
     public function index(Request $request): JsonResponse
     {
-        $query = ModCategory::query();
+        $sorts = $request->string('sort')->explode(',')->filter()->all();
 
-        // Apply filters
-        if ($request->has('filter')) {
-            $filters = $request->input('filter', []);
-
-            // Filter by IDs
-            if (isset($filters['id'])) {
-                $ids = array_map(intval(...), explode(',', $filters['id']));
-                $query->whereIn('id', $ids);
-            }
-
-            // Filter by slugs
-            if (isset($filters['slug'])) {
-                $slugs = explode(',', (string) $filters['slug']);
-                $query->whereIn('slug', $slugs);
-            }
-
-            // Filter by title (wildcard)
-            if (isset($filters['title'])) {
-                $query->where('title', 'like', '%'.$filters['title'].'%');
-            }
+        // Default to sorting by title when no sort is specified
+        if (empty(array_filter($sorts))) {
+            $sorts = ['title'];
         }
 
-        // Apply sorting
-        $sorts = $request->string('sort')->explode(',')->filter();
-        if ($sorts->isEmpty()) {
-            $query->orderBy('title');
-        } else {
-            foreach ($sorts as $sort) {
-                $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
-                $field = mb_ltrim($sort, '-');
+        $queryBuilder = (new ModCategoryQueryBuilder)
+            ->withFilters($request->input('filter'))
+            ->withFields($request->string('fields')->explode(',')->all())
+            ->withSorts($sorts);
 
-                if (in_array($field, ['id', 'title', 'slug'])) {
-                    $query->orderBy($field, $direction);
-                }
-            }
-        }
-
-        // Apply field selection
-        $fields = $request->string('fields')->explode(',')->filter();
-        if ($fields->isNotEmpty()) {
-            // Always include id for proper resource identification
-            $fields->push('id');
-            $query->select($fields->unique()->all());
-        }
-
-        // Paginate results
-        $perPage = min($request->integer('per_page', 50), 100);
-        $categories = $query->paginate($perPage);
+        $categories = $queryBuilder->paginate(min($request->integer('per_page', 50), 100));
 
         return ApiResponse::success(ModCategoryResource::collection($categories));
     }
@@ -176,21 +139,16 @@ class ModCategoryController extends Controller
     #[UrlParam('fields', description: 'Comma-separated list of fields to include in the response. Defaults to all fields.', required: false, example: 'id,title,slug')]
     public function show(Request $request, string $identifier): JsonResponse
     {
-        $query = ModCategory::query();
+        $queryBuilder = (new ModCategoryQueryBuilder)
+            ->withFields($request->string('fields')->explode(',')->all());
 
-        // Check if identifier is numeric (ID) or string (slug)
+        // Apply the query builder's field selection, then filter by ID or slug
+        $query = $queryBuilder->apply();
+
         if (is_numeric($identifier)) {
-            $query->where('id', $identifier);
+            $query->where('mod_categories.id', $identifier);
         } else {
-            $query->where('slug', $identifier);
-        }
-
-        // Apply field selection
-        $fields = $request->string('fields')->explode(',')->filter();
-        if ($fields->isNotEmpty()) {
-            // Always include id for proper resource identification
-            $fields->push('id');
-            $query->select($fields->unique()->all());
+            $query->where('mod_categories.slug', $identifier);
         }
 
         $category = $query->first();
