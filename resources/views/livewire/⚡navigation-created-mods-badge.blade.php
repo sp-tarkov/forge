@@ -47,7 +47,7 @@ new class extends Component {
             return;
         }
 
-        $this->createdCount = Cache::remember(
+        $this->createdCount = (int) Cache::remember(
             "user:{$user->id}:nav-created-mods-count",
             60,
             function () use ($user): int {
