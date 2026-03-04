@@ -51,7 +51,7 @@ class ModPolicy
      */
     public function create(User $user): Response
     {
-        return auth()->check() && $user->hasMfaEnabled()
+        return $user->hasMfaEnabled()
             ? Response::allow()
             : Response::deny(__('Your account must have MFA enabled to create a new mod.'));
     }
@@ -166,7 +166,7 @@ class ModPolicy
     }
 
     /**
-     * Determine whether the user can disable the model.
+     * Determine whether the user can feature the model.
      */
     public function feature(User $user, Mod $mod): bool
     {
