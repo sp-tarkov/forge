@@ -122,11 +122,7 @@ new class extends Component {
     {
         $userId = Auth::id();
 
-        $this->unreadCount = Cache::remember(
-            "user:{$userId}:unread-notification-count",
-            30,
-            fn (): int => Auth::user()->unreadNotifications()->count(),
-        );
+        $this->unreadCount = Cache::remember("user:{$userId}:unread-notification-count", 30, fn(): int => Auth::user()->unreadNotifications()->count());
     }
 
     /**
@@ -134,7 +130,7 @@ new class extends Component {
      */
     private function clearUnreadCountCache(): void
     {
-        Cache::forget('user:'.Auth::id().':unread-notification-count');
+        Cache::forget('user:' . Auth::id() . ':unread-notification-count');
     }
 
     /**
