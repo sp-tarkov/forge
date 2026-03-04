@@ -23,9 +23,7 @@ class DisposableEmailBlocklist extends Model
      */
     public static function isDisposable(string $domain): bool
     {
-        $version = (int) Cache::get('disposable_email_version', 0);
-
-        return Cache::remember("disposable_email_v{$version}_{$domain}", 3600, fn () => self::query()->where('domain', $domain)->exists());
+        return Cache::remember('disposable_email_'.$domain, 3600, fn () => self::query()->where('domain', $domain)->exists());
     }
 
     /**
@@ -33,15 +31,14 @@ class DisposableEmailBlocklist extends Model
      */
     public static function clearDomainCache(string $domain): void
     {
-        $version = (int) Cache::get('disposable_email_version', 0);
-        Cache::forget("disposable_email_v{$version}_{$domain}");
+        Cache::forget('disposable_email_'.$domain);
     }
 
     /**
-     * Invalidate all disposable email caches by incrementing the version key.
+     * Clear all disposable email caches.
      */
     public static function clearAllCaches(): void
     {
-        Cache::increment('disposable_email_version');
+        Cache::flush();
     }
 }
