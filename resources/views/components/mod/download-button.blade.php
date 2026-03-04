@@ -14,7 +14,7 @@
 <div class="{{ $name === 'download-show-mobile' ? 'lg:hidden block' : 'hidden lg:block' }}">
     <flux:modal.trigger name="{{ $name }}">
         <button
-            class="text-lg font-extrabold hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20"
+            class="text-lg font-extrabold text-gray-800 dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 shadow-md dark:shadow-gray-950 drop-shadow-2xl bg-cyan-500 dark:bg-cyan-700 rounded-xl w-full h-20"
         >
             <div class="flex flex-col justify-center items-center">
                 <div>{{ __('Download Latest Version') }} ({{ $versionString }})</div>

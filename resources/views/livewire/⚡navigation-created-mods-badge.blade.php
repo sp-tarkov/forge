@@ -47,24 +47,20 @@ new class extends Component {
             return;
         }
 
-        $this->createdCount = (int) Cache::remember(
-            "user:{$user->id}:nav-created-mods-count",
-            60,
-            function () use ($user): int {
-                $user->refresh();
+        $this->createdCount = (int) Cache::remember("user:{$user->id}:nav-created-mods-count", 60, function () use ($user): int {
+            $user->refresh();
 
-                $lastViewed = $user->mods_created_viewed_at;
-                $showDisabled = $user->isModOrAdmin();
+            $lastViewed = $user->mods_created_viewed_at;
+            $showDisabled = $user->isModOrAdmin();
 
-                return Mod::query()
-                    ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
-                        $query->select(DB::raw(1))->from('mod_versions')->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_versions.mod_id', 'mods.id')->unless($showDisabled, fn(QueryBuilder $query) => $query->where('mod_versions.disabled', false))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
-                    })
-                    ->where('mods.created_at', '>', $lastViewed)
-                    ->unless($showDisabled, fn(Builder $query) => $query->where('disabled', false))
-                    ->count();
-            }
-        );
+            return Mod::query()
+                ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
+                    $query->select(DB::raw(1))->from('mod_versions')->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_versions.mod_id', 'mods.id')->unless($showDisabled, fn(QueryBuilder $query) => $query->where('mod_versions.disabled', false))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
+                })
+                ->where('mods.created_at', '>', $lastViewed)
+                ->unless($showDisabled, fn(Builder $query) => $query->where('disabled', false))
+                ->count();
+        });
     }
 }; ?>
 
