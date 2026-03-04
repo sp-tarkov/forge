@@ -561,7 +561,7 @@ class Comment extends Model implements Reportable, Trackable
     }
 
     /**
-     * A recursive method to resolve the root_id of this comment by traversing the parent_id chain.
+     * Resolve the root_id of this comment by traversing the parent_id chain in a single query.
      */
     private function resolveRootId(): ?int
     {
@@ -569,6 +569,25 @@ class Comment extends Model implements Reportable, Trackable
             return $this->id;
         }
 
-        return $this->parent->resolveRootId();
+        $currentParentId = $this->parent_id;
+
+        while ($currentParentId !== null) {
+            $parent = self::query()
+                ->where('id', $currentParentId)
+                ->select(['id', 'parent_id'])
+                ->first();
+
+            if ($parent === null) {
+                return $currentParentId;
+            }
+
+            if ($parent->parent_id === null) {
+                return $parent->id;
+            }
+
+            $currentParentId = $parent->parent_id;
+        }
+
+        return null;
     }
 }
