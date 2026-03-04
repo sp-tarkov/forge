@@ -397,6 +397,7 @@ class ModVersion extends Model implements Trackable
      *
      * @return array<string, string>
      */
+    #[Override]
     protected function casts(): array
     {
         return [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Override;
 use Database\Factories\CommentVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -61,6 +62,7 @@ class CommentVersion extends Model
     /**
      * The attributes that should be cast to native types.
      */
+    #[Override]
     protected function casts(): array
     {
         return [
