@@ -23,8 +23,10 @@ class ResolveAddonVersionsJob implements ShouldQueue
     /**
      * Resolve the mod versions for each of the addon versions.
      */
-    public function handle(AddonVersionService $addonVersionService): void
+    public function handle(): void
     {
+        $addonVersionService = new AddonVersionService;
+
         AddonVersion::query()
             ->with('addon')
             ->chunk(100, function (Collection $addonVersions) use ($addonVersionService): void {
