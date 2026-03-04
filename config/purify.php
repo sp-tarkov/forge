@@ -52,7 +52,7 @@ return [
                 'a[href|title|rel|target|class|id|role|rev],'.
                 'ul,ol[start],li[class|id|role],'.
                 'img[src|alt|title|width|height],'.
-                'blockquote,'.
+                'blockquote[class],'.
                 'pre[class],code[class],'.
                 'table,thead,tbody,tr,th[align],td[align],'.
                 'dl,dt,dd,'.
@@ -73,7 +73,7 @@ return [
             'Attr.AllowedClasses' => [
                 'external-link', 'language-js', 'tabset', 'tab-title', 'tab-content', 'tab-panel', 'footnotes',
                 'footnote-ref', 'footnote-backref', 'doc-endnotes', 'doc-endnote', 'doc-noteref', 'doc-backlink',
-                'youtube-lite',
+                'youtube-lite', 'is-info', 'is-success', 'is-warning', 'is-danger',
             ],
             'Attr.AllowedFrameTargets' => ['_blank'],
         ],
@@ -112,7 +112,7 @@ return [
                 'a[href|title|rel|target|role|rev],'.
                 'ul,ol[start],li[role],'.
                 'img[src|alt|title|width|height],'.
-                'blockquote,'.
+                'blockquote[class],'.
                 'pre[class],code[class],'.
                 'table,thead,tbody,tr,th[align],td[align],'.
                 'dl,dt,dd,'.
@@ -132,7 +132,7 @@ return [
             'Attr.AllowedClasses' => [
                 'external-link', 'language-js', 'footnotes', 'footnote-ref', 'footnote-backref', 'doc-endnotes',
                 'doc-endnote', 'doc-noteref', 'doc-backlink',
-                'youtube-lite',
+                'youtube-lite', 'is-info', 'is-success', 'is-warning', 'is-danger',
             ],
         ],
     ],
