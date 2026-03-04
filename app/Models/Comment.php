@@ -542,6 +542,8 @@ class Comment extends Model implements Reportable, Trackable
 
     /**
      * The attributes that should be cast to native types.
+     *
+     * @return array<string, string>
      */
     #[Override]
     protected function casts(): array
