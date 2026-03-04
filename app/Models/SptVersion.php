@@ -58,54 +58,35 @@ class SptVersion extends Model
     {
         $includeUnpublished ??= auth()->user()?->isModOrAdmin() ?? false;
 
-        // Get the last three minor versions
-        $lastThreeMinorVersions = self::getLastThreeMinorVersions($includeUnpublished);
-
-        // Build the query
-        return self::query()
-            ->select(['spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count', 'spt_versions.publish_date'])
-            ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
-            ->where(function (Builder $query) use ($lastThreeMinorVersions): void {
-                foreach ($lastThreeMinorVersions as $minorVersion) {
-                    $query->orWhere(function (Builder $subQuery) use ($minorVersion): void {
-                        $subQuery->where('spt_versions.version_major', $minorVersion['major'])
-                            ->where('spt_versions.version_minor', $minorVersion['minor']);
-                    });
-                }
-            })
-            ->groupBy('spt_versions.id', 'spt_versions.version', 'spt_versions.color_class', 'spt_versions.mod_count', 'spt_versions.publish_date')
-            ->orderBy('spt_versions.version_major', 'DESC')
-            ->orderBy('spt_versions.version_minor', 'DESC')
-            ->orderBy('spt_versions.version_patch', 'DESC')
-            ->orderByRaw('CASE WHEN spt_versions.version_labels = ? THEN 0 ELSE 1 END', [''])
-            ->orderBy('spt_versions.version_labels', 'ASC')
-            ->get();
-    }
-
-    /**
-     * Get the last three minor versions (major.minor format).
-     *
-     * @param  bool|null  $includeUnpublished  If true, includes unpublished versions. If null, checks current user's permissions.
-     * @return array<int, array{major: int, minor: int}>
-     */
-    public static function getLastThreeMinorVersions(?bool $includeUnpublished = null): array
-    {
-        // Determine whether to include unpublished versions
-        $includeUnpublished ??= auth()->user()?->isModOrAdmin() ?? false;
-
-        return self::query()
-            ->selectRaw('CONCAT(version_major, ".", version_minor) AS minor_version, version_major, version_minor')
+        // Get the last three distinct major.minor pairs.
+        $lastThreeMinors = self::query()
+            ->select('version_major', 'version_minor')
             ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
             ->groupBy('version_major', 'version_minor')
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->limit(3)
-            ->get()
-            ->map(fn (SptVersion $sptVersion): array => [
-                'major' => (int) $sptVersion->version_major,
-                'minor' => (int) $sptVersion->version_minor,
-            ])
-            ->toArray();
+            ->get();
+
+        if ($lastThreeMinors->isEmpty()) {
+            return new Collection;
+        }
+
+        return self::query()
+            ->select(['id', 'version', 'color_class', 'mod_count', 'publish_date'])
+            ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
+            ->where(function (Builder $query) use ($lastThreeMinors): void {
+                $lastThreeMinors->each(fn (SptVersion $minor) => $query->orWhere(function (Builder $q) use ($minor): void {
+                    $q->where('version_major', $minor->version_major)
+                        ->where('version_minor', $minor->version_minor);
+                }));
+            })
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->get();
     }
 
     /**
