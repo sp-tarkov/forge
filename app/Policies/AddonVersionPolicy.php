@@ -7,12 +7,9 @@ namespace App\Policies;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AddonVersionPolicy
 {
-    use HandlesAuthorization;
-
     /**
      * Determine whether the user can view any addon versions.
      */
