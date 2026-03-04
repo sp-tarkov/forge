@@ -6,6 +6,7 @@ use App\Models\Mod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -30,43 +31,40 @@ new class extends Component {
     #[On('navigate')]
     public function refreshOnNavigate(): void
     {
-        // Refresh the user model to get the updated timestamp
         $this->loadCreatedCount();
     }
 
     /**
-     * Load the count of mods created since the user's last view.
+     * Load the count of mods created since the user's last view, cached for 60 seconds.
      */
     private function loadCreatedCount(): void
     {
         $user = Auth::user();
 
-        // If the user hasn't viewed the page yet, show no badge (first visit = no badge)
-        if ($user === null) {
+        if ($user === null || $user->mods_created_viewed_at === null) {
             $this->createdCount = 0;
 
             return;
         }
 
-        // Refresh to get the latest timestamp (in case it was just updated)
-        $user->refresh();
+        $this->createdCount = Cache::remember(
+            "user:{$user->id}:nav-created-mods-count",
+            60,
+            function () use ($user): int {
+                $user->refresh();
 
-        if ($user->mods_created_viewed_at === null) {
-            $this->createdCount = 0;
+                $lastViewed = $user->mods_created_viewed_at;
+                $showDisabled = $user->isModOrAdmin();
 
-            return;
-        }
-
-        $lastViewed = $user->mods_created_viewed_at;
-        $showDisabled = $user->isModOrAdmin();
-
-        $this->createdCount = Mod::query()
-            ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
-                $query->select(DB::raw(1))->from('mod_versions')->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_versions.mod_id', 'mods.id')->unless($showDisabled, fn(QueryBuilder $query) => $query->where('mod_versions.disabled', false))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
-            })
-            ->where('mods.created_at', '>', $lastViewed)
-            ->unless($showDisabled, fn(Builder $query) => $query->where('disabled', false))
-            ->count();
+                return Mod::query()
+                    ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
+                        $query->select(DB::raw(1))->from('mod_versions')->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_versions.mod_id', 'mods.id')->unless($showDisabled, fn(QueryBuilder $query) => $query->where('mod_versions.disabled', false))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
+                    })
+                    ->where('mods.created_at', '>', $lastViewed)
+                    ->unless($showDisabled, fn(Builder $query) => $query->where('disabled', false))
+                    ->count();
+            }
+        );
     }
 }; ?>
 

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -52,8 +53,9 @@ new #[Layout('layouts::base')] class extends Component {
         // Capture the previous timestamp before updating (used for filtering)
         $this->previousViewedAt = $user->mods_created_viewed_at?->toISOString();
 
-        // Update the user's last viewed timestamp
+        // Update the user's last viewed timestamp and clear the navigation badge cache
         $user->update(['mods_created_viewed_at' => now()]);
+        Cache::forget("user:{$user->id}:nav-created-mods-count");
     }
 
     /**
