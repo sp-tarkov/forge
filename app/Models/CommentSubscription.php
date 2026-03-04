@@ -27,12 +27,6 @@ class CommentSubscription extends Model
     /** @use HasFactory<CommentSubscriptionFactory> */
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'commentable_type',
-        'commentable_id',
-    ];
-
     /**
      * Create a subscription for a user to a commentable.
      *

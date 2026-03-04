@@ -26,12 +26,6 @@ class ConversationArchive extends Model
     /** @use HasFactory<ConversationArchiveFactory> */
     use HasFactory;
 
-    protected $fillable = [
-        'conversation_id',
-        'user_id',
-        'archived_at',
-    ];
-
     /**
      * Get the conversation that was archived.
      *
