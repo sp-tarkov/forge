@@ -71,6 +71,6 @@ class VisitorsPresenceBroadcastingController extends BroadcastController
         }
 
         // Let Laravel's parent method handle everything else
-        return parent::authenticate($request);
+        return parent::authenticate($request) ?? response('Unauthorized', 403);
     }
 }

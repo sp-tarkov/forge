@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -141,6 +142,16 @@ it('creates peak record if it does not exist', function (): void {
     // Check event was broadcast
     Event::assertDispatched(PeakVisitorUpdated::class);
 });
+
+it('prevents client-side modification of locked properties', function (): void {
+    Visitor::query()->create([
+        'peak_count' => 100,
+        'peak_date' => Date::parse('2025-01-01'),
+    ]);
+
+    Livewire::test('visitor-tracker')
+        ->set('peakCount', 999);
+})->throws(CannotUpdateLockedPropertyException::class);
 
 it('uses cache for initial peak data', function (): void {
     // Create a peak record
