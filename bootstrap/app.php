@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
+use Livewire\Exceptions\TooManyCallsException;
 use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
 use Spatie\Honeypot\ProtectAgainstSpam;
@@ -45,6 +46,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register the Flare exception handler.
         Flare::handles($exceptions);
+
+        // Don't report Livewire payload guard exceptions — these are security
+        // limits working as intended (typically triggered by bots/abuse).
+        $exceptions->dontReport(TooManyCallsException::class);
 
         // Register the custom exception handler for the API.
         $exceptions->render(function (Throwable $e, Request $request) {
