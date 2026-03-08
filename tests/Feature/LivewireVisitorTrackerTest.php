@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -150,7 +151,7 @@ it('prevents client-side modification of locked properties', function (): void {
 
     Livewire::test('visitor-tracker')
         ->set('peakCount', 999);
-})->throws(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+})->throws(CannotUpdateLockedPropertyException::class);
 
 it('uses cache for initial peak data', function (): void {
     // Create a peak record

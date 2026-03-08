@@ -1227,7 +1227,7 @@ describe('Comment Pinning Tests', function (): void {
             ->assertSeeIn('.comment-container-'.$commentToPin->id, 'Pin Comment')
             ->click('.comment-container-'.$commentToPin->id.' .action-pin')
             ->click('@confirm-pin-comment')
-            ->assertSeeIn('.comment-container-'.$commentToPin->id, 'Pinned')
+            ->assertPresent('.comment-container-'.$commentToPin->id.' .text-cyan-500:has-text("Pinned")')
             ->assertNoJavaScriptErrors();
     });
 });
