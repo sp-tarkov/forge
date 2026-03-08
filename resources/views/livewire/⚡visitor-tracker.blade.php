@@ -5,17 +5,20 @@ declare(strict_types=1);
 use App\Events\PeakVisitorUpdated;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component {
     /**
      * The current peak visitor count.
      */
+    #[Locked]
     public int $peakCount = 0;
 
     /**
      * The date when the peak was reached.
      */
+    #[Locked]
     public ?string $peakDate = null;
 
     /**

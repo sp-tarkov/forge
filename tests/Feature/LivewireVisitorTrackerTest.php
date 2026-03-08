@@ -142,6 +142,16 @@ it('creates peak record if it does not exist', function (): void {
     Event::assertDispatched(PeakVisitorUpdated::class);
 });
 
+it('prevents client-side modification of locked properties', function (): void {
+    Visitor::query()->create([
+        'peak_count' => 100,
+        'peak_date' => Date::parse('2025-01-01'),
+    ]);
+
+    Livewire::test('visitor-tracker')
+        ->set('peakCount', 999);
+})->throws(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+
 it('uses cache for initial peak data', function (): void {
     // Create a peak record
     Visitor::query()->create([
