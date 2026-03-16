@@ -22,7 +22,7 @@
         "laravel/octane": "^2.13",
         "laravel/reverb": "^1.7",
         "laravel/sanctum": "^4.3",
-        "laravel/scout": "^10.24",
+        "laravel/scout": "^11.0",
         "laravel/serializable-closure": "^2.0",
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.10.1",
