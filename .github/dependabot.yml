@@ -11,10 +11,9 @@ updates:
     target-branch: "develop"
     versioning-strategy: increase-if-necessary
     groups:
-      production-deps:
-        dependency-type: "production"
-      development-deps:
-        dependency-type: "development"
+      composer-deps:
+        patterns:
+          - "*"
     open-pull-requests-limit: 5
     commit-message:
       prefix: "composer"
@@ -51,10 +50,9 @@ updates:
     target-branch: "develop"
     versioning-strategy: increase-if-necessary
     groups:
-      production-deps:
-        dependency-type: "production"
-      development-deps:
-        dependency-type: "development"
+      npm-deps:
+        patterns:
+          - "*"
     open-pull-requests-limit: 5
     commit-message:
       prefix: "npm"
