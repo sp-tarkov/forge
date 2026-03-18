@@ -55,8 +55,8 @@ class DirectDownloadLink implements ValidationRule
             $contentDisposition = mb_strtolower($response->header('content-disposition'));
             $contentLength = $response->header('content-length');
 
-            // Validate content-type starts with `application/`
-            if (! str_starts_with($contentType, 'application/')) {
+            // Validate content-type starts with `application/` or is absent
+            if ($contentType !== '' && ! str_starts_with($contentType, 'application/')) {
                 $fail(__('This is not a direct download link. Please review our Content Guidelines.'));
 
                 return;
