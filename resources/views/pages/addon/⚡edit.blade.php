@@ -63,7 +63,7 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * The source code links of the addon.
      *
-     * @var array<int, array{url: string, label: string|null}>
+     * @var array<int, array{key: string, url: string, label: string|null}>
      */
     public array $sourceCodeLinks = [];
 
@@ -120,8 +120,10 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Load existing source code links
         $this->sourceCodeLinks = $this->addon->sourceCodeLinks
+            ->values()
             ->map(
-                fn(SourceCodeLink $link): array => [
+                fn(SourceCodeLink $link, int $index): array => [
+                    'key' => 'link-' . $index,
                     'url' => $link->url,
                     'label' => $link->label,
                 ],
@@ -130,7 +132,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Ensure at least one empty link input if no links exist
         if (empty($this->sourceCodeLinks)) {
-            $this->sourceCodeLinks[] = ['url' => '', 'label' => ''];
+            $this->sourceCodeLinks[] = ['key' => 'link-0', 'url' => '', 'label' => ''];
         }
 
         $this->publishedAt = $this->addon->published_at
@@ -180,7 +182,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Zero out seconds for consistency with datetime-local input format.
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
-        if ($this->publishedAt !== null) {
+        if ($this->publishedAt !== null && $this->publishedAt !== '') {
             $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
@@ -274,7 +276,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function addSourceCodeLink(): void
     {
         if (count($this->sourceCodeLinks) < 4) {
-            $this->sourceCodeLinks[] = ['url' => '', 'label' => ''];
+            $this->sourceCodeLinks[] = ['key' => uniqid('link-'), 'url' => '', 'label' => ''];
         }
     }
 
@@ -319,7 +321,7 @@ new #[Layout('layouts::base')] class extends Component {
             'license' => 'required|exists:licenses,id',
             'sourceCodeLinks' => 'required|array|min:1|max:4',
             'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
-            'sourceCodeLinks.*.label' => 'string|max:50',
+            'sourceCodeLinks.*.label' => 'nullable|string|max:50',
             'publishedAt' => 'nullable|date',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
@@ -541,49 +543,67 @@ new #[Layout('layouts::base')] class extends Component {
                                     'Provide links to the source code for your addon. The source code for addons is required to be publicly available. You can add up to 4 links (e.g., main repository, mirror, documentation). We recommend using services like <a href="https://github.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitHub</a> or <a href="https://gitlab.com" target="_blank" class="underline text-black dark:text-white hover:text-cyan-800 hover:dark:text-cyan-200 transition-colors">GitLab</a>.',
                                 ) !!}</flux:description>
 
-                                <div class="space-y-3">
-                                    @foreach ($sourceCodeLinks as $index => $link)
-                                        <div class="flex gap-2 items-center">
-                                            <div class="flex-1">
-                                                <flux:input
-                                                    type="url"
-                                                    wire:model.blur="sourceCodeLinks.{{ $index }}.url"
-                                                    placeholder="https://github.com/username/addon-name"
-                                                />
-                                            </div>
-                                            <div class="w-40">
-                                                <flux:input
-                                                    type="text"
-                                                    wire:model.blur="sourceCodeLinks.{{ $index }}.label"
-                                                    placeholder="Label (optional)"
-                                                />
-                                            </div>
-                                            @if (count($sourceCodeLinks) > 1)
-                                                <flux:button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    wire:click="removeSourceCodeLink({{ $index }})"
+                                <div
+                                    x-data="{
+                                        links: $wire.sourceCodeLinks,
+                                        counter: $wire.sourceCodeLinks.length,
+                                        addLink() {
+                                            if (this.links.length < 4) {
+                                                this.links.push({ key: 'link-' + this.counter++, url: '', label: '' });
+                                            }
+                                        },
+                                        removeLink(index) {
+                                            if (this.links.length > 1) {
+                                                this.links.splice(index, 1);
+                                            }
+                                        },
+                                    }"
+                                    x-effect="$wire.sourceCodeLinks = links"
+                                    class="space-y-3"
+                                >
+                                    <template
+                                        x-for="(link, index) in links"
+                                        :key="link.key"
+                                    >
+                                        <div>
+                                            <div class="flex gap-2 items-center">
+                                                <div class="flex-1">
+                                                    <input
+                                                        type="url"
+                                                        x-model.lazy="link.url"
+                                                        placeholder="https://github.com/username/addon-name"
+                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white dark:bg-white/10 text-zinc-700 placeholder-zinc-400 dark:text-zinc-300 dark:placeholder-zinc-400 shadow-xs border-zinc-200 border-b-zinc-300/80 dark:border-white/10"
+                                                    />
+                                                </div>
+                                                <div class="w-40">
+                                                    <input
+                                                        type="text"
+                                                        x-model.lazy="link.label"
+                                                        placeholder="Label (optional)"
+                                                        class="w-full border rounded-lg appearance-none text-base sm:text-sm py-2 h-10 leading-[1.375rem] ps-3 pe-3 bg-white dark:bg-white/10 text-zinc-700 placeholder-zinc-400 dark:text-zinc-300 dark:placeholder-zinc-400 shadow-xs border-zinc-200 border-b-zinc-300/80 dark:border-white/10"
+                                                    />
+                                                </div>
+                                                <button
+                                                    x-show="links.length > 1"
+                                                    x-on:click="removeLink(index)"
                                                     type="button"
-                                                    icon="x-mark"
-                                                />
-                                            @endif
+                                                    class="inline-flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                >
+                                                    <flux:icon.x-mark class="size-5" />
+                                                </button>
+                                            </div>
                                         </div>
-                                        @error('sourceCodeLinks.' . $index . '.url')
-                                            <flux:error>{{ $message }}</flux:error>
-                                        @enderror
-                                    @endforeach
+                                    </template>
 
-                                    @if (count($sourceCodeLinks) < 4)
-                                        <flux:button
-                                            variant="ghost"
-                                            size="sm"
-                                            wire:click="addSourceCodeLink"
-                                            type="button"
-                                            icon="plus"
-                                        >
-                                            {{ __('Add another link') }}
-                                        </flux:button>
-                                    @endif
+                                    <button
+                                        x-show="links.length < 4"
+                                        x-on:click="addLink()"
+                                        type="button"
+                                        class="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+                                    >
+                                        <flux:icon.plus class="size-4" />
+                                        {{ __('Add another link') }}
+                                    </button>
                                 </div>
 
                                 <flux:error name="sourceCodeLinks" />

@@ -387,6 +387,24 @@ describe('DirectDownloadLink validation rule', function (): void {
         expect($failMessage)->toContain('valid file size');
     });
 
+    it('passes validation when content-type header is absent', function (): void {
+        Http::fake([
+            'https://example.com/mod.7z' => Http::response('', 200, [
+                'content-length' => '2510798731',
+            ]),
+        ]);
+
+        $rule = new DirectDownloadLink;
+        $failCalled = false;
+
+        $rule->validate('link', 'https://example.com/mod.7z', function ($message) use (&$failCalled): void {
+            $failCalled = true;
+        });
+
+        expect($failCalled)->toBeFalse();
+        expect($rule->contentLength)->toBe(2510798731);
+    });
+
     it('validates correct file type in content-disposition when URL has no extension', function (): void {
         Http::fake([
             'https://example.com/download' => Http::response('', 200, [

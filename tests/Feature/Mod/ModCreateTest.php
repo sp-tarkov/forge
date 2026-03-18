@@ -52,6 +52,31 @@ describe('Mod Create Form', function (): void {
                 ->assertHasErrors(['name', 'teaser', 'description', 'license']);
         });
 
+        it('allows submission after removing an added source code link', function (): void {
+            $license = License::factory()->create();
+            $category = ModCategory::factory()->create();
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            Livewire::test('pages::mod.create')
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'Test Mod Remove Link')
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $license->id)
+                ->set('category', (string) $category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('containsAds', false)
+                ->call('addSourceCodeLink')
+                ->call('removeSourceCodeLink', 1)
+                ->call('save')
+                ->assertHasNoErrors();
+        });
+
         it('validates GUID format', function (): void {
             $license = License::factory()->create();
             $user = User::factory()->withMfa()->create();
