@@ -319,6 +319,30 @@ describe('Mod Version Edit Form', function (): void {
             expect($modVersion->version)->toBe('2.0.0');
         });
 
+        it('allows clearing the published_at date when editing a mod version', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'published_at' => now(),
+            ]);
+
+            Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
+                ->assertNotSet('publishedAt', null)
+                ->set('publishedAt', '')
+                ->set('virusTotalLinks', [
+                    ['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test Scan'],
+                ])
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $modVersion->refresh();
+            expect($modVersion->published_at)->toBeNull();
+        });
+
         it('allows updating fika compatibility status when editing a mod version', function (): void {
             $user = User::factory()->withMfa()->create();
             $this->actingAs($user);

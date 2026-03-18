@@ -104,6 +104,34 @@ describe('Mod Edit Form', function (): void {
     });
 });
 
+describe('Published At Handling', function (): void {
+
+    beforeEach(function (): void {
+        config()->set('honeypot.enabled', false);
+    });
+
+    it('allows clearing the published_at date when editing a mod', function (): void {
+        $license = License::factory()->create();
+        $user = User::factory()->create();
+        $mod = Mod::factory()->recycle($user)->create([
+            'published_at' => now(),
+            'license_id' => $license->id,
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->assertNotSet('publishedAt', null)
+            ->set('publishedAt', '')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect();
+
+        $mod->refresh();
+        expect($mod->published_at)->toBeNull();
+    });
+});
+
 describe('Browser Tests - Mod Editing Authorization', function (): void {
 
     beforeEach(function (): void {

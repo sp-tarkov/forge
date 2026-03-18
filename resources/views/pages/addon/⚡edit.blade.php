@@ -180,7 +180,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Zero out seconds for consistency with datetime-local input format.
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
-        if ($this->publishedAt !== null) {
+        if ($this->publishedAt !== null && $this->publishedAt !== '') {
             $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
