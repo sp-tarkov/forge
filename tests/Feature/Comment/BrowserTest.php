@@ -39,6 +39,7 @@ describe('Guest User Tests', function (): void {
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
             ->inDarkMode()
+            ->waitForText('No comments yet')
             ->assertSee('No comments yet')
             ->assertSee('Login or register to join the discussion')
             ->assertNotPresent('@new-comment-body')
@@ -58,9 +59,9 @@ describe('Guest User Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment that guests should not be able to reply to.');
 
-        // Assert directly without waiting
         $page->assertNotPresent('button[wire\\:click*=toggleReplyForm]')
             ->assertNoJavascriptErrors();
     });
@@ -78,7 +79,8 @@ describe('Guest User Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment that guests should not be able to edit.');
 
         $page->assertNotPresent('@edit-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -97,7 +99,8 @@ describe('Guest User Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment that guests should not be able to delete.');
 
         $page->assertNotPresent('@delete-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -116,7 +119,8 @@ describe('Guest User Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment that guests should not be able to react to.');
 
         $page->assertNotPresent('@reaction-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -134,7 +138,8 @@ describe('Comment Creation Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Post Comment');
 
         $page->assertSee('Post Comment')
             ->assertPresent('@new-comment-body')
@@ -154,7 +159,8 @@ describe('Comment Creation Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Post Comment');
 
         $page->assertSee('Post Comment')
             ->assertPresent('@new-comment-body')
@@ -174,7 +180,8 @@ describe('Comment Creation Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Post Comment');
 
         $page->assertSee('Post Comment')
             ->assertPresent('@new-comment-body')
@@ -195,7 +202,8 @@ describe('Comment Creation Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Post Comment');
 
         $page->assertSee('Post Comment')
             ->assertPresent('@new-comment-body')
@@ -220,7 +228,8 @@ describe('Comment Creation Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Post Comment');
 
         $page->assertSee('Post Comment')
             ->assertPresent('@new-comment-body')
@@ -245,7 +254,8 @@ describe('Comment Creation Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Post Comment');
 
         $page->assertSee('Post Comment')
             ->assertPresent('@new-comment-body')
@@ -275,7 +285,8 @@ describe('Comment Reply Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment that should show a reply button.');
 
         $page->assertPresent('@reply-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -296,7 +307,8 @@ describe('Comment Reply Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment to reply to.');
 
         $page->click('@reply-button-'.$comment->id)
             ->waitForText('Reply To Comment')
@@ -320,7 +332,8 @@ describe('Comment Reply Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment to reply to.');
 
         $page->click('@reply-button-'.$comment->id)
             ->waitForText('Reply To Comment')
@@ -345,7 +358,8 @@ describe('Comment Reply Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment to reply to.');
 
         $page->click('@reply-button-'.$comment->id)
             ->waitForText('Reply To Comment')
@@ -371,7 +385,8 @@ describe('Comment Reply Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is the root comment.');
 
         $page->click('@reply-button-'.$rootComment->id)
             ->waitForText('Reply To Comment')
@@ -397,7 +412,8 @@ describe('Comment Reply Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment to reply to.');
 
         $page->click('@reply-button-'.$comment->id)
             ->waitForText('Reply To Comment')
@@ -423,7 +439,8 @@ describe('Comment Reply Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a test comment to reply to.');
 
         $page->click('@reply-button-'.$comment->id)
             ->waitForText('Reply To Comment')
@@ -452,7 +469,8 @@ describe('Comment Editing Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a freshly created comment that should be editable.');
 
         $page->assertPresent('@edit-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -475,9 +493,9 @@ describe('Comment Editing Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This comment belongs to user1.');
 
-        // First assert the comment is visible (page is loaded), then check edit button is not present
         $page->assertSee('This comment belongs to user1.')
             ->assertNotPresent('@edit-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -500,7 +518,8 @@ describe('Comment Editing Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText($originalText);
 
         $page->click('@edit-button-'.$comment->id)
             ->assertSee('Edit Comment')
@@ -527,7 +546,8 @@ describe('Comment Editing Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText($originalText);
 
         $page->assertSee($originalText)
             ->click('@edit-button-'.$comment->id)
@@ -557,7 +577,8 @@ describe('Comment Editing Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText($originalText);
 
         $page->click('@edit-button-'.$comment->id)
             ->clear('@edit-body-'.$comment->id)
@@ -585,7 +606,8 @@ describe('Comment Editing Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText($originalText);
 
         $page->assertSee($originalText)
             ->click('@edit-button-'.$comment->id)
@@ -617,7 +639,8 @@ describe('Comment Editing Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText($originalText);
 
         $page->assertSee($originalText)
             ->click('@edit-button-'.$comment->id)
@@ -647,7 +670,8 @@ describe('Comment Deletion Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a comment that the owner should be able to delete.');
 
         $page->assertPresent('@delete-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -670,7 +694,8 @@ describe('Comment Deletion Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This comment belongs to user1.');
 
         $page->assertNotPresent('@delete-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -693,7 +718,8 @@ describe('Comment Deletion Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText($commentText);
 
         $page->assertSee($commentText)
             ->click('@delete-button-'.$comment->id)
@@ -720,7 +746,8 @@ describe('Comment Deletion Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText($commentText);
 
         $page->assertSee($commentText)
             ->click('@delete-button-'.$comment->id)
@@ -748,7 +775,8 @@ describe('Comment Reactions Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is a comment that should show reaction buttons.');
 
         $page->assertPresent('@reaction-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -769,7 +797,8 @@ describe('Comment Reactions Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('This is my own comment that should not have a reaction button.');
 
         $page->assertNotPresent('@reaction-button-'.$comment->id)
             ->assertNoJavaScriptErrors();
@@ -791,7 +820,8 @@ describe('Comment Reactions Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('0 Likes');
 
         $page->assertSee('0 Likes')
             ->click('@reaction-button-'.$comment->id)
@@ -815,7 +845,8 @@ describe('Comment Reactions Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('0 Likes');
 
         $page->assertSee('0 Likes')
             ->click('@reaction-button-'.$comment->id)
@@ -846,7 +877,8 @@ describe('Comment Reactions Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('2 Likes');
 
         $page->assertSee('2 Likes')
             ->assertNoJavaScriptErrors();
@@ -878,7 +910,8 @@ describe('Spam Marking Tests', function (): void {
 
         $this->actingAs($moderator);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText($comment->body);
 
         $page->assertSee($mod->name)
             ->assertSee($comment->body)
@@ -902,7 +935,8 @@ describe('Spam Marking Tests', function (): void {
 
         $this->actingAs($moderator);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText($comment->body);
 
         $page->assertSee($mod->name)
             ->assertSee($comment->body)
@@ -930,7 +964,8 @@ describe('Spam Marking Tests', function (): void {
 
         $this->actingAs($moderator);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText($comment->body);
 
         $page->assertSee($mod->name)
             ->assertSee($comment->body)
@@ -970,7 +1005,8 @@ describe('Spam Marking Tests', function (): void {
         $this->actingAs($otherUser); // Login as a different user, not the comment author
 
         // Visit the page - timeout is now configured globally
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText($mod->name);
 
         // Make assertions
         $page->assertSee($mod->name)
@@ -990,7 +1026,8 @@ describe('Comment Subscription Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Subscribe');
 
         $page->assertPresent('@subscription-toggle')
             ->assertSee('Subscribe')
@@ -1006,7 +1043,8 @@ describe('Comment Subscription Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Subscribe');
 
         $page->assertSee('Subscribe')
             ->click('@subscription-toggle')
@@ -1023,7 +1061,8 @@ describe('Comment Subscription Tests', function (): void {
 
         $page = visit($mod->detail_url.'#comments')
             ->on()->desktop()
-            ->inDarkMode();
+            ->inDarkMode()
+            ->waitForText('Subscribe');
 
         $page->assertSee('Subscribe')
             ->click('@subscription-toggle')
@@ -1040,7 +1079,8 @@ describe('Comment Subscription Tests', function (): void {
 
         $this->actingAs($user);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText($mod->name);
 
         $page->assertSee($mod->name)
             ->click('@subscription-toggle')
@@ -1060,7 +1100,8 @@ describe('Comment Display and Pagination Tests', function (): void {
 
         $this->actingAs($user);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText('Discussion');
 
         $page->assertSee($mod->name)
             ->assertSee('Discussion')
@@ -1081,7 +1122,8 @@ describe('Comment Display and Pagination Tests', function (): void {
 
         $this->actingAs($user);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText('(3)');
 
         $page->assertSee($mod->name)
             ->assertSee('(3)')
@@ -1110,7 +1152,8 @@ describe('Comment Display and Pagination Tests', function (): void {
 
         $this->actingAs($user);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText('Hide Replies (1)');
 
         $page->assertSee($mod->name)
             ->assertSee('Hide Replies (1)')
@@ -1141,7 +1184,8 @@ describe('Comment Display and Pagination Tests', function (): void {
 
         $this->actingAs($user);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText($replyText);
 
         $page->assertSee($mod->name)
             ->assertSee($replyText) // Replies shown by default now
@@ -1185,7 +1229,8 @@ describe('Comment Display and Pagination Tests', function (): void {
 
         $this->actingAs($user);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText('Root comment');
 
         $page->assertSee($mod->name)
             ->assertSee('Root comment')
@@ -1218,7 +1263,8 @@ describe('Comment Pinning Tests', function (): void {
 
         $this->actingAs($moderator);
 
-        $page = visit($mod->detail_url.'#comments');
+        $page = visit($mod->detail_url.'#comments')
+            ->waitForText($commentToPin->body);
 
         $page->assertSee($mod->name)
             ->assertSee($commentToPin->body)
