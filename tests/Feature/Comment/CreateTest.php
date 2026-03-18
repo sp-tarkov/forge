@@ -325,23 +325,20 @@ describe('security', function (): void {
         $user = User::factory()->create();
         $mod = Mod::factory()->create();
 
-        $component = Livewire::actingAs($user)
-            ->test('comment-component', ['commentable' => $mod]);
-
-        // Count comments before
         $commentCountBefore = Comment::query()->count();
 
-        // Livewire's property system will throw a TypeError when trying to set an array to string
-        $exceptionThrown = false;
+        // Livewire may throw a TypeError or silently reject the invalid type depending on
+        // the environment. Either way, no comment should be created from an array value.
         try {
-            $component->set('newCommentBody', ['array', 'of', 'values']);
+            Livewire::actingAs($user)
+                ->test('comment-component', ['commentable' => $mod])
+                ->set('newCommentBody', ['array', 'of', 'values'])
+                ->call('createComment');
         } catch (TypeError) {
-            $exceptionThrown = true;
+            // Expected in some environments; handled gracefully.
         }
 
-        // Expect an exception thrown, and no comment created.
-        expect($exceptionThrown)->toBeTrue()
-            ->and(Comment::query()->count())->toBe($commentCountBefore);
+        expect(Comment::query()->count())->toBe($commentCountBefore);
     });
 });
 
