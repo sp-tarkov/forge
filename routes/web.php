@@ -13,6 +13,8 @@ use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Models\Mod;
 use App\Models\Report;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
 
@@ -91,8 +93,8 @@ Route::middleware('auth.banned')->group(function (): void {
             ->name('mods.recently-created');
 
         // Profile routes
-        Route::view('/user/profile', 'profile.show')->name('profile.show');
-        Route::view('/user/api-tokens', 'api.index')->name('api-tokens.index');
+        Route::get('/user/profile', fn (): Factory|View => view('profile.show'))->name('profile.show');
+        Route::get('/user/api-tokens', fn (): Factory|View => view('api.index'))->name('api-tokens.index');
 
         Route::livewire('/mod/guidelines', 'pages::mod.guidelines-acknowledgment')
             ->name('mod.guidelines');
@@ -157,11 +159,11 @@ Route::middleware('auth.banned')->group(function (): void {
     });
 
     // Routes for static content
-    Route::view('/contact', 'static.contact')->name('static.contact');
-    Route::view('/dmca', 'static.dmca')->name('static.dmca');
-    Route::view('/community-standards', 'static.community-standards')->name('static.community-standards');
-    Route::view('/content-guidelines', 'static.content-guidelines')->name('static.content-guidelines');
-    Route::view('/installer', 'static.installer')->name('static.installer');
-    Route::view('/privacy-policy', 'static.privacy')->name('static.privacy');
-    Route::view('/terms-of-service', 'static.tos')->name('static.terms');
+    Route::get('/contact', fn (): Factory|View => view('static.contact'))->name('static.contact');
+    Route::get('/dmca', fn (): Factory|View => view('static.dmca'))->name('static.dmca');
+    Route::get('/community-standards', fn (): Factory|View => view('static.community-standards'))->name('static.community-standards');
+    Route::get('/content-guidelines', fn (): Factory|View => view('static.content-guidelines'))->name('static.content-guidelines');
+    Route::get('/installer', fn (): Factory|View => view('static.installer'))->name('static.installer');
+    Route::get('/privacy-policy', fn (): Factory|View => view('static.privacy'))->name('static.privacy');
+    Route::get('/terms-of-service', fn (): Factory|View => view('static.tos'))->name('static.terms');
 });
