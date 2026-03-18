@@ -30,7 +30,7 @@ The `main` branch is the default branch for Forge. This branch is used for the l
 Forge follows the PSR-2 coding standard and the PSR-4 autoloading standard. We use an automated Laravel Pint action to enforce the coding standard, though it's suggested to run your code changes through Pint before contributing. This can be done by configuring your IDE to format with Pint on save, or manually by running the following command:
 
 ```
-./vendor/bin/sail pint
+./vendor/bin/pint
 ```
 
 ### Tests

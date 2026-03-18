@@ -13,67 +13,56 @@ The Forge is a Laravel-based web application that provides a platform for the Si
 
 ## Development Environment Setup
 
-We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://github.com/sp-tarkov/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://github.com/sp-tarkov/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.
-
-### Available Services:
-
-| Service     | Access Via Application | Access Via Host  |
-|-------------|------------------------|------------------|
-| MySQL       | `mysql:3306`           | `localhost:3306` |
-| Redis       | `redis:6379`           | `localhost:6379` |
-| Meilisearch | `meilisearch:7700`     | `localhost:7700` |
-| Mailpit     | `mailpit:1025`         | `localhost:8025` |
+We use [Laravel Herd](https://herd.laravel.com) for local development. You can see detailed instructions on how to configure the development environment on the [project wiki](https://github.com/sp-tarkov/forge/wiki).
 
 ### Notable Routes
 
-| Service                          | Authentication | Access Via Host              |
-|----------------------------------|----------------|------------------------------|
-| Redis Queue Management (Horizon) | Via User Role  | <http://localhost/horizon>   |
-| Website Status (Pulse)           | Via User Role  | <http://localhost/pulse>     |
-| Meilisearch WebUI                | Local Only     | <http://localhost:7700>      |
-| Mailpit WebUI                    | Local Only     | <http://localhost:8025>      |
+| Service                          | Authentication | Access Via Host            |
+|----------------------------------|----------------|----------------------------|
+| Redis Queue Management (Horizon) | Via User Role  | `/horizon`                 |
+| Website Status (Pulse)           | Via User Role  | `/pulse`                   |
 
-Most of these connection settings should already be configured in the `.env.full` or `.env.light` example files. Simply save one of these (depending on your environment) as `.env` and adjust settings as needed.
+Copy the `.env.example` file to `.env` and adjust settings as needed.
 
 ### Basic Usage Examples
 
 Here are some basic commands to get started with Forge:
 
 ```
-# Start the Docker containers in detached mode:
-sail up -d
+# Start the development server (runs Vite, queue worker, etc.):
+composer run dev
 ```
 
 ```
 # View all of the available Artisan commands:
-sail artisan
+php artisan
 ```
 
 ```
 # Migrate and seed the database with test data:
-sail artisan migrate:fresh –seed
+php artisan migrate:fresh --seed
 ```
 
 ```
 # Run Laravel Horizon (the queue workers/monitor):
-sail artisan horizon
+php artisan horizon
 ```
 
 ```
-# Sync the local database with the Meilisearch server (requires horizon to be running): 
-sail artisan app:search-sync
+# Sync the local database with the Meilisearch server (requires horizon to be running):
+php artisan app:search-sync
 ```
 
 ```
-# Install NPM dependencies from within the container:
-sail npm install
+# Install NPM dependencies:
+npm install
 ```
 
 ```
-# Start the development server:
-sail npm run dev
+# Build frontend assets:
+npm run build
 ```
 
 ### More Information
 
-For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/11.x/).
+For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/12.x/).
