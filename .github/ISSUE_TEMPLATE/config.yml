@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Discussion
+    url: https://discord.com/invite/Xn9msqQZan
+    about: For questions, help, or general discussion, please join us on Discord instead of opening an issue.
