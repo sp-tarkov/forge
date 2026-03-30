@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use Illuminate\Foundation\Queue\Queueable;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\SptVersion;
 use App\Support\DataTransferObjects\GitHubSptVersion;
 use App\Support\Version;
 use Composer\Semver\Semver;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
@@ -25,10 +22,7 @@ use Illuminate\Support\Str;
 
 class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     /**
      * The number of seconds the job can run before timing out.
