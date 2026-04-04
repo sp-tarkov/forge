@@ -8,6 +8,8 @@ use App\Rules\NotDisposableEmail;
 use DateTimeZone;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
@@ -28,9 +30,26 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:36', 'unique:users,name'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', new NotDisposableEmail],
-            'password' => ['required', 'string', 'max:128', 'min:8'],
+            'name' => [
+                'required',
+                'string',
+                'max:36',
+                Rule::unique('users', 'name'),
+            ],
+            'email' => [
+                'required',
+                'string',
+                Rule::email(),
+                'max:255',
+                Rule::unique('users', 'email'),
+                new NotDisposableEmail(),
+            ],
+            'password' => [
+                'required',
+                'string',
+                'max:128',
+                Password::min(8),
+            ],
             'timezone' => ['required', 'string', 'in:'.implode(',', DateTimeZone::listIdentifiers())],
         ];
     }

@@ -6,6 +6,7 @@ namespace App\Http\Requests\Api\V0\Auth;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ResendVerificationRequest extends FormRequest
 {
@@ -26,7 +27,12 @@ class ResendVerificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                Rule::email(),
+                'max:255',
+            ],
         ];
     }
 
