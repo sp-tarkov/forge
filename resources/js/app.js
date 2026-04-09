@@ -1,10 +1,9 @@
 // Registrations
-import "./registerEcho";
-import "./registerViteAssets";
-import "./registerAlpineLivewire";
-
+import './registerEcho';
+import './registerViteAssets';
+import './registerAlpineLivewire';
 // App
-import "./userTabsets";
-import "./highlight";
-import "./detectTimezone";
-import "./youtubeLite";
+import './userTabsets';
+import './highlight';
+import './detectTimezone';
+import './youtubeLite';

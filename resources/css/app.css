@@ -1,18 +1,18 @@
-@import "tailwindcss";
-@import "../../vendor/livewire/flux/dist/flux.css";
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
 
-@plugin "@tailwindcss/forms";
-@plugin "@tailwindcss/typography";
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
 
-@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
-@source "../../vendor/laravel/jetstream/**/*.blade.php";
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/laravel/jetstream/**/*.blade.php';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
     --font-sans:
-        Figtree, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-        "Noto Color Emoji";
+        Figtree, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
     --color-accent: var(--color-cyan-500);
     --color-accent-content: var(--color-cyan-600);
     --color-accent-foreground: var(--color-white);
@@ -38,7 +38,7 @@
 }
 
 [data-flux-control]:focus {
-    @apply !ring-accent-content !border-accent-content;
+    @apply !border-accent-content !ring-accent-content;
 }
 
 @layer base {
@@ -536,7 +536,7 @@ button {
         transform-origin: center;
     }
     .animate-heart-bounce::before {
-        content: "";
+        content: '';
         position: absolute;
         inset: -2px;
         background: radial-gradient(circle at center, currentColor 0%, transparent 70%);
@@ -606,9 +606,9 @@ input:autofill:active {
 input[data-com-onepassword-filled],
 select[data-com-onepassword-filled],
 textarea[data-com-onepassword-filled],
-input[data-com-onepassword-filled="light"],
-select[data-com-onepassword-filled="light"],
-textarea[data-com-onepassword-filled="light"] {
+input[data-com-onepassword-filled='light'],
+select[data-com-onepassword-filled='light'],
+textarea[data-com-onepassword-filled='light'] {
     /* Match Flux UI dark mode input background */
     background-color: rgb(30 41 59) !important; /* slate-800 */
     color: rgb(226 232 240) !important; /* slate-200 */
@@ -618,9 +618,9 @@ textarea[data-com-onepassword-filled="light"] {
 .light input[data-com-onepassword-filled],
 .light select[data-com-onepassword-filled],
 .light textarea[data-com-onepassword-filled],
-.light input[data-com-onepassword-filled="light"],
-.light select[data-com-onepassword-filled="light"],
-.light textarea[data-com-onepassword-filled="light"] {
+.light input[data-com-onepassword-filled='light'],
+.light select[data-com-onepassword-filled='light'],
+.light textarea[data-com-onepassword-filled='light'] {
     /* Match Flux UI light mode input background */
     background-color: rgb(255 255 255) !important; /* white */
     color: rgb(15 23 42) !important; /* slate-900 */
@@ -657,7 +657,7 @@ textarea[data-com-onepassword-filled="light"] {
 }
 
 .youtube-lite::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     left: 50%;

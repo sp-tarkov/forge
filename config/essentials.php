@@ -2,6 +2,17 @@
 
 declare(strict_types=1);
 
+use NunoMaduro\Essentials\Configurables\AggressivePrefetching;
+use NunoMaduro\Essentials\Configurables\AutomaticallyEagerLoadRelationships;
+use NunoMaduro\Essentials\Configurables\FakeSleep;
+use NunoMaduro\Essentials\Configurables\ForceScheme;
+use NunoMaduro\Essentials\Configurables\ImmutableDates;
+use NunoMaduro\Essentials\Configurables\PreventStrayRequests;
+use NunoMaduro\Essentials\Configurables\ProhibitDestructiveCommands;
+use NunoMaduro\Essentials\Configurables\SetDefaultPassword;
+use NunoMaduro\Essentials\Configurables\ShouldBeStrict;
+use NunoMaduro\Essentials\Configurables\Unguard;
+
 return [
 
     /*
@@ -16,7 +27,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\AggressivePrefetching::class => true,
+    AggressivePrefetching::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -33,7 +44,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\AutomaticallyEagerLoadRelationships::class => true,
+    AutomaticallyEagerLoadRelationships::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -47,7 +58,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\FakeSleep::class => true,
+    FakeSleep::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +73,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\ForceScheme::class => true,
+    ForceScheme::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -74,7 +85,7 @@ return [
     */
 
     'environments' => [
-        NunoMaduro\Essentials\Configurables\ForceScheme::class => ['production'],
+        ForceScheme::class => ['production'],
     ],
 
     /*
@@ -90,7 +101,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\ImmutableDates::class => true,
+    ImmutableDates::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -105,7 +116,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\PreventStrayRequests::class => true,
+    PreventStrayRequests::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -121,7 +132,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\ProhibitDestructiveCommands::class => true,
+    ProhibitDestructiveCommands::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -136,7 +147,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\SetDefaultPassword::class => true,
+    SetDefaultPassword::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -151,7 +162,7 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\ShouldBeStrict::class => true,
+    ShouldBeStrict::class => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -166,6 +177,6 @@ return [
     |
     */
 
-    NunoMaduro\Essentials\Configurables\Unguard::class => true,
+    Unguard::class => true,
 
 ];

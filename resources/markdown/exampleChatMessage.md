@@ -2,7 +2,7 @@ Hey! I wanted to share some **important information** about the mod we discussed
 
 ## Quick Summary
 
-Here are the *key points* to remember:
+Here are the _key points_ to remember:
 
 - The mod supports **multiple game versions**
 - Installation is straightforward
