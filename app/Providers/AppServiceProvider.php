@@ -17,7 +17,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
@@ -42,15 +41,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Allow mass assignment for all models. Be careful!
-        Model::unguard();
-
-        // Disable lazy loading in non-production environments.
-        Model::preventLazyLoading(! app()->isProduction());
-
-        // Have Laravel automatically eager load Model relationships.
-        Model::automaticallyEagerLoadRelationships();
-
         // Register custom macros and mixins.
         $this->registerMacros();
         $this->registerMixins();

@@ -23,6 +23,9 @@ beforeEach(function (): void {
         $this->markTestSkipped('Akismet API key not set');
     }
 
+    // Allow real HTTP requests for Akismet API integration tests
+    Http::allowStrayRequests();
+
     // Set configuration for testing
     Config::set('akismet.enabled', true);
     Config::set('akismet.api_key', $apiKey);

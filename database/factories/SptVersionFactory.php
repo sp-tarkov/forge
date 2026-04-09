@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\SptVersion;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Date;
 
@@ -39,7 +39,7 @@ class SptVersionFactory extends Factory
     /**
      * Indicate that the SPT version is scheduled for future publication.
      */
-    public function scheduled(?Carbon $date = null): static
+    public function scheduled(?CarbonInterface $date = null): static
     {
         return $this->state(fn (array $attributes): array => [
             'publish_date' => $date ?? Date::now()->addWeek(),
@@ -49,7 +49,7 @@ class SptVersionFactory extends Factory
     /**
      * Indicate that the SPT version was published at a specific date.
      */
-    public function publishedAt(Carbon $date): static
+    public function publishedAt(CarbonInterface $date): static
     {
         return $this->state(fn (array $attributes): array => [
             'publish_date' => $date,

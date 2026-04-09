@@ -12,7 +12,7 @@ use App\Models\Report;
 use App\Models\User;
 use App\Notifications\UserBannedNotification;
 use App\Services\ReportActionService;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -192,7 +192,7 @@ new class extends Component {
      *
      * @return Carbon The calculated expiration date
      */
-    protected function getExpirationDate(): Carbon
+    protected function getExpirationDate(): CarbonInterface
     {
         return match ($this->duration) {
             '1_hour' => now()->addHour(),

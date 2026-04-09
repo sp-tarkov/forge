@@ -62,7 +62,7 @@ class ModVersionObserver
      */
     protected function updateRelatedMod(ModVersion $modVersion): void
     {
-        $modVersion->mod?->calculateDownloads();
+        $modVersion->mod?->fresh()?->calculateDownloads();
     }
 
     /**

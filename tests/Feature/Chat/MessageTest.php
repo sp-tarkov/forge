@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
@@ -273,5 +273,5 @@ it('tracks read timestamps properly', function (): void {
 
     $read = $message->reads()->where('user_id', $receiver->id)->first();
 
-    expect($read->read_at)->toBeInstanceOf(Carbon::class);
+    expect($read->read_at)->toBeInstanceOf(CarbonImmutable::class);
 });

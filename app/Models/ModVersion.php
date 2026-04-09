@@ -12,6 +12,7 @@ use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\ModVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -333,7 +334,7 @@ class ModVersion extends Model implements Trackable
      * Get the latest unpublished SPT version publish date this mod is pinned to.
      * Returns the furthest date in the future to ensure the mod waits for ALL pinned SPT versions.
      */
-    public function getLatestPinnedSptPublishDate(): ?Carbon
+    public function getLatestPinnedSptPublishDate(): Carbon|CarbonImmutable|null
     {
         /** @var SptVersion|null $sptVersion */
         $sptVersion = $this->sptVersions()

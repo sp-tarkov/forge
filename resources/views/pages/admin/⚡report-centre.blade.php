@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Notifications\ReportSubmittedNotification;
 use App\Notifications\UserBannedNotification;
 use App\Services\ReportActionService;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -533,7 +533,7 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * Get the expiration date based on the selected duration.
      */
-    private function getExpirationDate(): Carbon
+    private function getExpirationDate(): CarbonInterface
     {
         return match ($this->banDuration) {
             '1_hour' => now()->addHour(),
@@ -720,7 +720,7 @@ new #[Layout('layouts::base')] class extends Component {
                                             {{-- Report details --}}
                                             <div class="space-y-2 lg:mb-3">
 
-                                                @if ($report->description)
+                                                @if ($report->context)
                                                     <div class="flex items-start space-x-2">
                                                         <flux:icon.chat-bubble-left-ellipsis
                                                             class="size-4 text-blue-500 mt-0.5 flex-shrink-0"
@@ -730,7 +730,7 @@ new #[Layout('layouts::base')] class extends Component {
                                                                 class="text-sm font-medium text-gray-900 dark:text-white"
                                                             >Reason:</span>
                                                             <p class="text-sm text-gray-600 dark:text-gray-400">
-                                                                {{ $report->description }}</p>
+                                                                {{ $report->context }}</p>
                                                         </div>
                                                     </div>
                                                 @endif

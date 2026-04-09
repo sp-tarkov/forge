@@ -494,8 +494,10 @@ abstract class AbstractQueryBuilder
             $this->builder->select(array_merge($dbFields, $requiredFields, $requiredDependencies));
         } else {
             // When no fields are specified, include all allowed fields plus required fields
+            // and all dynamic attribute dependencies
             $allowedFields = static::getAllowedFields();
-            $this->builder->select(array_merge($allowedFields, $requiredFields));
+            $dynamicDependencies = array_merge(...array_values(static::getDynamicAttributes()) ?: [[]]);
+            $this->builder->select(array_unique(array_merge($allowedFields, $requiredFields, $dynamicDependencies)));
         }
     }
 

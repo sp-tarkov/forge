@@ -79,8 +79,8 @@ new class extends Component {
     public function version(): ModVersion
     {
         return ModVersion::query()
-            ->select(['id', 'version', 'disabled', 'published_at', 'mod_id'])
-            ->with(['mod:id,name,owner_id', 'mod.owner:id', 'mod.additionalAuthors:id'])
+            ->select(['id', 'version', 'description', 'disabled', 'published_at', 'mod_id', 'spt_version_constraint'])
+            ->with(['mod', 'mod.owner:id', 'mod.additionalAuthors:id'])
             ->findOrFail($this->versionId);
     }
 

@@ -85,7 +85,7 @@ new class extends Component {
     {
         return Addon::query()
             ->withoutGlobalScopes()
-            ->select(['id', 'name', 'slug', 'disabled', 'published_at', 'owner_id', 'contains_ai_content', 'detached_at', 'mod_id'])
+            ->select(['id', 'name', 'slug', 'description', 'disabled', 'published_at', 'owner_id', 'contains_ai_content', 'detached_at', 'mod_id'])
             ->with(['owner:id,name', 'additionalAuthors:id'])
             ->findOrFail($this->addonId);
     }

@@ -39,13 +39,18 @@ class UserFactory extends Factory
 
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
             'remember_token' => Str::random(10),
             'user_role_id' => null,
             'profile_photo_path' => null,
+            'cover_photo_path' => null,
             'timezone' => fake()->timezone(),
             'email_comment_notifications_enabled' => true,
             'email_reply_notifications_enabled' => true,
             'email_chat_notifications_enabled' => true,
+            'last_seen_at' => null,
+            'mods_updated_viewed_at' => null,
+            'mods_created_viewed_at' => null,
         ];
     }
 

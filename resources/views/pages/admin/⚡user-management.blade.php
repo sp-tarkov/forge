@@ -6,7 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\User;
 use App\Models\UserRole;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -446,7 +446,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
     /**
      * Calculate the expiration date based on the selected duration.
      */
-    protected function getExpirationDate(): Carbon
+    protected function getExpirationDate(): CarbonInterface
     {
         return match ($this->banDuration) {
             '1_hour' => now()->addHour(),
