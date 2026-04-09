@@ -6,4 +6,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class CircularDependencyException extends Exception {}
+final class CircularDependencyException extends Exception {}

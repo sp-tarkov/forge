@@ -21,7 +21,7 @@ use Override;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Mod> $mods
  */
-class License extends Model
+final class License extends Model
 {
     /** @use HasFactory<LicenseFactory> */
     use HasFactory;

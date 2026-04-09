@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class ProcessPinnedModVersionPublishDates implements ShouldQueue
+final class ProcessPinnedModVersionPublishDates implements ShouldQueue
 {
     use Queueable;
 

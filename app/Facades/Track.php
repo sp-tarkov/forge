@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see TrackService
  */
-class Track extends Facade
+final class Track extends Facade
 {
     /**
      * Get the registered name of the component.

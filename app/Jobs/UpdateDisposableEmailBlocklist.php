@@ -8,24 +8,18 @@ use App\Models\DisposableEmailBlocklist;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class UpdateDisposableEmailBlocklist implements ShouldQueue
+#[Timeout(120)]
+#[Tries(3)]
+final class UpdateDisposableEmailBlocklist implements ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the job may be attempted.
-     */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds the job can run before timing out.
-     */
-    public int $timeout = 120;
 
     /**
      * Execute the job.

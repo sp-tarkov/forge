@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 
-class ModRssFeedController extends Controller
+final class ModRssFeedController extends Controller
 {
     /**
      * Generate RSS feed for mods with filtering.

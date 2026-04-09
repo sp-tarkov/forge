@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class StartConversationController extends Controller
+final class StartConversationController extends Controller
 {
     /**
      * Start or resume a conversation with the specified user.

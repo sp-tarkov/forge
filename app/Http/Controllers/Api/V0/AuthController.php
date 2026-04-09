@@ -26,7 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for user authentication and token management.
  */
-class AuthController extends Controller
+final class AuthController extends Controller
 {
     /**
      * Login & Token Creation

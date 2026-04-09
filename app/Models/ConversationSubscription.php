@@ -20,7 +20,7 @@ use Override;
  * @property-read Conversation $conversation
  * @property-read User $user
  */
-class ConversationSubscription extends Model
+final class ConversationSubscription extends Model
 {
     use HasFactory;
 

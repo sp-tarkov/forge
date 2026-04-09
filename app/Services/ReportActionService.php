@@ -16,10 +16,10 @@ use Illuminate\Support\Facades\DB;
 /**
  * Service for managing moderation actions taken on reports.
  */
-class ReportActionService
+final readonly class ReportActionService
 {
     public function __construct(
-        protected TrackService $trackService
+        private TrackService $trackService
     ) {}
 
     /**

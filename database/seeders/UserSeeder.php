@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\progress;
 
-class UserSeeder extends Seeder
+final class UserSeeder extends Seeder
 {
     use SeederHelpers;
 

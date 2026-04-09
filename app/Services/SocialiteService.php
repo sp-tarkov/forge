@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as ProviderUser;
 use Throwable;
 
-class SocialiteService
+final class SocialiteService
 {
     /**
      * Find an existing user by OAuth connection or create a new one.

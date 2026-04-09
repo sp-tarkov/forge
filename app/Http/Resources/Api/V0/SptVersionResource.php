@@ -9,19 +9,19 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
-class SptVersionResource extends JsonResource
+final class SptVersionResource extends JsonResource
 {
     /**
      * The fields requested in the request.
      *
      * @var array<int, string>
      */
-    protected array $requestedFields = [];
+    private array $requestedFields = [];
 
     /**
      * Whether to show all fields.
      */
-    protected bool $showAllFields = true;
+    private bool $showAllFields = true;
 
     /**
      * Transform the resource into an array.
@@ -88,7 +88,7 @@ class SptVersionResource extends JsonResource
         return $data;
     }
 
-    protected function shouldInclude(string $field): bool
+    private function shouldInclude(string $field): bool
     {
         $requiredFields = SptVersionQueryBuilder::getRequiredFields();
 

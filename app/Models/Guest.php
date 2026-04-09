@@ -17,7 +17,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
  * @property-read string $id
  * @property-read bool $is_guest
  */
-class Guest implements Authenticatable
+final class Guest implements Authenticatable
 {
     /**
      * Create a new guest user instance.

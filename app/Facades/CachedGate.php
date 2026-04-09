@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see CachedGateService
  */
-class CachedGate extends Facade
+final class CachedGate extends Facade
 {
     /**
      * Get the registered name of the component.

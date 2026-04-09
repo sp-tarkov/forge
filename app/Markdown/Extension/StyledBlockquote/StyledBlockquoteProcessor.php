@@ -10,7 +10,7 @@ use League\CommonMark\Extension\CommonMark\Node\Block\BlockQuote;
 use League\CommonMark\Node\Block\Paragraph;
 use League\CommonMark\Node\Inline\Text;
 
-class StyledBlockquoteProcessor
+final class StyledBlockquoteProcessor
 {
     /**
      * The regex pattern to match styled blockquote markers.

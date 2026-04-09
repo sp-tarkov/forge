@@ -8,9 +8,9 @@ use App\Models\Addon;
 use App\Services\AddonVersionService;
 use Illuminate\Support\Facades\Storage;
 
-class AddonObserver
+final readonly class AddonObserver
 {
-    public function __construct(protected AddonVersionService $addonVersionService) {}
+    public function __construct(private AddonVersionService $addonVersionService) {}
 
     /**
      * Handle the Addon "updated" event.

@@ -11,7 +11,7 @@ use App\Traits\HasComments;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class CommentSubscriptionController extends Controller
+final class CommentSubscriptionController extends Controller
 {
     /**
      * Handle unsubscribe request from email.

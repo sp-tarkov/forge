@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<ModCategory>
  */
-class ModCategoryFactory extends Factory
+final class ModCategoryFactory extends Factory
 {
     /**
      * Define the model's default state.

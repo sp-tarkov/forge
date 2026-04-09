@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ResolveSptVersionsJob implements ShouldQueue
+final class ResolveSptVersionsJob implements ShouldQueue
 {
     use Queueable;
 

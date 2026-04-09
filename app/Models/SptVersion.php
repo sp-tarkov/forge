@@ -43,7 +43,7 @@ use Throwable;
  */
 #[ScopedBy([PublishedSptVersionScope::class])]
 #[ObservedBy([SptVersionObserver::class])]
-class SptVersion extends Model
+final class SptVersion extends Model
 {
     /** @use HasFactory<SptVersionFactory> */
     use HasFactory;
@@ -226,7 +226,7 @@ class SptVersion extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::saving(function (SptVersion $sptVersion): void {
+        self::saving(function (SptVersion $sptVersion): void {
             // Extract the version sections from the version string.
             try {
                 $version = new Version($sptVersion->version);

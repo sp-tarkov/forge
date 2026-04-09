@@ -8,7 +8,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 
-class ModVersionPolicy
+final class ModVersionPolicy
 {
     /**
      * Determine whether the user can view any mod versions.

@@ -12,7 +12,7 @@ use League\CommonMark\Node\Block\Paragraph;
 use League\CommonMark\Node\Inline\Text;
 use League\CommonMark\Node\Node;
 
-class TabsetProcessor
+final class TabsetProcessor
 {
     /**
      * The marker used to identify the start of a tabset.

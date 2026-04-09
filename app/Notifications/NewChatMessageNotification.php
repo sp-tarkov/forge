@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
-class NewChatMessageNotification extends Notification
+final class NewChatMessageNotification extends Notification
 {
     /**
      * Create a new notification instance.

@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
 /** @mixin Mod */
-class ModResource extends JsonResource
+final class ModResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

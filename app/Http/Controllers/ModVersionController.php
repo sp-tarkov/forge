@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 
-class ModVersionController extends Controller
+final class ModVersionController extends Controller
 {
     public function show(Request $request, int $modId, string $slug, string $version): RedirectResponse
     {

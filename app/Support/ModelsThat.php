@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\File;
 use ReflectionClass;
 use Symfony\Component\Finder\SplFileInfo;
 
-class ModelsThat
+final class ModelsThat
 {
     /**
      * Retrieves a collection of classes within the application that use a specified trait.

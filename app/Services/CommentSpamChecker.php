@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\SpamChecker;
 use App\Models\Comment;
 use App\Support\Akismet\SpamCheckResult;
 use Exception;
@@ -18,7 +19,7 @@ use Throwable;
 /**
  * Service for checking comments against Akismet spam detection.
  */
-class CommentSpamChecker
+final class CommentSpamChecker implements SpamChecker
 {
     /**
      * The base URL for the Akismet API.

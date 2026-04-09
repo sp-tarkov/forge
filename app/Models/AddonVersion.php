@@ -57,7 +57,7 @@ use Stevebauman\Purify\Facades\Purify;
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonVersionObserver::class])]
 #[Touches(['addon'])]
-class AddonVersion extends Model
+final class AddonVersion extends Model
 {
     /** @use HasFactory<AddonVersionFactory> */
     use HasFactory;
@@ -190,7 +190,7 @@ class AddonVersion extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::saving(function (AddonVersion $addonVersion): void {
+        self::saving(function (AddonVersion $addonVersion): void {
             // Strip the "v" prefix from the version string if present.
             $addonVersion->version = mb_ltrim($addonVersion->version, 'vV');
 

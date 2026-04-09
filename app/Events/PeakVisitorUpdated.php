@@ -16,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
  * This event is broadcast to all listening clients when a new peak visitor count is recorded, allowing real-time
  * updates of peak statistics across the application.
  */
-class PeakVisitorUpdated implements ShouldBroadcast
+final class PeakVisitorUpdated implements ShouldBroadcast
 {
     use Dispatchable;
     use InteractsWithSockets;

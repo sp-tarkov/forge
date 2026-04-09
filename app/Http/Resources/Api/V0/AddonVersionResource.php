@@ -14,19 +14,19 @@ use Override;
  *
  * @property AddonVersion $resource
  */
-class AddonVersionResource extends JsonResource
+final class AddonVersionResource extends JsonResource
 {
     /**
      * The fields requested in the request.
      *
      * @var array<int, string>
      */
-    protected array $requestedFields = [];
+    private array $requestedFields = [];
 
     /**
      * Whether to show all fields.
      */
-    protected bool $showAllFields = true;
+    private bool $showAllFields = true;
 
     /**
      * Transform the resource into an array.
@@ -103,7 +103,7 @@ class AddonVersionResource extends JsonResource
      * @param  string  $field  The field name to check
      * @return bool Whether the field should be included
      */
-    protected function shouldInclude(string $field): bool
+    private function shouldInclude(string $field): bool
     {
         return $this->showAllFields
             || in_array($field, $this->requestedFields, true)

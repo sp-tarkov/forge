@@ -13,14 +13,14 @@ use League\CommonMark\Util\HtmlElement;
 use League\CommonMark\Xml\XmlNodeRendererInterface;
 use Stringable;
 
-class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterface
+final class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterface
 {
     public const int MAX_TITLE_LEN = 40;
 
     /**
      * Renders the TabPanelNode into HTML.
      */
-    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable|string|null
+    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable
     {
         TabPanelNode::assertInstanceOf($node);
 

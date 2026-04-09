@@ -16,7 +16,7 @@ use Laravel\Prompts\Progress;
 
 use function Laravel\Prompts\progress;
 
-class CommentSeeder extends Seeder
+final class CommentSeeder extends Seeder
 {
     use SeederHelpers;
 

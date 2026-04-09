@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ConversationUpdated implements ShouldBroadcastNow
+final class ConversationUpdated implements ShouldBroadcastNow
 {
     use Dispatchable;
     use InteractsWithSockets;

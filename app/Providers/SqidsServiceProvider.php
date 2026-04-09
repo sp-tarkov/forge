@@ -8,7 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use Sqids\Sqids;
 
-class SqidsServiceProvider extends ServiceProvider
+final class SqidsServiceProvider extends ServiceProvider
 {
     /**
      * Register services.

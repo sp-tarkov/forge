@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<Addon>
  */
-class AddonFactory extends Factory
+final class AddonFactory extends Factory
 {
     public function definition(): array
     {

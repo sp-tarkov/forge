@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @extends Factory<TrackingEvent>
  */
-class TrackingEventFactory extends Factory
+final class TrackingEventFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.

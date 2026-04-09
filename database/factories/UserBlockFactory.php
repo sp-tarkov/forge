@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<UserBlock>
  */
-class UserBlockFactory extends Factory
+final class UserBlockFactory extends Factory
 {
     /**
      * Define the model's default state.

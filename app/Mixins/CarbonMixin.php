@@ -12,7 +12,7 @@ use Closure;
  *
  * @mixin Carbon
  */
-class CarbonMixin
+final class CarbonMixin
 {
     /**
      * Dynamically format dates based on how much time has passed.

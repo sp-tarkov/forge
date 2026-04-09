@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Cache;
  * @property Carbon|null $updated_at
  */
 #[Table(name: 'disposable_email_blocklist')]
-class DisposableEmailBlocklist extends Model
+final class DisposableEmailBlocklist extends Model
 {
     use HasFactory;
     use HasFactory;

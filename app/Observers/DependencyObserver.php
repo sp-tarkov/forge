@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Contracts\DependencyResolver;
 use App\Models\Dependency;
-use App\Services\DependencyVersionService;
 
-class DependencyObserver
+final readonly class DependencyObserver
 {
-    public function __construct(protected DependencyVersionService $dependencyVersionService) {}
+    public function __construct(private DependencyResolver $dependencyVersionService) {}
 
     /**
      * Handle the Dependency "saved" event.

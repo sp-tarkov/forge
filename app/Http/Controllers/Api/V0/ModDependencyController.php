@@ -23,9 +23,9 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for resolving mod dependency trees.
  */
-class ModDependencyController extends Controller
+final class ModDependencyController extends Controller
 {
-    public function __construct(protected DependencyService $dependencyService) {}
+    public function __construct(private readonly DependencyService $dependencyService) {}
 
     /**
      * Get Mod Dependencies

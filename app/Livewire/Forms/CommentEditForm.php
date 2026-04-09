@@ -9,7 +9,7 @@ use App\Rules\DoesNotContainLogFile;
 use Illuminate\Support\Facades\DB;
 use Livewire\Form;
 
-class CommentEditForm extends Form
+final class CommentEditForm extends Form
 {
     /**
      * The body of the comment.

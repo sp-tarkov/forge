@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Geolocator;
 use App\Enums\TrackingEventType;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\TrackingEvent;
 use App\Models\User;
-use App\Services\GeolocationService;
 use App\Services\TrackService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ uses(RefreshDatabase::class);
 
 describe('TrackService', function (): void {
     beforeEach(function (): void {
-        $this->geolocationService = $this->mock(GeolocationService::class);
+        $this->geolocationService = $this->mock(Geolocator::class);
         $this->trackService = new TrackService($this->geolocationService);
 
         // Disable defer to make deferred callbacks execute synchronously in tests

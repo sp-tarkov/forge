@@ -12,7 +12,7 @@ use Override;
 /**
  * @mixin UserRole
  */
-class RoleResource extends JsonResource
+final class RoleResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

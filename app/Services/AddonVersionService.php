@@ -10,7 +10,7 @@ use App\Models\ModVersion;
 use Composer\Semver\Semver;
 use Exception;
 
-class AddonVersionService
+final class AddonVersionService
 {
     /**
      * Resolve the compatible mod versions for an addon version.

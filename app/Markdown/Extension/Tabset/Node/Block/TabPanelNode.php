@@ -7,7 +7,7 @@ namespace App\Markdown\Extension\Tabset\Node\Block;
 use League\CommonMark\Node\Block\AbstractBlock;
 use League\CommonMark\Node\Node;
 
-class TabPanelNode extends AbstractBlock
+final class TabPanelNode extends AbstractBlock
 {
     /**
      * Constructor to initialize the panel node.

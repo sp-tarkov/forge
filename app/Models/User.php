@@ -91,7 +91,7 @@ use Stevebauman\Purify\Facades\Purify;
     'two_factor_recovery_codes',
     'two_factor_secret',
 ])]
-class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
+final class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
 {
     use Bannable;
     use HasApiTokens;
@@ -645,7 +645,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Comments on user profiles are displayed on the 'wall' tab.
      */
-    public function getCommentTabHash(): ?string
+    public function getCommentTabHash(): string
     {
         return 'wall';
     }

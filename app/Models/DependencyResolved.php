@@ -26,7 +26,7 @@ use Override;
  * @property-read ModVersion|null $resolvedModVersion
  */
 #[Table(name: 'dependencies_resolved')]
-class DependencyResolved extends Model
+final class DependencyResolved extends Model
 {
     /** @use HasFactory<DependencyResolvedFactory> */
     use HasFactory;

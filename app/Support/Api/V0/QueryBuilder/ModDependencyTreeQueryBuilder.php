@@ -12,14 +12,14 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<Mod>
  */
-class ModDependencyTreeQueryBuilder extends AbstractQueryBuilder
+final class ModDependencyTreeQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * The mod version IDs to resolve dependencies for.
      *
      * @var array<int>
      */
-    protected array $modVersionIds = [];
+    private array $modVersionIds = [];
 
     /**
      * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the

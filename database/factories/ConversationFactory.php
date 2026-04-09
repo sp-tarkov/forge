@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Conversation>
  */
-class ConversationFactory extends Factory
+final class ConversationFactory extends Factory
 {
     /**
      * Define the model's default state.

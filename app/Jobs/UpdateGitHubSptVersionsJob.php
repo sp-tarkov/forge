@@ -14,20 +14,17 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
+#[Timeout(60)]
+final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of seconds the job can run before timing out.
-     */
-    public int $timeout = 60;
 
     /**
      * Execute the job.

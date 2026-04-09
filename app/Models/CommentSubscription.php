@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property Model $commentable
  * @property User $user
  */
-class CommentSubscription extends Model
+final class CommentSubscription extends Model
 {
     /** @use HasFactory<CommentSubscriptionFactory> */
     use HasFactory;

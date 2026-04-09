@@ -13,14 +13,14 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-class ModFilter
+final class ModFilter
 {
     /**
      * The query builder instance for the mod model.
      *
      * @var Builder<Mod>
      */
-    protected Builder $builder;
+    private readonly Builder $builder;
 
     /**
      * Create a new ModFilter instance.
@@ -31,7 +31,7 @@ class ModFilter
          *
          * @var array<string, mixed>
          */
-        protected array $filters
+        private array $filters
     ) {
         $this->builder = $this->baseQuery();
     }

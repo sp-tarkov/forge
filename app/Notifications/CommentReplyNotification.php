@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-class CommentReplyNotification extends Notification
+final class CommentReplyNotification extends Notification
 {
     /**
      * Create a new notification instance.

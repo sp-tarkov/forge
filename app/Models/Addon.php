@@ -77,7 +77,7 @@ use Stevebauman\Purify\Facades\Purify;
 #[Appends([
     'detail_url',
 ])]
-class Addon extends Model implements Commentable, Reportable, Trackable
+final class Addon extends Model implements Commentable, Reportable, Trackable
 {
     /** @use HasComments<self> */
     use HasComments;
@@ -355,7 +355,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     /**
      * Comments on addons are displayed on the 'comments' tab.
      */
-    public function getCommentTabHash(): ?string
+    public function getCommentTabHash(): string
     {
         return 'comments';
     }

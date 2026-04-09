@@ -31,7 +31,7 @@ use Override;
  */
 #[ObservedBy([DependencyObserver::class])]
 #[Table(name: 'dependencies')]
-class Dependency extends Model
+final class Dependency extends Model
 {
     /** @use HasFactory<DependencyFactory> */
     use HasFactory;

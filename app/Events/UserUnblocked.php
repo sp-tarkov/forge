@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserUnblocked implements ShouldBroadcast
+final class UserUnblocked implements ShouldBroadcast
 {
     use Dispatchable;
     use InteractsWithSockets;

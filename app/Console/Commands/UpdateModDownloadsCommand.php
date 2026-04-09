@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Jobs\UpdateDownloadsJob;
 use Illuminate\Console\Command;
 
-class UpdateModDownloadsCommand extends Command
+final class UpdateModDownloadsCommand extends Command
 {
     protected $signature = 'app:update-downloads';
 

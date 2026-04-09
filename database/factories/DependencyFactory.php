@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<Dependency>
  */
-class DependencyFactory extends Factory
+final class DependencyFactory extends Factory
 {
     protected $model = Dependency::class;
 

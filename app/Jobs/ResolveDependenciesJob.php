@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ResolveDependenciesJob implements ShouldQueue
+final class ResolveDependenciesJob implements ShouldQueue
 {
     use Queueable;
 

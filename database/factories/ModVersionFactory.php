@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<ModVersion>
  */
-class ModVersionFactory extends Factory
+final class ModVersionFactory extends Factory
 {
     public function definition(): array
     {

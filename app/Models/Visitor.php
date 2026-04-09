@@ -23,7 +23,7 @@ use Override;
  * @property Carbon|null $updated_at
  */
 #[Table(name: 'visitor_peaks')]
-class Visitor extends Model
+final class Visitor extends Model
 {
     /** @use HasFactory<VisitorFactory> */
     use HasFactory;
@@ -36,7 +36,7 @@ class Visitor extends Model
     public static function updatePeak(int $count): void
     {
         /** @var self|null $peak */
-        $peak = static::query()->first();
+        $peak = self::query()->first();
 
         if ($peak) {
             $peak->update([
@@ -44,7 +44,7 @@ class Visitor extends Model
                 'peak_date' => Date::now(),
             ]);
         } else {
-            static::query()->create([
+            self::query()->create([
                 'peak_count' => $count,
                 'peak_date' => Date::now(),
             ]);
@@ -59,7 +59,7 @@ class Visitor extends Model
     public static function getPeakStats(): array
     {
         /** @var self|null $peak */
-        $peak = static::query()->first();
+        $peak = self::query()->first();
 
         if (! $peak) {
             // Don't create a peak record, just return empty stats

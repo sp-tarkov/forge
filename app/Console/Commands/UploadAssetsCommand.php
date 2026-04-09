@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
-class UploadAssetsCommand extends Command
+final class UploadAssetsCommand extends Command
 {
     protected $signature = 'app:upload-assets';
 
@@ -24,7 +24,7 @@ class UploadAssetsCommand extends Command
         $this->publishVendorAssets();
     }
 
-    protected function publishBuildAssets(): void
+    private function publishBuildAssets(): void
     {
         $this->info('Publishing build assets...');
 
@@ -38,7 +38,7 @@ class UploadAssetsCommand extends Command
         $this->info('Build assets published successfully');
     }
 
-    protected function publishVendorAssets(): void
+    private function publishVendorAssets(): void
     {
         $this->info('Publishing vendor assets...');
 

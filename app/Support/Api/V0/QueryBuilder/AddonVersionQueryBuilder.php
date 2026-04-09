@@ -15,7 +15,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<AddonVersion>
  */
-class AddonVersionQueryBuilder extends AbstractQueryBuilder
+final class AddonVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Create a new AddonVersionQueryBuilder instance.
@@ -24,7 +24,7 @@ class AddonVersionQueryBuilder extends AbstractQueryBuilder
         /**
          * The ID of the addon to filter versions for.
          */
-        protected readonly int $addonId
+        private readonly int $addonId
     ) {
         parent::__construct();
     }
@@ -281,7 +281,7 @@ class AddonVersionQueryBuilder extends AbstractQueryBuilder
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = static::getAllowedSorts();
+            $allowedSorts = self::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {

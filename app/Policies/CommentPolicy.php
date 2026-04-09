@@ -11,7 +11,7 @@ use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-class CommentPolicy
+final class CommentPolicy
 {
     /**
      * Determine whether the user can view any models.

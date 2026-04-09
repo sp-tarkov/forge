@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Pagination\AbstractPaginator;
 use Symfony\Component\HttpFoundation\Response;
 
-class ApiResponse
+final class ApiResponse
 {
     /**
      * Return a success response.

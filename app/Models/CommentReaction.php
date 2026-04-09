@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property-read User $user
  * @property-read Comment $comment
  */
-class CommentReaction extends Model
+final class CommentReaction extends Model
 {
     /** @use HasFactory<CommentReactionFactory> */
     use HasFactory;

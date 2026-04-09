@@ -24,7 +24,7 @@ use Override;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Mod> $mods
  */
-class ModCategory extends Model
+final class ModCategory extends Model
 {
     /** @use HasFactory<ModCategoryFactory> */
     use HasFactory;
@@ -45,13 +45,13 @@ class ModCategory extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::creating(function (ModCategory $modCategory): void {
+        self::creating(function (ModCategory $modCategory): void {
             if (empty($modCategory->slug)) {
                 $modCategory->slug = Str::slug($modCategory->title);
             }
         });
 
-        static::updating(function (ModCategory $modCategory): void {
+        self::updating(function (ModCategory $modCategory): void {
             if ($modCategory->isDirty('title')) {
                 $modCategory->slug = Str::slug($modCategory->title);
             }

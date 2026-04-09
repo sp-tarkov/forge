@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-class ChatSubscriptionController extends Controller
+final class ChatSubscriptionController extends Controller
 {
     /**
      * Handle the unsubscribe request for chat notifications.

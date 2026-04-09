@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\UserBlock;
 use Illuminate\Support\Facades\DB;
 
-class UserBlockingService
+final class UserBlockingService
 {
     /**
      * Block a user and handle all related cleanup.
@@ -41,7 +41,7 @@ class UserBlockingService
     /**
      * Clear caches for both users.
      */
-    protected function clearUserCaches(User $userOne, User $userTwo): void
+    private function clearUserCaches(User $userOne, User $userTwo): void
     {
         cache()->forget(sprintf('user_%d_role_name', $userOne->id));
         cache()->forget(sprintf('user_%d_role_name', $userTwo->id));

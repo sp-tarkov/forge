@@ -51,7 +51,7 @@ use Override;
  * @property User|null $user
  * @property-read Collection<int, Report> $reports
  */
-class TrackingEvent extends Model
+final class TrackingEvent extends Model
 {
     /** @use HasFactory<TrackingEventFactory> */
     use HasFactory;

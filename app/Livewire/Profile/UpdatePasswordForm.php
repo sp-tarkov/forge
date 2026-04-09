@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Livewire\Component;
 
-class UpdatePasswordForm extends Component
+final class UpdatePasswordForm extends Component
 {
     use PasswordValidationRules;
 

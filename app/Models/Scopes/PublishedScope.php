@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
-class PublishedScope implements Scope
+final class PublishedScope implements Scope
 {
     /**
      * Apply the scope to a given Eloquent query builder.

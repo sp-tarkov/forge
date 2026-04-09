@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<Mod>
  */
-class ModFactory extends Factory
+final class ModFactory extends Factory
 {
     public function definition(): array
     {

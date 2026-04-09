@@ -68,7 +68,7 @@ use Stevebauman\Purify\Facades\Purify;
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
 #[Touches(['mod'])]
-class ModVersion extends Model implements Trackable
+final class ModVersion extends Model implements Trackable
 {
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
@@ -273,7 +273,7 @@ class ModVersion extends Model implements Trackable
     /**
      * Get contextual information about this trackable resource.
      */
-    public function getTrackingContext(): ?string
+    public function getTrackingContext(): string
     {
         return sprintf('Version %s of %s', $this->version, $this->mod->name);
     }
@@ -355,7 +355,7 @@ class ModVersion extends Model implements Trackable
     #[Override]
     protected static function booted(): void
     {
-        static::saving(function (ModVersion $modVersion): void {
+        self::saving(function (ModVersion $modVersion): void {
             // Strip the "v" prefix from the version string if present.
             $modVersion->version = mb_ltrim($modVersion->version, 'vV');
 

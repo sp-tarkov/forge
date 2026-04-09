@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<DependencyResolved>
  */
-class DependencyResolvedFactory extends Factory
+final class DependencyResolvedFactory extends Factory
 {
     protected $model = DependencyResolved::class;
 

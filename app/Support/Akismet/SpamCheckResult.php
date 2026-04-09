@@ -9,7 +9,7 @@ use App\Enums\SpamStatus;
 /**
  * Represents the result of a spam check operation.
  */
-readonly class SpamCheckResult
+final readonly class SpamCheckResult
 {
     /**
      * @param  array<string, mixed>  $metadata

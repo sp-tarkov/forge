@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<OAuthConnection>
  */
-class OAuthConnectionFactory extends Factory
+final class OAuthConnectionFactory extends Factory
 {
     /**
      * Define the model's default state.

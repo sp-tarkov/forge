@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 /**
  * This class exists solely to make the original notification queueable.
  */
-class VerifyEmail extends OriginalVerifyEmail implements ShouldQueue
+final class VerifyEmail extends OriginalVerifyEmail implements ShouldQueue
 {
     use Queueable;
 

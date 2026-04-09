@@ -12,7 +12,7 @@ use Override;
 /**
  * @mixin ModCategory
  */
-class ModCategoryResource extends JsonResource
+final class ModCategoryResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

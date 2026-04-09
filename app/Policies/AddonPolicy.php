@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 
-class AddonPolicy
+final class AddonPolicy
 {
     /**
      * Determine whether the user can view multiple models.

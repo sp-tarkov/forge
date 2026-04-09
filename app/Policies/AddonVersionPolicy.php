@@ -8,7 +8,7 @@ use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\User;
 
-class AddonVersionPolicy
+final class AddonVersionPolicy
 {
     /**
      * Determine whether the user can view any addon versions.

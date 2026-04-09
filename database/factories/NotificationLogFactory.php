@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<NotificationLog>
  */
-class NotificationLogFactory extends Factory
+final class NotificationLogFactory extends Factory
 {
     /**
      * Define the model's default state.

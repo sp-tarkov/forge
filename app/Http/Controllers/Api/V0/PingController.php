@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
  *
  * APIs for general application status and information.
  */
-class PingController extends Controller
+final class PingController extends Controller
 {
     /**
      * Check API Health

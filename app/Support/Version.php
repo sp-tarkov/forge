@@ -8,7 +8,7 @@ use App\Exceptions\InvalidVersionNumberException;
 use Illuminate\Support\Str;
 use Stringable;
 
-class Version implements Stringable
+final class Version implements Stringable
 {
     /**
      * Parse a semantic version number.

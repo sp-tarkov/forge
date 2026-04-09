@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<SourceCodeLink>
  */
-class SourceCodeLinkFactory extends Factory
+final class SourceCodeLinkFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.

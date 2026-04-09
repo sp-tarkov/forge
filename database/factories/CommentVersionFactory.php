@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<CommentVersion>
  */
-class CommentVersionFactory extends Factory
+final class CommentVersionFactory extends Factory
 {
     /**
      * Define the model's default state.

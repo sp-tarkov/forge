@@ -8,7 +8,7 @@ use App\Models\SptVersion;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class SptVersionModCountsJob implements ShouldQueue
+final class SptVersionModCountsJob implements ShouldQueue
 {
     use Queueable;
 

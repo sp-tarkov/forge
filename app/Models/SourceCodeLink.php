@@ -23,7 +23,7 @@ use Override;
  * @property-read Model $sourceable
  */
 #[Table(name: 'source_code_links')]
-class SourceCodeLink extends Model
+final class SourceCodeLink extends Model
 {
     /** @use HasFactory<SourceCodeLinkFactory> */
     use HasFactory;

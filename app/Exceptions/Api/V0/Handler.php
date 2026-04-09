@@ -7,19 +7,18 @@ namespace App\Exceptions\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Responses\Api\V0\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
-class Handler
+final class Handler
 {
     /**
      * Render the API exception into an HTTP response.
      */
-    public function render(Throwable $e, Request $request): ?JsonResponse
+    public function render(Throwable $e): JsonResponse
     {
         if ($e instanceof ValidationException) {
             return ApiResponse::error(
@@ -70,7 +69,7 @@ class Handler
     /**
      * Determine the HTTP status code for the exception.
      */
-    protected function determineStatusCode(Throwable $e): int
+    private function determineStatusCode(Throwable $e): int
     {
         $statusCode = match (true) {
             method_exists($e, 'getStatusCode') => $e->getStatusCode(),
@@ -87,7 +86,7 @@ class Handler
     /**
      * Determine the error message for the exception.
      */
-    protected function determineMessage(Throwable $e, int $statusCode): string
+    private function determineMessage(Throwable $e, int $statusCode): string
     {
         // If it's a server error and debug mode is off, use a generic message
         if ($statusCode === Response::HTTP_INTERNAL_SERVER_ERROR && ! config('app.debug')) {

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Translation\PotentiallyTranslatedString;
 use Throwable;
 
-class DirectDownloadLink implements ValidationRule
+final class DirectDownloadLink implements ValidationRule
 {
     /**
      * The detected content length from the validation.

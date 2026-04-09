@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 
-class UpdateGeoLiteDatabase extends Command
+final class UpdateGeoLiteDatabase extends Command
 {
     /**
      * The name and signature of the console command.

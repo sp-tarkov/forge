@@ -7,7 +7,7 @@ namespace Database\Seeders;
 use App\Models\SptVersion;
 use Illuminate\Database\Seeder;
 
-class SptVersionSeeder extends Seeder
+final class SptVersionSeeder extends Seeder
 {
     /**
      * Run the database seeds.

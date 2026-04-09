@@ -17,7 +17,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
-class ProcessChatMessageNotification implements ShouldQueue
+final class ProcessChatMessageNotification implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;

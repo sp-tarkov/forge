@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Report>
  */
-class ReportFactory extends Factory
+final class ReportFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.

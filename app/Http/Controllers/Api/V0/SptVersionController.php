@@ -17,7 +17,7 @@ use Knuckles\Scribe\Attributes\UrlParam;
  *
  * Endpoints for retrieving SPT-related data.
  */
-class SptVersionController extends Controller
+final class SptVersionController extends Controller
 {
     /**
      * Get SPT Versions

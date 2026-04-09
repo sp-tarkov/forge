@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<SptVersion>
  */
-class SptVersionFactory extends Factory
+final class SptVersionFactory extends Factory
 {
     public function definition(): array
     {

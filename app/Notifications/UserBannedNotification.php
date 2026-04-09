@@ -11,7 +11,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Mchev\Banhammer\Models\Ban;
 
-class UserBannedNotification extends Notification implements ShouldQueue
+final class UserBannedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

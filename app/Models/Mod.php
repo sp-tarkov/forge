@@ -86,7 +86,7 @@ use Stevebauman\Purify\Facades\Purify;
 #[Appends([
     'detail_url',
 ])]
-class Mod extends Model implements Commentable, Reportable, Trackable
+final class Mod extends Model implements Commentable, Reportable, Trackable
 {
     /** @use HasComments<self> */
     use HasComments;
@@ -454,7 +454,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Comments on mods are displayed on the 'comments' tab.
      */
-    public function getCommentTabHash(): ?string
+    public function getCommentTabHash(): string
     {
         return 'comments';
     }

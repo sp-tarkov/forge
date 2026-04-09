@@ -23,7 +23,7 @@ use Override;
  * @property-read Model $linkable
  */
 #[Table(name: 'virus_total_links')]
-class VirusTotalLink extends Model
+final class VirusTotalLink extends Model
 {
     /** @use HasFactory<VirusTotalLinkFactory> */
     use HasFactory;

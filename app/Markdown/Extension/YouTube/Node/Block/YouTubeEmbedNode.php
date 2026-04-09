@@ -7,7 +7,7 @@ namespace App\Markdown\Extension\YouTube\Node\Block;
 use League\CommonMark\Node\Block\AbstractBlock;
 use League\CommonMark\Node\StringContainerInterface;
 
-class YouTubeEmbedNode extends AbstractBlock implements StringContainerInterface
+final class YouTubeEmbedNode extends AbstractBlock implements StringContainerInterface
 {
     public function __construct(public string $videoId)
     {

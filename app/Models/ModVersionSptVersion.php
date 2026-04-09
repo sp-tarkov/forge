@@ -21,7 +21,7 @@ use Override;
  * @property-read ModVersion $modVersion
  * @property-read SptVersion $sptVersion
  */
-class ModVersionSptVersion extends Pivot
+final class ModVersionSptVersion extends Pivot
 {
     /** @use HasFactory<Factory<ModVersionSptVersion>> */
     use HasFactory;

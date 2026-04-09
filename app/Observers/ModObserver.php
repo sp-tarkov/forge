@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Contracts\DependencyResolver;
 use App\Models\Mod;
 use App\Models\SptVersion;
-use App\Services\DependencyVersionService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-class ModObserver
+final readonly class ModObserver
 {
-    public function __construct(protected DependencyVersionService $dependencyVersionService) {}
+    public function __construct(private DependencyResolver $dependencyVersionService) {}
 
     /**
      * Handle the Mod "saved" event.
@@ -51,7 +51,7 @@ class ModObserver
     /**
      * Update properties on related SptVersions.
      */
-    protected function updateRelatedSptVersions(Mod $mod): void
+    private function updateRelatedSptVersions(Mod $mod): void
     {
         /** @var Collection<int, SptVersion> $sptVersions */
         $sptVersions = $mod->versions->flatMap->sptVersions->unique();

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<AddonVersion>
  */
-class AddonVersionFactory extends Factory
+final class AddonVersionFactory extends Factory
 {
     public function definition(): array
     {

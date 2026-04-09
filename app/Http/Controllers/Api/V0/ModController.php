@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for managing and retrieving mods.
  */
-class ModController extends Controller
+final class ModController extends Controller
 {
     /**
      * Get Mods

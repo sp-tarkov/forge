@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<UserRole>
  */
-class UserRoleFactory extends Factory
+final class UserRoleFactory extends Factory
 {
     public function definition(): array
     {

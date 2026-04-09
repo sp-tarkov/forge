@@ -7,7 +7,7 @@ namespace App\Policies;
 use App\Models\OAuthConnection;
 use App\Models\User;
 
-class OAuthConnectionPolicy
+final class OAuthConnectionPolicy
 {
     /**
      * Determine whether the user can view the model.

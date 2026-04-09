@@ -72,7 +72,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read CommentVersion|null $latestVersion
  */
 #[ObservedBy([CommentObserver::class])]
-class Comment extends Model implements Reportable, Trackable
+final class Comment extends Model implements Reportable, Trackable
 {
     /** @use HasFactory<CommentFactory> */
     use HasFactory;

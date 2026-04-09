@@ -122,7 +122,7 @@ abstract class AbstractQueryBuilder
      *
      * @return array<string>
      */
-    public static function getAllAllowedFields(): array
+    final public static function getAllAllowedFields(): array
     {
         return array_merge(
             static::getAllowedFields(),
@@ -135,7 +135,7 @@ abstract class AbstractQueryBuilder
      *
      * @return Builder<TModel>
      */
-    public function apply(): Builder
+    final public function apply(): Builder
     {
         $this->applyFilters();
         $this->applyIncludes();
@@ -152,7 +152,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string, mixed>|null  $filters
      * @return self<TModel>
      */
-    public function withFilters(?array $filters): self
+    final public function withFilters(?array $filters): self
     {
         if ($filters !== null) {
             $this->filters = $filters;
@@ -167,7 +167,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string>|null  $includes
      * @return self<TModel>
      */
-    public function withIncludes(?array $includes): self
+    final public function withIncludes(?array $includes): self
     {
         if ($includes !== null) {
             $this->includes = $includes;
@@ -182,7 +182,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string>|null  $fields
      * @return self<TModel>
      */
-    public function withFields(?array $fields): self
+    final public function withFields(?array $fields): self
     {
         if ($fields !== null) {
             $this->fields = $fields;
@@ -197,7 +197,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string>|null  $sorts
      * @return self<TModel>
      */
-    public function withSorts(?array $sorts): self
+    final public function withSorts(?array $sorts): self
     {
         if ($sorts !== null) {
             $this->sorts = $sorts;
@@ -211,7 +211,7 @@ abstract class AbstractQueryBuilder
      *
      * @return self<TModel>
      */
-    public function withSearch(?string $query): self
+    final public function withSearch(?string $query): self
     {
         if ($query !== null) {
             $this->searchQuery = $query;
@@ -225,7 +225,7 @@ abstract class AbstractQueryBuilder
      *
      * @return Collection<int, TModel>
      */
-    public function get(): Collection
+    final public function get(): Collection
     {
         /** @var Collection<int, TModel> */
         return $this->apply()->get();
@@ -236,7 +236,7 @@ abstract class AbstractQueryBuilder
      *
      * @return LengthAwarePaginator<int, TModel>
      */
-    public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
+    final public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
     {
         $perPage = min($perPage, $allowed_max);
 
@@ -250,7 +250,7 @@ abstract class AbstractQueryBuilder
      *
      * @throws ModelNotFoundException
      */
-    public function findOrFail(int $id): Model
+    final public function findOrFail(int $id): Model
     {
         return $this->apply()->findOrFail($id);
     }
@@ -465,7 +465,7 @@ abstract class AbstractQueryBuilder
             $fieldsToValidate = array_diff($fields, $requiredFields);
 
             if ($fieldsToValidate !== []) {
-                $allowedFields = static::getAllAllowedFields();
+                $allowedFields = self::getAllAllowedFields();
                 $invalidFields = array_diff($fieldsToValidate, $allowedFields);
 
                 if ($invalidFields !== []) {

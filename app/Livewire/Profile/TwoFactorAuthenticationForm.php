@@ -15,7 +15,7 @@ use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 use Laravel\Fortify\Features;
 use Livewire\Component;
 
-class TwoFactorAuthenticationForm extends Component
+final class TwoFactorAuthenticationForm extends Component
 {
     use ConfirmsPasswords;
 

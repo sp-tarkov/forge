@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Form;
 
-class CommentReplyForm extends Form
+final class CommentReplyForm extends Form
 {
     /**
      * The body of the comment.

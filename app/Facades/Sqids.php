@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \Sqids\Sqids
  */
-class Sqids extends Facade
+final class Sqids extends Facade
 {
     /**
      * Get the registered name of the component.

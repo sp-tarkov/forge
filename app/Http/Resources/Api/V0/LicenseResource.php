@@ -12,7 +12,7 @@ use Override;
 /**
  * @mixin License
  */
-class LicenseResource extends JsonResource
+final class LicenseResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

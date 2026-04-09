@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<License>
  */
-class LicenseFactory extends Factory
+final class LicenseFactory extends Factory
 {
     public function definition(): array
     {

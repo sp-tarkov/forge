@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Jobs\SearchSyncJob;
 use Illuminate\Console\Command;
 
-class SearchSyncCommand extends Command
+final class SearchSyncCommand extends Command
 {
     protected $signature = 'app:search-sync';
 

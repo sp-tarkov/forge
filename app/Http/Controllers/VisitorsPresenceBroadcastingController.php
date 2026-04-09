@@ -17,7 +17,7 @@ use Override;
  * This controller extends Laravel's default broadcast authentication to allow both authenticated users and guest users
  * (identified by session ID) to participate in the "visitors" presence channel.
  */
-class VisitorsPresenceBroadcastingController extends BroadcastController
+final class VisitorsPresenceBroadcastingController extends BroadcastController
 {
     /**
      * Authenticate the user for broadcasting channels.

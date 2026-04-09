@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<ConversationArchive>
  */
-class ConversationArchiveFactory extends Factory
+final class ConversationArchiveFactory extends Factory
 {
     /**
      * Define the model's default state.

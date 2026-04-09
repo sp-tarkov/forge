@@ -9,7 +9,7 @@ use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Support\Collection;
 
-class SptVersionService
+final class SptVersionService
 {
     /**
      * Resolve dependencies for the given mod version.

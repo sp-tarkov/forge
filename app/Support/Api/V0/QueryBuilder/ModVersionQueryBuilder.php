@@ -17,7 +17,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<ModVersion>
  */
-class ModVersionQueryBuilder extends AbstractQueryBuilder
+final class ModVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Create a new ModVersionQueryBuilder instance.
@@ -26,7 +26,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         /**
          * The ID of the mod to filter versions for.
          */
-        protected readonly int $modId
+        private readonly int $modId
     ) {
         parent::__construct();
     }
@@ -351,7 +351,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = static::getAllowedSorts();
+            $allowedSorts = self::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {

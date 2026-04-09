@@ -10,7 +10,7 @@ use App\Http\Responses\VerifyEmailResponse;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 
-class VerifyEmailController extends Controller
+final class VerifyEmailController extends Controller
 {
     /**
      * Mark the user's email address as verified.

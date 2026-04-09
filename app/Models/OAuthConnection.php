@@ -29,7 +29,7 @@ use Override;
  * @property-read User $user
  */
 #[Table(name: 'oauth_connections')]
-class OAuthConnection extends Model
+final class OAuthConnection extends Model
 {
     /** @use HasFactory<OAuthConnectionFactory> */
     use HasFactory;

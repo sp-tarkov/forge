@@ -10,7 +10,7 @@ use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
 use League\CommonMark\Node\Block\Paragraph;
 use League\CommonMark\Node\Node;
 
-class YouTubeProcessor
+final class YouTubeProcessor
 {
     public function __invoke(DocumentParsedEvent $e): void
     {

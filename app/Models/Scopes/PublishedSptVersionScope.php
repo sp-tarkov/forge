@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
-class PublishedSptVersionScope implements Scope
+final class PublishedSptVersionScope implements Scope
 {
     /**
      * Apply the scope to a given Eloquent query builder.

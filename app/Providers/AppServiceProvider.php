@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\DependencyResolver;
+use App\Contracts\Geolocator;
+use App\Contracts\SpamChecker;
 use App\Enums\TrackingEventType;
 use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\CachedGate;
@@ -12,6 +15,9 @@ use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
+use App\Services\CommentSpamChecker;
+use App\Services\DependencyVersionService;
+use App\Services\GeolocationService;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
@@ -34,8 +40,18 @@ use Spatie\LaravelFlare\Facades\Flare;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
-class AppServiceProvider extends ServiceProvider
+final class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        $this->app->bind(SpamChecker::class, CommentSpamChecker::class);
+        $this->app->bind(DependencyResolver::class, DependencyVersionService::class);
+        $this->app->bind(Geolocator::class, GeolocationService::class);
+    }
+
     /**
      * Bootstrap any application services.
      */

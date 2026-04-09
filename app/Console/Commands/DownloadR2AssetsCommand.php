@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Concurrency;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class DownloadR2AssetsCommand extends Command
+final class DownloadR2AssetsCommand extends Command
 {
     protected $signature = 'app:download-r2-assets
                             {--filter= : Only download files matching this pattern (e.g., "profile-photos/*")}

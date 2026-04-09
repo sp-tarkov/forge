@@ -23,7 +23,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $body_html
  * @property-read Comment $comment
  */
-class CommentVersion extends Model
+final class CommentVersion extends Model
 {
     /** @use HasFactory<CommentVersionFactory> */
     use HasFactory;

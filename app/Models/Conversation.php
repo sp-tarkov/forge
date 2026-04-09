@@ -41,7 +41,7 @@ use Override;
  * @property User $user2
  */
 #[Appends(['other_user', 'unread_count'])]
-class Conversation extends Model
+final class Conversation extends Model
 {
     /** @use HasFactory<ConversationFactory> */
     use HasFactory;
@@ -69,7 +69,7 @@ class Conversation extends Model
      */
     public static function findByHashId(string $hashId): ?self
     {
-        return static::query()->where('hash_id', $hashId)->first();
+        return self::query()->where('hash_id', $hashId)->first();
     }
 
     /**
@@ -81,7 +81,7 @@ class Conversation extends Model
         $userId1 = min($user1->id, $user2->id);
         $userId2 = max($user1->id, $user2->id);
 
-        return static::query()->firstOrCreate([
+        return self::query()->firstOrCreate([
             'user1_id' => $userId1,
             'user2_id' => $userId2,
         ], [
@@ -330,9 +330,9 @@ class Conversation extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::created(function (Conversation $conversation): void {
+        self::created(function (Conversation $conversation): void {
             // Generate and save the hash ID after the conversation is created
-            $conversation->hash_id = static::generateHashId($conversation->id);
+            $conversation->hash_id = self::generateHashId($conversation->id);
             $conversation->saveQuietly();
         });
     }

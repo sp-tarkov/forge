@@ -13,7 +13,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ReportSubmittedNotification extends Notification implements ShouldQueue
+final class ReportSubmittedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

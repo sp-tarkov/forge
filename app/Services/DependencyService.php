@@ -14,7 +14,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class DependencyService
+final class DependencyService
 {
     /**
      * Parse mod identifier:version pairs from query parameter.

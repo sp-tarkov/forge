@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 
-class ModPolicy
+final class ModPolicy
 {
     /**
      * Determine whether the user can view multiple models.

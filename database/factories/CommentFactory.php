@@ -17,7 +17,7 @@ use InvalidArgumentException;
 /**
  * @extends Factory<Comment>
  */
-class CommentFactory extends Factory
+final class CommentFactory extends Factory
 {
     public function definition(): array
     {

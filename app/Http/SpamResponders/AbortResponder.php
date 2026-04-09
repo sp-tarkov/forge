@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Spatie\Honeypot\SpamResponder\SpamResponder;
 
-class AbortResponder implements SpamResponder
+final class AbortResponder implements SpamResponder
 {
     public function respond(Request $request, Closure $next): mixed
     {

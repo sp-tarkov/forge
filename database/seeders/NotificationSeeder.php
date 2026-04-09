@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class NotificationSeeder extends Seeder
+final class NotificationSeeder extends Seeder
 {
     /**
      * Run the database seeds.

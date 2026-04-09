@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * @extends AbstractQueryBuilder<ModCategory>
  */
-class ModCategoryQueryBuilder extends AbstractQueryBuilder
+final class ModCategoryQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Get the allowed filters for this query builder.

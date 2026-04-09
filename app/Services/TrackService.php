@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\Geolocator;
 use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
@@ -18,7 +19,7 @@ use Throwable;
  * Service for tracking user events and analytics.
  */
 #[Singleton]
-class TrackService
+final readonly class TrackService
 {
     /**
      * Create a new TrackService instance.
@@ -27,7 +28,7 @@ class TrackService
         /**
          * The geolocation service for IP-based location lookups.
          */
-        protected GeolocationService $geolocationService
+        private Geolocator $geolocationService
     ) {}
 
     /**

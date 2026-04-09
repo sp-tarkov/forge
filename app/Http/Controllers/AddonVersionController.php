@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 
-class AddonVersionController extends Controller
+final class AddonVersionController extends Controller
 {
     public function show(Request $request, int $addonId, string $slug, string $version): RedirectResponse
     {

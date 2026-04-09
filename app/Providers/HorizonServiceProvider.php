@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
 use Override;
 
-class HorizonServiceProvider extends HorizonApplicationServiceProvider
+final class HorizonServiceProvider extends HorizonApplicationServiceProvider
 {
     /**
      * Bootstrap any application services.

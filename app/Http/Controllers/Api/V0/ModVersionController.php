@@ -15,7 +15,7 @@ use Knuckles\Scribe\Attributes\UrlParam;
 /**
  * @group Mods
  */
-class ModVersionController extends Controller
+final class ModVersionController extends Controller
 {
     /**
      * Get Mod Versions

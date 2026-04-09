@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for managing and retrieving addons.
  */
-class AddonController extends Controller
+final class AddonController extends Controller
 {
     /**
      * Get Addons

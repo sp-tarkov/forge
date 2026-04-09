@@ -7,7 +7,7 @@ namespace Database\Seeders;
 use App\Models\ModCategory;
 use Illuminate\Database\Seeder;
 
-class ModCategorySeeder extends Seeder
+final class ModCategorySeeder extends Seeder
 {
     /**
      * Run the database seeds.

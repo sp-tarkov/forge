@@ -16,19 +16,19 @@ use Override;
  *
  * @property Mod $resource
  */
-class ModResource extends JsonResource
+final class ModResource extends JsonResource
 {
     /**
      * The fields requested by the client.
      *
      * @var array<string>
      */
-    protected array $requestedFields = [];
+    private array $requestedFields = [];
 
     /**
      * Whether to show all fields (no specific fields requested).
      */
-    protected bool $showAllFields = true;
+    private bool $showAllFields = true;
 
     /**
      * Transform the resource into an array.
@@ -176,7 +176,7 @@ class ModResource extends JsonResource
      * @param  string  $field  The field name to check
      * @return bool Whether the field should be included
      */
-    protected function shouldInclude(string $field): bool
+    private function shouldInclude(string $field): bool
     {
         $requiredFields = ModQueryBuilder::getRequiredFields();
 

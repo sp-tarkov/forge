@@ -34,7 +34,7 @@ use Override;
  * @property-read Collection<int, ReportAction> $actions
  * @property-read Collection<int, TrackingEvent> $trackingEvents
  */
-class Report extends Model
+final class Report extends Model
 {
     /** @use HasFactory<ReportFactory> */
     use HasFactory;

@@ -16,19 +16,19 @@ use Override;
  *
  * @property Addon $resource
  */
-class AddonResource extends JsonResource
+final class AddonResource extends JsonResource
 {
     /**
      * The fields requested by the client.
      *
      * @var array<string>
      */
-    protected array $requestedFields = [];
+    private array $requestedFields = [];
 
     /**
      * Whether to show all fields (no specific fields requested).
      */
-    protected bool $showAllFields = true;
+    private bool $showAllFields = true;
 
     /**
      * Transform the resource into an array.
@@ -143,7 +143,7 @@ class AddonResource extends JsonResource
     /**
      * Determine if the given field should be included in the response.
      */
-    protected function shouldInclude(string $field): bool
+    private function shouldInclude(string $field): bool
     {
         // ID is always included
         if ($field === 'id') {

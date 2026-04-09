@@ -12,14 +12,14 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 
-class SocialiteController extends Controller
+final class SocialiteController extends Controller
 {
     /**
      * The providers that are supported.
      *
      * @var array<int, string>
      */
-    protected array $providers = ['discord'];
+    private array $providers = ['discord'];
 
     public function __construct(private readonly SocialiteService $socialiteService) {}
 

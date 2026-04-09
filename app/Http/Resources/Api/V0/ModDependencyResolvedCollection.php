@@ -18,7 +18,7 @@ use Override;
  *
  * @property EloquentCollection<int, ModVersion>|MissingValue $collection
  */
-class ModDependencyResolvedCollection extends ResourceCollection
+final class ModDependencyResolvedCollection extends ResourceCollection
 {
     /**
      * Indicates if the resource's collection keys should be preserved. The output is a plain array.

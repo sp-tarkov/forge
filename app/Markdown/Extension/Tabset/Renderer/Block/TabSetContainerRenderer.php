@@ -12,12 +12,12 @@ use League\CommonMark\Util\HtmlElement;
 use League\CommonMark\Xml\XmlNodeRendererInterface;
 use Stringable;
 
-class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererInterface
+final class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererInterface
 {
     /**
      * Renders the TabSetContainerNode into HTML.
      */
-    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable|string|null
+    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable
     {
         TabSetContainerNode::assertInstanceOf($node);
 

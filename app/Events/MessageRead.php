@@ -13,7 +13,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageRead implements ShouldBroadcastNow
+final class MessageRead implements ShouldBroadcastNow
 {
     use Dispatchable;
     use InteractsWithSockets;

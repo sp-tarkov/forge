@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $updated_at
  * @property-read Collection<int, User> $users
  */
-class UserRole extends Model
+final class UserRole extends Model
 {
     /** @use HasFactory<UserRoleFactory> */
     use HasFactory;

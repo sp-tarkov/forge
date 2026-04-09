@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 /**
  * @extends Factory<Visitor>
  */
-class VisitorFactory extends Factory
+final class VisitorFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.

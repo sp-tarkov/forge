@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\progress;
 
-class TrackingEventSeeder extends Seeder
+final class TrackingEventSeeder extends Seeder
 {
     use SeederHelpers;
 

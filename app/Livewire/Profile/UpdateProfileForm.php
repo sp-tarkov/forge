@@ -13,7 +13,7 @@ use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
 use Livewire\WithFileUploads;
 
-class UpdateProfileForm extends Component
+final class UpdateProfileForm extends Component
 {
     use WithFileUploads;
 

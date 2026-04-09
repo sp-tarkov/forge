@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
-class SendDiscordNotifications implements ShouldQueue
+final class SendDiscordNotifications implements ShouldQueue
 {
     use Queueable;
 

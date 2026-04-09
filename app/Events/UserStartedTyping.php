@@ -13,7 +13,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserStartedTyping implements ShouldBroadcastNow
+final class UserStartedTyping implements ShouldBroadcastNow
 {
     use Dispatchable;
     use InteractsWithSockets;

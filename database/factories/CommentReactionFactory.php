@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @extends Factory<CommentReaction>
  */
-class CommentReactionFactory extends Factory
+final class CommentReactionFactory extends Factory
 {
     public function definition(): array
     {

@@ -5,34 +5,31 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\ModVersion;
-use App\Models\SptVersion;
 use App\Services\SptVersionService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
-class SptVersionObserver
+final readonly class SptVersionObserver
 {
-    public function __construct(protected SptVersionService $sptVersionService) {}
+    public function __construct(private SptVersionService $sptVersionService) {}
 
     /**
      * Handle the SptVersion "saved" event.
      */
-    public function saved(SptVersion $sptVersion): void
+    public function saved(): void
     {
         // Clear all SPT version caches
         $this->clearSptVersionCaches();
-
         defer(fn () => $this->resolveSptVersion());
     }
 
     /**
      * Handle the SptVersion "deleted" event.
      */
-    public function deleted(SptVersion $sptVersion): void
+    public function deleted(): void
     {
         // Clear all SPT version caches
         $this->clearSptVersionCaches();
-
         defer(fn () => $this->resolveSptVersion());
     }
 

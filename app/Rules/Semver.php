@@ -10,7 +10,7 @@ use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Translation\PotentiallyTranslatedString;
 
-class Semver implements ValidationRule
+final class Semver implements ValidationRule
 {
     /**
      * Run the validation rule to ensure the value is a valid semantic version number.

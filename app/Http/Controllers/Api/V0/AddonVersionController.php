@@ -15,7 +15,7 @@ use Knuckles\Scribe\Attributes\UrlParam;
 /**
  * @group Addons
  */
-class AddonVersionController extends Controller
+final class AddonVersionController extends Controller
 {
     /**
      * Get Addon Versions

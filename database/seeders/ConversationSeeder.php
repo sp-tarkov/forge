@@ -16,7 +16,7 @@ use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\progress;
 
-class ConversationSeeder extends Seeder
+final class ConversationSeeder extends Seeder
 {
     use SeederHelpers;
 

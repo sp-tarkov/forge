@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Bus;
 
-class SearchSyncJob implements ShouldQueue
+final class SearchSyncJob implements ShouldQueue
 {
     use Queueable;
 

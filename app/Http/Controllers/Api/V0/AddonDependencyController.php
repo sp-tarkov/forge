@@ -23,9 +23,9 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for resolving addon dependency trees.
  */
-class AddonDependencyController extends Controller
+final class AddonDependencyController extends Controller
 {
-    public function __construct(protected DependencyService $dependencyService) {}
+    public function __construct(private readonly DependencyService $dependencyService) {}
 
     /**
      * Get Addon Dependencies

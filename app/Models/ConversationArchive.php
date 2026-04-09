@@ -21,7 +21,7 @@ use Override;
  * @property Conversation $conversation
  * @property User $user
  */
-class ConversationArchive extends Model
+final class ConversationArchive extends Model
 {
     /** @use HasFactory<ConversationArchiveFactory> */
     use HasFactory;

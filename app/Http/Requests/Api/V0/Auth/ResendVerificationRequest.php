@@ -7,7 +7,7 @@ namespace App\Http\Requests\Api\V0\Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ResendVerificationRequest extends FormRequest
+final class ResendVerificationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request. No specific authorization is needed here beyond

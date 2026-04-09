@@ -39,7 +39,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property User $user
  */
 #[Appends(['is_mine', 'is_read', 'content_html'])]
-class Message extends Model
+final class Message extends Model
 {
     /** @use HasFactory<MessageFactory> */
     use HasFactory;
@@ -113,7 +113,7 @@ class Message extends Model
     protected static function booted(): void
     {
         // Update the conversation's last message fields when a message is created
-        static::created(function (Message $message): void {
+        self::created(function (Message $message): void {
             $conversation = $message->conversation;
             if ($conversation->exists()) {
                 $conversation->update([

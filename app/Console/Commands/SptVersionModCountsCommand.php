@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Jobs\SptVersionModCountsJob;
 use Illuminate\Console\Command;
 
-class SptVersionModCountsCommand extends Command
+final class SptVersionModCountsCommand extends Command
 {
     protected $signature = 'app:count-mods';
 

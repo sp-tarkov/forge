@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for retrieving mod category data.
  */
-class ModCategoryController extends Controller
+final class ModCategoryController extends Controller
 {
     /**
      * Get Mod Categories

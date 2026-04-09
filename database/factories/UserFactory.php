@@ -14,12 +14,12 @@ use Random\RandomException;
 /**
  * @extends Factory<User>
  */
-class UserFactory extends Factory
+final class UserFactory extends Factory
 {
     /**
      * The current password being used by the factory.
      */
-    protected static ?string $password;
+    private static ?string $password;
 
     /**
      * Define the user's default state.
@@ -32,7 +32,7 @@ class UserFactory extends Factory
             'name' => $this->generateUniqueName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => self::$password ??= Hash::make('password'),
 
             // TODO: Does Faker have a markdown plugin?
             'about' => fake()->paragraphs(random_int(1, 10), true),

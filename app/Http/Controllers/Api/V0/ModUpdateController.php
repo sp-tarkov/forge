@@ -22,9 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @group Mods
  */
-class ModUpdateController extends Controller
+final class ModUpdateController extends Controller
 {
-    public function __construct(protected DependencyService $dependencyService) {}
+    public function __construct(private readonly DependencyService $dependencyService) {}
 
     /**
      * Get Mod Updates

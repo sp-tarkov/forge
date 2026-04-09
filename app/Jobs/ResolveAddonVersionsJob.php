@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 
-class ResolveAddonVersionsJob implements ShouldQueue
+final class ResolveAddonVersionsJob implements ShouldQueue
 {
     use Queueable;
 

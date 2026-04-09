@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
  * Caches gate authorization results for the duration of the request to prevent redundant policy checks.
  */
 #[Scoped]
-class CachedGateService
+final class CachedGateService
 {
     /**
      * Request-scoped cache for gate results.

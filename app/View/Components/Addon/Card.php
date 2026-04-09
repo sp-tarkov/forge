@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
-class Card extends Component
+final class Card extends Component
 {
     /**
      * Create a new component instance.

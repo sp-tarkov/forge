@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\DataTransferObjects;
 
-class GitHubSptVersion
+final class GitHubSptVersion
 {
     public string $url;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Contracts\SpamChecker;
 use App\Enums\SpamStatus;
 use App\Models\Comment;
-use App\Services\CommentSpamChecker;
 use App\Support\Akismet\SpamCheckResult;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Background job to check a comment for spam using Akismet.
  */
-class CheckCommentForSpam implements ShouldQueue
+final class CheckCommentForSpam implements ShouldQueue
 {
     use Queueable;
 
@@ -31,7 +31,7 @@ class CheckCommentForSpam implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(CommentSpamChecker $spamChecker): void
+    public function handle(SpamChecker $spamChecker): void
     {
         // Skip if already checked and this is not a recheck
         if ($this->comment->spam_checked_at !== null && ! $this->isRecheck) {

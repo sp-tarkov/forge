@@ -9,7 +9,7 @@ use App\Jobs\CheckCommentForSpam;
 use App\Jobs\ProcessCommentNotification;
 use App\Models\Comment;
 
-class CommentObserver
+final class CommentObserver
 {
     /**
      * Handle the Comment "created" event.

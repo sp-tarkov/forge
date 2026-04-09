@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Models\NotificationLog;
 use Illuminate\Console\Command;
 
-class CleanupOldNotificationLogs extends Command
+final class CleanupOldNotificationLogs extends Command
 {
     /**
      * The name and signature of the console command.

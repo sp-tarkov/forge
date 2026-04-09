@@ -17,7 +17,7 @@ use Laravel\Prompts\Progress;
 
 use function Laravel\Prompts\progress;
 
-class ModSeeder extends Seeder
+final class ModSeeder extends Seeder
 {
     use SeederHelpers;
 

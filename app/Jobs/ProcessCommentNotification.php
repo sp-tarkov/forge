@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class ProcessCommentNotification implements ShouldQueue
+final class ProcessCommentNotification implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;

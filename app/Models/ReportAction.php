@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
  * @property TrackingEvent $trackingEvent
  * @property User $moderator
  */
-class ReportAction extends Model
+final class ReportAction extends Model
 {
     /** @use HasFactory<ReportActionFactory> */
     use HasFactory;

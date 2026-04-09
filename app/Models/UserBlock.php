@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property-read User $blocker
  * @property-read User $blocked
  */
-class UserBlock extends Model
+final class UserBlock extends Model
 {
     /** @use HasFactory<UserBlockFactory> */
     use HasFactory;

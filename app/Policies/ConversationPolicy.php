@@ -7,7 +7,7 @@ namespace App\Policies;
 use App\Models\Conversation;
 use App\Models\User;
 
-class ConversationPolicy
+final class ConversationPolicy
 {
     /**
      * Determine whether the user can view any models.

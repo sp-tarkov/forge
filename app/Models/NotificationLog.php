@@ -24,7 +24,7 @@ use Override;
  * @property Carbon|null $updated_at
  * @property Model $notifiable
  */
-class NotificationLog extends Model
+final class NotificationLog extends Model
 {
     /** @use HasFactory<NotificationLogFactory> */
     use HasFactory;

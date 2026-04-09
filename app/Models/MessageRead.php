@@ -19,7 +19,7 @@ use Override;
  * @property-read Message $message
  * @property-read User $user
  */
-class MessageRead extends Model
+final class MessageRead extends Model
 {
     /** @use HasFactory<MessageReadFactory> */
     use HasFactory;

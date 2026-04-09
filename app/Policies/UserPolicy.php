@@ -7,7 +7,7 @@ namespace App\Policies;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-class UserPolicy
+final class UserPolicy
 {
     public function viewAny(User $user): bool
     {

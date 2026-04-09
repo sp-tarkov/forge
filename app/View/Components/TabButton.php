@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
-class TabButton extends Component
+final class TabButton extends Component
 {
     /**
      * The value of the tab.
