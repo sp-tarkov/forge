@@ -436,7 +436,7 @@ new class extends Component {
      */
     private function fetchSearchResults(): Collection
     {
-        if (empty($this->searchUser)) {
+        if ($this->searchUser === '' || $this->searchUser === '0') {
             return new Collection();
         }
 

@@ -110,7 +110,7 @@ trait HasComments
      */
     public function loadDescendants(Comment $comment, ?User $user = null): Collection
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             $user = Auth::user();
         }
 

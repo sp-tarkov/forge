@@ -17,6 +17,8 @@ use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -79,6 +81,16 @@ use Stevebauman\Purify\Facades\Purify;
  *
  * @implements Commentable<self>
  */
+#[Appends([
+    'profile_photo_url',
+    'cover_photo_url',
+])]
+#[Hidden([
+    'password',
+    'remember_token',
+    'two_factor_recovery_codes',
+    'two_factor_secret',
+])]
 class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
 {
     use Bannable;
@@ -101,18 +113,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     use Searchable;
     use TwoFactorAuthenticatable;
     use Visitor;
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
-    ];
-
-    protected $appends = [
-        'profile_photo_url',
-        'cover_photo_url',
-    ];
 
     /**
      * Get the storage path for profile photos.
@@ -375,7 +375,11 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function isBlockedMutually(self $user): bool
     {
-        return $this->hasBlocked($user) || $this->isBlockedBy($user);
+        if ($this->hasBlocked($user)) {
+            return true;
+        }
+
+        return $this->isBlockedBy($user);
     }
 
     /**
@@ -449,7 +453,15 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function isModOrAdmin(): bool
     {
-        return $this->isMod() || $this->isSeniorMod() || $this->isAdmin();
+        if ($this->isMod()) {
+            return true;
+        }
+
+        if ($this->isSeniorMod()) {
+            return true;
+        }
+
+        return $this->isAdmin();
     }
 
     /**
@@ -555,11 +567,12 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function hasMfaEnabled(): bool
     {
-        return $this->hasEnabledTwoFactorAuthentication()
-            || (
-                $this->oAuthConnections->isNotEmpty()
-                && $this->oAuthConnections->every(fn (OAuthConnection $connection): bool => (bool) $connection->mfa_enabled)
-            );
+        if ($this->hasEnabledTwoFactorAuthentication()) {
+            return true;
+        }
+
+        return $this->oAuthConnections->isNotEmpty()
+        && $this->oAuthConnections->every(fn (OAuthConnection $connection): bool => (bool) $connection->mfa_enabled);
     }
 
     /**

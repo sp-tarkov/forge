@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->boolean('discord_notification_sent')->default(false)->index()->after('disabled');
         });
 
@@ -27,7 +27,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->dropColumn('discord_notification_sent');
         });
     }

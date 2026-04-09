@@ -108,8 +108,10 @@ new class extends Component {
         if (!$mod) {
             return false;
         }
-
-        return $user->isModOrAdmin() || $mod->isAuthorOrOwner($user);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**

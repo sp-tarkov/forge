@@ -17,17 +17,13 @@ class UserPolicy
     public function view(?User $userCurrent, User $userResource): bool
     {
         // Allow viewing if not logged in
-        if ($userCurrent === null) {
+        if (! $userCurrent instanceof User) {
             return true;
         }
 
         // Prevent viewing only if the profile owner has blocked the viewer
         // The blocker can still view the blocked user's profile
-        if ($userResource->hasBlocked($userCurrent)) {
-            return false;
-        }
-
-        return true;
+        return ! $userResource->hasBlocked($userCurrent);
     }
 
     /**
@@ -36,7 +32,7 @@ class UserPolicy
      */
     public function viewDisabledUserMods(?User $user, User $userPageOwner): bool
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -44,11 +40,7 @@ class UserPolicy
             return true;
         }
 
-        if ($user->id === $userPageOwner->id) {
-            return true;
-        }
-
-        return false;
+        return $user->id === $userPageOwner->id;
     }
 
     /**
@@ -57,7 +49,7 @@ class UserPolicy
      */
     public function viewDisabledUserAddons(?User $user, User $userPageOwner): bool
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -65,11 +57,7 @@ class UserPolicy
             return true;
         }
 
-        if ($user->id === $userPageOwner->id) {
-            return true;
-        }
-
-        return false;
+        return $user->id === $userPageOwner->id;
     }
 
     public function create(User $user): bool
@@ -152,12 +140,8 @@ class UserPolicy
             }
 
             // Cannot ban other Senior Moderators
-            if ($targetUser->isSeniorMod()) {
-                return false;
-            }
-
             // Can ban Moderators and regular users
-            return true;
+            return ! $targetUser->isSeniorMod();
         }
 
         // Moderators and regular users cannot ban
@@ -206,10 +190,6 @@ class UserPolicy
         }
 
         // Cannot message users you have blocked (to avoid confusion)
-        if ($user->hasBlocked($target)) {
-            return false;
-        }
-
-        return true;
+        return ! $user->hasBlocked($target);
     }
 }

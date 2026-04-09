@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->boolean('profile_binding_notice_disabled')
                 ->default(false)
                 ->after('comments_disabled');
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->dropColumn('profile_binding_notice_disabled');
         });
     }

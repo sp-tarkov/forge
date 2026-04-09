@@ -46,7 +46,7 @@ class CommentSpamChecker
 
         $cacheKey = 'akismet:verify_key:'.config('akismet.api_key');
 
-        return Cache::remember($cacheKey, now()->addDay(), function () {
+        return Cache::remember($cacheKey, now()->addDay(), function (): bool {
             try {
                 $response = $this->makeRequest('POST', '/1.1/verify-key', [
                     'key' => config('akismet.api_key'),
@@ -123,15 +123,13 @@ class CommentSpamChecker
                 $metadata['recheck_after'] = $recheckAfter;
             }
 
-            $result = new SpamCheckResult(
+            return new SpamCheckResult(
                 isSpam: $isSpam,
                 metadata: $metadata,
                 discard: $discard,
                 proTip: $proTip,
                 recheckAfter: $recheckAfter
             );
-
-            return $result;
 
         } catch (Throwable $throwable) {
             // Return safe fallback - assume not spam if API fails
@@ -211,9 +209,7 @@ class CommentSpamChecker
                 'api_key' => config('akismet.api_key'),
             ]);
 
-            $data = $response->json();
-
-            return $data;
+            return $response->json();
         } catch (Throwable $throwable) {
             Log::error('Failed to retrieve Akismet usage limit', [
                 'error' => $throwable->getMessage(),
@@ -275,11 +271,7 @@ class CommentSpamChecker
         $url = self::BASE_URL.$endpoint;
 
         try {
-            if ($method === 'GET') {
-                $response = $client->get($url, $data);
-            } else {
-                $response = $client->post($url, $data);
-            }
+            $response = $method === 'GET' ? $client->get($url, $data) : $client->post($url, $data);
 
             // Check for rate limiting
             throw_if($response->status() === 429, Exception::class, 'Akismet API rate limit exceeded');

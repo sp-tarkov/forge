@@ -17,6 +17,7 @@ use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -65,19 +66,13 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
+#[Touches(['mod'])]
 class ModVersion extends Model implements Trackable
 {
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
 
     use Visitable;
-
-    /**
-     * Update the parent mod's updated_at timestamp when the mod version is updated.
-     *
-     * @var string[]
-     */
-    protected $touches = ['mod'];
 
     /**
      * Get all the version numbers for a mod.
@@ -294,11 +289,7 @@ class ModVersion extends Model implements Trackable
             return false;
         }
 
-        if ($this->isPinnedToUnpublishedSptVersion()) {
-            return false;
-        }
-
-        return true;
+        return ! $this->isPinnedToUnpublishedSptVersion();
     }
 
     /**

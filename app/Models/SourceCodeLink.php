@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\SourceCodeLinkFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -21,17 +22,11 @@ use Override;
  * @property Carbon $updated_at
  * @property-read Model $sourceable
  */
+#[Table(name: 'source_code_links')]
 class SourceCodeLink extends Model
 {
     /** @use HasFactory<SourceCodeLinkFactory> */
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'source_code_links';
 
     /**
      * The polymorphic relationship to the parent model (Mod or Addon).

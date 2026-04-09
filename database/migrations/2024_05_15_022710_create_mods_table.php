@@ -11,7 +11,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('mods', function (Blueprint $table) {
+        Schema::create('mods', function (Blueprint $table): void {
             $table->id();
             $table->bigInteger('hub_id')
                 ->nullable()

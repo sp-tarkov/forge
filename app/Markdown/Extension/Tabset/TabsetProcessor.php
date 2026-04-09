@@ -40,11 +40,9 @@ class TabsetProcessor
             $node = $event->getNode();
 
             // Only check when entering a Heading node.
-            if ($event->isEntering() && $node instanceof Heading) {
-                if ($this->isTabsetHeading($node)) {
-                    // Store the heading node that starts a tabset.
-                    $this->tabsetStartNodes[] = $node;
-                }
+            if ($event->isEntering() && $node instanceof Heading && $this->isTabsetHeading($node)) {
+                // Store the heading node that starts a tabset.
+                $this->tabsetStartNodes[] = $node;
             }
         }
 
@@ -104,7 +102,7 @@ class TabsetProcessor
 
         // Abort if no actual tab content headings were found for this tabset.
         if (empty($nodesToProcess)) {
-            $this->abortTabsetProcessing($tabsetHeading, $nodesToRemove);
+            $this->abortTabsetProcessing($nodesToRemove);
 
             return;
         }
@@ -161,7 +159,7 @@ class TabsetProcessor
         $firstTabHeadingFound = false;
 
         $sibling = $tabsetHeading->next();
-        while ($sibling !== null) {
+        while ($sibling instanceof Node) {
             $nextSibling = $sibling->next(); // Store reference to the next sibling.
 
             // Check for explicit end marker.
@@ -209,7 +207,7 @@ class TabsetProcessor
      *
      * @param  array<Node>  $nodesToRemove  Nodes initially marked for removal.
      */
-    private function abortTabsetProcessing(Heading $tabsetHeading, array $nodesToRemove): void
+    private function abortTabsetProcessing(array $nodesToRemove): void
     {
         // Detach all collected nodes in reverse to minimize walker issues.
         foreach (array_reverse($nodesToRemove) as $node) {

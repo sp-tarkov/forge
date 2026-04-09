@@ -14,6 +14,7 @@ use App\Traits\HasComments;
 use App\Traits\HasReports;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -82,6 +83,9 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModObserver::class])]
+#[Appends([
+    'detail_url',
+])]
 class Mod extends Model implements Commentable, Reportable, Trackable
 {
     /** @use HasComments<self> */
@@ -95,10 +99,6 @@ class Mod extends Model implements Commentable, Reportable, Trackable
 
     use Searchable;
     use Visitable;
-
-    protected $appends = [
-        'detail_url',
-    ];
 
     /**
      * The relationship between a mod and its owner (User).
@@ -323,12 +323,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         }
 
         // Check if mod has any versions compatible with active SPT releases
-        if (! $this->hasActiveSptCompatibility()) {
-            return false;
-        }
-
         // All conditions are met; the mod should be searchable.
-        return true;
+        return $this->hasActiveSptCompatibility();
     }
 
     /**
@@ -545,7 +541,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function isAuthorOrOwner(?User $user): bool
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 

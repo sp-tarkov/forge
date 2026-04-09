@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Query\JoinClause;
@@ -56,7 +55,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Update the user's last viewed timestamp and clear the navigation badge cache
         $user->update(['mods_updated_viewed_at' => now()]);
-        Cache::forget("user:{$user->id}:nav-updated-mods-count");
+        Cache::forget(sprintf('user:%s:nav-updated-mods-count', $user->id));
     }
 
     /**
@@ -81,7 +80,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function with(): array
     {
         $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
-        $previousViewedAt = $this->previousViewedAt ? Carbon::parse($this->previousViewedAt) : null;
+        $previousViewedAt = $this->previousViewedAt ? \Illuminate\Support\Facades\Date::parse($this->previousViewedAt) : null;
 
         $mods = Mod::query()
             ->select('mods.*')

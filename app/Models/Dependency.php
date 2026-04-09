@@ -8,6 +8,7 @@ use App\Observers\DependencyObserver;
 use Carbon\Carbon;
 use Database\Factories\DependencyFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,15 +30,11 @@ use Override;
  * @property-read Collection<int, DependencyResolved> $dependenciesResolved
  */
 #[ObservedBy([DependencyObserver::class])]
+#[Table(name: 'dependencies')]
 class Dependency extends Model
 {
     /** @use HasFactory<DependencyFactory> */
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'dependencies';
 
     /**
      * The polymorphic relationship between the dependency and either a mod version or addon version.

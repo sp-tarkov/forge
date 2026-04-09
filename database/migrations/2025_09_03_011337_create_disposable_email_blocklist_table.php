@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('disposable_email_blocklist', function (Blueprint $table) {
+        Schema::create('disposable_email_blocklist', function (Blueprint $table): void {
             $table->id();
             $table->string('domain')->unique();
             $table->timestamps();

@@ -21,9 +21,9 @@ return new class extends Migration
 
         foreach ($mods as $mod) {
             // Handle comma-separated URLs from Hub imports
-            $urls = array_map('trim', explode(',', $mod->source_code_url));
+            $urls = array_map(trim(...), explode(',', (string) $mod->source_code_url));
 
-            foreach ($urls as $index => $url) {
+            foreach ($urls as $url) {
                 if (! empty($url)) {
                     DB::table('mod_source_code_links')->insert([
                         'mod_id' => $mod->id,
@@ -53,6 +53,7 @@ return new class extends Migration
             if (! isset($modUrls[$link->mod_id])) {
                 $modUrls[$link->mod_id] = [];
             }
+
             $modUrls[$link->mod_id][] = $link->url;
         }
 

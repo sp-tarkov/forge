@@ -296,11 +296,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function updateRootId(): void
     {
-        if ($this->isRoot()) {
-            $this->root_id = null;
-        } else {
-            $this->root_id = $this->resolveRootId();
-        }
+        $this->root_id = $this->isRoot() ? null : $this->resolveRootId();
 
         $this->saveQuietly();
     }
@@ -491,12 +487,12 @@ class Comment extends Model implements Reportable, Trackable
     protected function visibleToUser(Builder $query, ?User $user = null): void
     {
         // Moderators and admins see everything.
-        if ($user !== null && $user->isModOrAdmin()) {
+        if ($user instanceof User && $user->isModOrAdmin()) {
             return;
         }
 
         // Guests only see clean comments.
-        if ($user === null) {
+        if (! $user instanceof User) {
             $query->clean();
 
             return;

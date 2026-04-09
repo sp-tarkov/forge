@@ -27,7 +27,7 @@ new class extends Component {
     {
         $timezoneToSave = $this->useJsDetection ? $this->detectedTimezone : $this->fallbackTimezone;
 
-        if ($timezoneToSave) {
+        if ($timezoneToSave !== '' && $timezoneToSave !== '0') {
             Auth::user()->update(['timezone' => $timezoneToSave]);
             $this->showModal = false;
 

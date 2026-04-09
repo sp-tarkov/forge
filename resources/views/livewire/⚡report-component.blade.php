@@ -136,7 +136,7 @@ new class extends Component {
         }
 
         $moderatorAdminIds = $this->getModeratorAdminIds();
-        if (!empty($moderatorAdminIds)) {
+        if ($moderatorAdminIds !== []) {
             $moderatorsAndAdmins = User::query()->whereIn('id', $moderatorAdminIds)->get();
 
             Notification::send($moderatorsAndAdmins, new ReportSubmittedNotification($report));

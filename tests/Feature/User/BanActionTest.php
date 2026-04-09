@@ -21,6 +21,7 @@ it('shows ban button for admin viewing regular user', function (): void {
 
     expect($admin->can('ban', $user))->toBeTrue();
     expect($user->isBanned())->toBeFalse();
+
     $component->assertSee('Ban User');
 });
 
@@ -37,6 +38,7 @@ it('shows unban button for admin viewing banned user', function (): void {
 
     expect($admin->can('ban', $user))->toBeTrue();
     expect($user->isBanned())->toBeTrue();
+
     $component->assertSee('Unban User');
 });
 

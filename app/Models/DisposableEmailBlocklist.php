@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -14,9 +16,11 @@ use Illuminate\Support\Facades\Cache;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+#[Table(name: 'disposable_email_blocklist')]
 class DisposableEmailBlocklist extends Model
 {
-    protected $table = 'disposable_email_blocklist';
+    use HasFactory;
+    use HasFactory;
 
     /**
      * Check if a domain is disposable.

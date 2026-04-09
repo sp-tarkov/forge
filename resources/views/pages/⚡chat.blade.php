@@ -290,7 +290,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function sendMessage(): void
     {
-        if (!$this->selectedConversation || empty(mb_trim($this->messageText))) {
+        if (!$this->selectedConversation || in_array(mb_trim($this->messageText), ['', '0'], true)) {
             return;
         }
 
@@ -340,7 +340,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function archiveConversation(): void
     {
-        if ($this->selectedConversation === null) {
+        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
             return;
         }
 
@@ -611,7 +611,7 @@ new #[Layout('layouts::base')] class extends Component {
         }
 
         // If no conversation is selected but we receive a message, it might be for an archived conversation
-        if ($this->selectedConversation === null) {
+        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
             // Check if this is a conversation we're part of
             $user = Auth::user();
             $conversation = Conversation::query()->where('hash_id', $event['message']['conversation_hash_id'])->forUser($user)->first();
@@ -728,7 +728,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function toggleNotifications(): void
     {
-        if ($this->selectedConversation === null) {
+        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
             return;
         }
 
@@ -751,7 +751,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function isNotificationEnabled(): bool
     {
-        if ($this->selectedConversation === null) {
+        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
             return true;
         }
 
@@ -931,7 +931,7 @@ new #[Layout('layouts::base')] class extends Component {
      **/
     private function fetchMessages(): Collection
     {
-        if ($this->selectedConversation === null) {
+        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
             return new Collection();
         }
 
@@ -976,7 +976,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     private function fetchSearchResults(): Collection
     {
-        if (empty($this->searchUser)) {
+        if ($this->searchUser === '' || $this->searchUser === '0') {
             return new Collection();
         }
 

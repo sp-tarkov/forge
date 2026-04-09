@@ -73,7 +73,7 @@ class GeolocationService
      */
     private function performLookup(string $ip): array
     {
-        if ($this->reader === null) {
+        if (! $this->reader instanceof Reader) {
             Log::warning('GeoIP database not available for lookup', ['ip' => $ip]);
 
             return $this->getDefaultLocationData();

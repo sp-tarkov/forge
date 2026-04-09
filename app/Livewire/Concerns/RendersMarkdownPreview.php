@@ -16,7 +16,7 @@ trait RendersMarkdownPreview
     #[Renderless]
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
-        if (empty(mb_trim($content))) {
+        if (in_array(mb_trim($content), ['', '0'], true)) {
             return '<p class="text-slate-400 dark:text-slate-500 italic">'.__('Nothing to preview.').'</p>';
         }
 

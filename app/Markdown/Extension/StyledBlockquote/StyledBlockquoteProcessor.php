@@ -75,7 +75,11 @@ class StyledBlockquoteProcessor
 
         // Second pass: apply classes and remove markers in reverse order.
         foreach (array_reverse($this->matches) as $match) {
-            if ($match['marker']->parent() === null || $match['blockquote']->parent() === null) {
+            if ($match['marker']->parent() === null) {
+                continue;
+            }
+
+            if ($match['blockquote']->parent() === null) {
                 continue;
             }
 

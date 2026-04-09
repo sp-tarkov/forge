@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('conversation_archives', function (Blueprint $table) {
+        Schema::table('conversation_archives', function (Blueprint $table): void {
             $table->string('reason')->nullable()->after('user_id');
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('conversation_archives', function (Blueprint $table) {
+        Schema::table('conversation_archives', function (Blueprint $table): void {
             $table->dropColumn('reason');
         });
     }

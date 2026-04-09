@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\Mod;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Modelable;
 use Livewire\Component;
@@ -70,7 +69,7 @@ new class extends Component {
         $this->componentId = 'mod-autocomplete-' . uniqid();
 
         // If a mod is already selected, load its name
-        if (!empty($selectedModId)) {
+        if ($selectedModId !== '' && $selectedModId !== '0') {
             $this->selectedModId = $selectedModId;
             $mod = Mod::query()->find($selectedModId);
             if ($mod) {
@@ -85,7 +84,7 @@ new class extends Component {
      */
     public function updatedSelectedModId(): void
     {
-        if (!empty($this->selectedModId)) {
+        if ($this->selectedModId !== '' && $this->selectedModId !== '0') {
             $mod = Mod::query()->find($this->selectedModId);
             if ($mod) {
                 $this->selectedModName = $mod->name;
@@ -105,7 +104,7 @@ new class extends Component {
     #[Computed]
     public function filteredMods(): Collection
     {
-        if (empty($this->search)) {
+        if ($this->search === '' || $this->search === '0') {
             return collect();
         }
 

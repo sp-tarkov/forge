@@ -31,7 +31,7 @@ class YouTubeProcessor
                 $url = $children[0]->getUrl();
                 $videoId = $this->extractVideoId($url);
 
-                if (! empty($videoId)) {
+                if (! in_array($videoId, [null, '', '0'], true)) {
                     // Replace the paragraph with a YouTubeEmbedNode.
                     $youtubeNode = new YouTubeEmbedNode($videoId);
                     $node->replaceWith($youtubeNode);

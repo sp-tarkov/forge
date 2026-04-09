@@ -127,7 +127,7 @@ new #[Layout('layouts::base')] class extends Component {
             ->all();
 
         // Ensure at least one empty link field is present
-        if (empty($this->virusTotalLinks)) {
+        if ($this->virusTotalLinks === []) {
             $this->virusTotalLinks[] = ['url' => '', 'label' => ''];
         }
 
@@ -162,7 +162,7 @@ new #[Layout('layouts::base')] class extends Component {
     #[Renderless]
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
-        if (empty(mb_trim($content))) {
+        if (in_array(mb_trim($content), ['', '0'], true)) {
             return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
         }
 
@@ -284,7 +284,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function updatedModVersionConstraint(): void
     {
-        if (empty($this->modVersionConstraint) || !$this->addonVersion->addon->mod_id) {
+        if ($this->modVersionConstraint === '' || $this->modVersionConstraint === '0' || !$this->addonVersion->addon->mod_id) {
             $this->matchingModVersions = [];
 
             return;
@@ -387,7 +387,7 @@ new #[Layout('layouts::base')] class extends Component {
             if (!empty($virusTotalLink['url'])) {
                 $this->addonVersion->virusTotalLinks()->create([
                     'url' => $virusTotalLink['url'],
-                    'label' => !empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
+                    'label' => empty($virusTotalLink['label']) ? '' : $virusTotalLink['label'],
                 ]);
             }
         }
@@ -395,7 +395,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Update dependencies - delete existing and recreate
         $this->addonVersion->dependencies()->delete();
         foreach ($this->dependencies as $dependency) {
-            if (!empty($dependency['modId']) && !empty($dependency['constraint'])) {
+            if (!empty($dependency['modId']) && (isset($dependency['constraint']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0'))) {
                 $this->addonVersion->dependencies()->create([
                     'dependent_mod_id' => (int) $dependency['modId'],
                     'constraint' => $dependency['constraint'],

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('message_reads', function (Blueprint $table) {
+        Schema::create('message_reads', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('message_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -26,7 +26,7 @@ return new class extends Migration
         });
 
         // Drop the old read_at column from messages table
-        Schema::table('messages', function (Blueprint $table) {
+        Schema::table('messages', function (Blueprint $table): void {
             $table->dropColumn('read_at');
         });
     }
@@ -37,7 +37,7 @@ return new class extends Migration
     public function down(): void
     {
         // Re-add read_at column to messages
-        Schema::table('messages', function (Blueprint $table) {
+        Schema::table('messages', function (Blueprint $table): void {
             $table->timestamp('read_at')->nullable();
         });
 

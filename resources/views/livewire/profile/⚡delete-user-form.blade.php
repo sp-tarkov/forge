@@ -52,7 +52,7 @@ new class extends Component {
         }
 
         // Get fresh user from database to ensure we have the actual model
-        $user = User::find($user->id);
+        $user = User::query()->find($user->id);
 
         // Store user information before deletion for tracking purposes
         $userData = [

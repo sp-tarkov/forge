@@ -78,7 +78,7 @@ describe('version creation', function (): void {
         for ($i = 2; $i <= 4; $i++) {
             Livewire::actingAs($user)
                 ->test('comment-component', ['commentable' => $mod])
-                ->set('formStates.edit-'.$comment->id.'.body', "Version {$i}")
+                ->set('formStates.edit-'.$comment->id.'.body', 'Version '.$i)
                 ->call('updateComment', $comment->id)
                 ->assertHasNoErrors();
         }

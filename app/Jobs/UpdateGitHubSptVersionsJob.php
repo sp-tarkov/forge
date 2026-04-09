@@ -44,7 +44,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
      *
      * @throws InvalidVersionNumberException
      */
-    private static function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
+    private function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
     {
         if ($rawLatestVersion === false) {
             return 'gray';
@@ -133,7 +133,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
                     'version_patch' => $version->getPatch(),
                     'version_labels' => $version->getLabels(),
                     'link' => $release->html_url,
-                    'color_class' => self::detectSptVersionColor($release->tag_name, $latestVersion),
+                    'color_class' => $this->detectSptVersionColor($release->tag_name, $latestVersion),
                     'created_at' => $publishedAt,
                     'updated_at' => $publishedAt,
                 ];
@@ -161,7 +161,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
             }
 
             // Insert new versions (only allocates IDs for actual new records)
-            if (! empty($insertData)) {
+            if ($insertData !== []) {
                 SptVersion::query()->insert($insertData);
             }
 

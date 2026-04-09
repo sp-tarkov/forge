@@ -6,7 +6,7 @@ namespace Database\Factories;
 
 use App\Models\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<UserRole>
@@ -21,8 +21,8 @@ class UserRoleFactory extends Factory
             'description' => $this->faker->text(),
             'color_class' => $this->faker->randomElement(['sky', 'red', 'green', 'emerald', 'lime']),
             'icon' => $this->faker->randomElement(['shield-check', 'star', 'wrench', 'flag']),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
         ];
     }
 
@@ -31,7 +31,7 @@ class UserRoleFactory extends Factory
      */
     public function staff(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'Staff',
             'short_name' => 'Staff',
             'description' => 'A staff member has full access to the site.',
@@ -45,7 +45,7 @@ class UserRoleFactory extends Factory
      */
     public function seniorModerator(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'Senior Moderator',
             'short_name' => 'Sr. Mod',
             'description' => 'A senior moderator can moderate content and ban users.',
@@ -59,7 +59,7 @@ class UserRoleFactory extends Factory
      */
     public function moderator(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'name' => 'Moderator',
             'short_name' => 'Mod',
             'description' => 'A moderator can moderate user content.',

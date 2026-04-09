@@ -370,12 +370,12 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
         $filters = [];
 
         // Search filter
-        if (!empty($this->search)) {
+        if ($this->search !== '' && $this->search !== '0') {
             $filters[] = sprintf("Search: '%s'", $this->search);
         }
 
         // Role filter
-        if (!empty($this->roleFilter)) {
+        if ($this->roleFilter !== '' && $this->roleFilter !== '0') {
             $role = $this->roles()->firstWhere('id', $this->roleFilter);
             if ($role) {
                 $filters[] = sprintf('Role: %s', $role->name);
@@ -465,7 +465,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
     private function applyFilters(Builder $query): void
     {
         // Search filter
-        if (!empty($this->search)) {
+        if ($this->search !== '' && $this->search !== '0') {
             $query->where(function (Builder $q): void {
                 $q->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('email', 'like', '%' . $this->search . '%')
@@ -474,7 +474,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
         }
 
         // Role filter
-        if (!empty($this->roleFilter)) {
+        if ($this->roleFilter !== '' && $this->roleFilter !== '0') {
             $query->whereHas('role', function (Builder $q): void {
                 $q->where('id', $this->roleFilter);
             });

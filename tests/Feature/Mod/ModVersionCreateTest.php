@@ -1063,6 +1063,7 @@ describe('Mod Version Create Form', function (): void {
 
             // Verify the version was created
             expect($mod->versions()->count())->toBe(1);
+
             $version = $mod->versions()->first();
             expect($version->version)->toBe('1.0.0');
             expect($version->spt_version_constraint)->toBe('>=4.0.0');

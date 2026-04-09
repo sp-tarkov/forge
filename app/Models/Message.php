@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Jobs\ProcessChatMessageNotification;
 use Database\Factories\MessageFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -37,17 +38,11 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read int $reads_count
  * @property User $user
  */
+#[Appends(['is_mine', 'is_read', 'content_html'])]
 class Message extends Model
 {
     /** @use HasFactory<MessageFactory> */
     use HasFactory;
-
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var list<string>
-     */
-    protected $appends = ['is_mine', 'is_read', 'content_html'];
 
     /**
      * Get the conversation that owns the message.

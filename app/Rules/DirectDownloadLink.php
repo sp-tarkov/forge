@@ -26,7 +26,7 @@ class DirectDownloadLink implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! is_string($value) || empty($value)) {
+        if (! is_string($value) || ($value === '' || $value === '0')) {
             $fail(__('The download link must be a valid URL.'));
 
             return;
@@ -68,7 +68,7 @@ class DirectDownloadLink implements ValidationRule
             $urlEndsWithZip = str_ends_with($urlLowercase, '.zip');
             $hasValidDisposition = false;
 
-            if ($contentDisposition) {
+            if ($contentDisposition !== '' && $contentDisposition !== '0') {
                 $hasAttachment = str_contains($contentDisposition, 'attachment');
                 $hasSevenZipFilename = str_contains($contentDisposition, '.7z');
                 $hasZipFilename = str_contains($contentDisposition, '.zip');

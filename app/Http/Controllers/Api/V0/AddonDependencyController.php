@@ -223,7 +223,7 @@ class AddonDependencyController extends Controller
             return null;
         }
 
-        if (empty($tree)) {
+        if ($tree === []) {
             return [];
         }
 

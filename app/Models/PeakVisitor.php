@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Events\PeakVisitorUpdated;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class PeakVisitor extends Model
 {
+    use HasFactory;
+
     /**
      * Create a new peak visitor record and broadcast the update.
      */

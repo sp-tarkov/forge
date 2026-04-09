@@ -69,10 +69,10 @@ return new class extends Migration
 
         // Re-resolve SPT versions for all affected mod versions
         if (count($modVersionIds) > 0) {
-            $sptVersionService = app(SptVersionService::class);
+            $sptVersionService = resolve(SptVersionService::class);
 
             foreach ($modVersionIds as $modVersionId) {
-                $modVersion = ModVersion::withoutGlobalScopes()->find($modVersionId);
+                $modVersion = ModVersion::query()->withoutGlobalScopes()->find($modVersionId);
                 if ($modVersion) {
                     $sptVersionService->resolve($modVersion);
                     Log::info('[Migration] Re-resolved SPT versions for mod version.', [

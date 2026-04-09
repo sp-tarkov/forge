@@ -94,6 +94,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->isDetached())->toBeTrue();
             expect($addon->detached_by_user_id)->toBe($modOwner->id);
         });
@@ -108,6 +109,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon)->not->toBeNull();
             expect($addon->published_at)->not->toBeNull();
         });
@@ -129,6 +131,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->name)->toBe($originalName);
             expect($addon->downloads)->toBe($originalDownloads);
             expect($addon->owner_id)->toBe($originalOwnerId);
@@ -144,6 +147,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->mod_id)->toBe($mod->id);
             expect($addon->mod)->not->toBeNull();
         });
@@ -279,6 +283,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->versions)->toHaveCount(3);
         });
 
@@ -294,6 +299,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->additionalAuthors)->toHaveCount(2);
         });
 
@@ -307,6 +313,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->detachedBy->id)->toBe($modOwner->id);
         });
     });
@@ -397,6 +404,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->isDetached())->toBeFalse();
             expect($addon->detached_by_user_id)->toBeNull();
         });
@@ -433,6 +441,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->name)->toBe($originalName);
             expect($addon->downloads)->toBe($originalDownloads);
             expect($addon->owner_id)->toBe($originalOwnerId);
@@ -447,6 +456,7 @@ describe('Addon Detachment', function (): void {
             $addon->save();
 
             $addon->refresh();
+
             expect($addon->mod_id)->toBe($mod->id);
             expect($addon->mod)->not->toBeNull();
         });
@@ -483,6 +493,7 @@ describe('Addon Detachment', function (): void {
 
             // Verify the searchable array includes the correct detached status
             $addon->refresh();
+
             $searchableArray = $addon->toSearchableArray();
             expect($searchableArray['is_detached'])->toBeTrue();
         });
@@ -502,6 +513,7 @@ describe('Addon Detachment', function (): void {
 
             // Verify the searchable array includes the correct attached status
             $addon->refresh();
+
             $searchableArray = $addon->toSearchableArray();
             expect($searchableArray['is_detached'])->toBeFalse();
         });

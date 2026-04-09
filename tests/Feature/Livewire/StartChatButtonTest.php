@@ -159,6 +159,7 @@ describe('Chat route functionality', function (): void {
         $response = $this->get(route('chat.start', $this->profileUser));
 
         $response->assertRedirect();
+
         expect(Conversation::query()->count())->toBe(1);
     });
 

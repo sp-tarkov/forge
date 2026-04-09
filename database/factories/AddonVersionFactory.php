@@ -7,9 +7,10 @@ namespace Database\Factories;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use App\Models\VirusTotalLink;
 use App\Support\Version;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<AddonVersion>
@@ -48,9 +49,9 @@ class AddonVersionFactory extends Factory
             'downloads' => fake()->randomNumber(),
             'disabled' => false,
             'discord_notification_sent' => true,
-            'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
-            'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
-            'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'published_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
+            'created_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
+            'updated_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
         ];
     }
 
@@ -60,7 +61,7 @@ class AddonVersionFactory extends Factory
     public function configure(): static
     {
         return $this->has(
-            \App\Models\VirusTotalLink::factory()->count(1),
+            VirusTotalLink::factory()->count(1),
             'virusTotalLinks'
         );
     }
@@ -70,7 +71,7 @@ class AddonVersionFactory extends Factory
      */
     public function disabled(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'disabled' => true,
         ]);
     }
@@ -80,9 +81,9 @@ class AddonVersionFactory extends Factory
      */
     public function withoutVirusTotalLinks(): static
     {
-        return $this->afterMaking(function (AddonVersion $addonVersion) {
+        return $this->afterMaking(function (AddonVersion $addonVersion): void {
             // Remove any auto-created VirusTotal links
-        })->afterCreating(function (AddonVersion $addonVersion) {
+        })->afterCreating(function (AddonVersion $addonVersion): void {
             $addonVersion->virusTotalLinks()->delete();
         });
     }

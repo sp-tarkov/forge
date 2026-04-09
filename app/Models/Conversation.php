@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Facades\Sqids;
 use Database\Factories\ConversationFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -39,17 +40,11 @@ use Override;
  * @property User $user1
  * @property User $user2
  */
+#[Appends(['other_user', 'unread_count'])]
 class Conversation extends Model
 {
     /** @use HasFactory<ConversationFactory> */
     use HasFactory;
-
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var list<string>
-     */
-    protected $appends = ['other_user', 'unread_count'];
 
     /**
      * Generate a hash ID for the given numeric ID.
@@ -66,7 +61,7 @@ class Conversation extends Model
     {
         $decoded = Sqids::decode($hashId);
 
-        return ! empty($decoded) ? $decoded[0] : null;
+        return empty($decoded) ? null : $decoded[0];
     }
 
     /**
@@ -90,7 +85,7 @@ class Conversation extends Model
             'user1_id' => $userId1,
             'user2_id' => $userId2,
         ], [
-            'created_by' => $creator ? $creator->id : $user1->id,
+            'created_by' => $creator instanceof User ? $creator->id : $user1->id,
         ]);
     }
 

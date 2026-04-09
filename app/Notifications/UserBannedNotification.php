@@ -53,16 +53,16 @@ class UserBannedNotification extends Notification implements ShouldQueue
         $message = (new MailMessage)
             ->subject('Your account has been suspended')
             ->greeting('Hello,')
-            ->line("Your account on {$appName} has been suspended.");
+            ->line(sprintf('Your account on %s has been suspended.', $appName));
 
         if ($isPermanent) {
             $message->line('**Duration:** Permanent');
         } else {
-            $message->line("**Duration:** Until {$expiredAt->format('F j, Y \a\t g:i A T')}");
+            $message->line('**Duration:** Until '.$expiredAt->format('F j, Y \a\t g:i A T'));
         }
 
         if ($comment) {
-            $message->line("**Reason:** {$comment}");
+            $message->line('**Reason:** '.$comment);
         }
 
         $message->line('');

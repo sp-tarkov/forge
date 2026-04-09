@@ -247,11 +247,7 @@ class CachedGateService
         $normalized = [];
 
         foreach ($arguments as $arg) {
-            if ($arg instanceof Model) {
-                $normalized[] = $arg::class.'.'.$arg->getKey();
-            } else {
-                $normalized[] = $arg;
-            }
+            $normalized[] = $arg instanceof Model ? $arg::class.'.'.$arg->getKey() : $arg;
         }
 
         return md5(serialize($normalized));

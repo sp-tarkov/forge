@@ -28,14 +28,14 @@ class ModelsThat
                 ->prepend('App')
                 ->replace('/', '\\')
                 ->value())
-            ->filter(function (string $class) use ($trait) {
+            ->filter(function (string $class) use ($trait): bool {
                 if (! class_exists($class)) {
                     return false;
                 }
 
                 $reflection = new ReflectionClass($class);
 
-                return in_array($trait, $reflection->getTraitNames());
+                return in_array($trait, $reflection->getTraitNames(), true);
             })
             ->values();
     }

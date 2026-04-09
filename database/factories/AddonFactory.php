@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Addon;
+use App\Models\AddonVersion;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\SourceCodeLink;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 
 /**
@@ -20,7 +21,7 @@ class AddonFactory extends Factory
 {
     public function definition(): array
     {
-        $name = Str::title(mb_rtrim(fake()->sentence(rand(2, 4)), '.'));
+        $name = Str::title(mb_rtrim(fake()->sentence(random_int(2, 4)), '.'));
         $addonSlug = Str::slug($name);
 
         return [
@@ -29,16 +30,16 @@ class AddonFactory extends Factory
             'name' => $name,
             'slug' => $addonSlug,
             'teaser' => fake()->sentence(),
-            'description' => fake()->paragraphs(rand(2, 5), true),
-            'license_id' => License::inRandomOrder()->first()->id ?? License::factory(),
+            'description' => fake()->paragraphs(random_int(2, 5), true),
+            'license_id' => License::query()->inRandomOrder()->first()->id ?? License::factory(),
             'downloads' => 0,
             'contains_ai_content' => fake()->boolean(),
             'contains_ads' => fake()->boolean(),
             'comments_disabled' => false,
             'discord_notification_sent' => true,
-            'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
-            'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
-            'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'published_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
+            'created_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
+            'updated_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
         ];
     }
 
@@ -47,7 +48,7 @@ class AddonFactory extends Factory
      */
     public function disabled(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'disabled' => true,
         ]);
     }
@@ -57,8 +58,8 @@ class AddonFactory extends Factory
      */
     public function published(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+        return $this->state(fn (array $attributes): array => [
+            'published_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
         ]);
     }
 
@@ -67,7 +68,7 @@ class AddonFactory extends Factory
      */
     public function unpublished(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'published_at' => null,
         ]);
     }
@@ -77,8 +78,8 @@ class AddonFactory extends Factory
      */
     public function detached(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'detached_at' => Carbon::now()->subDays(rand(0, 30)),
+        return $this->state(fn (array $attributes): array => [
+            'detached_at' => Date::now()->subDays(random_int(0, 30)),
             'detached_by_user_id' => User::factory(),
         ]);
     }
@@ -89,7 +90,7 @@ class AddonFactory extends Factory
     public function withVersions(int $count = 1): static
     {
         return $this->has(
-            \App\Models\AddonVersion::factory()->count($count),
+            AddonVersion::factory()->count($count),
             'versions'
         );
     }
@@ -101,7 +102,7 @@ class AddonFactory extends Factory
     {
         return $this->afterCreating(function (Addon $addon): void {
             // Create 0-2 source code links for each addon
-            $numberOfLinks = rand(0, 2);
+            $numberOfLinks = random_int(0, 2);
             for ($i = 0; $i < $numberOfLinks; $i++) {
                 SourceCodeLink::factory()->create([
                     'sourceable_type' => Addon::class,

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\Addon;
+use App\Models\Mod;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection;
@@ -16,7 +18,7 @@ return new class extends Migration
     public function up(): void
     {
         // Create the new polymorphic additional_authors table
-        Schema::create('additional_authors', function (Blueprint $table) {
+        Schema::create('additional_authors', function (Blueprint $table): void {
             $table->id();
             $table->morphs('authorable');
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
@@ -30,32 +32,28 @@ return new class extends Migration
 
         // Migrate data from mod_additional_authors
         DB::table('mod_additional_authors')->orderBy('id')->chunk(100, function (Collection $authors): void {
-            $data = $authors->map(function (stdClass $author): array {
-                return [
-                    'id' => $author->id,
-                    'authorable_type' => 'App\\Models\\Mod',
-                    'authorable_id' => $author->mod_id,
-                    'user_id' => $author->user_id,
-                    'created_at' => $author->created_at,
-                    'updated_at' => $author->updated_at,
-                ];
-            })->toArray();
+            $data = $authors->map(fn (stdClass $author): array => [
+                'id' => $author->id,
+                'authorable_type' => Mod::class,
+                'authorable_id' => $author->mod_id,
+                'user_id' => $author->user_id,
+                'created_at' => $author->created_at,
+                'updated_at' => $author->updated_at,
+            ])->all();
 
             DB::table('additional_authors')->insert($data);
         });
 
         // Migrate data from addon_additional_authors
         DB::table('addon_additional_authors')->orderBy('id')->chunk(100, function (Collection $authors): void {
-            $data = $authors->map(function (stdClass $author): array {
-                return [
-                    'id' => $author->id,
-                    'authorable_type' => 'App\\Models\\Addon',
-                    'authorable_id' => $author->addon_id,
-                    'user_id' => $author->user_id,
-                    'created_at' => $author->created_at,
-                    'updated_at' => $author->updated_at,
-                ];
-            })->toArray();
+            $data = $authors->map(fn (stdClass $author): array => [
+                'id' => $author->id,
+                'authorable_type' => Addon::class,
+                'authorable_id' => $author->addon_id,
+                'user_id' => $author->user_id,
+                'created_at' => $author->created_at,
+                'updated_at' => $author->updated_at,
+            ])->all();
 
             DB::table('additional_authors')->insert($data);
         });
@@ -71,7 +69,7 @@ return new class extends Migration
     public function down(): void
     {
         // Recreate mod_additional_authors table
-        Schema::create('mod_additional_authors', function (Blueprint $table) {
+        Schema::create('mod_additional_authors', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('mod_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
@@ -82,7 +80,7 @@ return new class extends Migration
         });
 
         // Recreate addon_additional_authors table
-        Schema::create('addon_additional_authors', function (Blueprint $table) {
+        Schema::create('addon_additional_authors', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('addon_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
@@ -94,36 +92,32 @@ return new class extends Migration
 
         // Migrate data back from additional_authors to mod_additional_authors
         DB::table('additional_authors')
-            ->where('authorable_type', 'App\\Models\\Mod')
+            ->where('authorable_type', Mod::class)
             ->orderBy('id')
             ->chunk(100, function (Collection $authors): void {
-                $data = $authors->map(function (stdClass $author): array {
-                    return [
-                        'id' => $author->id,
-                        'mod_id' => $author->authorable_id,
-                        'user_id' => $author->user_id,
-                        'created_at' => $author->created_at,
-                        'updated_at' => $author->updated_at,
-                    ];
-                })->toArray();
+                $data = $authors->map(fn (stdClass $author): array => [
+                    'id' => $author->id,
+                    'mod_id' => $author->authorable_id,
+                    'user_id' => $author->user_id,
+                    'created_at' => $author->created_at,
+                    'updated_at' => $author->updated_at,
+                ])->all();
 
                 DB::table('mod_additional_authors')->insert($data);
             });
 
         // Migrate data back from additional_authors to addon_additional_authors
         DB::table('additional_authors')
-            ->where('authorable_type', 'App\\Models\\Addon')
+            ->where('authorable_type', Addon::class)
             ->orderBy('id')
             ->chunk(100, function (Collection $authors): void {
-                $data = $authors->map(function (stdClass $author): array {
-                    return [
-                        'id' => $author->id,
-                        'addon_id' => $author->authorable_id,
-                        'user_id' => $author->user_id,
-                        'created_at' => $author->created_at,
-                        'updated_at' => $author->updated_at,
-                    ];
-                })->toArray();
+                $data = $authors->map(fn (stdClass $author): array => [
+                    'id' => $author->id,
+                    'addon_id' => $author->authorable_id,
+                    'user_id' => $author->user_id,
+                    'created_at' => $author->created_at,
+                    'updated_at' => $author->updated_at,
+                ])->all();
 
                 DB::table('addon_additional_authors')->insert($data);
             });

@@ -251,7 +251,7 @@ it('sends discord notification for new mod versions', function (): void {
     expect($oldVersion->discord_notification_sent)->toBeTrue();
 
     // Verify the notification was sent with the correct version (2.0.0)
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -318,7 +318,7 @@ it('sends individual notifications for multiple new versions of same mod', funct
     Http::assertSentCount(2);
 
     // Verify each notification contains the correct version
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -331,7 +331,7 @@ it('sends individual notifications for multiple new versions of same mod', funct
         return str_contains($embed['title'] ?? '', 'Version 2.0.0');
     });
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -496,7 +496,7 @@ it('does not duplicate spt versions in new mod notification', function (): void 
     expect($mod->discord_notification_sent)->toBeTrue();
 
     // Verify HTTP request was made with unique SPT versions only
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -579,7 +579,7 @@ it('does not send version update notification when new mod is created', function
     Http::assertSentCount(1);
 
     // Verify it's a new mod notification, not a version update notification
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $content = $body['content'] ?? '';
 
@@ -640,7 +640,7 @@ it('does not duplicate spt versions in mod version update notification', functio
     expect($newVersion->discord_notification_sent)->toBeTrue();
 
     // Verify HTTP request was made with unique SPT versions only
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -723,7 +723,7 @@ it('sends notification for lower semantic version uploaded after higher version'
     expect($lowerVersion->discord_notification_sent)->toBeTrue();
 
     // Verify the notification was sent with the CORRECT version (1.0.9, not 1.1.0)
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 

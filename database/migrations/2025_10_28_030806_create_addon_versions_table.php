@@ -11,7 +11,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('addon_versions', function (Blueprint $table) {
+        Schema::create('addon_versions', function (Blueprint $table): void {
             $table->id();
             $table->foreignIdFor(Addon::class)
                 ->constrained('addons')

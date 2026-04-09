@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use Mchev\Banhammer\Models\Ban;
 
 new class extends Component {
     /** The user being viewed/acted upon */
@@ -123,7 +122,6 @@ new class extends Component {
                     eventType: TrackingEventType::USER_BAN,
                     trackable: $this->user,
                     actionCallback: function () use ($attributes): void {
-                        /** @var Ban $ban */
                         $ban = $this->user->ban($attributes);
                         $this->user->notify(new UserBannedNotification($ban));
                         Track::event(TrackingEventType::USER_BANNED, $this->user);
@@ -141,7 +139,6 @@ new class extends Component {
         }
 
         // Standard ban without report linking
-        /** @var Ban $ban */
         $ban = $this->user->ban($attributes);
 
         $this->user->notify(new UserBannedNotification($ban));

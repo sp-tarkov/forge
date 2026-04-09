@@ -47,7 +47,7 @@ new class extends Component {
             return;
         }
 
-        $this->updatedCount = (int) Cache::remember("user:{$user->id}:nav-updated-mods-count", 60, function () use ($user): int {
+        $this->updatedCount = (int) Cache::remember(sprintf('user:%s:nav-updated-mods-count', $user->id), 60, function () use ($user): int {
             $user->refresh();
 
             $lastViewed = $user->mods_updated_viewed_at;

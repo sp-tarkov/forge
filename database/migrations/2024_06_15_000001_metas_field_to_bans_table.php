@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         if (! Schema::hasColumn(config('ban.table'), 'metas')) {
-            Schema::table(config('ban.table'), function (Blueprint $table) {
+            Schema::table(config('ban.table'), function (Blueprint $table): void {
                 $table->json('metas')->nullable();
             });
         }
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasColumn(config('ban.table'), 'metas')) {
-            Schema::table(config('ban.table'), function (Blueprint $table) {
+            Schema::table(config('ban.table'), function (Blueprint $table): void {
                 $table->dropColumn('metas');
             });
         }

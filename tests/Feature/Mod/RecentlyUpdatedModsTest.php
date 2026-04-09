@@ -241,7 +241,7 @@ describe('pagination', function (): void {
 
         // Create more than default per page (12)
         for ($i = 0; $i < 15; $i++) {
-            $mod = Mod::factory()->create(['name' => "Test Mod {$i}"]);
+            $mod = Mod::factory()->create(['name' => 'Test Mod '.$i]);
             ModVersion::factory()->recycle($mod)->create([
                 'spt_version_constraint' => '3.11.4',
                 'created_at' => now()->subMinutes($i),
@@ -260,7 +260,7 @@ describe('pagination', function (): void {
         $sptVersion = SptVersion::factory()->create(['version' => '3.11.4']);
 
         for ($i = 0; $i < 30; $i++) {
-            $mod = Mod::factory()->create(['name' => "Test Mod {$i}"]);
+            $mod = Mod::factory()->create(['name' => 'Test Mod '.$i]);
             ModVersion::factory()->recycle($mod)->create([
                 'spt_version_constraint' => '3.11.4',
                 'created_at' => now()->subMinutes($i),
@@ -270,6 +270,7 @@ describe('pagination', function (): void {
         $component = Livewire::actingAs($user)->test('pages::mod.recently-updated');
 
         $component->set('perPage', 24);
+
         $mods = $component->viewData('mods');
         expect($mods->count())->toBe(24);
     });

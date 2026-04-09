@@ -116,7 +116,7 @@ class ModDependencyTreeQueryBuilder extends AbstractQueryBuilder
             ->where('mods.published_at', '<=', now());
 
         // If we have mod version IDs, get their dependencies
-        if (! empty($this->modVersionIds)) {
+        if ($this->modVersionIds !== []) {
             $query->whereExists(function (\Illuminate\Database\Query\Builder $query): void {
                 $query->select(DB::raw(1))
                     ->from('dependencies_resolved')

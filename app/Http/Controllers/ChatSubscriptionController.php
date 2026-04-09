@@ -22,7 +22,7 @@ class ChatSubscriptionController extends Controller
         // Find the conversation by hash ID
         $conversation = Conversation::findByHashId($conversationHashId);
 
-        if ($conversation === null) {
+        if (! $conversation instanceof Conversation) {
             return to_route('home')
                 ->with('error', 'Conversation not found.');
         }

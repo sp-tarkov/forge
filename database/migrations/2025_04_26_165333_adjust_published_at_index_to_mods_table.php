@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->dropIndex('mods_filtering_index');
             $table->index('published_at');
             $table->index('disabled');
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->dropIndex('mods_published_at_index');
             $table->dropIndex('mods_disabled_index');
             $table->index(['disabled', 'published_at'], 'mods_filtering_index');

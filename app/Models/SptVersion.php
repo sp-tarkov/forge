@@ -141,7 +141,7 @@ class SptVersion extends Model
 
         // Get the absolute latest version to determine the latest minor release
         $latestVersion = self::getLatest();
-        if ($latestVersion === null) {
+        if (! $latestVersion instanceof self) {
             return new Collection;
         }
 

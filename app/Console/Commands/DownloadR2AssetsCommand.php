@@ -48,7 +48,7 @@ class DownloadR2AssetsCommand extends Command
             $this->info(sprintf('Skipping %d existing files', $skipped));
         }
 
-        if (empty($r2Files)) {
+        if ($r2Files === []) {
             $this->info('No files to download.');
 
             return self::SUCCESS;

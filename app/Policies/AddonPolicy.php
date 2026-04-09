@@ -74,7 +74,11 @@ class AddonPolicy
             return false;
         }
 
-        return $user->isModOrAdmin() || $addon->isAuthorOrOwner($user);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $addon->isAuthorOrOwner($user);
     }
 
     /**
@@ -87,7 +91,11 @@ class AddonPolicy
             return false;
         }
 
-        return $user->isAdmin() || $addon->owner_id === $user->id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $addon->owner_id === $user->id;
     }
 
     /**
@@ -105,12 +113,8 @@ class AddonPolicy
     public function download(?User $user, Addon $addon): bool
     {
         // Check if addon can be viewed first
-        if (! $this->view($user, $addon)) {
-            return false;
-        }
-
         // Allow downloads even if blocked
-        return true;
+        return $this->view($user, $addon);
     }
 
     /**
@@ -201,7 +205,7 @@ class AddonPolicy
         }
 
         // User must be owner/author of parent mod, moderator, or admin
-        if (! ($user->isModOrAdmin() || $addon->mod->isAuthorOrOwner($user))) {
+        if (! $user->isModOrAdmin() && ! $addon->mod->isAuthorOrOwner($user)) {
             return Response::deny(__('You must be an owner or author of the parent mod, or a moderator/staff member to attach this addon.'));
         }
 
@@ -229,7 +233,7 @@ class AddonPolicy
         }
 
         // User must be owner/author of parent mod, moderator, or admin
-        if (! ($user->isModOrAdmin() || $addon->mod->isAuthorOrOwner($user))) {
+        if (! $user->isModOrAdmin() && ! $addon->mod->isAuthorOrOwner($user)) {
             return Response::deny(__('You must be an owner or author of the parent mod, or a moderator/staff member to detach this addon.'));
         }
 

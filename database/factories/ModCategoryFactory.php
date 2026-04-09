@@ -20,7 +20,7 @@ class ModCategoryFactory extends Factory
      */
     public function definition(): array
     {
-        $title = fake()->unique()->words(rand(2, 4), true);
+        $title = fake()->unique()->words(random_int(2, 4), true);
 
         return [
             'title' => $title,
@@ -34,7 +34,7 @@ class ModCategoryFactory extends Factory
      */
     public function fromHub(int $hubId): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'hub_id' => $hubId,
         ]);
     }
@@ -44,7 +44,7 @@ class ModCategoryFactory extends Factory
      */
     public function showsProfileBindingNotice(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'shows_profile_binding_notice' => true,
         ]);
     }

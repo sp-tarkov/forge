@@ -107,7 +107,7 @@ class TrackService
      * @param  array<string, mixed>  $additionalData
      * @return array<string, mixed>
      */
-    private function extractEventData(TrackingEventType $eventType, ?Model $trackable, array $additionalData): array
+    private function extractEventData(?Model $trackable, array $additionalData): array
     {
         $eventData = $additionalData;
 
@@ -142,7 +142,7 @@ class TrackService
         }
 
         // Extract contextual information based on the event type and trackable model
-        $eventData = $this->extractEventData($eventType, $trackable, $additionalData);
+        $eventData = $this->extractEventData($trackable, $additionalData);
 
         // For authentication events (login, logout, register), the user is both the visitor and visitable
         $visitorId = Auth::id();
@@ -159,7 +159,7 @@ class TrackService
             TrackingEventType::USER_BANNED,
             TrackingEventType::USER_UNBANNED,
         ];
-        if (in_array($eventType, $userAsVisitorEvents) && $trackable instanceof User) {
+        if (in_array($eventType, $userAsVisitorEvents, true) && $trackable instanceof User) {
             $visitorId = $trackable->getKey();
             $visitorType = $trackable->getMorphClass();
         }

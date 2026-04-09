@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         // Add the owner_id column to the mods table.
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->foreignId('owner_id')
                 ->after('hub_id')
                 ->nullable()
@@ -36,7 +36,7 @@ return new class extends Migration
         Schema::rename('mod_authors', 'mod_user');
 
         // Remove the owner_id column and its foreign key constraint from the mods table.
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->dropForeign(['owner_id']);
             $table->dropColumn('owner_id');
         });

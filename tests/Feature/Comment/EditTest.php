@@ -65,6 +65,7 @@ describe('basic editing', function (): void {
         // Verify the comment was not changed
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->not->toBe("Trying to edit someone else's comment");
     });
 });
@@ -184,6 +185,7 @@ describe('moderator permissions', function (): void {
 
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->not->toBe('Moderator trying to edit');
     });
 
@@ -211,6 +213,7 @@ describe('moderator permissions', function (): void {
 
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->toBe('Moderator editing own comment');
     });
 
@@ -239,6 +242,7 @@ describe('moderator permissions', function (): void {
 
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->toBe('Moderator editing old own comment');
     });
 });
@@ -269,6 +273,7 @@ describe('administrator permissions', function (): void {
 
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->not->toBe('Admin trying to edit');
     });
 
@@ -296,6 +301,7 @@ describe('administrator permissions', function (): void {
 
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->toBe('Admin editing own comment');
     });
 });
@@ -378,6 +384,7 @@ describe('concurrent editing', function (): void {
         // Verify first edit succeeded
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->toBe('First edit');
 
         // User makes another edit on the same comment
@@ -391,6 +398,7 @@ describe('concurrent editing', function (): void {
         // The second edit should win
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->toBe('Second edit');
     });
 
@@ -482,6 +490,7 @@ describe('body trimming during edit', function (): void {
 
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->toBe('Edited comment with spaces');
     });
 
@@ -508,6 +517,7 @@ describe('body trimming during edit', function (): void {
 
         $comment->refresh();
         $comment->unsetRelation('latestVersion');
+
         expect($comment->body)->toBe('Edited with tabs and newlines');
     });
 });

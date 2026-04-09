@@ -13,6 +13,7 @@ use App\Traits\HasComments;
 use App\Traits\HasReports;
 use Database\Factories\AddonFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -73,6 +74,9 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonObserver::class])]
+#[Appends([
+    'detail_url',
+])]
 class Addon extends Model implements Commentable, Reportable, Trackable
 {
     /** @use HasComments<self> */
@@ -86,10 +90,6 @@ class Addon extends Model implements Commentable, Reportable, Trackable
 
     use Searchable;
     use Visitable;
-
-    protected $appends = [
-        'detail_url',
-    ];
 
     /**
      * The relationship between an addon and its parent mod.
@@ -199,7 +199,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      */
     public function isAuthorOrOwner(?User $user): bool
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -294,12 +294,8 @@ class Addon extends Model implements Commentable, Reportable, Trackable
         }
 
         // Ensure the addon has at least one published version.
-        if (! $this->hasPublishedVersion()) {
-            return false;
-        }
-
         // All conditions are met; the addon should be searchable.
-        return true;
+        return $this->hasPublishedVersion();
     }
 
     /**

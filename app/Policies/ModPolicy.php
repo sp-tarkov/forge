@@ -39,11 +39,8 @@ class ModPolicy
 
         // For non-privileged users, check if mod is publicly visible
         $isPrivilegedUser = $user && ($mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
-        if (! $isPrivilegedUser && ! $mod->isPubliclyVisible()) {
-            return false;
-        }
 
-        return true;
+        return ! (! $isPrivilegedUser && ! $mod->isPubliclyVisible());
     }
 
     /**
@@ -66,7 +63,11 @@ class ModPolicy
             return false;
         }
 
-        return $user->isModOrAdmin() || $mod->isAuthorOrOwner($user);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -79,7 +80,11 @@ class ModPolicy
             return false;
         }
 
-        return $user->isAdmin() || $mod->owner->id === $user->id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $mod->owner->id === $user->id;
     }
 
     /**
@@ -97,12 +102,8 @@ class ModPolicy
     public function download(?User $user, Mod $mod): bool
     {
         // Check if mod can be viewed first
-        if (! $this->view($user, $mod)) {
-            return false;
-        }
-
         // Allow downloads even if blocked
-        return true;
+        return $this->view($user, $mod);
     }
 
     /**

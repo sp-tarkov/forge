@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
         ]);
         User::factory($counts['staff'] - 1)->for($staffRole, 'role')->create();
 
-        $this->command->outputComponents()->info("Test account created: {$this->testAccount->email}");
+        $this->command->outputComponents()->info('Test account created: '.$this->testAccount->email);
 
         // Moderator Users
         $moderatorRole = UserRole::query()->firstOrCreate(
@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
         User::factory($counts['moderator'])->for($moderatorRole, 'role')->create();
 
         // Regular Users
-        User::withoutEvents(function () use ($counts) {
+        User::withoutEvents(function () use ($counts): void {
             progress(
                 label: 'Adding Users...',
                 steps: $counts['user'],
@@ -76,7 +76,7 @@ class UserSeeder extends Seeder
         progress(
             label: 'Adding user follows...',
             steps: $allUsers,
-            callback: function ($user) use ($allUsers) {
+            callback: function ($user) use ($allUsers): void {
                 // Special handling for test account
                 if ($user->id === $this->testAccount->id) {
                     $this->seedTestAccountFollows($user, $allUsers);
@@ -129,16 +129,16 @@ class UserSeeder extends Seeder
      */
     private function seedRandomUserFollows(User $user, Collection $allUsers): void
     {
-        $hasFollowers = rand(0, 100) < 70; // 70% chance to have followers
-        $isFollowing = rand(0, 100) < 70; // 70% chance to be following other users
+        $hasFollowers = random_int(0, 100) < 70; // 70% chance to have followers
+        $isFollowing = random_int(0, 100) < 70; // 70% chance to be following other users
 
         if ($hasFollowers) {
-            $followers = $allUsers->random(rand(1, 10))->pluck('id')->toArray();
+            $followers = $allUsers->random(random_int(1, 10))->pluck('id')->toArray();
             $user->followers()->attach($followers);
         }
 
         if ($isFollowing) {
-            $following = $allUsers->random(rand(1, 10))->pluck('id')->toArray();
+            $following = $allUsers->random(random_int(1, 10))->pluck('id')->toArray();
             $user->following()->attach($following);
         }
     }

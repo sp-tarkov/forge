@@ -43,7 +43,7 @@ class Guest implements Authenticatable
      */
     public function __isset(string $key): bool
     {
-        return in_array($key, ['id', 'name', 'is_guest']);
+        return in_array($key, ['id', 'name', 'is_guest'], true);
     }
 
     /**

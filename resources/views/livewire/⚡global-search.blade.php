@@ -90,7 +90,7 @@ new class extends Component {
      */
     protected function executeMultiSearch(string $query): array
     {
-        $client = app(MeilisearchClient::class);
+        $client = resolve(MeilisearchClient::class);
 
         $prefix = config('scout.prefix');
 

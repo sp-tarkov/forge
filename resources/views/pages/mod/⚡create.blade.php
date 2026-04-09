@@ -12,13 +12,11 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 use App\Livewire\Concerns\RendersMarkdownPreview;
-use Stevebauman\Purify\Facades\Purify;
 
 new #[Layout('layouts::base')] class extends Component {
     use UsesSpamProtection;
@@ -145,7 +143,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function shouldShowProfileBindingField(): bool
     {
-        if (empty($this->category)) {
+        if ($this->category === '' || $this->category === '0') {
             return false;
         }
 
@@ -197,7 +195,7 @@ new #[Layout('layouts::base')] class extends Component {
         ]);
 
         // Set the thumbnail if a file was uploaded.
-        if ($this->thumbnail !== null) {
+        if ($this->thumbnail instanceof \Illuminate\Http\UploadedFile) {
             $mod->thumbnail = $this->thumbnail->storePublicly(path: 'mods', options: config('filesystems.asset_upload', 'public'));
 
             // Calculate and store the hash of the uploaded thumbnail
@@ -208,7 +206,7 @@ new #[Layout('layouts::base')] class extends Component {
         $mod->save();
 
         // Add authors
-        if (!empty($this->authorIds)) {
+        if ($this->authorIds !== []) {
             $mod->additionalAuthors()->attach($this->authorIds);
         }
 

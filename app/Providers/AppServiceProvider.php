@@ -12,6 +12,7 @@ use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -77,12 +78,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('admin', fn (User $user): bool => $user->isAdmin());
 
         // Define gates for user blocking
-        Gate::define('block', function (User $user, User $target) {
+        Gate::define('block', function (User $user, User $target): Response {
             $policy = new BlockingPolicy;
 
             return $policy->block($user, $target);
         });
-        Gate::define('unblock', function (User $user, User $target) {
+        Gate::define('unblock', function (User $user, User $target): Response {
             $policy = new BlockingPolicy;
 
             return $policy->unblock($user, $target);
@@ -95,18 +96,15 @@ class AppServiceProvider extends ServiceProvider
 
         // Track authentication events
         Event::listen(Login::class, function (Login $event): void {
-            /** @var User|null $user */
             $user = $event->user instanceof User ? $event->user : null;
             Track::event(TrackingEventType::LOGIN, $user);
         });
         Event::listen(Logout::class, function (Logout $event): void {
             // Pass the user as the trackable model to capture user data
-            /** @var User|null $user */
             $user = $event->user instanceof User ? $event->user : null;
             Track::event(TrackingEventType::LOGOUT, $user);
         });
         Event::listen(Registered::class, function (Registered $event): void {
-            /** @var User|null $user */
             $user = $event->user instanceof User ? $event->user : null;
             Track::event(TrackingEventType::REGISTER, $user);
         });
@@ -197,7 +195,7 @@ class AppServiceProvider extends ServiceProvider
 
         // CachedGate directives
         Blade::if('cachedCan', function (string $ability, mixed ...$arguments): bool {
-            if (empty($arguments)) {
+            if ($arguments === []) {
                 return CachedGate::allows($ability);
             }
 
@@ -206,7 +204,7 @@ class AppServiceProvider extends ServiceProvider
             return CachedGate::allows($ability, $arg);
         });
         Blade::if('cachedCannot', function (string $ability, mixed ...$arguments): bool {
-            if (empty($arguments)) {
+            if ($arguments === []) {
                 return CachedGate::denies($ability);
             }
 

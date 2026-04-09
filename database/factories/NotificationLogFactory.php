@@ -37,7 +37,7 @@ class NotificationLogFactory extends Factory
      */
     public function email(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'notification_type' => NotificationType::EMAIL,
         ]);
     }
@@ -47,7 +47,7 @@ class NotificationLogFactory extends Factory
      */
     public function database(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'notification_type' => NotificationType::DATABASE,
         ]);
     }
@@ -57,7 +57,7 @@ class NotificationLogFactory extends Factory
      */
     public function all(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'notification_type' => NotificationType::ALL,
         ]);
     }
@@ -67,7 +67,7 @@ class NotificationLogFactory extends Factory
      */
     public function forUserAndComment(User $user, Comment $comment): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'user_id' => $user->id,
             'notifiable_type' => Comment::class,
             'notifiable_id' => $comment->id,

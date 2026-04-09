@@ -91,8 +91,10 @@ new class extends Component {
         if (!$addon) {
             return false;
         }
-
-        return $user->isModOrAdmin() || $addon->isAuthorOrOwner($user);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+        return $addon->isAuthorOrOwner($user);
     }
 
     /**

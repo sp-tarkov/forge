@@ -110,6 +110,7 @@ describe('Auth Login API', function (): void {
         ]);
 
         $responseOmitted->assertStatus(Response::HTTP_OK);
+
         $tokenOmitted = PersonalAccessToken::query()->where('tokenable_id', $user->id)->first();
         expect($tokenOmitted->abilities)->toEqual($defaultAbilities);
 
@@ -123,6 +124,7 @@ describe('Auth Login API', function (): void {
         ]);
 
         $responseEmpty->assertStatus(Response::HTTP_OK);
+
         $tokenEmpty = PersonalAccessToken::query()->where('tokenable_id', $user->id)->first();
         expect($tokenEmpty->abilities)->toEqual($defaultAbilities);
     });

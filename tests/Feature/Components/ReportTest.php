@@ -653,7 +653,7 @@ describe('ReportComponent', function (): void {
                 ->set('context', 'This content is inappropriate')
                 ->call('submit');
 
-            Notification::assertSentTo($moderator, ReportSubmittedNotification::class, function ($notification) use ($reporter, $mod) {
+            Notification::assertSentTo($moderator, ReportSubmittedNotification::class, function ($notification) use ($reporter, $mod): bool {
                 $report = $notification->report;
 
                 return $report->reporter_id === $reporter->id &&

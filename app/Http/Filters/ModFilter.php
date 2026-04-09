@@ -191,7 +191,7 @@ class ModFilter
      */
     private function category(mixed $categorySlug): Builder
     {
-        if (! is_string($categorySlug) || empty($categorySlug)) {
+        if (! is_string($categorySlug) || ($categorySlug === '' || $categorySlug === '0')) {
             return $this->builder;
         }
 
@@ -251,7 +251,7 @@ class ModFilter
         $normalVersions = array_filter($versions, fn (string $version): bool => $version !== 'legacy');
 
         // Both normal versions and legacy
-        if (! empty($normalVersions) && $hasLegacyVersion) {
+        if ($normalVersions !== [] && $hasLegacyVersion) {
             return $this->builder->whereExists(function (QueryBuilder $subQuery) use ($normalVersions, $showDisabled): void {
                 $subQuery->select(DB::raw(1))
                     ->from('mod_versions')
@@ -289,14 +289,14 @@ class ModFilter
         }
 
         // Only legacy versions
-        if (empty($normalVersions) && $hasLegacyVersion) {
+        if ($normalVersions === [] && $hasLegacyVersion) {
             return $this->builder->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
                 $this->legacyVersions($query, $showDisabled);
             });
         }
 
         // Only normal versions
-        if (! empty($normalVersions) && ! $hasLegacyVersion) {
+        if ($normalVersions !== [] && ! $hasLegacyVersion) {
             return $this->builder->whereExists(function (QueryBuilder $query) use ($normalVersions, $showDisabled): void {
                 $query->select(DB::raw(1))
                     ->from('mod_versions')

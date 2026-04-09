@@ -27,7 +27,7 @@ new class extends Component {
     public function mount(): void
     {
         // Load initial peak from database (cached for 5 minutes)
-        $peakData = Cache::flexible('peak_visitor_data', [3, 5], function () {
+        $peakData = Cache::flexible('peak_visitor_data', [3, 5], function (): array {
             $peak = Visitor::getPeakStats();
 
             $date = null;

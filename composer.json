@@ -5,7 +5,7 @@
     "keywords": [],
     "license": "MPL-2.0",
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "ext-curl": "*",
         "ext-imagick": "*",
         "ext-intl": "*",
@@ -15,7 +15,6 @@
         "geoip2/geoip2": "^3.3",
         "graham-campbell/markdown": "^16.0",
         "http-interop/http-factory-guzzle": "^1.2.1",
-        "knuckleswtf/scribe": "^5.8",
         "laravel/fortify": "^1.36.1",
         "laravel/framework": "^13.0",
         "laravel/horizon": "^5.45.3",
@@ -25,7 +24,6 @@
         "laravel/scout": "^10.25",
         "laravel/serializable-closure": "^2.0.10",
         "laravel/socialite": "^5.25",
-        "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.32",
         "league/html-to-markdown": "^5.1.1",
         "livewire/flux": "^2.13",
@@ -45,15 +43,19 @@
         "barryvdh/laravel-debugbar": "^4.1.3",
         "driftingly/rector-laravel": "^2.1.12",
         "fakerphp/faker": "^1.24.1",
+        "knuckleswtf/scribe": "^5.8",
         "laravel/boost": "^2.3.4",
         "laravel/pail": "^1.2.6",
         "laravel/pint": "^1.29.0",
         "mockery/mockery": "^1.6.12",
+        "laravel/tinker": "^3.0",
         "nunomaduro/collision": "^8.9.1",
+        "nunomaduro/pao": "^0.1",
         "pestphp/pest": "^4.4.2",
         "pestphp/pest-plugin-browser": "^4.3.0",
         "pestphp/pest-plugin-type-coverage": "^4.0.3",
-        "rector/rector": "^2.3.9"
+        "rector/rector": "^2.3.9",
+        "roave/security-advisories": "dev-latest"
     },
     "autoload": {
         "psr-4": {

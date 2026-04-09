@@ -197,7 +197,7 @@ new #[Lazy] class extends Component {
      */
     private function applyEventFilters(Builder $query): void
     {
-        if (!empty($this->eventFilter)) {
+        if ($this->eventFilter !== '' && $this->eventFilter !== '0') {
             $query->where('tracking_events.event_name', '=', $this->eventFilter);
         }
     }
@@ -209,11 +209,11 @@ new #[Lazy] class extends Component {
      */
     private function applyTechnicalFilters(Builder $query): void
     {
-        if (!empty($this->ipFilter)) {
+        if ($this->ipFilter !== '' && $this->ipFilter !== '0') {
             $query->where('tracking_events.ip', 'like', '%' . $this->ipFilter . '%');
         }
 
-        if (!empty($this->browserFilter)) {
+        if ($this->browserFilter !== '' && $this->browserFilter !== '0') {
             if ($this->browserFilter === 'Other') {
                 $query->whereNotIn('tracking_events.browser', ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera']);
             } else {
@@ -221,7 +221,7 @@ new #[Lazy] class extends Component {
             }
         }
 
-        if (!empty($this->platformFilter)) {
+        if ($this->platformFilter !== '' && $this->platformFilter !== '0') {
             if ($this->platformFilter === 'Other') {
                 $query->whereNotIn('tracking_events.platform', ['Windows', 'macOS', 'Linux', 'iOS', 'Android']);
             } else {
@@ -229,11 +229,11 @@ new #[Lazy] class extends Component {
             }
         }
 
-        if (!empty($this->deviceFilter)) {
+        if ($this->deviceFilter !== '' && $this->deviceFilter !== '0') {
             $query->where('tracking_events.device', '=', $this->deviceFilter);
         }
 
-        if (!empty($this->refererFilter)) {
+        if ($this->refererFilter !== '' && $this->refererFilter !== '0') {
             $query->whereJsonContains('tracking_events.event_data->referer', $this->refererFilter);
         }
     }
@@ -245,15 +245,15 @@ new #[Lazy] class extends Component {
      */
     private function applyGeographicFilters(Builder $query): void
     {
-        if (!empty($this->countryFilter)) {
+        if ($this->countryFilter !== '' && $this->countryFilter !== '0') {
             $query->where('tracking_events.country_name', 'like', '%' . $this->countryFilter . '%');
         }
 
-        if (!empty($this->regionFilter)) {
+        if ($this->regionFilter !== '' && $this->regionFilter !== '0') {
             $query->where('tracking_events.region_name', 'like', '%' . $this->regionFilter . '%');
         }
 
-        if (!empty($this->cityFilter)) {
+        if ($this->cityFilter !== '' && $this->cityFilter !== '0') {
             $query->where('tracking_events.city_name', 'like', '%' . $this->cityFilter . '%');
         }
     }
@@ -273,7 +273,7 @@ new #[Lazy] class extends Component {
         }
 
         // User search
-        if (!empty($this->userSearch)) {
+        if ($this->userSearch !== '' && $this->userSearch !== '0') {
             $query
                 ->whereHas('user', function (Builder $q): void {
                     $q->where('name', 'like', '%' . $this->userSearch . '%')->orWhere('email', 'like', '%' . $this->userSearch . '%');

@@ -59,7 +59,7 @@ class SptVersionSeeder extends Seeder
             // Use different colors for different major versions
             $colorClass = $colorClasses[$major % count($colorClasses)];
 
-            SptVersion::firstOrCreate([
+            SptVersion::query()->firstOrCreate([
                 'version' => $version,
             ], [
                 'version_major' => $major,
@@ -67,13 +67,13 @@ class SptVersionSeeder extends Seeder
                 'version_patch' => $patch,
                 'version_labels' => '',
                 'mod_count' => 0,
-                'link' => "https://github.com/sp-tarkov/build/releases/tag/{$version}",
+                'link' => 'https://github.com/sp-tarkov/build/releases/tag/'.$version,
                 'color_class' => $colorClass,
-                'publish_date' => now()->subDays(rand(30, 365)),
+                'publish_date' => now()->subDays(random_int(30, 365)),
             ]);
         }
 
-        $count = SptVersion::count();
-        $this->command->outputComponents()->success("Created {$count} SPT versions");
+        $count = SptVersion::query()->count();
+        $this->command->outputComponents()->success(sprintf('Created %s SPT versions', $count));
     }
 }

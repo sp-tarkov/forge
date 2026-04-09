@@ -281,7 +281,7 @@ abstract class AbstractQueryBuilder
      */
     protected static function parseCommaSeparatedInput(string $value, ?string $castReturn = null): array
     {
-        $values = array_filter(explode(',', $value), fn (string $value): bool => ! empty($value));
+        $values = array_filter(explode(',', $value), fn (string $value): bool => $value !== '' && $value !== '0');
 
         if ($castReturn === null) {
             return $values;
@@ -300,7 +300,7 @@ abstract class AbstractQueryBuilder
      */
     protected function applySearch(): void
     {
-        if (empty($this->searchQuery)) {
+        if (in_array($this->searchQuery, [null, '', '0'], true)) {
             return;
         }
 
@@ -356,7 +356,7 @@ abstract class AbstractQueryBuilder
      */
     protected function applyFilters(): void
     {
-        if (empty($this->filters)) {
+        if ($this->filters === []) {
             return;
         }
 
@@ -366,7 +366,7 @@ abstract class AbstractQueryBuilder
 
         $invalidFilters = array_diff($requestedFilterKeys, $allowedFilterKeys);
 
-        if (! empty($invalidFilters)) {
+        if ($invalidFilters !== []) {
             $invalidFilter = implode(', ', $invalidFilters);
             $validFilters = implode(', ', $allowedFilterKeys);
             throw new InvalidQuery(
@@ -395,16 +395,16 @@ abstract class AbstractQueryBuilder
      */
     protected function applyIncludes(): void
     {
-        if (! empty($this->includes)) {
-            $this->includes = array_filter($this->includes, fn (?string $include): bool => ! empty($include));
-            if (empty($this->includes)) {
+        if ($this->includes !== []) {
+            $this->includes = array_filter($this->includes, fn (?string $include): bool => ! in_array($include, [null, '', '0'], true));
+            if ($this->includes === []) {
                 return; // All includes were empty and filtered out, return early.
             }
 
             $allowedIncludes = static::getAllowedIncludes();
 
             // Check if we have a key-value array or a simple array
-            $isKeyValueArray = ! empty($allowedIncludes) && ! is_numeric(key($allowedIncludes));
+            $isKeyValueArray = $allowedIncludes !== [] && ! is_numeric(key($allowedIncludes));
 
             if ($isKeyValueArray) {
                 /** @var array<string, string|array<array<string>>> $allowedIncludes */
@@ -412,7 +412,7 @@ abstract class AbstractQueryBuilder
                 $validIncludes = array_keys($allowedIncludes);
 
                 // Check for invalid includes
-                if (! empty($invalidIncludes)) {
+                if ($invalidIncludes !== []) {
                     $invalidInclude = implode(', ', $invalidIncludes);
                     $validIncludeList = implode(', ', $validIncludes);
                     throw new InvalidQuery(
@@ -437,7 +437,7 @@ abstract class AbstractQueryBuilder
                 $invalidIncludes = array_diff($this->includes, $allowedIncludes);
                 $validIncludes = $allowedIncludes;
 
-                if (! empty($invalidIncludes)) {
+                if ($invalidIncludes !== []) {
                     $invalidInclude = implode(', ', $invalidIncludes);
                     $validIncludeList = implode(', ', $validIncludes);
                     throw new InvalidQuery(
@@ -457,18 +457,18 @@ abstract class AbstractQueryBuilder
      */
     protected function applyFields(): void
     {
-        $fields = array_filter($this->fields, fn (?string $field): bool => ! empty($field));
-        $requiredFields = array_filter(static::getRequiredFields(), fn (string $field): bool => ! empty($field));
+        $fields = array_filter($this->fields, fn (?string $field): bool => ! in_array($field, [null, '', '0'], true));
+        $requiredFields = array_filter(static::getRequiredFields(), fn (string $field): bool => $field !== '' && $field !== '0');
 
-        if (! empty($fields)) {
+        if ($fields !== []) {
             // Get fields that need validation (excluding required fields)
             $fieldsToValidate = array_diff($fields, $requiredFields);
 
-            if (! empty($fieldsToValidate)) {
+            if ($fieldsToValidate !== []) {
                 $allowedFields = static::getAllAllowedFields();
                 $invalidFields = array_diff($fieldsToValidate, $allowedFields);
 
-                if (! empty($invalidFields)) {
+                if ($invalidFields !== []) {
                     $invalidField = implode(', ', $invalidFields);
                     $validFields = implode(', ', $allowedFields);
                     throw new InvalidQuery(
@@ -506,9 +506,9 @@ abstract class AbstractQueryBuilder
      */
     protected function applySorts(): void
     {
-        if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
-            if (empty($this->sorts)) {
+        if ($this->sorts !== []) {
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! in_array($sort, [null, '', '0'], true));
+            if ($this->sorts === []) {
                 return; // All sorts were empty and filtered out, return early.
             }
 
@@ -522,7 +522,7 @@ abstract class AbstractQueryBuilder
                 }
             }
 
-            if (! empty($invalidSorts)) {
+            if ($invalidSorts !== []) {
                 $invalidSort = implode(', ', $invalidSorts);
                 $validSorts = implode(', ', $allowedSorts);
                 throw new InvalidQuery(

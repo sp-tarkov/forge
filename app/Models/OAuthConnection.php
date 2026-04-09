@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Database\Factories\OAuthConnectionFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,12 +28,11 @@ use Override;
  * @property Carbon $updated_at
  * @property-read User $user
  */
+#[Table(name: 'oauth_connections')]
 class OAuthConnection extends Model
 {
     /** @use HasFactory<OAuthConnectionFactory> */
     use HasFactory;
-
-    protected $table = 'oauth_connections';
 
     /**
      * The relationship between the OAuth connection and the user.

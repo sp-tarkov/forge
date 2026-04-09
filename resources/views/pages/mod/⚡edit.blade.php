@@ -17,13 +17,11 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Renderless;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 use App\Livewire\Concerns\RendersMarkdownPreview;
-use Stevebauman\Purify\Facades\Purify;
 
 new #[Layout('layouts::base')] class extends Component {
     use UsesSpamProtection;
@@ -158,7 +156,7 @@ new #[Layout('layouts::base')] class extends Component {
             ->all();
 
         // Ensure at least one empty link input if no links exist
-        if (empty($this->sourceCodeLinks)) {
+        if ($this->sourceCodeLinks === []) {
             $this->sourceCodeLinks[] = ['key' => 'link-0', 'url' => '', 'label' => ''];
         }
 
@@ -194,7 +192,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function shouldShowProfileBindingField(): bool
     {
-        if (empty($this->category)) {
+        if ($this->category === '' || $this->category === '0') {
             return false;
         }
 
@@ -260,7 +258,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
-        if ($this->thumbnail !== null) {
+        if ($this->thumbnail instanceof \Illuminate\Http\UploadedFile) {
             // Delete the old thumbnail file from storage
             if ($this->mod->thumbnail) {
                 Storage::disk(config('filesystems.asset_upload', 'public'))->delete($this->mod->thumbnail);

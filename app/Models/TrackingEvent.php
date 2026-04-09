@@ -128,7 +128,7 @@ class TrackingEvent extends Model
                 }
 
                 $eventType = $this->getEventType();
-                if ($eventType !== null) {
+                if ($eventType instanceof TrackingEventType) {
                     return $eventType->getName();
                 }
 
@@ -152,7 +152,7 @@ class TrackingEvent extends Model
                 $eventType = $this->getEventType();
 
                 // For events without a type, show URL
-                if ($eventType === null) {
+                if (! $eventType instanceof TrackingEventType) {
                     return $this->url ?? null;
                 }
 

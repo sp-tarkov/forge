@@ -87,6 +87,7 @@ describe('Mod Autocomplete Component', function (): void {
 
         // Navigate down
         $component->call('navigateWithKeyboard', 'down');
+
         expect($component->get('highlightIndex'))->toBe(0);
 
         // Navigate down again

@@ -150,7 +150,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function getModGuidRequiredProperty(): bool
     {
-        if (empty($this->sptVersionConstraint)) {
+        if ($this->sptVersionConstraint === '' || $this->sptVersionConstraint === '0') {
             return false;
         }
 
@@ -180,7 +180,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Reset GUID saved state when constraint changes
         $this->guidSaved = false;
 
-        if (empty($this->sptVersionConstraint)) {
+        if ($this->sptVersionConstraint === '' || $this->sptVersionConstraint === '0') {
             $this->matchingSptVersions = [];
 
             return;
@@ -460,7 +460,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Use a transaction to ensure both mod GUID and version are saved atomically
         $modVersion = DB::transaction(function () use ($validated) {
             // Update the mod's GUID if needed (only if not already saved inline)
-            if ($this->modGuidRequired && empty($this->modGuid) && !empty($this->newModGuid) && !$this->guidSaved) {
+            if ($this->modGuidRequired && ($this->modGuid === '' || $this->modGuid === '0') && ($this->newModGuid !== '' && $this->newModGuid !== '0') && !$this->guidSaved) {
                 $this->mod->guid = $this->newModGuid;
                 $this->mod->save();
             }
@@ -477,7 +477,7 @@ new #[Layout('layouts::base')] class extends Component {
             ]);
 
             // Attach SPT versions with pinning information
-            if (!empty($this->matchingSptVersions)) {
+            if ($this->matchingSptVersions !== []) {
                 $sptVersions = SptVersion::query()
                     ->withoutGlobalScope(PublishedSptVersionScope::class)
                     ->whereIn('version', array_column($this->matchingSptVersions, 'version'))
@@ -502,7 +502,7 @@ new #[Layout('layouts::base')] class extends Component {
 
             // Create dependencies if any were specified
             foreach ($this->dependencies as $dependency) {
-                if (!empty($dependency['modId']) && !empty($dependency['constraint'])) {
+                if (!empty($dependency['modId']) && (isset($dependency['constraint']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0'))) {
                     // Skip self-dependencies
                     if ((int) $dependency['modId'] === $this->mod->id) {
                         continue;
@@ -520,7 +520,7 @@ new #[Layout('layouts::base')] class extends Component {
                 if (!empty($virusTotalLink['url'])) {
                     $modVersion->virusTotalLinks()->create([
                         'url' => $virusTotalLink['url'],
-                        'label' => !empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
+                        'label' => empty($virusTotalLink['label']) ? '' : $virusTotalLink['label'],
                     ]);
                 }
             }
@@ -546,12 +546,12 @@ new #[Layout('layouts::base')] class extends Component {
         $rules = [];
 
         // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
-        if ($this->modGuidRequired && empty($this->modGuid) && !$this->guidSaved) {
+        if ($this->modGuidRequired && ($this->modGuid === '' || $this->modGuid === '0') && !$this->guidSaved) {
             $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', 'unique:mods,guid'];
         }
 
         // Add mod category validation if mod doesn't have one and hasn't been saved already
-        if (empty($this->modCategoryId) && !$this->categorySaved) {
+        if (($this->modCategoryId === null || $this->modCategoryId === 0) && !$this->categorySaved) {
             $rules['newModCategoryId'] = ['required', 'exists:mod_categories,id'];
         }
 
@@ -599,14 +599,14 @@ new #[Layout('layouts::base')] class extends Component {
             'virusTotalLinks.*.label.max' => 'The label must not exceed 255 characters.',
         ];
 
-        foreach ($this->dependencies as $index => $dependency) {
+        foreach (array_keys($this->dependencies) as $index) {
             $messages[sprintf('dependencies.%d.modId.required', $index)] = 'Please select a mod.';
             $messages[sprintf('dependencies.%d.modId.exists', $index)] = 'The selected mod does not exist.';
             $messages[sprintf('dependencies.%d.constraint.required', $index)] = 'Please specify a version constraint.';
             $messages[sprintf('dependencies.%d.constraint.string', $index)] = 'This version constraint is invalid.';
         }
 
-        foreach ($this->virusTotalLinks as $index => $virusTotalLink) {
+        foreach (array_keys($this->virusTotalLinks) as $index) {
             $messages[sprintf('virusTotalLinks.%d.url.required', $index)] = 'Please provide a VirusTotal URL.';
             $messages[sprintf('virusTotalLinks.%d.url.url', $index)] = 'Please provide a valid URL.';
             $messages[sprintf('virusTotalLinks.%d.url.starts_with', $index)] = 'The URL must be from VirusTotal (https://www.virustotal.com/).';
@@ -629,11 +629,9 @@ new #[Layout('layouts::base')] class extends Component {
             }
 
             // Check if there are matching versions
-            if (!empty($dependency['modId']) && !empty($dependency['constraint'])) {
-                if (!isset($this->matchingDependencyVersions[$index]) || count($this->matchingDependencyVersions[$index]) === 0) {
-                    $this->addError(sprintf('dependencies.%d.constraint', $index), 'No matching versions found. Please adjust the version constraint.');
-                    $hasErrors = true;
-                }
+            if (isset($dependency['modId']) && ($dependency['modId'] !== '' && $dependency['modId'] !== '0') && (isset($dependency['constraint']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0')) && (!isset($this->matchingDependencyVersions[$index]) || $this->matchingDependencyVersions[$index] === [])) {
+                $this->addError(sprintf('dependencies.%d.constraint', $index), 'No matching versions found. Please adjust the version constraint.');
+                $hasErrors = true;
             }
         }
 

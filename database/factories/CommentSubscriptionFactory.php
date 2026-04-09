@@ -33,7 +33,7 @@ class CommentSubscriptionFactory extends Factory
      */
     public function forUser(?User $user = null): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'commentable_type' => User::class,
             'commentable_id' => $user->id ?? User::factory(),
         ]);
@@ -44,7 +44,7 @@ class CommentSubscriptionFactory extends Factory
      */
     public function forMod(?Mod $mod = null): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'commentable_type' => Mod::class,
             'commentable_id' => $mod->id ?? Mod::factory(),
         ]);

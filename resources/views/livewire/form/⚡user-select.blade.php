@@ -137,7 +137,7 @@ new class extends Component {
      */
     public function getSelectedUsersProperty(): Collection
     {
-        if (empty($this->selectedUsers)) {
+        if ($this->selectedUsers === []) {
             return collect();
         }
 

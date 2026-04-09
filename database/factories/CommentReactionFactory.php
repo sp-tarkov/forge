@@ -8,7 +8,7 @@ use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<CommentReaction>
@@ -20,8 +20,8 @@ class CommentReactionFactory extends Factory
         return [
             'user_id' => User::factory(),
             'comment_id' => Comment::factory(),
-            'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
-            'updated_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
+            'created_at' => Date::now()->subDays(random_int(0, 30))->subHours(random_int(0, 23)),
+            'updated_at' => Date::now()->subDays(random_int(0, 30))->subHours(random_int(0, 23)),
         ];
     }
 }

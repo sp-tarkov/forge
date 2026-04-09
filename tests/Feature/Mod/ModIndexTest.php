@@ -312,7 +312,7 @@ describe('checkbox state validation', function (): void {
         $component = Livewire::test('pages::mod.index');
 
         // Helper to check what the blade @checked directives would evaluate to
-        $checkboxStates = function () use ($component) {
+        $checkboxStates = function () use ($component): array {
             $sptVersions = $component->get('sptVersions');
 
             return [

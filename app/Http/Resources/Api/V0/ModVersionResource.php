@@ -55,7 +55,7 @@ class ModVersionResource extends JsonResource
             ->filter()
             ->all();
 
-        $this->showAllFields = empty($this->requestedFields);
+        $this->showAllFields = $this->requestedFields === [];
 
         $data = [];
 

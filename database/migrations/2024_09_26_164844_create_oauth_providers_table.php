@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('oauth_connections', function (Blueprint $table) {
+        Schema::create('oauth_connections', function (Blueprint $table): void {
             $table->id();
             $table->foreignIdFor(User::class)
                 ->constrained('users')

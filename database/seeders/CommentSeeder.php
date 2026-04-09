@@ -28,7 +28,7 @@ class CommentSeeder extends Seeder
         $this->initializeFaker();
 
         $mods = Mod::all();
-        $addons = Addon::where('comments_disabled', false)->get();
+        $addons = Addon::query()->where('comments_disabled', false)->get();
         $allUsers = User::all();
 
         // Add comments to mods
@@ -49,11 +49,11 @@ class CommentSeeder extends Seeder
      */
     private function seedCommentsForMods(Collection $mods, Collection $allUsers): void
     {
-        Comment::withoutEvents(function () use ($mods, $allUsers) {
+        Comment::withoutEvents(function () use ($mods, $allUsers): void {
             progress(
                 label: 'Adding Comments...',
                 steps: $mods,
-                callback: function (Mod $mod, Progress $progress) use ($allUsers) {
+                callback: function (Mod $mod, Progress $progress) use ($allUsers): void {
                     $this->seedModComments($mod, $allUsers);
                 }
             );
@@ -72,11 +72,11 @@ class CommentSeeder extends Seeder
             return;
         }
 
-        Comment::withoutEvents(function () use ($addons, $allUsers) {
+        Comment::withoutEvents(function () use ($addons, $allUsers): void {
             progress(
                 label: 'Adding Addon Comments...',
                 steps: $addons,
-                callback: function (Addon $addon, Progress $progress) use ($allUsers) {
+                callback: function (Addon $addon, Progress $progress) use ($allUsers): void {
                     $this->seedAddonComments($addon, $allUsers);
                 }
             );
@@ -91,13 +91,13 @@ class CommentSeeder extends Seeder
     private function seedAddonComments(Addon $addon, Collection $allUsers): void
     {
         // Create 1-15 parent comments (fewer than mods typically)
-        $parentCommentCount = rand(1, 15);
+        $parentCommentCount = random_int(1, 15);
 
         for ($i = 0; $i < $parentCommentCount; $i++) {
             $comment = $this->createComment($addon, $allUsers);
 
             // For each comment, 30% chance to have replies
-            if (rand(0, 9) < 3) {
+            if (random_int(0, 9) < 3) {
                 $this->createReplies($comment, $allUsers);
             }
         }
@@ -111,13 +111,13 @@ class CommentSeeder extends Seeder
     private function seedModComments(Mod $mod, Collection $allUsers): void
     {
         // Create 1-20 parent comments with varied spam statuses
-        $parentCommentCount = rand(1, 20);
+        $parentCommentCount = random_int(1, 20);
 
         for ($i = 0; $i < $parentCommentCount; $i++) {
             $comment = $this->createComment($mod, $allUsers);
 
             // For each comment, 30% chance to have replies
-            if (rand(0, 9) < 3) {
+            if (random_int(0, 9) < 3) {
                 $this->createReplies($comment, $allUsers);
             }
         }
@@ -126,20 +126,19 @@ class CommentSeeder extends Seeder
     /**
      * Create a single comment.
      *
-     * @param  Mod|Addon  $commentable
      * @param  Collection<int, User>  $allUsers
      */
-    private function createComment($commentable, Collection $allUsers): Comment
+    private function createComment(Addon|Mod $commentable, Collection $allUsers): Comment
     {
         $spamStatus = $this->getRandomSpamStatus();
-        $isDeleted = rand(0, 100) < 10; // 10% chance to be deleted
+        $isDeleted = random_int(0, 100) < 10; // 10% chance to be deleted
 
         $commentData = [
             'spam_status' => $spamStatus,
         ];
 
         if ($isDeleted) {
-            $commentData['deleted_at'] = now()->subDays(rand(1, 30));
+            $commentData['deleted_at'] = now()->subDays(random_int(1, 30));
         }
 
         return Comment::factory()
@@ -157,13 +156,13 @@ class CommentSeeder extends Seeder
     private function createReplies(Comment $parentComment, Collection $allUsers): void
     {
         // Create 1-4 replies to the parent comment
-        $replyCount = rand(1, 4);
+        $replyCount = random_int(1, 4);
 
         for ($j = 0; $j < $replyCount; $j++) {
             $firstLevelReply = $this->createReply($parentComment, $allUsers, 8);
 
             // For each first-level reply, 40% chance to have nested replies
-            if (rand(0, 9) < 4) {
+            if (random_int(0, 9) < 4) {
                 $this->createNestedReplies($firstLevelReply, $allUsers);
             }
         }
@@ -177,14 +176,14 @@ class CommentSeeder extends Seeder
     private function createReply(Comment $parentComment, Collection $allUsers, int $deletionChance): Comment
     {
         $spamStatus = $this->getRandomSpamStatus();
-        $isDeleted = rand(0, 100) < $deletionChance;
+        $isDeleted = random_int(0, 100) < $deletionChance;
 
         $replyData = [
             'spam_status' => $spamStatus,
         ];
 
         if ($isDeleted) {
-            $replyData['deleted_at'] = now()->subDays(rand(1, 15));
+            $replyData['deleted_at'] = now()->subDays(random_int(1, 15));
         }
 
         return Comment::factory()
@@ -202,7 +201,7 @@ class CommentSeeder extends Seeder
     private function createNestedReplies(Comment $firstLevelReply, Collection $allUsers): void
     {
         // Create 1-2 nested replies
-        $nestedReplyCount = rand(1, 2);
+        $nestedReplyCount = random_int(1, 2);
 
         for ($k = 0; $k < $nestedReplyCount; $k++) {
             $this->createReply($firstLevelReply, $allUsers, 5);
@@ -216,13 +215,13 @@ class CommentSeeder extends Seeder
      */
     private function seedCommentReactions(Collection $allUsers): void
     {
-        CommentReaction::withoutEvents(function () use ($allUsers) {
+        CommentReaction::withoutEvents(function () use ($allUsers): void {
             progress(
                 label: 'Adding Comment Reactions...',
                 steps: Comment::all(),
-                callback: function (Comment $comment, Progress $progress) use ($allUsers) {
+                callback: function (Comment $comment, Progress $progress) use ($allUsers): void {
                     // 40% chance to have reactions
-                    if (rand(0, 9) < 4) {
+                    if (random_int(0, 9) < 4) {
                         $this->addReactionsToComment($comment, $allUsers);
                     }
                 }
@@ -239,14 +238,14 @@ class CommentSeeder extends Seeder
     {
         // Add 1-5 reactions from different users (but no more than available users)
         $maxReactions = min(5, $allUsers->count());
-        $reactionCount = rand(1, $maxReactions);
+        $reactionCount = random_int(1, $maxReactions);
 
         // Use shuffle and take to ensure unique users
         $reactingUsers = $allUsers->shuffle()->take($reactionCount);
 
         foreach ($reactingUsers as $user) {
             // Check if this user has already reacted to this comment
-            $existingReaction = CommentReaction::where('user_id', $user->id)
+            $existingReaction = CommentReaction::query()->where('user_id', $user->id)
                 ->where('comment_id', $comment->id)
                 ->exists();
 

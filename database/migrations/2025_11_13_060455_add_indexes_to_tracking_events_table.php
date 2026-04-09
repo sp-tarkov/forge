@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tracking_events', function (Blueprint $table) {
+        Schema::table('tracking_events', function (Blueprint $table): void {
             // Add individual column index for visitor_id filtering
             $table->index('visitor_id');
 
@@ -38,7 +38,7 @@ return new class extends Migration
         DB::statement('DROP INDEX tracking_events_platform_index ON tracking_events');
         DB::statement('DROP INDEX tracking_events_browser_index ON tracking_events');
 
-        Schema::table('tracking_events', function (Blueprint $table) {
+        Schema::table('tracking_events', function (Blueprint $table): void {
             // Drop composite index
             $table->dropIndex(['created_at', 'event_name']);
 

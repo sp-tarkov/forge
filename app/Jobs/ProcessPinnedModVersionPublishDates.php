@@ -45,20 +45,17 @@ class ProcessPinnedModVersionPublishDates implements ShouldQueue
 
                     // If this SPT version's publish date was the controlling one (latest), or if there are no more
                     // unpublished pinned versions, set the mod version's publish date
-                    if (is_null($latestPinnedDate) || $latestPinnedDate <= Date::now()) {
-                        // All pinned SPT versions are now published
-                        // Set the mod version's published_at to now if it wasn't already set
-                        if (is_null($modVersion->published_at)) {
-                            $modVersion->published_at = Date::now();
-                            $modVersion->save();
-
-                            Log::info('Automatically published mod version', [
-                                'mod_version_id' => $modVersion->id,
-                                'mod_name' => $modVersion->mod->name,
-                                'version' => $modVersion->version,
-                                'triggered_by_spt' => $sptVersion->version,
-                            ]);
-                        }
+                    // All pinned SPT versions are now published
+                    // Set the mod version's published_at to now if it wasn't already set
+                    if ((is_null($latestPinnedDate) || $latestPinnedDate <= Date::now()) && is_null($modVersion->published_at)) {
+                        $modVersion->published_at = Date::now();
+                        $modVersion->save();
+                        Log::info('Automatically published mod version', [
+                            'mod_version_id' => $modVersion->id,
+                            'mod_name' => $modVersion->mod->name,
+                            'version' => $modVersion->version,
+                            'triggered_by_spt' => $sptVersion->version,
+                        ]);
                     }
 
                     // Clear the pinning for this SPT version since it's now published

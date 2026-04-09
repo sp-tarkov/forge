@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mod_categories', function (Blueprint $table) {
+        Schema::create('mod_categories', function (Blueprint $table): void {
             $table->id();
             $table->unsignedInteger('hub_id')->nullable()->unique()->index()->comment('Hub category ID');
             $table->string('title');

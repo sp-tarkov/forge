@@ -49,9 +49,11 @@ new #[Layout('layouts::base')] class extends Component {
         if (!$user) {
             return false;
         }
-
         // Only show warnings to privileged users (owners, authors, mods, admins)
-        return $user->isModOrAdmin() || $this->mod->isAuthorOrOwner($user);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+        return $this->mod->isAuthorOrOwner($user);
     }
 
     /**

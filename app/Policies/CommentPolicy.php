@@ -32,7 +32,7 @@ class CommentPolicy
             $mod = $comment->commentable;
             if ($mod->comments_disabled) {
                 // Guest users cannot view disabled comments
-                if ($user === null) {
+                if (! $user instanceof User) {
                     return false;
                 }
 
@@ -47,12 +47,8 @@ class CommentPolicy
                 }
 
                 // Mod authors can view comments on their authored mods
-                if ($mod->additionalAuthors->contains($user)) {
-                    return true;
-                }
-
                 // All other users cannot view disabled comments
-                return false;
+                return $mod->additionalAuthors->contains($user);
             }
         }
 
@@ -62,7 +58,7 @@ class CommentPolicy
         }
 
         // If not logged in, can only see clean comments
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -72,12 +68,8 @@ class CommentPolicy
         }
 
         // Comment authors can see their own comments regardless of spam status
-        if ($comment->user_id === $user->id) {
-            return true;
-        }
-
         // Everyone else cannot see spam/pending comments
-        return false;
+        return $comment->user_id === $user->id;
     }
 
     /**
@@ -97,15 +89,13 @@ class CommentPolicy
         }
 
         // Commentable is required
-        if ($commentable === null) {
+        if (! $commentable instanceof Commentable) {
             return false;
         }
 
         // Check blocking for user profile comments
-        if ($commentable instanceof User) {
-            if ($user->isBlockedMutually($commentable)) {
-                return false;
-            }
+        if ($commentable instanceof User && $user->isBlockedMutually($commentable)) {
+            return false;
         }
 
         // Check blocking for mod comments
@@ -135,7 +125,7 @@ class CommentPolicy
      */
     public function viewVersionHistory(?User $user, Comment $comment): bool
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -205,11 +195,7 @@ class CommentPolicy
         }
 
         // Check if the user is blocked by the comment author
-        if ($user->isBlockedMutually($comment->user)) {
-            return false;
-        }
-
-        return true;
+        return ! $user->isBlockedMutually($comment->user);
     }
 
     /**
@@ -218,7 +204,7 @@ class CommentPolicy
     public function seeRibbon(?User $user, Comment $comment): bool
     {
         // Must be logged in
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -247,7 +233,7 @@ class CommentPolicy
     public function viewActions(?User $user, Comment $comment): bool
     {
         // Must be logged in
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 

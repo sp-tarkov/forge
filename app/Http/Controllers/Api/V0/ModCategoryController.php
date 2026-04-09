@@ -99,7 +99,7 @@ class ModCategoryController extends Controller
         $sorts = $request->string('sort')->explode(',')->filter()->all();
 
         // Default to sorting by title when no sort is specified
-        if (empty(array_filter($sorts))) {
+        if (array_filter($sorts) === []) {
             $sorts = ['title'];
         }
 

@@ -38,7 +38,11 @@ class DependencyVersionService
         $dependencies = [];
         foreach ($dependable->dependencies as $dependency) {
             // Skip if the dependency is being deleted or doesn't exist
-            if (! $dependency->exists || ! $dependency->id) {
+            if (! $dependency->exists) {
+                continue;
+            }
+
+            if (! $dependency->id) {
                 continue;
             }
 

@@ -487,6 +487,7 @@ describe('API include_legacy filter', function (): void {
 
         $response->assertOk();
         $response->assertJsonCount(2, 'data');
+
         $returnedIds = collect($response->json('data'))->pluck('id')->toArray();
         expect($returnedIds)->toContain($legacyMod->id, $modernMod->id);
     });

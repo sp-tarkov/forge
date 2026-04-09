@@ -13,6 +13,7 @@ use Database\Factories\AddonVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,17 +56,11 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonVersionObserver::class])]
+#[Touches(['addon'])]
 class AddonVersion extends Model
 {
     /** @use HasFactory<AddonVersionFactory> */
     use HasFactory;
-
-    /**
-     * Update the parent addon's updated_at timestamp when the addon version is updated.
-     *
-     * @var string[]
-     */
-    protected $touches = ['addon'];
 
     /**
      * The relationship between an addon version and addon.

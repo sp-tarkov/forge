@@ -132,14 +132,7 @@ new class extends Component {
                 return true;
             }
         }
-
-        if ($event->visitable instanceof Mod) {
-            if (is_null($event->visitable->published_at) || $event->visitable->published_at > now()) {
-                return true;
-            }
-        }
-
-        return false;
+        return $event->visitable instanceof Mod && (is_null($event->visitable->published_at) || $event->visitable->published_at > now());
     }
 };
 ?>

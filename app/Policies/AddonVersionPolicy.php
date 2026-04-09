@@ -27,11 +27,7 @@ class AddonVersionPolicy
             return true;
         }
 
-        if ($addonVersion->disabled) {
-            return false;
-        }
-
-        return true;
+        return ! $addonVersion->disabled;
     }
 
     /**
@@ -52,7 +48,11 @@ class AddonVersionPolicy
             return false;
         }
 
-        return $user->isModOrAdmin() || $addonVersion->addon->isAuthorOrOwner($user);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $addonVersion->addon->isAuthorOrOwner($user);
     }
 
     /**
@@ -65,7 +65,11 @@ class AddonVersionPolicy
             return false;
         }
 
-        return $user->isAdmin() || $addonVersion->addon->owner_id === $user->id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $addonVersion->addon->owner_id === $user->id;
     }
 
     /**
@@ -93,11 +97,7 @@ class AddonVersionPolicy
             return true;
         }
 
-        if ($addonVersion->addon->disabled || $addonVersion->disabled) {
-            return false;
-        }
-
-        return true;
+        return ! $addonVersion->addon->disabled && ! $addonVersion->disabled;
     }
 
     /**

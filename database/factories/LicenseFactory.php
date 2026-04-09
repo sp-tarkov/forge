@@ -6,7 +6,7 @@ namespace Database\Factories;
 
 use App\Models\License;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<License>
@@ -18,8 +18,8 @@ class LicenseFactory extends Factory
         return [
             'name' => fake()->name(),
             'link' => fake()->url(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
         ];
     }
 }

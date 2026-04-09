@@ -20,7 +20,7 @@ return new class extends Migration
             ->delete();
 
         // Drop columns that are no longer needed
-        Schema::table('visitors', function (Blueprint $table) {
+        Schema::table('visitors', function (Blueprint $table): void {
             // Drop indexes first
             $table->dropIndex('visitors_type_session_id_unique');
             $table->dropIndex('visitors_type_session_id_index');
@@ -51,7 +51,7 @@ return new class extends Migration
         Schema::rename('visitor_peaks', 'visitors');
 
         // Re-add the columns
-        Schema::table('visitors', function (Blueprint $table) {
+        Schema::table('visitors', function (Blueprint $table): void {
             $table->enum('type', ['visitor', 'peak'])->after('id');
             $table->string('session_id')->after('type');
             $table->unsignedBigInteger('user_id')->nullable()->after('session_id');

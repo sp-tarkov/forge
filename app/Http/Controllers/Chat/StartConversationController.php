@@ -26,10 +26,8 @@ class StartConversationController extends Controller
         $conversation = Conversation::findOrCreateBetween($currentUser, $user, creator: $currentUser);
 
         // If the conversation is archived for the current user, unarchive it
-        if ($conversation->isArchivedBy($currentUser)) {
-            if ($currentUser->can('unarchive', $conversation)) {
-                $conversation->unarchiveFor($currentUser);
-            }
+        if ($conversation->isArchivedBy($currentUser) && $currentUser->can('unarchive', $conversation)) {
+            $conversation->unarchiveFor($currentUser);
         }
 
         return redirect()->to($conversation->url);

@@ -47,7 +47,7 @@ class NewChatMessageNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $sender = $this->conversation->getOtherUser($notifiable);
-        $senderName = $sender ? $sender->name : 'Someone';
+        $senderName = $sender instanceof User ? $sender->name : 'Someone';
         $messageCount = $this->unreadMessages->count();
 
         // Get the most recent message for preview
@@ -112,7 +112,7 @@ class NewChatMessageNotification extends Notification
         return [
             'conversation_id' => $this->conversation->id,
             'conversation_hash_id' => $this->conversation->hash_id,
-            'sender_name' => $sender ? $sender->name : 'Someone',
+            'sender_name' => $sender instanceof User ? $sender->name : 'Someone',
             'sender_id' => $sender?->id,
             'message_count' => $messageCount,
             'latest_message_id' => $latestMessage->id,

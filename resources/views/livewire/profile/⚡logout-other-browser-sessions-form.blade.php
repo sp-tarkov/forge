@@ -146,7 +146,7 @@ new class extends Component {
      *
      * @return object{is_desktop: bool, platform: string|null, browser: string|null, ip_address: string|null, is_current_device: bool, last_active: string}
      */
-    private function parseSession(\stdClass $session): object
+    private function parseSession(\stdClass $session): \stdClass
     {
         $userAgent = $session->user_agent ?? '';
         $detector = new MobileDetect(userAgent: $userAgent);

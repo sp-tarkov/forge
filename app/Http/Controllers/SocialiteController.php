@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\SocialiteService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -56,7 +57,7 @@ class SocialiteController extends Controller
         }
 
         $user = $this->socialiteService->findOrCreateUser($provider, $providerUser);
-        if ($user === null) {
+        if (! $user instanceof User) {
             return to_route('login')
                 ->withErrors('Unable to retrieve email from Discord. Please ensure your Discord account has a verified email address and you have granted email access permission.');
         }

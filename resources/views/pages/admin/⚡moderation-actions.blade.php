@@ -172,18 +172,18 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     {
         $filters = [];
 
-        if (!empty($this->search)) {
+        if ($this->search !== '' && $this->search !== '0') {
             $filters[] = sprintf("Search: '%s'", $this->search);
         }
 
-        if (!empty($this->eventTypeFilter)) {
+        if ($this->eventTypeFilter !== '' && $this->eventTypeFilter !== '0') {
             $eventType = TrackingEventType::tryFrom($this->eventTypeFilter);
             if ($eventType) {
                 $filters[] = sprintf('Type: %s', $eventType->label());
             }
         }
 
-        if (!empty($this->moderatorFilter)) {
+        if ($this->moderatorFilter !== '' && $this->moderatorFilter !== '0') {
             $moderator = $this->moderators()->firstWhere('id', (int) $this->moderatorFilter);
             if ($moderator) {
                 $filters[] = sprintf('Moderator: %s', $moderator->name);
@@ -212,17 +212,17 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
      */
     private function applyFilters(Builder $query): void
     {
-        if (!empty($this->search)) {
+        if ($this->search !== '' && $this->search !== '0') {
             $query->where(function (Builder $q): void {
                 $q->whereRaw('LOWER(JSON_EXTRACT(additional_data, "$")) LIKE ?', ['%' . mb_strtolower($this->search) . '%']);
             });
         }
 
-        if (!empty($this->eventTypeFilter)) {
+        if ($this->eventTypeFilter !== '' && $this->eventTypeFilter !== '0') {
             $query->where('event_name', $this->eventTypeFilter);
         }
 
-        if (!empty($this->moderatorFilter)) {
+        if ($this->moderatorFilter !== '' && $this->moderatorFilter !== '0') {
             $query->where('visitor_id', (int) $this->moderatorFilter);
         }
 

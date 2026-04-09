@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_blocks', function (Blueprint $table) {
+        Schema::create('user_blocks', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('blocker_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('blocked_id')->constrained('users')->cascadeOnDelete();

@@ -79,7 +79,7 @@ class Handler
         };
 
         // Ensure the status code is a valid HTTP status code key in the Symfony Response class.
-        return array_key_exists($statusCode, Response::$statusTexts)
+        return array_key_exists((string) $statusCode, Response::$statusTexts)
             ? $statusCode
             : Response::HTTP_INTERNAL_SERVER_ERROR;
     }

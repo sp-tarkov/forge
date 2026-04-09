@@ -241,7 +241,7 @@ class ModUpdateController extends Controller
         // Find candidate update
         $candidate = $this->findCandidateUpdate($currentVersion, $sptVersion, $isPrerelease);
 
-        if ($candidate === null) {
+        if (! $candidate instanceof ModVersion) {
             // Check if current version is compatible with target SPT
             $currentSptCompatible = $currentVersion->sptVersions()
                 ->where('version', $sptVersion)
@@ -397,7 +397,7 @@ class ModUpdateController extends Controller
                 $sptVersion
             );
 
-            if ($satisfyingVersion === null) {
+            if (! $satisfyingVersion instanceof ModVersion) {
                 return [
                     'valid' => false,
                     'block_reason' => 'missing_dependency',

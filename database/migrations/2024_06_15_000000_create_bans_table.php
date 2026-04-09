@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create(config('ban.table'), function (Blueprint $table) {
+        Schema::create(config('ban.table'), function (Blueprint $table): void {
             $table->id();
             $table->nullableMorphs('bannable');
             $table->nullableMorphs('created_by');

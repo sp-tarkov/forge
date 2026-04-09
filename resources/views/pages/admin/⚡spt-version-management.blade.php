@@ -279,11 +279,11 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
      */
     private function applyFilters(Builder $query): void
     {
-        if (!empty($this->search)) {
+        if ($this->search !== '' && $this->search !== '0') {
             $query->where('version', 'like', '%' . $this->search . '%');
         }
 
-        if (!empty($this->colorFilter)) {
+        if ($this->colorFilter !== '' && $this->colorFilter !== '0') {
             $query->where('color_class', $this->colorFilter);
         }
     }

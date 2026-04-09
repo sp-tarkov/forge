@@ -174,10 +174,10 @@ describe('Comment Spam Status Ribbons', function (): void {
             'spam_status' => SpamStatus::SPAM->value,
         ]);
 
-        Livewire::test('ribbon.comment', getCommentRibbonProps($pendingComment, null))
+        Livewire::test('ribbon.comment', getCommentRibbonProps($pendingComment))
             ->assertDontSee('class="ribbon');
 
-        Livewire::test('ribbon.comment', getCommentRibbonProps($spamComment, null))
+        Livewire::test('ribbon.comment', getCommentRibbonProps($spamComment))
             ->assertDontSee('class="ribbon');
     });
 

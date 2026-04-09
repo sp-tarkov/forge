@@ -51,7 +51,6 @@ class ModRssFeedController extends Controller
      */
     private function parseSptVersions(Request $request): string|array
     {
-        /** @var mixed $versions */
         $versions = $request->get('versions');
 
         if (! $versions) {
@@ -104,7 +103,7 @@ class ModRssFeedController extends Controller
         $feedDescription = $this->generateFeedDescription($filters);
         /** @var array<string, mixed> $queryParams */
         $queryParams = $request->query();
-        $queryString = ! empty($queryParams) ? '?'.http_build_query($queryParams) : '';
+        $queryString = empty($queryParams) ? '' : '?'.http_build_query($queryParams);
         $currentUrl = url()->current().$queryString;
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -148,9 +147,8 @@ class ModRssFeedController extends Controller
         }
 
         $xml .= '</channel>';
-        $xml .= '</rss>';
 
-        return $xml;
+        return $xml.'</rss>';
     }
 
     /**
@@ -180,10 +178,8 @@ class ModRssFeedController extends Controller
             $parts[] = 'in category: '.$filters['category'];
         }
 
-        if (! empty($filters['sptVersions']) && $filters['sptVersions'] !== 'all') {
-            if (is_array($filters['sptVersions'])) {
-                $parts[] = 'for SPT versions: '.implode(', ', $filters['sptVersions']);
-            }
+        if (! empty($filters['sptVersions']) && $filters['sptVersions'] !== 'all' && is_array($filters['sptVersions'])) {
+            $parts[] = 'for SPT versions: '.implode(', ', $filters['sptVersions']);
         }
 
         if (isset($filters['order']) && is_string($filters['order'])) {

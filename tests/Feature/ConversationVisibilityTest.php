@@ -11,6 +11,7 @@ beforeEach(function (): void {
     $this->user2 = User::factory()->create(['email_verified_at' => now()]);
     $this->bannedUser = User::factory()->create(['email_verified_at' => now()]);
     $this->bannedUser->ban();
+
     $this->unverifiedUser = User::factory()->create(['email_verified_at' => null]);
 });
 

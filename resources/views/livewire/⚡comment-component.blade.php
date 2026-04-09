@@ -304,11 +304,7 @@ new class extends Component
 
         // Update reply counts and clear loaded replies for the parent.
         $parentComment = Comment::query()->find($parentId);
-        if ($parentComment && $parentComment->isRoot()) {
-            $rootId = $parentComment->id;
-        } else {
-            $rootId = $parentComment->root_id;
-        }
+        $rootId = $parentComment && $parentComment->isRoot() ? $parentComment->id : $parentComment->root_id;
 
         if ($rootId) {
             $this->descendantCounts[$rootId] = ($this->descendantCounts[$rootId] ?? 0) + 1;
@@ -979,7 +975,7 @@ new class extends Component
             return null;
         }
 
-        return CommentVersion::find($this->viewingVersionId);
+        return CommentVersion::query()->find($this->viewingVersionId);
     }
 
     /**

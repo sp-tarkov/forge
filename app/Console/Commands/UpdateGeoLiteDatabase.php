@@ -187,7 +187,7 @@ class UpdateGeoLiteDatabase extends Command
         }
 
         // Report issues
-        if (! empty($issues)) {
+        if ($issues !== []) {
             $this->error('System diagnostic issues found:');
             foreach ($issues as $issue) {
                 $this->error('  • '.$issue);
@@ -252,7 +252,7 @@ class UpdateGeoLiteDatabase extends Command
 
                 $this->info(sprintf('✓ %s directory ready: %s', $name, $dir));
             } catch (Exception $e) {
-                throw new Exception(sprintf('Failed to create %s directory: %s. Error: %s', $name, $dir, $e->getMessage()));
+                throw new Exception(sprintf('Failed to create %s directory: %s. Error: %s', $name, $dir, $e->getMessage()), $e->getCode(), $e);
             }
         }
     }
@@ -279,7 +279,7 @@ class UpdateGeoLiteDatabase extends Command
 
             $this->info('✓ Network connectivity test passed');
         } catch (Exception $exception) {
-            throw new Exception('Network connectivity test failed: '.$exception->getMessage());
+            throw new Exception('Network connectivity test failed: '.$exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
@@ -334,7 +334,7 @@ class UpdateGeoLiteDatabase extends Command
                 File::move($databasePath, $backupPath);
                 $this->info('✓ Existing database backed up to: '.$backupPath);
             } catch (Exception $e) {
-                throw new Exception('Failed to backup existing database: '.$e->getMessage());
+                throw new Exception('Failed to backup existing database: '.$e->getMessage(), $e->getCode(), $e);
             }
         }
     }

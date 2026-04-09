@@ -32,7 +32,7 @@ return new class extends Migration
         ');
 
         // Add unique constraint to prevent future duplicates
-        Schema::table('mod_version_spt_version', function (Blueprint $table) {
+        Schema::table('mod_version_spt_version', function (Blueprint $table): void {
             $table->unique(['mod_version_id', 'spt_version_id'], 'mod_version_spt_version_unique');
         });
     }
@@ -42,7 +42,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mod_version_spt_version', function (Blueprint $table) {
+        Schema::table('mod_version_spt_version', function (Blueprint $table): void {
             $table->dropUnique('mod_version_spt_version_unique');
         });
     }

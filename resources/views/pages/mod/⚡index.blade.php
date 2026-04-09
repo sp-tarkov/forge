@@ -125,7 +125,7 @@ new #[Layout('layouts::base')] class extends Component {
         }
 
         // Set default versions if none provided via URL
-        if (empty($this->sptVersions)) {
+        if (in_array($this->sptVersions, ['', '0', []], true)) {
             $this->sptVersions = $this->defaultSptVersions();
         }
     }
@@ -191,7 +191,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function updatedOrder(string $value): void
     {
-        if (!in_array($value, ['created', 'updated', 'downloaded'])) {
+        if (!in_array($value, ['created', 'updated', 'downloaded'], true)) {
             $this->order = 'created';
         }
     }
@@ -236,7 +236,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Count sptVersions filter if it's not 'all' and not empty
         if (is_array($this->sptVersions)) {
             $count += count($this->sptVersions);
-        } elseif ($this->sptVersions !== 'all' && !empty($this->sptVersions)) {
+        } elseif ($this->sptVersions !== 'all' && ($this->sptVersions !== '' && $this->sptVersions !== '0')) {
             $count++;
         }
 
@@ -322,7 +322,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->sptVersions = $this->toggleVersionInArray($version, $currentVersions);
 
         // If no versions are selected after toggling, switch to "all"
-        if (empty($this->sptVersions)) {
+        if ($this->sptVersions === []) {
             $this->sptVersions = 'all';
         }
     }
@@ -345,7 +345,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     private function toggleVersionInArray(string $version, array $versions): array
     {
-        $key = array_search($version, $versions);
+        $key = array_search($version, $versions, true);
 
         if ($key !== false) {
             unset($versions[$key]);

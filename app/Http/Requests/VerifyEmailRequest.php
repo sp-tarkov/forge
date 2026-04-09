@@ -16,16 +16,12 @@ class VerifyEmailRequest extends FormRequest
     {
         $user = $this->getUserFromRoute();
 
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
         // Verify the hash matches
-        if (! hash_equals(sha1((string) $user->getEmailForVerification()), (string) $this->route('hash'))) {
-            return false;
-        }
-
-        return true;
+        return hash_equals(sha1((string) $user->getEmailForVerification()), (string) $this->route('hash'));
     }
 
     /**

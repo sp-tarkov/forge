@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Database\Factories\DependencyResolvedFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,15 +25,11 @@ use Override;
  * @property-read Dependency|null $dependency
  * @property-read ModVersion|null $resolvedModVersion
  */
+#[Table(name: 'dependencies_resolved')]
 class DependencyResolved extends Model
 {
     /** @use HasFactory<DependencyResolvedFactory> */
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'dependencies_resolved';
 
     /**
      * The polymorphic relationship between the resolved dependency and the parent version.

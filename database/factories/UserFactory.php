@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -53,7 +54,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'email_verified_at' => null,
         ]);
     }
@@ -63,7 +64,7 @@ class UserFactory extends Factory
      */
     public function withMfa(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'two_factor_secret' => encrypt('fake-two-factor-secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1', 'recovery-code-2'])),
             'two_factor_confirmed_at' => now(),
@@ -75,11 +76,11 @@ class UserFactory extends Factory
      */
     public function moderator(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'user_role_id' => \App\Models\UserRole::query()
+        return $this->state(fn (array $attributes): array => [
+            'user_role_id' => UserRole::query()
                 ->firstOrCreate(
                     ['name' => 'Moderator'],
-                    \App\Models\UserRole::factory()->moderator()->make()->toArray()
+                    UserRole::factory()->moderator()->make()->toArray()
                 )->id,
         ]);
     }
@@ -89,11 +90,11 @@ class UserFactory extends Factory
      */
     public function seniorModerator(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'user_role_id' => \App\Models\UserRole::query()
+        return $this->state(fn (array $attributes): array => [
+            'user_role_id' => UserRole::query()
                 ->firstOrCreate(
                     ['name' => 'Senior Moderator'],
-                    \App\Models\UserRole::factory()->seniorModerator()->make()->toArray()
+                    UserRole::factory()->seniorModerator()->make()->toArray()
                 )->id,
         ]);
     }
@@ -103,11 +104,11 @@ class UserFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'user_role_id' => \App\Models\UserRole::query()
+        return $this->state(fn (array $attributes): array => [
+            'user_role_id' => UserRole::query()
                 ->firstOrCreate(
                     ['name' => 'Staff'],
-                    \App\Models\UserRole::factory()->staff()->make()->toArray()
+                    UserRole::factory()->staff()->make()->toArray()
                 )->id,
         ]);
     }

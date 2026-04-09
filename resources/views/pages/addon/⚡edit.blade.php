@@ -131,7 +131,7 @@ new #[Layout('layouts::base')] class extends Component {
             ->all();
 
         // Ensure at least one empty link input if no links exist
-        if (empty($this->sourceCodeLinks)) {
+        if ($this->sourceCodeLinks === []) {
             $this->sourceCodeLinks[] = ['key' => 'link-0', 'url' => '', 'label' => ''];
         }
 
@@ -198,7 +198,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->addon->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
-        if ($this->thumbnail !== null) {
+        if ($this->thumbnail instanceof \Illuminate\Http\UploadedFile) {
             // Delete the old thumbnail file from storage
             if ($this->addon->thumbnail) {
                 Storage::disk(config('filesystems.asset_upload', 'public'))->delete($this->addon->thumbnail);
@@ -297,7 +297,7 @@ new #[Layout('layouts::base')] class extends Component {
     #[Renderless]
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
-        if (empty(mb_trim($content))) {
+        if (in_array(mb_trim($content), ['', '0'], true)) {
             return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
         }
 

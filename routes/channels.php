@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Broadcast;
  * A private broadcast "presents" channel that we've allowed unauthorized users to join by assigning a temporary Guest
  * model as their user state. Guest users are identified by a hashed version of their session ID.
  */
-Broadcast::channel('visitors', function ($user) {
+Broadcast::channel('visitors', function ($user): array {
     // For guest users, the ID is already hashed in VisitorsPresenceBroadcastingController
     // For authenticated users, we use their actual ID
     $userId = isset($user->is_guest) && $user->is_guest
@@ -25,7 +25,7 @@ Broadcast::channel('visitors', function ($user) {
 /*
  * Private channel for conversation messages
  */
-Broadcast::channel('conversation.{conversationHashId}', function ($user, $conversationHashId) {
+Broadcast::channel('conversation.{conversationHashId}', function ($user, $conversationHashId): bool {
     $conversation = Conversation::query()->where('hash_id', $conversationHashId)->first();
 
     return $conversation && $conversation->hasUser($user);

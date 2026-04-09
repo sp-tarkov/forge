@@ -72,7 +72,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
     {
         $query = User::query()->with('role')->whereNotNull('user_role_id');
 
-        if (!empty($this->roleFilter)) {
+        if ($this->roleFilter !== '' && $this->roleFilter !== '0') {
             $query->where('user_role_id', $this->roleFilter);
         }
 

@@ -32,7 +32,11 @@ class ReportPolicy
             return false;
         }
 
-        return $user->isModOrAdmin() || $user->id === $report->reporter_id;
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $user->id === $report->reporter_id;
     }
 
     /**

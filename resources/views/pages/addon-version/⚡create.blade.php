@@ -6,7 +6,6 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\AddonVersion;
-use App\Models\Dependency;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Rules\DirectDownloadLink;
@@ -117,7 +116,7 @@ new #[Layout('layouts::base')] class extends Component {
     #[Renderless]
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
-        if (empty(mb_trim($content))) {
+        if (in_array(mb_trim($content), ['', '0'], true)) {
             return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
         }
 
@@ -239,7 +238,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function updatedModVersionConstraint(): void
     {
-        if (empty($this->modVersionConstraint) || !$this->addon->mod_id) {
+        if ($this->modVersionConstraint === '' || $this->modVersionConstraint === '0' || !$this->addon->mod_id) {
             $this->matchingModVersions = [];
 
             return;
@@ -342,14 +341,14 @@ new #[Layout('layouts::base')] class extends Component {
             if (!empty($virusTotalLink['url'])) {
                 $addonVersion->virusTotalLinks()->create([
                     'url' => $virusTotalLink['url'],
-                    'label' => !empty($virusTotalLink['label']) ? $virusTotalLink['label'] : '',
+                    'label' => empty($virusTotalLink['label']) ? '' : $virusTotalLink['label'],
                 ]);
             }
         }
 
         // Create dependencies (on mods)
         foreach ($this->dependencies as $dependency) {
-            if (!empty($dependency['modId']) && !empty($dependency['constraint'])) {
+            if (!empty($dependency['modId']) && (isset($dependency['constraint']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0'))) {
                 $addonVersion->dependencies()->create([
                     'dependent_mod_id' => (int) $dependency['modId'],
                     'constraint' => $dependency['constraint'],

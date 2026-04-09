@@ -455,6 +455,7 @@ describe('Mod Index API', function (): void {
 
         // The thumbnail should be returned as a full URL, not just the path
         $response->assertJsonPath('data.0.thumbnail', $mod->thumbnailUrl);
+
         expect($response->json('data.0.thumbnail'))->toContain('thumbnails/test-image.jpg');
     });
 

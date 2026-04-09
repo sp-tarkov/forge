@@ -25,7 +25,7 @@ class DependencyService
     {
         return collect(explode(',', $modsParam))
             ->map(fn (string $pair): string => mb_trim($pair))
-            ->reject(fn (string $pair): bool => empty($pair))
+            ->reject(fn (string $pair): bool => $pair === '' || $pair === '0')
             ->unique()
             ->map(function (string $pair): ?array {
                 $parts = explode(':', $pair);
@@ -36,7 +36,7 @@ class DependencyService
                 $identifier = mb_trim($parts[0]);
                 $version = mb_trim($parts[1]);
 
-                if (empty($identifier) || empty($version)) {
+                if ($identifier === '' || $identifier === '0' || ($version === '' || $version === '0')) {
                     return null;
                 }
 
@@ -62,7 +62,7 @@ class DependencyService
     {
         return collect(explode(',', $addonsParam))
             ->map(fn (string $pair): string => mb_trim($pair))
-            ->reject(fn (string $pair): bool => empty($pair))
+            ->reject(fn (string $pair): bool => $pair === '' || $pair === '0')
             ->unique()
             ->map(function (string $pair): ?array {
                 $parts = explode(':', $pair);
@@ -73,7 +73,7 @@ class DependencyService
                 $identifier = mb_trim($parts[0]);
                 $version = mb_trim($parts[1]);
 
-                if (empty($identifier) || empty($version)) {
+                if ($identifier === '' || $identifier === '0' || ($version === '' || $version === '0')) {
                     return null;
                 }
 

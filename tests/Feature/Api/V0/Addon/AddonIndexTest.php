@@ -26,7 +26,7 @@ describe('Addon Index API', function (): void {
         // Helper function to create a fully visible addon with all required relationships
         $this->createVisibleAddon = function (array $addonAttributes = [], ?Mod $mod = null): Addon {
             // Create mod with published version if not provided
-            if ($mod === null) {
+            if (! $mod instanceof Mod) {
                 $mod = Mod::factory()->create();
                 ModVersion::factory()->create([
                     'mod_id' => $mod->id,

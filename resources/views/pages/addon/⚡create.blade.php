@@ -160,7 +160,7 @@ new #[Layout('layouts::base')] class extends Component {
         ]);
 
         // Set the thumbnail if a file was uploaded.
-        if ($this->thumbnail !== null) {
+        if ($this->thumbnail instanceof \Illuminate\Http\UploadedFile) {
             $addon->thumbnail = $this->thumbnail->storePublicly(path: 'addons', options: config('filesystems.asset_upload', 'public'));
 
             // Calculate and store the hash of the uploaded thumbnail
@@ -171,7 +171,7 @@ new #[Layout('layouts::base')] class extends Component {
         $addon->save();
 
         // Add authors
-        if (!empty($this->authorIds)) {
+        if ($this->authorIds !== []) {
             $addon->additionalAuthors()->attach($this->authorIds);
         }
 
@@ -232,7 +232,7 @@ new #[Layout('layouts::base')] class extends Component {
     #[Renderless]
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
-        if (empty(mb_trim($content))) {
+        if (in_array(mb_trim($content), ['', '0'], true)) {
             return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
         }
 

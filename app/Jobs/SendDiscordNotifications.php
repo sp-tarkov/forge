@@ -249,7 +249,7 @@ class SendDiscordNotifications implements ShouldQueue
             $features[] = 'Contains Ads';
         }
 
-        if (! empty($features)) {
+        if ($features !== []) {
             $embed['fields'][] = [
                 'name' => 'Tags',
                 'value' => implode(', ', $features),
@@ -387,7 +387,7 @@ class SendDiscordNotifications implements ShouldQueue
             $features[] = 'Detached';
         }
 
-        if (! empty($features)) {
+        if ($features !== []) {
             $embed['fields'][] = [
                 'name' => 'Tags',
                 'value' => implode(', ', $features),

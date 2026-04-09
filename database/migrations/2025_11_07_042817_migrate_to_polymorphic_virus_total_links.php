@@ -15,7 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         // Create the new polymorphic table
-        Schema::create('virus_total_links', function (Blueprint $table) {
+        Schema::create('virus_total_links', function (Blueprint $table): void {
             $table->id();
             $table->morphs('linkable');
             $table->string('url');
@@ -27,7 +27,7 @@ return new class extends Migration
         ModVersion::query()
             ->whereNotNull('virus_total_link')
             ->where('virus_total_link', '!=', '')
-            ->each(function (ModVersion $modVersion) {
+            ->each(function (ModVersion $modVersion): void {
                 $modVersion->virusTotalLinks()->create([
                     'url' => $modVersion->virus_total_link,
                     'label' => '',
@@ -35,12 +35,12 @@ return new class extends Migration
             });
 
         // Remove virus_total_link column from mod_versions table
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->dropColumn('virus_total_link');
         });
 
         // Remove virus_total_link column from addon_versions table
-        Schema::table('addon_versions', function (Blueprint $table) {
+        Schema::table('addon_versions', function (Blueprint $table): void {
             $table->dropColumn('virus_total_link');
         });
     }
@@ -50,11 +50,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->string('virus_total_link')->nullable()->after('spt_version_constraint');
         });
 
-        Schema::table('addon_versions', function (Blueprint $table) {
+        Schema::table('addon_versions', function (Blueprint $table): void {
             $table->string('virus_total_link')->nullable()->after('mod_version_constraint');
         });
 
