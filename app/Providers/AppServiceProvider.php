@@ -17,7 +17,7 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
@@ -70,7 +70,7 @@ class AppServiceProvider extends ServiceProvider
             Route::match(['get', 'post'], 'broadcasting/auth', [VisitorsPresenceBroadcastingController::class, 'authenticate'])
                 ->name('broadcasting.auth')
                 ->middleware('web')
-                ->withoutMiddleware([VerifyCsrfToken::class]);
+                ->withoutMiddleware([PreventRequestForgery::class]);
         });
 
         // This gate determines who can access admin features.
