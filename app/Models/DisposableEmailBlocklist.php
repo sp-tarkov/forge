@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\DisposableEmailBlocklistFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Cache;
 #[Table(name: 'disposable_email_blocklist')]
 final class DisposableEmailBlocklist extends Model
 {
-    use HasFactory;
+    /** @use HasFactory<DisposableEmailBlocklistFactory> */
     use HasFactory;
 
     /**

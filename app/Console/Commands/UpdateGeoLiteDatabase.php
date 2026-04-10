@@ -36,10 +36,12 @@ final class UpdateGeoLiteDatabase extends Command
         }
 
         // Check if credentials are configured
+        /** @var string $accountId */
         $accountId = config('services.maxmind.account_id');
+        /** @var string $licenseKey */
         $licenseKey = config('services.maxmind.license_key');
 
-        if (! $accountId || ! $licenseKey) {
+        if ($accountId === '' || $licenseKey === '') {
             $message = 'MaxMind credentials not configured. Please set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY environment variables.';
             $this->error($message);
             Log::error('GeoLite2 database update failed: Missing credentials');
@@ -309,15 +311,17 @@ final class UpdateGeoLiteDatabase extends Command
         if (empty($extractedFiles)) {
             // List contents for debugging
             $contents = File::glob($tempDir.'/*');
+            /** @var array<string> $contents */
             $contentsInfo = empty($contents) ? 'directory is empty' : 'found: '.implode(', ', array_map(basename(...), $contents));
 
             throw new Exception('Could not find GeoLite2-City.mmdb in extracted files. Directory contents: '.$contentsInfo);
         }
 
+        /** @var string $extractedDatabase */
         $extractedDatabase = $extractedFiles[0];
         $fileSize = File::size($extractedDatabase);
 
-        $this->info(sprintf('✓ Found extracted database: %s (', $extractedDatabase).number_format($fileSize).' bytes)');
+        $this->info(sprintf('✓ Found extracted database: %s (%s bytes)', $extractedDatabase, number_format($fileSize)));
 
         return $extractedDatabase;
     }

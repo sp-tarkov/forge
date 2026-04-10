@@ -206,6 +206,7 @@ final class SendDiscordNotifications implements ShouldQueue
             ];
         }
 
+        /** @var array<int, string> $authors */
         $authors = $mod->additionalAuthors->pluck('name')->filter()->toArray();
         if (! empty($authors)) {
             $embed['fields'][] = [
@@ -268,8 +269,8 @@ final class SendDiscordNotifications implements ShouldQueue
 
         // Build message with optional role mention
         $message = 'A new mod has been posted to the Forge!';
-        $roleId = config('discord-alerts.mod_notifications_role_id');
-        if (! empty($roleId)) {
+        $roleId = config()->string('discord-alerts.mod_notifications_role_id');
+        if ($roleId !== '') {
             $message .= sprintf(' <@&%s>', $roleId);
         }
 
@@ -357,6 +358,7 @@ final class SendDiscordNotifications implements ShouldQueue
             ];
         }
 
+        /** @var array<int, string> $authors */
         $authors = $addon->additionalAuthors->pluck('name')->filter()->toArray();
         if (! empty($authors)) {
             $embed['fields'][] = [
@@ -406,8 +408,8 @@ final class SendDiscordNotifications implements ShouldQueue
 
         // Build message with optional role mention
         $message = 'A new addon has been posted to the Forge!';
-        $roleId = config('discord-alerts.mod_notifications_role_id');
-        if (! empty($roleId)) {
+        $roleId = config()->string('discord-alerts.mod_notifications_role_id');
+        if ($roleId !== '') {
             $message .= sprintf(' <@&%s>', $roleId);
         }
 

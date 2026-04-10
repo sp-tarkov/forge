@@ -7,6 +7,8 @@ namespace App\Jobs;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -27,11 +29,11 @@ final class ProcessPinnedModVersionPublishDates implements ShouldQueue
             ->withoutGlobalScope(PublishedSptVersionScope::class)
             ->whereNotNull('publish_date')
             ->where('publish_date', '<=', Date::now())
-            ->whereHas('modVersions', function (mixed $query): void {
+            ->whereHas('modVersions', function (Builder $query): void {
                 $query->withoutGlobalScopes()
                     ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
             })
-            ->with(['modVersions' => function (mixed $query): void {
+            ->with(['modVersions' => function (Relation $query): void {
                 $query->withoutGlobalScopes()
                     ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
             }])
@@ -48,7 +50,7 @@ final class ProcessPinnedModVersionPublishDates implements ShouldQueue
                     // All pinned SPT versions are now published
                     // Set the mod version's published_at to now if it wasn't already set
                     if ((is_null($latestPinnedDate) || $latestPinnedDate <= Date::now()) && is_null($modVersion->published_at)) {
-                        $modVersion->published_at = Date::now();
+                        $modVersion->published_at = Date::now()->toMutable();
                         $modVersion->save();
                         Log::info('Automatically published mod version', [
                             'mod_version_id' => $modVersion->id,

@@ -26,7 +26,9 @@ final class CarbonMixin
         return function (bool $includeTime = true, bool $verbose = true): string {
             // Get the user's timezone, fallback to app timezone if not authenticated or no timezone set
             $userTimezone = auth()->user() ? auth()->user()->timezone : null;
-            $userTimezone ??= config('app.timezone', 'UTC');
+            /** @var string $appTimezone */
+            $appTimezone = config('app.timezone', 'UTC');
+            $userTimezone ??= $appTimezone;
 
             // Convert the date to the user's timezone
             $localDate = $this->copy()->setTimezone($userTimezone);

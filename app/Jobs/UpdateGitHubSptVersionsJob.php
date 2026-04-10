@@ -77,8 +77,8 @@ final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
         $url = 'https://api.github.com/repos/sp-tarkov/build/releases';
 
         $response = Http::acceptJson()
-            ->withUserAgent(Str::slug(config('app.name').'-'.config('app.env').'-'.config('app.url')))
-            ->withToken(config('services.github.token'))
+            ->withUserAgent(Str::slug(config()->string('app.name').'-'.config()->string('app.env').'-'.config()->string('app.url')))
+            ->withToken(config()->string('services.github.token'))
             ->get($url);
 
         $response->throwUnlessStatus(200);
@@ -114,7 +114,9 @@ final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
     private function processSptVersions(Collection $releases): void
     {
         // Sort the releases by the tag_name using Semver::sort
-        $sortedVersions = Semver::sort($releases->pluck('tag_name')->toArray());
+        /** @var array<int, string> $tagNames */
+        $tagNames = $releases->pluck('tag_name')->toArray();
+        $sortedVersions = Semver::sort($tagNames);
         $latestVersion = end($sortedVersions);
 
         $versionData = [];

@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
 use App\Rules\DoesNotContainLogFile;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Form;
@@ -27,7 +28,9 @@ final class CommentCreateForm extends Form
      */
     public function rules(): array
     {
+        /** @var int $minLength */
         $minLength = config('comments.validation.min_length', 3);
+        /** @var int $maxLength */
         $maxLength = config('comments.validation.max_length', 10000);
 
         return [
@@ -52,7 +55,8 @@ final class CommentCreateForm extends Form
 
         return DB::transaction(function () use ($commentable): Comment {
             $comment = new Comment;
-            $comment->user_id = Auth::id();
+            $comment->user_id = (int) Auth::id();
+            assert($commentable instanceof Model);
             $comment->commentable()->associate($commentable);
             $comment->save();
 

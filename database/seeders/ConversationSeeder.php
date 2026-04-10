@@ -48,9 +48,11 @@ final class ConversationSeeder extends Seeder
      */
     private function seedConversations(array $counts, Collection $allUsers, ?User $testAccount): void
     {
+        /** @var int $conversationCount */
+        $conversationCount = $counts['conversations'];
         progress(
             label: 'Adding Conversations and Messages...',
-            steps: $counts['conversations'],
+            steps: $conversationCount,
             callback: function (int $step) use ($allUsers, $testAccount, $counts): void {
                 $this->createConversationWithMessages($allUsers, $testAccount, $counts);
             }
@@ -111,7 +113,9 @@ final class ConversationSeeder extends Seeder
         } else {
             // Select two different random users
             $selectedUsers = $allUsers->random(2);
+            /** @var User $user1 */
             $user1 = $selectedUsers->first();
+            /** @var User $user2 */
             $user2 = $selectedUsers->last();
         }
 
@@ -158,7 +162,10 @@ final class ConversationSeeder extends Seeder
      */
     private function createMessages(Conversation $conversation, User $user1, User $user2, array $counts): Collection
     {
-        $messageCount = random_int($counts['messagesPerConversation'][0], $counts['messagesPerConversation'][1]);
+        /** @var array{0: int, 1: int} $range */
+        $range = $counts['messagesPerConversation'];
+        $messageCount = random_int($range[0], $range[1]);
+        /** @var Collection<int, Message> $messages */
         $messages = collect();
 
         // Generate chronological timestamps
@@ -203,6 +210,7 @@ final class ConversationSeeder extends Seeder
     {
         // Every third message, randomly select the sender
         if ($index % 3 === 0) {
+            /** @var User */
             return $this->faker->randomElement([$user1, $user2]);
         }
 
@@ -215,6 +223,7 @@ final class ConversationSeeder extends Seeder
      */
     private function createMessage(Conversation $conversation, User $sender, DateTimeImmutable $timestamp): Message
     {
+        /** @var Message */
         return Message::withoutEvents(fn () => Message::factory()->create([
             'conversation_id' => $conversation->id,
             'user_id' => $sender->id,
@@ -252,8 +261,10 @@ final class ConversationSeeder extends Seeder
     {
         // 20% chance the conversation is archived by one of the users
         if (random_int(0, 9) < 2) {
+            /** @var User $archivingUser */
             $archivingUser = $this->faker->randomElement([$user1, $user2]);
-            $lastMessageAt = $messages->isNotEmpty() ? $messages->last()->created_at : $conversation->created_at;
+            $lastMessage = $messages->last();
+            $lastMessageAt = $lastMessage instanceof Message ? $lastMessage->created_at : $conversation->created_at;
 
             ConversationArchive::factory()->create([
                 'conversation_id' => $conversation->id,
@@ -306,6 +317,7 @@ final class ConversationSeeder extends Seeder
         $markdownContent = file_get_contents($markdownPath);
 
         // Create initial message from random user with markdown content
+        /** @var Message $markdownMessage */
         $markdownMessage = Message::withoutEvents(fn () => Message::factory()->create([
             'conversation_id' => $conversation->id,
             'user_id' => $randomUser->id,
@@ -321,6 +333,7 @@ final class ConversationSeeder extends Seeder
         ]);
 
         // Test account responds
+        /** @var Message $response */
         $response = Message::withoutEvents(fn () => Message::factory()->create([
             'conversation_id' => $conversation->id,
             'user_id' => $testAccount->id,
@@ -336,6 +349,7 @@ final class ConversationSeeder extends Seeder
         ]);
 
         // Random user sends another message
+        /** @var Message $finalMessage */
         $finalMessage = Message::withoutEvents(fn () => Message::factory()->create([
             'conversation_id' => $conversation->id,
             'user_id' => $randomUser->id,

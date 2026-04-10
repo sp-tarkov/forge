@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 
 final class SocialiteController extends Controller
@@ -32,13 +33,10 @@ final class SocialiteController extends Controller
             return to_route('login')->withErrors(__('Unsupported OAuth provider.'));
         }
 
+        /** @var AbstractProvider $socialiteProvider */
         $socialiteProvider = Socialite::driver($provider);
 
-        if (method_exists($socialiteProvider, 'scopes')) {
-            return $socialiteProvider->scopes(['identify', 'email'])->redirect();
-        }
-
-        return $socialiteProvider->redirect();
+        return $socialiteProvider->scopes(['identify', 'email'])->redirect();
     }
 
     /**

@@ -84,7 +84,7 @@ final class ModPolicy
             return true;
         }
 
-        return $mod->owner->id === $user->id;
+        return $mod->owner?->id === $user->id;
     }
 
     /**

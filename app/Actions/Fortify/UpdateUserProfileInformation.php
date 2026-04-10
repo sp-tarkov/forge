@@ -7,6 +7,7 @@ namespace App\Actions\Fortify;
 use App\Models\User;
 use App\Rules\NotDisposableEmail;
 use DateTimeZone;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -29,11 +30,11 @@ final class UpdateUserProfileInformation implements UpdatesUserProfileInformatio
             'about' => ['nullable', 'string'],
         ])->validateWithBag('updateProfileInformation');
 
-        if (isset($input['photo'])) {
+        if (isset($input['photo']) && $input['photo'] instanceof UploadedFile) {
             $user->updateProfilePhoto($input['photo']);
         }
 
-        if (isset($input['cover'])) {
+        if (isset($input['cover']) && $input['cover'] instanceof UploadedFile) {
             $user->updateCoverPhoto($input['cover']);
         }
 
@@ -52,7 +53,7 @@ final class UpdateUserProfileInformation implements UpdatesUserProfileInformatio
     /**
      * Update the given verified user's profile information.
      *
-     * @param  array<string, string>  $input
+     * @param  array<string, mixed>  $input
      */
     private function updateVerifiedUser(User $user, array $input): void
     {

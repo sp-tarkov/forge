@@ -53,9 +53,14 @@ final class CommentVersion extends Model
     protected function bodyHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('comments')->clean(
-                Markdown::convert($this->body)->getContent()
-            )
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('comments')->clean(
+                    Markdown::convert($this->body)->getContent()
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 

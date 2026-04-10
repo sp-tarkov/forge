@@ -31,7 +31,7 @@ final class PublishedScope implements Scope
         );
 
         // If user is authenticated and is an admin or moderator, show everything.
-        if (Auth::check() && Auth::user()->isModOrAdmin()) {
+        if (Auth::check() && Auth::user()?->isModOrAdmin()) {
             return;
         }
 

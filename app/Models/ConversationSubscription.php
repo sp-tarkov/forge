@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\ConversationSubscriptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,7 @@ use Override;
  */
 final class ConversationSubscription extends Model
 {
+    /** @use HasFactory<ConversationSubscriptionFactory> */
     use HasFactory;
 
     /**

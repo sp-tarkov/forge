@@ -19,7 +19,7 @@ final class UserFactory extends Factory
     /**
      * The current password being used by the factory.
      */
-    private static ?string $password;
+    private static string $password;
 
     /**
      * Define the user's default state.
@@ -85,7 +85,7 @@ final class UserFactory extends Factory
             'user_role_id' => UserRole::query()
                 ->firstOrCreate(
                     ['name' => 'Moderator'],
-                    UserRole::factory()->moderator()->make()->toArray()
+                    UserRole::factory()->moderator()->make()->attributesToArray()
                 )->id,
         ]);
     }
@@ -99,7 +99,7 @@ final class UserFactory extends Factory
             'user_role_id' => UserRole::query()
                 ->firstOrCreate(
                     ['name' => 'Senior Moderator'],
-                    UserRole::factory()->seniorModerator()->make()->toArray()
+                    UserRole::factory()->seniorModerator()->make()->attributesToArray()
                 )->id,
         ]);
     }
@@ -113,7 +113,7 @@ final class UserFactory extends Factory
             'user_role_id' => UserRole::query()
                 ->firstOrCreate(
                     ['name' => 'Staff'],
-                    UserRole::factory()->staff()->make()->toArray()
+                    UserRole::factory()->staff()->make()->attributesToArray()
                 )->id,
         ]);
     }

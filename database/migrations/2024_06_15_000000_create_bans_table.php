@@ -13,7 +13,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create(config('ban.table'), function (Blueprint $table): void {
+        /** @var string $banTable */
+        $banTable = config('ban.table');
+        Schema::create($banTable, function (Blueprint $table): void {
             $table->id();
             $table->nullableMorphs('bannable');
             $table->nullableMorphs('created_by');
@@ -32,6 +34,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists(config('ban.table'));
+        /** @var string $banTable */
+        $banTable = config('ban.table');
+        Schema::dropIfExists($banTable);
     }
 };

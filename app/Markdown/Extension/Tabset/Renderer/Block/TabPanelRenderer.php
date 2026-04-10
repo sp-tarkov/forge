@@ -33,9 +33,12 @@ final class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererIn
             $attrs = [];
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
+
         // Add the "tab-panel" class by merging with existing classes.
-        $existingClasses = $attrs['class'] ?? '';
-        $separator = empty($existingClasses) ? '' : ' ';
+        $rawClass = $attrs['class'] ?? '';
+        $existingClasses = is_string($rawClass) ? $rawClass : '';
+        $separator = $existingClasses === '' ? '' : ' ';
         $attrs['class'] = mb_trim($existingClasses.$separator.'tab-panel');
         if (empty($attrs['class'])) {
             unset($attrs['class']);
@@ -60,6 +63,7 @@ final class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererIn
             $innerHtml .= "\n".$contentWrapperHtml;
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
         return new HtmlElement('div', $attrs, $innerHtml);
     }
 
@@ -73,6 +77,8 @@ final class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererIn
 
     /**
      * Returns an array of XML attributes for the TabPanelNode.
+     *
+     * @return array<string, array<string>|bool|string>
      */
     public function getXmlAttributes(Node $node): array
     {
@@ -90,6 +96,7 @@ final class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererIn
             $xmlAttrs['id'] = 'tab-'.Str::slug($node->tabTitle).'-'.spl_object_hash($node);
         }
 
+        /** @var array<string, array<string>|bool|string> $xmlAttrs */
         return $xmlAttrs;
     }
 }

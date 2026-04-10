@@ -49,21 +49,27 @@ trait HasCoverPhoto
      */
     protected function coverPhotoDisk(): string
     {
-        return config('filesystems.asset_upload', 'public');
+        /** @var string $disk */
+        $disk = config('filesystems.asset_upload', 'public');
+
+        return $disk;
     }
 
     /**
      * Get the cover photo URL for the user.
      *
-     * @return Attribute<string[], never>
+     * @return Attribute<string, never>
      */
     protected function coverPhotoUrl(): Attribute
     {
-        return new Attribute(
+        /** @var Attribute<string, never> $attribute */
+        $attribute = new Attribute(
             get: fn (): string => $this->cover_photo_path
                 ? Storage::disk($this->coverPhotoDisk())->url($this->cover_photo_path)
                 : $this->defaultCoverPhotoUrl()
         );
+
+        return $attribute;
     }
 
     /**

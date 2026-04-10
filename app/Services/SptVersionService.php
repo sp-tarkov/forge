@@ -31,6 +31,7 @@ final class SptVersionService
             ->pluck('pivot');
 
         foreach ($existingPivots as $pivot) {
+            /** @var object{pinned_to_spt_publish: bool, spt_version_id: int} $pivot */
             if ($pivot->pinned_to_spt_publish) {
                 $pivotData[$pivot->spt_version_id]['pinned_to_spt_publish'] = true;
             }
@@ -47,7 +48,7 @@ final class SptVersionService
     private function satisfyConstraint(ModVersion $modVersion): array
     {
         return match ($modVersion->spt_version_constraint) {
-            null, '' => [],
+            '' => [],
             default => $this->resolveSemverConstraint($modVersion->spt_version_constraint),
         };
     }
@@ -79,6 +80,7 @@ final class SptVersionService
      */
     private function getAvailableVersions(): Collection
     {
+        /** @var Collection<string, int> */
         return SptVersion::query()
             ->orderBy('version', 'desc')
             ->pluck('id', 'version');

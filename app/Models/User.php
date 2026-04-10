@@ -743,10 +743,17 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     protected function profileUrl(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes): string => route('user.show', [
-                'userId' => $attributes['id'],
-                'slug' => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
-            ]),
+            get: function (mixed $value, array $attributes): string {
+                /** @var string $name */
+                $name = $attributes['name'] ?? '';
+                /** @var int|string $id */
+                $id = $attributes['id'] ?? 0;
+
+                return route('user.show', [
+                    'userId' => $id,
+                    'slug' => Str::slug($name) ?: 'user-'.$id,
+                ]);
+            },
         )->shouldCache();
     }
 
@@ -758,7 +765,14 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     protected function slug(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes): string => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
+            get: function (mixed $value, array $attributes): string {
+                /** @var string $name */
+                $name = $attributes['name'] ?? '';
+                /** @var int|string $id */
+                $id = $attributes['id'] ?? 0;
+
+                return Str::slug($name) ?: 'user-'.$id;
+            },
         )->shouldCache();
     }
 
@@ -771,7 +785,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     protected function about(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value): string => $value ?? '', // If DB value is NULL, return ''
+            get: fn (mixed $value): string => is_string($value) ? $value : '', // If DB value is NULL, return ''
             set: fn (?string $value): string => mb_trim($value ?? ''), // Trim whitespace and handle NULL
         );
     }
@@ -784,11 +798,18 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     protected function aboutHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->about
-                ? Purify::config('comments')->clean(
+            get: function (): string {
+                if (! $this->about) {
+                    return '';
+                }
+
+                /** @var string $clean */
+                $clean = Purify::config('comments')->clean(
                     Markdown::convert($this->about)->getContent()
-                )
-                : ''
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 
@@ -797,7 +818,10 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
      */
     protected function profilePhotoDisk(): string
     {
-        return config('filesystems.asset_upload', 'public');
+        /** @var string $disk */
+        $disk = config('filesystems.asset_upload', 'public');
+
+        return $disk;
     }
 
     /**

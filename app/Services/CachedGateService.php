@@ -91,6 +91,7 @@ final class CachedGateService
         $results = [];
 
         foreach ($models as $model) {
+            /** @var int|string $key */
             $key = $model->getKey();
             $results[$key] = $this->allows($ability, $model);
         }
@@ -112,6 +113,7 @@ final class CachedGateService
         $results = [];
 
         foreach ($models as $model) {
+            /** @var int|string $key */
             $key = $model->getKey();
             $results[$key] = [];
 
@@ -154,6 +156,7 @@ final class CachedGateService
     public function clearForModel(Model $model): void
     {
         $modelClass = $model::class;
+        /** @var int|string $modelKey */
         $modelKey = $model->getKey();
         $userId = auth()->id() ?? 'guest';
 
@@ -229,7 +232,9 @@ final class CachedGateService
         } elseif (is_array($arguments)) {
             $argsHash = $this->hashArguments($arguments);
         } elseif ($arguments instanceof Model) {
-            $argsHash = $arguments::class.'.'.$arguments->getKey();
+            /** @var int|string $argumentsKey */
+            $argumentsKey = $arguments->getKey();
+            $argsHash = $arguments::class.'.'.$argumentsKey;
         } else {
             $argsHash = md5(serialize($arguments));
         }
@@ -247,7 +252,13 @@ final class CachedGateService
         $normalized = [];
 
         foreach ($arguments as $arg) {
-            $normalized[] = $arg instanceof Model ? $arg::class.'.'.$arg->getKey() : $arg;
+            if ($arg instanceof Model) {
+                /** @var int|string $argKey */
+                $argKey = $arg->getKey();
+                $normalized[] = $arg::class.'.'.$argKey;
+            } else {
+                $normalized[] = $arg;
+            }
         }
 
         return md5(serialize($normalized));

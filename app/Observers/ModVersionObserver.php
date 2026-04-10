@@ -6,6 +6,7 @@ namespace App\Observers;
 
 use App\Contracts\DependencyResolver;
 use App\Models\AddonVersion;
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Services\AddonVersionService;
 use App\Services\SptVersionService;
@@ -62,7 +63,9 @@ final readonly class ModVersionObserver
      */
     private function updateRelatedMod(ModVersion $modVersion): void
     {
-        $modVersion->mod?->fresh()?->calculateDownloads();
+        /** @var Mod|null $mod */
+        $mod = $modVersion->mod;
+        $mod?->fresh()?->calculateDownloads();
     }
 
     /**

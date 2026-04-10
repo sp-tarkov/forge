@@ -9,6 +9,7 @@ use App\Facades\Track;
 use App\Models\Mod;
 use Illuminate\Support\Facades\Auth;
 
+/** @phpstan-ignore trait.unused */
 trait ModeratesMod
 {
     /**

@@ -27,7 +27,9 @@ final class CommentReplyForm extends Form
      */
     public function rules(): array
     {
+        /** @var int $minLength */
         $minLength = config('comments.validation.min_length', 3);
+        /** @var int $maxLength */
         $maxLength = config('comments.validation.max_length', 10000);
 
         return [
@@ -53,6 +55,7 @@ final class CommentReplyForm extends Form
         $parentComment = Comment::query()->findOrFail($parentCommentId);
 
         DB::transaction(function () use ($commentable, $parentComment): void {
+            /** @var Comment $comment */
             $comment = $commentable->comments()->create([
                 'user_id' => Auth::id(),
                 'parent_id' => $parentComment->id,

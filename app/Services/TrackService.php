@@ -147,7 +147,8 @@ final readonly class TrackService
 
         // For authentication events (login, logout, register), the user is both the visitor and visitable
         $visitorId = Auth::id();
-        $visitorType = Auth::check() ? Auth::user()::class : null;
+        $authenticatedUser = Auth::user();
+        $visitorType = $authenticatedUser !== null ? $authenticatedUser::class : null;
 
         // For events where trackable user should be the visitor
         // - Authentication events: Auth might be cleared (logout and account deletion)

@@ -6,6 +6,7 @@ namespace App\Livewire\Forms;
 
 use App\Models\Comment;
 use App\Rules\DoesNotContainLogFile;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Form;
 
@@ -23,7 +24,9 @@ final class CommentEditForm extends Form
      */
     public function rules(): array
     {
+        /** @var int $minLength */
         $minLength = config('comments.validation.min_length', 3);
+        /** @var int $maxLength */
         $maxLength = config('comments.validation.max_length', 10000);
 
         return [
@@ -46,14 +49,16 @@ final class CommentEditForm extends Form
 
         DB::transaction(function () use ($comment): void {
             // Create new version with updated content
-            $nextVersionNumber = ($comment->versions()->max('version_number') ?? 0) + 1;
+            /** @var int $maxVersion */
+            $maxVersion = $comment->versions()->max('version_number') ?? 0;
+            $nextVersionNumber = $maxVersion + 1;
             $comment->versions()->create([
                 'body' => mb_trim($this->body),
                 'version_number' => $nextVersionNumber,
                 'created_at' => now(),
             ]);
 
-            $comment->edited_at = now();
+            $comment->edited_at = Date::now();
             $comment->save();
         });
     }

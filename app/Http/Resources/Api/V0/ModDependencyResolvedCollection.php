@@ -28,10 +28,10 @@ final class ModDependencyResolvedCollection extends ResourceCollection
     /**
      * Transform the resource collection into an array.
      *
-     * @return array<int, array<string, mixed>>|MissingValue
+     * @return array<int, array<string, mixed>>
      */
     #[Override]
-    public function toArray(Request $request): array|MissingValue
+    public function toArray(Request $request): array
     {
         if ($this->collection instanceof MissingValue) {
             return [];

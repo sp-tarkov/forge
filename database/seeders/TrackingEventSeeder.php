@@ -44,10 +44,12 @@ final class TrackingEventSeeder extends Seeder
      */
     private function seedTrackingEvents(array $counts, Collection $allUsers, Collection $mods, Collection $modVersions): void
     {
-        TrackingEvent::withoutEvents(function () use ($counts, $allUsers, $mods, $modVersions): void {
+        /** @var int $trackingEventCount */
+        $trackingEventCount = $counts['trackingEvents'];
+        TrackingEvent::withoutEvents(function () use ($trackingEventCount, $allUsers, $mods, $modVersions): void {
             progress(
                 label: 'Adding Tracking Events...',
-                steps: $counts['trackingEvents'],
+                steps: $trackingEventCount,
                 callback: function (int $step) use ($allUsers, $mods, $modVersions): void {
                     $this->createTrackingEvent($allUsers, $mods, $modVersions);
                 }
@@ -89,7 +91,9 @@ final class TrackingEventSeeder extends Seeder
 
         if ($trackable instanceof Model) {
             $trackingEvent->visitable_type = $trackable::class;
-            $trackingEvent->visitable_id = $trackable->getKey();
+            /** @var int $trackableKey */
+            $trackableKey = $trackable->getKey();
+            $trackingEvent->visitable_id = $trackableKey;
         }
 
         $trackingEvent->saveQuietly();

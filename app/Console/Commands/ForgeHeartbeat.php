@@ -30,9 +30,10 @@ final class ForgeHeartbeat extends Command
      */
     public function handle(): int
     {
+        /** @var string $url */
         $url = config('app.forge_heartbeat_url');
 
-        if (! $url) {
+        if ($url === '') {
             $this->error('No URL configured. Please set FORGE_HEARTBEAT_URL in your .env file.');
 
             return Command::FAILURE;

@@ -39,6 +39,7 @@ final class VerifyEmailRequest extends FormRequest
      */
     public function getUserFromRoute(): ?User
     {
+        /** @var User|null */
         return User::query()->find($this->route('id'));
     }
 }

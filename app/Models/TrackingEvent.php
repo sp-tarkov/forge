@@ -167,8 +167,9 @@ final class TrackingEvent extends Model
                     }
 
                     // Fallback to snapshot data if model not available
-                    if (isset($this->event_data['snapshot']['name'])) {
-                        return $this->event_data['snapshot']['name'];
+                    $snapshot = $this->event_data['snapshot'] ?? [];
+                    if (is_array($snapshot) && isset($snapshot['name']) && is_string($snapshot['name'])) {
+                        return $snapshot['name'];
                     }
                 }
 
@@ -229,7 +230,12 @@ final class TrackingEvent extends Model
                 }
 
                 // Final fallback to request URL
-                return $this->event_data['url'] ?? $this->url ? url($this->url) : null;
+                $eventUrl = $this->event_data['url'] ?? null;
+                if (is_string($eventUrl)) {
+                    return $eventUrl;
+                }
+
+                return $this->url ? (string) url($this->url) : null;
             }
         );
     }
@@ -241,10 +247,13 @@ final class TrackingEvent extends Model
     {
         $snapshot = $this->event_data['snapshot'] ?? [];
 
+        if (! is_array($snapshot)) {
+            return null;
+        }
+
         // Return the most relevant context based on what's available
-        return $snapshot['comment_body'] ??
-               $snapshot['mod_name'] ??
-               $snapshot['version_name'] ??
-               null;
+        $context = $snapshot['comment_body'] ?? $snapshot['mod_name'] ?? $snapshot['version_name'] ?? null;
+
+        return is_string($context) ? $context : null;
     }
 }

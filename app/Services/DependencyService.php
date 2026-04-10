@@ -10,6 +10,7 @@ use App\Models\ModVersion;
 use App\Support\Api\V0\QueryBuilder\ModDependencyTreeQueryBuilder;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -98,6 +99,7 @@ final class DependencyService
      */
     public function resolveModVersionIds(Collection $modVersionPairs): Collection
     {
+        /** @var Collection<int, int> $queriedModVersionIds */
         $queriedModVersionIds = collect();
 
         foreach ($modVersionPairs as $pair) {
@@ -119,7 +121,7 @@ final class DependencyService
 
             $versionId = $query->value('mod_versions.id');
 
-            if ($versionId) {
+            if (is_int($versionId)) {
                 $queriedModVersionIds->push($versionId);
             }
         }
@@ -135,6 +137,7 @@ final class DependencyService
      */
     public function resolveAddonVersionIds(Collection $addonVersionPairs): Collection
     {
+        /** @var Collection<int, int> $queriedAddonVersionIds */
         $queriedAddonVersionIds = collect();
 
         foreach ($addonVersionPairs as $pair) {
@@ -156,7 +159,7 @@ final class DependencyService
 
             $versionId = $query->value('addon_versions.id');
 
-            if ($versionId) {
+            if (is_int($versionId)) {
                 $queriedAddonVersionIds->push($versionId);
             }
         }
@@ -251,12 +254,17 @@ final class DependencyService
 
         // Store constraints for each mod
         foreach ($dependencies as $dependency) {
+            /** @var int $modId */
             $modId = $dependency->dependent_mod_id;
             if (! $constraintsByModId->has($modId)) {
-                $constraintsByModId->put($modId, collect());
+                /** @var Collection<int, string> $emptyCollection */
+                $emptyCollection = collect();
+                $constraintsByModId->put($modId, $emptyCollection);
             }
 
-            $constraintsByModId->get($modId)->push($dependency->constraint);
+            /** @var string $constraint */
+            $constraint = $dependency->constraint;
+            $constraintsByModId->get($modId)?->push($constraint);
         }
 
         // Load the actual mod versions with their mods using QueryBuilder for consistency
@@ -270,7 +278,7 @@ final class DependencyService
             ->whereHas('versions', function (Builder $query) use ($versionIds): void {
                 $query->whereIn('id', $versionIds);
             })
-            ->with(['versions' => function (mixed $query) use ($versionIds): void {
+            ->with(['versions' => function (Relation $query) use ($versionIds): void {
                 $query->whereIn('id', $versionIds);
             }])
             ->get();
@@ -280,7 +288,8 @@ final class DependencyService
 
         // Build tree nodes for each mod
         return $mods->map(function (Mod $mod) use ($modVersionMap, $processedVersionIds, $constraintsByModId): array {
-            $latestVersionId = $modVersionMap[$mod->id] ?? null;
+            /** @var int $latestVersionId */
+            $latestVersionId = $modVersionMap[$mod->id] ?? 0;
             $latestVersion = $latestVersionId ? $mod->versions->firstWhere('id', $latestVersionId) : null;
 
             // Recursively build dependencies for this version
@@ -302,9 +311,9 @@ final class DependencyService
      *
      * @param  Collection<int, int>  $processedVersionIds
      * @param  Collection<int, Collection<int, string>>  $constraintsByModId
-     * @return array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}>|null
+     * @return array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}>
      */
-    public function buildAddonDependencyTree(int $addonVersionId, Collection $processedVersionIds, Collection $constraintsByModId): ?array
+    public function buildAddonDependencyTree(int $addonVersionId, Collection $processedVersionIds, Collection $constraintsByModId): array
     {
         // Get the latest resolved version for each dependency by semantic version
         $dependencies = DB::table('dependencies_resolved')
@@ -357,12 +366,17 @@ final class DependencyService
 
         // Store constraints for each mod
         foreach ($dependencies as $dependency) {
+            /** @var int $modId */
             $modId = $dependency->dependent_mod_id;
             if (! $constraintsByModId->has($modId)) {
-                $constraintsByModId->put($modId, collect());
+                /** @var Collection<int, string> $emptyCollection */
+                $emptyCollection = collect();
+                $constraintsByModId->put($modId, $emptyCollection);
             }
 
-            $constraintsByModId->get($modId)->push($dependency->constraint);
+            /** @var string $constraint */
+            $constraint = $dependency->constraint;
+            $constraintsByModId->get($modId)?->push($constraint);
         }
 
         // Load the actual mod versions with their mods using QueryBuilder for consistency
@@ -376,7 +390,7 @@ final class DependencyService
             ->whereHas('versions', function (Builder $query) use ($versionIds): void {
                 $query->whereIn('id', $versionIds);
             })
-            ->with(['versions' => function (mixed $query) use ($versionIds): void {
+            ->with(['versions' => function (Relation $query) use ($versionIds): void {
                 $query->whereIn('id', $versionIds);
             }])
             ->get();
@@ -386,7 +400,8 @@ final class DependencyService
 
         // Build tree nodes for each mod (addon dependencies don't recurse - addons only depend on mods)
         return $mods->map(function (Mod $mod) use ($modVersionMap, $processedVersionIds, $constraintsByModId): array {
-            $latestVersionId = $modVersionMap[$mod->id] ?? null;
+            /** @var int $latestVersionId */
+            $latestVersionId = $modVersionMap[$mod->id] ?? 0;
             $latestVersion = $latestVersionId ? $mod->versions->firstWhere('id', $latestVersionId) : null;
 
             // Recursively build dependencies for this mod version (mods can depend on other mods)
@@ -456,18 +471,25 @@ final class DependencyService
                     ->get();
 
                 foreach ($dependencies as $dep) {
+                    /** @var int $depModId */
                     $depModId = $dep->dependent_mod_id;
                     if (! $constraintsByModId->has($depModId)) {
-                        $constraintsByModId->put($depModId, collect());
+                        /** @var Collection<int, string> $emptyCollection */
+                        $emptyCollection = collect();
+                        $constraintsByModId->put($depModId, $emptyCollection);
                     }
 
-                    $constraintsByModId->get($depModId)->push($dep->constraint);
+                    /** @var string $depConstraint */
+                    $depConstraint = $dep->constraint;
+                    $constraintsByModId->get($depModId)?->push($depConstraint);
                 }
             }
 
             // Recursively collect from sub-dependencies
             if (! empty($node['dependencies'])) {
-                $this->collectAllConstraints($node['dependencies'], $constraintsByModId);
+                /** @var array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}> $subDependencies */
+                $subDependencies = $node['dependencies'];
+                $this->collectAllConstraints($subDependencies, $constraintsByModId);
             }
         }
     }

@@ -61,6 +61,7 @@ trait SeederHelpers
 
         if ($random <= 60) {
             // 20% authentication events
+            /** @var TrackingEventType */
             return $this->faker->randomElement([
                 TrackingEventType::LOGIN,
                 TrackingEventType::LOGOUT,
@@ -70,6 +71,7 @@ trait SeederHelpers
 
         if ($random <= 80) {
             // 20% comment interactions
+            /** @var TrackingEventType */
             return $this->faker->randomElement([
                 TrackingEventType::COMMENT_CREATE,
                 TrackingEventType::COMMENT_LIKE,
@@ -79,6 +81,7 @@ trait SeederHelpers
         }
 
         // 20% other events (mod management, versions, etc.)
+        /** @var TrackingEventType */
         return $this->faker->randomElement([
             TrackingEventType::MOD_CREATE,
             TrackingEventType::MOD_EDIT,

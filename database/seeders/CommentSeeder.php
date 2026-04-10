@@ -238,6 +238,10 @@ final class CommentSeeder extends Seeder
     {
         // Add 1-5 reactions from different users (but no more than available users)
         $maxReactions = min(5, $allUsers->count());
+        if ($maxReactions < 1) {
+            return;
+        }
+
         $reactionCount = random_int(1, $maxReactions);
 
         // Use shuffle and take to ensure unique users

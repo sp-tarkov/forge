@@ -8,6 +8,7 @@ use GrahamCampbell\Markdown\Facades\Markdown;
 use Livewire\Attributes\Renderless;
 use Stevebauman\Purify\Facades\Purify;
 
+/** @phpstan-ignore trait.unused */
 trait RendersMarkdownPreview
 {
     /**

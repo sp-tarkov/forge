@@ -11,6 +11,7 @@ use App\Models\User;
 use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Laravel\Prompts\Progress;
 
 use function Laravel\Prompts\progress;
@@ -63,7 +64,9 @@ final class AddonSeeder extends Seeder
      */
     private function seedAddons(Collection $mods, Collection $allUsers): void
     {
-        $this->addons = collect();
+        /** @var Collection<int, Addon> $addons */
+        $addons = collect();
+        $this->addons = $addons;
 
         Addon::withoutEvents(function () use ($mods, $allUsers): void {
             progress(
@@ -95,7 +98,7 @@ final class AddonSeeder extends Seeder
 
                         // Small chance (5%) of being detached
                         if (random_int(1, 100) <= 5) {
-                            $addon->detached_at = now()->subDays(random_int(0, 30));
+                            $addon->detached_at = Date::now()->subDays(random_int(0, 30));
                             $addon->detached_by_user_id = $mod->owner_id;
                             $addon->save();
                         }
@@ -112,7 +115,9 @@ final class AddonSeeder extends Seeder
      */
     private function seedAddonVersions(): void
     {
-        $this->addonVersions = collect();
+        /** @var Collection<int, AddonVersion> $addonVersions */
+        $addonVersions = collect();
+        $this->addonVersions = $addonVersions;
 
         AddonVersion::withoutEvents(function (): void {
             progress(

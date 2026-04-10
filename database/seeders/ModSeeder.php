@@ -39,7 +39,9 @@ final class ModSeeder extends Seeder
         $this->initializeFaker();
         $counts = $this->getDefaultCounts();
 
-        $licenses = License::factory($counts['license'])->create();
+        /** @var int $licenseCount */
+        $licenseCount = $counts['license'];
+        $licenses = License::factory($licenseCount)->create();
         $allUsers = User::all();
 
         // Create mods
@@ -86,13 +88,18 @@ final class ModSeeder extends Seeder
      */
     private function seedMods(array $counts, Collection $licenses): void
     {
-        $this->mods = collect();
+        /** @var Collection<int, Mod> $mods */
+        $mods = collect();
+        $this->mods = $mods;
+
         $categories = ModCategory::all();
 
-        Mod::withoutEvents(function () use ($counts, $licenses, $categories): void {
+        /** @var int $modCount */
+        $modCount = $counts['mod'];
+        Mod::withoutEvents(function () use ($modCount, $licenses, $categories): void {
             $this->mods = collect(progress(
                 label: 'Adding Mods...',
-                steps: $counts['mod'],
+                steps: $modCount,
                 callback: function () use ($licenses, $categories) {
                     $mod = Mod::factory()->recycle([$licenses])->create();
                     // 80% chance of having a category
@@ -133,12 +140,16 @@ final class ModSeeder extends Seeder
      */
     private function seedModVersions(array $counts): void
     {
-        $this->modVersions = collect();
+        /** @var Collection<int, ModVersion> $modVersions */
+        $modVersions = collect();
+        $this->modVersions = $modVersions;
 
-        ModVersion::withoutEvents(function () use ($counts): void {
+        /** @var int $modVersionCount */
+        $modVersionCount = $counts['modVersion'];
+        ModVersion::withoutEvents(function () use ($modVersionCount): void {
             $this->modVersions = collect(progress(
                 label: 'Adding Mod Versions...',
-                steps: $counts['modVersion'],
+                steps: $modVersionCount,
                 callback: fn () => ModVersion::factory()->recycle([$this->mods])->create()
             ));
         });

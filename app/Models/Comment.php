@@ -11,6 +11,7 @@ use App\Enums\SpamStatus;
 use App\Observers\CommentObserver;
 use App\Support\Akismet\SpamCheckResult;
 use App\Traits\HasReports;
+use Carbon\CarbonImmutable;
 use Database\Factories\CommentFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -44,9 +45,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $root_id
  * @property SpamStatus $spam_status
  * @property array<string, mixed>|null $spam_metadata
- * @property Carbon|null $spam_checked_at
+ * @property Carbon|CarbonImmutable|null $spam_checked_at
  * @property int $spam_recheck_count
- * @property Carbon|null $edited_at
+ * @property CarbonImmutable|null $edited_at
  * @property Carbon|null $deleted_at
  * @property Carbon|null $pinned_at
  * @property Carbon|null $created_at
@@ -263,7 +264,7 @@ final class Comment extends Model implements Reportable, Trackable
             return sprintf("Comment on %s's profile", $commentable->name);
         }
 
-        if (method_exists($commentable, 'name') && property_exists($commentable, 'name') && $commentable->name) {
+        if (method_exists($commentable, 'name') && property_exists($commentable, 'name') && is_string($commentable->name) && $commentable->name !== '') {
             return 'Comment on '.$commentable->name;
         }
 
@@ -286,7 +287,7 @@ final class Comment extends Model implements Reportable, Trackable
     /**
      * Get contextual information about this trackable resource.
      */
-    public function getTrackingContext(): ?string
+    public function getTrackingContext(): string
     {
         return $this->body;
     }
@@ -427,9 +428,14 @@ final class Comment extends Model implements Reportable, Trackable
     protected function bodyHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('comments')->clean(
-                Markdown::convert($this->body)->getContent()
-            )
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('comments')->clean(
+                    Markdown::convert($this->body)->getContent()
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 
@@ -441,7 +447,7 @@ final class Comment extends Model implements Reportable, Trackable
     protected function body(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->latestVersion?->body ?? '',
+            get: fn (): string => $this->latestVersion->body ?? '',
         );
     }
 

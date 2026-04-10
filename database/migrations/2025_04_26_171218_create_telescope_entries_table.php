@@ -13,6 +13,7 @@ return new class extends Migration
      */
     public function getConnection(): ?string
     {
+        /** @var string|null */
         return config('telescope.storage.database.connection');
     }
 

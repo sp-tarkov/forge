@@ -32,6 +32,7 @@ final readonly class AddonObserver
     {
         // Remove the addon's thumbnail image from storage if it exists.
         if ($addon->thumbnail) {
+            /** @var string $disk */
             $disk = config('filesystems.asset_upload', 'public');
             if (Storage::disk($disk)->exists($addon->thumbnail)) {
                 Storage::disk($disk)->delete($addon->thumbnail);

@@ -44,9 +44,12 @@ final class TwoFactorAuthenticationForm extends Component
      */
     public function mount(): void
     {
+        /** @var User $user */
+        $user = Auth::user();
+
         if (Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm') &&
-            is_null(Auth::user()->two_factor_confirmed_at)) {
-            resolve(DisableTwoFactorAuthentication::class)(Auth::user());
+            is_null($user->two_factor_confirmed_at)) {
+            resolve(DisableTwoFactorAuthentication::class)($user);
         }
     }
 
@@ -79,7 +82,7 @@ final class TwoFactorAuthenticationForm extends Component
             $this->ensurePasswordIsConfirmed();
         }
 
-        $confirm(Auth::user(), $this->code);
+        $confirm(Auth::user(), $this->code ?? '');
 
         $this->showingQrCode = false;
         $this->showingConfirmation = false;
@@ -133,6 +136,7 @@ final class TwoFactorAuthenticationForm extends Component
      */
     public function getUserProperty(): User
     {
+        /** @var User */
         return Auth::user();
     }
 
@@ -141,7 +145,7 @@ final class TwoFactorAuthenticationForm extends Component
      */
     public function getEnabledProperty(): bool
     {
-        return ! empty($this->user->two_factor_secret);
+        return ! empty($this->getUserProperty()->two_factor_secret);
     }
 
     /**

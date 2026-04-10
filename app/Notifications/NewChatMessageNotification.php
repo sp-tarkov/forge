@@ -44,7 +44,7 @@ final class NewChatMessageNotification extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(User $notifiable): MailMessage
     {
         $sender = $this->conversation->getOtherUser($notifiable);
         $senderName = $sender instanceof User ? $sender->name : 'Someone';
@@ -52,7 +52,7 @@ final class NewChatMessageNotification extends Notification
 
         // Get the most recent message for preview
         $latestMessage = $this->unreadMessages->last();
-        $messagePreview = Str::limit($latestMessage->content, 150);
+        $messagePreview = $latestMessage !== null ? Str::limit($latestMessage->content, 150) : '';
 
         // Create unsubscribe URL
         $unsubscribeUrl = URL::signedRoute('chat.unsubscribe', [
@@ -95,7 +95,7 @@ final class NewChatMessageNotification extends Notification
             ->action('View Conversation', $this->conversation->url)
             ->line('')
             ->line(sprintf('You can [unsubscribe](%s) from notifications for this conversation.', $unsubscribeUrl))
-            ->salutation('Regards,  '."\n".config('app.name'));
+            ->salutation('Regards,  '."\n".config()->string('app.name'));
     }
 
     /**
@@ -103,7 +103,7 @@ final class NewChatMessageNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray(User $notifiable): array
     {
         $sender = $this->conversation->getOtherUser($notifiable);
         $messageCount = $this->unreadMessages->count();
@@ -115,8 +115,8 @@ final class NewChatMessageNotification extends Notification
             'sender_name' => $sender instanceof User ? $sender->name : 'Someone',
             'sender_id' => $sender?->id,
             'message_count' => $messageCount,
-            'latest_message_id' => $latestMessage->id,
-            'latest_message_preview' => Str::limit($latestMessage->content, 150),
+            'latest_message_id' => $latestMessage?->id,
+            'latest_message_preview' => $latestMessage !== null ? Str::limit($latestMessage->content, 150) : '',
             'conversation_url' => $this->conversation->url,
         ];
     }

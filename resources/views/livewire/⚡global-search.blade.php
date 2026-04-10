@@ -10,8 +10,6 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Session;
 use Livewire\Component;
-use Meilisearch\Client as MeilisearchClient;
-use Meilisearch\Contracts\SearchQuery;
 
 new class extends Component {
     /**
@@ -84,26 +82,40 @@ new class extends Component {
     }
 
     /**
-     * Execute a multi-search query against Meilisearch.
+     * Execute a multi-search query against the configured search driver.
      *
      * @return array<string, Collection<int, mixed>>
      */
     protected function executeMultiSearch(string $query): array
     {
-        $client = resolve(MeilisearchClient::class);
+        if (config('scout.driver') === 'meilisearch') {
+            return $this->executeMeilisearchMultiSearch($query);
+        }
+
+        return $this->executeScoutSearch($query);
+    }
+
+    /**
+     * Execute a multi-search query using the Meilisearch API directly.
+     *
+     * @return array<string, Collection<int, mixed>>
+     */
+    protected function executeMeilisearchMultiSearch(string $query): array
+    {
+        $client = resolve(\Meilisearch\Client::class);
 
         $prefix = config('scout.prefix');
 
         $queries = [
-            new SearchQuery()
+            new \Meilisearch\Contracts\SearchQuery()
                 ->setIndexUid($prefix . new Mod()->getTable())
                 ->setQuery($query)
                 ->setShowRankingScore(true),
-            new SearchQuery()
+            new \Meilisearch\Contracts\SearchQuery()
                 ->setIndexUid($prefix . new Addon()->getTable())
                 ->setQuery($query)
                 ->setShowRankingScore(true),
-            new SearchQuery()->setIndexUid($prefix . new User()->getTable())->setQuery($query),
+            new \Meilisearch\Contracts\SearchQuery()->setIndexUid($prefix . new User()->getTable())->setQuery($query),
         ];
 
         /** @var array{results: array<int, array{hits: array<int, mixed>}>} $response */
@@ -113,6 +125,26 @@ new class extends Component {
             'mod' => $this->processModResults($response['results'][0]['hits']),
             'addon' => $this->processAddonResults($response['results'][1]['hits']),
             'user' => collect($response['results'][2]['hits']),
+        ];
+    }
+
+    /**
+     * Execute search queries using Laravel Scout's driver-agnostic API.
+     *
+     * @return array<string, Collection<int, mixed>>
+     */
+    protected function executeScoutSearch(string $query): array
+    {
+        return [
+            'mod' => $this->processModResults(
+                Mod::search($query)->get()->map->toSearchableArray()->all()
+            ),
+            'addon' => $this->processAddonResults(
+                Addon::search($query)->get()->map->toSearchableArray()->all()
+            ),
+            'user' => collect(
+                User::search($query)->get()->map->toSearchableArray()->all()
+            ),
         ];
     }
 

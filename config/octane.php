@@ -133,7 +133,9 @@ return [
     ],
 
     'flush' => [
-        LaravelDebugbar::class,
+        ...class_exists(LaravelDebugbar::class)
+            ? [LaravelDebugbar::class]
+            : [],
     ],
 
     /*

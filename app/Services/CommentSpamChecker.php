@@ -9,8 +9,10 @@ use App\Models\Comment;
 use App\Support\Akismet\SpamCheckResult;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -45,7 +47,9 @@ final class CommentSpamChecker implements SpamChecker
             return false;
         }
 
-        $cacheKey = 'akismet:verify_key:'.config('akismet.api_key');
+        /** @var string $apiKey */
+        $apiKey = config('akismet.api_key');
+        $cacheKey = 'akismet:verify_key:'.$apiKey;
 
         return Cache::remember($cacheKey, now()->addDay(), function (): bool {
             try {
@@ -210,6 +214,7 @@ final class CommentSpamChecker implements SpamChecker
                 'api_key' => config('akismet.api_key'),
             ]);
 
+            /** @var array<string, mixed>|null */
             return $response->json();
         } catch (Throwable $throwable) {
             Log::error('Failed to retrieve Akismet usage limit', [
@@ -240,8 +245,8 @@ final class CommentSpamChecker implements SpamChecker
             'comment_author' => $comment->user->name,
             'comment_author_email' => $comment->user->email,
             'comment_content' => $comment->body,
-            'comment_date_gmt' => $comment->created_at->utc()->toDateTimeString(),
-            'comment_post_modified_gmt' => $comment->commentable->getAttribute('created_at')?->utc()->toDateTimeString(),
+            'comment_date_gmt' => $comment->created_at?->utc()->toDateTimeString(),
+            'comment_post_modified_gmt' => $comment->commentable->getAttribute('created_at') instanceof Carbon ? $comment->commentable->getAttribute('created_at')->utc()->toDateTimeString() : null,
             'blog_lang' => config('app.locale', 'en'),
             'blog_charset' => 'UTF-8',
         ];
@@ -267,7 +272,11 @@ final class CommentSpamChecker implements SpamChecker
     {
         $client = Http::timeout(self::TIMEOUT_SECONDS)
             ->asForm()
-            ->retry(self::MAX_RETRIES, 100, fn (Exception $exception): bool => $exception instanceof ConnectionException || ($exception instanceof RequestException && $exception->getCode() >= 500));
+            ->retry(
+                self::MAX_RETRIES,
+                100,
+                fn (Throwable $exception, PendingRequest $request, ?string $lastUrl = null): bool => $exception instanceof ConnectionException || ($exception instanceof RequestException && $exception->getCode() >= 500)
+            );
 
         $url = self::BASE_URL.$endpoint;
 

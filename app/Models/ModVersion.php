@@ -84,6 +84,7 @@ final class ModVersion extends Model implements Trackable
      */
     public static function versionNumbers(int $modId): array
     {
+        /** @var array<int, string> */
         return Cache::flexible('mod_version_numbers_'.$modId, [5 * 60, 10 * 60], fn () => self::query()
             ->where('mod_id', $modId)
             ->where('version', '!=', '0.0.0')
@@ -178,7 +179,7 @@ final class ModVersion extends Model implements Trackable
     /**
      * The relationship between a mod version and its SPT versions.
      *
-     * @return BelongsToMany<SptVersion, $this>
+     * @return BelongsToMany<SptVersion, $this, ModVersionSptVersion>
      */
     public function sptVersions(): BelongsToMany
     {
@@ -334,7 +335,7 @@ final class ModVersion extends Model implements Trackable
      * Get the latest unpublished SPT version publish date this mod is pinned to.
      * Returns the furthest date in the future to ensure the mod waits for ALL pinned SPT versions.
      */
-    public function getLatestPinnedSptPublishDate(): Carbon|CarbonImmutable|null
+    public function getLatestPinnedSptPublishDate(): ?CarbonImmutable
     {
         /** @var SptVersion|null $sptVersion */
         $sptVersion = $this->sptVersions()
@@ -408,9 +409,14 @@ final class ModVersion extends Model implements Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('description')->clean(
-                Markdown::convert($this->description)->getContent()
-            )
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
+                    Markdown::convert($this->description)->getContent()
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 

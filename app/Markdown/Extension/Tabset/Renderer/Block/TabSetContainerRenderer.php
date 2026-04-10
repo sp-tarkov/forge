@@ -27,14 +27,18 @@ final class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRen
             $attrs = [];
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
+
         // Add the 'tabset' class by merging with existing classes.
-        $existingClasses = $attrs['class'] ?? '';
-        $separator = empty($existingClasses) ? '' : ' ';
+        $rawClass = $attrs['class'] ?? '';
+        $existingClasses = is_string($rawClass) ? $rawClass : '';
+        $separator = $existingClasses === '' ? '' : ' ';
         $attrs['class'] = mb_trim($existingClasses.$separator.'tabset');
         if (empty($attrs['class'])) {
             unset($attrs['class']);
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
         return new HtmlElement('div', $attrs, $childRenderer->renderNodes($node->children()));
     }
 

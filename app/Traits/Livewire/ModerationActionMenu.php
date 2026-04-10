@@ -6,6 +6,7 @@ namespace App\Traits\Livewire;
 
 use Illuminate\Support\Facades\Cache;
 
+/** @phpstan-ignore trait.unused */
 trait ModerationActionMenu
 {
     /**

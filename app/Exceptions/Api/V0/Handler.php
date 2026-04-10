@@ -71,11 +71,13 @@ final class Handler
      */
     private function determineStatusCode(Throwable $e): int
     {
-        $statusCode = match (true) {
+        $rawStatusCode = match (true) {
             method_exists($e, 'getStatusCode') => $e->getStatusCode(),
-            (is_int($e->getCode()) && $e->getCode() >= 100 && $e->getCode() < 600) => $e->getCode(),
+            ($e->getCode() >= 100 && $e->getCode() < 600) => $e->getCode(),
             default => Response::HTTP_INTERNAL_SERVER_ERROR, // Default to 500
         };
+
+        $statusCode = is_int($rawStatusCode) ? $rawStatusCode : Response::HTTP_INTERNAL_SERVER_ERROR;
 
         // Ensure the status code is a valid HTTP status code key in the Symfony Response class.
         return array_key_exists((string) $statusCode, Response::$statusTexts)

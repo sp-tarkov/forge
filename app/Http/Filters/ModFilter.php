@@ -370,10 +370,11 @@ final class ModFilter
     {
         $cacheKey = $isAdmin ? 'spt-versions:active:admin' : 'spt-versions:active:user';
 
+        /** @var array<int, string> */
         return Cache::flexible(
             $cacheKey,
             [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
-            fn (): array => SptVersion::getVersionsForLastThreeMinors($isAdmin)->pluck('version')->toArray()
+            fn (): array => SptVersion::getVersionsForLastThreeMinors($isAdmin)->pluck('version')->all()
         );
     }
 }

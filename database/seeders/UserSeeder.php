@@ -29,27 +29,33 @@ final class UserSeeder extends Seeder
         // Staff Users
         $staffRole = UserRole::query()->firstOrCreate(
             ['name' => 'Staff'],
-            UserRole::factory()->staff()->make()->toArray()
+            UserRole::factory()->staff()->make()->attributesToArray()
         );
         $this->testAccount = User::factory()->for($staffRole, 'role')->create([
             'email' => 'test@example.com',
         ]);
-        User::factory($counts['staff'] - 1)->for($staffRole, 'role')->create();
+        /** @var int $staffCount */
+        $staffCount = $counts['staff'];
+        User::factory($staffCount - 1)->for($staffRole, 'role')->create();
 
         $this->command->outputComponents()->info('Test account created: '.$this->testAccount->email);
 
         // Moderator Users
         $moderatorRole = UserRole::query()->firstOrCreate(
             ['name' => 'Moderator'],
-            UserRole::factory()->moderator()->make()->toArray()
+            UserRole::factory()->moderator()->make()->attributesToArray()
         );
-        User::factory($counts['moderator'])->for($moderatorRole, 'role')->create();
+        /** @var int $moderatorCount */
+        $moderatorCount = $counts['moderator'];
+        User::factory($moderatorCount)->for($moderatorRole, 'role')->create();
 
         // Regular Users
-        User::withoutEvents(function () use ($counts): void {
+        /** @var int $userCount */
+        $userCount = $counts['user'];
+        User::withoutEvents(function () use ($userCount): void {
             progress(
                 label: 'Adding Users...',
-                steps: $counts['user'],
+                steps: $userCount,
                 callback: fn () => User::factory()->create()
             );
         });

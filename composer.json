@@ -44,6 +44,7 @@
         "driftingly/rector-laravel": "^2.3.0",
         "fakerphp/faker": "^1.24.1",
         "knuckleswtf/scribe": "^5.9",
+        "larastan/larastan": "^3.9",
         "laravel/boost": "^2.4.2",
         "laravel/pail": "^1.2.6",
         "laravel/pint": "^1.29.0",
@@ -80,6 +81,9 @@
         "coverage": [
             "./vendor/bin/pest --type-coverage --min=100"
         ],
+        "phpstan": [
+            "./vendor/bin/phpstan analyse --memory-limit=512M"
+        ],
         "pint": [
             "./vendor/bin/pint --config pint.json"
         ],
@@ -100,6 +104,7 @@
             "composer rector-fix",
             "composer lint",
             "composer pint",
+            "composer phpstan",
             "composer spell",
             "composer coverage",
             "@php artisan test --parallel"
@@ -111,6 +116,7 @@
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
             "@php artisan vendor:publish --tag=livewire:assets --ansi --force",
+            "@php artisan boost:update --ansi",
             "@php artisan clear",
             "@update:requirements"
         ],

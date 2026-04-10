@@ -46,9 +46,7 @@ final class CommentSubscription extends Model
     /**
      * Remove a subscription for a user from a commentable.
      *
-     * @template T of Model
-     *
-     * @param  T&Commentable<T>  $commentable
+     * @param  Model&Commentable<Model>  $commentable
      */
     public static function unsubscribe(User $user, Model&Commentable $commentable): bool
     {

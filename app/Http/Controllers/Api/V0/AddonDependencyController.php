@@ -131,12 +131,16 @@ final class AddonDependencyController extends Controller
         }
 
         // Build dependency trees for each queried addon version, including constraint information
+        /** @var Collection<int, ModResource> $allDependencies */
         $allDependencies = collect();
+        /** @var Collection<int, Collection<int, string>> $constraintsByModId */
         $constraintsByModId = collect();
 
         foreach ($queriedAddonVersionIds as $versionId) {
-            $dependencies = $this->buildDependencyTree($versionId, collect(), $constraintsByModId);
-            if ($dependencies) {
+            /** @var Collection<int, int> $processedVersionIds */
+            $processedVersionIds = collect();
+            $dependencies = $this->buildDependencyTree($versionId, $processedVersionIds, $constraintsByModId);
+            if ($dependencies !== []) {
                 $allDependencies = $allDependencies->merge($dependencies);
             }
         }
@@ -161,7 +165,9 @@ final class AddonDependencyController extends Controller
             ->flatMap(function (Collection $modVersions, int $modId) use ($constraintsByModId) {
                 // If there's only one version of this mod, keep it (no conflict)
                 if ($modVersions->count() === 1) {
-                    $modVersions->first()->resource->conflict = false;
+                    /** @var ModResource $first */
+                    $first = $modVersions->first();
+                    $first->resource->conflict = false;
 
                     return $modVersions;
                 }
@@ -183,17 +189,21 @@ final class AddonDependencyController extends Controller
                 $allVersions = $modVersions->pluck('resource.latestCompatibleVersion.version')->filter();
 
                 // Find versions that satisfy ALL constraints
-                $satisfyingVersions = $allVersions->filter(fn (string $version) => $constraints->every(fn (string $constraint) => Semver::satisfies($version, $constraint)));
+                $satisfyingVersions = $allVersions->filter(fn (mixed $version): bool => is_string($version) && $constraints->every(fn (string $constraint) => Semver::satisfies($version, $constraint)));
 
                 if ($satisfyingVersions->isNotEmpty()) {
                     // Find the highest version that satisfies all constraints (no conflict)
-                    $sortedVersions = Semver::rsort($satisfyingVersions->all());
+                    /** @var array<string> $versionStrings */
+                    $versionStrings = $satisfyingVersions->all();
+                    $sortedVersions = Semver::rsort($versionStrings);
                     $highestSatisfyingVersion = $sortedVersions[0];
 
                     // Keep only the mod resource with this version
                     $filtered = $modVersions->filter(fn (ModResource $resource): bool => $resource->resource->latestCompatibleVersion?->version === $highestSatisfyingVersion)->take(1);
 
-                    $filtered->first()->resource->conflict = false;
+                    /** @var ModResource $firstFiltered */
+                    $firstFiltered = $filtered->first();
+                    $firstFiltered->resource->conflict = false;
 
                     return $filtered;
                 }
@@ -212,16 +222,12 @@ final class AddonDependencyController extends Controller
      *
      * @param  Collection<int, int>  $processedVersionIds  Track visited versions to prevent infinite loops
      * @param  Collection<int, Collection<int, string>>  $constraintsByModId  Collect constraints for each mod
-     * @return array<int, ModResource>|null
+     * @return array<int, ModResource>
      */
-    private function buildDependencyTree(int $addonVersionId, Collection $processedVersionIds, Collection $constraintsByModId): ?array
+    private function buildDependencyTree(int $addonVersionId, Collection $processedVersionIds, Collection $constraintsByModId): array
     {
         // Use service to build the addon dependency tree
         $tree = $this->dependencyService->buildAddonDependencyTree($addonVersionId, $processedVersionIds, $constraintsByModId);
-
-        if (is_null($tree)) {
-            return null;
-        }
 
         if ($tree === []) {
             return [];
@@ -231,6 +237,7 @@ final class AddonDependencyController extends Controller
         return collect($tree)->map(function (array $node) use ($constraintsByModId): ModResource {
             $mod = $node['mod'];
             $latestVersion = $node['latest_version'];
+            /** @var array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}> $subDependencies */
             $subDependencies = $node['dependencies'];
 
             // Attach the latest compatible version and dependencies to the mod (dynamic properties for API response)
@@ -256,6 +263,7 @@ final class AddonDependencyController extends Controller
         return collect($tree)->map(function (array $node) use ($constraintsByModId): ModResource {
             $mod = $node['mod'];
             $latestVersion = $node['latest_version'];
+            /** @var array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}> $subDependencies */
             $subDependencies = $node['dependencies'];
 
             // Attach the latest compatible version and dependencies to the mod

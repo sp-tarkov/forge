@@ -73,6 +73,8 @@ final class YouTubeProcessor
         // For full `youtube.com` links, extract the v parameter
         parse_str(parse_url($url, PHP_URL_QUERY) ?: '', $params);
 
-        return $params['v'] ?? null;
+        $value = $params['v'] ?? null;
+
+        return is_string($value) ? $value : null;
     }
 }

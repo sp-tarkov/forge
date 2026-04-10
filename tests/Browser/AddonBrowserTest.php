@@ -9,7 +9,6 @@ use App\Models\ModVersion;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Support\Sleep;
 
 describe('Addon Browser Tests', function (): void {
 
@@ -78,6 +77,7 @@ describe('Addon Browser Tests', function (): void {
             $page = visit(route('addon.guidelines', ['mod' => $mod->id]));
 
             $page->click('I Understand')
+                ->waitForText('Addon Information')
                 ->click('Create Addon')
                 ->waitForText('The name field is required')
                 ->assertSee('The teaser field is required')
@@ -177,9 +177,6 @@ describe('Addon Browser Tests', function (): void {
                 'name' => 'Unique Search Test Addon',
             ]);
 
-            // Allow Meilisearch time to index (usleep is not faked like Sleep)
-            Sleep::usleep(500_000);
-
             $page = visit('/');
 
             $page->fill('#global-search', 'Unique Search Test')
@@ -194,9 +191,6 @@ describe('Addon Browser Tests', function (): void {
             $addon = Addon::factory()->for($mod)->published()->withVersions(1)->detached()->create([
                 'name' => 'Detached Search Addon',
             ]);
-
-            // Allow Meilisearch time to index (usleep is not faked like Sleep)
-            Sleep::usleep(500_000);
 
             $page = visit('/');
 

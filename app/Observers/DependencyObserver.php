@@ -16,10 +16,7 @@ final readonly class DependencyObserver
      */
     public function saved(Dependency $dependency): void
     {
-        $dependable = $dependency->dependable;
-        if ($dependable !== null) {
-            $this->dependencyVersionService->resolve($dependable);
-        }
+        $this->dependencyVersionService->resolve($dependency->dependable);
     }
 
     /**
@@ -27,9 +24,6 @@ final readonly class DependencyObserver
      */
     public function deleted(Dependency $dependency): void
     {
-        $dependable = $dependency->dependable;
-        if ($dependable !== null) {
-            $this->dependencyVersionService->resolve($dependable);
-        }
+        $this->dependencyVersionService->resolve($dependency->dependable);
     }
 }

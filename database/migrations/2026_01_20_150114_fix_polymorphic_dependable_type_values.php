@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -47,7 +48,7 @@ return new class extends Migration
             // Find malformed records that have a corresponding valid record (user already fixed)
             // These should be deleted as they are duplicates
             $duplicateIds = DB::table('dependencies as malformed')
-                ->join('dependencies as valid', function ($join) use ($malformed, $correct): void {
+                ->join('dependencies as valid', function (JoinClause $join) use ($malformed, $correct): void {
                     $join->on('malformed.dependable_id', '=', 'valid.dependable_id')
                         ->on('malformed.dependent_mod_id', '=', 'valid.dependent_mod_id')
                         ->where('malformed.dependable_type', '=', $malformed)
@@ -77,7 +78,7 @@ return new class extends Migration
             // Find malformed records that have a corresponding valid record (user already fixed)
             // These should be deleted as they are duplicates
             $duplicateIds = DB::table('resolved_dependencies as malformed')
-                ->join('resolved_dependencies as valid', function ($join) use ($malformed, $correct): void {
+                ->join('resolved_dependencies as valid', function (JoinClause $join) use ($malformed, $correct): void {
                     $join->on('malformed.dependable_id', '=', 'valid.dependable_id')
                         ->on('malformed.dependency_id', '=', 'valid.dependency_id')
                         ->on('malformed.resolved_mod_version_id', '=', 'valid.resolved_mod_version_id')

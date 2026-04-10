@@ -75,6 +75,7 @@ final class UpdatePasswordForm extends Component
      */
     public function getUserProperty(): User
     {
+        /** @var User */
         return Auth::user();
     }
 

@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V0;
 
+use App\Models\SptVersion;
 use App\Support\Api\V0\QueryBuilder\SptVersionQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
+/**
+ * @mixin SptVersion
+ *
+ * @property SptVersion $resource
+ */
 final class SptVersionResource extends JsonResource
 {
     /**
@@ -78,11 +84,11 @@ final class SptVersionResource extends JsonResource
         }
 
         if ($this->shouldInclude('created_at')) {
-            $data['created_at'] = $this->resource->created_at?->toISOString();
+            $data['created_at'] = $this->resource->created_at->toISOString();
         }
 
         if ($this->shouldInclude('updated_at')) {
-            $data['updated_at'] = $this->resource->updated_at?->toISOString();
+            $data['updated_at'] = $this->resource->updated_at->toISOString();
         }
 
         return $data;

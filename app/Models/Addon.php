@@ -11,6 +11,7 @@ use App\Models\Scopes\PublishedScope;
 use App\Observers\AddonObserver;
 use App\Traits\HasComments;
 use App\Traits\HasReports;
+use Carbon\CarbonImmutable;
 use Database\Factories\AddonFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -52,7 +53,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $contains_ai_content
  * @property bool $contains_ads
  * @property bool $comments_disabled
- * @property Carbon|null $detached_at
+ * @property CarbonImmutable|null $detached_at
  * @property int|null $detached_by_user_id
  * @property bool $discord_notification_sent
  * @property Carbon|null $published_at
@@ -497,7 +498,12 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn () => Markdown::convert(Purify::clean($this->description ?? ''))->getContent(),
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::clean($this->description ?? '');
+
+                return Markdown::convert($clean)->getContent();
+            },
         );
     }
 
@@ -520,6 +526,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
      */
     protected function thumbnailUrl(): Attribute
     {
+        /** @var string $disk */
         $disk = config('filesystems.asset_upload', 'public');
 
         return Attribute::get(fn (): string => $this->thumbnail

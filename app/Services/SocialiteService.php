@@ -120,8 +120,11 @@ final class SocialiteService
      */
     private function getMfaStatus(string $provider, ProviderUser $providerUser): ?bool
     {
+        /** @var \Laravel\Socialite\Two\User $providerUser */
+        $userData = (array) $providerUser->user;
+
         return match ($provider) {
-            'discord' => $providerUser->user['mfa_enabled'] ?? null,
+            'discord' => isset($userData['mfa_enabled']) ? (bool) $userData['mfa_enabled'] : null,
             default => null,
         };
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Events\PeakVisitorUpdated;
+use Database\Factories\PeakVisitorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
  */
 final class PeakVisitor extends Model
 {
+    /** @use HasFactory<PeakVisitorFactory> */
     use HasFactory;
 
     /**
@@ -32,7 +34,7 @@ final class PeakVisitor extends Model
 
         broadcast(new PeakVisitorUpdated(
             $count,
-            $peak->created_at->format('M j, Y')
+            $peak->created_at?->format('M j, Y') ?? ''
         ));
     }
 

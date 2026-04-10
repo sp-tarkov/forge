@@ -22,11 +22,11 @@ final class ModRssFeedController extends Controller
         // Get the filters from the request
         /** @var array<string, string|array<int, string>> $filters */
         $filters = [
-            'query' => (string) $request->get('query', ''),
-            'order' => (string) $request->get('order', 'created'),
+            'query' => $request->string('query', '')->toString(),
+            'order' => $request->string('order', 'created')->toString(),
             'sptVersions' => $this->parseSptVersions($request),
-            'featured' => (string) $request->get('featured', 'include'),
-            'category' => (string) $request->get('category', ''),
+            'featured' => $request->string('featured', 'include')->toString(),
+            'category' => $request->string('category', '')->toString(),
         ];
 
         // Apply filters using the same ModFilter class
@@ -51,6 +51,7 @@ final class ModRssFeedController extends Controller
      */
     private function parseSptVersions(Request $request): string|array
     {
+        /** @var string|array<int, string>|null $versions */
         $versions = $request->get('versions');
 
         if (! $versions) {
@@ -132,14 +133,14 @@ final class ModRssFeedController extends Controller
             }
 
             $xml .= '<dc:creator>'.htmlspecialchars($mod->owner->name ?? 'Unknown', ENT_XML1).'</dc:creator>';
-            $xml .= '<pubDate>'.$mod->created_at->toRssString().'</pubDate>';
+            $xml .= '<pubDate>'.$mod->created_at?->toRssString().'</pubDate>';
 
             if ($mod->thumbnail_url !== '') {
                 $xml .= '<enclosure url="'.htmlspecialchars((string) $mod->thumbnail_url, ENT_XML1).'" type="image/png" length="0"/>';
             }
 
             if ($latestVersion !== null) {
-                $xml .= '<dc:date>'.$latestVersion->created_at->toIso8601String().'</dc:date>';
+                $xml .= '<dc:date>'.$latestVersion->created_at?->toIso8601String().'</dc:date>';
                 $xml .= '<dc:identifier>v'.htmlspecialchars($latestVersion->version, ENT_XML1).'</dc:identifier>';
             }
 

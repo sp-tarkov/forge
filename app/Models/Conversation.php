@@ -454,7 +454,10 @@ final class Conversation extends Model
 
             // If we have a cached unread_messages_count (from withCount), use it
             if (isset($this->attributes['unread_messages_count'])) {
-                return (int) $this->attributes['unread_messages_count'];
+                /** @var int|string $count */
+                $count = $this->attributes['unread_messages_count'];
+
+                return (int) $count;
             }
 
             // Otherwise calculate it

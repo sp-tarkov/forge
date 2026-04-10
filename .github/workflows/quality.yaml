@@ -108,6 +108,31 @@ jobs:
           commit_user_email: me@refringe.com
           commit_author: Refringe <me@refringe.com>
 
+  phpstan:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.5
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: PHPStan Cache
+        uses: actions/cache@v5
+        with:
+          path: /tmp/phpstan
+          key: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon') }}-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon') }}-
+
+      - name: Execute PHPStan Analysis
+        run: php vendor/bin/phpstan analyse --no-progress
+
   security:
     name: Security Check
     runs-on: ubuntu-latest

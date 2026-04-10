@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\ModVersion;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -24,13 +25,18 @@ return new class extends Migration
         });
 
         // Migrate existing ModVersion VirusTotal links
-        ModVersion::query()
+        DB::table('mod_versions')
             ->whereNotNull('virus_total_link')
             ->where('virus_total_link', '!=', '')
-            ->each(function (ModVersion $modVersion): void {
-                $modVersion->virusTotalLinks()->create([
-                    'url' => $modVersion->virus_total_link,
+            ->orderBy('id')
+            ->each(function (object $row): void {
+                DB::table('virus_total_links')->insert([
+                    'linkable_type' => ModVersion::class,
+                    'linkable_id' => $row->id,
+                    'url' => $row->virus_total_link,
                     'label' => '',
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             });
 

@@ -27,7 +27,12 @@ final class VirusTotalLinkFactory extends Factory
             'url' => 'https://www.virustotal.com/gui/file/'.$hash,
             'label' => $this->faker->optional(0.3, '')->randomElement(['Main File', 'Alternative Download', 'Mirror']),
             'linkable_type' => $this->faker->randomElement([ModVersion::class, AddonVersion::class]),
-            'linkable_id' => fn (array $attributes) => $attributes['linkable_type']::factory(),
+            'linkable_id' => function (array $attributes) {
+                /** @var class-string<ModVersion>|class-string<AddonVersion> $modelClass */
+                $modelClass = $attributes['linkable_type'];
+
+                return $modelClass::factory();
+            },
         ];
     }
 

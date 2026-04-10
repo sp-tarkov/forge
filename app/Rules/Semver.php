@@ -21,6 +21,7 @@ final class Semver implements ValidationRule
     {
         try {
             // Attempt to parse the version using the Version class.
+            /** @var int|string $value */
             new Version($value);
         } catch (Exception) {
             $fail(__('Please enter a valid semantic version number.'));

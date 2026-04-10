@@ -41,7 +41,7 @@ final class UserBannedNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $appName = config('app.name');
+        $appName = config()->string('app.name');
 
         /** @var Carbon|null $expiredAt */
         $expiredAt = $this->ban->getAttribute('expired_at');

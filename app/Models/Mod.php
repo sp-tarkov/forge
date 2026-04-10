@@ -132,6 +132,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
 
         // Get the cached download count (the count that was last indexed in search)
         // If no cache exists, use the current downloads value as baseline
+        /** @var int $cachedDownloads */
         $cachedDownloads = Cache::get($cacheKey, $this->downloads);
 
         // Calculate the new actual download count
@@ -287,8 +288,8 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
             'thumbnail' => $this->thumbnailUrl,
             'featured' => $this->featured,
             'downloads' => $this->downloads,
-            'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at->timestamp,
+            'created_at' => $this->created_at?->timestamp,
+            'updated_at' => $this->updated_at?->timestamp,
             'published_at' => $this->published_at?->timestamp,
             'latestVersion' => $this->latestVersion?->latestSptVersion?->version_formatted,
             'latestVersionColorClass' => $this->latestVersion?->latestSptVersion?->color_class,
@@ -531,7 +532,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Get contextual information about this trackable resource.
      */
-    public function getTrackingContext(): ?string
+    public function getTrackingContext(): string
     {
         return $this->description;
     }
@@ -653,6 +654,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
      */
     protected function thumbnailUrl(): Attribute
     {
+        /** @var string $disk */
         $disk = config('filesystems.asset_upload', 'public');
 
         return Attribute::get(fn (): string => $this->thumbnail
@@ -704,8 +706,8 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     protected function slug(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value) => $value ? Str::lower($value) : '',
-            set: fn (?string $value) => $value ? Str::slug($value) : '',
+            get: fn (mixed $value): string => is_string($value) ? Str::lower($value) : '',
+            set: fn (?string $value): string => $value ? Str::slug($value) : '',
         );
     }
 
@@ -717,11 +719,18 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->description
-                ? Purify::config('description')->clean(
+            get: function (): string {
+                if (! $this->description) {
+                    return '';
+                }
+
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
                     Markdown::convert($this->description)->getContent()
-                )
-                : ''
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 

@@ -257,9 +257,14 @@ final class Message extends Model
     protected function contentHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('messages')->clean(
-                Markdown::convert($this->content)->getContent()
-            )
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('messages')->clean(
+                    Markdown::convert($this->content)->getContent()
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 }

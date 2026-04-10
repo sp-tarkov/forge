@@ -60,8 +60,10 @@ final class NotificationSeeder extends Seeder
                 $commentable = $mods->random();
             } else {
                 // Comment on a random user's profile
-                $profileUser = User::query()->inRandomOrder()->first();
-                $commentable = $profileUser;
+                $commentable = User::query()->inRandomOrder()->first();
+                if (! $commentable) {
+                    continue;
+                }
             }
 
             // Create a comment
@@ -112,6 +114,6 @@ final class NotificationSeeder extends Seeder
      */
     private function getCommentUrl(Comment $comment): string
     {
-        return $comment->getUrl();
+        return $comment->getUrl() ?? '';
     }
 }

@@ -17,7 +17,7 @@ final class ChatSubscriptionController extends Controller
     public function unsubscribe(Request $request, User $user, string $conversationHashId): RedirectResponse
     {
         // Verify the signed URL
-        abort_unless($request->hasValidSignature(), 403);
+        abort_unless((bool) $request->hasValidSignature(), 403);
 
         // Find the conversation by hash ID
         $conversation = Conversation::findByHashId($conversationHashId);

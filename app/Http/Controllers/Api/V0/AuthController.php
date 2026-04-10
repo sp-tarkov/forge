@@ -90,7 +90,11 @@ final class AuthController extends Controller
         }
 
         // Does the provided password match the stored hash?
-        if (! Hash::check($validated['password'], $user->password)) {
+        /** @var string $password */
+        $password = $validated['password'];
+        /** @var string $userPassword */
+        $userPassword = $user->password;
+        if (! Hash::check($password, $userPassword)) {
             return ApiResponse::error(
                 'Invalid credentials provided.',
                 Response::HTTP_UNAUTHORIZED,
@@ -101,17 +105,21 @@ final class AuthController extends Controller
         // Authentication Successful
 
         // Determine token name
+        /** @var string $tokenName */
         $tokenName = $validated['token_name'] ?? 'auth_token_'.Str::random(5);
 
         // Determine and filter abilities
         $allowedAbilities = ['create', 'read', 'update', 'delete'];
+        /** @var array<int, string> $requestedAbilities */
         $requestedAbilities = $validated['abilities'] ?? ['read'];
         $validAbilities = array_values(array_intersect($requestedAbilities, $allowedAbilities));
 
         if (! in_array('read', $validAbilities, true)) {
+            /** @var array<int, string> $validAbilities */
             $validAbilities = Arr::prepend($validAbilities, 'read');
         }
 
+        /** @var array<int, string> $abilitiesToGrant */
         $abilitiesToGrant = array_values(array_unique($validAbilities));
 
         // Create the token
@@ -143,7 +151,9 @@ final class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        /** @var User $user */
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
 
         return ApiResponse::success(['message' => 'Current token revoked successfully.']);
     }
@@ -171,7 +181,9 @@ final class AuthController extends Controller
      */
     public function logoutAll(Request $request): JsonResponse
     {
-        $request->user()->tokens()->delete();
+        /** @var User $user */
+        $user = $request->user();
+        $user->tokens()->delete();
 
         return ApiResponse::success(['message' => 'All tokens revoked successfully.']);
     }
@@ -228,11 +240,14 @@ final class AuthController extends Controller
      */
     public function user(Request $request): JsonResponse
     {
+        /** @var User $authUser */
+        $authUser = $request->user();
+
         $queryBuilder = (new UserQueryBuilder)
-            ->withFilters(['id' => $request->user()->id])
+            ->withFilters(['id' => $authUser->id])
             ->withIncludes($request->string('include')->explode(',')->all());
 
-        $user = $queryBuilder->findOrFail($request->user()->id);
+        $user = $queryBuilder->findOrFail($authUser->id);
 
         return ApiResponse::success(new UserResource($user));
     }
@@ -280,6 +295,7 @@ final class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
+        /** @var array{name: string, email: string, password: string, timezone: string} $validated */
         $validated = $request->validated();
 
         $user = User::query()->create([
@@ -367,7 +383,7 @@ final class AuthController extends Controller
      */
     public function abilities(Request $request): JsonResponse
     {
-        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $token = PersonalAccessToken::findToken((string) $request->bearerToken());
 
         if (! $token) {
             // This should never happen, as the middleware should ensure a valid token is present. Just in case...

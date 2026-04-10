@@ -86,6 +86,7 @@ final class AddonVersionService
             }
         });
 
+        /** @var array<int> */
         return $compatibleVersions->pluck('id')->toArray();
     }
 }

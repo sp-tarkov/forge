@@ -33,6 +33,7 @@ final class TrackingEventFactory extends Factory
      */
     public function definition(): array
     {
+        /** @var TrackingEventType $eventType */
         $eventType = $this->faker->randomElement(TrackingEventType::cases());
         $isAuthenticated = $this->faker->boolean(70); // 70% chance of authenticated user
 

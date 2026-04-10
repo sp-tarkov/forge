@@ -42,7 +42,9 @@ final class ProcessCommentNotification implements ShouldQueue
     public function __construct(
         public Comment $comment
     ) {
-        $this->notifiedUserIds = collect();
+        /** @var Collection<int, int> $emptyCollection */
+        $emptyCollection = collect();
+        $this->notifiedUserIds = $emptyCollection;
     }
 
     /**
@@ -75,7 +77,9 @@ final class ProcessCommentNotification implements ShouldQueue
         }
 
         // Reset notified users for this run
-        $this->notifiedUserIds = collect();
+        /** @var Collection<int, int> $emptyCollection */
+        $emptyCollection = collect();
+        $this->notifiedUserIds = $emptyCollection;
 
         // Step 1: Handle direct reply notification (if this is a reply to another comment)
         $this->handleReplyNotification($freshComment);
@@ -100,9 +104,6 @@ final class ProcessCommentNotification implements ShouldQueue
         }
 
         $parentAuthor = $parentComment->user;
-        if ($parentAuthor === null) {
-            return;
-        }
 
         // Don't notify if the parent author is the same as the comment author
         if ($parentAuthor->id === $comment->user_id) {
@@ -127,16 +128,12 @@ final class ProcessCommentNotification implements ShouldQueue
 
         try {
             DB::transaction(function () use ($parentAuthor, $comment): void {
-                $notificationType = $parentAuthor->email_reply_notifications_enabled
-                    ? NotificationType::ALL
-                    : NotificationType::DATABASE;
-
                 // Record the notification log entry first
                 NotificationLog::recordSent(
                     $comment,
                     $parentAuthor->id,
                     CommentReplyNotification::class,
-                    $notificationType
+                    NotificationType::ALL
                 );
 
                 // Send the reply notification

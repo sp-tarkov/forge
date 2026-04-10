@@ -196,8 +196,18 @@ final class AppServiceProvider extends ServiceProvider
             ?>");
 
         // Email verification directives
-        Blade::if('verified', fn (): bool => auth()->check() && auth()->user()->hasVerifiedEmail());
-        Blade::if('unverified', fn (): bool => auth()->check() && ! auth()->user()->hasVerifiedEmail());
+        Blade::if('verified', function (): bool {
+            /** @var User|null $user */
+            $user = auth()->user();
+
+            return $user !== null && $user->hasVerifiedEmail();
+        });
+        Blade::if('unverified', function (): bool {
+            /** @var User|null $user */
+            $user = auth()->user();
+
+            return $user !== null && ! $user->hasVerifiedEmail();
+        });
 
         // CachedGate directives
         Blade::if('cachedCan', function (string $ability, mixed ...$arguments): bool {

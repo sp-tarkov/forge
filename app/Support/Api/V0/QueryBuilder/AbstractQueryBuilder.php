@@ -49,7 +49,7 @@ abstract class AbstractQueryBuilder
     /**
      * The sort parameters for the query.
      *
-     * @var array<string, string>
+     * @var array<string>
      */
     protected array $sorts = [];
 
@@ -312,8 +312,12 @@ abstract class AbstractQueryBuilder
             return;
         }
 
-        // Get the search results with their relevance ordering and ranking scores
-        $searchResults = $model->search($this->searchQuery)->options(['showRankingScore' => true])->raw();
+        // Get the search results with their relevance ordering and ranking scores (model uses Searchable trait, verified above)
+        assert(method_exists($model, 'search'));
+        /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
+        $scoutBuilder = $model->search($this->searchQuery);
+        /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */
+        $searchResults = $scoutBuilder->options(['showRankingScore' => true])->raw();
 
         if (empty($searchResults['hits'])) {
             // If no search results, force no records to be returned
@@ -323,7 +327,9 @@ abstract class AbstractQueryBuilder
         }
 
         // Sort results by version segments first, then by ranking score
-        $sortedHits = collect($searchResults['hits'])
+        /** @var array<int, array<string, mixed>> $hits */
+        $hits = $searchResults['hits'];
+        $sortedHits = collect($hits)
             ->sortBy([
                 ['latestVersionMajor', 'desc'],
                 ['latestVersionMinor', 'desc'],
@@ -345,8 +351,8 @@ abstract class AbstractQueryBuilder
         }
 
         // Filter the main query by these IDs and preserve the order from Scout
-        $this->builder->whereIn($model->getQualifiedKeyName(), $orderedIds)
-            ->orderByRaw('FIELD('.$model->getQualifiedKeyName().', '.implode(',', array_map(intval(...), $orderedIds)).')');
+        $this->builder->whereIn($model->getQualifiedKeyName(), $orderedIds);
+        $this->preserveScoutOrder($model, $orderedIds);
     }
 
     /**
@@ -538,5 +544,32 @@ abstract class AbstractQueryBuilder
                 $this->builder->orderBy($column, $isReverse ? 'desc' : 'asc');
             }
         }
+    }
+
+    /**
+     * Preserve search result ordering using FIELD() with parameterized bindings.
+     *
+     * @param  TModel  $model
+     * @param  list<int|string>  $orderedIds
+     */
+    private function preserveScoutOrder(Model $model, array $orderedIds): void
+    {
+        // Build CASE WHEN ordering to preserve Scout relevance order without dynamic SQL
+        $intIds = array_map(intval(...), $orderedIds);
+        $bindings = [];
+        $cases = [];
+
+        foreach ($intIds as $position => $id) {
+            $cases[] = 'WHEN ? THEN ?';
+            $bindings[] = $id;
+            $bindings[] = $position;
+        }
+
+        $caseExpression = 'CASE '.$model->getQualifiedKeyName().' '.implode(' ', $cases).' END';
+        $this->builder->getQuery()->orders[] = [
+            'type' => 'Raw',
+            'sql' => $caseExpression,
+        ];
+        $this->builder->getQuery()->addBinding($bindings, 'order');
     }
 }

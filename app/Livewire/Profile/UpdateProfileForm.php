@@ -10,7 +10,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Livewire\Component;
-use Livewire\Features\SupportRedirects\Redirector;
 use Livewire\WithFileUploads;
 
 final class UpdateProfileForm extends Component
@@ -44,12 +43,16 @@ final class UpdateProfileForm extends Component
      */
     public function mount(): void
     {
+        /** @var User $user */
         $user = Auth::user();
+
+        /** @var array<string, mixed> $userArray */
+        $userArray = $user->withoutRelations()->toArray();
 
         $this->state = array_merge([
             'email' => $user->email,
             'about' => $user->about ?? '',
-        ], $user->withoutRelations()->toArray());
+        ], $userArray);
     }
 
     /**
@@ -75,12 +78,15 @@ final class UpdateProfileForm extends Component
     /**
      * Update the user's profile information.
      */
-    public function updateProfileInformation(UpdatesUserProfileInformation $updater): RedirectResponse|Redirector|null
+    public function updateProfileInformation(UpdatesUserProfileInformation $updater): ?RedirectResponse
     {
         $this->resetErrorBag();
 
+        /** @var User $user */
+        $user = Auth::user();
+
         $updater->update(
-            Auth::user(),
+            $user,
             $this->photo || $this->cover
                 ? array_merge($this->state, array_filter([
                     'photo' => $this->photo,
@@ -104,7 +110,9 @@ final class UpdateProfileForm extends Component
      */
     public function deleteProfilePhoto(): void
     {
-        Auth::user()->deleteProfilePhoto();
+        /** @var User $user */
+        $user = Auth::user();
+        $user->deleteProfilePhoto();
 
         $this->dispatch('refresh-navigation-menu');
     }
@@ -114,7 +122,9 @@ final class UpdateProfileForm extends Component
      */
     public function deleteCoverPhoto(): void
     {
-        Auth::user()->deleteCoverPhoto();
+        /** @var User $user */
+        $user = Auth::user();
+        $user->deleteCoverPhoto();
 
         $this->dispatch('refresh-navigation-menu');
     }
@@ -124,7 +134,9 @@ final class UpdateProfileForm extends Component
      */
     public function sendEmailVerification(): void
     {
-        Auth::user()->sendEmailVerificationNotification();
+        /** @var User $user */
+        $user = Auth::user();
+        $user->sendEmailVerificationNotification();
 
         $this->verificationLinkSent = true;
     }
@@ -134,6 +146,7 @@ final class UpdateProfileForm extends Component
      */
     public function getUserProperty(): User
     {
+        /** @var User */
         return Auth::user();
     }
 

@@ -27,8 +27,8 @@ final class LicenseResource extends JsonResource
             'hub_id' => $this->hub_id,
             'name' => $this->name,
             'link' => $this->link,
-            'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }

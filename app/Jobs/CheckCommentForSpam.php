@@ -92,7 +92,9 @@ final class CheckCommentForSpam implements ShouldQueue
      */
     private function getMaxRecheckAttempts(): int
     {
-        return config('comments.spam.max_recheck_attempts', 3);
+        $value = config('comments.spam.max_recheck_attempts', 3);
+
+        return is_int($value) ? $value : 3;
     }
 
     /**

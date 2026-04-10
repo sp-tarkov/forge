@@ -28,12 +28,14 @@ return new class extends Migration
                 ->get();
 
             // Skip the first user, rename subsequent ones
+            /** @var string $duplicateName */
+            $duplicateName = $duplicate->name;
             foreach ($users->skip(1) as $index => $user) {
-                $newName = $duplicate->name.($index + 1);
+                $newName = $duplicateName.((int) $index + 1);
 
                 // Ensure the new name doesn't already exist
                 while (DB::table('users')->where('name', $newName)->exists()) {
-                    $newName = $duplicate->name.($index + 2);
+                    $newName = $duplicateName.((int) $index + 2);
                 }
 
                 DB::table('users')

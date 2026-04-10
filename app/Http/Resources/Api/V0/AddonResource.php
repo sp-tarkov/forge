@@ -109,11 +109,11 @@ final class AddonResource extends JsonResource
         }
 
         if ($this->shouldInclude('created_at')) {
-            $data['created_at'] = $this->resource->created_at->toISOString();
+            $data['created_at'] = $this->resource->created_at?->toISOString();
         }
 
         if ($this->shouldInclude('updated_at')) {
-            $data['updated_at'] = $this->resource->updated_at->toISOString();
+            $data['updated_at'] = $this->resource->updated_at?->toISOString();
         }
 
         // Handle relationships - owner and additional_authors are always included
@@ -128,13 +128,11 @@ final class AddonResource extends JsonResource
         $data['versions'] = AddonVersionResource::collection($this->whenLoaded('versions', fn () =>
             // Limit versions in list view to the 6 most recent versions
             $this->resource->versions
-                ->sortBy([
-                    ['version_major', 'desc'],
-                    ['version_minor', 'desc'],
-                    ['version_patch', 'desc'],
-                    [fn (AddonVersion $a, AddonVersion $b): int => ($a->version_labels === '' ? 0 : 1) <=> ($b->version_labels === '' ? 0 : 1), 'asc'],
-                    ['version_labels', 'asc'],
-                ])
+                ->sort(fn (AddonVersion $a, AddonVersion $b): int => $b->version_major <=> $a->version_major
+                    ?: $b->version_minor <=> $a->version_minor
+                    ?: $b->version_patch <=> $a->version_patch
+                    ?: ($a->version_pre_release === '' ? 0 : 1) <=> ($b->version_pre_release === '' ? 0 : 1)
+                    ?: $a->version_pre_release <=> $b->version_pre_release)
                 ->take(6)));
 
         return $data;

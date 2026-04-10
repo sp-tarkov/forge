@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Services\AddonVersionService;
 
@@ -47,6 +48,8 @@ final readonly class AddonVersionObserver
      */
     private function updateRelatedAddon(AddonVersion $addonVersion): void
     {
-        $addonVersion->addon?->calculateDownloads();
+        /** @var Addon|null $addon */
+        $addon = $addonVersion->addon;
+        $addon?->calculateDownloads();
     }
 }

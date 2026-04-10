@@ -20,6 +20,7 @@ final class StartConversationController extends Controller
     {
         abort_if(Gate::denies('initiateChat', $user), 403);
 
+        /** @var User $currentUser */
         $currentUser = Auth::user();
 
         // Find or create the conversation

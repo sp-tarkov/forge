@@ -20,6 +20,7 @@ final class ModCategoryFactory extends Factory
      */
     public function definition(): array
     {
+        /** @var string $title */
         $title = fake()->unique()->words(random_int(2, 4), true);
 
         return [

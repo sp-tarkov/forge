@@ -219,7 +219,12 @@ final class AddonVersion extends Model
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn () => Markdown::convert(Purify::clean($this->description ?? ''))->getContent(),
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::clean($this->description ?? '');
+
+                return Markdown::convert($clean)->getContent();
+            },
         );
     }
 

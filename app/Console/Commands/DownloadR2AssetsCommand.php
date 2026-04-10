@@ -36,12 +36,24 @@ final class DownloadR2AssetsCommand extends Command
 
         // Apply filter if specified
         if ($filter = $this->option('filter')) {
-            $r2Files = array_filter($r2Files, fn (string $file): bool => Str::is($filter, $file));
+            /** @var string $filterPattern */
+            $filterPattern = $filter;
+            $r2Files = array_filter($r2Files, static function (mixed $file) use ($filterPattern): bool {
+                /** @var string $path */
+                $path = $file;
+
+                return Str::is($filterPattern, $path);
+            });
         }
 
         // Skip existing files
         $initialCount = count($r2Files);
-        $r2Files = array_filter($r2Files, fn (string $file): bool => ! Storage::disk('public')->exists($file));
+        $r2Files = array_filter($r2Files, static function (mixed $file): bool {
+            /** @var string $path */
+            $path = $file;
+
+            return ! Storage::disk('public')->exists($path);
+        });
         $skipped = $initialCount - count($r2Files);
 
         if ($skipped > 0) {
@@ -59,7 +71,7 @@ final class DownloadR2AssetsCommand extends Command
         $progressBar = $this->output->createProgressBar(count($r2Files));
         $progressBar->start();
 
-        $chunkSize = (int) $this->option('chunk');
+        $chunkSize = max(1, (int) $this->option('chunk'));
         $allResults = [];
 
         // Process files in chunks to avoid "too many open files" error
@@ -67,16 +79,18 @@ final class DownloadR2AssetsCommand extends Command
             // Create download tasks for this chunk
             $tasks = [];
             foreach ($chunk as $file) {
-                $tasks[] = function () use ($file): bool {
+                /** @var string $filePath */
+                $filePath = $file;
+                $tasks[] = function () use ($filePath): bool {
                     try {
                         // Recreate disk instances inside the closure to avoid serialization
-                        $contents = Storage::disk('r2')->get($file);
+                        $contents = Storage::disk('r2')->get($filePath);
 
                         if ($contents === null) {
                             return false;
                         }
 
-                        Storage::disk('public')->put($file, $contents);
+                        Storage::disk('public')->put($filePath, $contents);
 
                         return true;
                     } catch (Exception) {

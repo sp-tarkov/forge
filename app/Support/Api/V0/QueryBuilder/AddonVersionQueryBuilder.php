@@ -187,6 +187,7 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
+        /** @var array<string> $allVersionNumbers */
         $allVersionNumbers = AddonVersion::query()->where('addon_id', $this->addonId)
             ->pluck('version')
             ->all();

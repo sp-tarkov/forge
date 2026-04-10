@@ -10,6 +10,7 @@ use App\Models\Addon;
 use App\Models\AddonVersion;
 use Illuminate\Support\Facades\Auth;
 
+/** @phpstan-ignore trait.unused */
 trait ModeratesAddon
 {
     /**

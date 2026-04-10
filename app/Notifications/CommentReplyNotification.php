@@ -42,7 +42,7 @@ final class CommentReplyNotification extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(User $notifiable): MailMessage
     {
         /** @var Commentable<Model>|null $commentable */
         $commentable = $this->comment->commentable;
@@ -67,10 +67,10 @@ final class CommentReplyNotification extends Notification
             ->line('')
             ->line('> '.Str::limit($this->comment->body, 500))
             ->line('')
-            ->action('View Reply', $this->comment->getUrl())
+            ->action('View Reply', $this->comment->getUrl() ?? '')
             ->line('')
             ->line(sprintf('You can [unsubscribe](%s) from notifications for this %s.', $unsubscribeUrl, $commentableType))
-            ->salutation('Regards,  '."\n".config('app.name'));
+            ->salutation('Regards,  '."\n".config()->string('app.name'));
     }
 
     /**

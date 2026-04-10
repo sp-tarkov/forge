@@ -27,8 +27,11 @@ final class UpdateUserPassword implements UpdatesUserPasswords
             'current_password.current_password' => __('The provided password does not match your current password.'),
         ])->validateWithBag('updatePassword');
 
+        /** @var string $password */
+        $password = $input['password'];
+
         $user->forceFill([
-            'password' => Hash::make($input['password']),
+            'password' => Hash::make($password),
         ])->save();
     }
 }

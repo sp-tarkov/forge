@@ -410,8 +410,11 @@ final class ModUpdateController extends Controller
         }
 
         // Validate transitive dependencies
+        /** @var Collection<int, Collection<int, string>> $constraintsByModId */
         $constraintsByModId = collect();
-        $dependencyTree = $this->dependencyService->buildDependencyTree($candidate->id, collect(), $constraintsByModId);
+        /** @var Collection<int, int> $processedVersionIds */
+        $processedVersionIds = collect();
+        $dependencyTree = $this->dependencyService->buildDependencyTree($candidate->id, $processedVersionIds, $constraintsByModId);
 
         if (! is_null($dependencyTree)) {
             // Check for conflicts in transitive dependencies
@@ -419,10 +422,11 @@ final class ModUpdateController extends Controller
                 $modId = $installedMod->mod_id;
 
                 if ($constraintsByModId->has($modId)) {
+                    /** @var Collection<int, string> $constraints */
                     $constraints = $constraintsByModId->get($modId);
 
                     foreach ($constraints as $constraint) {
-                        if (! Semver::satisfies($installedMod->version, $constraint)) {
+                        if (! Semver::satisfies($installedMod->version, (string) $constraint)) {
                             return [
                                 'valid' => false,
                                 'block_reason' => 'chain_dependency_conflict',
@@ -492,7 +496,7 @@ final class ModUpdateController extends Controller
                 'version' => $latestVersion->version,
                 'spt_versions' => $latestVersion->sptVersions->pluck('version')->toArray(),
             ],
-            'block_reason' => $validationResult['block_reason'],
+            'block_reason' => $validationResult['block_reason'] ?? 'unknown',
         ];
 
         if (isset($validationResult['blocking_mods'])) {

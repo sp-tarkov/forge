@@ -50,6 +50,9 @@ final class StartChatButton extends Component
             return false;
         }
 
-        return Auth::user()->can('initiateChat', $this->user);
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $user->can('initiateChat', $this->user);
     }
 }

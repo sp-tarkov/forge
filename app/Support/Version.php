@@ -24,7 +24,7 @@ final class Version implements Stringable
         private int $patch = 0,
         private string $labels = '',
     ) {
-        $this->version = Str::ltrim($this->version, 'v');
+        $this->version = Str::ltrim((string) $this->version, 'v');
 
         $this->parse();
     }
@@ -43,7 +43,7 @@ final class Version implements Stringable
     public static function cleanSptImport(string $version): self
     {
         // Remove leading 'SPT' and trailing build number. EZ.
-        $cleanedVersion = preg_replace('/^SPT\s+(\d+\.\d+\.\d+).*/', '$1', $version);
+        $cleanedVersion = preg_replace('/^SPT\s+(\d+\.\d+\.\d+).*/', '$1', $version) ?? $version;
 
         return new self($cleanedVersion);
     }
@@ -174,7 +174,7 @@ final class Version implements Stringable
             $labels .= Str::trim('-'.$matches['prerelease']);
         }
 
-        if (isset($matches['buildMetadata']) && ($matches['buildMetadata'] !== '' && $matches['buildMetadata'] !== '0')) {
+        if (isset($matches['buildMetadata']) && $matches['buildMetadata'] !== '0') {
             $labels .= Str::trim('+'.$matches['buildMetadata']);
         }
 

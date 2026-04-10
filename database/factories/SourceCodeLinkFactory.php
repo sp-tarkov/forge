@@ -28,6 +28,7 @@ final class SourceCodeLinkFactory extends Factory
     public function definition(): array
     {
         $providers = ['github.com', 'gitlab.com', 'bitbucket.org'];
+        /** @var string $provider */
         $provider = $this->faker->randomElement($providers);
 
         return [
