@@ -9,6 +9,7 @@ use App\Models\ModVersion;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Support\Sleep;
 
 describe('Addon Browser Tests', function (): void {
 
@@ -26,7 +27,7 @@ describe('Addon Browser Tests', function (): void {
     function createVisibleMod(array $modAttributes = [], ?User $owner = null): Mod
     {
         $factory = Mod::factory();
-        if ($owner) {
+        if ($owner instanceof User) {
             $factory = $factory->for($owner, 'owner');
         }
 
@@ -78,7 +79,7 @@ describe('Addon Browser Tests', function (): void {
 
             $page->click('I Understand')
                 ->click('Create Addon')
-                ->assertSee('The name field is required')
+                ->waitForText('The name field is required')
                 ->assertSee('The teaser field is required')
                 ->assertSee('The description field is required')
                 ->assertNoJavascriptErrors();
@@ -177,7 +178,7 @@ describe('Addon Browser Tests', function (): void {
             ]);
 
             // Allow Meilisearch time to index (usleep is not faked like Sleep)
-            usleep(500_000);
+            Sleep::usleep(500_000);
 
             $page = visit('/');
 
@@ -195,7 +196,7 @@ describe('Addon Browser Tests', function (): void {
             ]);
 
             // Allow Meilisearch time to index (usleep is not faked like Sleep)
-            usleep(500_000);
+            Sleep::usleep(500_000);
 
             $page = visit('/');
 

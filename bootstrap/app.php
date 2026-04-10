@@ -54,7 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register the custom exception handler for the API.
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/v0/*') || $request->expectsJson()) {
-                return (new ApiV0ExceptionHandler)->render($e, $request);
+                return (new ApiV0ExceptionHandler)->render($e);
             }
         });
     })
