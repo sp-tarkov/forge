@@ -22,7 +22,8 @@ beforeEach(function (): void {
 
     // Set test webhook URL and use sync queue for testing
     config([
-        'discord-alerts.webhook_urls.mods' => 'https://discord.com/api/webhooks/test',
+        'discord-alerts.webhook_urls.mods' => 'https://discord.com/api/webhooks/test-mods',
+        'discord-alerts.webhook_urls.addons' => 'https://discord.com/api/webhooks/test-addons',
         'queue.default' => 'sync', // Use sync queue to execute jobs immediately
     ]);
 });
