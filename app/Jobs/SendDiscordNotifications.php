@@ -369,7 +369,7 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
             'embed' => $embed,
         ]);
 
-        // Build message with optional role mention
+        // Build message
         $message = 'A mod has been updated on the Forge!';
 
         // Send the notification
