@@ -1235,3 +1235,152 @@ it('sends addon notifications to the addons webhook url', function (): void {
         return str_contains($request->url(), 'test-addons');
     });
 });
+
+it('includes role mention in new mod notification when role id is configured', function (): void {
+    // Set role ID
+    config(['discord-alerts.mod_notifications_role_id' => '123456789']);
+
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    $job->handle();
+
+    // Verify role mention is included
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        return str_contains($content, '<@&123456789>');
+    });
+});
+
+it('includes role mention in new addon notification when role id is configured', function (): void {
+    // Set addon role ID
+    config(['discord-alerts.addon_notifications_role_id' => '987654321']);
+
+    // Create SPT version for mod visibility
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Create an addon that should trigger notification
+    $addon = Addon::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->for($mod, 'mod')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    AddonVersion::factory()
+        ->for($addon)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    $job->handle();
+
+    // Verify addon role mention is included (not the mod role)
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        if (! str_contains($content, 'addon')) {
+            return false;
+        }
+
+        return str_contains($content, '<@&987654321>');
+    });
+});
+
+it('does not include role mention when role id is not configured', function (): void {
+    // Ensure role IDs are empty
+    config([
+        'discord-alerts.mod_notifications_role_id' => '',
+        'discord-alerts.addon_notifications_role_id' => '',
+    ]);
+
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    $job->handle();
+
+    // Verify no role mention is included
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        return ! str_contains($content, '<@&');
+    });
+});
