@@ -16,6 +16,20 @@ use Illuminate\Support\Facades\DB;
 final class ModFilter
 {
     /**
+     * The allowed filter method names that can be called from user input.
+     *
+     * @var array<int, string>
+     */
+    private const array ALLOWED_FILTERS = [
+        'query',
+        'order',
+        'featured',
+        'category',
+        'fikaCompatibility',
+        'sptVersions',
+    ];
+
+    /**
      * The query builder instance for the mod model.
      *
      * @var Builder<Mod>
@@ -49,7 +63,7 @@ final class ModFilter
         }
 
         foreach ($this->filters as $method => $value) {
-            if (method_exists($this, $method) && ! empty($value)) {
+            if (in_array($method, self::ALLOWED_FILTERS, true) && ! empty($value)) {
                 $this->$method($value);
             }
         }
