@@ -29,17 +29,15 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
 
     /**
      * The number of times the job may be attempted.
-     *
-     * @var int
      */
-    public $tries = 3;
+    public int $tries = 3;
 
     /**
      * The number of seconds to wait before retrying the job.
      *
      * @var array<int, int>
      */
-    public $backoff = [1, 5, 10];
+    public array $backoff = [1, 5, 10];
 
     /**
      * Execute the job.
@@ -53,10 +51,10 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
             return;
         }
 
-        $modPolicy = new ModPolicy;
-        $versionPolicy = new ModVersionPolicy;
-        $addonPolicy = new AddonPolicy;
-        $addonVersionPolicy = new AddonVersionPolicy;
+        $modPolicy = app(ModPolicy::class);
+        $versionPolicy = app(ModVersionPolicy::class);
+        $addonPolicy = app(AddonPolicy::class);
+        $addonVersionPolicy = app(AddonVersionPolicy::class);
 
         /** @var array<int> */
         $notifiedModIds = [];
