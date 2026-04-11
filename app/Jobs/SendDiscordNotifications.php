@@ -13,6 +13,7 @@ use App\Policies\AddonVersionPolicy;
 use App\Policies\ModPolicy;
 use App\Policies\ModVersionPolicy;
 use Exception;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
@@ -23,7 +24,7 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 use Throwable;
 
 #[Timeout(120)]
-final class SendDiscordNotifications implements ShouldQueue
+final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
