@@ -97,7 +97,7 @@ describe('soft deletion', function (): void {
             ->and($comment->deleted_at)->not->toBeNull();
 
         // Comment should still exist in the database
-        $this->assertDatabaseHas('comments', ['id' => $comment->id]);
+        $this->assertModelExists($comment);
     });
 
     it('soft deletes comments within 5 minutes that have children', function (): void {
@@ -133,7 +133,7 @@ describe('soft deletion', function (): void {
             ->and($parentComment->deleted_at)->not->toBeNull();
 
         // Parent should still exist in the database
-        $this->assertDatabaseHas('comments', ['id' => $parentComment->id]);
+        $this->assertModelExists($parentComment);
     });
 });
 
