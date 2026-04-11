@@ -6,11 +6,8 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use App\Notifications\NewChatMessageNotification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 it('displays chat message notifications with correct details', function (): void {
     $recipient = User::factory()->create();

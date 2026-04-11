@@ -6,12 +6,9 @@ use App\Models\ModCategory;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 describe('Mod index filter options respect SPT publish dates', function (): void {
     beforeEach(function (): void {

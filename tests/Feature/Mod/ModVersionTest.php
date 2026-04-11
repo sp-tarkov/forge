@@ -7,13 +7,10 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
-uses(RefreshDatabase::class);
 
 describe('version prefix stripping', function (): void {
     it('strips lowercase v prefix from version on save', function (): void {

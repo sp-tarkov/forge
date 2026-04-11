@@ -8,11 +8,8 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
-
-uses(RefreshDatabase::class);
 
 describe('SPT version latest minor detection', function (): void {
     it("returns true if the version is part of the latest version's minor releases", function (): void {

@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Conversation;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 it('shows conversation to other user after first message is sent', function (): void {
     $user1 = User::factory()->create(['name' => 'Alice']);

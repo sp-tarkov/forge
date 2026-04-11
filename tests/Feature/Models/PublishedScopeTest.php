@@ -7,10 +7,7 @@ use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
-
-uses(RefreshDatabase::class);
 
 describe('PublishedScope', function (): void {
     beforeEach(function (): void {

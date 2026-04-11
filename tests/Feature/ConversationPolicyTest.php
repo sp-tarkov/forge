@@ -5,9 +5,6 @@ declare(strict_types=1);
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user1 = User::factory()->create();

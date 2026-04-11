@@ -9,10 +9,7 @@ use App\Models\Mod;
 use App\Models\TrackingEvent;
 use App\Models\User;
 use App\Services\TrackService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-
-uses(RefreshDatabase::class);
 
 describe('TrackService', function (): void {
     beforeEach(function (): void {

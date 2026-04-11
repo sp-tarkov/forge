@@ -6,9 +6,6 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('can create a message in a conversation', function (): void {
     $user1 = User::factory()->create();

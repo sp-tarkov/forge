@@ -5,9 +5,6 @@ declare(strict_types=1);
 use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     // Roles will be created automatically by the factory when needed

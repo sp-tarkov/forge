@@ -6,11 +6,8 @@ use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Queue::fake(); // Prevent spam check jobs from running

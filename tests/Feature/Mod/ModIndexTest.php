@@ -5,10 +5,7 @@ declare(strict_types=1);
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 describe('basic functionality', function (): void {
     it('can toggle version filters without errors', function (): void {

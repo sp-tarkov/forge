@@ -6,10 +6,7 @@ use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
-
-uses(RefreshDatabase::class);
 
 describe('ProcessPinnedModVersionPublishDates job', function (): void {
     it('publishes mod version when all pinned SPT versions are published', function (): void {

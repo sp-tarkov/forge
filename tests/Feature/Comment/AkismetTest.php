@@ -7,12 +7,9 @@ use App\Models\Mod;
 use App\Models\User;
 use App\Services\CommentSpamChecker;
 use App\Support\Akismet\SpamCheckResult;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $apiKey = config('akismet.api_key');

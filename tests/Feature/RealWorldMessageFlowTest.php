@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Conversation;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 it('shows unread badge in complete user flow from conversation creation to first message', function (): void {
     $alice = User::factory()->create(['name' => 'Alice']);

@@ -8,7 +8,6 @@ use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
 describe('Mod Edit Form', function (): void {
@@ -139,8 +138,6 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         config()->set('honeypot.enabled', false);
     });
 
-    uses(RefreshDatabase::class);
-
     it('allows mod owners to access edit page via browser', function (): void {
         $owner = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
@@ -260,8 +257,6 @@ describe('HTTP Tests - Mod Editing Authorization', function (): void {
         config()->set('honeypot.enabled', false);
     });
 
-    uses(RefreshDatabase::class);
-
     it('prevents unauthorized users from editing mods', function (): void {
         $owner = User::factory()->withMfa()->create();
         $unauthorizedUser = User::factory()->withMfa()->create();
@@ -294,8 +289,6 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         // Disable honeypot for testing
         config()->set('honeypot.enabled', false);
     });
-
-    uses(RefreshDatabase::class);
 
     it('allows owners to update all mod fields including checkboxes', function (): void {
         $license = License::factory()->create();
@@ -411,8 +404,6 @@ describe('GUID Requirements for Mod Editing', function (): void {
         SptVersion::factory()->create(['version' => '4.0.0']);
         SptVersion::factory()->create(['version' => '4.1.0']);
     });
-
-    uses(RefreshDatabase::class);
 
     it('allows editing a mod without GUID when no versions target SPT 4.0.0+', function (): void {
         $this->actingAs($this->user);

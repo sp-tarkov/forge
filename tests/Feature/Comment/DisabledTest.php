@@ -7,11 +7,8 @@ use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->withoutDefer();

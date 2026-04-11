@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 it('shows ban button for admin viewing regular user', function (): void {
     $adminRole = UserRole::factory()->create(['name' => 'Staff']);

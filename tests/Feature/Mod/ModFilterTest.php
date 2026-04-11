@@ -7,9 +7,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('SPT version filtering', function (): void {
     it('filters mods by a single SPT version', function (): void {

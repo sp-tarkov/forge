@@ -5,9 +5,6 @@ declare(strict_types=1);
 use App\Http\Resources\Api\V0\RoleResource;
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('displays user role with color and icon', function (): void {
     $role = UserRole::factory()->staff()->create();

@@ -8,12 +8,9 @@ use App\Models\Message;
 use App\Models\NotificationLog;
 use App\Models\User;
 use App\Notifications\NewChatMessageNotification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
-
-uses(RefreshDatabase::class);
 
 it('dispatches chat notification job when a new message is created', function (): void {
     Queue::fake();

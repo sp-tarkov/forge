@@ -6,10 +6,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 describe('badge count calculation', function (): void {
     it('shows zero for users with null timestamp (first visit)', function (): void {

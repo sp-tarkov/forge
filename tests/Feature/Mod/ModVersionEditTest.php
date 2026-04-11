@@ -9,7 +9,6 @@ use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
@@ -185,8 +184,6 @@ describe('Mod Version Edit Form', function (): void {
             SptVersion::factory()->create(['version' => '4.0.0']);
             SptVersion::factory()->create(['version' => '4.1.0']);
         });
-
-        uses(RefreshDatabase::class);
 
         it('allows editing mod version with inline GUID save', function (): void {
             $this->actingAs($this->user);

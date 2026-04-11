@@ -8,9 +8,6 @@ use App\Models\Mod;
 use App\Models\Report;
 use App\Models\User;
 use App\Notifications\ReportSubmittedNotification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('Notification Delivery', function (): void {
     it('sends notification via database channel', function (): void {

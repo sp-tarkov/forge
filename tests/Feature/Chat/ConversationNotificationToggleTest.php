@@ -5,10 +5,7 @@ declare(strict_types=1);
 use App\Models\Conversation;
 use App\Models\ConversationSubscription;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 it('can toggle notification preferences for a conversation', function (): void {
     $user = User::factory()->create([

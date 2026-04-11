@@ -8,9 +8,6 @@ use App\Models\DependencyResolved;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->withoutDefer();
