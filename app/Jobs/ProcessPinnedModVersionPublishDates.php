@@ -31,11 +31,11 @@ final class ProcessPinnedModVersionPublishDates implements ShouldQueue
             ->where('publish_date', '<=', Date::now())
             ->whereHas('modVersions', function (Builder $query): void {
                 $query->withoutGlobalScopes()
-                    ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
+                    ->where('mod_version_spt_version.pinned_to_spt_publish', true);
             })
             ->with(['modVersions' => function (Relation $query): void {
                 $query->withoutGlobalScopes()
-                    ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
+                    ->wherePivot('pinned_to_spt_publish', true);
             }])
             ->get();
 
