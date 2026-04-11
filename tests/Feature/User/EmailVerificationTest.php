@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -11,6 +13,10 @@ use Illuminate\Support\Facades\URL;
 use Laravel\Fortify\Features;
 
 describe('email verification', function (): void {
+    beforeEach(function (): void {
+        $this->withoutMiddleware([ThrottleRequests::class, ThrottleRequestsWithRedis::class]);
+    });
+
     it('can render email verification screen', function (): void {
         $user = User::factory()->create([
             'email_verified_at' => null,
@@ -57,42 +63,6 @@ describe('email verification', function (): void {
         $this->actingAs($user)->get($verificationUrl);
 
         expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
-    })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
-
-    it('throttles email verification requests', function (): void {
-        $user = User::factory()->create([
-            'email_verified_at' => null,
-        ]);
-
-        // Make 6 requests (the rate limit)
-        for ($i = 0; $i < 6; $i++) {
-            $response = $this->actingAs($user)->post('/email/verification-notification');
-            $response->assertSessionHasNoErrors();
-        }
-
-        // The 7th request should be throttled
-        $response = $this->actingAs($user)->post('/email/verification-notification');
-        $response->assertStatus(429);
-        $response->assertSee('Too Many Requests');
-    })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
-
-    it('displays custom 429 error page for throttled requests', function (): void {
-        Notification::fake();
-
-        $user = User::factory()->create([
-            'email_verified_at' => null,
-        ]);
-
-        // Quickly make requests to trigger rate limiting
-        for ($i = 0; $i < 7; $i++) {
-            $response = $this->actingAs($user)->post('/email/verification-notification');
-        }
-
-        // Last request should show custom error page
-        $response->assertStatus(429);
-        $response->assertSee('429');
-        $response->assertSee('Too Many Requests');
-        $response->assertSee('Please wait a moment before trying again');
     })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
 
     it('can verify email when not authenticated', function (): void {
@@ -211,5 +181,47 @@ describe('email verification', function (): void {
         $response->assertSee('Send Verification Email');
         // Should have initial delay to prevent abuse
         $response->assertSee('Please wait...');
+    })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
+});
+
+describe('email verification rate limiting', function (): void {
+    beforeEach(function (): void {
+        app('redis')->flushdb();
+    });
+
+    it('throttles email verification requests', function (): void {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        // Make 6 requests (the rate limit)
+        for ($i = 0; $i < 6; $i++) {
+            $response = $this->actingAs($user)->post('/email/verification-notification');
+            $response->assertSessionHasNoErrors();
+        }
+
+        // The 7th request should be throttled
+        $response = $this->actingAs($user)->post('/email/verification-notification');
+        $response->assertStatus(429);
+        $response->assertSee('Too Many Requests');
+    })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
+
+    it('displays custom 429 error page for throttled requests', function (): void {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        // Quickly make requests to trigger rate limiting
+        for ($i = 0; $i < 7; $i++) {
+            $response = $this->actingAs($user)->post('/email/verification-notification');
+        }
+
+        // Last request should show custom error page
+        $response->assertStatus(429);
+        $response->assertSee('429');
+        $response->assertSee('Too Many Requests');
+        $response->assertSee('Please wait a moment before trying again');
     })->skip(fn (): bool => ! Features::enabled(Features::emailVerification()), 'Email verification not enabled.');
 });

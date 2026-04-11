@@ -104,6 +104,10 @@ describe('Auth Resend Verification API', function (): void {
 });
 
 describe('Auth Resend Verification Rate Limiting', function (): void {
+    beforeEach(function (): void {
+        app('redis')->flushdb();
+    });
+
     it('rate limits the public resend endpoint', function (): void {
         $user = User::factory()->create(['email_verified_at' => null]);
         $email = $user->email;
