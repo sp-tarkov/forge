@@ -447,7 +447,7 @@ final class Comment extends Model implements Reportable, Trackable
     protected function body(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->latestVersion?->body ?? '',
+            get: fn (): string => $this->latestVersion?->body ?? '', // @phpstan-ignore nullsafe.neverNull
         );
     }
 

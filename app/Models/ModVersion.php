@@ -11,7 +11,6 @@ use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
-use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Database\Factories\ModVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
@@ -52,9 +51,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $downloads
  * @property bool $disabled
  * @property FikaCompatibility $fika_compatibility
- * @property Carbon|null $published_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $published_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string $description_html
  * @property-read Mod $mod
  * @property-read Collection<int, Dependency> $dependencies
