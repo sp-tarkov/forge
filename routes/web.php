@@ -59,11 +59,13 @@ Route::middleware('auth.banned')->group(function (): void {
         ->name('user.banned');
 
     // Socialite OAuth Login
-    Route::controller(SocialiteController::class)->group(function (): void {
-        Route::get('/login/{provider}/redirect', 'redirect')
-            ->name('login.socialite');
-        Route::get('/login/{provider}/callback', 'callback');
-    });
+    Route::controller(SocialiteController::class)
+        ->middleware('throttle:10,1')
+        ->group(function (): void {
+            Route::get('/login/{provider}/redirect', 'redirect')
+                ->name('login.socialite');
+            Route::get('/login/{provider}/callback', 'callback');
+        });
 
     // Email verification route without auth requirement (Fortify override)
     Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
