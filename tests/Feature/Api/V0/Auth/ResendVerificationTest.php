@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Notifications\VerifyEmail;
+use Illuminate\Contracts\Redis\Factory;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Support\Facades\Notification;
@@ -105,7 +106,7 @@ describe('Auth Resend Verification API', function (): void {
 
 describe('Auth Resend Verification Rate Limiting', function (): void {
     beforeEach(function (): void {
-        app('redis')->flushdb();
+        resolve(Factory::class)->flushdb();
     });
 
     it('rate limits the public resend endpoint', function (): void {

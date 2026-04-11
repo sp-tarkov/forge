@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Contracts\Redis\Factory;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Support\Facades\Auth;
@@ -186,7 +187,7 @@ describe('email verification', function (): void {
 
 describe('email verification rate limiting', function (): void {
     beforeEach(function (): void {
-        app('redis')->flushdb();
+        resolve(Factory::class)->flushdb();
     });
 
     it('throttles email verification requests', function (): void {
