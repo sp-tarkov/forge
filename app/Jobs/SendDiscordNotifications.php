@@ -65,6 +65,8 @@ final class SendDiscordNotifications implements ShouldQueue
                     ModVersion::query()
                         ->where('mod_id', $mod->id)
                         ->where('disabled', false)
+                        ->whereNotNull('published_at')
+                        ->where('published_at', '<=', now())
                         ->update(['discord_notification_sent' => true]);
 
                     $notifiedModIds[] = $mod->id;
@@ -143,6 +145,8 @@ final class SendDiscordNotifications implements ShouldQueue
                 AddonVersion::query()
                     ->where('addon_id', $addon->id)
                     ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now())
                     ->update(['discord_notification_sent' => true]);
 
                 $notifiedAddonIds[] = $addon->id;
