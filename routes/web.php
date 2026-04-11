@@ -74,10 +74,12 @@ Route::middleware('auth.banned')->group(function (): void {
 
     // Comment unsubscribe route (no auth required for email links)
     Route::get('/comment/unsubscribe/{user}/{commentable_type}/{commentable_id}', [CommentSubscriptionController::class, 'unsubscribe'])
+        ->middleware('signed')
         ->name('comment.unsubscribe');
 
     // Chat unsubscribe route (no auth required for email links)
     Route::get('/chat/unsubscribe/{user}/{conversation}', [ChatSubscriptionController::class, 'unsubscribe'])
+        ->middleware('signed')
         ->name('chat.unsubscribe');
 
     // Authenticated routes
