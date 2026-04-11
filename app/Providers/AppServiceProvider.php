@@ -23,11 +23,14 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
@@ -57,6 +60,9 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Define the API rate limiter.
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip()));
+
         // Register custom macros and mixins.
         $this->registerMacros();
         $this->registerMixins();

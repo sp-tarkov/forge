@@ -27,6 +27,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(IPBanned::class);
 
+        // Use Redis-backed rate limiting and apply to API routes.
+        $middleware->throttleWithRedis();
+        $middleware->api(prepend: [
+            'throttle:api',
+        ]);
+
         // Register middleware aliases
         $middleware->alias([
             'auth.banned' => AuthBanned::class,
