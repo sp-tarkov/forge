@@ -24,10 +24,8 @@ final class CommentEditForm extends Form
      */
     public function rules(): array
     {
-        /** @var int $minLength */
-        $minLength = config('comments.validation.min_length', 3);
-        /** @var int $maxLength */
-        $maxLength = config('comments.validation.max_length', 10000);
+        $minLength = config()->integer('comments.validation.min_length', 3);
+        $maxLength = config()->integer('comments.validation.max_length', 10000);
 
         return [
             'body' => [

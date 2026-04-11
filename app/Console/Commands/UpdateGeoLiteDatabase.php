@@ -36,10 +36,8 @@ final class UpdateGeoLiteDatabase extends Command
         }
 
         // Check if credentials are configured
-        /** @var string $accountId */
-        $accountId = config('services.maxmind.account_id');
-        /** @var string $licenseKey */
-        $licenseKey = config('services.maxmind.license_key');
+        $accountId = config()->string('services.maxmind.account_id', '');
+        $licenseKey = config()->string('services.maxmind.license_key', '');
 
         if ($accountId === '' || $licenseKey === '') {
             $message = 'MaxMind credentials not configured. Please set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY environment variables.';

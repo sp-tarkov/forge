@@ -96,7 +96,7 @@ describe('Automatic Recheck Scheduling', function (): void {
 
     test('stops rechecking after maximum attempts reached', function (): void {
         // Set comment to already have max recheck attempts
-        $maxAttempts = config('comments.spam.max_recheck_attempts', 3);
+        $maxAttempts = config()->integer('comments.spam.max_recheck_attempts', 3);
         $this->comment->update(['spam_recheck_count' => $maxAttempts]);
 
         $mockSpamChecker = Mockery::mock(SpamChecker::class);
@@ -115,7 +115,7 @@ describe('Automatic Recheck Scheduling', function (): void {
         Bus::fake();
 
         // Set comment to already have max recheck attempts
-        $maxAttempts = config('comments.spam.max_recheck_attempts', 3);
+        $maxAttempts = config()->integer('comments.spam.max_recheck_attempts', 3);
         $this->comment->update(['spam_recheck_count' => $maxAttempts]);
 
         // Mock the spam checker - should not be called because job is skipped
@@ -219,7 +219,7 @@ describe('Helper Methods', function (): void {
     });
 
     test('canBeRechecked returns false when at max attempts', function (): void {
-        $maxAttempts = config('comments.spam.max_recheck_attempts', 3);
+        $maxAttempts = config()->integer('comments.spam.max_recheck_attempts', 3);
         $this->comment->update(['spam_recheck_count' => $maxAttempts]);
         expect($this->comment->canBeRechecked())->toBeFalse();
 

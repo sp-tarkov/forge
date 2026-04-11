@@ -79,8 +79,7 @@ trait ConfirmsPasswords
      */
     protected function ensurePasswordIsConfirmed(?int $maximumSecondsSinceConfirmation = null): void
     {
-        /** @var int $timeout */
-        $timeout = config('auth.password_timeout', 900);
+        $timeout = config()->integer('auth.password_timeout', 900);
         $maximumSecondsSinceConfirmation = $maximumSecondsSinceConfirmation ?: $timeout;
 
         abort_unless($this->passwordIsConfirmed($maximumSecondsSinceConfirmation), 403);
@@ -91,8 +90,7 @@ trait ConfirmsPasswords
      */
     protected function passwordIsConfirmed(?int $maximumSecondsSinceConfirmation = null): bool
     {
-        /** @var int $timeout */
-        $timeout = config('auth.password_timeout', 900);
+        $timeout = config()->integer('auth.password_timeout', 900);
         $maximumSecondsSinceConfirmation = $maximumSecondsSinceConfirmation ?: $timeout;
 
         /** @var int $confirmedAt */

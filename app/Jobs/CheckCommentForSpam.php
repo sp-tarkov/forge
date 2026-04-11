@@ -51,7 +51,7 @@ final class CheckCommentForSpam implements ShouldQueue
         }
 
         // Default to clean if spam checking is disabled.
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             $this->comment->markAsClean(metadata: ['reason' => 'akismet_disabled'], quiet: true);
 
             return;
@@ -92,9 +92,7 @@ final class CheckCommentForSpam implements ShouldQueue
      */
     private function getMaxRecheckAttempts(): int
     {
-        $value = config('comments.spam.max_recheck_attempts', 3);
-
-        return is_int($value) ? $value : 3;
+        return config()->integer('comments.spam.max_recheck_attempts', 3);
     }
 
     /**

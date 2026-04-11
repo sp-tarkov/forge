@@ -97,7 +97,7 @@ test('getTrackingTitle returns user profile title when commentable is user', fun
 });
 
 test('cannot save comment with body exceeding max length', function (): void {
-    $maxLength = config('comments.validation.max_length', 10000);
+    $maxLength = config()->integer('comments.validation.max_length', 10000);
     $mod = Mod::factory()->create();
     $user = User::factory()->create();
 
@@ -113,7 +113,7 @@ test('cannot save comment with body exceeding max length', function (): void {
 });
 
 test('can save comment at exactly max length', function (): void {
-    $maxLength = config('comments.validation.max_length', 10000);
+    $maxLength = config()->integer('comments.validation.max_length', 10000);
     $mod = Mod::factory()->create();
     $user = User::factory()->create();
 

@@ -361,7 +361,7 @@ final class Comment extends Model implements Reportable, Trackable
      */
     public function canBeRechecked(): bool
     {
-        return $this->spam_recheck_count < config('comments.spam.max_recheck_attempts', 3);
+        return $this->spam_recheck_count < config()->integer('comments.spam.max_recheck_attempts', 3);
     }
 
     /**

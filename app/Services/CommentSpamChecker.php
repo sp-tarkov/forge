@@ -43,19 +43,18 @@ final class CommentSpamChecker implements SpamChecker
      */
     public function verifyKey(): bool
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return false;
         }
 
-        /** @var string $apiKey */
-        $apiKey = config('akismet.api_key');
+        $apiKey = config()->string('akismet.api_key');
         $cacheKey = 'akismet:verify_key:'.$apiKey;
 
         return Cache::remember($cacheKey, now()->addDay(), function (): bool {
             try {
                 $response = $this->makeRequest('POST', '/1.1/verify-key', [
-                    'key' => config('akismet.api_key'),
-                    'blog' => config('akismet.blog_url'),
+                    'key' => config()->string('akismet.api_key'),
+                    'blog' => config()->string('akismet.blog_url'),
                 ]);
 
                 $isValid = $response->body() === 'valid';
@@ -84,7 +83,7 @@ final class CommentSpamChecker implements SpamChecker
     public function checkSpam(Comment $comment): SpamCheckResult
     {
         // If Akismet is disabled, return not spam but keep a note in the metadata.
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return new SpamCheckResult(
                 isSpam: false,
                 metadata: ['reason' => 'akismet_disabled']
@@ -153,7 +152,7 @@ final class CommentSpamChecker implements SpamChecker
      */
     public function markAsHam(Comment $comment): void
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return;
         }
 
@@ -178,7 +177,7 @@ final class CommentSpamChecker implements SpamChecker
      */
     public function markAsSpam(Comment $comment): void
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return;
         }
 
@@ -205,13 +204,13 @@ final class CommentSpamChecker implements SpamChecker
      */
     public function getUsageLimit(): ?array
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return null;
         }
 
         try {
             $response = $this->makeRequest('GET', '/1.2/usage-limit', [
-                'api_key' => config('akismet.api_key'),
+                'api_key' => config()->string('akismet.api_key'),
             ]);
 
             /** @var array<string, mixed>|null */
@@ -235,8 +234,8 @@ final class CommentSpamChecker implements SpamChecker
         // Details on available values:
         // https://akismet.com/developers/detailed-docs/comment-check/
         $payload = [
-            'api_key' => config('akismet.api_key'),
-            'blog' => config('akismet.blog_url'),
+            'api_key' => config()->string('akismet.api_key'),
+            'blog' => config()->string('akismet.blog_url'),
             'user_ip' => $comment->user_ip,
             'user_agent' => $comment->user_agent,
             'referrer' => $comment->referrer,
@@ -247,7 +246,7 @@ final class CommentSpamChecker implements SpamChecker
             'comment_content' => $comment->body,
             'comment_date_gmt' => $comment->created_at?->utc()->toDateTimeString(),
             'comment_post_modified_gmt' => $comment->commentable->getAttribute('created_at') instanceof Carbon ? $comment->commentable->getAttribute('created_at')->utc()->toDateTimeString() : null,
-            'blog_lang' => config('app.locale', 'en'),
+            'blog_lang' => config()->string('app.locale', 'en'),
             'blog_charset' => 'UTF-8',
         ];
 

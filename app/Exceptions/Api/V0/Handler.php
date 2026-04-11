@@ -91,7 +91,7 @@ final class Handler
     private function determineMessage(Throwable $e, int $statusCode): string
     {
         // If it's a server error and debug mode is off, use a generic message
-        if ($statusCode === Response::HTTP_INTERNAL_SERVER_ERROR && ! config('app.debug')) {
+        if ($statusCode === Response::HTTP_INTERNAL_SERVER_ERROR && ! config()->boolean('app.debug')) {
             return 'An unexpected error occurred.';
         }
 
