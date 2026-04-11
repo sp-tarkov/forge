@@ -50,7 +50,7 @@ final class ProcessPinnedModVersionPublishDates implements ShouldQueue
                     // All pinned SPT versions are now published
                     // Set the mod version's published_at to now if it wasn't already set
                     if ((is_null($latestPinnedDate) || $latestPinnedDate <= Date::now()) && is_null($modVersion->published_at)) {
-                        $modVersion->published_at = Date::now()->toMutable();
+                        $modVersion->published_at = Date::now();
                         $modVersion->save();
                         Log::info('Automatically published mod version', [
                             'mod_version_id' => $modVersion->id,
