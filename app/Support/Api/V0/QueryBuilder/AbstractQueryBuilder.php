@@ -300,7 +300,7 @@ abstract class AbstractQueryBuilder
      */
     protected function applySearch(): void
     {
-        if (in_array($this->searchQuery, [null, '', '0'], true)) {
+        if ($this->searchQuery === null || $this->searchQuery === '') {
             return;
         }
 
@@ -402,7 +402,7 @@ abstract class AbstractQueryBuilder
     protected function applyIncludes(): void
     {
         if ($this->includes !== []) {
-            $this->includes = array_filter($this->includes, fn (?string $include): bool => ! in_array($include, [null, '', '0'], true));
+            $this->includes = array_filter($this->includes, fn (?string $include): bool => $include !== null && $include !== '');
             if ($this->includes === []) {
                 return; // All includes were empty and filtered out, return early.
             }
@@ -463,7 +463,7 @@ abstract class AbstractQueryBuilder
      */
     protected function applyFields(): void
     {
-        $fields = array_filter($this->fields, fn (?string $field): bool => ! in_array($field, [null, '', '0'], true));
+        $fields = array_filter($this->fields, fn (?string $field): bool => $field !== null && $field !== '');
         $requiredFields = array_filter(static::getRequiredFields(), fn (string $field): bool => $field !== '' && $field !== '0');
 
         if ($fields !== []) {
@@ -515,7 +515,7 @@ abstract class AbstractQueryBuilder
     protected function applySorts(): void
     {
         if ($this->sorts !== []) {
-            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! in_array($sort, [null, '', '0'], true));
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => $sort !== null && $sort !== '');
             if ($this->sorts === []) {
                 return; // All sorts were empty and filtered out, return early.
             }

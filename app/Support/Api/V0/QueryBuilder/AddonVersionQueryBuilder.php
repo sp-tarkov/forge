@@ -277,7 +277,7 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
     protected function applySorts(): void
     {
         if ($this->sorts !== []) {
-            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! in_array($sort, [null, '', '0'], true));
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => $sort !== null && $sort !== '');
             if ($this->sorts === []) {
                 return; // All sorts were empty and filtered out, return early.
             }
