@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('Auth Register API', function (): void {
+    beforeEach(function (): void {
+        Cache::flush();
+    });
+
     it('allows a new user to register', function (): void {
         $userData = [
             'name' => 'NewRegisterUser',

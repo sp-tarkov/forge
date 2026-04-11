@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('Auth Login API', function (): void {
+    beforeEach(function (): void {
+        Cache::flush();
+    });
+
     it('allows a user with correct credentials to log in and receive a token', function (): void {
         $user = User::factory()->create([
             'email' => 'test@example.com',
