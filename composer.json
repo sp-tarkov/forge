@@ -41,10 +41,11 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.2.5",
+        "calebdw/larastan-livewire": "^2.5",
         "driftingly/rector-laravel": "^2.3.0",
         "fakerphp/faker": "^1.24.1",
         "knuckleswtf/scribe": "^5.9",
-        "larastan/larastan": "^3.9",
+        "larastan/larastan": "^3.9.3",
         "laravel/boost": "^2.4.2",
         "laravel/pail": "^1.2.6",
         "laravel/pint": "^1.29.0",

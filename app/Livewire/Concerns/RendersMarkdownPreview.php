@@ -23,6 +23,7 @@ trait RendersMarkdownPreview
 
         $html = Markdown::convert($content)->getContent();
 
+        /** @var string */
         return Purify::config($purifyConfig)->clean($html);
     }
 }

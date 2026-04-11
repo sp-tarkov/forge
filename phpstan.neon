@@ -1,5 +1,6 @@
 includes:
     - vendor/larastan/larastan/extension.neon
+    - vendor/calebdw/larastan-livewire/extension.neon
     - vendor/nesbot/carbon/extension.neon
     - phar://phpstan.phar/conf/bleedingEdge.neon
 
@@ -10,6 +11,8 @@ parameters:
         - config
         - database
         - public
+        - resources/views/livewire
+        - resources/views/pages
         - routes
 
     level: max

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
@@ -11,7 +10,7 @@ describe('password update', function (): void {
     it('can update password', function (): void {
         $this->actingAs($user = User::factory()->create());
 
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state', [
                 'current_password' => 'password',
                 'password' => 'new-password',
@@ -25,7 +24,7 @@ describe('password update', function (): void {
     it('requires correct current password', function (): void {
         $this->actingAs($user = User::factory()->create());
 
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state', [
                 'current_password' => 'wrong-password',
                 'password' => 'new-password',
@@ -41,7 +40,7 @@ describe('password update', function (): void {
         $this->actingAs($user = User::factory()->create());
         $longPassword = str_repeat('a', 129);
 
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state', [
                 'current_password' => 'password',
                 'password' => $longPassword,
@@ -56,7 +55,7 @@ describe('password update', function (): void {
     it('requires new passwords to match', function (): void {
         $this->actingAs($user = User::factory()->create());
 
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state', [
                 'current_password' => 'password',
                 'password' => 'new-password',
