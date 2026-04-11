@@ -12,7 +12,6 @@ use App\Policies\AddonPolicy;
 use App\Policies\AddonVersionPolicy;
 use App\Policies\ModPolicy;
 use App\Policies\ModVersionPolicy;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
@@ -90,7 +89,7 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
                     $notifiedModIds[] = $mod->id;
 
                     Log::info('Discord notification sent for mod', ['mod_id' => $mod->id, 'mod_name' => $mod->name]);
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     Log::error('Failed to send Discord notification for mod', [
                         'mod_id' => $mod->id,
                         'mod_name' => $mod->name,
@@ -126,7 +125,7 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
                         'mod_name' => $modVersion->mod->name,
                         'version' => $modVersion->version,
                     ]);
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     Log::error('Failed to send Discord notification for mod version', [
                         'mod_id' => $modVersion->mod->id,
                         'version' => $modVersion->version,
@@ -170,7 +169,7 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
                 $notifiedAddonIds[] = $addon->id;
 
                 Log::info('Discord notification sent for addon', ['addon_id' => $addon->id, 'addon_name' => $addon->name]);
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 Log::error('Failed to send Discord notification for addon', [
                     'addon_id' => $addon->id,
                     'addon_name' => $addon->name,
@@ -206,7 +205,7 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
                     'addon_name' => $addonVersion->addon->name,
                     'version' => $addonVersion->version,
                 ]);
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 Log::error('Failed to send Discord notification for addon version', [
                     'addon_id' => $addonVersion->addon->id,
                     'version' => $addonVersion->version,
