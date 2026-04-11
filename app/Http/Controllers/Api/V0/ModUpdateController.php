@@ -360,9 +360,8 @@ final class ModUpdateController extends Controller
                 continue;
             }
 
-            $dependencies = $otherMod->dependencies()
-                ->where('dependent_mod_id', $currentVersion->mod_id)
-                ->get();
+            $dependencies = $otherMod->dependencies
+                ->where('dependent_mod_id', $currentVersion->mod_id);
 
             foreach ($dependencies as $dep) {
                 if (! Semver::satisfies($candidate->version, $dep->constraint)) {
