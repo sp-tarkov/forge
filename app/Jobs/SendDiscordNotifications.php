@@ -16,13 +16,30 @@ use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
+use Throwable;
 
+#[Timeout(120)]
 final class SendDiscordNotifications implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var array<int, int>
+     */
+    public $backoff = [1, 5, 10];
 
     /**
      * Execute the job.
@@ -196,6 +213,16 @@ final class SendDiscordNotifications implements ShouldQueue
                 ]);
             }
         }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('SendDiscordNotifications job failed permanently', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 
     /**
