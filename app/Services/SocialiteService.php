@@ -138,10 +138,7 @@ final class SocialiteService
             return;
         }
 
-        $disk = match (config('app.env')) {
-            'production' => 'r2',
-            default => 'public',
-        };
+        $disk = app()->isProduction() ? 'r2' : 'public';
 
         try {
             $response = Http::get($avatarUrl);

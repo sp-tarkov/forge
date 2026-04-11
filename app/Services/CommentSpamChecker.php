@@ -256,7 +256,7 @@ final class CommentSpamChecker implements SpamChecker
         }
 
         // Add test flag for non-production environments
-        if (config('app.env', 'local') !== 'production') {
+        if (! app()->isProduction()) {
             $payload['is_test'] = '1';
         }
 

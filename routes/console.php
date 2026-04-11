@@ -23,6 +23,6 @@ if (config('app.forge_heartbeat_url')) {
     Schedule::command(ForgeHeartbeat::class)->everyMinute();
 }
 
-if (config('app.env') === 'local' && config('telescope.enabled')) {
+if (app()->isLocal() && config('telescope.enabled')) {
     Schedule::command('telescope:prune --hours=48')->daily();
 }
