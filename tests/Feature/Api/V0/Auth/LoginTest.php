@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('Auth Login API', function (): void {
     beforeEach(function (): void {
-        Cache::flush();
+        $this->withoutMiddleware([ThrottleRequests::class, ThrottleRequestsWithRedis::class]);
     });
 
     it('allows a user with correct credentials to log in and receive a token', function (): void {
