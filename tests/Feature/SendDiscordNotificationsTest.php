@@ -802,6 +802,43 @@ it('does not send notification for future-published mod versions', function (): 
     expect($version->discord_notification_sent)->toBeFalse();
 });
 
+it('sends mod notifications to the mods webhook url', function (): void {
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    // Create a version with SPT support
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    $job->handle();
+
+    // Verify notification was sent to the mods webhook URL
+    Http::assertSent(function ($request): bool {
+        return str_contains($request->url(), 'test-mods');
+    });
+});
+
 it('sends discord notification for newly published addons', function (): void {
     // Create SPT version for mod visibility
     $sptVersion = SptVersion::factory()->create();
@@ -1136,4 +1173,65 @@ it('marks all published addon versions as notified when new addon notification i
     $futureVersion->refresh();
     expect($unpublishedVersion->discord_notification_sent)->toBeFalse();
     expect($futureVersion->discord_notification_sent)->toBeFalse();
+});
+
+it('sends addon notifications to the addons webhook url', function (): void {
+    // Create SPT version for mod visibility
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    // Create a mod version with SPT support
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Create an addon that should trigger notification
+    $addon = Addon::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->for($mod, 'mod')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    // Create a published version
+    AddonVersion::factory()
+        ->for($addon)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    $job->handle();
+
+    // Verify addon notification was sent to the addons webhook URL (not the mods URL)
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        if (! str_contains($content, 'addon')) {
+            return false;
+        }
+
+        return str_contains($request->url(), 'test-addons');
+    });
 });
