@@ -42,14 +42,14 @@ final class TwoFactorAuthenticationForm extends Component
     /**
      * Mount the component.
      */
-    public function mount(): void
+    public function mount(DisableTwoFactorAuthentication $disable): void
     {
         /** @var User $user */
         $user = Auth::user();
 
         if (Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm') &&
             is_null($user->two_factor_confirmed_at)) {
-            resolve(DisableTwoFactorAuthentication::class)($user);
+            $disable($user);
         }
     }
 
