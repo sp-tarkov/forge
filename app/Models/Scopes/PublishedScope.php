@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
 final class PublishedScope implements Scope
@@ -43,6 +44,8 @@ final class PublishedScope implements Scope
             });
 
             // Show unpublished and future-published models to owners and authors.
+            // Uses cached ID sets instead of whereHas('additionalAuthors') subqueries
+            // to avoid expensive EXISTS joins on every query for authenticated users.
             if (Auth::check()) {
                 $query->orWhere(function (Builder $unpublishedQuery) use ($model): void {
                     $unpublishedQuery->where(function (Builder $dateQuery) use ($model): void {
@@ -51,44 +54,90 @@ final class PublishedScope implements Scope
                     });
 
                     if ($model instanceof Mod) {
-                        // For Mods, directly check ownership.
-                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($model): void {
-                            $ownerQuery->where($model->getTable().'.owner_id', Auth::id())
-                                ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
-                                    $authorsQuery->where('users.id', Auth::id());
-                                });
+                        $modIds = self::getAuthoredModIds();
+                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($model, $modIds): void {
+                            $ownerQuery->where($model->getTable().'.owner_id', Auth::id());
+                            if ($modIds !== []) {
+                                $ownerQuery->orWhereIn($model->getTable().'.id', $modIds);
+                            }
                         });
                     } elseif ($model instanceof ModVersion) {
-                        // For ModVersions, check for ownership through the mod relationship.
-                        $unpublishedQuery->where(function (Builder $ownerQuery): void {
+                        $modIds = self::getAuthoredModIds();
+                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($modIds): void {
                             $ownerQuery->whereHas('mod', function (Builder $modQuery): void {
-                                $modQuery->where('owner_id', Auth::id())
-                                    ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
-                                        $authorsQuery->where('users.id', Auth::id());
-                                    });
+                                $modQuery->where('owner_id', Auth::id());
                             });
+                            if ($modIds !== []) {
+                                $ownerQuery->orWhereIn('mod_id', $modIds);
+                            }
                         });
                     } elseif ($model instanceof Addon) {
-                        // For Addons, directly check ownership.
-                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($model): void {
-                            $ownerQuery->where($model->getTable().'.owner_id', Auth::id())
-                                ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
-                                    $authorsQuery->where('users.id', Auth::id());
-                                });
+                        $addonIds = self::getAuthoredAddonIds();
+                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($model, $addonIds): void {
+                            $ownerQuery->where($model->getTable().'.owner_id', Auth::id());
+                            if ($addonIds !== []) {
+                                $ownerQuery->orWhereIn($model->getTable().'.id', $addonIds);
+                            }
                         });
                     } elseif ($model instanceof AddonVersion) {
-                        // For AddonVersions, check for ownership through the addon relationship.
-                        $unpublishedQuery->where(function (Builder $ownerQuery): void {
+                        $addonIds = self::getAuthoredAddonIds();
+                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($addonIds): void {
                             $ownerQuery->whereHas('addon', function (Builder $addonQuery): void {
-                                $addonQuery->where('owner_id', Auth::id())
-                                    ->orWhereHas('additionalAuthors', function (Builder $authorsQuery): void {
-                                        $authorsQuery->where('users.id', Auth::id());
-                                    });
+                                $addonQuery->where('owner_id', Auth::id());
                             });
+                            if ($addonIds !== []) {
+                                $ownerQuery->orWhereIn('addon_id', $addonIds);
+                            }
                         });
                     }
                 });
             }
         });
+    }
+
+    /**
+     * Get mod IDs where the current user is an additional author (cached 5 minutes).
+     *
+     * @return array<int, int>
+     */
+    private static function getAuthoredModIds(): array
+    {
+        $userId = Auth::id();
+
+        if ($userId === null) {
+            return [];
+        }
+
+        return Cache::remember(
+            sprintf('user:%d:authored-mod-ids', $userId),
+            300,
+            fn (): array => Mod::withoutGlobalScope(self::class)
+                ->whereHas('additionalAuthors', fn (Builder $q): Builder => $q->where('users.id', $userId))
+                ->pluck('id')
+                ->all()
+        );
+    }
+
+    /**
+     * Get addon IDs where the current user is an additional author (cached 5 minutes).
+     *
+     * @return array<int, int>
+     */
+    private static function getAuthoredAddonIds(): array
+    {
+        $userId = Auth::id();
+
+        if ($userId === null) {
+            return [];
+        }
+
+        return Cache::remember(
+            sprintf('user:%d:authored-addon-ids', $userId),
+            300,
+            fn (): array => Addon::withoutGlobalScope(self::class)
+                ->whereHas('additionalAuthors', fn (Builder $q): Builder => $q->where('users.id', $userId))
+                ->pluck('id')
+                ->all()
+        );
     }
 }
