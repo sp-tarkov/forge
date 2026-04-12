@@ -229,7 +229,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
      */
     public function downloadUrl(bool $absolute = false): ?string
     {
-        $this->load('latestVersion');
+        $this->loadMissing('latestVersion');
 
         if ($this->latestVersion === null) {
             return null;
@@ -249,7 +249,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
      */
     public function toSearchableArray(): array
     {
-        $this->load(['latestVersion', 'mod']);
+        $this->loadMissing(['latestVersion', 'mod']);
 
         return [
             'id' => $this->id,

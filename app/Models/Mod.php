@@ -160,7 +160,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function downloadUrl(bool $absolute = false): ?string
     {
-        $this->load('latestVersion');
+        $this->loadMissing('latestVersion');
 
         if ($this->latestVersion === null) {
             return null;
@@ -274,7 +274,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function toSearchableArray(): array
     {
-        $this->load([
+        $this->loadMissing([
             'latestVersion',
             'latestVersion.latestSptVersion',
         ]);
