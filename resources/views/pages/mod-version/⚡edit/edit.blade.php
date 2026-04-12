@@ -64,7 +64,7 @@
                                                             wire:model.live="newModCategoryId"
                                                             placeholder="Choose category..."
                                                         >
-                                                            @foreach (\App\Models\ModCategory::orderBy('title')->get() as $category)
+                                                            @foreach ($this->categories as $category)
                                                                 <flux:select.option value="{{ $category->id }}">
                                                                     {{ $category->title }}
                                                                 </flux:select.option>

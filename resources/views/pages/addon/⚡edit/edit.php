@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Addon;
+use App\Models\License;
 use App\Models\SourceCodeLink;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Http\UploadedFile;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Renderless;
@@ -163,6 +165,17 @@ new #[Layout('layouts::base')] class extends Component {
     public function updateAuthorIds(array $ids): void
     {
         $this->authorIds = $ids;
+    }
+
+    /**
+     * Get all licenses ordered by name.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, License>
+     */
+    #[Computed]
+    public function licenses(): \Illuminate\Database\Eloquent\Collection
+    {
+        return License::orderBy('name')->get();
     }
 
     /**

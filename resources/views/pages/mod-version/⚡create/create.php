@@ -7,6 +7,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\Mod;
+use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
@@ -19,6 +20,7 @@ use Composer\Semver\Semver;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -427,6 +429,17 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Show success message
         flash()->success('Mod category has been successfully saved.');
+    }
+
+    /**
+     * Get all mod categories ordered by title.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, ModCategory>
+     */
+    #[Computed]
+    public function categories(): \Illuminate\Database\Eloquent\Collection
+    {
+        return ModCategory::orderBy('title')->get();
     }
 
     /**

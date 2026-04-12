@@ -174,7 +174,7 @@
                                     wire:model.blur="license"
                                     placeholder="Choose license..."
                                 >
-                                    @foreach (\App\Models\License::orderBy('name')->get() as $license)
+                                    @foreach ($this->licenses as $license)
                                         <flux:select.option value="{{ $license->id }}">{{ $license->name }}
                                         </flux:select.option>
                                     @endforeach

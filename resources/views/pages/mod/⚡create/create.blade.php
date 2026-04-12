@@ -181,7 +181,7 @@
                                     wire:model.blur="license"
                                     placeholder="Choose license..."
                                 >
-                                    @foreach (\App\Models\License::orderBy('name')->get() as $license)
+                                    @foreach ($this->licenses as $license)
                                         <flux:select.option value="{{ $license->id }}">{{ $license->name }}
                                         </flux:select.option>
                                     @endforeach
@@ -198,7 +198,7 @@
                                     wire:model.live="category"
                                     placeholder="Choose category..."
                                 >
-                                    @foreach (\App\Models\ModCategory::orderBy('title')->get() as $category)
+                                    @foreach ($this->categories as $category)
                                         <flux:select.option value="{{ $category->id }}">{{ $category->title }}
                                         </flux:select.option>
                                     @endforeach

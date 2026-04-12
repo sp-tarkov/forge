@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -150,6 +152,28 @@ new #[Layout('layouts::base')] class extends Component {
         $category = ModCategory::query()->find($this->category);
 
         return $category && $category->shows_profile_binding_notice;
+    }
+
+    /**
+     * Get all licenses ordered by name.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, License>
+     */
+    #[Computed]
+    public function licenses(): \Illuminate\Database\Eloquent\Collection
+    {
+        return License::orderBy('name')->get();
+    }
+
+    /**
+     * Get all mod categories ordered by title.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, ModCategory>
+     */
+    #[Computed]
+    public function categories(): \Illuminate\Database\Eloquent\Collection
+    {
+        return ModCategory::orderBy('title')->get();
     }
 
     /**
