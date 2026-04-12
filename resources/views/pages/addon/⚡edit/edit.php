@@ -74,7 +74,12 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * The published at date of the addon.
      */
-    public ?string $publishedAt = null;
+    public ?string $publishedAtDate = null;
+
+    /**
+     * The published at time of the addon.
+     */
+    public ?string $publishedAtTime = null;
 
     /**
      * Whether the addon contains AI content.
@@ -139,11 +144,12 @@ new #[Layout('layouts::base')] class extends Component
             $this->sourceCodeLinks[] = ['key' => 'link-0', 'url' => '', 'label' => ''];
         }
 
-        $this->publishedAt = $this->addon->published_at
-            ? Date::parse($this->addon->published_at)
-                ->setTimezone(auth()->user()->timezone ?? 'UTC')
-                ->format('Y-m-d\TH:i')
-            : null;
+        if ($this->addon->published_at) {
+            $publishedAtLocal = Date::parse($this->addon->published_at)
+                ->setTimezone(auth()->user()->timezone ?? 'UTC');
+            $this->publishedAtDate = $publishedAtLocal->format('Y-m-d');
+            $this->publishedAtTime = $publishedAtLocal->format('H:i');
+        }
         $this->containsAiContent = (bool) $this->addon->contains_ai_content;
         $this->containsAds = (bool) $this->addon->contains_ads;
         $this->commentsDisabled = (bool) $this->addon->comments_disabled;
@@ -196,12 +202,12 @@ new #[Layout('layouts::base')] class extends Component
             return;
         }
 
-        // Parse the published at date in the user's timezone, convert to UTC for DB storage.
-        // Zero out seconds for consistency with datetime-local input format.
+        // Combine date and time into a single published_at value, converting from user timezone to UTC.
         $publishedAtCarbon = null;
-        $userTimezone = auth()->user()->timezone ?? 'UTC';
-        if ($this->publishedAt !== null && $this->publishedAt !== '') {
-            $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
+        if ($this->publishedAtDate !== null && $this->publishedAtDate !== '') {
+            $userTimezone = auth()->user()->timezone ?? 'UTC';
+            $dateTimeString = $this->publishedAtDate.' '.($this->publishedAtTime ?? '00:00');
+            $publishedAtCarbon = Date::parse($dateTimeString, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         // Update addon fields
@@ -355,7 +361,8 @@ new #[Layout('layouts::base')] class extends Component
             'sourceCodeLinks' => 'required|array|min:1|max:4',
             'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
             'sourceCodeLinks.*.label' => 'nullable|string|max:50',
-            'publishedAt' => 'nullable|date',
+            'publishedAtDate' => 'nullable|date',
+            'publishedAtTime' => 'nullable|date_format:H:i',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',

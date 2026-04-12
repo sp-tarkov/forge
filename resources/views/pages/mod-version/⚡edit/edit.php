@@ -17,6 +17,7 @@ use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
 use Composer\Semver\Semver;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -30,7 +31,8 @@ use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 /**
  * @property-read bool $modGuidRequired
  */
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use RendersMarkdownPreview;
     use UsesSpamProtection;
 
@@ -83,7 +85,13 @@ new #[Layout('layouts::base')] class extends Component {
      * The published at date of the mod version.
      */
     #[Validate('nullable|date')]
-    public ?string $publishedAt = null;
+    public ?string $publishedAtDate = null;
+
+    /**
+     * The published at time of the mod version.
+     */
+    #[Validate('nullable|date_format:H:i')]
+    public ?string $publishedAtTime = null;
 
     /**
      * The matching SPT versions for the current constraint.
@@ -173,7 +181,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Load existing VirusTotal links
         $this->virusTotalLinks = $modVersion->virusTotalLinks
             ->map(
-                fn(VirusTotalLink $link): array => [
+                fn (VirusTotalLink $link): array => [
                     'url' => $link->url,
                     'label' => $link->label ?? '',
                 ],
@@ -186,11 +194,12 @@ new #[Layout('layouts::base')] class extends Component {
         }
 
         $this->fikaCompatibilityStatus = $modVersion->fika_compatibility->value;
-        $this->publishedAt = $modVersion->published_at
-            ? Date::parse($modVersion->published_at)
-                ->setTimezone(auth()->user()->timezone ?? 'UTC')
-                ->format('Y-m-d\TH:i')
-            : null;
+        if ($modVersion->published_at) {
+            $publishedAtLocal = Date::parse($modVersion->published_at)
+                ->setTimezone(auth()->user()->timezone ?? 'UTC');
+            $this->publishedAtDate = $publishedAtLocal->format('Y-m-d');
+            $this->publishedAtTime = $publishedAtLocal->format('H:i');
+        }
 
         $this->loadExistingDependencies();
 
@@ -218,7 +227,7 @@ new #[Layout('layouts::base')] class extends Component {
                     return true;
                 }
             }
-        } catch (\Exception) {
+        } catch (Exception) {
             // If there's an error, don't require the GUID
             return false;
         }
@@ -253,7 +262,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Validate the GUID
         $this->validate(
             [
-                'newModGuid' => 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,' . $this->mod->id,
+                'newModGuid' => 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id,
             ],
             [
                 'newModGuid.required' => 'The mod GUID is required.',
@@ -397,15 +406,15 @@ new #[Layout('layouts::base')] class extends Component {
                 ->orderBy('version_labels')
                 ->get()
                 ->map(
-                    fn(SptVersion $version): array => [
+                    fn (SptVersion $version): array => [
                         'version' => $version->version,
                         'color_class' => $version->color_class,
-                        'is_published' => !is_null($version->publish_date) && $version->publish_date->lte(now()),
+                        'is_published' => ! is_null($version->publish_date) && $version->publish_date->lte(now()),
                         'publish_date' => $version->publish_date?->format('Y-m-d H:i:s'),
                     ],
                 )
                 ->all();
-        } catch (\Exception) {
+        } catch (Exception) {
             $this->matchingSptVersions = [];
         }
     }
@@ -415,7 +424,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function hasUnpublishedSptVersions(): bool
     {
-        return array_any($this->matchingSptVersions, fn(array $version): bool => !$version['is_published']);
+        return array_any($this->matchingSptVersions, fn (array $version): bool => ! $version['is_published']);
     }
 
     /**
@@ -425,16 +434,16 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function getUnpublishedSptVersions(): array
     {
-        return array_filter($this->matchingSptVersions, fn(array $version): bool => !$version['is_published']);
+        return array_filter($this->matchingSptVersions, fn (array $version): bool => ! $version['is_published']);
     }
 
     /**
      * Get all mod categories ordered by title.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, ModCategory>
+     * @return Collection<int, ModCategory>
      */
     #[Computed]
-    public function categories(): \Illuminate\Database\Eloquent\Collection
+    public function categories(): Collection
     {
         return ModCategory::cachedOrdered();
     }
@@ -450,28 +459,28 @@ new #[Layout('layouts::base')] class extends Component {
         $this->protectAgainstSpam();
 
         $validated = $this->validate();
-        if (!$validated) {
+        if (! $validated) {
             return;
         }
 
         // Additional validation for matching versions
-        if (!$this->validateDependenciesHaveMatchingVersions()) {
+        if (! $this->validateDependenciesHaveMatchingVersions()) {
             return;
         }
 
-        // Parse the published at date in the user's timezone, convert to UTC for DB storage.
-        // Zero out seconds for consistency with datetime-local input format.
+        // Combine date and time into a single published_at value, converting from user timezone to UTC.
         $publishedAtCarbon = null;
-        $userTimezone = auth()->user()->timezone ?? 'UTC';
-        if ($this->publishedAt !== null && $this->publishedAt !== '') {
-            $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
+        if ($this->publishedAtDate !== null && $this->publishedAtDate !== '') {
+            $userTimezone = auth()->user()->timezone ?? 'UTC';
+            $dateTimeString = $this->publishedAtDate.' '.($this->publishedAtTime ?? '00:00');
+            $publishedAtCarbon = Date::parse($dateTimeString, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         // Use a transaction to ensure both mod GUID and version are saved atomically
         /** @var array{version: string, description: string, link: string, sptVersionConstraint: string, virusTotalLink: string} $validated */
         DB::transaction(function () use ($validated, $publishedAtCarbon): void {
             // Update the mod's GUID if needed (only if not already saved inline)
-            if ($this->modGuidRequired && ($this->modGuid === '' || $this->modGuid === '0') && ($this->newModGuid !== '' && $this->newModGuid !== '0') && !$this->guidSaved) {
+            if ($this->modGuidRequired && ($this->modGuid === '' || $this->modGuid === '0') && ($this->newModGuid !== '' && $this->newModGuid !== '0') && ! $this->guidSaved) {
                 $this->mod->guid = $this->newModGuid;
                 $this->mod->save();
             }
@@ -489,7 +498,7 @@ new #[Layout('layouts::base')] class extends Component {
             // Update VirusTotal links - delete existing and recreate
             $this->modVersion->virusTotalLinks()->delete();
             foreach ($this->virusTotalLinks as $virusTotalLink) {
-                if (!empty($virusTotalLink['url'])) {
+                if (! empty($virusTotalLink['url'])) {
                     $this->modVersion->virusTotalLinks()->create([
                         'url' => $virusTotalLink['url'],
                         'label' => empty($virusTotalLink['label']) ? '' : $virusTotalLink['label'],
@@ -510,7 +519,7 @@ new #[Layout('layouts::base')] class extends Component {
                     $isPinned = false;
 
                     // Only pin if the user opted in AND the SPT version is unpublished
-                    if ($this->pinToSptVersions && !$sptVersion->is_published) {
+                    if ($this->pinToSptVersions && ! $sptVersion->is_published) {
                         $isPinned = true;
                     }
 
@@ -523,7 +532,7 @@ new #[Layout('layouts::base')] class extends Component {
             // Update dependencies
             $this->modVersion->dependencies()->delete();
             foreach ($this->dependencies as $dependency) {
-                if (!empty($dependency['modId']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0')) {
+                if (! empty($dependency['modId']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0')) {
                     // Skip self-dependencies
                     if ((int) $dependency['modId'] === $this->mod->id) {
                         continue;
@@ -554,12 +563,12 @@ new #[Layout('layouts::base')] class extends Component {
         $rules = [];
 
         // Add mod GUID validation if required and mod doesn't have one and hasn't been saved already
-        if ($this->modGuidRequired && ($this->modGuid === '' || $this->modGuid === '0') && !$this->guidSaved) {
+        if ($this->modGuidRequired && ($this->modGuid === '' || $this->modGuid === '0') && ! $this->guidSaved) {
             $rules['newModGuid'] = ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/', 'unique:mods,guid'];
         }
 
         // Add mod category validation if mod doesn't have one and hasn't been saved already
-        if (($this->modCategoryId === null || $this->modCategoryId === 0) && !$this->categorySaved) {
+        if (($this->modCategoryId === null || $this->modCategoryId === 0) && ! $this->categorySaved) {
             $rules['newModCategoryId'] = ['required', 'exists:mod_categories,id'];
         }
 
@@ -570,7 +579,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         foreach ($this->dependencies as $index => $dependency) {
             // If either field is filled, both are required
-            if (!empty($dependency['modId']) || !empty($dependency['constraint'])) {
+            if (! empty($dependency['modId']) || ! empty($dependency['constraint'])) {
                 $rules[sprintf('dependencies.%d.modId', $index)] = 'required|exists:mods,id';
                 $rules[sprintf('dependencies.%d.constraint', $index)] = ['required', 'string', new SemverConstraintRule()];
             } else {
@@ -631,13 +640,13 @@ new #[Layout('layouts::base')] class extends Component {
             }
 
             // Check if there are matching versions
-            if (($dependency['modId'] !== '' && $dependency['modId'] !== '0') && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0') && (!isset($this->matchingDependencyVersions[$index]) || $this->matchingDependencyVersions[$index] === [])) {
+            if (($dependency['modId'] !== '' && $dependency['modId'] !== '0') && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0') && (! isset($this->matchingDependencyVersions[$index]) || $this->matchingDependencyVersions[$index] === [])) {
                 $this->addError(sprintf('dependencies.%d.constraint', $index), 'No matching versions found. Please adjust the version constraint.');
                 $hasErrors = true;
             }
         }
 
-        return !$hasErrors;
+        return ! $hasErrors;
     }
 
     /**
@@ -671,7 +680,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     private function updateMatchingDependencyVersions(int $index): void
     {
-        if (!isset($this->dependencies[$index])) {
+        if (! isset($this->dependencies[$index])) {
             return;
         }
 
@@ -685,7 +694,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         try {
             $mod = Mod::query()->find($dependency['modId']);
-            if (!$mod) {
+            if (! $mod) {
                 $this->matchingDependencyVersions[$index] = [];
 
                 return;
@@ -695,9 +704,9 @@ new #[Layout('layouts::base')] class extends Component {
                 ->versions()
                 ->withoutGlobalScope(PublishedScope::class)
                 ->get()
-                ->filter(fn(ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
+                ->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
                 ->map(
-                    fn(ModVersion $version): array => [
+                    fn (ModVersion $version): array => [
                         'id' => $version->id,
                         'mod_name' => $mod->name,
                         'version' => $version->version,
@@ -707,7 +716,7 @@ new #[Layout('layouts::base')] class extends Component {
                 ->all();
 
             $this->matchingDependencyVersions[$index] = $versions;
-        } catch (\Exception) {
+        } catch (Exception) {
             $this->matchingDependencyVersions[$index] = [];
         }
     }

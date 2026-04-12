@@ -34,8 +34,9 @@ describe('Addon Edit Form', function (): void {
         $this->actingAs($user);
 
         Livewire::test('pages::addon.edit', ['addonId' => $addon->id])
-            ->assertNotSet('publishedAt', null)
-            ->set('publishedAt', '')
+            ->assertNotSet('publishedAtDate', null)
+            ->set('publishedAtDate', '')
+            ->set('publishedAtTime', '')
             ->call('save')
             ->assertHasNoErrors()
             ->assertRedirect();

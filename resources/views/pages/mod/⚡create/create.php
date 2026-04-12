@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
@@ -18,12 +20,12 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
-use App\Livewire\Concerns\RendersMarkdownPreview;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithFileUploads;
-    use RendersMarkdownPreview;
 
     /**
      * The honeypot data to be validated.
@@ -75,7 +77,12 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * The published at date of the mod.
      */
-    public ?string $publishedAt = null;
+    public ?string $publishedAtDate = null;
+
+    /**
+     * The published at time of the mod.
+     */
+    public ?string $publishedAtTime = null;
 
     /**
      * Whether the mod contains AI content.
@@ -157,10 +164,10 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * Get all licenses ordered by name.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, License>
+     * @return Collection<int, License>
      */
     #[Computed]
-    public function licenses(): \Illuminate\Database\Eloquent\Collection
+    public function licenses(): Collection
     {
         return License::cachedOrdered();
     }
@@ -168,10 +175,10 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * Get all mod categories ordered by title.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, ModCategory>
+     * @return Collection<int, ModCategory>
      */
     #[Computed]
-    public function categories(): \Illuminate\Database\Eloquent\Collection
+    public function categories(): Collection
     {
         return ModCategory::cachedOrdered();
     }
@@ -188,15 +195,16 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Validate the form.
         $validated = $this->validate();
-        if (!$validated) {
+        if (! $validated) {
             return;
         }
 
-        // Parse the published at date in the user's timezone, falling back to UTC if the user has no timezone, and
-        // convert it to UTC for DB storage. Zero out seconds for consistency with datetime-local input format.
-        if ($this->publishedAt !== null) {
+        // Combine date and time into a single published_at value, converting from user timezone to UTC.
+        $publishedAt = null;
+        if ($this->publishedAtDate !== null) {
             $userTimezone = auth()->user()->timezone ?? 'UTC';
-            $this->publishedAt = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0)->toDateTimeString();
+            $dateTimeString = $this->publishedAtDate.' '.($this->publishedAtTime ?? '00:00');
+            $publishedAt = Date::parse($dateTimeString, $userTimezone)->setTimezone('UTC')->second(0)->toDateTimeString();
         }
 
         // Create a new mod instance.
@@ -215,11 +223,11 @@ new #[Layout('layouts::base')] class extends Component {
             'addons_disabled' => $this->addonsDisabled,
             'profile_binding_notice_disabled' => $this->disableProfileBindingNotice,
             'cheat_notice' => $this->cheatNotice,
-            'published_at' => $this->publishedAt,
+            'published_at' => $publishedAt,
         ]);
 
         // Set the thumbnail if a file was uploaded.
-        if ($this->thumbnail instanceof \Illuminate\Http\UploadedFile) {
+        if ($this->thumbnail instanceof UploadedFile) {
             /** @var string $diskName */
             $diskName = config('filesystems.asset_upload', 'public');
             $thumbnailPath = $this->thumbnail->storePublicly(path: 'mods', options: $diskName);
@@ -244,7 +252,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Add source code links
         foreach ($this->sourceCodeLinks as $link) {
-            if (!empty($link['url'])) {
+            if (! empty($link['url'])) {
                 $mod->sourceCodeLinks()->create([
                     'url' => $link['url'],
                     'label' => $link['label'] ?? '',
@@ -311,7 +319,8 @@ new #[Layout('layouts::base')] class extends Component {
             'sourceCodeLinks' => 'required|array|min:1|max:4',
             'sourceCodeLinks.*.url' => 'required|url|starts_with:https://,http://',
             'sourceCodeLinks.*.label' => 'nullable|string|max:50',
-            'publishedAt' => 'nullable|date',
+            'publishedAtDate' => 'nullable|date',
+            'publishedAtTime' => 'nullable|date_format:H:i',
             'containsAiContent' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',

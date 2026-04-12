@@ -191,7 +191,9 @@ describe('addon publishing functionality', function (): void {
         $mod = Mod::factory()->create();
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
+        $publishDateTime = Date::now()->addHour();
+        $publishDate = $publishDateTime->format('Y-m-d');
+        $publishTime = $publishDateTime->format('H:i');
 
         Livewire::actingAs($owner)
             ->test('addon.action', [
@@ -201,13 +203,14 @@ describe('addon publishing functionality', function (): void {
                 'addonPublished' => false,
                 'addonDetached' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertSet('addonPublished', true);
 
         $addon->refresh();
         expect($addon->published_at)->not->toBeNull();
-        expect($addon->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate)->format('Y-m-d H:i:s'));
+        expect($addon->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
     });
 
     it('allows addon owners to unpublish an addon', function (): void {
@@ -236,7 +239,8 @@ describe('addon publishing functionality', function (): void {
         $mod = Mod::factory()->create();
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
@@ -247,7 +251,8 @@ describe('addon publishing functionality', function (): void {
                 'addonPublished' => false,
                 'addonDetached' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertForbidden();
 
@@ -271,7 +276,8 @@ describe('addon publishing functionality', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id, 'owner_id' => $owner->id, 'published_at' => null]);
         $addon->additionalAuthors()->attach($author);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         // Test author can publish
         Livewire::actingAs($author)
@@ -282,7 +288,8 @@ describe('addon publishing functionality', function (): void {
                 'addonPublished' => false,
                 'addonDetached' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertSet('addonPublished', true);
 

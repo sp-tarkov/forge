@@ -400,7 +400,7 @@
                                         <label class="flex items-start gap-3">
                                             <flux:checkbox
                                                 wire:model.live="pinToSptVersions"
-                                                @change="if($event.target.checked) { $wire.set('publishedAt', null) }"
+                                                @change="if($event.target.checked) { $wire.set('publishedAtDate', null); $wire.set('publishedAtTime', null) }"
                                                 class="mt-0.5"
                                             />
                                             <div class="flex-1">
@@ -468,23 +468,27 @@
                                             </p>
                                         @endif
                                         <div class="flex gap-2 items-center">
-                                            <flux:input
-                                                type="datetime-local"
-                                                wire:model.defer="publishedAt"
-                                                placeholder="Leave blank to keep unpublished"
+                                            <flux:date-picker
+                                                wire:model="publishedAtDate"
+                                                clearable
+                                            />
+                                            <flux:time-picker
+                                                wire:model="publishedAtTime"
+                                                clearable
                                             />
                                             @if (auth()->user()->timezone !== null)
                                                 <flux:button
                                                     size="sm"
                                                     variant="outline"
-                                                    @click="$wire.set('publishedAt', now())"
+                                                    @click="$wire.set('publishedAtDate', '{{ now()->timezone(auth()->user()->timezone)->format('Y-m-d') }}'); $wire.set('publishedAtTime', '{{ now()->timezone(auth()->user()->timezone)->format('H:i') }}')"
                                                 >Now</flux:button>
                                             @endif
                                         </div>
                                     </div>
                                 </div>
 
-                                <flux:error name="publishedAt" />
+                                <flux:error name="publishedAtDate" />
+                                <flux:error name="publishedAtTime" />
                             </flux:field>
 
                             <x-honeypot livewire-model="honeypotData" />

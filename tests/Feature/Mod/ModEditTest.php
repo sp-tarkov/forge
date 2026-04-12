@@ -120,8 +120,9 @@ describe('Published At Handling', function (): void {
         $this->actingAs($user);
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertNotSet('publishedAt', null)
-            ->set('publishedAt', '')
+            ->assertNotSet('publishedAtDate', null)
+            ->set('publishedAtDate', '')
+            ->set('publishedAtTime', '')
             ->call('save')
             ->assertHasNoErrors()
             ->assertRedirect();

@@ -25,7 +25,8 @@ use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 use Stevebauman\Purify\Facades\Purify;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use UsesSpamProtection;
 
     /**
@@ -72,7 +73,13 @@ new #[Layout('layouts::base')] class extends Component {
      * The published at date of the addon version.
      */
     #[Validate('nullable|date')]
-    public ?string $publishedAt = null;
+    public ?string $publishedAtDate = null;
+
+    /**
+     * The published at time of the addon version.
+     */
+    #[Validate('nullable|date_format:H:i')]
+    public ?string $publishedAtTime = null;
 
     /**
      * The matching mod versions for the current constraint.
@@ -119,7 +126,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Load existing VirusTotal links
         $this->virusTotalLinks = $addonVersion->virusTotalLinks
             ->map(
-                fn(VirusTotalLink $link): array => [
+                fn (VirusTotalLink $link): array => [
                     'url' => $link->url,
                     'label' => $link->label ?? '',
                 ],
@@ -134,7 +141,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Load existing dependencies
         $this->dependencies = $addonVersion->dependencies
             ->map(
-                fn(Dependency $dependency): array => [
+                fn (Dependency $dependency): array => [
                     'id' => $dependency->id,
                     'modId' => (string) $dependency->dependent_mod_id,
                     'constraint' => $dependency->constraint,
@@ -147,11 +154,12 @@ new #[Layout('layouts::base')] class extends Component {
             $this->updateMatchingDependencyVersions($index);
         }
 
-        $this->publishedAt = $this->addonVersion->published_at
-            ? Date::parse($this->addonVersion->published_at)
-                ->setTimezone(auth()->user()->timezone ?? 'UTC')
-                ->format('Y-m-d\TH:i')
-            : null;
+        if ($this->addonVersion->published_at) {
+            $publishedAtLocal = Date::parse($this->addonVersion->published_at)
+                ->setTimezone(auth()->user()->timezone ?? 'UTC');
+            $this->publishedAtDate = $publishedAtLocal->format('Y-m-d');
+            $this->publishedAtTime = $publishedAtLocal->format('H:i');
+        }
 
         $this->updatedModVersionConstraint();
     }
@@ -163,7 +171,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
         if (in_array(mb_trim($content), ['', '0'], true)) {
-            return '<p class="text-slate-400 dark:text-slate-500 italic">' . __('Nothing to preview.') . '</p>';
+            return '<p class="text-slate-400 dark:text-slate-500 italic">'.__('Nothing to preview.').'</p>';
         }
 
         $converter = new GithubFlavoredMarkdownConverter();
@@ -233,60 +241,11 @@ new #[Layout('layouts::base')] class extends Component {
     }
 
     /**
-     * Update matching dependency versions for a specific dependency.
-     */
-    private function updateMatchingDependencyVersions(int $index): void
-    {
-        if (!isset($this->dependencies[$index])) {
-            return;
-        }
-
-        $dependency = $this->dependencies[$index];
-        $modId = $dependency['modId'];
-        $constraint = $dependency['constraint'];
-
-        if (empty($modId) || empty($constraint)) {
-            $this->matchingDependencyVersions[$index] = [];
-
-            return;
-        }
-
-        try {
-            $mod = Mod::query()->find($modId);
-            if (!$mod) {
-                $this->matchingDependencyVersions[$index] = [];
-
-                return;
-            }
-
-            $modVersions = ModVersion::query()->where('mod_id', $modId)->where('disabled', false)->whereNotNull('published_at')->get();
-
-            /** @var array<string> $validVersions */
-            $validVersions = $modVersions->pluck('version')->toArray();
-            $compatibleVersions = Semver::satisfiedBy($validVersions, $constraint);
-
-            $this->matchingDependencyVersions[$index] = $modVersions
-                ->whereIn('version', $compatibleVersions)
-                ->sortByDesc('version')
-                ->map(
-                    fn(ModVersion $version): array => [
-                        'mod_name' => $mod->name,
-                        'version' => $version->version,
-                    ],
-                )
-                ->values()
-                ->all();
-        } catch (\Exception) {
-            $this->matchingDependencyVersions[$index] = [];
-        }
-    }
-
-    /**
      * Update the matching mod versions when the constraint changes.
      */
     public function updatedModVersionConstraint(): void
     {
-        if ($this->modVersionConstraint === '' || $this->modVersionConstraint === '0' || !$this->addonVersion->addon->mod_id) {
+        if ($this->modVersionConstraint === '' || $this->modVersionConstraint === '0' || ! $this->addonVersion->addon->mod_id) {
             $this->matchingModVersions = [];
 
             return;
@@ -307,14 +266,14 @@ new #[Layout('layouts::base')] class extends Component {
                 ->whereIn('version', $compatibleVersions)
                 ->sortByDesc('version')
                 ->map(
-                    fn(ModVersion $version): array => [
+                    fn (ModVersion $version): array => [
                         'id' => $version->id,
                         'version' => $version->version,
                     ],
                 )
                 ->values()
                 ->all();
-        } catch (\Exception) {
+        } catch (Exception) {
             $this->matchingModVersions = [];
         }
     }
@@ -338,7 +297,8 @@ new #[Layout('layouts::base')] class extends Component {
             'version' => ['required', 'string', 'max:50', new SemverRule()],
             'description' => 'required|string',
             'modVersionConstraint' => ['required', 'string', 'max:75', new SemverConstraintRule()],
-            'publishedAt' => 'nullable|date',
+            'publishedAtDate' => 'nullable|date',
+            'publishedAtTime' => 'nullable|date_format:H:i',
         ];
 
         // VirusTotal links validation
@@ -367,12 +327,12 @@ new #[Layout('layouts::base')] class extends Component {
         // Validate all fields
         $this->validate($rules, $messages);
 
-        // Parse the published at date in the user's timezone, convert to UTC for DB storage.
-        // Zero out seconds for consistency with datetime-local input format.
+        // Combine date and time into a single published_at value, converting from user timezone to UTC.
         $publishedAtCarbon = null;
-        $userTimezone = auth()->user()->timezone ?? 'UTC';
-        if ($this->publishedAt !== null && $this->publishedAt !== '') {
-            $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
+        if ($this->publishedAtDate !== null && $this->publishedAtDate !== '') {
+            $userTimezone = auth()->user()->timezone ?? 'UTC';
+            $dateTimeString = $this->publishedAtDate.' '.($this->publishedAtTime ?? '00:00');
+            $publishedAtCarbon = Date::parse($dateTimeString, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         $this->addonVersion->update([
@@ -387,7 +347,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Update VirusTotal links - delete existing and recreate
         $this->addonVersion->virusTotalLinks()->delete();
         foreach ($this->virusTotalLinks as $virusTotalLink) {
-            if (!empty($virusTotalLink['url'])) {
+            if (! empty($virusTotalLink['url'])) {
                 $this->addonVersion->virusTotalLinks()->create([
                     'url' => $virusTotalLink['url'],
                     'label' => empty($virusTotalLink['label']) ? '' : $virusTotalLink['label'],
@@ -398,7 +358,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Update dependencies - delete existing and recreate
         $this->addonVersion->dependencies()->delete();
         foreach ($this->dependencies as $dependency) {
-            if (!empty($dependency['modId']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0')) {
+            if (! empty($dependency['modId']) && ($dependency['constraint'] !== '' && $dependency['constraint'] !== '0')) {
                 $this->addonVersion->dependencies()->create([
                     'dependent_mod_id' => (int) $dependency['modId'],
                     'constraint' => $dependency['constraint'],
@@ -411,5 +371,54 @@ new #[Layout('layouts::base')] class extends Component {
         Session::flash('success', 'Addon Version has been Successfully Updated');
 
         $this->redirect($this->addonVersion->addon->detail_url);
+    }
+
+    /**
+     * Update matching dependency versions for a specific dependency.
+     */
+    private function updateMatchingDependencyVersions(int $index): void
+    {
+        if (! isset($this->dependencies[$index])) {
+            return;
+        }
+
+        $dependency = $this->dependencies[$index];
+        $modId = $dependency['modId'];
+        $constraint = $dependency['constraint'];
+
+        if (empty($modId) || empty($constraint)) {
+            $this->matchingDependencyVersions[$index] = [];
+
+            return;
+        }
+
+        try {
+            $mod = Mod::query()->find($modId);
+            if (! $mod) {
+                $this->matchingDependencyVersions[$index] = [];
+
+                return;
+            }
+
+            $modVersions = ModVersion::query()->where('mod_id', $modId)->where('disabled', false)->whereNotNull('published_at')->get();
+
+            /** @var array<string> $validVersions */
+            $validVersions = $modVersions->pluck('version')->toArray();
+            $compatibleVersions = Semver::satisfiedBy($validVersions, $constraint);
+
+            $this->matchingDependencyVersions[$index] = $modVersions
+                ->whereIn('version', $compatibleVersions)
+                ->sortByDesc('version')
+                ->map(
+                    fn (ModVersion $version): array => [
+                        'mod_name' => $mod->name,
+                        'version' => $version->version,
+                    ],
+                )
+                ->values()
+                ->all();
+        } catch (Exception) {
+            $this->matchingDependencyVersions[$index] = [];
+        }
     }
 };

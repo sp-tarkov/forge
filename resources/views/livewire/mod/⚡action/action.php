@@ -15,7 +15,8 @@ use Livewire\Component;
 /**
  * @property-read Mod $mod
  */
-new class extends Component {
+new class extends Component
+{
     use ModerationActionMenu;
 
     /**
@@ -51,7 +52,12 @@ new class extends Component {
     /**
      * The publish date for the mod.
      */
-    public ?string $publishedAt = null;
+    public ?string $publishedAtDate = null;
+
+    /**
+     * The publish time for the mod.
+     */
+    public ?string $publishedAtTime = null;
 
     /**
      * The reason for moderation actions.
@@ -107,7 +113,7 @@ new class extends Component {
     {
         $user = Auth::user();
 
-        return $user && $user->isModOrAdmin() && !$this->mod->isAuthorOrOwner($user);
+        return $user && $user->isModOrAdmin() && ! $this->mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -127,7 +133,7 @@ new class extends Component {
         $this->modFeatured = true;
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
-        $this->dispatch('mod-updated.' . $this->modId, featured: true);
+        $this->dispatch('mod-updated.'.$this->modId, featured: true);
 
         flash()->success('Mod successfully featured!');
 
@@ -153,7 +159,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('mod-updated.' . $this->modId, featured: false);
+        $this->dispatch('mod-updated.'.$this->modId, featured: false);
 
         flash()->success('Mod successfully unfeatured!');
 
@@ -175,7 +181,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::MOD_DISABLE, $mod, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -183,7 +189,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('mod-updated.' . $this->modId, disabled: true);
+        $this->dispatch('mod-updated.'.$this->modId, disabled: true);
 
         flash()->success('Mod successfully disabled!');
 
@@ -205,7 +211,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::MOD_ENABLE, $mod, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -213,7 +219,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('mod-updated.' . $this->modId, disabled: false);
+        $this->dispatch('mod-updated.'.$this->modId, disabled: false);
 
         flash()->success('Mod successfully enabled!');
 
@@ -226,7 +232,8 @@ new class extends Component {
      */
     public function publish(): void
     {
-        $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
+        $dateTimeString = $this->publishedAtDate ? $this->publishedAtDate.' '.($this->publishedAtTime ?? '00:00') : null;
+        $publishedDate = $dateTimeString ? Date::parse($dateTimeString) : now();
         $mod = $this->mod;
 
         $this->authorize('publish', $mod);
@@ -236,7 +243,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::MOD_PUBLISH, $mod, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -244,7 +251,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('mod-updated.' . $this->modId, published: true);
+        $this->dispatch('mod-updated.'.$this->modId, published: true);
 
         flash()->success('Mod successfully published!');
 
@@ -266,7 +273,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::MOD_UNPUBLISH, $mod, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -274,7 +281,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('mod.%d.permissions.%s', $this->modId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('mod-updated.' . $this->modId, published: false);
+        $this->dispatch('mod-updated.'.$this->modId, published: false);
 
         flash()->success('Mod successfully unpublished!');
 

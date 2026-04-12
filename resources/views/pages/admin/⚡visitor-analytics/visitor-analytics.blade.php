@@ -76,28 +76,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {{-- Date Range Filter --}}
                     <div>
-                        <flux:label
-                            for="dateFrom"
-                            class="text-xs"
-                        >Date From</flux:label>
-                        <flux:input
-                            type="date"
+                        <flux:date-picker
                             wire:model.live="dateFrom"
-                            id="dateFrom"
+                            label="Date From"
                             size="sm"
+                            clearable
                         />
                     </div>
 
                     <div>
-                        <flux:label
-                            for="dateTo"
-                            class="text-xs"
-                        >Date To</flux:label>
-                        <flux:input
-                            type="date"
+                        <flux:date-picker
                             wire:model.live="dateTo"
-                            id="dateTo"
+                            label="Date To"
                             size="sm"
+                            clearable
                         />
                     </div>
 

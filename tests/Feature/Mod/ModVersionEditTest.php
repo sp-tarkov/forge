@@ -327,8 +327,9 @@ describe('Mod Version Edit Form', function (): void {
             ]);
 
             Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
-                ->assertNotSet('publishedAt', null)
-                ->set('publishedAt', '')
+                ->assertNotSet('publishedAtDate', null)
+                ->set('publishedAtDate', '')
+                ->set('publishedAtTime', '')
                 ->set('virusTotalLinks', [
                     ['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test Scan'],
                 ])

@@ -15,7 +15,8 @@ use Livewire\Component;
 /**
  * @property-read Addon $addon
  */
-new class extends Component {
+new class extends Component
+{
     use ModerationActionMenu;
 
     /**
@@ -51,7 +52,12 @@ new class extends Component {
     /**
      * The publish date for the addon.
      */
-    public ?string $publishedAt = null;
+    public ?string $publishedAtDate = null;
+
+    /**
+     * The publish time for the addon.
+     */
+    public ?string $publishedAtTime = null;
 
     /**
      * The reason for moderation actions.
@@ -99,7 +105,7 @@ new class extends Component {
     {
         $user = Auth::user();
 
-        return $user && $user->isModOrAdmin() && !$this->addon->isAuthorOrOwner($user);
+        return $user && $user->isModOrAdmin() && ! $this->addon->isAuthorOrOwner($user);
     }
 
     /**
@@ -116,7 +122,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::ADDON_DISABLE, $addon, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -124,7 +130,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('addon-updated.' . $this->addonId, disabled: true);
+        $this->dispatch('addon-updated.'.$this->addonId, disabled: true);
 
         flash()->success('Addon successfully disabled!');
 
@@ -146,7 +152,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::ADDON_ENABLE, $addon, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -154,7 +160,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('addon-updated.' . $this->addonId, disabled: false);
+        $this->dispatch('addon-updated.'.$this->addonId, disabled: false);
 
         flash()->success('Addon successfully enabled!');
 
@@ -167,7 +173,8 @@ new class extends Component {
      */
     public function publish(): void
     {
-        $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
+        $dateTimeString = $this->publishedAtDate ? $this->publishedAtDate.' '.($this->publishedAtTime ?? '00:00') : null;
+        $publishedDate = $dateTimeString ? Date::parse($dateTimeString) : now();
         $addon = $this->addon;
 
         $this->authorize('publish', $addon);
@@ -177,7 +184,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::ADDON_PUBLISH, $addon, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -185,7 +192,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('addon-updated.' . $this->addonId, published: true);
+        $this->dispatch('addon-updated.'.$this->addonId, published: true);
 
         flash()->success('Addon successfully published!');
 
@@ -207,7 +214,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::ADDON_UNPUBLISH, $addon, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -215,7 +222,7 @@ new class extends Component {
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
         // Dispatch event to update ribbon
-        $this->dispatch('addon-updated.' . $this->addonId, published: false);
+        $this->dispatch('addon-updated.'.$this->addonId, published: false);
 
         flash()->success('Addon successfully unpublished!');
 
@@ -241,7 +248,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::ADDON_ATTACH, $addon, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
@@ -272,7 +279,7 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $addon->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::ADDON_DETACH, $addon, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 

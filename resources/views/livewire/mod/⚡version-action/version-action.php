@@ -17,7 +17,8 @@ use Livewire\Component;
 /**
  * @property-read ModVersion $version
  */
-new class extends Component {
+new class extends Component
+{
     use ModerationActionMenu;
 
     /**
@@ -53,7 +54,12 @@ new class extends Component {
     /**
      * The publish date for the version.
      */
-    public ?string $publishedAt = null;
+    public ?string $publishedAtDate = null;
+
+    /**
+     * The publish time for the version.
+     */
+    public ?string $publishedAtTime = null;
 
     /**
      * The reason for moderation actions.
@@ -93,7 +99,7 @@ new class extends Component {
     {
         $user = Auth::user();
 
-        return $user && $user->isModOrAdmin() && !$this->version->mod->isAuthorOrOwner($user);
+        return $user && $user->isModOrAdmin() && ! $this->version->mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -105,14 +111,14 @@ new class extends Component {
     public function permissions(): array
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return [];
         }
 
         return Cache::remember(
             sprintf('mod_version.%d.permissions.%s', $this->versionId, $user->id),
             60, // Seconds
-            fn(): array => [
+            fn (): array => [
                 'viewActions' => Gate::allows('viewActions', [$this->version->mod, $this->version->mod]),
                 'update' => Gate::allows('update', $this->version),
                 'delete' => Gate::allows('delete', $this->version),
@@ -139,14 +145,14 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::VERSION_DISABLE, $version, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
         $this->versionDisabled = true;
         $this->clearPermissionCache(sprintf('mod_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
-        $this->dispatch('mod-version-updated.' . $this->versionId, disabled: true);
+        $this->dispatch('mod-version-updated.'.$this->versionId, disabled: true);
 
         flash()->success('Mod version successfully disabled!');
 
@@ -168,14 +174,14 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::VERSION_ENABLE, $version, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
         $this->versionDisabled = false;
         $this->clearPermissionCache(sprintf('mod_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
-        $this->dispatch('mod-version-updated.' . $this->versionId, disabled: false);
+        $this->dispatch('mod-version-updated.'.$this->versionId, disabled: false);
 
         flash()->success('Mod version successfully enabled!');
 
@@ -188,7 +194,8 @@ new class extends Component {
      */
     public function publish(): void
     {
-        $publishedDate = $this->publishedAt ? Date::parse($this->publishedAt) : now();
+        $dateTimeString = $this->publishedAtDate ? $this->publishedAtDate.' '.($this->publishedAtTime ?? '00:00') : null;
+        $publishedDate = $dateTimeString ? Date::parse($dateTimeString) : now();
         $version = $this->version;
 
         $this->authorize('publish', $version);
@@ -198,14 +205,14 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::VERSION_PUBLISH, $version, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
         $this->versionPublished = true;
         $this->clearPermissionCache(sprintf('mod_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
-        $this->dispatch('mod-version-updated.' . $this->versionId, published: true);
+        $this->dispatch('mod-version-updated.'.$this->versionId, published: true);
 
         flash()->success('Mod version successfully published!');
 
@@ -227,14 +234,14 @@ new class extends Component {
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
         $user = Auth::user();
-        $isModerationAction = $user && !$version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
+        $isModerationAction = $user && ! $version->mod->isAuthorOrOwner($user) && $user->isModOrAdmin();
 
         Track::eventSync(TrackingEventType::VERSION_UNPUBLISH, $version, isModerationAction: $isModerationAction, reason: $isModerationAction ? ($this->moderationReason ?: null) : null);
 
         $this->versionPublished = false;
         $this->clearPermissionCache(sprintf('mod_version.%d.permissions.%s', $this->versionId, (string) Auth::id()));
 
-        $this->dispatch('mod-version-updated.' . $this->versionId, published: false);
+        $this->dispatch('mod-version-updated.'.$this->versionId, published: false);
 
         flash()->success('Mod version successfully unpublished!');
 

@@ -305,19 +305,24 @@
                                     @endif
                                 </flux:description>
                                 <div class="flex gap-2 items-center">
-                                    <flux:input
-                                        type="datetime-local"
-                                        wire:model.defer="publishedAt"
+                                    <flux:date-picker
+                                        wire:model="publishedAtDate"
+                                        clearable
+                                    />
+                                    <flux:time-picker
+                                        wire:model="publishedAtTime"
+                                        clearable
                                     />
                                     @if (auth()->user()->timezone !== null)
                                         <flux:button
                                             size="sm"
                                             variant="outline"
-                                            @click="$wire.set('publishedAt', now())"
+                                            @click="$wire.set('publishedAtDate', '{{ now()->timezone(auth()->user()->timezone)->format('Y-m-d') }}'); $wire.set('publishedAtTime', '{{ now()->timezone(auth()->user()->timezone)->format('H:i') }}')"
                                         >Now</flux:button>
                                     @endif
                                 </div>
-                                <flux:error name="publishedAt" />
+                                <flux:error name="publishedAtDate" />
+                                <flux:error name="publishedAtTime" />
                             </flux:field>
 
                             <flux:field class="col-span-6">

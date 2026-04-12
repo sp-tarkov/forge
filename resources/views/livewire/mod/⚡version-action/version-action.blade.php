@@ -317,14 +317,6 @@
     <flux:modal
         name="mod-version-action-publish-{{ $this->versionId }}"
         class="md:w-[500px] lg:w-[600px]"
-        x-data="{
-            now() {
-                // Format: YYYY-MM-DDTHH:MM
-                const pad = n => n.toString().padStart(2, '0');
-                const d = new Date();
-                return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-            }
-        }"
     >
         <div class="space-y-0">
             {{-- Header Section --}}
@@ -379,15 +371,13 @@
                         @endif
                     </flux:description>
                     <div class="flex gap-2 items-center">
-                        <flux:input
-                            type="datetime-local"
-                            wire:model.defer="publishedAt"
-                        />
+                        <flux:date-picker wire:model="publishedAtDate" clearable />
+                        <flux:time-picker wire:model="publishedAtTime" clearable />
                         @if (auth()->user()?->timezone !== null)
                             <flux:button
                                 size="sm"
                                 variant="outline"
-                                @click="$wire.set('publishedAt', now())"
+                                @click="$wire.set('publishedAtDate', '{{ now()->format('Y-m-d') }}'); $wire.set('publishedAtTime', '{{ now()->format('H:i') }}')"
                             >Now</flux:button>
                         @endif
                     </div>

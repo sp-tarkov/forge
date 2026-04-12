@@ -127,28 +127,20 @@
 
                     {{-- Date Range Filters --}}
                     <div>
-                        <flux:label
-                            for="joinedFrom"
-                            class="text-xs"
-                        >Joined From</flux:label>
-                        <flux:input
-                            type="date"
+                        <flux:date-picker
                             wire:model.live="joinedFrom"
-                            id="joinedFrom"
+                            label="Joined From"
                             size="sm"
+                            clearable
                         />
                     </div>
 
                     <div>
-                        <flux:label
-                            for="joinedTo"
-                            class="text-xs"
-                        >Joined To</flux:label>
-                        <flux:input
-                            type="date"
+                        <flux:date-picker
                             wire:model.live="joinedTo"
-                            id="joinedTo"
+                            label="Joined To"
                             size="sm"
+                            clearable
                         />
                     </div>
                 </div>

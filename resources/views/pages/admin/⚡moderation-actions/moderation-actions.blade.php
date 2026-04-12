@@ -99,29 +99,21 @@
 
                     {{-- Date From Filter --}}
                     <div>
-                        <flux:label
-                            for="dateFrom"
-                            class="text-xs"
-                        >Date From</flux:label>
-                        <flux:input
-                            type="date"
+                        <flux:date-picker
                             wire:model.live="dateFrom"
-                            id="dateFrom"
+                            label="Date From"
                             size="sm"
+                            clearable
                         />
                     </div>
 
                     {{-- Date To Filter --}}
                     <div>
-                        <flux:label
-                            for="dateTo"
-                            class="text-xs"
-                        >Date To</flux:label>
-                        <flux:input
-                            type="date"
+                        <flux:date-picker
                             wire:model.live="dateTo"
-                            id="dateTo"
+                            label="Date To"
                             size="sm"
+                            clearable
                         />
                     </div>
 
