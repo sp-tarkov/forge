@@ -740,9 +740,9 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
      */
     private function hasActiveSptCompatibility(): bool
     {
-        // Get active SPT versions (last three minor versions) for search
-        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
-        $activeSptVersionIds = $activeSptVersions->pluck('version')->toArray();
+        // Get active SPT version strings (last three minor versions) for search — cache strings, not models
+        /** @var array<int, string> $activeSptVersionIds */
+        $activeSptVersionIds = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): array => SptVersion::getVersionsForLastThreeMinors()->pluck('version')->all());
 
         // Use the scope to filter and then check for active SPT versions
         return $this->versions()
