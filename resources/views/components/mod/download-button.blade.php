@@ -113,9 +113,9 @@
                             variant="primary"
                             size="sm"
                             x-on:click="$flux.modal('{{ $name }}').close(); $nextTick(() => $flux.modal('{{ $depsModalName }}').show())"
-                            icon="arrow-down"
+                            icon="arrow-right"
                         >
-                            {{ __('Download') }}
+                            {{ __('Continue') }}
                         </flux:button>
                     @else
                         <flux:button
@@ -223,7 +223,7 @@
                         x-on:click="$flux.modal('{{ $depsModalName }}').close(); window.open('{{ $downloadUrl }}', '_blank')"
                         icon="arrow-down"
                     >
-                        {{ __('Download Anyway') }}
+                        {{ __('Download') }}
                     </flux:button>
                 </div>
             </div>
