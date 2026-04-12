@@ -6,6 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Lazy;
@@ -111,7 +112,21 @@ new #[Lazy] class extends Component {
     }
 
     /**
+     * The maximum number of days allowed for a stats query to prevent full table scans.
+     */
+    private const int MAX_STATS_DAYS = 365;
+
+    /**
+     * The default number of days to query when no date range is provided.
+     */
+    private const int DEFAULT_STATS_DAYS = 30;
+
+    /**
      * Compute statistics from tracking_events table.
+     *
+     * Enforces a date range cap to prevent full table scans on 7M+ rows.
+     * Splits the expensive COUNT(DISTINCT ip) from other aggregates so
+     * MySQL can use the covering index efficiently for each.
      *
      * @return array<string, mixed>
      */
@@ -120,12 +135,23 @@ new #[Lazy] class extends Component {
         $baseQuery = TrackingEvent::query();
         $this->applyFilters($baseQuery);
 
-        // Use a single query with conditional aggregates to reduce database round trips
-        $counts = (clone $baseQuery)->selectRaw('COUNT(*) as total_events')->selectRaw('COUNT(DISTINCT ip) as unique_users')->selectRaw('SUM(CASE WHEN visitor_id IS NOT NULL THEN 1 ELSE 0 END) as authenticated_events')->selectRaw('SUM(CASE WHEN visitor_id IS NULL THEN 1 ELSE 0 END) as anonymous_events')->selectRaw('COUNT(DISTINCT country_code) as unique_countries')->first();
+        // Lightweight aggregates that MySQL can answer from the covering index
+        $counts = (clone $baseQuery)
+            ->selectRaw('COUNT(*) as total_events')
+            ->selectRaw('SUM(CASE WHEN visitor_id IS NOT NULL THEN 1 ELSE 0 END) as authenticated_events')
+            ->selectRaw('SUM(CASE WHEN visitor_id IS NULL THEN 1 ELSE 0 END) as anonymous_events')
+            ->selectRaw('COUNT(DISTINCT country_code) as unique_countries')
+            ->first();
+
+        // COUNT(DISTINCT ip) is the heaviest aggregate — run separately so
+        // MySQL can use an index-only loose scan on ip
+        $uniqueUsers = (clone $baseQuery)
+            ->selectRaw('COUNT(DISTINCT ip) as unique_users')
+            ->value('unique_users');
 
         return [
             'total_events' => (int) ($counts->total_events ?? 0), // @phpstan-ignore cast.int
-            'unique_users' => (int) ($counts->unique_users ?? 0), // @phpstan-ignore cast.int
+            'unique_users' => (int) ($uniqueUsers ?? 0), // @phpstan-ignore cast.int
             'authenticated_events' => (int) ($counts->authenticated_events ?? 0), // @phpstan-ignore cast.int
             'anonymous_events' => (int) ($counts->anonymous_events ?? 0), // @phpstan-ignore cast.int
             'top_events' => $this->getTopEvents(clone $baseQuery),
@@ -138,14 +164,26 @@ new #[Lazy] class extends Component {
 
     /**
      * Generate a cache key for stats based on current filter values.
+     *
+     * Includes the effective (capped) date range so that different cap
+     * calculations for the same raw filter values still hit the right cache entry.
      */
     private function getStatsCacheKey(): string
     {
+        $effectiveDateTo = $this->dateTo ?? now()->format('Y-m-d');
+        $effectiveDateFrom = $this->dateFrom ?? now()->subDays(self::DEFAULT_STATS_DAYS)->format('Y-m-d');
+
+        // Apply the same cap logic used in applyDateFilters
+        $maxFrom = Carbon::parse($effectiveDateTo)->subDays(self::MAX_STATS_DAYS)->format('Y-m-d');
+        if ($effectiveDateFrom < $maxFrom) {
+            $effectiveDateFrom = $maxFrom;
+        }
+
         $filterValues = [
             'filter' => $this->filter,
             'userSearch' => $this->userSearch,
-            'dateFrom' => $this->dateFrom,
-            'dateTo' => $this->dateTo,
+            'dateFrom' => $effectiveDateFrom,
+            'dateTo' => $effectiveDateTo,
             'eventFilter' => $this->eventFilter,
             'ipFilter' => $this->ipFilter,
             'browserFilter' => $this->browserFilter,
@@ -177,17 +215,30 @@ new #[Lazy] class extends Component {
     /**
      * Apply date range filters to the query.
      *
+     * Enforces a bounded date range to prevent full table scans on large tables.
+     * When no dates are provided, defaults to the last DEFAULT_STATS_DAYS days.
+     * When the range exceeds MAX_STATS_DAYS, the start date is capped.
+     *
      * @param  Builder<TrackingEvent>  $query
      */
     private function applyDateFilters(Builder $query): void
     {
-        if ($this->dateFrom) {
-            $query->where('tracking_events.created_at', '>=', $this->dateFrom . ' 00:00:00');
+        $dateTo = $this->dateTo
+            ? Carbon::parse($this->dateTo)->endOfDay()
+            : now()->endOfDay();
+
+        $dateFrom = $this->dateFrom
+            ? Carbon::parse($this->dateFrom)->startOfDay()
+            : now()->subDays(self::DEFAULT_STATS_DAYS)->startOfDay();
+
+        // Cap the range to prevent scanning the entire table
+        $maxFrom = $dateTo->copy()->subDays(self::MAX_STATS_DAYS)->startOfDay();
+        if ($dateFrom->lt($maxFrom)) {
+            $dateFrom = $maxFrom;
         }
 
-        if ($this->dateTo) {
-            $query->where('tracking_events.created_at', '<=', $this->dateTo . ' 23:59:59');
-        }
+        $query->where('tracking_events.created_at', '>=', $dateFrom);
+        $query->where('tracking_events.created_at', '<=', $dateTo);
     }
 
     /**
