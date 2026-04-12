@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
@@ -22,12 +24,12 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
 use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
-use App\Livewire\Concerns\RendersMarkdownPreview;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
+    use RendersMarkdownPreview;
     use UsesSpamProtection;
     use WithFileUploads;
-    use RendersMarkdownPreview;
 
     /**
      * The honeypot data to be validated.
@@ -148,8 +150,8 @@ new #[Layout('layouts::base')] class extends Component {
         $this->sourceCodeLinks = $this->mod->sourceCodeLinks
             ->values()
             ->map(
-                fn(SourceCodeLink $link, int $index): array => [
-                    'key' => 'link-' . $index,
+                fn (SourceCodeLink $link, int $index): array => [
+                    'key' => 'link-'.$index,
                     'url' => $link->url,
                     'label' => $link->label,
                 ],
@@ -207,10 +209,10 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * Get all licenses ordered by name.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, License>
+     * @return Collection<int, License>
      */
     #[Computed]
-    public function licenses(): \Illuminate\Database\Eloquent\Collection
+    public function licenses(): Collection
     {
         return License::cachedOrdered();
     }
@@ -218,10 +220,10 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * Get all mod categories ordered by title.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, ModCategory>
+     * @return Collection<int, ModCategory>
      */
     #[Computed]
-    public function categories(): \Illuminate\Database\Eloquent\Collection
+    public function categories(): Collection
     {
         return ModCategory::cachedOrdered();
     }
@@ -254,7 +256,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Validate the form.
         $validated = $this->validate();
-        if (!$validated) {
+        if (! $validated) {
             return;
         }
 
@@ -263,7 +265,7 @@ new #[Layout('layouts::base')] class extends Component {
         $publishedAtCarbon = null;
         $userTimezone = auth()->user()->timezone ?? 'UTC';
         if ($this->publishedAt !== null && $this->publishedAt !== '') {
-            $publishedAtCarbon = \Illuminate\Support\Carbon::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
+            $publishedAtCarbon = Date::parse($this->publishedAt, $userTimezone)->setTimezone('UTC')->second(0);
         }
 
         // Update mod fields
@@ -280,10 +282,10 @@ new #[Layout('layouts::base')] class extends Component {
         $this->mod->profile_binding_notice_disabled = $this->disableProfileBindingNotice;
         $this->mod->cheat_notice = $this->cheatNotice;
         $this->mod->addons_disabled = $this->addonsDisabled;
-        $this->mod->published_at = $publishedAtCarbon;
+        $this->mod->published_at = $publishedAtCarbon; // @phpstan-ignore assign.propertyType
 
         // Set the thumbnail if a file was uploaded.
-        if ($this->thumbnail instanceof \Illuminate\Http\UploadedFile) {
+        if ($this->thumbnail instanceof UploadedFile) {
             // Delete the old thumbnail file from storage
             if ($this->mod->thumbnail) {
                 /** @var string $diskName */
@@ -311,7 +313,7 @@ new #[Layout('layouts::base')] class extends Component {
         // Update source code links
         $this->mod->sourceCodeLinks()->delete();
         foreach ($this->sourceCodeLinks as $link) {
-            if (!empty($link['url'])) {
+            if (! empty($link['url'])) {
                 $this->mod->sourceCodeLinks()->create([
                     'url' => $link['url'],
                     'label' => $link['label'] ?? '',
@@ -365,7 +367,7 @@ new #[Layout('layouts::base')] class extends Component {
     protected function rules(): array
     {
         // GUID is required if any existing mod version targets SPT >= 4.0.0
-        $guidRules = $this->isGuidRequired ? 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,' . $this->mod->id : 'nullable|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,' . $this->mod->id;
+        $guidRules = $this->isGuidRequired ? 'required|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id : 'nullable|string|max:255|regex:/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/|unique:mods,guid,'.$this->mod->id;
 
         return [
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -426,7 +428,7 @@ new #[Layout('layouts::base')] class extends Component {
                     return true;
                 }
             }
-        } catch (\Exception) {
+        } catch (Exception) {
             // If there's an error parsing the constraint, assume it doesn't require GUID
             return false;
         }

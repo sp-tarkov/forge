@@ -243,7 +243,7 @@ final class ModUpdateController extends Controller
         if (! $candidate instanceof ModVersion) {
             // Check if current version is compatible with target SPT (use eager-loaded collection)
             $currentSptCompatible = $currentVersion->sptVersions
-                ->contains(fn ($spt): bool => $spt->version === $sptVersion
+                ->contains(fn (SptVersion $spt): bool => $spt->version === $sptVersion
                     && $spt->publish_date !== null
                     && $spt->publish_date->lte(now()));
 

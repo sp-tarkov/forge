@@ -87,7 +87,7 @@ final class Comment extends Model implements Reportable, Trackable
     /**
      * Always eager load latestVersion since the body accessor depends on it.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $with = ['latestVersion'];
 
@@ -591,6 +591,7 @@ final class Comment extends Model implements Reportable, Trackable
             SELECT id FROM ancestors WHERE parent_id IS NULL LIMIT 1
             SQL, [$this->parent_id]);
 
+        /** @var array<int, object{id: int}> $result */
         return $result[0]->id ?? $this->parent_id;
     }
 }

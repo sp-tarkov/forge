@@ -101,14 +101,16 @@ final class DependencyService
     public function resolveModVersionIds(Collection $modVersionPairs): Collection
     {
         if ($modVersionPairs->isEmpty()) {
+            /** @var Collection<int, int> */
             return collect();
         }
 
+        /** @var Collection<int, int> */
         return DB::table('mod_versions')
             ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
-            ->where(function ($query) use ($modVersionPairs): void {
+            ->where(function (\Illuminate\Database\Query\Builder $query) use ($modVersionPairs): void {
                 foreach ($modVersionPairs as $pair) {
-                    $query->orWhere(function ($q) use ($pair): void {
+                    $query->orWhere(function (\Illuminate\Database\Query\Builder $q) use ($pair): void {
                         $q->where('mod_versions.version', $pair['version']);
                         if ($pair['is_mod_id']) {
                             $q->where('mods.id', (int) $pair['identifier']);
@@ -136,14 +138,16 @@ final class DependencyService
     public function resolveAddonVersionIds(Collection $addonVersionPairs): Collection
     {
         if ($addonVersionPairs->isEmpty()) {
+            /** @var Collection<int, int> */
             return collect();
         }
 
+        /** @var Collection<int, int> */
         return DB::table('addon_versions')
             ->join('addons', 'addon_versions.addon_id', '=', 'addons.id')
-            ->where(function ($query) use ($addonVersionPairs): void {
+            ->where(function (\Illuminate\Database\Query\Builder $query) use ($addonVersionPairs): void {
                 foreach ($addonVersionPairs as $pair) {
-                    $query->orWhere(function ($q) use ($pair): void {
+                    $query->orWhere(function (\Illuminate\Database\Query\Builder $q) use ($pair): void {
                         $q->where('addon_versions.version', $pair['version']);
                         if ($pair['is_addon_id']) {
                             $q->where('addons.id', (int) $pair['identifier']);

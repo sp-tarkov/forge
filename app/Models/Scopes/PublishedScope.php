@@ -54,7 +54,7 @@ final class PublishedScope implements Scope
                     });
 
                     if ($model instanceof Mod) {
-                        $modIds = self::getAuthoredModIds();
+                        $modIds = $this->getAuthoredModIds();
                         $unpublishedQuery->where(function (Builder $ownerQuery) use ($model, $modIds): void {
                             $ownerQuery->where($model->getTable().'.owner_id', Auth::id());
                             if ($modIds !== []) {
@@ -62,7 +62,7 @@ final class PublishedScope implements Scope
                             }
                         });
                     } elseif ($model instanceof ModVersion) {
-                        $modIds = self::getAuthoredModIds();
+                        $modIds = $this->getAuthoredModIds();
                         $unpublishedQuery->where(function (Builder $ownerQuery) use ($modIds): void {
                             $ownerQuery->whereHas('mod', function (Builder $modQuery): void {
                                 $modQuery->where('owner_id', Auth::id());
@@ -72,7 +72,7 @@ final class PublishedScope implements Scope
                             }
                         });
                     } elseif ($model instanceof Addon) {
-                        $addonIds = self::getAuthoredAddonIds();
+                        $addonIds = $this->getAuthoredAddonIds();
                         $unpublishedQuery->where(function (Builder $ownerQuery) use ($model, $addonIds): void {
                             $ownerQuery->where($model->getTable().'.owner_id', Auth::id());
                             if ($addonIds !== []) {
@@ -80,7 +80,7 @@ final class PublishedScope implements Scope
                             }
                         });
                     } elseif ($model instanceof AddonVersion) {
-                        $addonIds = self::getAuthoredAddonIds();
+                        $addonIds = $this->getAuthoredAddonIds();
                         $unpublishedQuery->where(function (Builder $ownerQuery) use ($addonIds): void {
                             $ownerQuery->whereHas('addon', function (Builder $addonQuery): void {
                                 $addonQuery->where('owner_id', Auth::id());
@@ -100,7 +100,7 @@ final class PublishedScope implements Scope
      *
      * @return array<int, int>
      */
-    private static function getAuthoredModIds(): array
+    private function getAuthoredModIds(): array
     {
         $userId = Auth::id();
 
@@ -108,10 +108,11 @@ final class PublishedScope implements Scope
             return [];
         }
 
+        /** @var array<int, int> */
         return Cache::remember(
             sprintf('user:%d:authored-mod-ids', $userId),
             300,
-            fn (): array => Mod::withoutGlobalScope(self::class)
+            fn (): array => Mod::query()->withoutGlobalScope(self::class)
                 ->whereHas('additionalAuthors', fn (Builder $q): Builder => $q->where('users.id', $userId))
                 ->pluck('id')
                 ->all()
@@ -123,7 +124,7 @@ final class PublishedScope implements Scope
      *
      * @return array<int, int>
      */
-    private static function getAuthoredAddonIds(): array
+    private function getAuthoredAddonIds(): array
     {
         $userId = Auth::id();
 
@@ -131,10 +132,11 @@ final class PublishedScope implements Scope
             return [];
         }
 
+        /** @var array<int, int> */
         return Cache::remember(
             sprintf('user:%d:authored-addon-ids', $userId),
             300,
-            fn (): array => Addon::withoutGlobalScope(self::class)
+            fn (): array => Addon::query()->withoutGlobalScope(self::class)
                 ->whereHas('additionalAuthors', fn (Builder $q): Builder => $q->where('users.id', $userId))
                 ->pluck('id')
                 ->all()
