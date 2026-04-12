@@ -243,28 +243,19 @@
                 <div>
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
-                        <label
-                            for="tabs"
-                            class="sr-only"
-                        >{{ __('Select a tab') }}</label>
-                        <select
-                            id="tabs"
-                            name="tabs"
+                        <flux:select
                             x-model="selectedTab"
-                            class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-cyan-500 dark:focus:ring-cyan-400"
+                            label:sr-only="{{ __('Select a tab') }}"
                         >
-                            <option value="description">{{ __('Description') }}</option>
-                            <option value="versions">{{ $versionCount }}
-                                {{ __(Str::plural('Version', $versionCount)) }}</option>
+                            <flux:select.option value="description">{{ __('Description') }}</flux:select.option>
+                            <flux:select.option value="versions">{{ $versionCount }} {{ __(Str::plural('Version', $versionCount)) }}</flux:select.option>
                             @if ($mod->addons_enabled)
-                                <option value="addons">{{ $addonCount }}
-                                    {{ __(Str::plural('Addon', $addonCount)) }}</option>
+                                <flux:select.option value="addons">{{ $addonCount }} {{ __(Str::plural('Addon', $addonCount)) }}</flux:select.option>
                             @endif
                             @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
-                                <option value="comments">{{ $commentCount }}
-                                    {{ __(Str::plural('Comment', $commentCount)) }}</option>
+                                <flux:select.option value="comments">{{ $commentCount }} {{ __(Str::plural('Comment', $commentCount)) }}</flux:select.option>
                             @endif
-                        </select>
+                        </flux:select>
                     </div>
 
                     {{-- Desktop Tabs --}}

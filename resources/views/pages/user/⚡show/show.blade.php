@@ -178,23 +178,15 @@
                 <div>
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
-                        <label
-                            for="tabs"
-                            class="sr-only"
-                        >{{ __('Select a tab') }}</label>
-                        <select
-                            id="tabs"
-                            name="tabs"
+                        <flux:select
                             x-model="selectedTab"
-                            class="block w-full rounded-md dark:text-white bg-gray-100 dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-grey-500 dark:focus:border-grey-600 focus:ring-grey-500 dark:focus:ring-grey-600"
+                            label:sr-only="{{ __('Select a tab') }}"
                         >
-                            <option value="wall">{{ __('Wall') }}</option>
-                            <option value="mods">{{ $modCount }} {{ __(Str::plural('Mod', $modCount)) }}
-                            </option>
-                            <option value="addons">{{ $addonCount }} {{ __(Str::plural('Addon', $addonCount)) }}
-                            </option>
-                            <option value="activity">{{ __('Activity') }}</option>
-                        </select>
+                            <flux:select.option value="wall">{{ __('Wall') }}</flux:select.option>
+                            <flux:select.option value="mods">{{ $modCount }} {{ __(Str::plural('Mod', $modCount)) }}</flux:select.option>
+                            <flux:select.option value="addons">{{ $addonCount }} {{ __(Str::plural('Addon', $addonCount)) }}</flux:select.option>
+                            <flux:select.option value="activity">{{ __('Activity') }}</flux:select.option>
+                        </flux:select>
                     </div>
 
                     {{-- Desktop Tabs --}}

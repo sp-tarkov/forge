@@ -134,32 +134,23 @@
                 value="{{ __('Timezone') }}"
             />
             <div class="flex items-center gap-2 mt-1">
-                <select
-                    id="timezone"
-                    class="block w-full rounded-md border-0 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-gray-600 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm"
+                <flux:select
                     wire:model="state.timezone"
+                    variant="combobox"
+                    placeholder="{{ __('Select timezone...') }}"
                     required
                 >
-                    @if ($this->user->timezone === null)
-                        <option
-                            value=""
-                            selected
-                        ></option>
-                    @endif
                     @foreach (\DateTimeZone::listIdentifiers() as $tz)
-                        <option value="{{ $tz }}">{{ $tz }}</option>
+                        <flux:select.option value="{{ $tz }}">{{ $tz }}</flux:select.option>
                     @endforeach
-                </select>
+                </flux:select>
 
                 <flux:button
                     size="sm"
                     id="detect-timezone"
                 >{{ __('Detect') }}</flux:button>
             </div>
-            <x-input-error
-                for="timezone"
-                class="mt-2"
-            />
+            <flux:error name="state.timezone" />
         </div>
 
         <!-- About -->

@@ -516,16 +516,16 @@
                         <legend class="block font-semibold text-gray-800 dark:text-gray-100">{{ __('Category') }}
                         </legend>
                         <div class="pt-6 sm:pt-4">
-                            <select
+                            <flux:select
                                 wire:model.live="category"
-                                class="w-full rounded-md border-0 bg-white dark:bg-gray-700 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-300 ring-1 ring-inset ring-gray-400 dark:ring-gray-700 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-700 dark:focus:bg-gray-200 dark:focus:text-black dark:focus:ring-0 sm:text-sm sm:leading-6"
                                 wire:loading.attr="disabled"
+                                placeholder="{{ __('All Categories') }}"
                             >
-                                <option value="">{{ __('All Categories') }}</option>
+                                <flux:select.option value="">{{ __('All Categories') }}</flux:select.option>
                                 @foreach ($availableCategories as $cat)
-                                    <option value="{{ $cat->slug }}">{{ $cat->title }}</option>
+                                    <flux:select.option value="{{ $cat->slug }}">{{ $cat->title }}</flux:select.option>
                                 @endforeach
-                            </select>
+                            </flux:select>
                         </div>
                     </fieldset>
                 </div>

@@ -75,26 +75,19 @@
 
                 <flux:field>
                     <flux:label for="timezone">{{ __('Timezone') }}</flux:label>
-                    <select
-                        id="timezone"
+                    <flux:select
                         name="timezone"
+                        id="timezone"
                         data-tz-auto="true"
+                        variant="combobox"
+                        placeholder="{{ __('Select your timezone') }}"
+                        :value="old('timezone')"
                         required
-                        class="flux-input block w-full rounded-md border-0 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white/20"
                     >
-                        <option
-                            value=""
-                            @selected(!old('timezone'))
-                        >{{ __('Select your timezone') }}</option>
                         @foreach (\DateTimeZone::listIdentifiers() as $tz)
-                            <option
-                                value="{{ $tz }}"
-                                @selected(old('timezone') === $tz)
-                            >
-                                {{ $tz }}
-                            </option>
+                            <flux:select.option value="{{ $tz }}">{{ $tz }}</flux:select.option>
                         @endforeach
-                    </select>
+                    </flux:select>
                 </flux:field>
             </div>
 
