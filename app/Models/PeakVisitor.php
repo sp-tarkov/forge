@@ -39,10 +39,10 @@ final class PeakVisitor extends Model
     }
 
     /**
-     * Get the highest peak visitor record.
+     * Get the highest peak visitor record, cached until a new peak is created.
      */
     public static function getPeak(): ?self
     {
-        return self::query()->orderByDesc('count')->first();
+        return Cache::flexible('peak_visitor_data', [3600, 7200], fn (): ?self => self::query()->orderByDesc('count')->first());
     }
 }
