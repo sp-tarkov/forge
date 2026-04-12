@@ -3,23 +3,22 @@
 declare(strict_types=1);
 
 use App\Models\Conversation;
+use App\Models\Guest;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
  * A private broadcast "presents" channel that we've allowed unauthorized users to join by assigning a temporary Guest
  * model as their user state. Guest users are identified by a hashed version of their session ID.
  */
-Broadcast::channel('visitors', function (User $user): array {
-    // For guest users, the ID is already hashed in VisitorsPresenceBroadcastingController
-    // For authenticated users, we use their actual ID
-    $userId = isset($user->is_guest) && $user->is_guest
-        ? (string) $user->id  // Already hashed for guests
-        : (string) $user->id;  // Actual ID for authenticated users
+Broadcast::channel('visitors', function (Authenticatable $user): array {
+    /** @var int|string $id */
+    $id = $user->getAuthIdentifier();
 
     return [
-        'id' => $userId,
-        'type' => isset($user->is_guest) && $user->is_guest ? 'guest' : 'authenticated',
+        'id' => (string) $id,
+        'type' => $user instanceof Guest ? 'guest' : 'authenticated',
     ];
 });
 
