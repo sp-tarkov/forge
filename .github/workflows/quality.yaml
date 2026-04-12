@@ -5,6 +5,9 @@ on: [ push, pull_request ]
 permissions:
   contents: read
 
+env:
+  COMPOSER_AUTH: '{"http-basic": {"composer.fluxui.dev": {"username": "${{ secrets.FLUX_USERNAME }}", "password": "${{ secrets.FLUX_LICENSE_KEY }}"}}}'
+
 jobs:
   composer-psr:
     name: Check Namespaces
