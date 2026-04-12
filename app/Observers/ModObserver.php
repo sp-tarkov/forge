@@ -41,8 +41,7 @@ final readonly class ModObserver
     {
         // Remove the mod's thumbnail image from storage if it exists.
         if ($mod->thumbnail) {
-            /** @var string $disk */
-            $disk = config('filesystems.asset_upload', 'public');
+            $disk = config()->string('filesystems.asset_upload', 'public');
             if (Storage::disk($disk)->exists($mod->thumbnail)) {
                 Storage::disk($disk)->delete($mod->thumbnail);
             }

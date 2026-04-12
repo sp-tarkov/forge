@@ -655,7 +655,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     protected function thumbnailUrl(): Attribute
     {
         /** @var string $disk */
-        $disk = config('filesystems.asset_upload', 'public');
+        $disk = config()->string('filesystems.asset_upload', 'public');
 
         return Attribute::get(fn (): string => $this->thumbnail
             ? Storage::disk($disk)->url($this->thumbnail)

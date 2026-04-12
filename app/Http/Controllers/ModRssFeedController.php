@@ -98,8 +98,7 @@ final class ModRssFeedController extends Controller
      */
     private function generateRssFeed(Request $request, Collection $mods, array $filters): string
     {
-        /** @var string $siteUrl */
-        $siteUrl = config('app.url');
+        $siteUrl = config()->string('app.url');
         $feedTitle = 'The Forge - SPT Mods';
         $feedDescription = $this->generateFeedDescription($filters);
         /** @var array<string, mixed> $queryParams */

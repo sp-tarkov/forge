@@ -174,7 +174,7 @@ final class AppServiceProvider extends ServiceProvider
                     return;
                 }
                 \$__ogImageAlt = Str::before(\$__ogImageArgs[1] ?? '', ' - ');
-                \$__ogImageDisk = config('filesystems.asset_upload', 'public');
+                \$__ogImageDisk = config()->string('filesystems.asset_upload', 'public');
                 \$__ogImageCacheKey = 'og_image_data:' . \$__ogImageDisk . ':' . \$__ogImagePath;
                 \$__ogImageData = Cache::remember(\$__ogImageCacheKey, 3600, function () use (\$__ogImagePath, \$__ogImageDisk) {
                     try {
