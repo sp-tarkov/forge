@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 final class DependencyService
 {
@@ -459,18 +460,62 @@ final class DependencyService
      */
     public function collectAllConstraints(array $dependencyTree, Collection $constraintsByModId): void
     {
+        // Collect all version IDs from the tree upfront to batch-query dependencies
+        $versionIds = $this->collectVersionIdsFromTree($dependencyTree);
+
+        if ($versionIds === []) {
+            return;
+        }
+
+        // Single query for all dependencies instead of one per tree node
+        $allDependencies = DB::table('dependencies')
+            ->whereIn('dependable_id', $versionIds)
+            ->where('dependable_type', ModVersion::class)
+            ->get()
+            ->groupBy('dependable_id');
+
+        $this->applyConstraintsFromTree($dependencyTree, $allDependencies, $constraintsByModId);
+    }
+
+    /**
+     * Recursively collect all version IDs from a dependency tree.
+     *
+     * @param  array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}>  $dependencyTree
+     * @return array<int, int>
+     */
+    private function collectVersionIdsFromTree(array $dependencyTree): array
+    {
+        $ids = [];
+
         foreach ($dependencyTree as $node) {
-            $modId = $node['mod']->id;
+            if ($node['latest_version_id']) {
+                $ids[] = $node['latest_version_id'];
+            }
+
+            if (! empty($node['dependencies'])) {
+                /** @var array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}> $subDependencies */
+                $subDependencies = $node['dependencies'];
+                $ids = [...$ids, ...$this->collectVersionIdsFromTree($subDependencies)];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Apply pre-fetched dependency constraints to the collection.
+     *
+     * @param  array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}>  $dependencyTree
+     * @param  Collection<int, Collection<int, stdClass>>  $allDependencies
+     * @param  Collection<int, Collection<int, string>>  $constraintsByModId
+     */
+    private function applyConstraintsFromTree(array $dependencyTree, Collection $allDependencies, Collection $constraintsByModId): void
+    {
+        foreach ($dependencyTree as $node) {
             $versionId = $node['latest_version_id'];
 
-            if ($versionId) {
-                // Get direct dependencies for this version
-                $dependencies = DB::table('dependencies')
-                    ->where('dependable_id', $versionId)
-                    ->where('dependable_type', ModVersion::class)
-                    ->get();
-
-                foreach ($dependencies as $dep) {
+            if ($versionId && $allDependencies->has($versionId)) {
+                foreach ($allDependencies->get($versionId, collect()) as $dep) {
                     /** @var int $depModId */
                     $depModId = $dep->dependent_mod_id;
                     if (! $constraintsByModId->has($depModId)) {
@@ -485,11 +530,10 @@ final class DependencyService
                 }
             }
 
-            // Recursively collect from sub-dependencies
             if (! empty($node['dependencies'])) {
                 /** @var array<int, array{mod: Mod, latest_version_id: int, latest_version: ModVersion|null, dependencies: array<int, mixed>}> $subDependencies */
                 $subDependencies = $node['dependencies'];
-                $this->collectAllConstraints($subDependencies, $constraintsByModId);
+                $this->applyConstraintsFromTree($subDependencies, $allDependencies, $constraintsByModId);
             }
         }
     }
