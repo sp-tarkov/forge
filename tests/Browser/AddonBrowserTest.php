@@ -179,7 +179,9 @@ describe('Addon Browser Tests', function (): void {
 
             $page = visit('/');
 
-            $page->fill('#global-search', 'Unique Search Test')
+            $page->click('[name="global-search"]')
+                ->waitForSelector('#global-search')
+                ->fill('#global-search', 'Unique Search Test')
                 ->waitForText('Unique Search Test Addon')
                 ->assertSee('ADDON')
                 ->assertSee('Unique Search Test Addon')
@@ -194,7 +196,9 @@ describe('Addon Browser Tests', function (): void {
 
             $page = visit('/');
 
-            $page->fill('#global-search', 'Detached Search')
+            $page->click('[name="global-search"]')
+                ->waitForSelector('#global-search')
+                ->fill('#global-search', 'Detached Search')
                 ->waitForText('Detached Search Addon')
                 ->assertSee('ADDON')
                 ->assertSee('Detached')
