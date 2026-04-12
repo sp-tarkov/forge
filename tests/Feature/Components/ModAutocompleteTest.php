@@ -8,113 +8,58 @@ use Livewire\Livewire;
 describe('Mod Autocomplete Component', function (): void {
 
     it('filters mods based on search input', function (): void {
-        // Create test mods
         $mod1 = Mod::factory()->create(['name' => 'Alpha Mod']);
         $mod2 = Mod::factory()->create(['name' => 'Beta Mod']);
         $mod3 = Mod::factory()->create(['name' => 'Gamma Mod']);
 
-        // Test the autocomplete component
         $component = Livewire::test('form.mod-autocomplete')
             ->set('search', 'Beta');
 
-        // Check that only matching mod is in filtered results
         $filteredMods = $component->get('filteredMods');
         expect($filteredMods)->toHaveCount(1);
         expect($filteredMods->first()->name)->toBe('Beta Mod');
     });
 
     it('excludes specified mod from results', function (): void {
-        // Create test mods
         $mod1 = Mod::factory()->create(['name' => 'Alpha Mod']);
         $mod2 = Mod::factory()->create(['name' => 'Beta Mod']);
         $mod3 = Mod::factory()->create(['name' => 'Another Alpha Mod']);
 
-        // Test excluding a mod
         $component = Livewire::test('form.mod-autocomplete', ['excludeModId' => $mod1->id])
             ->set('search', 'Alpha');
 
-        // Check that excluded mod is not in results
         $filteredMods = $component->get('filteredMods');
         expect($filteredMods)->toHaveCount(1);
         expect($filteredMods->first()->id)->toBe($mod3->id);
     });
 
-    it('selects a mod and updates the display', function (): void {
+    it('selects a mod via wire:model', function (): void {
         $mod = Mod::factory()->create(['name' => 'Test Mod']);
 
         $component = Livewire::test('form.mod-autocomplete')
-            ->set('search', 'Test')
-            ->call('selectMod', $mod->id, 'Test Mod');
+            ->set('selectedModId', (string) $mod->id);
 
         expect($component->get('selectedModId'))->toBe((string) $mod->id);
-        expect($component->get('selectedModName'))->toBe('Test Mod');
-        expect($component->get('search'))->toBe('Test Mod');
-        expect($component->get('showDropdown'))->toBeFalse();
     });
 
-    it('clears selection when clear button is clicked', function (): void {
+    it('dispatches event when mod is selected', function (): void {
+        $mod = Mod::factory()->create(['name' => 'Event Test Mod']);
+
+        Livewire::test('form.mod-autocomplete')
+            ->set('selectedModId', (string) $mod->id)
+            ->assertDispatched('mod-selected', modId: $mod->id, modName: 'Event Test Mod');
+    });
+
+    it('dispatches event when mod is cleared', function (): void {
         $mod = Mod::factory()->create(['name' => 'Test Mod']);
 
-        $component = Livewire::test('form.mod-autocomplete')
+        Livewire::test('form.mod-autocomplete')
             ->set('selectedModId', (string) $mod->id)
-            ->set('selectedModName', 'Test Mod')
-            ->set('search', 'Test Mod')
-            ->call('clearSelection');
-
-        expect($component->get('selectedModId'))->toBe('');
-        expect($component->get('selectedModName'))->toBe('');
-        expect($component->get('search'))->toBe('');
-    });
-
-    it('shows dropdown when searching', function (): void {
-        Mod::factory()->create(['name' => 'Test Mod']);
-
-        $component = Livewire::test('form.mod-autocomplete')
-            ->set('search', 'Test');
-
-        expect($component->get('showDropdown'))->toBeTrue();
-    });
-
-    it('navigates through results with keyboard', function (): void {
-        // Create test mods
-        Mod::factory()->create(['name' => 'Alpha Mod']);
-        Mod::factory()->create(['name' => 'Another Mod']);
-        Mod::factory()->create(['name' => 'Amazing Mod']);
-
-        $component = Livewire::test('form.mod-autocomplete')
-            ->set('search', 'A')
-            ->set('showDropdown', true);
-
-        // Navigate down
-        $component->call('navigateWithKeyboard', 'down');
-
-        expect($component->get('highlightIndex'))->toBe(0);
-
-        // Navigate down again
-        $component->call('navigateWithKeyboard', 'down');
-        expect($component->get('highlightIndex'))->toBe(1);
-
-        // Navigate up
-        $component->call('navigateWithKeyboard', 'up');
-        expect($component->get('highlightIndex'))->toBe(0);
-    });
-
-    it('selects highlighted item when enter is pressed', function (): void {
-        $mod1 = Mod::factory()->create(['name' => 'Alpha Mod']);
-        $mod2 = Mod::factory()->create(['name' => 'Another Mod']);
-
-        $component = Livewire::test('form.mod-autocomplete')
-            ->set('search', 'A')
-            ->set('showDropdown', true)
-            ->set('highlightIndex', 1)
-            ->call('selectHighlighted');
-
-        expect($component->get('selectedModId'))->toBe((string) $mod2->id);
-        expect($component->get('selectedModName'))->toBe('Another Mod');
+            ->set('selectedModId', '')
+            ->assertDispatched('mod-cleared');
     });
 
     it('limits results to 10 items', function (): void {
-        // Create 15 mods with similar names
         for ($i = 1; $i <= 15; $i++) {
             Mod::factory()->create(['name' => 'Test Mod '.$i]);
         }
@@ -134,21 +79,15 @@ describe('Mod Autocomplete Component', function (): void {
         ]);
 
         expect($component->get('selectedModId'))->toBe((string) $mod->id);
-        expect($component->get('selectedModName'))->toBe('Preselected Mod');
-        expect($component->get('search'))->toBe('Preselected Mod');
     });
 
-    it('dispatches events when mod is selected or cleared', function (): void {
-        $mod = Mod::factory()->create(['name' => 'Event Test Mod']);
+    it('returns empty results for empty search', function (): void {
+        Mod::factory()->create(['name' => 'Test Mod']);
 
-        $component = Livewire::test('form.mod-autocomplete');
+        $component = Livewire::test('form.mod-autocomplete')
+            ->set('search', '');
 
-        // Test selection event
-        $component->call('selectMod', $mod->id, 'Event Test Mod')
-            ->assertDispatched('mod-selected', modId: $mod->id, modName: 'Event Test Mod');
-
-        // Test clear event
-        $component->call('clearSelection')
-            ->assertDispatched('mod-cleared');
+        $filteredMods = $component->get('filteredMods');
+        expect($filteredMods)->toHaveCount(0);
     });
 });

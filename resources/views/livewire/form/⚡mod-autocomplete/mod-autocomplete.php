@@ -11,7 +11,8 @@ use Livewire\Component;
 /**
  * @property Collection<int, Mod> $filteredMods
  */
-new class extends Component {
+new class extends Component
+{
     /**
      * The search query for filtering mods.
      */
@@ -22,21 +23,6 @@ new class extends Component {
      */
     #[Modelable]
     public string $selectedModId = '';
-
-    /**
-     * The selected mod name for display.
-     */
-    public string $selectedModName = '';
-
-    /**
-     * Whether the dropdown is open.
-     */
-    public bool $showDropdown = false;
-
-    /**
-     * The currently highlighted index in the dropdown.
-     */
-    public int $highlightIndex = -1;
 
     /**
      * The mod to exclude from results (usually the current mod).
@@ -54,11 +40,6 @@ new class extends Component {
     public string $label = 'Select Mod';
 
     /**
-     * A unique ID for this component instance.
-     */
-    public string $componentId = '';
-
-    /**
      * Mount the component.
      */
     public function mount(?int $excludeModId = null, string $placeholder = 'Search for a mod...', string $label = 'Select Mod', string $selectedModId = ''): void
@@ -66,33 +47,9 @@ new class extends Component {
         $this->excludeModId = $excludeModId;
         $this->placeholder = $placeholder;
         $this->label = $label;
-        $this->componentId = 'mod-autocomplete-' . uniqid();
 
-        // If a mod is already selected, load its name
         if ($selectedModId !== '' && $selectedModId !== '0') {
             $this->selectedModId = $selectedModId;
-            $mod = Mod::query()->find($selectedModId);
-            if ($mod) {
-                $this->selectedModName = $mod->name;
-                $this->search = $mod->name;
-            }
-        }
-    }
-
-    /**
-     * Update when selectedModId changes from parent.
-     */
-    public function updatedSelectedModId(): void
-    {
-        if ($this->selectedModId !== '' && $this->selectedModId !== '0') {
-            $mod = Mod::query()->find($this->selectedModId);
-            if ($mod) {
-                $this->selectedModName = $mod->name;
-                $this->search = $mod->name;
-            }
-        } else {
-            $this->selectedModName = '';
-            $this->search = '';
         }
     }
 
@@ -110,7 +67,7 @@ new class extends Component {
         }
 
         $query = Mod::query()
-            ->where('name', 'like', '%' . $this->search . '%')
+            ->where('name', 'like', '%'.$this->search.'%')
             ->orderBy('name')
             ->limit(10);
 
@@ -123,94 +80,17 @@ new class extends Component {
     }
 
     /**
-     * Handle search input updates.
+     * Handle selection changes.
      */
-    public function updatedSearch(): void
+    public function updatedSelectedModId(): void
     {
-        // Reset selection if search doesn't match selected mod name
-        if ($this->search !== $this->selectedModName) {
-            $this->selectedModId = '';
-            $this->selectedModName = '';
-            $this->showDropdown = true;
-            $this->highlightIndex = -1;
-        } else {
-            $this->showDropdown = false;
-        }
-    }
-
-    /**
-     * Select a mod from the dropdown.
-     */
-    public function selectMod(int $modId, string $modName): void
-    {
-        $this->selectedModId = (string) $modId;
-        $this->selectedModName = $modName;
-        $this->search = $modName;
-        $this->showDropdown = false;
-        $this->highlightIndex = -1;
-
-        // Dispatch event to parent component
-        $this->dispatch('mod-selected', modId: $modId, modName: $modName);
-    }
-
-    /**
-     * Clear the selection.
-     */
-    public function clearSelection(): void
-    {
-        $this->selectedModId = '';
-        $this->selectedModName = '';
-        $this->search = '';
-        $this->showDropdown = false;
-        $this->highlightIndex = -1;
-
-        // Dispatch event to parent component
-        $this->dispatch('mod-cleared');
-    }
-
-    /**
-     * Navigate dropdown with keyboard.
-     */
-    public function navigateWithKeyboard(string $direction): void
-    {
-        if (!$this->showDropdown) {
-            $this->showDropdown = true;
-
-            return;
-        }
-
-        $modsCount = $this->filteredMods->count();
-
-        if ($modsCount === 0) {
-            return;
-        }
-
-        if ($direction === 'down') {
-            $this->highlightIndex = ($this->highlightIndex + 1) % $modsCount;
-        } elseif ($direction === 'up') {
-            $this->highlightIndex = $this->highlightIndex <= 0 ? $modsCount - 1 : $this->highlightIndex - 1;
-        }
-    }
-
-    /**
-     * Select the highlighted mod.
-     */
-    public function selectHighlighted(): void
-    {
-        if ($this->highlightIndex >= 0 && $this->showDropdown) {
-            $mod = $this->filteredMods->values()->get($this->highlightIndex);
+        if ($this->selectedModId !== '' && $this->selectedModId !== '0') {
+            $mod = Mod::query()->find($this->selectedModId);
             if ($mod) {
-                $this->selectMod($mod->id, $mod->name);
+                $this->dispatch('mod-selected', modId: $mod->id, modName: $mod->name);
             }
+        } else {
+            $this->dispatch('mod-cleared');
         }
-    }
-
-    /**
-     * Close the dropdown.
-     */
-    public function closeDropdown(): void
-    {
-        $this->showDropdown = false;
-        $this->highlightIndex = -1;
     }
 };

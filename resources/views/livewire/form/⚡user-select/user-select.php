@@ -5,11 +5,16 @@ declare(strict_types=1);
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Modelable;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
-new class extends Component {
+/**
+ * @property Collection<int, User> $searchResults
+ */
+new class extends Component
+{
     /**
      * The selected users (array of user IDs).
      *
@@ -22,18 +27,6 @@ new class extends Component {
      * The search query for finding users.
      */
     public string $search = '';
-
-    /**
-     * The search results.
-     *
-     * @var Collection<int, User>
-     */
-    public Collection $searchResults;
-
-    /**
-     * Whether the search dropdown is open.
-     */
-    public bool $showDropdown = false;
 
     /**
      * Maximum number of users that can be selected.
@@ -68,100 +61,33 @@ new class extends Component {
     public array $excludeUsers = [];
 
     /**
-     * Mount the component.
+     * Get search results based on the current query.
      *
-     * @param  array<int>  $selectedUsers
+     * @return Collection<int, User>
      */
-    public function mount(array $selectedUsers = []): void
-    {
-        $this->selectedUsers = $selectedUsers;
-        /** @var Collection<int, User> $empty */
-        $empty = collect();
-        $this->searchResults = $empty;
-    }
-
-    /**
-     * Perform the user search.
-     */
-    public function updatedSearch(): void
+    #[Computed]
+    public function searchResults(): Collection
     {
         $searchTerm = Str::of($this->search)->trim();
 
         if ($searchTerm->length() < 2) {
-            /** @var Collection<int, User> $empty */
-            $empty = collect();
-            $this->searchResults = $empty;
-            $this->showDropdown = false;
-
-            return;
-        }
-
-        $query = User::query()
-            ->where('name', 'like', $this->search . '%')
-            ->whereNotIn('id', array_merge($this->selectedUsers, $this->excludeUsers))
-            ->withCount(['mods', 'comments'])
-            ->limit(10);
-
-        /** @var Collection<int, User> $results */
-        $results = $query->get();
-        $this->searchResults = $results;
-        $this->showDropdown = $this->searchResults->isNotEmpty();
-    }
-
-    /**
-     * Add a user to the selected list.
-     */
-    public function addUser(int $userId): void
-    {
-        if (count($this->selectedUsers) >= $this->maxUsers) {
-            return;
-        }
-
-        if (!in_array($userId, $this->selectedUsers)) {
-            $this->selectedUsers[] = $userId;
-            $this->dispatch('updateAuthorIds', ids: $this->selectedUsers);
-        }
-
-        $this->search = '';
-        /** @var Collection<int, User> $empty */
-        $empty = collect();
-        $this->searchResults = $empty;
-        $this->showDropdown = false;
-    }
-
-    /**
-     * Remove a user from the selected list.
-     */
-    public function removeUser(int $userId): void
-    {
-        $this->selectedUsers = array_values(array_filter($this->selectedUsers, fn(int $id): bool => $id !== $userId));
-        $this->dispatch('updateAuthorIds', ids: $this->selectedUsers);
-    }
-
-    /**
-     * Get the selected User models.
-     *
-     * @return Collection<int, User>
-     */
-    public function getSelectedUsersProperty(): Collection
-    {
-        if ($this->selectedUsers === []) {
             /** @var Collection<int, User> */
             return collect();
         }
 
         /** @var Collection<int, User> */
         return User::query()
-            ->whereIn('id', $this->selectedUsers)
-            ->withCount(['mods', 'comments'])
+            ->where('name', 'like', $this->search.'%')
+            ->whereNotIn('id', array_merge($this->selectedUsers, $this->excludeUsers))
+            ->limit(10)
             ->get();
     }
 
     /**
-     * Close the dropdown when clicking outside.
+     * Handle selection changes by dispatching to parent.
      */
-    public function closeDropdown(): void
+    public function updatedSelectedUsers(): void
     {
-        $this->showDropdown = false;
+        $this->dispatch('updateAuthorIds', ids: $this->selectedUsers);
     }
 };
