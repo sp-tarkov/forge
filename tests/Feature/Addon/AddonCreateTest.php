@@ -7,6 +7,25 @@ use App\Models\License;
 use App\Models\Mod;
 use App\Models\User;
 
+it('renders the addon guidelines page', function (): void {
+    $user = User::factory()->withMfa()->create();
+    $mod = Mod::factory()->addonsEnabled()->create();
+
+    $this->actingAs($user)
+        ->get(route('addon.guidelines', $mod->id))
+        ->assertOk();
+});
+
+it('renders the addon version create page', function (): void {
+    $user = User::factory()->withMfa()->create();
+    $mod = Mod::factory()->addonsEnabled()->create();
+    $addon = Addon::factory()->published()->recycle($mod)->for($user, 'owner')->create();
+
+    $this->actingAs($user)
+        ->get(route('addon.version.create', $addon->id))
+        ->assertOk();
+});
+
 describe('Addon Create Form', function (): void {
 
     beforeEach(function (): void {

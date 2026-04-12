@@ -9,6 +9,16 @@ use App\Models\ModCategory;
 use App\Models\User;
 use Livewire\Livewire;
 
+it('renders the mod guidelines page', function (): void {
+    $this->actingAs(User::factory()->withMfa()->create())
+        ->get('/mod/guidelines')
+        ->assertOk();
+});
+
+it('redirects guests from mod create to login', function (): void {
+    $this->get('/mod/create')->assertRedirect('/login');
+});
+
 describe('Mod Create Form', function (): void {
 
     beforeEach(function (): void {

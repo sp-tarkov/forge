@@ -7,6 +7,10 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use Livewire\Livewire;
 
+it('renders the mods index', function (): void {
+    $this->get('/mods')->assertOk();
+});
+
 describe('basic functionality', function (): void {
     it('can toggle version filters without errors', function (): void {
         // Create some SPT versions and mods

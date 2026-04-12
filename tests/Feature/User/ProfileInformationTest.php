@@ -5,6 +5,10 @@ declare(strict_types=1);
 use App\Models\User;
 use Livewire\Livewire;
 
+it('redirects guests from profile to login', function (): void {
+    $this->get('/user/profile')->assertRedirect('/login');
+});
+
 describe('profile information', function (): void {
     it('shows current profile information', function (): void {
         $this->actingAs($user = User::factory()->create(['about' => 'My about content']));

@@ -5,6 +5,16 @@ declare(strict_types=1);
 use App\Models\User;
 use Livewire\Livewire;
 
+it('renders the API tokens page', function (): void {
+    $this->actingAs(User::factory()->create())
+        ->get('/user/api-tokens')
+        ->assertOk();
+});
+
+it('redirects guests from API tokens to login', function (): void {
+    $this->get('/user/api-tokens')->assertRedirect('/login');
+});
+
 describe('API token creation', function (): void {
     it('can create api tokens', function (): void {
         $this->actingAs($user = User::factory()->create());

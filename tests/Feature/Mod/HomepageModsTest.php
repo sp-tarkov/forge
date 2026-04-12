@@ -13,6 +13,10 @@ afterEach(function (): void {
     Cache::clear();
 });
 
+it('renders the homepage', function (): void {
+    $this->get('/')->assertOk();
+});
+
 describe('homepage featured mods', function (): void {
     it('should only display featured mods in the featured section', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
