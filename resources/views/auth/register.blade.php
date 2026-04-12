@@ -77,10 +77,8 @@
                         name="timezone"
                         id="timezone"
                         data-tz-auto="true"
-                        variant="combobox"
                         placeholder="{{ __('Select your timezone') }}"
-                        :value="old('timezone')"
-                        required
+                        value="{{ old('timezone', '') }}"
                     >
                         @foreach (\DateTimeZone::listIdentifiers() as $tz)
                             <flux:select.option value="{{ $tz }}">{{ $tz }}</flux:select.option>
