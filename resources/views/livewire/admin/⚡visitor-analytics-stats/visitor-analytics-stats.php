@@ -6,8 +6,8 @@ use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
@@ -20,7 +20,18 @@ use Livewire\Component;
  *
  * Uses stale-while-revalidate caching pattern for better UX on subsequent loads.
  */
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
+    /**
+     * The maximum number of days allowed for a stats query to prevent full table scans.
+     */
+    private const int MAX_STATS_DAYS = 365;
+
+    /**
+     * The default number of days to query when no date range is provided.
+     */
+    private const int DEFAULT_STATS_DAYS = 30;
+
     /**
      * Filter values passed from parent component.
      */
@@ -108,18 +119,8 @@ new #[Lazy] class extends Component {
         $cacheKey = $this->getStatsCacheKey();
 
         // Fresh for 15 minutes, stale for up to 30 minutes
-        return Cache::flexible($cacheKey, [900, 1800], fn(): array => $this->computeStats());
+        return Cache::flexible($cacheKey, [900, 1800], fn (): array => $this->computeStats());
     }
-
-    /**
-     * The maximum number of days allowed for a stats query to prevent full table scans.
-     */
-    private const int MAX_STATS_DAYS = 365;
-
-    /**
-     * The default number of days to query when no date range is provided.
-     */
-    private const int DEFAULT_STATS_DAYS = 30;
 
     /**
      * Compute statistics from tracking_events table.
@@ -149,6 +150,16 @@ new #[Lazy] class extends Component {
             ->selectRaw('COUNT(DISTINCT ip) as unique_users')
             ->value('unique_users');
 
+        // Daily event counts for the chart
+        $dailyEvents = (clone $baseQuery)
+            ->selectRaw('DATE(created_at) as date')
+            ->selectRaw('COUNT(*) as events')
+            ->groupByRaw('DATE(created_at)')
+            ->orderBy('date')
+            ->get()
+            ->map(fn ($row): array => ['date' => $row->date, 'events' => (int) $row->events]) // @phpstan-ignore cast.int
+            ->all();
+
         return [
             'total_events' => (int) ($counts->total_events ?? 0), // @phpstan-ignore cast.int
             'unique_users' => (int) ($uniqueUsers ?? 0), // @phpstan-ignore cast.int
@@ -159,6 +170,7 @@ new #[Lazy] class extends Component {
             'top_platforms' => $this->getTopPlatforms(clone $baseQuery),
             'top_countries' => $this->getTopCountries(clone $baseQuery),
             'unique_countries' => (int) ($counts->unique_countries ?? 0), // @phpstan-ignore cast.int
+            'daily_events' => $dailyEvents,
         ];
     }
 
@@ -174,7 +186,7 @@ new #[Lazy] class extends Component {
         $effectiveDateFrom = $this->dateFrom ?? now()->subDays(self::DEFAULT_STATS_DAYS)->format('Y-m-d');
 
         // Apply the same cap logic used in applyDateFilters
-        $maxFrom = Carbon::parse($effectiveDateTo)->subDays(self::MAX_STATS_DAYS)->format('Y-m-d');
+        $maxFrom = Date::parse($effectiveDateTo)->subDays(self::MAX_STATS_DAYS)->format('Y-m-d');
         if ($effectiveDateFrom < $maxFrom) {
             $effectiveDateFrom = $maxFrom;
         }
@@ -195,7 +207,7 @@ new #[Lazy] class extends Component {
             'cityFilter' => $this->cityFilter,
         ];
 
-        return 'visitor_analytics_stats:' . md5(serialize($filterValues));
+        return 'visitor_analytics_stats:'.md5(serialize($filterValues));
     }
 
     /**
@@ -224,11 +236,11 @@ new #[Lazy] class extends Component {
     private function applyDateFilters(Builder $query): void
     {
         $dateTo = $this->dateTo
-            ? Carbon::parse($this->dateTo)->endOfDay()
+            ? Date::parse($this->dateTo)->endOfDay()
             : now()->endOfDay();
 
         $dateFrom = $this->dateFrom
-            ? Carbon::parse($this->dateFrom)->startOfDay()
+            ? Date::parse($this->dateFrom)->startOfDay()
             : now()->subDays(self::DEFAULT_STATS_DAYS)->startOfDay();
 
         // Cap the range to prevent scanning the entire table
@@ -261,7 +273,7 @@ new #[Lazy] class extends Component {
     private function applyTechnicalFilters(Builder $query): void
     {
         if ($this->ipFilter !== '' && $this->ipFilter !== '0') {
-            $query->where('tracking_events.ip', 'like', '%' . $this->ipFilter . '%');
+            $query->where('tracking_events.ip', 'like', '%'.$this->ipFilter.'%');
         }
 
         if ($this->browserFilter !== '' && $this->browserFilter !== '0') {
@@ -297,15 +309,15 @@ new #[Lazy] class extends Component {
     private function applyGeographicFilters(Builder $query): void
     {
         if ($this->countryFilter !== '' && $this->countryFilter !== '0') {
-            $query->where('tracking_events.country_name', 'like', '%' . $this->countryFilter . '%');
+            $query->where('tracking_events.country_name', 'like', '%'.$this->countryFilter.'%');
         }
 
         if ($this->regionFilter !== '' && $this->regionFilter !== '0') {
-            $query->where('tracking_events.region_name', 'like', '%' . $this->regionFilter . '%');
+            $query->where('tracking_events.region_name', 'like', '%'.$this->regionFilter.'%');
         }
 
         if ($this->cityFilter !== '' && $this->cityFilter !== '0') {
-            $query->where('tracking_events.city_name', 'like', '%' . $this->cityFilter . '%');
+            $query->where('tracking_events.city_name', 'like', '%'.$this->cityFilter.'%');
         }
     }
 
@@ -327,9 +339,9 @@ new #[Lazy] class extends Component {
         if ($this->userSearch !== '' && $this->userSearch !== '0') {
             $query
                 ->whereHas('user', function (Builder $q): void {
-                    $q->where('name', 'like', '%' . $this->userSearch . '%')->orWhere('email', 'like', '%' . $this->userSearch . '%');
+                    $q->where('name', 'like', '%'.$this->userSearch.'%')->orWhere('email', 'like', '%'.$this->userSearch.'%');
                 })
-                ->orWhere('tracking_events.visitor_id', 'like', '%' . $this->userSearch . '%');
+                ->orWhere('tracking_events.visitor_id', 'like', '%'.$this->userSearch.'%');
         }
     }
 
@@ -341,7 +353,7 @@ new #[Lazy] class extends Component {
      */
     private function getTopEvents(Builder $query): Collection
     {
-        $validEventNames = collect(TrackingEventType::cases())->map(fn(TrackingEventType $case): string => $case->value)->all();
+        $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
         return $query->select('event_name', DB::raw('COUNT(*) as count'))->whereIn('event_name', $validEventNames)->groupBy('event_name')->orderByDesc('count')->limit(10)->get();
     }

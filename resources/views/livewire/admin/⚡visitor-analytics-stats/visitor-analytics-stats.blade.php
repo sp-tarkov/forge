@@ -76,6 +76,33 @@
         </div>
     </div>
 
+    {{-- Daily Events Chart --}}
+    @if (!empty($stats['daily_events']))
+        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Daily Events</h3>
+            <flux:chart :value="$stats['daily_events']" class="aspect-3/1">
+                <flux:chart.svg>
+                    <flux:chart.line field="events" class="text-blue-500" />
+                    <flux:chart.area field="events" class="text-blue-100/50 dark:text-blue-900/30" />
+                    <flux:chart.point field="events" class="text-blue-400" />
+                    <flux:chart.axis axis="x" field="date" :format="['month' => 'short', 'day' => 'numeric']">
+                        <flux:chart.axis.line />
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
+                    <flux:chart.axis axis="y">
+                        <flux:chart.axis.grid />
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
+                </flux:chart.svg>
+                <flux:chart.cursor />
+                <flux:chart.tooltip>
+                    <flux:chart.tooltip.heading field="date" :format="['month' => 'long', 'day' => 'numeric']" />
+                    <flux:chart.tooltip.value field="events" label="Events" />
+                </flux:chart.tooltip>
+            </flux:chart>
+        </div>
+    @endif
+
     {{-- Top Stats --}}
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {{-- Top Events --}}
