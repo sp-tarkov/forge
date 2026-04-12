@@ -80,30 +80,12 @@ new #[Layout('layouts::base')] class extends Component
     #[Url]
     public mixed $fikaCompatibility = false;
 
-    /**
-     * The available SPT versions.
-     *
-     * @var Collection<int, SptVersion>
-     */
-    public Collection $availableSptVersions;
-
-    /**
-     * The available mod categories.
-     *
-     * @var Collection<int, ModCategory>
-     */
-    public Collection $availableCategories;
 
     /**
      * Called when a component is created.
      */
     public function mount(): void
     {
-        $this->loadAvailableSptVersions();
-
-        // Fetch all mod categories (cached in model)
-        $this->availableCategories = ModCategory::cachedOrdered();
-
         // Normalize URL parameters to ensure they're the correct type (handles malformed URLs)
         if (! is_string($this->query)) {
             $this->query = '';
@@ -132,7 +114,7 @@ new #[Layout('layouts::base')] class extends Component
      */
     public function resetFilters(): void
     {
-        $this->loadAvailableSptVersions();
+        unset($this->availableSptVersions, $this->splitSptVersions);
 
         $this->query = '';
         $this->sptVersions = $this->defaultSptVersions();
@@ -195,11 +177,48 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Get the available SPT versions.
+     *
+     * @return Collection<int, SptVersion>
+     */
+    #[Computed]
+    public function availableSptVersions(): Collection
+    {
+        $isAdmin = auth()->user()?->isModOrAdmin() ?? false;
+        $cacheKey = $isAdmin ? 'spt-versions:filter-ids:admin' : 'spt-versions:filter-ids:user';
+
+        /** @var array<int, int> $ids */
+        $ids = Cache::flexible(
+            $cacheKey,
+            [5 * 60, 10 * 60],
+            fn (): array => SptVersion::getVersionsForLastThreeMinors($isAdmin)->pluck('id')->all(),
+        );
+
+        return SptVersion::query()
+            ->whereIn('id', $ids)
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->get();
+    }
+
+    /**
+     * Get the available mod categories.
+     *
+     * @return Collection<int, ModCategory>
+     */
+    #[Computed]
+    public function availableCategories(): Collection
+    {
+        return ModCategory::cachedOrdered();
+    }
+
+    /**
      * Compute the split of the active SPT versions.
      *
      * @return array<int, Collection<int, SptVersion>>
      */
-    #[Computed(cache: true)]
+    #[Computed]
     public function splitSptVersions(): array
     {
         $versions = $this->availableSptVersions;
@@ -248,9 +267,6 @@ new #[Layout('layouts::base')] class extends Component
      */
     public function with(): array
     {
-        // Ensure SPT versions are up to date for current auth state
-        $this->loadAvailableSptVersions();
-
         // Fetch the mods using the filters saved to the component properties.
         $filters = new ModFilter([
             'query' => $this->query,
@@ -278,25 +294,6 @@ new #[Layout('layouts::base')] class extends Component
         $this->redirectOutOfBoundsPage($paginatedMods);
 
         return ['mods' => $paginatedMods, 'includeLegacy' => $includeLegacy];
-    }
-
-    /**
-     * Load available SPT versions based on current user role.
-     */
-    private function loadAvailableSptVersions(): void
-    {
-        // Fetch all versions in the last three minor versions
-        $isAdmin = auth()->user()?->isModOrAdmin() ?? false;
-        $cacheKey = $isAdmin ? 'spt-versions:filter-list:admin' : 'spt-versions:filter-list:user';
-
-        $this->availableSptVersions = Cache::flexible(
-            $cacheKey,
-            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
-            fn (): Collection => SptVersion::getVersionsForLastThreeMinors($isAdmin),
-        );
-
-        // Clear the computed property cache
-        unset($this->splitSptVersions);
     }
 
     /**

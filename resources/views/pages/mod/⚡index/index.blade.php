@@ -522,7 +522,7 @@
                                 placeholder="{{ __('All Categories') }}"
                             >
                                 <flux:select.option value="">{{ __('All Categories') }}</flux:select.option>
-                                @foreach ($availableCategories as $cat)
+                                @foreach ($this->availableCategories as $cat)
                                     <flux:select.option value="{{ $cat->slug }}">{{ $cat->title }}</flux:select.option>
                                 @endforeach
                             </flux:select>

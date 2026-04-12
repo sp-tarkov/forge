@@ -120,7 +120,8 @@ describe('Mod index filter options respect SPT publish dates', function (): void
         $version->save();
 
         // Clear cache (this should happen automatically via observer)
-        Cache::forget('active-spt-versions');
+        Cache::forget('spt-versions:filter-ids:user');
+        Cache::forget('spt-versions:filter-ids:admin');
 
         // Second load - should now see the version
         $component2 = Livewire::test('pages::mod.index');

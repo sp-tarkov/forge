@@ -43,11 +43,11 @@ final readonly class SptVersionObserver
         Cache::forget('spt-versions:all:additional-authors');
         Cache::forget('spt-versions:active:user');
         Cache::forget('spt-versions:active:admin');
-        Cache::forget('spt-versions:filter-list:user');
-        Cache::forget('spt-versions:filter-list:admin');
+        Cache::forget('spt-versions:filter-ids:user');
+        Cache::forget('spt-versions:filter-ids:admin');
 
         // Clear mod categories cache as well
-        Cache::forget('mod-categories');
+        Cache::forget('mod-categories:ordered-ids');
     }
 
     /**
