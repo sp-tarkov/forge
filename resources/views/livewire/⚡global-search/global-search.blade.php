@@ -1,88 +1,171 @@
-<div class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
-    <div class="w-full max-w-lg lg:max-w-xs">
+<div
+    class="flex flex-1 justify-end px-2 lg:ml-6"
+    x-data="{ open: false }"
+    x-on:keydown.cmd.k.window.prevent="open = true"
+    x-on:keydown.ctrl.k.window.prevent="open = true"
+>
+    <div class="relative z-10 w-40 sm:w-48">
         {{-- Trigger Button --}}
-        <flux:modal.trigger name="global-search" shortcut="cmd.k">
-            <flux:input
-                as="button"
-                placeholder="{{ __('Search...') }}"
-                icon="magnifying-glass"
-                kbd="⌘K"
-            />
-        </flux:modal.trigger>
+        <flux:input
+            as="button"
+            placeholder="{{ __('Search...') }}"
+            icon="magnifying-glass"
+            kbd="⌘K"
+            x-on:click="open = true"
+            class="!bg-zinc-800 !border-zinc-700"
+        />
     </div>
 
     {{-- Search Modal --}}
-    <flux:modal
-        name="global-search"
-        variant="bare"
-        class="w-full max-w-[36rem] my-[12vh] max-h-screen overflow-y-hidden"
-    >
-        <flux:command class="border-none shadow-lg inline-flex flex-col max-h-[76vh]">
-            <flux:command.input
-                id="global-search"
-                wire:model.live.debounce.250ms="query"
-                placeholder="{{ __('Search everything...') }}"
-                closable
-            />
+    <template x-teleport="body">
+        <div
+            x-show="open"
+            x-trap.noreturn.noscroll="open"
+            x-on:keydown.escape.window="open = false; $wire.set('query', '')"
+            class="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh]"
+            style="display: none;"
+        >
+            {{-- Backdrop --}}
+            <div
+                x-show="open"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/70"
+                x-on:click="open = false; $wire.set('query', '')"
+            ></div>
 
-            @if (Str::length($this->query) > 0)
-                <flux:command.items class="max-h-[60vh] overflow-y-auto">
-                    {{-- Loading State --}}
-                    <div
-                        wire:loading.delay
-                        wire:target="query"
-                        class="flex items-center justify-center gap-2 px-6 py-14"
-                    >
-                        <flux:icon.arrow-path class="size-5 animate-spin text-gray-400 dark:text-gray-500" />
-                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('Searching...') }}</span>
+            {{-- Panel --}}
+            <div
+                x-show="open"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                x-on:keydown.down.prevent="
+                    if (document.activeElement === $refs.searchInput) {
+                        $refs.resultsList?.querySelector('[tabindex=&quot;0&quot;]')?.focus();
+                    } else if ($refs.resultsList) {
+                        $focus.within($refs.resultsList).next();
+                    }
+                "
+                x-on:keydown.up.prevent="
+                    if ($refs.resultsList) {
+                        const first = $refs.resultsList.querySelector('[tabindex=&quot;0&quot;]');
+                        if (document.activeElement === first) {
+                            $refs.searchInput.focus();
+                        } else {
+                            $focus.within($refs.resultsList).previous();
+                        }
+                    }
+                "
+                x-init="$watch('open', value => { if (value) $nextTick(() => $refs.searchInput.focus()) })"
+                class="relative z-10 w-full max-w-[36rem] rounded-xl bg-zinc-900 shadow-2xl ring-1 ring-white/10 overflow-hidden"
+            >
+                {{-- Search Input --}}
+                <div class="flex items-center gap-2 border-b border-zinc-700 px-4">
+                    <flux:icon.magnifying-glass class="size-5 shrink-0 text-zinc-400" />
+                    <input
+                        x-ref="searchInput"
+                        id="global-search"
+                        type="search"
+                        wire:model.live.debounce.250ms="query"
+                        placeholder="{{ __('Search everything...') }}"
+                        class="min-w-0 flex-1 border-0 bg-transparent py-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-0 [&::-webkit-search-cancel-button]:hidden"
+                        autocomplete="off"
+                        x-on:keydown.enter.prevent="$refs.resultsList?.querySelector('a[role=listitem]')?.click()"
+                    />
+                    @if (Str::length($this->query) > 0)
+                        <button
+                            type="button"
+                            wire:click="$set('query', '')"
+                            tabindex="-1"
+                            class="shrink-0 rounded p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+                        >
+                            <flux:icon.x-mark class="size-4" />
+                        </button>
+                    @endif
+                    <kbd class="shrink-0 rounded border border-zinc-600 bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400">ESC</kbd>
+                </div>
+
+                {{-- Empty State --}}
+                @if (Str::length($this->query) === 0)
+                    <div class="px-6 py-14 text-center">
+                        <flux:icon.magnifying-glass class="mx-auto size-6 text-zinc-500" />
+                        <p class="mt-4 text-sm text-zinc-400">{{ __('Start typing to search mods, addons, and users.') }}</p>
                     </div>
+                @endif
 
-                    {{-- Results Content --}}
-                    <div
-                        wire:loading.delay.remove
-                        wire:target="query"
-                    >
-                        @if ($this->hasResults)
-                            @foreach ($this->results as $type => $typeResults)
-                                @if ($typeResults->count())
-                                    @php
-                                        $visibilityProperty = 'is' . Str::ucfirst($type) . 'CatVisible';
-                                        $isVisible = $this->$visibilityProperty;
-                                    @endphp
-                                    <h4
-                                        wire:click="toggleTypeVisibility('{{ $type }}')"
-                                        class="flex cursor-pointer select-none flex-row gap-1.5 bg-gray-100 px-4 py-2.5 text-[0.6875rem] font-semibold uppercase text-gray-700 dark:bg-gray-950 dark:text-gray-300"
-                                    >
-                                        <span>{{ Str::plural($type) }}</span>
-                                        <flux:icon.chevron-right
-                                            class="size-4 transform transition-all duration-400 {{ $isVisible ? 'rotate-90' : '' }}"
-                                        />
-                                    </h4>
-                                    <div
-                                        class="max-h-0 transform divide-y divide-dashed divide-gray-200 overflow-hidden transition-all duration-400 dark:divide-gray-800 {{ $isVisible ? 'max-h-screen' : '' }}">
-                                        @foreach ($typeResults as $hit)
-                                            <x-dynamic-component
-                                                :component="'global-search-result-' . Str::lower($type)"
-                                                :result="$hit"
-                                                link-class="group/global-search-link flex flex-row gap-3 py-1.5 px-4 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-800"
+                {{-- Results --}}
+                @if (Str::length($this->query) > 0)
+                    <div x-ref="resultsList" class="max-h-[60vh] overflow-y-auto">
+                        {{-- Loading State --}}
+                        <div
+                            wire:loading.delay
+                            wire:target="query"
+                            class="flex items-center justify-center gap-2 px-6 py-14"
+                        >
+                            <flux:icon.arrow-path class="size-5 animate-spin text-zinc-500" />
+                            <span class="text-sm text-zinc-400">{{ __('Searching...') }}</span>
+                        </div>
+
+                        {{-- Results Content --}}
+                        <div
+                            wire:loading.delay.remove
+                            wire:target="query"
+                        >
+                            @if ($this->hasResults)
+                                @foreach ($this->results as $type => $typeResults)
+                                    @if ($typeResults->count())
+                                        @php
+                                            $visibilityProperty = 'is' . Str::ucfirst($type) . 'CatVisible';
+                                            $isVisible = $this->$visibilityProperty;
+                                        @endphp
+                                        <button
+                                            type="button"
+                                            wire:click="toggleTypeVisibility('{{ $type }}')"
+                                            tabindex="0"
+                                            x-on:keydown.enter.prevent="$el.click()"
+                                            x-on:keydown.space.prevent="$el.click()"
+                                            class="flex w-full cursor-pointer select-none flex-row items-center gap-1.5 border-t border-zinc-700 bg-zinc-800/80 px-4 py-2 text-[0.6875rem] font-semibold uppercase tracking-wide text-zinc-400 hover:text-zinc-300 focus:bg-zinc-700/60 focus:text-zinc-300 focus:outline-none transition-colors"
+                                        >
+                                            <span>{{ Str::plural($type) }}</span>
+                                            <flux:icon.chevron-right
+                                                class="size-3.5 transform transition-transform duration-200 {{ $isVisible ? 'rotate-90' : '' }}"
                                             />
-                                        @endforeach
-                                    </div>
-                                @endif
-                            @endforeach
-                        @else
-                            {{-- No Results --}}
-                            <div class="px-6 py-14 text-center sm:px-14">
-                                <flux:icon.document-magnifying-glass
-                                    class="mx-auto size-6 text-gray-400 dark:text-gray-500" />
-                                <p class="mt-4 text-sm text-gray-900 dark:text-gray-200">
-                                    {{ __("We couldn't find any content with that query. Please try again.") }}
-                                </p>
-                            </div>
-                        @endif
+                                        </button>
+                                        <div
+                                            class="divide-y divide-zinc-800 overflow-hidden transition-all duration-200 {{ $isVisible ? 'max-h-screen' : 'max-h-0' }}"
+                                            @if (!$isVisible) inert @endif
+                                        >
+                                            @foreach ($typeResults as $hit)
+                                                <x-dynamic-component
+                                                    :component="'global-search-result-' . Str::lower($type)"
+                                                    :result="$hit"
+                                                    link-class="flex flex-row items-center gap-3 py-2.5 px-4 text-zinc-200 hover:bg-zinc-700/60 focus:bg-zinc-700/60 focus:outline-none transition-colors"
+                                                />
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @else
+                                {{-- No Results --}}
+                                <div class="px-6 py-14 text-center">
+                                    <flux:icon.document-magnifying-glass class="mx-auto size-6 text-zinc-500" />
+                                    <p class="mt-4 text-sm text-zinc-400">
+                                        {{ __("We couldn't find any content with that query. Please try again.") }}
+                                    </p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
-                </flux:command.items>
-            @endif
-        </flux:command>
-    </flux:modal>
+                @endif
+            </div>
+        </div>
+    </template>
 </div>
