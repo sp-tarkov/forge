@@ -85,6 +85,13 @@ final class Comment extends Model implements Reportable, Trackable
     use Visitable;
 
     /**
+     * Always eager load latestVersion since the body accessor depends on it.
+     *
+     * @var array<int, string>
+     */
+    protected $with = ['latestVersion'];
+
+    /**
      * The relationship between a comment and it's user.
      *
      * @return BelongsTo<User, $this>
