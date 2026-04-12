@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\Api\V0\ApiResponse;
-use App\Models\Dependency;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Services\DependencyService;
@@ -242,12 +241,11 @@ final class ModUpdateController extends Controller
         $candidate = $this->findCandidateUpdate($currentVersion, $sptVersion, $isPrerelease);
 
         if (! $candidate instanceof ModVersion) {
-            // Check if current version is compatible with target SPT
-            $currentSptCompatible = $currentVersion->sptVersions()
-                ->where('version', $sptVersion)
-                ->whereNotNull('publish_date')
-                ->where('publish_date', '<=', now())
-                ->exists();
+            // Check if current version is compatible with target SPT (use eager-loaded collection)
+            $currentSptCompatible = $currentVersion->sptVersions
+                ->contains(fn ($spt): bool => $spt->version === $sptVersion
+                    && $spt->publish_date !== null
+                    && $spt->publish_date->lte(now()));
 
             if ($currentSptCompatible) {
                 return [
@@ -334,7 +332,8 @@ final class ModUpdateController extends Controller
             }
         });
 
-        return $query->orderByDesc('version_major')
+        return $query->with('dependencies')
+            ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
@@ -383,11 +382,8 @@ final class ModUpdateController extends Controller
             }
         }
 
-        // Check outgoing dependencies (what this update needs)
-        $candidateDependencies = Dependency::query()
-            ->where('dependable_id', $candidate->id)
-            ->where('dependable_type', ModVersion::class)
-            ->get();
+        // Check outgoing dependencies (what this update needs — eager-loaded in findCandidateUpdate)
+        $candidateDependencies = $candidate->dependencies;
 
         foreach ($candidateDependencies as $dep) {
             $satisfyingVersion = $this->dependencyService->findSatisfyingVersion(
