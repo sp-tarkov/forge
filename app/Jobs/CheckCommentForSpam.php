@@ -10,15 +10,30 @@ use App\Models\Comment;
 use App\Support\Akismet\SpamCheckResult;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
  * Background job to check a comment for spam using Akismet.
  */
+#[Timeout(120)]
 final class CheckCommentForSpam implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [1, 5, 10];
 
     /**
      * Create a new job instance.
@@ -27,6 +42,16 @@ final class CheckCommentForSpam implements ShouldQueue
         public Comment $comment,
         public bool $isRecheck = false
     ) {}
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [new RateLimited('external-api')];
+    }
 
     /**
      * Execute the job.
@@ -85,6 +110,18 @@ final class CheckCommentForSpam implements ShouldQueue
 
         // Schedule recheck if Akismet recommends it and we haven't exceeded max attempts
         $this->scheduleRecheckIfNeeded($result);
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('CheckCommentForSpam job failed', [
+            'comment_id' => $this->comment->id,
+            'is_recheck' => $this->isRecheck,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 
     /**

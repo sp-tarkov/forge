@@ -6,17 +6,33 @@ namespace App\Jobs;
 
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
-final class ProcessPinnedModVersionPublishDates implements ShouldQueue
+#[Timeout(60)]
+final class ProcessPinnedModVersionPublishDates implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [1, 5, 10];
 
     /**
      * Execute the job.
@@ -72,5 +88,15 @@ final class ProcessPinnedModVersionPublishDates implements ShouldQueue
                 }
             });
         }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ProcessPinnedModVersionPublishDates job failed', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

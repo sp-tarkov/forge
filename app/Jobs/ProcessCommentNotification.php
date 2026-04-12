@@ -14,14 +14,28 @@ use App\Notifications\NewCommentNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Timeout;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+#[Timeout(60)]
 final class ProcessCommentNotification implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [1, 5, 10];
 
     /**
      * Track users who have been notified in this run to prevent duplicates.
@@ -80,6 +94,17 @@ final class ProcessCommentNotification implements ShouldQueue
 
         // Step 2: Handle page subscription notifications
         $this->handleSubscriberNotifications($freshComment, $commentable);
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ProcessCommentNotification job failed', [
+            'comment_id' => $this->comment->id,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 
     /**

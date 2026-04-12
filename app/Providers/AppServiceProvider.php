@@ -63,6 +63,9 @@ final class AppServiceProvider extends ServiceProvider
         // Define the API rate limiter.
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip()));
 
+        // Define the external API rate limiter for queue jobs that call external services.
+        RateLimiter::for('external-api', fn () => Limit::perMinute(30));
+
         // Register custom macros and mixins.
         $this->registerMacros();
         $this->registerMixins();

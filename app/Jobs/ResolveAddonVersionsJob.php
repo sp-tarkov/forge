@@ -6,13 +6,30 @@ namespace App\Jobs;
 
 use App\Models\AddonVersion;
 use App\Services\AddonVersionService;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
-final class ResolveAddonVersionsJob implements ShouldQueue
+#[Timeout(60)]
+final class ResolveAddonVersionsJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [1, 5, 10];
 
     /**
      * Resolve the mod versions for each of the addon versions.
@@ -28,5 +45,15 @@ final class ResolveAddonVersionsJob implements ShouldQueue
                     $addonVersionService->resolve($addonVersion);
                 }
             });
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ResolveAddonVersionsJob failed', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

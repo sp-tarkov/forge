@@ -15,16 +15,40 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 #[Timeout(60)]
 final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [1, 5, 10];
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [new RateLimited('external-api')];
+    }
 
     /**
      * Execute the job.
@@ -34,6 +58,16 @@ final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
     public function handle(): void
     {
         $this->getGitHubSptVersions();
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('UpdateGitHubSptVersionsJob failed', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 
     /**
