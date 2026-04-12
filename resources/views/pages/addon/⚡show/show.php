@@ -63,19 +63,25 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $warnings = [];
 
-        // Check if the addon has no versions at all
-        if ($this->addon->versions()->count() === 0) {
+        // Single query for all version counts instead of 3 separate count queries
+        $versionCounts = $this->addon->versions()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN published_at IS NOT NULL AND published_at <= NOW() THEN 1 ELSE 0 END) as published')
+            ->selectRaw('SUM(CASE WHEN disabled = false THEN 1 ELSE 0 END) as enabled')
+            ->first();
+
+        $total = (int) ($versionCounts->total ?? 0); // @phpstan-ignore cast.int
+        $published = (int) ($versionCounts->published ?? 0); // @phpstan-ignore cast.int
+        $enabled = (int) ($versionCounts->enabled ?? 0); // @phpstan-ignore cast.int
+
+        if ($total === 0) {
             $warnings['no_versions'] = 'This addon has no versions. Users will be unable to view this addon until a version is created.';
         } else {
-            // Check if the addon has no published versions (that are actually released)
-            $publishedVersions = $this->addon->versions()->whereNotNull('published_at')->where('published_at', '<=', now())->count();
-            $enabledVersions = $this->addon->versions()->where('disabled', false)->count();
-
-            if ($publishedVersions === 0) {
+            if ($published === 0) {
                 $warnings['no_published_versions'] = 'This addon has no published versions. Users will be unable to view this addon until a version is published.';
             }
 
-            if ($enabledVersions === 0) {
+            if ($enabled === 0) {
                 $warnings['no_enabled_versions'] = 'This addon has no enabled versions. Users will be unable to view this addon until a version is enabled.';
             }
         }

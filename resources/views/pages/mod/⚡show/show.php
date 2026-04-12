@@ -65,24 +65,29 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $warnings = [];
 
-        // Check if the mod has no versions at all
-        if ($this->mod->versions()->count() === 0) {
+        // Single query for all version counts instead of 3 separate count queries
+        $versionCounts = $this->mod->versions()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN published_at IS NOT NULL THEN 1 ELSE 0 END) as published')
+            ->selectRaw('SUM(CASE WHEN disabled = false THEN 1 ELSE 0 END) as enabled')
+            ->first();
+
+        $total = (int) ($versionCounts->total ?? 0); // @phpstan-ignore cast.int
+        $published = (int) ($versionCounts->published ?? 0); // @phpstan-ignore cast.int
+        $enabled = (int) ($versionCounts->enabled ?? 0); // @phpstan-ignore cast.int
+
+        if ($total === 0) {
             $warnings['no_versions'] = 'This mod has no versions. Users will be unable to view this mod until a version is created.';
         } else {
-            // Check if the mod has no published versions
-            $publishedVersions = $this->mod->versions()->whereNotNull('published_at')->count();
-            $enabledVersions = $this->mod->versions()->where('disabled', false)->count();
-
-            if ($publishedVersions === 0) {
+            if ($published === 0) {
                 $warnings['no_published_versions'] = 'This mod has no published versions. Users will be unable to view this mod until a version is published.';
             }
 
-            if ($enabledVersions === 0) {
+            if ($enabled === 0) {
                 $warnings['no_enabled_versions'] = 'This mod has no enabled versions. Users will be unable to view this mod until a version is enabled.';
             }
 
-            // Check if the mod has no publicly visible versions (only if there are versions)
-            if (!$this->hasPublicVersions()) {
+            if (! $this->hasPublicVersions()) {
                 $user = auth()->user();
                 $isPrivilegedUser = $user && ($this->mod->isAuthorOrOwner($user) || $user->isModOrAdmin());
 
@@ -92,12 +97,10 @@ new #[Layout('layouts::base')] class extends Component {
             }
         }
 
-        // Check if the mod itself is unpublished
-        if (!$this->mod->published_at) {
+        if (! $this->mod->published_at) {
             $warnings['unpublished'] = 'This mod is unpublished. Users will be unable to view this mod until it is published.';
         }
 
-        // Check if the mod is disabled
         if ($this->mod->disabled) {
             $warnings['disabled'] = 'This mod is disabled. Users will be unable to view this mod until it is enabled.';
         }
