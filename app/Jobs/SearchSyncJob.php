@@ -10,27 +10,19 @@ use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 #[Timeout(300)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
 final class SearchSyncJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the job may be attempted.
-     */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds to wait before retrying the job.
-     *
-     * @var array<int, int>
-     */
-    public array $backoff = [1, 5, 10];
 
     public function handle(): void
     {

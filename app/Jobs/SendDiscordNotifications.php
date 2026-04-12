@@ -16,28 +16,20 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 use Throwable;
 
 #[Timeout(120)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
 final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the job may be attempted.
-     */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds to wait before retrying the job.
-     *
-     * @var array<int, int>
-     */
-    public array $backoff = [1, 5, 10];
 
     /**
      * Execute the job.
@@ -51,10 +43,10 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
             return;
         }
 
-        $modPolicy = app(ModPolicy::class);
-        $versionPolicy = app(ModVersionPolicy::class);
-        $addonPolicy = app(AddonPolicy::class);
-        $addonVersionPolicy = app(AddonVersionPolicy::class);
+        $modPolicy = resolve(ModPolicy::class);
+        $versionPolicy = resolve(ModVersionPolicy::class);
+        $addonPolicy = resolve(AddonPolicy::class);
+        $addonVersionPolicy = resolve(AddonVersionPolicy::class);
 
         /** @var array<int> */
         $notifiedModIds = [];

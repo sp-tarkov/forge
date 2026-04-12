@@ -12,7 +12,9 @@ use App\Notifications\NewChatMessageNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
@@ -20,24 +22,14 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 #[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
 final class ProcessChatMessageNotification implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
-
-    /**
-     * The number of times the job may be attempted.
-     */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds to wait before retrying the job.
-     *
-     * @var array<int, int>
-     */
-    public array $backoff = [1, 5, 10];
 
     /**
      * Create a new job instance.

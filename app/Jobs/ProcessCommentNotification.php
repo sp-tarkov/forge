@@ -14,28 +14,20 @@ use App\Notifications\NewCommentNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 #[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
 final class ProcessCommentNotification implements ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the job may be attempted.
-     */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds to wait before retrying the job.
-     *
-     * @var array<int, int>
-     */
-    public array $backoff = [1, 5, 10];
 
     /**
      * Track users who have been notified in this run to prevent duplicates.

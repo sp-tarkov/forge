@@ -10,7 +10,9 @@ use App\Models\Comment;
 use App\Support\Akismet\SpamCheckResult;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -19,21 +21,11 @@ use Throwable;
  * Background job to check a comment for spam using Akismet.
  */
 #[Timeout(120)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
 final class CheckCommentForSpam implements ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the job may be attempted.
-     */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds to wait before retrying the job.
-     *
-     * @var array<int, int>
-     */
-    public array $backoff = [1, 5, 10];
 
     /**
      * Create a new job instance.

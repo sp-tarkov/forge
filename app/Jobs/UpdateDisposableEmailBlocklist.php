@@ -8,7 +8,9 @@ use App\Models\DisposableEmailBlocklist;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
 use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -17,21 +19,11 @@ use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 #[Timeout(120)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
 final class UpdateDisposableEmailBlocklist implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
-
-    /**
-     * The number of times the job may be attempted.
-     */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds to wait before retrying the job.
-     *
-     * @var array<int, int>
-     */
-    public array $backoff = [1, 5, 10];
 
     /**
      * Get the middleware the job should pass through.
@@ -99,9 +91,9 @@ final class UpdateDisposableEmailBlocklist implements ShouldBeUnique, ShouldQueu
             DisposableEmailBlocklist::clearAllCaches();
 
             Log::info('Successfully updated disposable email blocklist', ['count' => count($domains)]);
-        } catch (Throwable $exception) {
-            Log::error('Error updating disposable email blocklist', ['error' => $exception->getMessage()]);
-            throw $exception;
+        } catch (Throwable $throwable) {
+            Log::error('Error updating disposable email blocklist', ['error' => $throwable->getMessage()]);
+            throw $throwable;
         }
     }
 
