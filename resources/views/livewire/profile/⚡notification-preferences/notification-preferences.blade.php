@@ -65,13 +65,6 @@
             <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {{ __('Receive email notifications when you have unread chat messages.') }}
             </div>
-
-            <x-action-message
-                class="mt-3"
-                on="saved"
-            >
-                {{ __('Saved.') }}
-            </x-action-message>
         </div>
     </x-slot>
 </x-action-section>

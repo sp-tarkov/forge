@@ -7,6 +7,7 @@ namespace App\Traits\Livewire;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 
 /** @phpstan-ignore trait.unused */
@@ -32,7 +33,7 @@ trait ModeratesMod
 
         $mod->delete();
 
-        flash()->success('Mod successfully deleted!');
+        Flux::toast(text: 'Mod successfully deleted!');
 
         // Redirect to the listing if the mod was deleted from the detail page.
         if ($route === 'mod.show') {
@@ -58,6 +59,6 @@ trait ModeratesMod
             reason: $reason ?: null
         );
 
-        flash()->success('Mod successfully unfeatured!');
+        Flux::toast(text: 'Mod successfully unfeatured!');
     }
 }

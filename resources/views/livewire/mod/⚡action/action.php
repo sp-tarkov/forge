@@ -6,6 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Mod;
 use App\Traits\Livewire\ModerationActionMenu;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Livewire\Attributes\Computed;
@@ -135,7 +136,7 @@ new class extends Component
 
         $this->dispatch('mod-updated.'.$this->modId, featured: true);
 
-        flash()->success('Mod successfully featured!');
+        Flux::toast(text: 'Mod successfully featured!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -161,7 +162,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, featured: false);
 
-        flash()->success('Mod successfully unfeatured!');
+        Flux::toast(text: 'Mod successfully unfeatured!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -191,7 +192,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, disabled: true);
 
-        flash()->success('Mod successfully disabled!');
+        Flux::toast(text: 'Mod successfully disabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -221,7 +222,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, disabled: false);
 
-        flash()->success('Mod successfully enabled!');
+        Flux::toast(text: 'Mod successfully enabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -253,7 +254,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, published: true);
 
-        flash()->success('Mod successfully published!');
+        Flux::toast(text: 'Mod successfully published!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -283,7 +284,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, published: false);
 
-        flash()->success('Mod successfully unpublished!');
+        Flux::toast(text: 'Mod successfully unpublished!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;

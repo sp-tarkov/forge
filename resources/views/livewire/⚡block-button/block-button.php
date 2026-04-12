@@ -5,10 +5,11 @@ declare(strict_types=1);
 use App\Models\User;
 use App\Services\UserBlockingService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Flux\Flux;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public User $user;
 
     public bool $isBlocked = false;
@@ -34,7 +35,7 @@ new class extends Component {
      */
     public function toggleBlockModal(): void
     {
-        $this->showModal = !$this->showModal;
+        $this->showModal = ! $this->showModal;
         $this->blockReason = null;
     }
 
@@ -43,7 +44,7 @@ new class extends Component {
      */
     public function confirmBlock(): void
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return;
         }
 
@@ -54,13 +55,11 @@ new class extends Component {
 
         // Check authorization - the policy methods are on BlockingPolicy
         if ($this->isBlocked) {
-            if (!$currentUser->can('unblock', $this->user)) {
+            if (! $currentUser->can('unblock', $this->user)) {
                 return;
             }
-        } else {
-            if (!$currentUser->can('block', $this->user)) {
-                return;
-            }
+        } elseif (! $currentUser->can('block', $this->user)) {
+            return;
         }
 
         $blockingService = resolve(UserBlockingService::class);
@@ -69,12 +68,12 @@ new class extends Component {
             $blockingService->unblockUser($currentUser, $this->user);
             $this->isBlocked = false;
             $this->dispatch('user-unblocked', userId: $this->user->id);
-            flash()->success('You have successfully unblocked ' . $this->user->name . '.');
+            Flux::toast(text: 'You have successfully unblocked '.$this->user->name.'.');
         } else {
             $blockingService->blockUser($currentUser, $this->user, $this->blockReason);
             $this->isBlocked = true;
             $this->dispatch('user-blocked', userId: $this->user->id);
-            Session::flash('success', 'You have successfully blocked ' . $this->user->name . '.');
+            Flux::toast(text: 'You have successfully blocked '.$this->user->name.'.');
 
             // Redirect to homepage after blocking since the user profile will now be inaccessible
             $this->redirect(route('home'));

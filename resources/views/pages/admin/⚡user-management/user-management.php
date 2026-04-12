@@ -7,6 +7,7 @@ use App\Facades\Track;
 use App\Models\User;
 use App\Models\UserRole;
 use Carbon\CarbonInterface;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -19,7 +20,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Mchev\Banhammer\Models\Ban;
 
-new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class extends Component {
+new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class extends Component
+{
     use WithPagination;
 
     /**
@@ -149,7 +151,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
-            flash()->error('Cannot ban other staff members.');
+            Flux::toast(text: 'Cannot ban other staff members.', variant: 'danger');
 
             return;
         }
@@ -217,7 +219,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
-            flash()->error('Cannot ban other staff members.');
+            Flux::toast(text: 'Cannot ban other staff members.', variant: 'danger');
             $this->closeBanModal();
 
             return;
@@ -238,7 +240,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         Track::event(TrackingEventType::USER_BAN, $user);
 
-        flash()->success(sprintf('User %s has been banned successfully.', $user->name));
+        Flux::toast(text: sprintf('User %s has been banned successfully.', $user->name));
         $this->closeBanModal();
     }
 
@@ -252,7 +254,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         Track::event(TrackingEventType::USER_UNBAN, $user);
 
-        flash()->success(sprintf('User %s has been unbanned successfully.', $user->name));
+        Flux::toast(text: sprintf('User %s has been unbanned successfully.', $user->name));
         $this->closeUnbanModal();
     }
 
@@ -263,7 +265,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
     {
         // Prevent banning the user's current IP address
         if ($ip === request()->ip()) {
-            flash()->error('Cannot ban your current IP address.');
+            Flux::toast(text: 'Cannot ban your current IP address.', variant: 'danger');
 
             return;
         }
@@ -280,7 +282,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
             // Unban IP
             $existingBan->delete();
             Track::event(TrackingEventType::IP_UNBAN, additionalData: ['ip' => $ip]);
-            flash()->success(sprintf('IP address %s has been unbanned.', $ip));
+            Flux::toast(text: sprintf('IP address %s has been unbanned.', $ip));
         } else {
             // Ban IP with 1 month expiry
             Ban::query()->create([
@@ -293,7 +295,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
                 'expired_at' => now()->addMonth(),
             ]);
             Track::event(TrackingEventType::IP_BAN, additionalData: ['ip' => $ip]);
-            flash()->success(sprintf('IP address %s has been banned for 1 month.', $ip));
+            Flux::toast(text: sprintf('IP address %s has been banned for 1 month.', $ip));
         }
 
         // Refresh IP data if we have a selected user
@@ -468,9 +470,9 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
         // Search filter
         if ($this->search !== '' && $this->search !== '0') {
             $query->where(function (Builder $q): void {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%')
-                    ->orWhere('id', 'like', '%' . $this->search . '%');
+                $q->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email', 'like', '%'.$this->search.'%')
+                    ->orWhere('id', 'like', '%'.$this->search.'%');
             });
         }
 
@@ -498,11 +500,11 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         // Date range filters
         if ($this->joinedFrom) {
-            $query->where('created_at', '>=', $this->joinedFrom . ' 00:00:00');
+            $query->where('created_at', '>=', $this->joinedFrom.' 00:00:00');
         }
 
         if ($this->joinedTo) {
-            $query->where('created_at', '<=', $this->joinedTo . ' 23:59:59');
+            $query->where('created_at', '<=', $this->joinedTo.' 23:59:59');
         }
     }
 };

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Models\TrackingEvent;
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public bool $showModal = false;
 
     public string $detectedTimezone = '';
@@ -33,7 +35,7 @@ new class extends Component {
             $this->showModal = false;
 
             // Flash success message
-            flash()->success(__('Timezone updated successfully to :timezone', ['timezone' => $timezoneToSave]));
+            Flux::toast(text: __('Timezone updated successfully to :timezone', ['timezone' => $timezoneToSave]));
 
             $this->dispatch('$refresh');
         }
@@ -61,7 +63,7 @@ new class extends Component {
     private function loadFallbackTimezone(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 

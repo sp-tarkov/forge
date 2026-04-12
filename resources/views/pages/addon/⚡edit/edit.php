@@ -11,8 +11,8 @@ use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Flux\Flux;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -277,7 +277,7 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::ADDON_EDIT, $this->addon);
 
-        Session::flash('success', 'Addon has been Successfully Updated');
+        Flux::toast(text: 'Addon has been Successfully Updated');
 
         $this->redirect($this->addon->detail_url);
     }
@@ -305,7 +305,7 @@ new #[Layout('layouts::base')] class extends Component
             $this->addon->thumbnail_hash = null;
             $this->addon->save();
 
-            flash()->success('Thumbnail has been deleted');
+            Flux::toast(text: 'Thumbnail has been deleted');
         }
     }
 

@@ -3,13 +3,15 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new class extends Component {
+new class extends Component
+{
     use WithFileUploads;
 
     /**
@@ -94,7 +96,7 @@ new class extends Component {
             return to_route('profile.show');
         }
 
-        $this->dispatch('saved');
+        Flux::toast(text: 'Profile updated.');
 
         $this->dispatch('refresh-navigation-menu');
 

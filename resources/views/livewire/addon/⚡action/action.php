@@ -6,6 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Addon;
 use App\Traits\Livewire\ModerationActionMenu;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Livewire\Attributes\Computed;
@@ -132,7 +133,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, disabled: true);
 
-        flash()->success('Addon successfully disabled!');
+        Flux::toast(text: 'Addon successfully disabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -162,7 +163,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, disabled: false);
 
-        flash()->success('Addon successfully enabled!');
+        Flux::toast(text: 'Addon successfully enabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -194,7 +195,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, published: true);
 
-        flash()->success('Addon successfully published!');
+        Flux::toast(text: 'Addon successfully published!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -224,7 +225,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, published: false);
 
-        flash()->success('Addon successfully unpublished!');
+        Flux::toast(text: 'Addon successfully unpublished!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -255,7 +256,7 @@ new class extends Component
         $this->addonDetached = false;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
-        flash()->success('Addon successfully attached!');
+        Flux::toast(text: 'Addon successfully attached!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -286,7 +287,7 @@ new class extends Component
         $this->addonDetached = true;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) auth()->id()));
 
-        flash()->success('Addon successfully detached!');
+        Flux::toast(text: 'Addon successfully detached!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;

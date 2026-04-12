@@ -20,7 +20,7 @@ use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
@@ -370,7 +370,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->guidSaved = true;
 
         // Show success message
-        flash()->success('Mod GUID has been successfully saved.');
+        Flux::toast(text: 'Mod GUID has been successfully saved.');
     }
 
     /**
@@ -400,7 +400,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->categorySaved = true;
 
         // Show success message
-        flash()->success('Mod category has been successfully saved.');
+        Flux::toast(text: 'Mod category has been successfully saved.');
     }
 
     /**
@@ -517,7 +517,7 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::VERSION_CREATE, $modVersion);
 
-        Session::flash('success', 'Mod version has been successfully created.');
+        Flux::toast(text: 'Mod version has been successfully created.');
 
         // Redirect to the mod version page.
         $this->redirect(route('mod.show', [$this->mod->id, $this->mod->slug]));

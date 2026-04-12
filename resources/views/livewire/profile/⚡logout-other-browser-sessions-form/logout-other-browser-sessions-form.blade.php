@@ -82,12 +82,6 @@
                 {{ __('Log Out Other Browser Sessions') }}
             </x-button>
 
-            <x-action-message
-                class="ms-3"
-                on="loggedOut"
-            >
-                {{ __('Done.') }}
-            </x-action-message>
         </div>
 
         <!-- Log Out Other Devices Confirmation Modal -->

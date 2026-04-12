@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use App\Models\Conversation;
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * Controls visibility of the new conversation modal.
      */
@@ -45,7 +47,7 @@ new class extends Component {
     public function mount(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -66,7 +68,7 @@ new class extends Component {
     public function markAsRead(int $conversationId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -101,19 +103,19 @@ new class extends Component {
     public function startConversation(int $userId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $otherUser = User::query()->find($userId);
 
-        if (!$otherUser || $otherUser->id === $user->id) {
+        if (! $otherUser || $otherUser->id === $user->id) {
             return;
         }
 
         // Check if either user has blocked the other
         if ($user->hasBlocked($otherUser) || $user->isBlockedBy($otherUser)) {
-            flash()->error('You cannot start a conversation with this user.');
+            Flux::toast(text: 'You cannot start a conversation with this user.', variant: 'danger');
             $this->closeNewConversationModal();
 
             return;
@@ -136,7 +138,7 @@ new class extends Component {
         }
 
         // If this is a new conversation, update our conversation hashes
-        if (!$existingConversation) {
+        if (! $existingConversation) {
             $this->loadUserConversationHashes();
         }
 
@@ -389,7 +391,7 @@ new class extends Component {
     private function loadUserConversationHashes(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -409,7 +411,7 @@ new class extends Component {
     private function fetchConversations(): Collection
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return new Collection();
         }
 
@@ -432,7 +434,7 @@ new class extends Component {
     private function fetchUnreadCount(): int
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return 0;
         }
 
@@ -448,7 +450,7 @@ new class extends Component {
     private function fetchSearchResults(): Collection
     {
         $user = Auth::user();
-        if (!$user || $this->searchUser === '' || $this->searchUser === '0') {
+        if (! $user || $this->searchUser === '' || $this->searchUser === '0') {
             return new Collection();
         }
 

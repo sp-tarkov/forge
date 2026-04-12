@@ -3,14 +3,15 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Support\Arr;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\NewAccessToken;
 use Laravel\Sanctum\PersonalAccessToken;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The available API token permissions.
      *
@@ -113,7 +114,7 @@ new class extends Component {
         $this->createApiTokenForm['name'] = '';
         $this->createApiTokenForm['permissions'] = $this->ensureReadAbility(self::DEFAULT_PERMISSIONS);
 
-        $this->dispatch('created');
+        Flux::toast(text: 'API token created.');
     }
 
     /**
@@ -139,7 +140,7 @@ new class extends Component {
         $updatePermissions = $this->updateApiTokenForm['permissions'];
         $this->updateApiTokenForm['permissions'] = $this->ensureReadAbility($updatePermissions);
 
-        if (!$this->managingPermissionsFor) {
+        if (! $this->managingPermissionsFor instanceof PersonalAccessToken) {
             return;
         }
 
@@ -231,7 +232,7 @@ new class extends Component {
      */
     private function ensureReadAbility(array $permissions): array
     {
-        if (!in_array(self::READ_ABILITY, $permissions, true)) {
+        if (! in_array(self::READ_ABILITY, $permissions, true)) {
             array_unshift($permissions, self::READ_ABILITY);
         }
 

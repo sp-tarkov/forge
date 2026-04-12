@@ -11,6 +11,7 @@ use App\Models\ModVersion;
 use App\Models\ReportAction;
 use App\Models\TrackingEvent;
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,7 +21,8 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class extends Component {
+new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class extends Component
+{
     use WithPagination;
 
     /** Search term for action content. */
@@ -57,14 +59,14 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     #[Computed]
     public function actions(): LengthAwarePaginator
     {
-        $moderationEventNames = collect(TrackingEventType::moderationActions())->map(fn(TrackingEventType $type): string => $type->value)->all();
+        $moderationEventNames = collect(TrackingEventType::moderationActions())->map(fn (TrackingEventType $type): string => $type->value)->all();
 
         $query = TrackingEvent::query()
             ->whereIn('event_name', $moderationEventNames)
             ->where('is_moderation_action', true)
             ->with(['user', 'reports.reporter'])
             ->with([
-                'visitable' => fn($morphTo) => $morphTo->morphWith([ // @phpstan-ignore method.nonObject
+                'visitable' => fn ($morphTo) => $morphTo->morphWith([ // @phpstan-ignore method.nonObject
                     // @pest-ignore-type
                     Mod::class => ['owner:id,name'],
                     Addon::class => ['owner:id,name'],
@@ -87,7 +89,7 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     #[Computed]
     public function moderators(): Collection
     {
-        $moderationEventNames = collect(TrackingEventType::moderationActions())->map(fn(TrackingEventType $type): string => $type->value)->all();
+        $moderationEventNames = collect(TrackingEventType::moderationActions())->map(fn (TrackingEventType $type): string => $type->value)->all();
 
         $moderatorIds = TrackingEvent::query()->whereIn('event_name', $moderationEventNames)->where('is_moderation_action', true)->whereNotNull('visitor_id')->distinct()->pluck('visitor_id');
 
@@ -159,7 +161,7 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     {
         ReportAction::query()->where('tracking_event_id', $trackingEventId)->where('report_id', $reportId)->delete();
 
-        flash()->success('Action detached from report.');
+        Flux::toast(text: 'Action detached from report.');
         $this->dispatch('$refresh');
     }
 
@@ -214,7 +216,7 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     {
         if ($this->search !== '' && $this->search !== '0') {
             $query->where(function (Builder $q): void {
-                $q->whereRaw('LOWER(JSON_EXTRACT(additional_data, "$")) LIKE ?', ['%' . mb_strtolower($this->search) . '%']);
+                $q->whereRaw('LOWER(JSON_EXTRACT(additional_data, "$")) LIKE ?', ['%'.mb_strtolower($this->search).'%']);
             });
         }
 
@@ -227,11 +229,11 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
         }
 
         if ($this->dateFrom) {
-            $query->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+            $query->where('created_at', '>=', $this->dateFrom.' 00:00:00');
         }
 
         if ($this->dateTo) {
-            $query->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+            $query->where('created_at', '<=', $this->dateTo.' 23:59:59');
         }
 
         if ($this->reportLinkedOnly) {

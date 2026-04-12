@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Models\UserRole;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -14,7 +15,8 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class extends Component {
+new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class extends Component
+{
     use WithPagination;
 
     /**
@@ -105,7 +107,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
 
         return User::query()
             ->where(function (Builder $query): void {
-                $query->where('name', 'like', '%' . $this->userSearch . '%')->orWhere('email', 'like', '%' . $this->userSearch . '%');
+                $query->where('name', 'like', '%'.$this->userSearch.'%')->orWhere('email', 'like', '%'.$this->userSearch.'%');
             })
             ->orderBy('name')
             ->limit(10)
@@ -158,7 +160,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
         // Clear the cached role name
         Cache::forget(sprintf('user_%d_role_name', $user->id));
 
-        flash()->success(sprintf('Role assigned to %s successfully.', $user->name));
+        Flux::toast(text: sprintf('Role assigned to %s successfully.', $user->name));
 
         $this->closeAssignModal();
     }
@@ -181,7 +183,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
 
         // Prevent admins from removing their own role
         if ($user->id === auth()->id()) {
-            flash()->error('You cannot remove your own role.');
+            Flux::toast(text: 'You cannot remove your own role.', variant: 'danger');
             $this->closeRemoveModal();
 
             return;
@@ -195,7 +197,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
         // Clear the cached role name
         Cache::forget(sprintf('user_%d_role_name', $user->id));
 
-        flash()->success(sprintf('%s role removed from %s successfully.', $previousRoleName, $user->name));
+        Flux::toast(text: sprintf('%s role removed from %s successfully.', $previousRoleName, $user->name));
 
         $this->closeRemoveModal();
     }

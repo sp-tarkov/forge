@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f4b6447f8b168c4c45399b933ec4a9b",
+    "content-hash": "d6caa91a57c6836a414d49e2c4cd1a93",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -3904,6 +3904,79 @@
             "time": "2026-03-31T20:25:36+00:00"
         },
         {
+            "name": "livewire/flux-pro",
+            "version": "2.13.2",
+            "dist": {
+                "type": "zip",
+                "url": "https://composer.fluxui.dev/download/a16f3bfb-a644-4cc1-af52-0125cc224b2d/flux-pro-2.13.2.zip",
+                "reference": "e6e02a77f2296b1c755149b89cfefafa05b0a62e",
+                "shasum": "c7fb89b5cd6e0b051b1aac8245970de9310b770b"
+            },
+            "require": {
+                "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/view": "^10.0|^11.0|^12.0|^13.0",
+                "laravel/prompts": "^0.1.24|^0.2|^0.3",
+                "livewire/flux": "2.13.2|dev-main",
+                "livewire/livewire": "^3.7.4|^4.0",
+                "php": "^8.1",
+                "symfony/console": "^6.0|^7.0|^8.0"
+            },
+            "require-dev": {
+                "livewire/volt": "*",
+                "orchestra/testbench": "^10.8|^11.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Flux": "FluxPro\\FluxPro"
+                    },
+                    "providers": [
+                        "FluxPro\\FluxProServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "FluxPro\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "App\\": "workbench/app/"
+                }
+            },
+            "scripts": {
+                "serve": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "@php vendor/bin/testbench workbench:build --ansi",
+                    "@php vendor/bin/testbench serve --port 3000 --ansi"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "Caleb Porzio",
+                    "email": "calebporzio@gmail.com"
+                }
+            ],
+            "description": "The pro version of Flux, the official UI component library for Livewire.",
+            "keywords": [
+                "components",
+                "flux",
+                "laravel",
+                "livewire",
+                "ui"
+            ],
+            "time": "2026-03-31T21:06:39+00:00"
+        },
+        {
             "name": "livewire/livewire",
             "version": "v4.2.4",
             "source": {
@@ -5046,142 +5119,6 @@
                 "source": "https://github.com/paragonie/sodium_compat/tree/v2.5.0"
             },
             "time": "2025-12-30T16:12:18+00:00"
-        },
-        {
-            "name": "php-flasher/flasher",
-            "version": "v2.5.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-flasher/flasher.git",
-                "reference": "d02a61b6f43c72014b8944107a310c1738ff6182"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-flasher/flasher/zipball/d02a61b6f43c72014b8944107a310c1738ff6182",
-                "reference": "d02a61b6f43c72014b8944107a310c1738ff6182",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.2",
-                "yoeunes/regex-parser": "^1.0"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "functions.php",
-                    "helpers.php"
-                ],
-                "psr-4": {
-                    "Flasher\\Prime\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Younes ENNAJI",
-                    "email": "younes.ennaji.pro@gmail.com",
-                    "homepage": "https://www.linkedin.com/in/younes--ennaji/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "The foundational PHP library for PHPFlasher, enabling the creation of framework-agnostic flash notifications. Ideal for building custom integrations or for use in PHP projects.",
-            "homepage": "https://php-flasher.io",
-            "keywords": [
-                "custom-integrations",
-                "flash-notifications",
-                "flasher-core",
-                "framework-agnostic",
-                "open-source",
-                "php"
-            ],
-            "support": {
-                "issues": "https://github.com/php-flasher/php-flasher/issues",
-                "source": "https://github.com/php-flasher/php-flasher"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/yoeunes",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-04-05T10:55:06+00:00"
-        },
-        {
-            "name": "php-flasher/flasher-laravel",
-            "version": "v2.5.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-flasher/flasher-laravel.git",
-                "reference": "a4bb0380e7c7adec167ea4f014234bd013ea7f09"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-flasher/flasher-laravel/zipball/a4bb0380e7c7adec167ea4f014234bd013ea7f09",
-                "reference": "a4bb0380e7c7adec167ea4f014234bd013ea7f09",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/support": "^11.0|^12.0|^13.0",
-                "php": ">=8.2",
-                "php-flasher/flasher": "^2.5.2"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "Flasher": "Flasher\\Laravel\\Facade\\Flasher"
-                    },
-                    "providers": [
-                        "Flasher\\Laravel\\FlasherServiceProvider"
-                    ]
-                },
-                "phpstan": {
-                    "includes": [
-                        "extension.neon"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Flasher\\Laravel\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Younes ENNAJI",
-                    "email": "younes.ennaji.pro@gmail.com",
-                    "homepage": "https://www.linkedin.com/in/younes--ennaji/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Seamlessly integrate flash notifications into your Laravel applications with PHPFlasher. Enhance user feedback and engagement with minimal setup.",
-            "homepage": "https://php-flasher.io",
-            "keywords": [
-                "flash-notifications",
-                "laravel",
-                "open-source",
-                "php",
-                "phpflasher",
-                "user-feedback"
-            ],
-            "support": {
-                "issues": "https://github.com/php-flasher/php-flasher/issues",
-                "source": "https://github.com/php-flasher/php-flasher"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/yoeunes",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-04-05T10:55:06+00:00"
         },
         {
             "name": "php-http/discovery",
@@ -10641,94 +10578,6 @@
                 }
             ],
             "time": "2024-11-21T01:49:47+00:00"
-        },
-        {
-            "name": "yoeunes/regex-parser",
-            "version": "v1.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/yoeunes/regex-parser.git",
-                "reference": "770d1142c3c62195fbde7be6e5277da90b65d3a2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/yoeunes/regex-parser/zipball/770d1142c3c62195fbde7be6e5277da90b65d3a2",
-                "reference": "770d1142c3c62195fbde7be6e5277da90b65d3a2",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.2"
-            },
-            "suggest": {
-                "phpstan/extension-installer": "To automatically enable the PHPStan rule for regex validation.",
-                "phpstan/phpstan": "To run static analysis and detect invalid regex patterns.",
-                "psr/cache": "To share AST cache via PSR-6 pools.",
-                "psr/simple-cache": "To share AST cache via PSR-16 caches."
-            },
-            "bin": [
-                "bin/regex"
-            ],
-            "type": "library",
-            "extra": {
-                "ide": {
-                    "regex.dist.json": "./regex.schema.json"
-                },
-                "phpstan": {
-                    "includes": [
-                        "extension.neon"
-                    ]
-                },
-                "branch-alias": {
-                    "dev-main": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "src/Automata/LegacyAliases.php"
-                ],
-                "psr-4": {
-                    "RegexParser\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Younes ENNAJI",
-                    "email": "younes.ennaji.pro@gmail.com",
-                    "homepage": "https://www.linkedin.com/in/yoeunes/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A powerful PCRE regex parser with lexer, AST builder, validation, ReDoS analysis, and syntax highlighting. Zero dependencies, blazing fast, and production-ready.",
-            "homepage": "https://github.com/yoeunes/regex-parser",
-            "keywords": [
-                "PCRE",
-                "ast",
-                "cli",
-                "lexer",
-                "parser",
-                "php",
-                "redos",
-                "regex",
-                "security",
-                "syntax-highlighting",
-                "validation"
-            ],
-            "support": {
-                "docs": "https://github.com/yoeunes/regex-parser#readme",
-                "issues": "https://github.com/yoeunes/regex-parser/issues",
-                "source": "https://github.com/yoeunes/regex-parser"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/yoeunes",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-01-12T20:49:05+00:00"
         }
     ],
     "packages-dev": [

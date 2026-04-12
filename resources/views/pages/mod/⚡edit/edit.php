@@ -14,8 +14,8 @@ use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Flux\Flux;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -332,7 +332,7 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 
-        Session::flash('success', 'Mod has been Successfully Updated');
+        Flux::toast(text: 'Mod has been Successfully Updated');
 
         $this->redirect($this->mod->detail_url);
     }

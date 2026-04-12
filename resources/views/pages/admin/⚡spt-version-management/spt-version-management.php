@@ -8,6 +8,7 @@ use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use App\Support\Version;
 use Closure;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Date;
@@ -17,7 +18,8 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] class extends Component {
+new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] class extends Component
+{
     use WithPagination;
 
     /**
@@ -195,7 +197,7 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
                 'color_class' => $this->formColorClass,
                 'publish_date' => $publishDate,
             ]);
-            flash()->success('SPT version updated successfully.');
+            Flux::toast(text: 'SPT version updated successfully.');
         } else {
             SptVersion::query()->create([
                 'version' => $this->formVersion,
@@ -203,7 +205,7 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
                 'color_class' => $this->formColorClass,
                 'publish_date' => $publishDate,
             ]);
-            flash()->success('SPT version created successfully.');
+            Flux::toast(text: 'SPT version created successfully.');
         }
 
         $this->closeModals();
@@ -219,13 +221,13 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
 
         // Check if version has associated mod versions
         if ($version->modVersions()->exists()) {
-            flash()->error('Cannot delete this version as it has associated mod versions.');
+            Flux::toast(text: 'Cannot delete this version as it has associated mod versions.', variant: 'danger');
 
             return;
         }
 
         $version->delete();
-        flash()->success('SPT version deleted successfully.');
+        Flux::toast(text: 'SPT version deleted successfully.');
         $this->resetPage();
     }
 
@@ -235,7 +237,7 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
     public function syncFromGitHub(): void
     {
         dispatch(new UpdateGitHubSptVersionsJob());
-        flash()->success('GitHub sync job has been queued. Version data will be updated shortly.');
+        Flux::toast(text: 'GitHub sync job has been queued. Version data will be updated shortly.');
     }
 
     /**
@@ -281,7 +283,7 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
     private function applyFilters(Builder $query): void
     {
         if ($this->search !== '' && $this->search !== '0') {
-            $query->where('version', 'like', '%' . $this->search . '%');
+            $query->where('version', 'like', '%'.$this->search.'%');
         }
 
         if ($this->colorFilter !== '' && $this->colorFilter !== '0') {

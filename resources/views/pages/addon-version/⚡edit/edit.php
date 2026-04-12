@@ -15,7 +15,7 @@ use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
 use Composer\Semver\Semver;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Session;
+use Flux\Flux;
 use League\CommonMark\GithubFlavoredMarkdownConverter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Renderless;
@@ -368,7 +368,7 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::ADDON_VERSION_EDIT, $this->addonVersion);
 
-        Session::flash('success', 'Addon Version has been Successfully Updated');
+        Flux::toast(text: 'Addon Version has been Successfully Updated');
 
         $this->redirect($this->addonVersion->addon->detail_url);
     }

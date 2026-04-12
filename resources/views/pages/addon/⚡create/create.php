@@ -11,8 +11,8 @@ use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -222,7 +222,7 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::ADDON_CREATE, $addon);
 
-        Session::flash('success', 'Addon has been Successfully Created');
+        Flux::toast(text: 'Addon has been Successfully Created');
 
         $this->redirect($addon->detail_url);
     }

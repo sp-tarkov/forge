@@ -6,6 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\ModVersion;
 use App\Traits\Livewire\ModerationActionMenu;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -154,7 +155,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, disabled: true);
 
-        flash()->success('Mod version successfully disabled!');
+        Flux::toast(text: 'Mod version successfully disabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -183,7 +184,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, disabled: false);
 
-        flash()->success('Mod version successfully enabled!');
+        Flux::toast(text: 'Mod version successfully enabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -214,7 +215,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, published: true);
 
-        flash()->success('Mod version successfully published!');
+        Flux::toast(text: 'Mod version successfully published!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -243,7 +244,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, published: false);
 
-        flash()->success('Mod version successfully unpublished!');
+        Flux::toast(text: 'Mod version successfully unpublished!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;

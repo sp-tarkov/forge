@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public bool $emailCommentNotificationsEnabled = true;
 
     public bool $emailReplyNotificationsEnabled = true;
@@ -31,6 +33,6 @@ new class extends Component {
             'email_chat_notifications_enabled' => $this->emailChatNotificationsEnabled,
         ]);
 
-        $this->dispatch('saved');
+        Flux::toast(text: 'Saved.');
     }
 };

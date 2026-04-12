@@ -15,11 +15,13 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     /**
      * The conversation hash ID that is injected into the component from the URL.
      */
@@ -113,9 +115,9 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $this->currentUserId = (int) Auth::id();
         // Only switch conversation if we don't already have one selected or if the hash doesn't match the current selection
-        if ($this->conversationHash && (!$this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash)) {
+        if ($this->conversationHash && (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash)) {
             $this->switchConversation($this->conversationHash);
-        } elseif (!$this->selectedConversation && !$this->conversationHash) {
+        } elseif (! $this->selectedConversation && ! $this->conversationHash) {
             $this->redirectToLatestIfExists();
         }
     }
@@ -144,8 +146,8 @@ new #[Layout('layouts::base')] class extends Component {
             ->where('hash_id', $hashId)
             ->first();
 
-        abort_if(!$conversation, 404);
-        abort_if(!$conversation->hasUser($user), 403);
+        abort_if(! $conversation, 404);
+        abort_if(! $conversation->hasUser($user), 403);
 
         $this->selectedConversation = $conversation;
         $this->conversationHash = $hashId;
@@ -229,7 +231,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function handleIncomingMessage(array|bool $event): void
     {
         // Handle authorization failure or empty event
-        if (is_bool($event) || !$this->selectedConversation || !$this->conversationHash) {
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
             return;
         }
 
@@ -266,7 +268,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function handleMessageRead(array|bool $event): void
     {
         // Handle authorization failure or empty event
-        if (is_bool($event) || !$this->selectedConversation || !$this->conversationHash) {
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
             return;
         }
 
@@ -284,11 +286,11 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function redirectToConversation(Conversation|string $conversation): void
     {
-        if (!$conversation instanceof Conversation) {
+        if (! $conversation instanceof Conversation) {
             $conversation = Conversation::query()->where('hash_id', $conversation)->first();
         }
 
-        if (!$conversation || !$conversation->hash_id) {
+        if (! $conversation || ! $conversation->hash_id) {
             return;
         }
 
@@ -301,7 +303,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function sendMessage(): void
     {
-        if (!$this->selectedConversation || in_array(mb_trim($this->messageText), ['', '0'], true)) {
+        if (! $this->selectedConversation || in_array(mb_trim($this->messageText), ['', '0'], true)) {
             return;
         }
 
@@ -326,6 +328,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $conversation->unarchiveForAllUsers();
         $conversation->refresh();
+
         $this->selectedConversation = $conversation;
 
         // Broadcast the message to other users
@@ -357,7 +360,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function archiveConversation(): void
     {
-        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
+        if (! $this->selectedConversation instanceof Conversation) {
             return;
         }
 
@@ -392,7 +395,7 @@ new #[Layout('layouts::base')] class extends Component {
             $this->hasMoreMessages = true;
 
             // Update URL to remove conversation hash
-            $this->js("window.history.pushState({}, '', '" . route('chat') . "')");
+            $this->js("window.history.pushState({}, '', '".route('chat')."')");
         }
     }
 
@@ -401,7 +404,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function loadMoreMessages(): void
     {
-        if (!$this->selectedConversation || !$this->hasMoreMessages) {
+        if (! $this->selectedConversation || ! $this->hasMoreMessages) {
             return;
         }
 
@@ -438,7 +441,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $otherUser = User::query()->find($userId);
 
-        if (!$otherUser || $otherUser->id === $user->id) {
+        if (! $otherUser || $otherUser->id === $user->id) {
             return;
         }
 
@@ -459,7 +462,7 @@ new #[Layout('layouts::base')] class extends Component {
                 $conversation->unarchiveFor($user);
                 $this->dispatch('conversation-updated')->to('navigation-chat');
             } else {
-                flash()->error('Cannot start conversation with this user.');
+                Flux::toast(text: 'Cannot start conversation with this user.', variant: 'danger');
                 $this->closeNewConversationModal();
 
                 return;
@@ -467,7 +470,7 @@ new #[Layout('layouts::base')] class extends Component {
         }
 
         // If this is a new conversation, notify NavigationChat to update its conversation hashes
-        if (!$existingConversation) {
+        if (! $existingConversation) {
             $this->dispatch('conversation-created')->to('navigation-chat');
         }
 
@@ -483,13 +486,13 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function handleTyping(): void
     {
-        if (!$this->selectedConversation || !Auth::check()) {
+        if (! $this->selectedConversation || ! Auth::check()) {
             return;
         }
 
         $user = Auth::user();
 
-        if (!$this->isTyping && $user) {
+        if (! $this->isTyping && $user) {
             $this->isTyping = true;
             broadcast(new UserStartedTyping($this->selectedConversation, $user))->toOthers();
         }
@@ -500,7 +503,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function stopTyping(): void
     {
-        if (!$this->selectedConversation || !$this->isTyping || !Auth::check()) {
+        if (! $this->selectedConversation || ! $this->isTyping || ! Auth::check()) {
             return;
         }
 
@@ -520,7 +523,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function handleUserStartedTyping(array|bool $event): void
     {
         // Handle authorization failure or when conversation is not selected
-        if (is_bool($event) || !$this->selectedConversation || !$this->conversationHash) {
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
             return;
         }
 
@@ -529,7 +532,7 @@ new #[Layout('layouts::base')] class extends Component {
             return;
         }
 
-        if (!isset($this->typingUsers[$event['user_id']])) {
+        if (! isset($this->typingUsers[$event['user_id']])) {
             $this->typingUsers[$event['user_id']] = [
                 'id' => $event['user_id'],
                 'name' => $event['user_name'],
@@ -545,7 +548,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function handleUserStoppedTyping(array|bool $event): void
     {
         // Handle authorization failure or when conversation is not selected
-        if (is_bool($event) || !$this->selectedConversation || !$this->conversationHash) {
+        if (is_bool($event) || ! $this->selectedConversation || ! $this->conversationHash) {
             return;
         }
 
@@ -640,7 +643,7 @@ new #[Layout('layouts::base')] class extends Component {
         $message = $event['message'];
 
         // If no conversation is selected but we receive a message, it might be for an archived conversation
-        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
+        if (! $this->selectedConversation instanceof Conversation) {
             // Check if this is a conversation we're part of
             $user = Auth::user();
             if (! $user) {
@@ -719,7 +722,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function handleForwardedTypingStarted(array $event): void
     {
         // Only process if this is for the current conversation
-        if (!$this->selectedConversation || $this->selectedConversation->hash_id !== $event['conversation_hash']) {
+        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $event['conversation_hash']) {
             return;
         }
 
@@ -728,7 +731,7 @@ new #[Layout('layouts::base')] class extends Component {
             return;
         }
 
-        if (!isset($this->typingUsers[$event['user_id']])) {
+        if (! isset($this->typingUsers[$event['user_id']])) {
             $this->typingUsers[$event['user_id']] = [
                 'id' => $event['user_id'],
                 'name' => $event['user_name'],
@@ -744,7 +747,7 @@ new #[Layout('layouts::base')] class extends Component {
     public function handleForwardedTypingStopped(array $event): void
     {
         // Only process if this is for the current conversation
-        if (!$this->selectedConversation || $this->selectedConversation->hash_id !== $event['conversation_hash']) {
+        if (! $this->selectedConversation || $this->selectedConversation->hash_id !== $event['conversation_hash']) {
             return;
         }
 
@@ -761,21 +764,21 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function toggleNotifications(): void
     {
-        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
+        if (! $this->selectedConversation instanceof Conversation) {
             return;
         }
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $isEnabled = $this->selectedConversation->toggleNotificationForUser($user);
 
         if ($isEnabled) {
-            flash()->success('Notifications enabled for this conversation');
+            Flux::toast(text: 'Notifications enabled for this conversation');
         } else {
-            flash()->success('Notifications disabled for this conversation');
+            Flux::toast(text: 'Notifications disabled for this conversation');
         }
     }
 
@@ -784,12 +787,12 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function isNotificationEnabled(): bool
     {
-        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
+        if (! $this->selectedConversation instanceof Conversation) {
             return true;
         }
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return true;
         }
 
@@ -820,12 +823,12 @@ new #[Layout('layouts::base')] class extends Component {
     #[Computed]
     public function isUserBlocked(): bool
     {
-        if (!$this->selectedConversation || !$this->selectedConversation->other_user) {
+        if (! $this->selectedConversation || ! $this->selectedConversation->other_user) {
             return false;
         }
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -838,12 +841,12 @@ new #[Layout('layouts::base')] class extends Component {
     #[Computed]
     public function isConversationBlocked(): bool
     {
-        if (!$this->selectedConversation || !$this->selectedConversation->other_user) {
+        if (! $this->selectedConversation || ! $this->selectedConversation->other_user) {
             return false;
         }
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -855,12 +858,12 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function confirmBlock(): void
     {
-        if (!$this->selectedConversation || !$this->selectedConversation->other_user) {
+        if (! $this->selectedConversation || ! $this->selectedConversation->other_user) {
             return;
         }
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -869,7 +872,7 @@ new #[Layout('layouts::base')] class extends Component {
         if ($this->isUserBlocked()) {
             // Unblock the user
             $user->unblock($otherUser);
-            flash()->success('User unblocked successfully');
+            Flux::toast(text: 'User unblocked successfully');
 
             // Broadcast the unblock event for real-time updates
             broadcast(new UserUnblocked($user, $otherUser))->toOthers();
@@ -877,7 +880,7 @@ new #[Layout('layouts::base')] class extends Component {
         } else {
             // Block the user
             $user->block($otherUser, $this->blockReason ?: null);
-            flash()->success('User blocked successfully');
+            Flux::toast(text: 'User blocked successfully');
 
             // Broadcast the block event for real-time updates
             broadcast(new UserBlocked($user, $otherUser))->toOthers();
@@ -944,7 +947,7 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return new Collection();
         }
 
@@ -967,13 +970,13 @@ new #[Layout('layouts::base')] class extends Component {
      **/
     private function fetchMessages(): Collection
     {
-        if (!$this->selectedConversation instanceof \App\Models\Conversation) {
+        if (! $this->selectedConversation instanceof Conversation) {
             return new Collection();
         }
 
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return new Collection();
         }
 

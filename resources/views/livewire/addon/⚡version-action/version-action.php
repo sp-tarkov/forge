@@ -6,6 +6,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\AddonVersion;
 use App\Traits\Livewire\ModerationActionMenu;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -154,7 +155,7 @@ new class extends Component
 
         $this->dispatch('addon-version-updated.'.$this->versionId, disabled: true);
 
-        flash()->success('Addon version successfully disabled!');
+        Flux::toast(text: 'Addon version successfully disabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -183,7 +184,7 @@ new class extends Component
 
         $this->dispatch('addon-version-updated.'.$this->versionId, disabled: false);
 
-        flash()->success('Addon version successfully enabled!');
+        Flux::toast(text: 'Addon version successfully enabled!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -214,7 +215,7 @@ new class extends Component
 
         $this->dispatch('addon-version-updated.'.$this->versionId, published: true);
 
-        flash()->success('Addon version successfully published!');
+        Flux::toast(text: 'Addon version successfully published!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -243,7 +244,7 @@ new class extends Component
 
         $this->dispatch('addon-version-updated.'.$this->versionId, published: false);
 
-        flash()->success('Addon version successfully unpublished!');
+        Flux::toast(text: 'Addon version successfully unpublished!');
 
         $this->moderationReason = '';
         $this->menuOpen = false;

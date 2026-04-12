@@ -6,12 +6,14 @@ use App\Actions\Fortify\PasswordValidationRules;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     use PasswordValidationRules;
 
     /**
@@ -63,7 +65,7 @@ new class extends Component {
 
         Track::event(TrackingEventType::PASSWORD_CHANGE);
 
-        $this->dispatch('saved');
+        Flux::toast(text: 'Password updated.');
     }
 
     /**

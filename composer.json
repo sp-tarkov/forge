@@ -27,10 +27,10 @@
         "league/flysystem-aws-s3-v3": "^3.32",
         "league/html-to-markdown": "^5.1.1",
         "livewire/flux": "^2.13.2",
+        "livewire/flux-pro": "^2.13",
         "livewire/livewire": "^4.2.4",
         "mchev/banhammer": "^2.5.0",
         "meilisearch/meilisearch-php": "^1.16.1",
-        "php-flasher/flasher-laravel": "^2.5.2",
         "shetabit/visitor": "^4.5.4",
         "socialiteproviders/discord": "^4.2",
         "spatie/laravel-discord-alerts": "^1.9.1",
@@ -102,12 +102,12 @@
             "npx npm-check-updates -u"
         ],
         "sendit": [
-            "composer rector-fix",
             "composer lint",
-            "composer pint",
-            "composer phpstan",
-            "composer spell",
+            "composer rector-fix",
             "composer coverage",
+            "composer phpstan",
+            "composer pint",
+            "composer spell",
             "@php artisan test --parallel"
         ],
         "post-autoload-dump": [
@@ -153,5 +153,10 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [{
+        "name": "flux-pro",
+        "type": "composer",
+        "url": "https://composer.fluxui.dev"
+    }]
 }

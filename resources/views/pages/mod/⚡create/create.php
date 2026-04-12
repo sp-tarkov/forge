@@ -11,8 +11,8 @@ use App\Models\ModCategory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -268,7 +268,7 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::MOD_CREATE, $mod);
 
-        Session::flash('success', 'Mod has been Successfully Created');
+        Flux::toast(text: 'Mod has been Successfully Created');
 
         $this->redirect($mod->detail_url);
     }

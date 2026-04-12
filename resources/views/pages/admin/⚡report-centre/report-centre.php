@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\ReportStatus;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use Flux\Flux;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
@@ -22,13 +23,14 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator as BaseLengthAwarePaginator;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Session;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Session;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use AuthorizesRequests;
     use WithPagination;
 
@@ -85,9 +87,9 @@ new #[Layout('layouts::base')] class extends Component {
     public function reports(): BaseLengthAwarePaginator
     {
         return Report::with(['reporter', 'reportable', 'assignee', 'actions.trackingEvent', 'actions.moderator'])
-            ->when($this->filterUnresolved, fn(Builder $query) => $query->where('status', ReportStatus::PENDING))
-            ->when($this->filterReportId !== '', fn(Builder $query) => $query->where('id', (int) $this->filterReportId))
-            ->when($this->filterReporterUsername !== '', fn(Builder $query) => $query->whereHas('reporter', fn(Builder $q) => $q->where('name', 'like', '%' . $this->filterReporterUsername . '%')))
+            ->when($this->filterUnresolved, fn (Builder $query) => $query->where('status', ReportStatus::PENDING))
+            ->when($this->filterReportId !== '', fn (Builder $query) => $query->where('id', (int) $this->filterReportId))
+            ->when($this->filterReporterUsername !== '', fn (Builder $query) => $query->whereHas('reporter', fn (Builder $q) => $q->where('name', 'like', '%'.$this->filterReporterUsername.'%')))
             ->latest()
             ->paginate(10, pageName: 'reports-page');
     }
@@ -139,7 +141,7 @@ new #[Layout('layouts::base')] class extends Component {
     #[Computed]
     public function recentModerationActions(): Collection
     {
-        $moderationEventNames = collect(TrackingEventType::moderationActions())->map(fn(TrackingEventType $type): string => $type->value)->all();
+        $moderationEventNames = collect(TrackingEventType::moderationActions())->map(fn (TrackingEventType $type): string => $type->value)->all();
 
         $query = TrackingEvent::query()
             ->whereIn('event_name', $moderationEventNames)
@@ -220,7 +222,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->authorize('update', $report);
 
         if ($this->selectedTrackingEventId === 0) {
-            flash()->error('Please select an action to link.');
+            Flux::toast(text: 'Please select an action to link.', variant: 'danger');
 
             return;
         }
@@ -233,7 +235,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->showLinkActionModal = false;
         $this->reset(['activeReportId', 'selectedTrackingEventId', 'actionNote']);
 
-        flash()->success('Action linked to report.');
+        Flux::toast(text: 'Action linked to report.');
         $this->dispatch('$refresh');
     }
 
@@ -247,7 +249,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $reportAction->delete();
 
-        flash()->success('Action detached from report.');
+        Flux::toast(text: 'Action detached from report.');
         $this->dispatch('$refresh');
     }
 
@@ -276,7 +278,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->showActionModal = false;
         $this->reset(['activeReportId', 'actionNote', 'selectedAction', 'banDuration', 'resolveAfterAction']);
 
-        flash()->success('Action taken and linked to report.');
+        Flux::toast(text: 'Action taken and linked to report.');
         $this->dispatch('$refresh');
     }
 
@@ -400,7 +402,7 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $mod = $report->reportable;
 
-        if (!$mod instanceof Mod) {
+        if (! $mod instanceof Mod) {
             return;
         }
 
@@ -408,7 +410,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $service = resolve(ReportActionService::class);
 
-        $service->takeAction(report: $report, eventType: TrackingEventType::MOD_DISABLE, trackable: $mod, actionCallback: fn() => $mod->update(['disabled' => true]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+        $service->takeAction(report: $report, eventType: TrackingEventType::MOD_DISABLE, trackable: $mod, actionCallback: fn () => $mod->update(['disabled' => true]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
     }
 
     /**
@@ -418,7 +420,7 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $addon = $report->reportable;
 
-        if (!$addon instanceof Addon) {
+        if (! $addon instanceof Addon) {
             return;
         }
 
@@ -426,7 +428,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $service = resolve(ReportActionService::class);
 
-        $service->takeAction(report: $report, eventType: TrackingEventType::ADDON_DISABLE, trackable: $addon, actionCallback: fn() => $addon->update(['disabled' => true]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+        $service->takeAction(report: $report, eventType: TrackingEventType::ADDON_DISABLE, trackable: $addon, actionCallback: fn () => $addon->update(['disabled' => true]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
     }
 
     /**
@@ -436,7 +438,7 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $mod = $report->reportable;
 
-        if (!$mod instanceof Mod) {
+        if (! $mod instanceof Mod) {
             return;
         }
 
@@ -444,7 +446,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $service = resolve(ReportActionService::class);
 
-        $service->takeAction(report: $report, eventType: TrackingEventType::MOD_ENABLE, trackable: $mod, actionCallback: fn() => $mod->update(['disabled' => false]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+        $service->takeAction(report: $report, eventType: TrackingEventType::MOD_ENABLE, trackable: $mod, actionCallback: fn () => $mod->update(['disabled' => false]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
     }
 
     /**
@@ -454,7 +456,7 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $addon = $report->reportable;
 
-        if (!$addon instanceof Addon) {
+        if (! $addon instanceof Addon) {
             return;
         }
 
@@ -462,7 +464,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $service = resolve(ReportActionService::class);
 
-        $service->takeAction(report: $report, eventType: TrackingEventType::ADDON_ENABLE, trackable: $addon, actionCallback: fn() => $addon->update(['disabled' => false]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+        $service->takeAction(report: $report, eventType: TrackingEventType::ADDON_ENABLE, trackable: $addon, actionCallback: fn () => $addon->update(['disabled' => false]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
     }
 
     /**
@@ -472,7 +474,7 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $comment = $report->reportable;
 
-        if (!$comment instanceof Comment) {
+        if (! $comment instanceof Comment) {
             return;
         }
 
@@ -480,7 +482,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $service = resolve(ReportActionService::class);
 
-        $service->takeAction(report: $report, eventType: TrackingEventType::COMMENT_SOFT_DELETE, trackable: $comment, actionCallback: fn() => $comment->update(['deleted_at' => now()]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+        $service->takeAction(report: $report, eventType: TrackingEventType::COMMENT_SOFT_DELETE, trackable: $comment, actionCallback: fn () => $comment->update(['deleted_at' => now()]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
     }
 
     /**
@@ -490,7 +492,7 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $comment = $report->reportable;
 
-        if (!$comment instanceof Comment) {
+        if (! $comment instanceof Comment) {
             return;
         }
 
@@ -498,7 +500,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $service = resolve(ReportActionService::class);
 
-        $service->takeAction(report: $report, eventType: TrackingEventType::COMMENT_RESTORE, trackable: $comment, actionCallback: fn() => $comment->update(['deleted_at' => null]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+        $service->takeAction(report: $report, eventType: TrackingEventType::COMMENT_RESTORE, trackable: $comment, actionCallback: fn () => $comment->update(['deleted_at' => null]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
     }
 
     /**
@@ -527,7 +529,7 @@ new #[Layout('layouts::base')] class extends Component {
             return $reportable->user;
         }
 
-        throw new \RuntimeException('Cannot determine user to ban from report.');
+        throw new RuntimeException('Cannot determine user to ban from report.');
     }
 
     /**
@@ -552,6 +554,6 @@ new #[Layout('layouts::base')] class extends Component {
         /** @var User $user */
         $user = auth()->user();
 
-        $user->unreadNotifications()->where('type', ReportSubmittedNotification::class)->get()->filter(fn(DatabaseNotification $notification): bool => ($notification->data['report_id'] ?? null) === $report->id)->each(fn(DatabaseNotification $notification) => $notification->markAsRead());
+        $user->unreadNotifications()->where('type', ReportSubmittedNotification::class)->get()->filter(fn (DatabaseNotification $notification): bool => ($notification->data['report_id'] ?? null) === $report->id)->each(fn (DatabaseNotification $notification) => $notification->markAsRead());
     }
 };

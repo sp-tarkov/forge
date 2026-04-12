@@ -65,13 +65,6 @@
         </x-slot>
 
         <x-slot name="actions">
-            <x-action-message
-                class="me-3"
-                on="created"
-            >
-                {{ __('Created.') }}
-            </x-action-message>
-
             <x-button>
                 {{ __('Create') }}
             </x-button>

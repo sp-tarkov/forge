@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\ReportStatus;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
+use Flux\Flux;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
@@ -20,7 +21,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /** The user being viewed/acted upon */
     public User $user;
 
@@ -131,7 +133,7 @@ new class extends Component {
                     reason: $this->reason ?: null,
                 );
 
-                flash()->success('User banned and linked to report!');
+                Flux::toast(text: 'User banned and linked to report!');
                 $this->showBanModal = false;
                 $this->reset(['duration', 'reason', 'selectedReportId']);
 
@@ -147,7 +149,7 @@ new class extends Component {
         Track::event(TrackingEventType::USER_BAN, $this->user);
         Track::event(TrackingEventType::USER_BANNED, $this->user);
 
-        flash()->success('User successfully banned!');
+        Flux::toast(text: 'User successfully banned!');
 
         $this->showBanModal = false;
         $this->reset(['duration', 'reason', 'selectedReportId']);
@@ -167,7 +169,7 @@ new class extends Component {
         Track::event(TrackingEventType::USER_UNBAN, $this->user);
         Track::event(TrackingEventType::USER_UNBANNED, $this->user);
 
-        flash()->success('User successfully unbanned!');
+        Flux::toast(text: 'User successfully unbanned!');
 
         $this->showUnbanModal = false;
     }

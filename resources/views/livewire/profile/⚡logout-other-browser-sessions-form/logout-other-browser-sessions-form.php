@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Detection\MobileDetect;
+use Flux\Flux;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * List of additional operating systems.
      *
@@ -88,7 +90,7 @@ new class extends Component {
         /** @var User $user */
         $user = Auth::user();
 
-        if (!Hash::check($this->password, (string) $user->password)) {
+        if (! Hash::check($this->password, (string) $user->password)) {
             throw ValidationException::withMessages([
                 'password' => [__('This password does not match our records.')],
             ]);
@@ -101,23 +103,23 @@ new class extends Component {
         request()
             ->session()
             ->put([
-                'password_hash_' . Auth::getDefaultDriver() => $user->getAuthPassword(),
+                'password_hash_'.Auth::getDefaultDriver() => $user->getAuthPassword(),
             ]);
 
         $this->confirmingLogout = false;
 
-        $this->dispatch('loggedOut');
+        Flux::toast(text: 'Other browser sessions logged out.');
     }
 
     /**
      * Get the current sessions.
      *
-     * @return Collection<int, \stdClass>
+     * @return Collection<int, stdClass>
      */
     public function getSessionsProperty(): Collection
     {
         if (config('session.driver') !== 'database') {
-            /** @var Collection<int, \stdClass> */
+            /** @var Collection<int, stdClass> */
             return collect();
         }
 
@@ -129,13 +131,13 @@ new class extends Component {
         /** @var string $table */
         $table = config('session.table', 'sessions');
 
-        /** @var Collection<int, \stdClass> $sessions */
+        /** @var Collection<int, stdClass> $sessions */
         $sessions = DB::connection($connection)
             ->table($table)
             ->where('user_id', $user->getAuthIdentifier())
             ->orderBy('last_activity', 'desc')
             ->get()
-            ->map(fn(\stdClass $session): \stdClass => $this->parseSession($session));
+            ->map(fn (stdClass $session): stdClass => $this->parseSession($session));
 
         return $sessions;
     }
@@ -167,7 +169,7 @@ new class extends Component {
     /**
      * Parse session data into a structured object.
      */
-    private function parseSession(\stdClass $session): \stdClass
+    private function parseSession(stdClass $session): stdClass
     {
         /** @var string $userAgent */
         $userAgent = $session->user_agent ?? '';
@@ -178,7 +180,7 @@ new class extends Component {
         $lastActivity = $session->last_activity;
 
         return (object) [
-            'is_desktop' => !$detector->isMobile() && !$detector->isTablet(),
+            'is_desktop' => ! $detector->isMobile() && ! $detector->isTablet(),
             'platform' => $this->detectPlatform($userAgent),
             'browser' => $this->detectBrowser($userAgent),
             'ip_address' => $session->ip_address,
@@ -223,7 +225,7 @@ new class extends Component {
 
             $regex = str_replace('/', '\\/', $regex);
 
-            if (preg_match('/' . $regex . '/i', $userAgent)) {
+            if (preg_match('/'.$regex.'/i', $userAgent)) {
                 return $key;
             }
         }

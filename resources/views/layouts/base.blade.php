@@ -103,9 +103,7 @@
 </head>
 
 <body class="font-sans antialiased flex flex-col min-h-screen">
-    @if ($variant !== 'simple')
-        <x-banner />
-    @endif
+    <flux:toast />
 
     <div class="flex-grow bg-gray-100 dark:bg-gray-800">
         @if ($variant !== 'simple')
