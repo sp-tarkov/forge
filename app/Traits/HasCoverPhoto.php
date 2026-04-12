@@ -49,9 +49,7 @@ trait HasCoverPhoto
      */
     protected function coverPhotoDisk(): string
     {
-        $disk = config()->string('filesystems.asset_upload', 'public');
-
-        return $disk;
+        return config()->string('filesystems.asset_upload', 'public');
     }
 
     /**

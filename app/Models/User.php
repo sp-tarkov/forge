@@ -818,9 +818,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
      */
     protected function profilePhotoDisk(): string
     {
-        $disk = config()->string('filesystems.asset_upload', 'public');
-
-        return $disk;
+        return config()->string('filesystems.asset_upload', 'public');
     }
 
     /**
