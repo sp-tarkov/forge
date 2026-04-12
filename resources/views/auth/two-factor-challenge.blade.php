@@ -40,19 +40,13 @@
                     class="mt-4"
                     x-show="! recovery"
                 >
-                    <x-label
-                        for="code"
-                        value="{{ __('Code') }}"
-                    />
-                    <x-input
-                        id="code"
-                        class="block mt-1 w-full"
-                        type="text"
-                        inputmode="numeric"
+                    <flux:otp
                         name="code"
+                        length="6"
+                        label="{{ __('Code') }}"
+                        submit="auto"
                         autofocus
                         x-ref="code"
-                        autocomplete="one-time-code"
                     />
                 </div>
 
