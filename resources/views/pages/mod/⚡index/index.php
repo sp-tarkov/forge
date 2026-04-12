@@ -80,7 +80,6 @@ new #[Layout('layouts::base')] class extends Component
     #[Url]
     public mixed $fikaCompatibility = false;
 
-
     /**
      * Called when a component is created.
      */

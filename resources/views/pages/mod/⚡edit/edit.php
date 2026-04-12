@@ -11,11 +11,11 @@ use App\Models\ModCategory;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Storage;
-use Flux\Flux;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -174,6 +174,7 @@ new #[Layout('layouts::base')] class extends Component
             $this->publishedAtDate = $publishedAtLocal->format('Y-m-d');
             $this->publishedAtTime = $publishedAtLocal->format('H:i');
         }
+
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
         $this->containsAds = (bool) $this->mod->contains_ads;
         $this->commentsDisabled = (bool) $this->mod->comments_disabled;

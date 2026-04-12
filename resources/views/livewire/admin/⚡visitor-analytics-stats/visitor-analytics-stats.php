@@ -159,7 +159,7 @@ new #[Lazy] class extends Component
             ->groupByRaw('DATE(created_at)')
             ->orderBy('date')
             ->get()
-            ->map(fn (\stdClass $row): array => [
+            ->map(fn (stdClass $row): array => [
                 'date' => is_string($row->date) ? $row->date : '',
                 'events' => is_numeric($row->events) ? (int) $row->events : 0,
             ])

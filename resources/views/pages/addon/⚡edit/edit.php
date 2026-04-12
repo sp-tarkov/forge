@@ -7,12 +7,12 @@ use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\License;
 use App\Models\SourceCodeLink;
+use Flux\Flux;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Storage;
-use Flux\Flux;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -150,6 +150,7 @@ new #[Layout('layouts::base')] class extends Component
             $this->publishedAtDate = $publishedAtLocal->format('Y-m-d');
             $this->publishedAtTime = $publishedAtLocal->format('H:i');
         }
+
         $this->containsAiContent = (bool) $this->addon->contains_ai_content;
         $this->containsAds = (bool) $this->addon->contains_ads;
         $this->commentsDisabled = (bool) $this->addon->comments_disabled;

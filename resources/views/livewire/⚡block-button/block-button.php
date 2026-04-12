@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Services\UserBlockingService;
-use Illuminate\Support\Facades\Auth;
 use Flux\Flux;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 new class extends Component
