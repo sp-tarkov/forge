@@ -47,57 +47,32 @@
                                 <flux:description>
                                     {{ __('Optionally upload an image to use as the mod\'s thumbnail. This will be displayed on the mod page and in search results. The image should be square, JPG or PNG, and no larger than 2MB.') }}
                                 </flux:description>
-                                <flux:input
-                                    type="file"
-                                    wire:model.blur="thumbnail"
-                                    accept="image/*"
-                                />
+                                <flux:file-upload wire:model="thumbnail">
+                                    <flux:file-upload.dropzone
+                                        heading="{{ __('Drop image here or click to browse') }}"
+                                        text="{{ __('JPG or PNG, square, up to 2MB') }}"
+                                        with-progress
+                                        inline
+                                    />
+                                </flux:file-upload>
                                 <flux:error name="thumbnail" />
-                                <div
-                                    wire:loading
-                                    wire:target="thumbnail"
-                                    class="mt-2"
-                                >
-                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div
-                                            class="bg-cyan-500 h-2.5 rounded-full"
-                                            style="width: 0%"
-                                            wire:loading.class="animate-pulse"
-                                        ></div>
-                                    </div>
-                                </div>
-                                <div class="mt-2 flex items-center gap-6">
-                                    @if ($mod && $mod->thumbnail)
-                                        <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">Current Thumbnail:</p>
-                                            <img
-                                                src="{{ asset($mod->thumbnail) }}"
-                                                class="h-20 w-20 object-cover rounded border border-gray-300 dark:border-gray-700"
-                                                alt="Current thumbnail"
-                                            >
-                                        </div>
-                                    @endif
-                                    @if ($thumbnail)
-                                        <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">New Thumbnail:</p>
-                                            <img
-                                                src="{{ $thumbnail->temporaryUrl() }}"
-                                                class="h-20 w-20 object-cover rounded border border-gray-300 dark:border-gray-700"
-                                                alt="New thumbnail"
-                                            >
-                                        </div>
-                                        <div>
-                                            <flux:button
-                                                size="sm"
-                                                variant="outline"
-                                                wire:click="removeThumbnail"
-                                                type="button"
-                                            >
-                                                {{ __('Cancel Thumbnail Change') }}
-                                            </flux:button>
-                                        </div>
-                                    @endif
-                                </div>
+                                @if ($mod && $mod->thumbnail && !$thumbnail)
+                                    <flux:file-item
+                                        heading="{{ __('Current Thumbnail') }}"
+                                        :image="asset($mod->thumbnail)"
+                                    />
+                                @endif
+                                @if ($thumbnail)
+                                    <flux:file-item
+                                        :heading="$thumbnail->getClientOriginalName()"
+                                        :image="$thumbnail->temporaryUrl()"
+                                        :size="$thumbnail->getSize()"
+                                    >
+                                        <x-slot name="actions">
+                                            <flux:file-item.remove wire:click="removeThumbnail" />
+                                        </x-slot>
+                                    </flux:file-item>
+                                @endif
                             </flux:field>
 
                             <flux:field

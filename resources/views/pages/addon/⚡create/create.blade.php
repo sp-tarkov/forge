@@ -53,40 +53,25 @@
                                 <flux:description>
                                     {{ __('Optionally upload an image to use as the addon\'s thumbnail. This will be displayed on the addon page and in search results. The image should be square, JPG or PNG, and no larger than 2MB. ') }}
                                 </flux:description>
-                                <flux:input
-                                    type="file"
-                                    wire:model.blur="thumbnail"
-                                    accept="image/*"
-                                />
+                                <flux:file-upload wire:model="thumbnail">
+                                    <flux:file-upload.dropzone
+                                        heading="{{ __('Drop image here or click to browse') }}"
+                                        text="{{ __('JPG or PNG, square, up to 2MB') }}"
+                                        with-progress
+                                        inline
+                                    />
+                                </flux:file-upload>
                                 <flux:error name="thumbnail" />
-                                <div
-                                    wire:loading
-                                    wire:target="thumbnail"
-                                    class="mt-2"
-                                >
-                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div class="bg-cyan-500 h-2.5 rounded-full animate-pulse"></div>
-                                    </div>
-                                </div>
                                 @if ($thumbnail)
-                                    <div class="mt-2 flex items-center gap-2">
-                                        <div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400">Preview:</p>
-                                            <img
-                                                src="{{ $thumbnail->temporaryUrl() }}"
-                                                class="h-20 w-20 object-cover rounded"
-                                                alt="Thumbnail preview"
-                                            >
-                                        </div>
-                                        <flux:button
-                                            size="sm"
-                                            variant="outline"
-                                            wire:click="removeThumbnail"
-                                            type="button"
-                                        >
-                                            {{ __('Remove Thumbnail') }}
-                                        </flux:button>
-                                    </div>
+                                    <flux:file-item
+                                        :heading="$thumbnail->getClientOriginalName()"
+                                        :image="$thumbnail->temporaryUrl()"
+                                        :size="$thumbnail->getSize()"
+                                    >
+                                        <x-slot name="actions">
+                                            <flux:file-item.remove wire:click="removeThumbnail" />
+                                        </x-slot>
+                                    </flux:file-item>
                                 @endif
                             </flux:field>
 
