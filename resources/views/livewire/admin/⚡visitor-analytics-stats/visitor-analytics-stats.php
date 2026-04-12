@@ -354,45 +354,45 @@ new #[Lazy] class extends Component
      * Get top events' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
+     * @return \Illuminate\Support\Collection<int, stdClass>
      */
-    private function getTopEvents(Builder $query): Collection
+    private function getTopEvents(Builder $query): \Illuminate\Support\Collection
     {
         $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
-        return $query->select('event_name', DB::raw('COUNT(*) as count'))->whereIn('event_name', $validEventNames)->groupBy('event_name')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('event_name', DB::raw('COUNT(*) as count'))->whereIn('event_name', $validEventNames)->groupBy('event_name')->orderByDesc('count')->limit(10)->get();
     }
 
     /**
      * Get top browsers' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
+     * @return \Illuminate\Support\Collection<int, stdClass>
      */
-    private function getTopBrowsers(Builder $query): Collection
+    private function getTopBrowsers(Builder $query): \Illuminate\Support\Collection
     {
-        return $query->select('browser', DB::raw('COUNT(*) as count'))->whereNotNull('browser')->groupBy('browser')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('browser', DB::raw('COUNT(*) as count'))->whereNotNull('browser')->groupBy('browser')->orderByDesc('count')->limit(10)->get();
     }
 
     /**
      * Get top platforms statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
+     * @return \Illuminate\Support\Collection<int, stdClass>
      */
-    private function getTopPlatforms(Builder $query): Collection
+    private function getTopPlatforms(Builder $query): \Illuminate\Support\Collection
     {
-        return $query->select('platform', DB::raw('COUNT(*) as count'))->whereNotNull('platform')->groupBy('platform')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('platform', DB::raw('COUNT(*) as count'))->whereNotNull('platform')->groupBy('platform')->orderByDesc('count')->limit(10)->get();
     }
 
     /**
      * Get top countries' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, TrackingEvent>
+     * @return \Illuminate\Support\Collection<int, stdClass>
      */
-    private function getTopCountries(Builder $query): Collection
+    private function getTopCountries(Builder $query): \Illuminate\Support\Collection
     {
-        return $query->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))->whereNotNull('country_code')->groupBy('country_name', 'country_code')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))->whereNotNull('country_code')->groupBy('country_name', 'country_code')->orderByDesc('count')->limit(10)->get();
     }
 };
