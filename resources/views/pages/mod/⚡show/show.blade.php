@@ -206,6 +206,7 @@
                     :version-description-html="$displayVersion->description_html"
                     :version-updated-at="$displayVersion->updated_at"
                     :file-size="$displayVersion->formatted_file_size"
+                    :dependencies="$displayVersion->latestDependenciesResolved"
                 />
             @endif
 
@@ -345,6 +346,7 @@
                     :version-description-html="$displayVersion->description_html"
                     :version-updated-at="$displayVersion->updated_at"
                     :file-size="$displayVersion->formatted_file_size"
+                    :dependencies="$displayVersion->latestDependenciesResolved"
                 />
             @endif
 

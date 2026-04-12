@@ -9,6 +9,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Darker modal backdrop overlay */
+dialog[data-modal]::backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
 @theme {
     --font-sans:
         Figtree, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
