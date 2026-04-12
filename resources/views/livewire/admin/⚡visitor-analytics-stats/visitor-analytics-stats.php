@@ -150,14 +150,19 @@ new #[Lazy] class extends Component
             ->selectRaw('COUNT(DISTINCT ip) as unique_users')
             ->value('unique_users');
 
-        // Daily event counts for the chart
+        // Daily event counts for the chart — uses toBase() so the query builder
+        // returns stdClass rows instead of Eloquent models, giving PHPStan clean types.
         $dailyEvents = (clone $baseQuery)
+            ->toBase()
             ->selectRaw('DATE(created_at) as date')
             ->selectRaw('COUNT(*) as events')
             ->groupByRaw('DATE(created_at)')
             ->orderBy('date')
             ->get()
-            ->map(fn ($row): array => ['date' => $row->date, 'events' => (int) $row->events]) // @phpstan-ignore cast.int
+            ->map(fn (\stdClass $row): array => [
+                'date' => is_string($row->date) ? $row->date : '',
+                'events' => is_numeric($row->events) ? (int) $row->events : 0,
+            ])
             ->all();
 
         return [
