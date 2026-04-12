@@ -40,7 +40,7 @@ final class ForgeHeartbeat extends Command
         }
 
         try {
-            $response = Http::timeout(30)->get($url);
+            $response = Http::connectTimeout(5)->timeout(30)->get($url);
 
             if ($response->successful()) {
                 $message = sprintf('Successfully pinged %s - Status: %d', $url, $response->status());

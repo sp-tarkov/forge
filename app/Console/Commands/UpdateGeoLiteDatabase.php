@@ -70,7 +70,9 @@ final class UpdateGeoLiteDatabase extends Command
             $tempFile = $tempDir.'/GeoLite2-City.tar.gz';
 
             $response = Http::withBasicAuth($accountId, $licenseKey)
+                ->connectTimeout(10)
                 ->timeout(300)
+                ->retry(3, 1000, throw: false)
                 ->get($downloadUrl);
 
             throw_unless($response->successful(),
@@ -266,6 +268,7 @@ final class UpdateGeoLiteDatabase extends Command
 
         try {
             $response = Http::withBasicAuth($accountId, $licenseKey)
+                ->connectTimeout(5)
                 ->timeout(30)
                 ->head($url);
 

@@ -141,7 +141,7 @@ final class SocialiteService
         $disk = app()->isProduction() ? 'r2' : 'public';
 
         try {
-            $response = Http::get($avatarUrl);
+            $response = Http::connectTimeout(5)->timeout(30)->get($avatarUrl);
 
             if ($response->failed()) {
                 Log::error('Failed to download avatar', ['url' => $avatarUrl, 'status' => $response->status()]);

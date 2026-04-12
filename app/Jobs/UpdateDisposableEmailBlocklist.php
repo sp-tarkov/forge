@@ -50,7 +50,10 @@ final class UpdateDisposableEmailBlocklist implements ShouldBeUnique, ShouldQueu
     {
         try {
             // Download the latest blocklist
-            $response = Http::timeout(60)->get('https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/master/disposable_email_blocklist.conf');
+            $response = Http::connectTimeout(5)
+                ->timeout(60)
+                ->retry(3, 1000, throw: false)
+                ->get('https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/master/disposable_email_blocklist.conf');
 
             if (! $response->successful()) {
                 Log::error('Failed to download disposable email blocklist', ['status' => $response->status()]);

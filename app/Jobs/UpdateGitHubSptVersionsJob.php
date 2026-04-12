@@ -111,6 +111,9 @@ final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
         $url = 'https://api.github.com/repos/sp-tarkov/build/releases';
 
         $response = Http::acceptJson()
+            ->connectTimeout(5)
+            ->timeout(30)
+            ->retry(3, 100, throw: false)
             ->withUserAgent(Str::slug(config()->string('app.name').'-'.config()->string('app.env').'-'.config()->string('app.url')))
             ->withToken(config()->string('services.github.token'))
             ->get($url);

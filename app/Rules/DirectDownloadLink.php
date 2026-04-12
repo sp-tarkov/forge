@@ -41,7 +41,8 @@ final class DirectDownloadLink implements ValidationRule
 
         try {
             // Make HEAD request with redirects and reasonable timeout
-            $response = Http::timeout(30)
+            $response = Http::connectTimeout(5)
+                ->timeout(30)
                 ->withoutVerifying() // Some sites may have SSL issues
                 ->head($value);
 
