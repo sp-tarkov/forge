@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Override;
 
 /**
@@ -27,6 +28,16 @@ final class License extends Model
     use HasFactory;
 
     /**
+     * Get all licenses ordered by name, cached for 1 hour.
+     *
+     * @return Collection<int, self>
+     */
+    public static function cachedOrdered(): Collection
+    {
+        return Cache::flexible('licenses:ordered', [3600, 7200], fn (): Collection => self::query()->orderBy('name')->get());
+    }
+
+    /**
      * The relationship between a license and mod.
      *
      * @return HasMany<Mod, $this>
@@ -34,6 +45,16 @@ final class License extends Model
     public function mods(): HasMany
     {
         return $this->hasMany(Mod::class);
+    }
+
+    /**
+     * Boot the model.
+     */
+    #[Override]
+    protected static function booted(): void
+    {
+        self::saved(fn () => Cache::forget('licenses:ordered'));
+        self::deleted(fn () => Cache::forget('licenses:ordered'));
     }
 
     /**

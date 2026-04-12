@@ -100,12 +100,8 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $this->loadAvailableSptVersions();
 
-        // Fetch all mod categories
-        $this->availableCategories = Cache::flexible(
-            'mod-categories',
-            [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
-            fn(): Collection => ModCategory::query()->orderBy('title')->get(),
-        );
+        // Fetch all mod categories (cached in model)
+        $this->availableCategories = ModCategory::cachedOrdered();
 
         // Normalize URL parameters to ensure they're the correct type (handles malformed URLs)
         if (!is_string($this->query)) {

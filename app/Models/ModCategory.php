@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Override;
 
@@ -28,6 +29,16 @@ final class ModCategory extends Model
 {
     /** @use HasFactory<ModCategoryFactory> */
     use HasFactory;
+
+    /**
+     * Get all categories ordered by title, cached for 1 hour.
+     *
+     * @return Collection<int, self>
+     */
+    public static function cachedOrdered(): Collection
+    {
+        return Cache::flexible('mod-categories:ordered', [3600, 7200], fn (): Collection => self::query()->orderBy('title')->get());
+    }
 
     /**
      * The mods in this category.
@@ -56,6 +67,9 @@ final class ModCategory extends Model
                 $modCategory->slug = Str::slug($modCategory->title);
             }
         });
+
+        self::saved(fn () => Cache::forget('mod-categories:ordered'));
+        self::deleted(fn () => Cache::forget('mod-categories:ordered'));
     }
 
     /**

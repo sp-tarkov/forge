@@ -439,7 +439,7 @@ new #[Layout('layouts::base')] class extends Component {
     #[Computed]
     public function categories(): \Illuminate\Database\Eloquent\Collection
     {
-        return ModCategory::orderBy('title')->get();
+        return ModCategory::cachedOrdered();
     }
 
     /**

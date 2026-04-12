@@ -175,7 +175,7 @@ new #[Layout('layouts::base')] class extends Component {
     #[Computed]
     public function licenses(): \Illuminate\Database\Eloquent\Collection
     {
-        return License::orderBy('name')->get();
+        return License::cachedOrdered();
     }
 
     /**
