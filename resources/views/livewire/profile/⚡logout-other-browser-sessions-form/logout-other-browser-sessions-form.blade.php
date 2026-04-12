@@ -75,12 +75,13 @@
         @endif
 
         <div class="flex items-center mt-5">
-            <x-button
+            <flux:button
+                variant="primary"
                 wire:click="confirmLogout"
                 wire:loading.attr="disabled"
             >
                 {{ __('Log Out Other Browser Sessions') }}
-            </x-button>
+            </flux:button>
 
         </div>
 
@@ -130,10 +131,7 @@
                             wire:model="password"
                             wire:keydown.enter="logoutOtherBrowserSessions"
                         />
-                        <x-input-error
-                            for="password"
-                            class="mt-2"
-                        />
+                        <flux:error name="password" />
                     </div>
                 </div>
 

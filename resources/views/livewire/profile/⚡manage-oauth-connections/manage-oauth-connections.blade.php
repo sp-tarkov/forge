@@ -77,12 +77,13 @@
 
                     <div class="ms-auto">
                         @can('delete', $connection)
-                            <x-danger-button
+                            <flux:button
+                                variant="danger"
                                 wire:click="confirmConnectionDeletion({{ $connection->id }})"
                                 wire:loading.attr="disabled"
                             >
                                 {{ __('Remove') }}
-                            </x-danger-button>
+                            </flux:button>
                         @endcan
                     </div>
                 </div>

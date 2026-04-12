@@ -12,6 +12,7 @@
         >
             <flux:command>
                 <flux:command.input
+                    id="global-search"
                     wire:model.live.debounce.250ms="query"
                     x-on:focus="open = true"
                     x-on:input="open = true"

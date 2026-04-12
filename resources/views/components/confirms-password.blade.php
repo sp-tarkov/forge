@@ -64,10 +64,7 @@
                         wire:model="confirmablePassword"
                         wire:keydown.enter="confirmPassword"
                     />
-                    <x-input-error
-                        for="confirmable_password"
-                        class="mt-2"
-                    />
+                    <flux:error name="confirmable_password" />
                 </div>
             </div>
 

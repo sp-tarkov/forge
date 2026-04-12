@@ -23,35 +23,27 @@
         <x-slot name="form">
             <!-- Token Name -->
             <div class="col-span-6 sm:col-span-4">
-                <x-label
-                    for="name"
-                    value="{{ __('Token Name') }}"
-                />
-                <x-input
-                    id="name"
-                    type="text"
-                    class="mt-1 block w-full"
-                    wire:model="createApiTokenForm.name"
-                    autofocus
-                />
-                <x-input-error
-                    for="name"
-                    class="mt-2"
-                />
+                <flux:field>
+                    <flux:label for="name">{{ __('Token Name') }}</flux:label>
+                    <flux:input
+                        id="name"
+                        type="text"
+                        wire:model="createApiTokenForm.name"
+                        autofocus
+                    />
+                    <flux:error name="name" />
+                </flux:field>
             </div>
 
             <!-- Token Permissions -->
             @if (count($this->permissions) > 0)
                 <div class="col-span-6">
-                    <x-label
-                        for="permissions"
-                        value="{{ __('Permissions') }}"
-                    />
+                    <flux:label for="permissions">{{ __('Permissions') }}</flux:label>
 
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         @foreach ($this->permissions as $permission)
                             <label class="flex items-center">
-                                <x-checkbox
+                                <flux:checkbox
                                     wire:model="createApiTokenForm.permissions"
                                     :value="$permission"
                                     :disabled="$permission === 'read'"
@@ -65,9 +57,9 @@
         </x-slot>
 
         <x-slot name="actions">
-            <x-button>
+            <flux:button variant="primary">
                 {{ __('Create') }}
-            </x-button>
+            </flux:button>
         </x-slot>
     </x-form-section>
 

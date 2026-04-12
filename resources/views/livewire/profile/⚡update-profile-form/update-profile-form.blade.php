@@ -68,42 +68,32 @@
 
         <!-- Name -->
         <div class="col-span-6 sm:col-span-4">
-            <x-label
-                for="name"
-                value="{{ __('Name') }}"
-            />
-            <x-input
-                id="name"
-                type="text"
-                class="mt-1 block w-full"
-                wire:model="state.name"
-                required
-                autocomplete="off"
-            />
-            <x-input-error
-                for="name"
-                class="mt-2"
-            />
+            <flux:field>
+                <flux:label for="name">{{ __('Name') }}</flux:label>
+                <flux:input
+                    id="name"
+                    type="text"
+                    wire:model="state.name"
+                    required
+                    autocomplete="off"
+                />
+                <flux:error name="name" />
+            </flux:field>
         </div>
 
         <!-- Email -->
         <div class="col-span-6 sm:col-span-4">
-            <x-label
-                for="email"
-                value="{{ __('Email') }}"
-            />
-            <x-input
-                id="email"
-                type="email"
-                class="mt-1 block w-full"
-                wire:model="state.email"
-                required
-                autocomplete="off"
-            />
-            <x-input-error
-                for="email"
-                class="mt-2"
-            />
+            <flux:field>
+                <flux:label for="email">{{ __('Email') }}</flux:label>
+                <flux:input
+                    id="email"
+                    type="email"
+                    wire:model="state.email"
+                    required
+                    autocomplete="off"
+                />
+                <flux:error name="email" />
+            </flux:field>
 
             @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::emailVerification()) &&
                     !$this->user->hasVerifiedEmail())
@@ -129,10 +119,7 @@
 
         <!-- Timezone -->
         <div class="col-span-6 sm:col-span-4">
-            <x-label
-                for="timezone"
-                value="{{ __('Timezone') }}"
-            />
+            <flux:label for="timezone">{{ __('Timezone') }}</flux:label>
             <div class="flex items-center gap-2 mt-1">
                 <flux:select
                     wire:model="state.timezone"
@@ -155,10 +142,7 @@
 
         <!-- About -->
         <div class="col-span-6 sm:col-span-4">
-            <x-label
-                for="about"
-                value="{{ __('About Me') }}"
-            />
+            <flux:label for="about">{{ __('About Me') }}</flux:label>
             <textarea
                 id="about"
                 rows="6"
@@ -169,19 +153,17 @@
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {{ __('Basic markdown formatting is supported.') }}
             </p>
-            <x-input-error
-                for="about"
-                class="mt-2"
-            />
+            <flux:error name="about" />
         </div>
     </x-slot>
 
     <x-slot name="actions">
-        <x-button
+        <flux:button
+            variant="primary"
             wire:loading.attr="disabled"
             wire:target="photo,cover"
         >
             {{ __('Save') }}
-        </x-button>
+        </flux:button>
     </x-slot>
 </x-form-section>

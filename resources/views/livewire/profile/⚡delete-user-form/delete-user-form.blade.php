@@ -13,12 +13,13 @@
         </div>
 
         <div class="mt-5">
-            <x-danger-button
+            <flux:button
+                variant="danger"
                 wire:click="confirmUserDeletion"
                 wire:loading.attr="disabled"
             >
                 {{ __('Delete Account') }}
-            </x-danger-button>
+            </flux:button>
         </div>
 
         <!-- Delete User Confirmation Modal -->
@@ -84,10 +85,7 @@
                             wire:model="password"
                             wire:keydown.enter="deleteUser"
                         />
-                        <x-input-error
-                            for="password"
-                            class="mt-2"
-                        />
+                        <flux:error name="password" />
                     </div>
                 </div>
 

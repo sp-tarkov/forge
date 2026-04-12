@@ -16,64 +16,49 @@
             </div>
         @else
             <div class="col-span-6 sm:col-span-4">
-                <x-label
-                    for="current_password"
-                    value="{{ __('Current Password') }}"
-                />
-                <x-input
-                    id="current_password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    wire:model="state.current_password"
-                    autocomplete="off"
-                />
-                <x-input-error
-                    for="current_password"
-                    class="mt-2"
-                />
+                <flux:field>
+                    <flux:label for="current_password">{{ __('Current Password') }}</flux:label>
+                    <flux:input
+                        id="current_password"
+                        type="password"
+                        wire:model="state.current_password"
+                        autocomplete="off"
+                    />
+                    <flux:error name="current_password" />
+                </flux:field>
             </div>
         @endif
 
         <div class="col-span-6 sm:col-span-4">
-            <x-label
-                for="password"
-                value="{{ __('New Password') }}"
-            />
-            <x-input
-                id="password"
-                type="password"
-                class="mt-1 block w-full"
-                wire:model="state.password"
-                autocomplete="off"
-            />
-            <x-input-error
-                for="password"
-                class="mt-2"
-            />
+            <flux:field>
+                <flux:label for="password">{{ __('New Password') }}</flux:label>
+                <flux:input
+                    id="password"
+                    type="password"
+                    wire:model="state.password"
+                    autocomplete="off"
+                />
+                <flux:error name="password" />
+            </flux:field>
         </div>
 
         <div class="col-span-6 sm:col-span-4">
-            <x-label
-                for="password_confirmation"
-                value="{{ __('Confirm Password') }}"
-            />
-            <x-input
-                id="password_confirmation"
-                type="password"
-                class="mt-1 block w-full"
-                wire:model="state.password_confirmation"
-                autocomplete="off"
-            />
-            <x-input-error
-                for="password_confirmation"
-                class="mt-2"
-            />
+            <flux:field>
+                <flux:label for="password_confirmation">{{ __('Confirm Password') }}</flux:label>
+                <flux:input
+                    id="password_confirmation"
+                    type="password"
+                    wire:model="state.password_confirmation"
+                    autocomplete="off"
+                />
+                <flux:error name="password_confirmation" />
+            </flux:field>
         </div>
     </x-slot>
 
     <x-slot name="actions">
-        <x-button>
+        <flux:button variant="primary">
             {{ __('Save') }}
-        </x-button>
+        </flux:button>
     </x-slot>
 </x-form-section>

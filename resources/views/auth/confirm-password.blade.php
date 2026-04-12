@@ -16,36 +16,30 @@
             {{ __('Please confirm your password to continue.') }}
         </div>
 
-        <x-validation-errors class="mb-4" />
-
         <form
             method="POST"
             action="{{ route('password.confirm') }}"
         >
             @csrf
 
-            <div>
-                <x-label
-                    for="password"
-                    value="{{ __('Password') }}"
-                />
-                <x-input
+            <flux:field>
+                <flux:label for="password">{{ __('Password') }}</flux:label>
+                <flux:input
                     id="password"
-                    class="block mt-1 w-full"
                     type="password"
                     name="password"
                     required
                     autocomplete="current-password"
                     autofocus
                 />
-            </div>
+            </flux:field>
 
             <x-honeypot />
 
             <div class="flex justify-end mt-4">
-                <x-button class="ms-4">
+                <flux:button variant="primary" type="submit">
                     {{ __('Confirm') }}
-                </x-button>
+                </flux:button>
             </div>
         </form>
     </x-authentication-card>
