@@ -35,7 +35,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function getUser(int $userId): User
     {
-        return User::with(['following', 'followers'])->findOrFail($userId);
+        return User::findOrFail($userId);
     }
 
     /**
