@@ -834,9 +834,7 @@ it('sends mod notifications to the mods webhook url', function (): void {
     $job->handle();
 
     // Verify notification was sent to the mods webhook URL
-    Http::assertSent(function ($request): bool {
-        return str_contains($request->url(), 'test-mods');
-    });
+    Http::assertSent(fn ($request): bool => str_contains((string) $request->url(), 'test-mods'));
 });
 
 it('sends discord notification for newly published addons', function (): void {
@@ -1232,7 +1230,7 @@ it('sends addon notifications to the addons webhook url', function (): void {
             return false;
         }
 
-        return str_contains($request->url(), 'test-addons');
+        return str_contains((string) $request->url(), 'test-addons');
     });
 });
 
