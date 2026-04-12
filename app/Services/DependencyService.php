@@ -100,34 +100,31 @@ final class DependencyService
      */
     public function resolveModVersionIds(Collection $modVersionPairs): Collection
     {
-        /** @var Collection<int, int> $queriedModVersionIds */
-        $queriedModVersionIds = collect();
-
-        foreach ($modVersionPairs as $pair) {
-            $query = DB::table('mod_versions')
-                ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
-                ->where('mod_versions.version', $pair['version'])
-                ->whereNotNull('mod_versions.published_at')
-                ->where('mod_versions.published_at', '<=', now())
-                ->where('mod_versions.disabled', false)
-                ->whereNotNull('mods.published_at')
-                ->where('mods.published_at', '<=', now())
-                ->where('mods.disabled', false);
-
-            if ($pair['is_mod_id']) {
-                $query->where('mods.id', (int) $pair['identifier']);
-            } else {
-                $query->where('mods.guid', $pair['identifier']);
-            }
-
-            $versionId = $query->value('mod_versions.id');
-
-            if (is_int($versionId)) {
-                $queriedModVersionIds->push($versionId);
-            }
+        if ($modVersionPairs->isEmpty()) {
+            return collect();
         }
 
-        return $queriedModVersionIds;
+        return DB::table('mod_versions')
+            ->join('mods', 'mod_versions.mod_id', '=', 'mods.id')
+            ->where(function ($query) use ($modVersionPairs): void {
+                foreach ($modVersionPairs as $pair) {
+                    $query->orWhere(function ($q) use ($pair): void {
+                        $q->where('mod_versions.version', $pair['version']);
+                        if ($pair['is_mod_id']) {
+                            $q->where('mods.id', (int) $pair['identifier']);
+                        } else {
+                            $q->where('mods.guid', $pair['identifier']);
+                        }
+                    });
+                }
+            })
+            ->whereNotNull('mod_versions.published_at')
+            ->where('mod_versions.published_at', '<=', now())
+            ->where('mod_versions.disabled', false)
+            ->whereNotNull('mods.published_at')
+            ->where('mods.published_at', '<=', now())
+            ->where('mods.disabled', false)
+            ->pluck('mod_versions.id');
     }
 
     /**
@@ -138,34 +135,31 @@ final class DependencyService
      */
     public function resolveAddonVersionIds(Collection $addonVersionPairs): Collection
     {
-        /** @var Collection<int, int> $queriedAddonVersionIds */
-        $queriedAddonVersionIds = collect();
-
-        foreach ($addonVersionPairs as $pair) {
-            $query = DB::table('addon_versions')
-                ->join('addons', 'addon_versions.addon_id', '=', 'addons.id')
-                ->where('addon_versions.version', $pair['version'])
-                ->whereNotNull('addon_versions.published_at')
-                ->where('addon_versions.published_at', '<=', now())
-                ->where('addon_versions.disabled', false)
-                ->whereNotNull('addons.published_at')
-                ->where('addons.published_at', '<=', now())
-                ->where('addons.disabled', false);
-
-            if ($pair['is_addon_id']) {
-                $query->where('addons.id', (int) $pair['identifier']);
-            } else {
-                $query->where('addons.slug', $pair['identifier']);
-            }
-
-            $versionId = $query->value('addon_versions.id');
-
-            if (is_int($versionId)) {
-                $queriedAddonVersionIds->push($versionId);
-            }
+        if ($addonVersionPairs->isEmpty()) {
+            return collect();
         }
 
-        return $queriedAddonVersionIds;
+        return DB::table('addon_versions')
+            ->join('addons', 'addon_versions.addon_id', '=', 'addons.id')
+            ->where(function ($query) use ($addonVersionPairs): void {
+                foreach ($addonVersionPairs as $pair) {
+                    $query->orWhere(function ($q) use ($pair): void {
+                        $q->where('addon_versions.version', $pair['version']);
+                        if ($pair['is_addon_id']) {
+                            $q->where('addons.id', (int) $pair['identifier']);
+                        } else {
+                            $q->where('addons.slug', $pair['identifier']);
+                        }
+                    });
+                }
+            })
+            ->whereNotNull('addon_versions.published_at')
+            ->where('addon_versions.published_at', '<=', now())
+            ->where('addon_versions.disabled', false)
+            ->whereNotNull('addons.published_at')
+            ->where('addons.published_at', '<=', now())
+            ->where('addons.disabled', false)
+            ->pluck('addon_versions.id');
     }
 
     /**
