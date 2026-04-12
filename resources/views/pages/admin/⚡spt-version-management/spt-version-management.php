@@ -7,7 +7,6 @@ use App\Jobs\UpdateGitHubSptVersionsJob;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use App\Support\Version;
-use Closure;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -159,7 +158,7 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
                 'required',
                 'string',
                 'max:50',
-                function (string $attribute, mixed $value, Closure $fail): void {
+                function (string $attribute, mixed $value, \Closure $fail): void {
                     $versionString = is_string($value) ? $value : '';
                     try {
                         new Version($versionString);
