@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Override;
 use Shetabit\Visitor\Models\Visit;
@@ -303,15 +304,25 @@ final class Comment extends Model implements Reportable, Trackable
     }
 
     /**
-     * A recursive method to update the root_id of all descendants of this comment.
+     * Update the root_id of all descendants of this comment in a single query.
+     *
+     * Uses a recursive CTE to find all descendant IDs, then bulk-updates
+     * them instead of loading and saving each child individually.
      */
     public function updateChildRootIds(): void
     {
-        $this->replies()->each(function (Comment $reply): void {
-            $reply->root_id = $this->root_id;
-            $reply->saveQuietly();
-            $reply->updateChildRootIds();
-        });
+        DB::update(<<<'SQL'
+            UPDATE comments
+            SET root_id = ?
+            WHERE id IN (
+                WITH RECURSIVE descendants AS (
+                    SELECT id FROM comments WHERE parent_id = ?
+                    UNION ALL
+                    SELECT c.id FROM comments c INNER JOIN descendants d ON c.parent_id = d.id
+                )
+                SELECT id FROM descendants
+            )
+            SQL, [$this->root_id, $this->id]);
     }
 
     /**
@@ -546,6 +557,9 @@ final class Comment extends Model implements Reportable, Trackable
 
     /**
      * Resolve the root_id of this comment by traversing the parent_id chain in a single query.
+     *
+     * Uses a recursive CTE instead of a while-loop to avoid N+1 queries
+     * for deeply nested comment threads.
      */
     private function resolveRootId(): ?int
     {
@@ -553,25 +567,23 @@ final class Comment extends Model implements Reportable, Trackable
             return $this->id;
         }
 
-        $currentParentId = $this->parent_id;
-
-        while ($currentParentId !== null) {
-            $parent = self::query()
-                ->where('id', $currentParentId)
-                ->select(['id', 'parent_id'])
-                ->first();
-
-            if ($parent === null) {
-                return $currentParentId;
-            }
-
-            if ($parent->parent_id === null) {
-                return $parent->id;
-            }
-
-            $currentParentId = $parent->parent_id;
+        if ($this->parent_id === null) {
+            return null;
         }
 
-        return null;
+        $result = DB::select(<<<'SQL'
+            WITH RECURSIVE ancestors AS (
+                SELECT id, parent_id
+                FROM comments
+                WHERE id = ?
+                UNION ALL
+                SELECT c.id, c.parent_id
+                FROM comments c
+                INNER JOIN ancestors a ON a.parent_id = c.id
+            )
+            SELECT id FROM ancestors WHERE parent_id IS NULL LIMIT 1
+            SQL, [$this->parent_id]);
+
+        return $result[0]->id ?? $this->parent_id;
     }
 }
