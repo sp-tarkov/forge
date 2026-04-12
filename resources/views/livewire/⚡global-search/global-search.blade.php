@@ -104,14 +104,24 @@
                 {{-- Results --}}
                 @if (Str::length($this->query) > 0)
                     <div x-ref="resultsList" class="max-h-[60vh] overflow-y-auto">
-                        {{-- Loading State --}}
+                        {{-- Loading Skeleton --}}
                         <div
                             wire:loading.delay
                             wire:target="query"
-                            class="flex items-center justify-center gap-2 px-6 py-14"
+                            class="p-2"
                         >
-                            <flux:icon.arrow-path class="size-5 animate-spin text-zinc-500" />
-                            <span class="text-sm text-zinc-400">{{ __('Searching...') }}</span>
+                            <flux:skeleton.group animate="shimmer">
+                                @foreach (range(1, 6) as $i)
+                                    <div class="flex items-center gap-3 px-2 py-2.5">
+                                        <flux:skeleton class="size-8 rounded shrink-0" />
+                                        <div class="flex-1 space-y-1.5">
+                                            <flux:skeleton.line class="w-[{{ rand(40, 70) }}%]" />
+                                            <flux:skeleton.line class="w-[{{ rand(20, 40) }}%]" />
+                                        </div>
+                                        <flux:skeleton class="h-6 w-16 rounded-md shrink-0" />
+                                    </div>
+                                @endforeach
+                            </flux:skeleton.group>
                         </div>
 
                         {{-- Results Content --}}
