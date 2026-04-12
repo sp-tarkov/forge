@@ -32,7 +32,7 @@ final class ModRssFeedController extends Controller
         // Apply filters using the same ModFilter class
         $modFilter = new ModFilter($filters);
         $mods = $modFilter->apply()
-            ->with(['latestVersion', 'category'])
+            ->with(['latestVersion', 'category', 'owner'])
             ->limit(50)
             ->get();
 
