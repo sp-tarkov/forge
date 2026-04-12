@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The type of user follow relationship to display.
      * Currently, either "followers" or "following".
@@ -70,7 +72,7 @@ new class extends Component {
     #[Computed]
     public function followUsers(): Collection
     {
-        /** @var \Illuminate\Database\Eloquent\Relations\BelongsToMany<User, User> $relation */
+        /** @var BelongsToMany<User, User> $relation */
         $relation = $this->profileUser->{$this->relationship}();
 
         /** @var Collection<int, User> */
@@ -101,7 +103,7 @@ new class extends Component {
      */
     public function toggleFollowDialog(): void
     {
-        $this->showFollowDialog = !$this->showFollowDialog;
+        $this->showFollowDialog = ! $this->showFollowDialog;
     }
 
     /**
@@ -135,7 +137,7 @@ new class extends Component {
         $user->unfollow($userId);
 
         // Update the authFollowIds collection
-        $this->authFollowIds = $this->authFollowIds->reject(fn(int $id): bool => $id === $userId);
+        $this->authFollowIds = $this->authFollowIds->reject(fn (int $id): bool => $id === $userId);
 
         $this->dispatch('user-follow-change');
     }

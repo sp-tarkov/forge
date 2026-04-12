@@ -13,7 +13,8 @@ use Livewire\Component;
 /**
  * @property-read array<string, string>|null $ribbonData
  */
-new class extends Component {
+new class extends Component
+{
     /**
      * The mod version ID.
      */
@@ -53,7 +54,7 @@ new class extends Component {
                 $hasChanges = true;
             }
 
-            if (!$hasChanges) {
+            if (! $hasChanges) {
                 $this->skipRender();
             }
         } else {
@@ -69,29 +70,31 @@ new class extends Component {
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         $version = ModVersionModel::query()->with('mod')->find($this->versionId);
 
-        if (!$version) {
+        if (! $version) {
             return false;
         }
 
         // Check if mod relationship exists by checking the foreign key
-        if (!$version->mod_id) {
+        if (! $version->mod_id) {
             return false;
         }
 
         /** @var Mod|null $mod */
         $mod = $version->mod;
-        if (!$mod) {
+        if (! $mod) {
             return false;
         }
+
         if ($user->isModOrAdmin()) {
             return true;
         }
+
         return $mod->isAuthorOrOwner($user);
     }
 

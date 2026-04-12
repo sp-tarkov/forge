@@ -20,7 +20,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The ID of the reportable model.
      */
@@ -161,7 +162,7 @@ new class extends Component {
             'moderator_admin_ids',
             60, // Seconds
             /** @return array<int> */
-            fn() => User::query()
+            fn () => User::query()
                 ->whereHas('role', function (Builder $query): void {
                     $query->whereIn('name', ['moderator', 'staff']);
                 })

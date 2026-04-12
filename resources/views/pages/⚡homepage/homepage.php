@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use ModeratesMod;
 
     /**
@@ -52,7 +53,7 @@ new #[Layout('layouts::base')] class extends Component {
             ->whereFeatured(true)
             ->whereHas('versions', function (Builder $query): void {
                 $query->where('disabled', false);
-                if (!$this->viewDisabled) {
+                if (! $this->viewDisabled) {
                     $query->whereNotNull('published_at');
                 }
             })
@@ -60,7 +61,7 @@ new #[Layout('layouts::base')] class extends Component {
             ->inRandomOrder()
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn(Builder $q): Builder => $q->where('mods.disabled', false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->where('mods.disabled', false));
 
         return $query->get();
     }
@@ -75,7 +76,7 @@ new #[Layout('layouts::base')] class extends Component {
         $query = Mod::query()
             ->whereHas('versions', function (Builder $query): void {
                 $query->where('disabled', false);
-                if (!$this->viewDisabled) {
+                if (! $this->viewDisabled) {
                     $query->whereNotNull('published_at');
                 }
             })
@@ -83,7 +84,7 @@ new #[Layout('layouts::base')] class extends Component {
             ->latest()
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn(Builder $q): Builder => $q->where('mods.disabled', false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->where('mods.disabled', false));
 
         return $query->get();
     }
@@ -102,10 +103,10 @@ new #[Layout('layouts::base')] class extends Component {
                     ->on('latest_version.mod_id', '=', 'mods.id')
                     ->whereNotNull('latest_version.published_at')
                     ->where('latest_version.disabled', false)
-                    ->whereExists(function (\Illuminate\Database\Query\Builder $query): void {
-                        $query->select(DB::raw(1))->from('mod_version_spt_version')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_version_spt_version.mod_version_id', 'latest_version.id')->unless($this->viewDisabled, fn(\Illuminate\Database\Query\Builder $q) => $q->where('spt_versions.version', '!=', '0.0.0'));
+                    ->whereExists(function (Illuminate\Database\Query\Builder $query): void {
+                        $query->select(DB::raw(1))->from('mod_version_spt_version')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_version_spt_version.mod_version_id', 'latest_version.id')->unless($this->viewDisabled, fn (Illuminate\Database\Query\Builder $q) => $q->where('spt_versions.version', '!=', '0.0.0'));
                     })
-                    ->where('latest_version.created_at', '=', function (\Illuminate\Database\Query\Builder $query): void {
+                    ->where('latest_version.created_at', '=', function (Illuminate\Database\Query\Builder $query): void {
                         $query->select(DB::raw('MAX(mv2.created_at)'))->from('mod_versions as mv2')->whereColumn('mv2.mod_id', 'mods.id')->whereNotNull('mv2.published_at')->where('mv2.disabled', false);
                     });
             })
@@ -113,8 +114,8 @@ new #[Layout('layouts::base')] class extends Component {
             ->orderByDesc('latest_version.created_at')
             ->limit(6);
 
-        $query->unless($this->viewDisabled, fn(Builder $q): Builder => $q->where('mods.disabled', false));
+        $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->where('mods.disabled', false));
 
         return $query->get();
     }
-}; 
+};

@@ -10,7 +10,8 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * Current count of unread notifications for the authenticated user.
      */
@@ -38,18 +39,18 @@ new class extends Component {
     public function reviewNotification(string $notificationId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $notification = $user->notifications()->find($notificationId);
 
-        if (!$notification) {
+        if (! $notification) {
             return;
         }
 
         // Mark as read if not already
-        if (!$notification->read_at) {
+        if (! $notification->read_at) {
             $notification->markAsRead();
             $this->loadUnreadCount();
         }
@@ -68,13 +69,13 @@ new class extends Component {
     public function markAsRead(string $notificationId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $notification = $user->notifications()->find($notificationId);
 
-        if ($notification && !$notification->read_at) {
+        if ($notification && ! $notification->read_at) {
             $notification->markAsRead();
             $this->loadUnreadCount();
         }
@@ -86,7 +87,7 @@ new class extends Component {
     public function markAllAsRead(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -101,14 +102,14 @@ new class extends Component {
     public function deleteNotification(string $notificationId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $notification = $user->notifications()->find($notificationId);
 
         if ($notification) {
-            $wasUnread = !$notification->read_at;
+            $wasUnread = ! $notification->read_at;
             $notification->delete();
 
             if ($wasUnread) {
@@ -123,7 +124,7 @@ new class extends Component {
     public function deleteAll(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -153,7 +154,7 @@ new class extends Component {
     private function loadUnreadCount(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -169,7 +170,7 @@ new class extends Component {
     private function fetchNotifications(): Collection
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return new Collection();
         }
 

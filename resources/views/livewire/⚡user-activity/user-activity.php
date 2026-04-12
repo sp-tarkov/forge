@@ -12,7 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The user whose activity is being displayed.
      */
@@ -47,7 +48,7 @@ new class extends Component {
 
         // Eagerly load the mod relationship without global scopes for ModVersion visitables only
         $events->each(function (TrackingEvent $event): void {
-            if ($event->visitable instanceof ModVersion && !$event->visitable->relationLoaded('mod')) {
+            if ($event->visitable instanceof ModVersion && ! $event->visitable->relationLoaded('mod')) {
                 $event->visitable->loadMissing([
                     'mod' => function (BelongsTo $relation): void {
                         $relation->getQuery()->withoutGlobalScopes();
@@ -59,7 +60,7 @@ new class extends Component {
         // If not authenticated or not viewing own profile and not a moderator/admin, filter private events
         $authUser = auth()->user();
         if (! $authUser || ($authUser->id !== $this->user->id && ! $authUser->isModOrAdmin())) {
-            return $events->reject(fn(TrackingEvent $event): bool => $this->shouldEventBePrivate($event));
+            return $events->reject(fn (TrackingEvent $event): bool => $this->shouldEventBePrivate($event));
         }
 
         return $events;
@@ -95,9 +96,9 @@ new class extends Component {
     public function hasContext(TrackingEvent $event): bool
     {
         $eventType = $this->getEventType($event);
-        $shouldShowContext = !$eventType || $eventType->shouldShowContext();
+        $shouldShowContext = ! $eventType || $eventType->shouldShowContext();
 
-        return $shouldShowContext && !empty($event->event_context);
+        return $shouldShowContext && ! empty($event->event_context);
     }
 
     /**
@@ -117,7 +118,7 @@ new class extends Component {
     private function shouldEventBePrivate(TrackingEvent $event): bool
     {
         // Check if the event type itself is private
-        if (!$event->event_name) {
+        if (! $event->event_name) {
             return false;
         }
 
@@ -133,6 +134,7 @@ new class extends Component {
                 return true;
             }
         }
+
         return $event->visitable instanceof Mod && (is_null($event->visitable->published_at) || $event->visitable->published_at > now());
     }
 };

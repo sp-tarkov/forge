@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The current peak visitor count.
      */

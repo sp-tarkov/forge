@@ -15,7 +15,7 @@ $wire.on('join-presence-channel', () => {
             users.push({
                 id: member.id,
                 name: member.info.name,
-                profile_photo_url: member.info.profile_photo_url
+                profile_photo_url: member.info.profile_photo_url,
             });
         });
         $wire.handleUsersHere(users);
@@ -38,9 +38,7 @@ $wire.on('join-presence-channel', () => {
 });
 
 // Handle debounced offline check
-$wire.on('debounce-user-offline', ({
-    userId
-}) => {
+$wire.on('debounce-user-offline', ({ userId }) => {
     // Clear existing timer if any
     if (offlineTimers.has(userId)) {
         clearTimeout(offlineTimers.get(userId));
@@ -49,7 +47,7 @@ $wire.on('debounce-user-offline', ({
     // Set new timer
     const timerId = setTimeout(() => {
         $wire.dispatch('check-user-offline', {
-            userId
+            userId,
         });
         offlineTimers.delete(userId);
     }, offlineDeboune);
@@ -58,9 +56,7 @@ $wire.on('debounce-user-offline', ({
 });
 
 // Set up private channel for user-specific events
-$wire.on('set-user-id', ({
-    userId
-}) => {
+$wire.on('set-user-id', ({ userId }) => {
     if (!window.Echo || !userId) return;
 
     // Clean up existing channel

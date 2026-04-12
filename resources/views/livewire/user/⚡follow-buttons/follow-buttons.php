@@ -5,7 +5,8 @@ declare(strict_types=1);
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The ID of the user whose profile is being viewed.
      */

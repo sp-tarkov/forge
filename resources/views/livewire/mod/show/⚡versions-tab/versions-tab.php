@@ -12,7 +12,8 @@ use Livewire\Attributes\Lazy;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
     use ModeratesModVersion;
     use WithPagination;
 
@@ -65,7 +66,7 @@ new #[Lazy] class extends Component {
                     $query->whereHas('addon', function (Builder $addonQuery) use ($user): void {
                         $addonQuery->whereNull('detached_at');
 
-                        if (!$user?->isModOrAdmin()) {
+                        if (! $user?->isModOrAdmin()) {
                             $addonQuery->where('disabled', false)->whereNotNull('published_at')->where('published_at', '<=', now());
                         }
                     });

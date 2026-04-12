@@ -12,7 +12,8 @@ use Livewire\Attributes\Lazy;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
     use ModeratesAddon;
     use WithPagination;
 
@@ -54,7 +55,7 @@ new #[Lazy] class extends Component {
             ->with(['owner', 'additionalAuthors', 'latestVersion', 'mod:id,name,slug', 'mod.latestVersion:id,mod_id,version_major,version_minor,version_patch', 'versions.compatibleModVersions'])
             ->orderBy('addons.downloads', 'desc');
 
-        if (!$viewer?->can('viewDisabledUserAddons', $user)) {
+        if (! $viewer?->can('viewDisabledUserAddons', $user)) {
             $query->where('addons.disabled', false)->whereNotNull('addons.published_at')->where('addons.published_at', '<=', now());
         }
 

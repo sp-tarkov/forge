@@ -8,7 +8,8 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The user account that is being viewed.
      */

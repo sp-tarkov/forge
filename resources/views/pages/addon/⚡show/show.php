@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use ModeratesAddon;
 
     /**
@@ -44,13 +45,15 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
+
         // Only show warnings to privileged users (owners, authors, mods, admins)
         if ($user->isModOrAdmin()) {
             return true;
         }
+
         return $this->addon->isAuthorOrOwner($user);
     }
 
@@ -87,7 +90,7 @@ new #[Layout('layouts::base')] class extends Component {
         }
 
         // Check if the addon itself is unpublished
-        if (!$this->addon->published_at) {
+        if (! $this->addon->published_at) {
             $warnings['unpublished'] = 'This addon is unpublished. Users will be unable to view this addon until it is published.';
         }
 
@@ -98,7 +101,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Check if parent mod is publicly visible
         $mod = $this->addon->mod;
-        if ($mod && !$mod->isPubliclyVisible()) {
+        if ($mod && ! $mod->isPubliclyVisible()) {
             $warnings['parent_mod_not_visible'] = 'Users will be unable to view this addon until the parent mod is publicly available.';
         }
 
@@ -113,7 +116,7 @@ new #[Layout('layouts::base')] class extends Component {
         return $this->addon
             ->versions()
             ->when(
-                !auth()
+                ! auth()
                     ->user()
                     ?->can('viewAny', [AddonVersion::class, $this->addon]),
                 function (Builder $query): void {
@@ -131,6 +134,22 @@ new #[Layout('layouts::base')] class extends Component {
         $user = auth()->user();
 
         return $this->addon->comments()->visibleToUser($user)->count();
+    }
+
+    /**
+     * Get view data.
+     *
+     * @return array<string, mixed>
+     */
+    public function with(): array
+    {
+        return [
+            'addon' => $this->addon,
+            'shouldShowWarnings' => $this->shouldShowWarnings(),
+            'warningMessages' => $this->getWarningMessages(),
+            'versionCount' => $this->getVersionCount(),
+            'commentCount' => $this->getCommentCount(),
+        ];
     }
 
     /**
@@ -152,21 +171,5 @@ new #[Layout('layouts::base')] class extends Component {
         if ($addon->slug !== $slug) {
             $this->redirectRoute('addon.show', [$addon->id, $addon->slug], navigate: true);
         }
-    }
-
-    /**
-     * Get view data.
-     *
-     * @return array<string, mixed>
-     */
-    public function with(): array
-    {
-        return [
-            'addon' => $this->addon,
-            'shouldShowWarnings' => $this->shouldShowWarnings(),
-            'warningMessages' => $this->getWarningMessages(),
-            'versionCount' => $this->getVersionCount(),
-            'commentCount' => $this->getCommentCount(),
-        ];
     }
 };

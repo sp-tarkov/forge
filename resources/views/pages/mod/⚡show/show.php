@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use ModeratesAddon;
     use ModeratesMod;
 
@@ -46,13 +47,15 @@ new #[Layout('layouts::base')] class extends Component {
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
+
         // Only show warnings to privileged users (owners, authors, mods, admins)
         if ($user->isModOrAdmin()) {
             return true;
         }
+
         return $this->mod->isAuthorOrOwner($user);
     }
 
@@ -148,7 +151,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         return $this->mod
             ->addons()
-            ->when(!$user?->isModOrAdmin(), function (Builder $query): void {
+            ->when(! $user?->isModOrAdmin(), function (Builder $query): void {
                 $query->where('disabled', false)->whereNotNull('published_at')->where('published_at', '<=', now());
             })
             ->whereNull('detached_at')
@@ -175,6 +178,41 @@ new #[Layout('layouts::base')] class extends Component {
     public function requiresCheatNotice(): bool
     {
         return $this->mod->cheat_notice;
+    }
+
+    /**
+     * Get the display version - prefers modern version but falls back to legacy.
+     */
+    public function getDisplayVersion(): ?ModVersion
+    {
+        if ($this->mod->latestVersion) {
+            return $this->mod->latestVersion;
+        }
+
+        return $this->mod->latestLegacyVersion;
+    }
+
+    /**
+     * Get view data.
+     *
+     * @return array<string, mixed>
+     */
+    public function with(): array
+    {
+        $displayVersion = $this->getDisplayVersion();
+
+        return [
+            'mod' => $this->mod,
+            'displayVersion' => $displayVersion,
+            'shouldShowWarnings' => $this->shouldShowWarnings(),
+            'warningMessages' => $this->getWarningMessages(),
+            'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
+            'requiresCheatNotice' => $this->requiresCheatNotice(),
+            'versionCount' => $this->getVersionCount(),
+            'commentCount' => $this->getCommentCount(),
+            'addonCount' => $this->getAddonCount(),
+            'fikaStatus' => $this->mod->getOverallFikaCompatibility(),
+        ];
     }
 
     /**
@@ -215,40 +253,5 @@ new #[Layout('layouts::base')] class extends Component {
 
         // Check for legacy versions (no SPT constraint)
         return $this->mod->versions()->legacyPubliclyVisible()->exists();
-    }
-
-    /**
-     * Get the display version - prefers modern version but falls back to legacy.
-     */
-    public function getDisplayVersion(): ?ModVersion
-    {
-        if ($this->mod->latestVersion) {
-            return $this->mod->latestVersion;
-        }
-
-        return $this->mod->latestLegacyVersion;
-    }
-
-    /**
-     * Get view data.
-     *
-     * @return array<string, mixed>
-     */
-    public function with(): array
-    {
-        $displayVersion = $this->getDisplayVersion();
-
-        return [
-            'mod' => $this->mod,
-            'displayVersion' => $displayVersion,
-            'shouldShowWarnings' => $this->shouldShowWarnings(),
-            'warningMessages' => $this->getWarningMessages(),
-            'requiresProfileBindingNotice' => $this->requiresProfileBindingNotice(),
-            'requiresCheatNotice' => $this->requiresCheatNotice(),
-            'versionCount' => $this->getVersionCount(),
-            'commentCount' => $this->getCommentCount(),
-            'addonCount' => $this->getAddonCount(),
-            'fikaStatus' => $this->mod->getOverallFikaCompatibility(),
-        ];
     }
 };

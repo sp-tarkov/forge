@@ -18,7 +18,8 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use ModeratesMod;
     use WithPagination;
 
@@ -104,19 +105,19 @@ new #[Layout('layouts::base')] class extends Component {
         $this->availableCategories = ModCategory::cachedOrdered();
 
         // Normalize URL parameters to ensure they're the correct type (handles malformed URLs)
-        if (!is_string($this->query)) {
+        if (! is_string($this->query)) {
             $this->query = '';
         }
 
-        if (!is_string($this->featured)) {
+        if (! is_string($this->featured)) {
             $this->featured = 'include';
         }
 
-        if (!is_string($this->category)) {
+        if (! is_string($this->category)) {
             $this->category = '';
         }
 
-        if (!is_bool($this->fikaCompatibility)) {
+        if (! is_bool($this->fikaCompatibility)) {
             $this->fikaCompatibility = false;
         }
 
@@ -180,7 +181,7 @@ new #[Layout('layouts::base')] class extends Component {
         }
 
         // Find the closest allowed value.
-        $this->perPage = $allowed->sortBy(fn(int $item): int => abs($item - $value))->first() ?? 12;
+        $this->perPage = $allowed->sortBy(fn (int $item): int => abs($item - $value))->first() ?? 12;
     }
 
     /**
@@ -188,7 +189,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function updatedOrder(string $value): void
     {
-        if (!in_array($value, ['created', 'updated', 'downloaded'], true)) {
+        if (! in_array($value, ['created', 'updated', 'downloaded'], true)) {
             $this->order = 'created';
         }
     }
@@ -266,7 +267,7 @@ new #[Layout('layouts::base')] class extends Component {
         $includeLegacy = $this->sptVersions === 'all' || (is_array($this->sptVersions) && in_array('legacy', $this->sptVersions)) || $this->sptVersions === 'legacy';
 
         // Eager load appropriate version relationship
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Mod> $modCollection */
+        /** @var Collection<int, Mod> $modCollection */
         $modCollection = $paginatedMods->getCollection();
         if ($includeLegacy) {
             $modCollection->loadMissing(['latestVersion', 'latestLegacyVersion']);
@@ -291,7 +292,7 @@ new #[Layout('layouts::base')] class extends Component {
         $this->availableSptVersions = Cache::flexible(
             $cacheKey,
             [5 * 60, 10 * 60], // 5 minutes stale, 10 minutes expire
-            fn(): Collection => SptVersion::getVersionsForLastThreeMinors($isAdmin),
+            fn (): Collection => SptVersion::getVersionsForLastThreeMinors($isAdmin),
         );
 
         // Clear the computed property cache
@@ -366,4 +367,4 @@ new #[Layout('layouts::base')] class extends Component {
             $this->redirectRoute('mods', ['page' => $paginatedMods->lastPage()]);
         }
     }
-}; 
+};

@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Models\UserBlock;
 use App\Services\UserBlockingService;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component {
+new class extends Component
+{
     use WithPagination;
 
     /**
@@ -23,7 +26,7 @@ new class extends Component {
         $blockedUser = $currentUser->blocking()->where('blocked_id', $userId)->first()?->blocked;
 
         if ($blockedUser) {
-            if (!$currentUser->can('unblock', $blockedUser)) {
+            if (! $currentUser->can('unblock', $blockedUser)) {
                 return;
             }
 
@@ -37,13 +40,13 @@ new class extends Component {
     /**
      * Get the blocked users with pagination
      *
-     * @return \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\UserBlock>
+     * @return LengthAwarePaginator<int, UserBlock>
      */
-    public function getBlockedUsersProperty(): \Illuminate\Pagination\LengthAwarePaginator
+    public function getBlockedUsersProperty(): LengthAwarePaginator
     {
         $user = Auth::user();
         if (! $user) {
-            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+            return new LengthAwarePaginator([], 0, 20);
         }
 
         return $user->blocking()->with('blocked')->paginate(20);

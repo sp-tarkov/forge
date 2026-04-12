@@ -13,7 +13,8 @@ use Livewire\Component;
  * @property-read array<string, string>|null $ribbonData
  * @property-read bool $canSeeWarnings
  */
-new class extends Component {
+new class extends Component
+{
     /**
      * The mod ID.
      */
@@ -83,7 +84,7 @@ new class extends Component {
                 $hasChanges = true;
             }
 
-            if (!$hasChanges) {
+            if (! $hasChanges) {
                 $this->skipRender();
             }
         } else {
@@ -99,18 +100,20 @@ new class extends Component {
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         $mod = ModModel::query()->find($this->modId);
 
-        if (!$mod) {
+        if (! $mod) {
             return false;
         }
+
         if ($user->isModOrAdmin()) {
             return true;
         }
+
         return $mod->isAuthorOrOwner($user);
     }
 
@@ -137,11 +140,11 @@ new class extends Component {
 
         // Check if mod is not publicly visible due to missing or unpublished versions or invalid SPT compatibility
         // Only show this to privileged users who can see warnings
-        if (!$this->publiclyVisible && $this->canSeeWarnings) {
+        if (! $this->publiclyVisible && $this->canSeeWarnings) {
             return ['color' => 'amber', 'label' => __('Unpublished')];
         }
 
-        if ($this->featured && !$this->homepageFeatured) {
+        if ($this->featured && ! $this->homepageFeatured) {
             return ['color' => 'sky', 'label' => __('Featured!')];
         }
 

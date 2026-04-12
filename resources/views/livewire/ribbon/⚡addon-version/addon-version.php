@@ -14,7 +14,8 @@ use Livewire\Component;
  * @property-read array<string, string>|null $ribbonData
  * @property-read bool $canSeeWarnings
  */
-new class extends Component {
+new class extends Component
+{
     /**
      * The addon version ID.
      */
@@ -54,7 +55,7 @@ new class extends Component {
                 $hasChanges = true;
             }
 
-            if (!$hasChanges) {
+            if (! $hasChanges) {
                 $this->skipRender();
             }
         } else {
@@ -70,29 +71,31 @@ new class extends Component {
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         $version = AddonVersionModel::query()->with('addon')->find($this->versionId);
 
-        if (!$version) {
+        if (! $version) {
             return false;
         }
 
         // Check if addon relationship exists by checking the foreign key
-        if (!$version->addon_id) {
+        if (! $version->addon_id) {
             return false;
         }
 
         /** @var Addon|null $addon */
         $addon = $version->addon;
-        if (!$addon) {
+        if (! $addon) {
             return false;
         }
+
         if ($user->isModOrAdmin()) {
             return true;
         }
+
         return $addon->isAuthorOrOwner($user);
     }
 
@@ -105,7 +108,7 @@ new class extends Component {
     public function ribbonData(): ?array
     {
         // Only show visibility warnings to privileged users
-        if (!$this->canSeeWarnings) {
+        if (! $this->canSeeWarnings) {
             return null;
         }
 

@@ -12,7 +12,8 @@ use Livewire\Attributes\Lazy;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
     use ModeratesAddon;
     use WithPagination;
 

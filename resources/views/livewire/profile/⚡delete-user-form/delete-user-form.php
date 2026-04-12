@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * Indicates if user deletion is being confirmed.
      */
@@ -45,7 +46,7 @@ new class extends Component {
         /** @var User $user */
         $user = Auth::user();
 
-        if (!Hash::check($this->password, (string) $user->password)) {
+        if (! Hash::check($this->password, (string) $user->password)) {
             throw ValidationException::withMessages([
                 'password' => [__('This password does not match our records.')],
             ]);

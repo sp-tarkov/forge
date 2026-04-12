@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component {
+new class extends Component
+{
     use WithPagination;
 
     /**
@@ -44,7 +45,7 @@ new class extends Component {
     public function markAsRead(string $notificationId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -62,7 +63,7 @@ new class extends Component {
     public function markAllAsRead(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -78,13 +79,13 @@ new class extends Component {
     public function deleteNotification(string $notificationId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $notification = $user->notifications()->find($notificationId);
         if ($notification) {
-            $wasUnread = !$notification->read_at;
+            $wasUnread = ! $notification->read_at;
             $notification->delete();
             if ($wasUnread) {
                 $this->clearUnreadCountCache();
@@ -99,7 +100,7 @@ new class extends Component {
     public function deleteAll(): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
@@ -114,18 +115,18 @@ new class extends Component {
     public function reviewNotification(string $notificationId): void
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
         $notification = $user->notifications()->find($notificationId);
 
-        if (!$notification) {
+        if (! $notification) {
             return;
         }
 
         // Mark as read if not already
-        if (!$notification->read_at) {
+        if (! $notification->read_at) {
             $notification->markAsRead();
             $this->clearUnreadCountCache();
             $this->loadUnreadCount();
@@ -147,11 +148,11 @@ new class extends Component {
         $userId = Auth::id();
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
-        $this->unreadCount = (int) Cache::remember(sprintf('user:%s:unread-notification-count', $userId), 30, fn(): int => $user->unreadNotifications()->count());
+        $this->unreadCount = (int) Cache::remember(sprintf('user:%s:unread-notification-count', $userId), 30, fn (): int => $user->unreadNotifications()->count());
     }
 
     /**
@@ -159,7 +160,7 @@ new class extends Component {
      */
     private function clearUnreadCountCache(): void
     {
-        Cache::forget('user:' . Auth::id() . ':unread-notification-count');
+        Cache::forget('user:'.Auth::id().':unread-notification-count');
     }
 
     /**
@@ -187,8 +188,7 @@ new class extends Component {
     private function fetchNotifications(): LengthAwarePaginator
     {
         $user = Auth::user();
-        if (!$user) {
-            /** @var LengthAwarePaginator<int, DatabaseNotification> */
+        if (! $user) {
             return new LengthAwarePaginator([], 0, 8, null, ['pageName' => 'notificationPage']);
         }
 

@@ -13,7 +13,8 @@ use Livewire\Component;
  * @property-read array<string, string>|null $ribbonData
  * @property-read bool $canSeeWarnings
  */
-new class extends Component {
+new class extends Component
+{
     /**
      * The addon ID.
      */
@@ -66,7 +67,7 @@ new class extends Component {
                 $hasChanges = true;
             }
 
-            if (!$hasChanges) {
+            if (! $hasChanges) {
                 $this->skipRender();
             }
         } else {
@@ -82,18 +83,20 @@ new class extends Component {
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
         $addon = AddonModel::query()->find($this->addonId);
 
-        if (!$addon) {
+        if (! $addon) {
             return false;
         }
+
         if ($user->isModOrAdmin()) {
             return true;
         }
+
         return $addon->isAuthorOrOwner($user);
     }
 
@@ -120,7 +123,7 @@ new class extends Component {
 
         // Check if addon is not publicly visible due to missing or unpublished versions
         // Only show this to privileged users who can see warnings
-        if (!$this->publiclyVisible && $this->canSeeWarnings) {
+        if (! $this->publiclyVisible && $this->canSeeWarnings) {
             return ['color' => 'amber', 'label' => __('Unpublished')];
         }
 

@@ -15,7 +15,8 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
     use WithPagination;
 
     /**
@@ -70,7 +71,7 @@ new #[Lazy] class extends Component {
 
         return $this->mod
             ->addons()
-            ->when(!$user?->isModOrAdmin(), function (Builder $query): void {
+            ->when(! $user?->isModOrAdmin(), function (Builder $query): void {
                 $query->where('disabled', false)->whereNotNull('published_at')->where('published_at', '<=', now());
             })
             ->whereNull('detached_at')
@@ -149,7 +150,7 @@ new #[Lazy] class extends Component {
                 'additionalAuthors',
                 'latestVersion',
                 'mod.latestVersion:id,mod_id,version,version_major,version_minor,version_patch',
-                'latestVersion.compatibleModVersions' => fn(Relation $query): mixed => $query
+                'latestVersion.compatibleModVersions' => fn (Relation $query): mixed => $query
                     ->select(['mod_versions.id', 'mod_versions.mod_id', 'mod_versions.version', 'mod_versions.version_major', 'mod_versions.version_minor', 'mod_versions.version_patch'])
                     ->where('mod_id', $mod->id)
                     ->orderBy('version_major', 'desc')
@@ -167,7 +168,7 @@ new #[Lazy] class extends Component {
                         });
                 });
             })
-            ->when(!$user?->isModOrAdmin(), function (Builder $query): void {
+            ->when(! $user?->isModOrAdmin(), function (Builder $query): void {
                 $query->where('disabled', false)->whereNotNull('published_at')->where('published_at', '<=', now());
             })
             ->whereNull('detached_at')

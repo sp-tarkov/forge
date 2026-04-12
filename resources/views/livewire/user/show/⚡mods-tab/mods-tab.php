@@ -13,7 +13,8 @@ use Livewire\Attributes\Lazy;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
     use ModeratesMod;
     use WithPagination;
 
@@ -55,7 +56,7 @@ new #[Lazy] class extends Component {
             ->with(['owner:id,name', 'additionalAuthors:id,name', 'latestVersion', 'latestVersion.latestSptVersion'])
             ->latest();
 
-        if (!$viewer?->can('viewDisabledUserMods', $user)) {
+        if (! $viewer?->can('viewDisabledUserMods', $user)) {
             $query->whereDisabled(false)->whereHas('versions', function (Builder $versionQuery): void {
                 $versionQuery->where('disabled', false)->whereNotNull('published_at');
             });

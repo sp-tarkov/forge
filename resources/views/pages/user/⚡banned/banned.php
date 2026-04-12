@@ -5,7 +5,8 @@ declare(strict_types=1);
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     /**
      * Return data for the view.
      *
@@ -17,4 +18,4 @@ new #[Layout('layouts::base')] class extends Component {
             'banExpiresAt' => session('ban_expires_at'),
         ];
     }
-}; 
+};

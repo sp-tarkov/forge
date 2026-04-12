@@ -12,7 +12,8 @@ use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 use Laravel\Fortify\Features;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     use ConfirmsPasswords;
 
     /**

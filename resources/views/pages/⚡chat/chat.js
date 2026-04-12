@@ -1,7 +1,5 @@
 let currentConversationChannel = null;
-$wire.on('join-conversation-presence', ({
-    conversationHash
-}) => {
+$wire.on('join-conversation-presence', ({ conversationHash }) => {
     if (!window.Echo || !conversationHash) return;
     if (currentConversationChannel) {
         window.Echo.leave(currentConversationChannel);
@@ -14,9 +12,7 @@ $wire.on('join-conversation-presence', ({
 });
 
 // Handle leaving presence channel when archiving or clearing conversation
-$wire.on('leave-conversation-presence', ({
-    conversationHash
-}) => {
+$wire.on('leave-conversation-presence', ({ conversationHash }) => {
     if (!window.Echo || !conversationHash) return;
     if (currentConversationChannel === `presence.conversation.${conversationHash}`) {
         window.Echo.leave(currentConversationChannel);

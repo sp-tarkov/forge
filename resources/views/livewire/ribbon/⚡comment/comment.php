@@ -13,7 +13,8 @@ use Livewire\Component;
 /**
  * @property-read array<string, string>|null $ribbonData
  */
-new class extends Component {
+new class extends Component
+{
     /**
      * The comment ID.
      */
@@ -58,7 +59,7 @@ new class extends Component {
     #[Computed]
     public function ribbonData(): ?array
     {
-        if (!$this->canSeeRibbon) {
+        if (! $this->canSeeRibbon) {
             return null;
         }
 

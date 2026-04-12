@@ -9,6 +9,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -17,7 +18,8 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     use ModeratesMod;
     use WithPagination;
 
@@ -69,7 +71,7 @@ new #[Layout('layouts::base')] class extends Component {
             return;
         }
 
-        $this->perPage = $allowed->sortBy(fn(int $item): int => abs($item - $value))->first() ?? 12;
+        $this->perPage = $allowed->sortBy(fn (int $item): int => abs($item - $value))->first() ?? 12;
     }
 
     /**
@@ -80,16 +82,16 @@ new #[Layout('layouts::base')] class extends Component {
     public function with(): array
     {
         $showDisabled = auth()->user()?->isModOrAdmin() ?? false;
-        $previousViewedAt = $this->previousViewedAt ? \Illuminate\Support\Facades\Date::parse($this->previousViewedAt) : null;
+        $previousViewedAt = $this->previousViewedAt ? Date::parse($this->previousViewedAt) : null;
 
         $mods = Mod::query()
             ->select('mods.*')
-            ->unless($showDisabled, fn(Builder $query) => $query->where('mods.disabled', false))
+            ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false))
             ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
-                $query->select(DB::raw(1))->from('mod_versions')->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_versions.mod_id', 'mods.id')->unless($showDisabled, fn(QueryBuilder $query) => $query->where('mod_versions.disabled', false))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))->unless($showDisabled, fn(QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
+                $query->select(DB::raw(1))->from('mod_versions')->join('mod_version_spt_version', 'mod_versions.id', '=', 'mod_version_spt_version.mod_version_id')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_versions.mod_id', 'mods.id')->unless($showDisabled, fn (QueryBuilder $query) => $query->where('mod_versions.disabled', false))->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('mod_versions.published_at'))->unless($showDisabled, fn (QueryBuilder $query) => $query->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
             })
             // Filter to only show mods created since the user's last visit (if they've visited before)
-            ->when($previousViewedAt, fn(Builder $query) => $query->where('mods.created_at', '>', $previousViewedAt))
+            ->when($previousViewedAt, fn (Builder $query) => $query->where('mods.created_at', '>', $previousViewedAt))
             ->latest('mods.created_at')
             ->paginate($this->perPage);
 
@@ -101,7 +103,7 @@ new #[Layout('layouts::base')] class extends Component {
     /**
      * Check if the current page is greater than the last page. Redirect if it is.
      *
-     * @param LengthAwarePaginator<int, Mod> $paginatedMods
+     * @param  LengthAwarePaginator<int, Mod>  $paginatedMods
      */
     private function redirectOutOfBoundsPage(LengthAwarePaginator $paginatedMods): void
     {
@@ -109,4 +111,4 @@ new #[Layout('layouts::base')] class extends Component {
             $this->redirectRoute('mods.recently-created', ['page' => $paginatedMods->lastPage()]);
         }
     }
-}; 
+};

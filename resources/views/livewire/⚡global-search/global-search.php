@@ -10,8 +10,11 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Session;
 use Livewire\Component;
+use Meilisearch\Client;
+use Meilisearch\Contracts\SearchQuery;
 
-new class extends Component {
+new class extends Component
+{
     /**
      * The search query.
      */
@@ -40,9 +43,9 @@ new class extends Component {
      */
     public function toggleTypeVisibility(string $type): void
     {
-        $typeProperty = 'is' . ucfirst($type) . 'CatVisible';
+        $typeProperty = 'is'.ucfirst($type).'CatVisible';
         if (property_exists($this, $typeProperty)) {
-            $this->$typeProperty = !$this->$typeProperty;
+            $this->$typeProperty = ! $this->$typeProperty;
         }
     }
 
@@ -69,7 +72,7 @@ new class extends Component {
     #[Computed]
     public function totalCount(): int
     {
-        return (int) collect($this->results)->reduce(fn(int $carry, Collection $result): int => $carry + $result->count(), 0);
+        return (int) collect($this->results)->reduce(fn (int $carry, Collection $result): int => $carry + $result->count(), 0);
     }
 
     /**
@@ -102,21 +105,21 @@ new class extends Component {
      */
     protected function executeMeilisearchMultiSearch(string $query): array
     {
-        $client = resolve(\Meilisearch\Client::class);
+        $client = resolve(Client::class);
 
         /** @var string $prefix */
         $prefix = config('scout.prefix');
 
         $queries = [
-            new \Meilisearch\Contracts\SearchQuery()
-                ->setIndexUid($prefix . new Mod()->getTable())
+            new SearchQuery()
+                ->setIndexUid($prefix.new Mod()->getTable())
                 ->setQuery($query)
                 ->setShowRankingScore(true),
-            new \Meilisearch\Contracts\SearchQuery()
-                ->setIndexUid($prefix . new Addon()->getTable())
+            new SearchQuery()
+                ->setIndexUid($prefix.new Addon()->getTable())
                 ->setQuery($query)
                 ->setShowRankingScore(true),
-            new \Meilisearch\Contracts\SearchQuery()->setIndexUid($prefix . new User()->getTable())->setQuery($query),
+            new SearchQuery()->setIndexUid($prefix.new User()->getTable())->setQuery($query),
         ];
 
         /** @var array{results: array<int, array{hits: array<int, mixed>}>} $response */

@@ -10,7 +10,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Mchev\Banhammer\Models\Ban;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     /**
      * The user being viewed.
      */
@@ -35,7 +36,7 @@ new #[Layout('layouts::base')] class extends Component {
      */
     public function getUser(int $userId): User
     {
-        return User::findOrFail($userId);
+        return User::query()->findOrFail($userId);
     }
 
     /**
@@ -47,7 +48,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $query = $this->user->ownedAndAuthoredMods();
 
-        if (!$viewer?->can('viewDisabledUserMods', $this->user)) {
+        if (! $viewer?->can('viewDisabledUserMods', $this->user)) {
             $query->whereDisabled(false)->whereHas('versions', function (Builder $versionQuery): void {
                 $versionQuery->where('disabled', false)->whereNotNull('published_at');
             });
@@ -65,7 +66,7 @@ new #[Layout('layouts::base')] class extends Component {
 
         $query = $this->user->ownedAndAuthoredAddons();
 
-        if (!$viewer?->can('viewDisabledUserAddons', $this->user)) {
+        if (! $viewer?->can('viewDisabledUserAddons', $this->user)) {
             $query->where('addons.disabled', false)->whereNotNull('addons.published_at')->where('addons.published_at', '<=', now());
         }
 
@@ -88,6 +89,22 @@ new #[Layout('layouts::base')] class extends Component {
                 $query->whereNull('expired_at')->orWhere('expired_at', '>', now());
             })
             ->first();
+    }
+
+    /**
+     * Get view data.
+     *
+     * @return array<string, mixed>
+     */
+    public function with(): array
+    {
+        return [
+            'user' => $this->user,
+            'openGraphImage' => $this->user->profile_photo_path,
+            'modCount' => $this->getModCount(),
+            'addonCount' => $this->getAddonCount(),
+            'activeBan' => $this->getActiveBan(),
+        ];
     }
 
     /**
@@ -139,21 +156,5 @@ new #[Layout('layouts::base')] class extends Component {
                 'slug' => $user->slug,
             ]);
         }
-    }
-
-    /**
-     * Get view data.
-     *
-     * @return array<string, mixed>
-     */
-    public function with(): array
-    {
-        return [
-            'user' => $this->user,
-            'openGraphImage' => $this->user->profile_photo_path,
-            'modCount' => $this->getModCount(),
-            'addonCount' => $this->getAddonCount(),
-            'activeBan' => $this->getActiveBan(),
-        ];
     }
 };

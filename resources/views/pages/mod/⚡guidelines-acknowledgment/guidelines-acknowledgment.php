@@ -6,7 +6,8 @@ use App\Models\Mod;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new #[Layout('layouts::base')] class extends Component {
+new #[Layout('layouts::base')] class extends Component
+{
     /**
      * Mount the component.
      */

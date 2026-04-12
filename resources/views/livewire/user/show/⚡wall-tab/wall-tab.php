@@ -7,7 +7,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
     /**
      * The user ID whose wall is being shown.
      */
