@@ -12,6 +12,7 @@ use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
 use App\Traits\HasReports;
+use Carbon\CarbonImmutable;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -27,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -61,9 +61,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $addons_disabled
  * @property bool $profile_binding_notice_disabled
  * @property bool $cheat_notice
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $published_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property CarbonImmutable|null $published_at
  * @property-read string $detail_url
  * @property-read string $description_html
  * @property-read bool $addons_enabled

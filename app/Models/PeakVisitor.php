@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Events\PeakVisitorUpdated;
+use Carbon\CarbonImmutable;
 use Database\Factories\PeakVisitorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
  * @property int $count
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 final class PeakVisitor extends Model
 {

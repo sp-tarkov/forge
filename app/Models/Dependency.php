@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Observers\DependencyObserver;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\DependencyFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -23,8 +23,8 @@ use Override;
  * @property int $dependable_id
  * @property int $dependent_mod_id
  * @property string $constraint
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read ModVersion|AddonVersion $dependable
  * @property-read Mod $dependentMod
  * @property-read Collection<int, DependencyResolved> $dependenciesResolved

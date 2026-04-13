@@ -13,7 +13,7 @@ use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
 use App\Traits\HasProfilePhoto;
 use App\Traits\HasReports;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -49,21 +49,21 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $discord_id
  * @property string $name
  * @property string $email
- * @property Carbon|null $email_verified_at
+ * @property CarbonImmutable|null $email_verified_at
  * @property string|null $password
  * @property string $about
  * @property int|null $user_role_id
  * @property string|null $profile_photo_path
  * @property string|null $cover_photo_path
  * @property string|null $remember_token
- * @property Carbon|null $last_seen_at
- * @property Carbon|null $mods_updated_viewed_at
- * @property Carbon|null $mods_created_viewed_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property CarbonImmutable|null $last_seen_at
+ * @property CarbonImmutable|null $mods_updated_viewed_at
+ * @property CarbonImmutable|null $mods_created_viewed_at
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property Carbon|null $two_factor_confirmed_at
+ * @property CarbonImmutable|null $two_factor_confirmed_at
  * @property string|null $timezone
  * @property bool $email_comment_notifications_enabled
  * @property bool $email_reply_notifications_enabled

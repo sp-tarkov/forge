@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
+use Carbon\CarbonImmutable;
 use Database\Factories\TrackingEventFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -42,8 +42,8 @@ use Override;
  * @property null|string $latitude
  * @property null|string $longitude
  * @property string|null $timezone
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read null|string $event_context attribute
  * @property-read string $event_display_name attribute
  * @property-read null|string $event_url attribute

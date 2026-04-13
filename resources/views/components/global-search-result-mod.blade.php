@@ -6,8 +6,8 @@
     tabindex="{{ $tabindex ?? 0 }}"
 >
     @empty($result['thumbnail'])
-        <div class="size-8 shrink-0 self-center flex items-center justify-center rounded bg-zinc-800">
-            <flux:icon.cube-transparent class="size-4 text-zinc-500" />
+        <div class="size-8 shrink-0 self-center flex items-center justify-center rounded bg-gray-800">
+            <flux:icon.cube-transparent class="size-4 text-gray-500" />
         </div>
     @else
         <img
@@ -19,7 +19,7 @@
     <div class="grow flex flex-col min-w-0">
         <span class="text-sm font-medium truncate">{{ $result['name'] }}</span>
         @if (isset($result['downloads']))
-            <span class="text-xs text-zinc-400">
+            <span class="text-xs text-gray-400">
                 {{ number_format($result['downloads']) }} downloads
             </span>
         @endif

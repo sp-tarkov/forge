@@ -9,7 +9,6 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\AddonVersionObserver;
 use App\Support\Version;
-use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Database\Factories\AddonVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
@@ -44,14 +43,14 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $etag
  * @property string|null $last_modified_header
  * @property VerificationStatus|null $verification_status
- * @property CarbonImmutable|null $last_verified_at
+ * @property CarbonImmutableImmutable|null $last_verified_at
  * @property string $mod_version_constraint
  * @property int $downloads
  * @property bool $disabled
  * @property bool $discord_notification_sent
- * @property Carbon|null $published_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $published_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string $description_html
  * @property-read string|null $formatted_file_size
  * @property-read Addon $addon

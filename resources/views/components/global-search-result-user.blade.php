@@ -17,7 +17,7 @@
     <div class="grow flex flex-col min-w-0">
         <span class="text-sm font-medium truncate">{{ $result['name'] }}</span>
         @if (($result['mods_count'] ?? 0) > 0 || ($result['addons_count'] ?? 0) > 0)
-            <span class="text-xs text-zinc-400">
+            <span class="text-xs text-gray-400">
                 @if (($result['mods_count'] ?? 0) > 0)
                     {{ $result['mods_count'] }} {{ Str::plural('mod', $result['mods_count']) }}
                 @endif

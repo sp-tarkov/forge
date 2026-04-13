@@ -5,10 +5,10 @@ declare(strict_types=1);
 use App\Enums\FikaCompatibility;
 use App\Models\License;
 use App\Models\Mod;
-use Illuminate\Support\Facades\Cache;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 describe('mod display', function (): void {

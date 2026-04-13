@@ -25,7 +25,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Override;
@@ -46,13 +45,13 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $root_id
  * @property SpamStatus $spam_status
  * @property array<string, mixed>|null $spam_metadata
- * @property Carbon|CarbonImmutable|null $spam_checked_at
+ * @property CarbonImmutable|null $spam_checked_at
  * @property int $spam_recheck_count
  * @property CarbonImmutable|null $edited_at
- * @property Carbon|null $deleted_at
- * @property Carbon|null $pinned_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $deleted_at
+ * @property CarbonImmutable|null $pinned_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property string $body
  * @property string $body_html
  * @property-read User $user

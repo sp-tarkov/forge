@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\VisitorFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,9 +18,9 @@ use Override;
  *
  * @property int $id
  * @property int|null $peak_count
- * @property Carbon|null $peak_date
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $peak_date
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
 #[Table(name: 'visitor_peaks')]
 final class Visitor extends Model
@@ -54,7 +54,7 @@ final class Visitor extends Model
     /**
      * Get peak visitor statistics.
      *
-     * @return array{count: int, date: Carbon|null}
+     * @return array{count: int, date: CarbonImmutable|null}
      */
     public static function getPeakStats(): array
     {
