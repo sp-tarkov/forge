@@ -120,7 +120,7 @@ final class AddonVersionController extends Controller
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all());
 
-        $addonVersions = $queryBuilder->paginate($request->integer('per_page', 12));
+        $addonVersions = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(AddonVersionResource::collection($addonVersions));
     }

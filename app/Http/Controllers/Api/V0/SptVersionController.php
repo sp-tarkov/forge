@@ -116,7 +116,7 @@ final class SptVersionController extends Controller
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all());
 
-        $sptVersions = $queryBuilder->paginate($request->integer('per_page', 12));
+        $sptVersions = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(SptVersionResource::collection($sptVersions));
     }

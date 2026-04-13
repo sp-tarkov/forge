@@ -356,7 +356,7 @@ final class ModController extends Controller
             ->withSorts($request->string('sort')->explode(',')->all())
             ->withSearch($request->string('query')->toString());
 
-        $mods = $queryBuilder->paginate($request->integer('per_page', 12));
+        $mods = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(ModResource::collection($mods));
     }

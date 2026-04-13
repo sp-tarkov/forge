@@ -259,7 +259,7 @@ final class ModVersionController extends Controller
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all());
 
-        $modVersions = $queryBuilder->paginate($request->integer('per_page', 12));
+        $modVersions = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(ModVersionResource::collection($modVersions));
     }

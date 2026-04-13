@@ -138,7 +138,7 @@ final class AddonController extends Controller
             ->withSorts($request->string('sort')->explode(',')->all())
             ->withSearch($request->string('query')->toString());
 
-        $addons = $queryBuilder->paginate($request->integer('per_page', 12));
+        $addons = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(AddonResource::collection($addons));
     }
