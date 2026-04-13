@@ -63,12 +63,12 @@ final class PublishedScope implements Scope
                         });
                     } elseif ($model instanceof ModVersion) {
                         $modIds = $this->getAuthoredModIds();
-                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($modIds): void {
+                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($model, $modIds): void {
                             $ownerQuery->whereHas('mod', function (Builder $modQuery): void {
                                 $modQuery->where('owner_id', Auth::id());
                             });
                             if ($modIds !== []) {
-                                $ownerQuery->orWhereIn('mod_id', $modIds);
+                                $ownerQuery->orWhereIn($model->getTable().'.mod_id', $modIds);
                             }
                         });
                     } elseif ($model instanceof Addon) {
@@ -81,12 +81,12 @@ final class PublishedScope implements Scope
                         });
                     } elseif ($model instanceof AddonVersion) {
                         $addonIds = $this->getAuthoredAddonIds();
-                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($addonIds): void {
+                        $unpublishedQuery->where(function (Builder $ownerQuery) use ($model, $addonIds): void {
                             $ownerQuery->whereHas('addon', function (Builder $addonQuery): void {
                                 $addonQuery->where('owner_id', Auth::id());
                             });
                             if ($addonIds !== []) {
-                                $ownerQuery->orWhereIn('addon_id', $addonIds);
+                                $ownerQuery->orWhereIn($model->getTable().'.addon_id', $addonIds);
                             }
                         });
                     }
