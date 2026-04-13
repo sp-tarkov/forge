@@ -8,6 +8,7 @@
         {{-- Trigger Button --}}
         <flux:input
             as="button"
+            size="sm"
             placeholder="{{ __('Search...') }}"
             icon="magnifying-glass"
             kbd="⌘K"
