@@ -211,17 +211,6 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     }
 
     /**
-     * Get all conversations for the user.
-     *
-     * @return HasMany<Conversation, $this>
-     */
-    public function conversations(): HasMany
-    {
-        return $this->hasMany(Conversation::class, 'user1_id')
-            ->orWhere('user2_id', $this->id);
-    }
-
-    /**
      * Get all messages sent by the user.
      *
      * @return HasMany<Message, $this>
