@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -354,9 +354,9 @@ new #[Lazy] class extends Component
      * Get top events' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return \Illuminate\Support\Collection<int, stdClass>
+     * @return Collection<int, stdClass>
      */
-    private function getTopEvents(Builder $query): \Illuminate\Support\Collection
+    private function getTopEvents(Builder $query): Collection
     {
         $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
@@ -367,9 +367,9 @@ new #[Lazy] class extends Component
      * Get top browsers' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return \Illuminate\Support\Collection<int, stdClass>
+     * @return Collection<int, stdClass>
      */
-    private function getTopBrowsers(Builder $query): \Illuminate\Support\Collection
+    private function getTopBrowsers(Builder $query): Collection
     {
         return $query->toBase()->select('browser', DB::raw('COUNT(*) as count'))->whereNotNull('browser')->groupBy('browser')->orderByDesc('count')->limit(10)->get();
     }
@@ -378,9 +378,9 @@ new #[Lazy] class extends Component
      * Get top platforms statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return \Illuminate\Support\Collection<int, stdClass>
+     * @return Collection<int, stdClass>
      */
-    private function getTopPlatforms(Builder $query): \Illuminate\Support\Collection
+    private function getTopPlatforms(Builder $query): Collection
     {
         return $query->toBase()->select('platform', DB::raw('COUNT(*) as count'))->whereNotNull('platform')->groupBy('platform')->orderByDesc('count')->limit(10)->get();
     }
@@ -389,9 +389,9 @@ new #[Lazy] class extends Component
      * Get top countries' statistics.
      *
      * @param  Builder<TrackingEvent>  $query
-     * @return \Illuminate\Support\Collection<int, stdClass>
+     * @return Collection<int, stdClass>
      */
-    private function getTopCountries(Builder $query): \Illuminate\Support\Collection
+    private function getTopCountries(Builder $query): Collection
     {
         return $query->toBase()->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))->whereNotNull('country_code')->groupBy('country_name', 'country_code')->orderByDesc('count')->limit(10)->get();
     }

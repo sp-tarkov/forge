@@ -102,6 +102,7 @@
             "npx npm-check-updates -u"
         ],
         "sendit": [
+            "Composer\\Config::disableProcessTimeout",
             "composer lint",
             "composer rector-fix",
             "composer coverage",
@@ -131,7 +132,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --queue=long,default --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#86efac,#fde047\" \"php artisan serve\" \"php artisan queue:listen --queue=long,default --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" \"php artisan queue:listen --queue=verification-detection --tries=2 --timeout=60\" \"php artisan queue:listen --queue=verification --tries=2 --timeout=900\" --names=server,queue,logs,vite,verification-detection,verification"
         ]
     },
     "extra": {

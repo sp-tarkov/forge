@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\VerificationStatus;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\AddonVersionObserver;
 use App\Support\Version;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\AddonVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -21,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
@@ -38,6 +41,10 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $description
  * @property string $link
  * @property int|null $content_length
+ * @property string|null $etag
+ * @property string|null $last_modified_header
+ * @property VerificationStatus|null $verification_status
+ * @property CarbonImmutable|null $last_verified_at
  * @property string $mod_version_constraint
  * @property int $downloads
  * @property bool $disabled
@@ -50,6 +57,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Addon $addon
  * @property-read Collection<int, ModVersion> $compatibleModVersions
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
+ * @property-read Collection<int, VerificationResult> $verificationResults
+ * @property-read VerificationResult|null $latestVerificationResult
  * @property-read Collection<int, Dependency> $dependencies
  * @property-read Collection<int, ModVersion> $dependenciesResolved
  * @property-read Collection<int, ModVersion> $latestDependenciesResolved
@@ -92,6 +101,27 @@ final class AddonVersion extends Model
     {
         return $this->morphMany(VirusTotalLink::class, 'linkable')
             ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
+    }
+
+    /**
+     * The relationship between an addon version and its verification results.
+     *
+     * @return MorphMany<VerificationResult, $this>
+     */
+    public function verificationResults(): MorphMany
+    {
+        return $this->morphMany(VerificationResult::class, 'verifiable')->latest();
+    }
+
+    /**
+     * The relationship between an addon version and its latest verification result.
+     *
+     * @return MorphOne<VerificationResult, $this>
+     */
+    public function latestVerificationResult(): MorphOne
+    {
+        return $this->morphOne(VerificationResult::class, 'verifiable')
+            ->latestOfMany();
     }
 
     /**
@@ -257,6 +287,8 @@ final class AddonVersion extends Model
             'content_length' => 'integer',
             'downloads' => 'integer',
             'disabled' => 'boolean',
+            'verification_status' => VerificationStatus::class,
+            'last_verified_at' => 'datetime',
             'discord_notification_sent' => 'boolean',
             'published_at' => 'datetime',
         ];

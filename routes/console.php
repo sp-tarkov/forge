@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Console\Commands\CleanupOldNotificationLogs;
 use App\Console\Commands\ForgeHeartbeat;
 use App\Console\Commands\UpdateGeoLiteDatabase;
+use App\Jobs\DetectDownloadChangesJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Jobs\SendDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
@@ -21,6 +22,10 @@ Schedule::job(new ProcessPinnedModVersionPublishDates)->everyMinute()->onOneServ
 
 if (config('app.forge_heartbeat_url')) {
     Schedule::command(ForgeHeartbeat::class)->everyMinute()->onOneServer()->withoutOverlapping();
+}
+
+if (config('verification.enabled')) {
+    Schedule::job(new DetectDownloadChangesJob)->twiceDaily(6, 18)->onOneServer()->withoutOverlapping();
 }
 
 if (app()->isLocal() && config('telescope.enabled')) {

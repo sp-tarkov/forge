@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verification Enabled
+    |--------------------------------------------------------------------------
+    |
+    | Toggle the file verification pipeline on or off. When disabled, no
+    | change detection or verification jobs will be dispatched.
+    |
+    */
+
+    'enabled' => env('VERIFICATION_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Docker Image
+    |--------------------------------------------------------------------------
+    |
+    | The Docker image used to extract and inspect mod archives in an isolated,
+    | network-less container. Published automatically via GitHub Actions.
+    |
+    */
+
+    'docker_image' => env('VERIFICATION_DOCKER_IMAGE', 'ghcr.io/sp-tarkov/forge/verification:latest'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum File Size
+    |--------------------------------------------------------------------------
+    |
+    | Files larger than this threshold (in bytes) will be skipped during
+    | verification. Default: 500 MB.
+    |
+    */
+
+    'max_file_size' => (int) env('VERIFICATION_MAX_FILE_SIZE', 500 * 1024 * 1024),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Queue Name
+    |--------------------------------------------------------------------------
+    |
+    | The queue name used for verification jobs. Must match the Horizon
+    | supervisor configuration in config/horizon.php.
+    |
+    */
+
+    'queue' => env('VERIFICATION_QUEUE', 'verification'),
+
+    'change_detection_queue' => env('VERIFICATION_CHANGE_DETECTION_QUEUE', 'verification-detection'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum Extraction Ratio
+    |--------------------------------------------------------------------------
+    |
+    | The maximum allowed ratio of extracted size to archive size. Archives
+    | that exceed this ratio are flagged as potential zip bombs. A ratio of
+    | 100 means the extracted content can be at most 100x the archive size.
+    |
+    */
+
+    'max_extraction_ratio' => (int) env('VERIFICATION_MAX_EXTRACTION_RATIO', 100),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum Extracted Size
+    |--------------------------------------------------------------------------
+    |
+    | Absolute cap on total extracted content size (in bytes), regardless of
+    | ratio. Default: 2 GB.
+    |
+    */
+
+    'max_extracted_size' => (int) env('VERIFICATION_MAX_EXTRACTED_SIZE', 2 * 1024 * 1024 * 1024),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Timeouts
+    |--------------------------------------------------------------------------
+    |
+    | Timeout values (in seconds) for each stage of the verification pipeline.
+    |
+    */
+
+    'timeouts' => [
+        'download' => (int) env('VERIFICATION_DOWNLOAD_TIMEOUT', 300),
+        'container' => (int) env('VERIFICATION_CONTAINER_TIMEOUT', 600),
+    ],
+
+];

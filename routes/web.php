@@ -159,6 +159,7 @@ Route::middleware('auth.banned')->group(function (): void {
             Route::livewire('/admin/user-management', 'pages::admin.user-management')->name('admin.user-management');
             Route::livewire('/admin/role-management', 'pages::admin.role-management')->name('admin.role-management');
             Route::livewire('/admin/spt-versions', 'pages::admin.spt-version-management')->name('admin.spt-versions');
+            Route::livewire('/admin/file-verification', 'pages::admin.file-verification')->name('admin.file-verification');
         });
     });
 

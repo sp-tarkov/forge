@@ -1,0 +1,374 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Jobs;
+
+use App\Enums\VerificationStatus;
+use App\Exceptions\VerificationFailedException;
+use App\Models\AddonVersion;
+use App\Models\ModVersion;
+use App\Models\VerificationResult;
+use App\Services\Verification\DownloadSafetyService;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
+use Throwable;
+
+/**
+ * Downloads a mod/addon archive on the host, then runs an ephemeral Docker container to extract it and report the file
+ * tree. The container has no network access and is destroyed after each job.
+ */
+#[Timeout(900)]
+#[Backoff([30, 60])]
+#[Tries(2)]
+final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
+{
+    use Queueable;
+
+    /** @var array<string, mixed> */
+    private array $details = [];
+
+    private ?string $tempFilePath = null;
+
+    public function __construct(
+        public VerificationResult $verificationResult,
+    ) {
+        $this->onQueue(config()->string('verification.queue', 'verification'));
+    }
+
+    /**
+     * The unique ID for preventing duplicate jobs per verifiable entity.
+     */
+    public function uniqueId(): string
+    {
+        return $this->verificationResult->verifiable_type.':'.$this->verificationResult->verifiable_id;
+    }
+
+    public function handle(DownloadSafetyService $safetyService): void
+    {
+        try {
+            $this->verificationResult->update([
+                'status' => VerificationStatus::Running,
+                'started_at' => now(),
+            ]);
+
+            $this->validateDownloadUrl($safetyService);
+            $this->downloadArchive();
+            $this->extractAndAnalyze();
+        } catch (VerificationFailedException) {
+            // Expected failure. Just clean up.
+        } catch (Throwable $throwable) {
+            $this->markAsError($throwable);
+
+            throw $throwable;
+        } finally {
+            $this->cleanup();
+        }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        $this->cleanup();
+
+        $this->verificationResult->update([
+            'status' => VerificationStatus::Error,
+            'failure_reason' => $exception?->getMessage() ?? 'Job failed',
+            'completed_at' => now(),
+        ]);
+
+        $this->updateVersionStatus(VerificationStatus::Error);
+
+        Log::error('RunVerificationJob failed', [
+            'verification_result_id' => $this->verificationResult->id,
+            'error' => $exception?->getMessage(),
+        ]);
+    }
+
+    /**
+     * Validate the download URL is safe before downloading (SSRF protection, direct link, size pre-check).
+     */
+    private function validateDownloadUrl(DownloadSafetyService $safetyService): void
+    {
+        $maxFileSize = config()->integer('verification.max_file_size', 500 * 1024 * 1024);
+        $safetyCheck = $safetyService->validate($this->verificationResult->download_url, $maxFileSize);
+        $this->details['safety_check'] = $safetyCheck;
+
+        if ($safetyCheck['safe'] === false) {
+            $this->markAsFailed(
+                failureReason: $safetyCheck['error'] ?? 'URL safety check failed',
+                downloadOk: false,
+            );
+        }
+    }
+
+    /**
+     * Download the archive file to a temporary path on the host.
+     */
+    private function downloadArchive(): void
+    {
+        $maxFileSize = config()->integer('verification.max_file_size', 500 * 1024 * 1024);
+
+        $downloadStart = microtime(true);
+        $outcome = $this->performDownload($this->verificationResult->download_url, $maxFileSize);
+        $this->details['download'] = [
+            'duration_seconds' => round(microtime(true) - $downloadStart, 2),
+            ...$outcome,
+        ];
+
+        if ($outcome['ok'] === false) {
+            $this->markAsFailed(
+                failureReason: is_string($outcome['error'] ?? null) ? $outcome['error'] : 'Download failed',
+                downloadOk: false,
+            );
+        }
+
+        $this->verificationResult->update([
+            'download_ok' => true,
+            'downloaded_size' => $outcome['size'] ?? null,
+            'downloaded_sha256' => $outcome['sha256'] ?? null,
+        ]);
+    }
+
+    /**
+     * Run the ephemeral Docker container to extract the archive and analyze the results.
+     */
+    private function extractAndAnalyze(): void
+    {
+        $archiveSize = $this->verificationResult->downloaded_size ?? 0;
+
+        $extractionStart = microtime(true);
+        $outcome = $this->runContainer($archiveSize);
+        $this->details['container'] = [
+            'duration_seconds' => round(microtime(true) - $extractionStart, 2),
+        ];
+
+        if ($outcome['ok'] === false) {
+            $this->markAsFailed(
+                failureReason: is_string($outcome['error'] ?? null) ? $outcome['error'] : 'Container failed',
+                archiveOk: false,
+            );
+        }
+
+        /** @var array<string, mixed> $containerData */
+        $containerData = $outcome['data'] ?? [];
+        $archiveOk = (bool) ($containerData['archive_ok'] ?? false);
+        /** @var list<string> $fileTree */
+        $fileTree = $containerData['file_tree'] ?? [];
+
+        if (isset($containerData['downloaded_sha256']) && is_string($containerData['downloaded_sha256']) && $this->verificationResult->downloaded_sha256 === null) {
+            $this->verificationResult->downloaded_sha256 = $containerData['downloaded_sha256'];
+        }
+
+        $finalStatus = $archiveOk ? VerificationStatus::Passed : VerificationStatus::Failed;
+        $errorValue = $containerData['error'] ?? null;
+        $failureReason = $archiveOk ? null : (is_string($errorValue) ? $errorValue : 'Archive extraction failed');
+
+        $this->verificationResult->update([
+            'status' => $finalStatus,
+            'archive_ok' => $archiveOk,
+            'file_tree' => $fileTree,
+            'downloaded_sha256' => $this->verificationResult->downloaded_sha256,
+            'failure_reason' => $failureReason,
+            'details' => $this->details,
+            'completed_at' => now(),
+        ]);
+
+        $this->updateVersionStatus($finalStatus);
+    }
+
+    /**
+     * Mark the verification result as failed and halt further processing.
+     */
+    private function markAsFailed(string $failureReason, ?bool $downloadOk = null, ?bool $archiveOk = null): never
+    {
+        $updates = [
+            'status' => VerificationStatus::Failed,
+            'failure_reason' => $failureReason,
+            'details' => $this->details,
+            'completed_at' => now(),
+        ];
+
+        if ($downloadOk !== null) {
+            $updates['download_ok'] = $downloadOk;
+        }
+
+        if ($archiveOk !== null) {
+            $updates['archive_ok'] = $archiveOk;
+        }
+
+        $this->verificationResult->update($updates);
+        $this->updateVersionStatus(VerificationStatus::Failed);
+
+        throw new VerificationFailedException($failureReason);
+    }
+
+    /**
+     * Mark the verification result as errored due to an unexpected exception.
+     */
+    private function markAsError(Throwable $throwable): void
+    {
+        $this->verificationResult->update([
+            'status' => VerificationStatus::Error,
+            'failure_reason' => $throwable->getMessage(),
+            'details' => $this->details,
+            'completed_at' => now(),
+        ]);
+
+        $this->updateVersionStatus(VerificationStatus::Error);
+    }
+
+    /**
+     * Perform the HTTP download to a temporary file.
+     *
+     * @return array<string, mixed>
+     */
+    private function performDownload(string $url, int $maxFileSize): array
+    {
+        $tempDir = storage_path('app/private/verification');
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $tempFile = tempnam($tempDir, 'forge_verify_');
+        if ($tempFile === false) {
+            return ['ok' => false, 'error' => 'Failed to create temporary file'];
+        }
+
+        $this->tempFilePath = $tempFile;
+
+        try {
+            $downloadTimeout = config()->integer('verification.timeouts.download', 300);
+
+            $response = Http::connectTimeout(10)
+                ->timeout($downloadTimeout)
+                ->withoutVerifying()
+                ->sink($this->tempFilePath)
+                ->get($url);
+
+            if (! $response->successful()) {
+                return ['ok' => false, 'error' => 'Download returned HTTP '.$response->status()];
+            }
+
+            $fileSize = filesize($this->tempFilePath);
+            if ($fileSize === false || $fileSize === 0) {
+                return ['ok' => false, 'error' => 'Downloaded file is empty'];
+            }
+
+            if ($fileSize > $maxFileSize) {
+                return ['ok' => false, 'error' => 'File size ('.$fileSize.' bytes) exceeds maximum ('.$maxFileSize.' bytes)'];
+            }
+
+            $sha256 = hash_file('sha256', $this->tempFilePath);
+
+            return [
+                'ok' => true,
+                'size' => $fileSize,
+                'sha256' => $sha256,
+            ];
+        } catch (Throwable $throwable) {
+            return ['ok' => false, 'error' => 'Download failed: '.$throwable->getMessage()];
+        }
+    }
+
+    /**
+     * Run the ephemeral Docker container to extract the archive and report the file tree.
+     *
+     * @return array<string, mixed>
+     */
+    private function runContainer(int $archiveSize): array
+    {
+        if ($this->tempFilePath === null || ! file_exists($this->tempFilePath)) {
+            return ['ok' => false, 'error' => 'No downloaded file available for container'];
+        }
+
+        $extension = $this->detectExtension($this->verificationResult->download_url);
+
+        $dockerImage = config()->string('verification.docker_image', 'ghcr.io/sp-tarkov/forge/verification:latest');
+        $timeout = config()->integer('verification.timeouts.container', 600);
+        $maxExtractionRatio = config()->integer('verification.max_extraction_ratio', 100);
+        $maxExtractedSize = config()->integer('verification.max_extracted_size', 2 * 1024 * 1024 * 1024);
+
+        $command = sprintf(
+            'docker run --rm --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s %s',
+            escapeshellarg($this->tempFilePath),
+            escapeshellarg($extension),
+            escapeshellarg((string) $archiveSize),
+            escapeshellarg((string) $maxExtractionRatio),
+            escapeshellarg((string) $maxExtractedSize),
+            escapeshellarg($dockerImage),
+        );
+
+        $processResult = Process::timeout($timeout)->run($command);
+
+        if (! $processResult->successful()) {
+            $stderr = $processResult->errorOutput();
+
+            return ['ok' => false, 'error' => 'Docker container failed: '.($stderr !== '' ? $stderr : 'exit code '.$processResult->exitCode())];
+        }
+
+        $stdout = mb_trim($processResult->output());
+        if ($stdout === '') {
+            return ['ok' => false, 'error' => 'Docker container produced no output'];
+        }
+
+        /** @var array<string, mixed>|null $data */
+        $data = json_decode($stdout, true);
+        if (! is_array($data)) {
+            return ['ok' => false, 'error' => 'Docker container produced invalid JSON'];
+        }
+
+        if (isset($data['error']) && is_string($data['error'])) {
+            return ['ok' => false, 'data' => $data, 'error' => $data['error']];
+        }
+
+        return ['ok' => true, 'data' => $data];
+    }
+
+    /**
+     * Detect the archive extension from the download URL.
+     */
+    private function detectExtension(string $url): string
+    {
+        $path = mb_strtolower((string) parse_url($url, PHP_URL_PATH));
+
+        return match (true) {
+            str_ends_with($path, '.7z') => '7z',
+            str_ends_with($path, '.zip') => 'zip',
+            default => throw new VerificationFailedException('Unsupported archive format: URL must end with .zip or .7z'),
+        };
+    }
+
+    /**
+     * Update the denormalized verification status on the version model.
+     */
+    private function updateVersionStatus(VerificationStatus $status): void
+    {
+        /** @var ModVersion|AddonVersion|null $verifiable */
+        $verifiable = $this->verificationResult->verifiable;
+        $verifiable?->updateQuietly([
+            'verification_status' => $status->value,
+            'last_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Clean up the temporary download file.
+     */
+    private function cleanup(): void
+    {
+        if ($this->tempFilePath !== null && file_exists($this->tempFilePath)) {
+            @unlink($this->tempFilePath);
+            $this->tempFilePath = null;
+        }
+    }
+}

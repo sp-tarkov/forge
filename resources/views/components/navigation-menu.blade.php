@@ -284,6 +284,11 @@
                                             href="{{ route('admin.role-management') }}"
                                             wire:navigate
                                         >{{ __('Role Management') }}</flux:menu.item>
+                                        <flux:menu.item
+                                            icon="shield-check"
+                                            href="{{ route('admin.file-verification') }}"
+                                            wire:navigate
+                                        >{{ __('File Verification') }}</flux:menu.item>
                                     </flux:menu.submenu>
                                 @endif
 
@@ -478,6 +483,10 @@
                         href="{{ route('admin.role-management') }}"
                         :active="request()->routeIs('admin.role-management')"
                     >{{ __('Role Management') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('admin.file-verification') }}"
+                        :active="request()->routeIs('admin.file-verification')"
+                    >{{ __('File Verification') }}</x-responsive-nav-link>
                 @endif
                 <form
                     method="POST"

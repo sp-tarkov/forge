@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Trackable;
 use App\Enums\FikaCompatibility;
+use App\Enums\VerificationStatus;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +49,10 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $description
  * @property string $link
  * @property int|null $content_length
+ * @property string|null $etag
+ * @property string|null $last_modified_header
+ * @property VerificationStatus|null $verification_status
+ * @property CarbonImmutable|null $last_verified_at
  * @property string $spt_version_constraint
  * @property int $downloads
  * @property bool $disabled
@@ -63,6 +69,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, SptVersion> $sptVersions
  * @property-read Collection<int, AddonVersion> $compatibleAddonVersions
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
+ * @property-read Collection<int, VerificationResult> $verificationResults
+ * @property-read VerificationResult|null $latestVerificationResult
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
@@ -214,6 +222,27 @@ final class ModVersion extends Model implements Trackable
     {
         return $this->morphMany(VirusTotalLink::class, 'linkable')
             ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
+    }
+
+    /**
+     * The relationship between a mod version and its verification results.
+     *
+     * @return MorphMany<VerificationResult, $this>
+     */
+    public function verificationResults(): MorphMany
+    {
+        return $this->morphMany(VerificationResult::class, 'verifiable')->latest();
+    }
+
+    /**
+     * The relationship between a mod version and its latest verification result.
+     *
+     * @return MorphOne<VerificationResult, $this>
+     */
+    public function latestVerificationResult(): MorphOne
+    {
+        return $this->morphOne(VerificationResult::class, 'verifiable')
+            ->latestOfMany();
     }
 
     /**
@@ -392,6 +421,8 @@ final class ModVersion extends Model implements Trackable
             'downloads' => 'integer',
             'disabled' => 'boolean',
             'fika_compatibility' => FikaCompatibility::class,
+            'verification_status' => VerificationStatus::class,
+            'last_verified_at' => 'datetime',
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
