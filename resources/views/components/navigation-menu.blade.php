@@ -1,6 +1,7 @@
 <nav
     x-data="{ profileDropdownOpen: false, mobileMenuOpen: false }"
     class="relative bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-900 dark:via-black dark:to-gray-950 border-b border-gray-200 dark:border-gray-800 z-50"
+    aria-label="{{ __('Main navigation') }}"
 >
     <div class="absolute inset-0 overflow-hidden">
         <div
