@@ -289,7 +289,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->mod->profile_binding_notice_disabled = $this->disableProfileBindingNotice;
         $this->mod->cheat_notice = $this->cheatNotice;
         $this->mod->addons_disabled = $this->addonsDisabled;
-        $this->mod->published_at = $publishedAtCarbon; // @phpstan-ignore assign.propertyType
+        $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
         if ($this->thumbnail instanceof UploadedFile) {

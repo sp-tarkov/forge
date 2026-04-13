@@ -220,7 +220,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->addon->contains_ai_content = $this->containsAiContent;
         $this->addon->contains_ads = $this->containsAds;
         $this->addon->comments_disabled = $this->commentsDisabled;
-        $this->addon->published_at = $publishedAtCarbon; // @phpstan-ignore assign.propertyType
+        $this->addon->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
         if ($this->thumbnail instanceof UploadedFile) {

@@ -180,7 +180,7 @@ new class extends Component
 
         $this->authorize('publish', $addon);
 
-        $addon->published_at = $publishedDate; // @phpstan-ignore assign.propertyType (datetime cast handles conversion)
+        $addon->published_at = $publishedDate;
         $addon->save();
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content

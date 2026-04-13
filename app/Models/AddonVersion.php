@@ -43,7 +43,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $etag
  * @property string|null $last_modified_header
  * @property VerificationStatus|null $verification_status
- * @property CarbonImmutableImmutable|null $last_verified_at
+ * @property CarbonImmutable|null $last_verified_at
  * @property string $mod_version_constraint
  * @property int $downloads
  * @property bool $disabled

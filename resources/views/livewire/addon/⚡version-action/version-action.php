@@ -201,7 +201,7 @@ new class extends Component
 
         $this->authorize('publish', $version);
 
-        $version->published_at = $publishedDate; // @phpstan-ignore assign.propertyType (datetime cast handles conversion)
+        $version->published_at = $publishedDate;
         $version->save();
 
         // Only flag as moderation action if the current user is a mod/admin acting on someone else's content
