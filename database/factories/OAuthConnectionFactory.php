@@ -21,7 +21,7 @@ final class OAuthConnectionFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'provider_name' => $this->faker->randomElement(['discord', 'google', 'facebook']),
+            'provider' => $this->faker->randomElement(['discord', 'google', 'facebook']),
             'provider_id' => (string) $this->faker->unique()->numberBetween(100000, 999999),
             'token' => Str::random(40),
             'refresh_token' => Str::random(40),
