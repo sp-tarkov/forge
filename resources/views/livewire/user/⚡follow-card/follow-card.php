@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
@@ -58,11 +59,13 @@ new class extends Component
     public Collection $authFollowIds;
 
     /**
-     * The events the component should listen for.
-     *
-     * @var array<string, string>
+     * Re-render the component when the auth user's follow state changes.
      */
-    protected $listeners = ['auth-follow-change' => '$refresh'];
+    #[On('auth-follow-change')]
+    public function refreshFollowState(): void
+    {
+        unset($this->followUsers);
+    }
 
     /**
      * The profile user's followers (or following).
