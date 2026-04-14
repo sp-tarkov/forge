@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -353,46 +352,71 @@ new #[Lazy] class extends Component
     /**
      * Get top events' statistics.
      *
+     * Returns plain arrays instead of stdClass to ensure reliable cache serialization.
+     *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, stdClass>
+     * @return list<array{event_name: string, count: int}>
      */
-    private function getTopEvents(Builder $query): Collection
+    private function getTopEvents(Builder $query): array
     {
         $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
-        return $query->toBase()->select('event_name', DB::raw('COUNT(*) as count'))->whereIn('event_name', $validEventNames)->groupBy('event_name')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('event_name', DB::raw('COUNT(*) as count'))->whereIn('event_name', $validEventNames)->groupBy('event_name')->orderByDesc('count')->limit(10)->get()
+            ->map(fn (stdClass $row): array => [
+                'event_name' => (string) $row->event_name,
+                'count' => (int) $row->count,
+            ])->all();
     }
 
     /**
      * Get top browsers' statistics.
      *
+     * Returns plain arrays instead of stdClass to ensure reliable cache serialization.
+     *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, stdClass>
+     * @return list<array{browser: string, count: int}>
      */
-    private function getTopBrowsers(Builder $query): Collection
+    private function getTopBrowsers(Builder $query): array
     {
-        return $query->toBase()->select('browser', DB::raw('COUNT(*) as count'))->whereNotNull('browser')->groupBy('browser')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('browser', DB::raw('COUNT(*) as count'))->whereNotNull('browser')->groupBy('browser')->orderByDesc('count')->limit(10)->get()
+            ->map(fn (stdClass $row): array => [
+                'browser' => (string) $row->browser,
+                'count' => (int) $row->count,
+            ])->all();
     }
 
     /**
      * Get top platforms statistics.
      *
+     * Returns plain arrays instead of stdClass to ensure reliable cache serialization.
+     *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, stdClass>
+     * @return list<array{platform: string, count: int}>
      */
-    private function getTopPlatforms(Builder $query): Collection
+    private function getTopPlatforms(Builder $query): array
     {
-        return $query->toBase()->select('platform', DB::raw('COUNT(*) as count'))->whereNotNull('platform')->groupBy('platform')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('platform', DB::raw('COUNT(*) as count'))->whereNotNull('platform')->groupBy('platform')->orderByDesc('count')->limit(10)->get()
+            ->map(fn (stdClass $row): array => [
+                'platform' => (string) $row->platform,
+                'count' => (int) $row->count,
+            ])->all();
     }
 
     /**
      * Get top countries' statistics.
      *
+     * Returns plain arrays instead of stdClass to ensure reliable cache serialization.
+     *
      * @param  Builder<TrackingEvent>  $query
-     * @return Collection<int, stdClass>
+     * @return list<array{country_name: string, country_code: string, count: int}>
      */
-    private function getTopCountries(Builder $query): Collection
+    private function getTopCountries(Builder $query): array
     {
-        return $query->toBase()->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))->whereNotNull('country_code')->groupBy('country_name', 'country_code')->orderByDesc('count')->limit(10)->get();
+        return $query->toBase()->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))->whereNotNull('country_code')->groupBy('country_name', 'country_code')->orderByDesc('count')->limit(10)->get()
+            ->map(fn (stdClass $row): array => [
+                'country_name' => (string) $row->country_name,
+                'country_code' => (string) $row->country_code,
+                'count' => (int) $row->count,
+            ])->all();
     }
 };

@@ -113,17 +113,17 @@
                     <div class="flex justify-between items-center">
                         <div class="flex items-center space-x-2 truncate pr-2">
                             <flux:icon
-                                name="{{ \App\Enums\TrackingEventType::from($event->event_name)->getIcon() }}"
+                                name="{{ \App\Enums\TrackingEventType::from($event['event_name'])->getIcon() }}"
                                 class="w-4 h-4"
-                                color="{{ \App\Enums\TrackingEventType::from($event->event_name)->getColor() }}"
+                                color="{{ \App\Enums\TrackingEventType::from($event['event_name'])->getColor() }}"
                             />
                             <span
-                                class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ \App\Enums\TrackingEventType::from($event->event_name)->getName() }}</span>
+                                class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ \App\Enums\TrackingEventType::from($event['event_name'])->getName() }}</span>
                         </div>
                         <flux:badge
                             size="sm"
-                            color="{{ \App\Enums\TrackingEventType::from($event->event_name)->getColor() }}"
-                        >{{ number_format($event->count) }}</flux:badge>
+                            color="{{ \App\Enums\TrackingEventType::from($event['event_name'])->getColor() }}"
+                        >{{ number_format($event['count']) }}</flux:badge>
                     </div>
                 @empty
                     <p class="text-gray-500 dark:text-gray-400">No data available</p>
@@ -138,11 +138,11 @@
                 @forelse($stats['top_browsers'] as $browser)
                     <div class="flex justify-between items-center">
                         <span
-                            class="text-sm text-gray-700 dark:text-gray-300">{{ $browser->browser ?: 'Unknown' }}</span>
+                            class="text-sm text-gray-700 dark:text-gray-300">{{ $browser['browser'] ?: 'Unknown' }}</span>
                         <flux:badge
                             size="sm"
                             color="green"
-                        >{{ number_format($browser->count) }}</flux:badge>
+                        >{{ number_format($browser['count']) }}</flux:badge>
                     </div>
                 @empty
                     <p class="text-gray-500 dark:text-gray-400">No data available</p>
@@ -157,11 +157,11 @@
                 @forelse($stats['top_platforms'] as $platform)
                     <div class="flex justify-between items-center">
                         <span
-                            class="text-sm text-gray-700 dark:text-gray-300">{{ $platform->platform ?: 'Unknown' }}</span>
+                            class="text-sm text-gray-700 dark:text-gray-300">{{ $platform['platform'] ?: 'Unknown' }}</span>
                         <flux:badge
                             size="sm"
                             color="purple"
-                        >{{ number_format($platform->count) }}</flux:badge>
+                        >{{ number_format($platform['count']) }}</flux:badge>
                     </div>
                 @empty
                     <p class="text-gray-500 dark:text-gray-400">No data available</p>
@@ -177,15 +177,15 @@
                     <div class="flex justify-between items-center">
                         <div class="flex items-center space-x-2">
                             <span
-                                class="text-lg">{{ $country->country_code ? \App\Services\GeolocationService::getCountryFlag($country->country_code) : '' }}</span>
+                                class="text-lg">{{ $country['country_code'] ? \App\Services\GeolocationService::getCountryFlag($country['country_code']) : '' }}</span>
                             <span class="text-sm text-gray-700 dark:text-gray-300">
-                                {{ $country->country_name ?: 'Unknown' }}
+                                {{ $country['country_name'] ?: 'Unknown' }}
                             </span>
                         </div>
                         <flux:badge
                             size="sm"
                             color="indigo"
-                        >{{ number_format($country->count) }}</flux:badge>
+                        >{{ number_format($country['count']) }}</flux:badge>
                     </div>
                 @empty
                     <p class="text-gray-500 dark:text-gray-400">No data available</p>
