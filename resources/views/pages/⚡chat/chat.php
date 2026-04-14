@@ -102,11 +102,11 @@ new #[Layout('layouts::base')] class extends Component
     public ?int $currentUserId = null;
 
     /**
-     * Store all conversation hashes to register listeners for cleanup.
+     * Store all conversation hashes to register listeners.
      *
      * @var array<int, string>
      */
-    protected array $allConversationHashes = [];
+    public array $allConversationHashes = [];
 
     /**
      * Initialize the component with optional conversation.
@@ -114,6 +114,11 @@ new #[Layout('layouts::base')] class extends Component
     public function boot(): void
     {
         $this->currentUserId = (int) Auth::id();
+
+        if ($this->allConversationHashes === []) {
+            $this->loadAllConversationHashes();
+        }
+
         // Only switch conversation if we don't already have one selected or if the hash doesn't match the current selection
         if ($this->conversationHash && (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash)) {
             $this->switchConversation($this->conversationHash);
@@ -205,18 +210,13 @@ new #[Layout('layouts::base')] class extends Component
         }
 
         // Register listeners for all conversations the user is part of
-        $user = Auth::user();
-        if ($user) {
-            /** @var array<int, string> $conversationHashes */
-            $conversationHashes = Conversation::query()->forUser($user)->pluck('hash_id')->toArray();
-            foreach ($conversationHashes as $hash) {
-                if ($hash !== $this->conversationHash) {
-                    $listeners[sprintf('echo-private:conversation.%s,MessageSent', $hash)] = 'handleIncomingMessage';
-                    $listeners[sprintf('echo-private:conversation.%s,MessageRead', $hash)] = 'handleMessageRead';
-                    $listeners[sprintf('echo-presence:conversation.%s,UserStartedTyping', $hash)] = 'handleUserStartedTyping';
-                    $listeners[sprintf('echo-presence:conversation.%s,UserStoppedTyping', $hash)] = 'handleUserStoppedTyping';
-                    $listeners[sprintf('echo-presence:conversation.%s,leaving', $hash)] = 'handleUserLeavingConversation';
-                }
+        foreach ($this->allConversationHashes as $hash) {
+            if ($hash !== $this->conversationHash) {
+                $listeners[sprintf('echo-private:conversation.%s,MessageSent', $hash)] = 'handleIncomingMessage';
+                $listeners[sprintf('echo-private:conversation.%s,MessageRead', $hash)] = 'handleMessageRead';
+                $listeners[sprintf('echo-presence:conversation.%s,UserStartedTyping', $hash)] = 'handleUserStartedTyping';
+                $listeners[sprintf('echo-presence:conversation.%s,UserStoppedTyping', $hash)] = 'handleUserStoppedTyping';
+                $listeners[sprintf('echo-presence:conversation.%s,leaving', $hash)] = 'handleUserLeavingConversation';
             }
         }
 
@@ -469,8 +469,9 @@ new #[Layout('layouts::base')] class extends Component
             }
         }
 
-        // If this is a new conversation, notify NavigationChat to update its conversation hashes
+        // If this is a new conversation, update hashes and notify NavigationChat
         if (! $existingConversation) {
+            $this->loadAllConversationHashes();
             $this->dispatch('conversation-created')->to('navigation-chat');
         }
 
@@ -915,6 +916,18 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * Redirect to the latest conversation if one exists.
      */
+    private function loadAllConversationHashes(): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        /** @var array<int, string> $hashes */
+        $hashes = Conversation::query()->forUser($user)->pluck('hash_id')->toArray();
+        $this->allConversationHashes = $hashes;
+    }
+
     private function redirectToLatestIfExists(): void
     {
         $user = Auth::user();
