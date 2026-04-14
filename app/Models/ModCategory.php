@@ -37,10 +37,7 @@ final class ModCategory extends Model
      */
     public static function cachedOrdered(): Collection
     {
-        /** @var array<int, int> $ids */
-        $ids = Cache::flexible('mod-categories:ordered-ids', [3600, 7200], fn (): array => self::query()->orderBy('title')->pluck('id')->all());
-
-        return self::query()->whereIn('id', $ids)->orderBy('title')->get();
+        return Cache::flexible('mod-categories:ordered', [3600, 7200], fn (): Collection => self::query()->orderBy('title')->get());
     }
 
     /**
