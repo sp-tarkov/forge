@@ -58,7 +58,7 @@ it('sends discord notification for newly visible mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was marked as notified
     $mod->refresh();
@@ -77,7 +77,7 @@ it('does not send notification for disabled mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified
     $mod->refresh();
@@ -96,7 +96,7 @@ it('does not send notification for unpublished mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified
     $mod->refresh();
@@ -115,7 +115,7 @@ it('does not send notification for mods without valid SPT versions', function ()
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified
     $mod->refresh();
@@ -147,7 +147,7 @@ it('does not send notification for already notified mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod still has the sent flag as true
     $mod->refresh();
@@ -191,7 +191,7 @@ it('includes all mod details in discord embed', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Verify the mod was marked as notified
     $mod->refresh();
@@ -241,7 +241,7 @@ it('sends discord notification for new mod versions', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert new version was marked as notified
     $newVersion->refresh();
@@ -307,7 +307,7 @@ it('sends individual notifications for multiple new versions of same mod', funct
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert both versions were marked as notified
     $version1->refresh();
@@ -371,7 +371,7 @@ it('marks versions as notified when new mod notification is sent', function (): 
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was notified (first time)
     $mod->refresh();
@@ -407,7 +407,7 @@ it('does not send version notification for disabled versions', function (): void
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified
     $version->refresh();
@@ -439,7 +439,7 @@ it('does not send version notification for unpublished versions', function (): v
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified
     $version->refresh();
@@ -490,7 +490,7 @@ it('does not duplicate spt versions in new mod notification', function (): void 
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was marked as notified
     $mod->refresh();
@@ -564,7 +564,7 @@ it('does not send version update notification when new mod is created', function
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was marked as notified
     $mod->refresh();
@@ -634,7 +634,7 @@ it('does not duplicate spt versions in mod version update notification', functio
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert new version was marked as notified
     $newVersion->refresh();
@@ -717,7 +717,7 @@ it('sends notification for lower semantic version uploaded after higher version'
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert the lower version was marked as notified
     $lowerVersion->refresh();
@@ -763,7 +763,7 @@ it('does not send notification for future-published mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified (scope filters it out)
     $mod->refresh();
@@ -795,7 +795,7 @@ it('does not send notification for future-published mod versions', function (): 
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified (scope filters it out)
     $version->refresh();
@@ -831,7 +831,7 @@ it('sends mod notifications to the mods webhook url', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Verify notification was sent to the mods webhook URL
     Http::assertSent(fn ($request): bool => str_contains((string) $request->url(), 'test-mods'));
@@ -878,7 +878,7 @@ it('sends discord notification for newly published addons', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was marked as notified
     $addon->refresh();
@@ -897,7 +897,7 @@ it('does not send notification for unpublished addons', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was not marked as notified
     $addon->refresh();
@@ -936,7 +936,7 @@ it('does not send notification for future-published addons', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was not marked as notified (scope filters it out)
     $addon->refresh();
@@ -1001,7 +1001,7 @@ it('sends discord notification for new addon versions', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert new version was marked as notified
     $newVersion->refresh();
@@ -1038,7 +1038,7 @@ it('does not send notification for future-published addon versions', function ()
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified (scope filters it out)
     $version->refresh();
@@ -1075,7 +1075,7 @@ it('does not send notification for unpublished addon versions', function (): voi
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified
     $version->refresh();
@@ -1154,7 +1154,7 @@ it('marks all published addon versions as notified when new addon notification i
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was marked as notified
     $addon->refresh();
@@ -1219,7 +1219,7 @@ it('sends addon notifications to the addons webhook url', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Verify addon notification was sent to the addons webhook URL (not the mods URL)
     Http::assertSent(function ($request): bool {
@@ -1265,7 +1265,7 @@ it('includes role mention in new mod notification when role id is configured', f
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Verify role mention is included
     Http::assertSent(function ($request): bool {
@@ -1323,7 +1323,7 @@ it('includes role mention in new addon notification when role id is configured',
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Verify addon role mention is included (not the mod role)
     Http::assertSent(function ($request): bool {
@@ -1372,7 +1372,7 @@ it('does not include role mention when role id is not configured', function (): 
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Verify no role mention is included
     Http::assertSent(function ($request): bool {

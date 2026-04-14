@@ -34,19 +34,18 @@ final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
-    {
+    public function handle(
+        ModPolicy $modPolicy,
+        ModVersionPolicy $versionPolicy,
+        AddonPolicy $addonPolicy,
+        AddonVersionPolicy $addonVersionPolicy,
+    ): void {
         $modsWebhookConfigured = ! empty(config('discord-alerts.webhook_urls.mods'));
         $addonsWebhookConfigured = ! empty(config('discord-alerts.webhook_urls.addons'));
 
         if (! $modsWebhookConfigured && ! $addonsWebhookConfigured) {
             return;
         }
-
-        $modPolicy = resolve(ModPolicy::class);
-        $versionPolicy = resolve(ModVersionPolicy::class);
-        $addonPolicy = resolve(AddonPolicy::class);
-        $addonVersionPolicy = resolve(AddonVersionPolicy::class);
 
         /** @var array<int> */
         $notifiedModIds = [];
