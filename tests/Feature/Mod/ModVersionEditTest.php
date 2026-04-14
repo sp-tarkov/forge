@@ -354,6 +354,7 @@ describe('Mod Version Edit Form', function (): void {
             Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->assertSet('fikaCompatibilityStatus', 'incompatible')
                 ->set('fikaCompatibilityStatus', 'compatible')
+                ->set('link', 'https://example.com/download.7z')
                 ->set('virusTotalLinks', [
                     ['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test Scan'],
                 ])
