@@ -114,11 +114,7 @@ final class ProcessChatMessageNotification implements ShouldQueue
             return;
         }
 
-        DB::transaction(function () use ($recipient, $conversation, $unreadMessages): void {
-            // Send the notification
-            $recipient->notify(new NewChatMessageNotification($conversation, $unreadMessages));
-
-            // Update or create the notification log
+        DB::transaction(function () use ($recipient, $conversation): void {
             NotificationLog::query()->updateOrCreate([
                 'notifiable_type' => Conversation::class,
                 'notifiable_id' => $conversation->id,
@@ -129,6 +125,8 @@ final class ProcessChatMessageNotification implements ShouldQueue
                 'updated_at' => now(),
             ]);
         });
+
+        $recipient->notify(new NewChatMessageNotification($conversation, $unreadMessages));
     }
 
     /**

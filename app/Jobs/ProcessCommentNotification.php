@@ -139,17 +139,15 @@ final class ProcessCommentNotification implements ShouldQueue
 
         try {
             DB::transaction(function () use ($parentAuthor, $comment): void {
-                // Record the notification log entry first
                 NotificationLog::recordSent(
                     $comment,
                     $parentAuthor->id,
                     CommentReplyNotification::class,
                     NotificationType::ALL
                 );
-
-                // Send the reply notification
-                $parentAuthor->notify(new CommentReplyNotification($comment));
             });
+
+            $parentAuthor->notify(new CommentReplyNotification($comment));
 
             // Mark this user as notified so they don't get a duplicate NewCommentNotification
             $this->notifiedUserIds->push($parentAuthor->id);
@@ -182,9 +180,9 @@ final class ProcessCommentNotification implements ShouldQueue
                     CommentReplyNotification::class,
                     NotificationType::DATABASE
                 );
-
-                $user->notify(new CommentReplyNotification($comment));
             });
+
+            $user->notify(new CommentReplyNotification($comment));
 
             $this->notifiedUserIds->push($user->id);
         } catch (Throwable $throwable) {
@@ -238,18 +236,15 @@ final class ProcessCommentNotification implements ShouldQueue
                         ? NotificationType::ALL
                         : NotificationType::DATABASE;
 
-                    // Record the notification log entry first
                     NotificationLog::recordSent(
                         $comment,
                         $user->id,
                         NewCommentNotification::class,
                         $notificationType
                     );
-
-                    // Send the notification - if this fails, the transaction rolls back and the log entry is not
-                    // committed, allowing retry to work
-                    $user->notify(new NewCommentNotification($comment));
                 });
+
+                $user->notify(new NewCommentNotification($comment));
             } catch (Throwable $e) {
                 Log::error('Failed to send comment notification', [
                     'comment_id' => $comment->id,
