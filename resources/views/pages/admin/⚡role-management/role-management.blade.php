@@ -94,6 +94,7 @@
                             <flux:select
                                 wire:model.live="roleFilter"
                                 size="sm"
+                                variant="listbox"
                             >
                                 <flux:select.option value="">{{ __('All Roles') }}</flux:select.option>
                                 @foreach ($this->roles as $role)
@@ -278,6 +279,7 @@
                 {{-- Role Selection --}}
                 <div>
                     <flux:select
+                        variant="listbox"
                         wire:model="selectedRoleId"
                         label="{{ __('Select Role') }}"
                     >

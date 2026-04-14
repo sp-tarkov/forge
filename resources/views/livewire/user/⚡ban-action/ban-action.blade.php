@@ -102,6 +102,7 @@
                 @if ($this->availableReports->isNotEmpty())
                     <div>
                         <flux:select
+                            variant="listbox"
                             wire:model="selectedReportId"
                             label="{{ __('Link to Report (optional)') }}"
                         >

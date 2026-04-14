@@ -28,7 +28,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <flux:label for="statusFilter" class="text-xs">Status</flux:label>
-                        <flux:select wire:model.live="statusFilter" id="statusFilter" size="sm">
+                        <flux:select wire:model.live="statusFilter" id="statusFilter" size="sm" variant="listbox">
                             <flux:select.option value="">All Statuses</flux:select.option>
                             @foreach(\App\Enums\VerificationStatus::cases() as $status)
                                 <flux:select.option value="{{ $status->value }}">{{ $status->label() }}</flux:select.option>

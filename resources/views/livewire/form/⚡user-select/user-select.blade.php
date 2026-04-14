@@ -13,7 +13,7 @@
                 wire:model.live="search"
                 :placeholder="count($selectedUsers) >= $maxUsers ? __('Maximum authors reached') : $placeholder"
                 :disabled="count($selectedUsers) >= $maxUsers"
-                class="bg-transparent border-0 p-0 shadow-none focus:ring-0"
+                class="bg-transparent border-0 p-0 shadow-none focus:ring-0 text-base sm:text-sm"
             />
         </x-slot>
 

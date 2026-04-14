@@ -517,6 +517,8 @@
                         </legend>
                         <div class="pt-6 sm:pt-4">
                             <flux:select
+                                variant="listbox"
+                                searchable
                                 wire:model.live="category"
                                 wire:loading.attr="disabled"
                                 placeholder="{{ __('All Categories') }}"

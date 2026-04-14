@@ -76,18 +76,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {{-- Date Range Filter --}}
                     <div>
+                        <flux:label class="text-xs">Date From</flux:label>
                         <flux:date-picker
                             wire:model.live="dateFrom"
-                            label="Date From"
                             size="sm"
                             clearable
                         />
                     </div>
 
                     <div>
+                        <flux:label class="text-xs">Date To</flux:label>
                         <flux:date-picker
                             wire:model.live="dateTo"
-                            label="Date To"
                             size="sm"
                             clearable
                         />
@@ -103,6 +103,8 @@
                             wire:model.live="eventFilter"
                             id="eventFilter"
                             size="sm"
+                            variant="listbox"
+                            searchable
                         >
                             <flux:select.option value="">All Events</flux:select.option>
                             @foreach (\App\Enums\TrackingEventType::cases() as $eventType)
@@ -137,6 +139,7 @@
                             wire:model.live="browserFilter"
                             id="browserFilter"
                             size="sm"
+                            variant="listbox"
                         >
                             <flux:select.option value="">All Browsers</flux:select.option>
                             <flux:select.option value="Chrome">Chrome</flux:select.option>
@@ -155,6 +158,7 @@
                             class="text-xs"
                         >Platform</flux:label>
                         <flux:select
+                            variant="listbox"
                             wire:model.live="platformFilter"
                             id="platformFilter"
                             size="sm"
@@ -176,6 +180,7 @@
                             class="text-xs"
                         >Device</flux:label>
                         <flux:select
+                            variant="listbox"
                             wire:model.live="deviceFilter"
                             id="deviceFilter"
                             size="sm"
@@ -209,6 +214,7 @@
                             class="text-xs"
                         >User Type</flux:label>
                         <flux:select
+                            variant="listbox"
                             wire:model.live="filter"
                             id="filter"
                             size="sm"

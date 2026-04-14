@@ -193,6 +193,7 @@
                     {{-- Mobile Dropdown --}}
                     <div class="sm:hidden">
                         <flux:select
+                            variant="listbox"
                             x-model="selectedTab"
                             label:sr-only="{{ __('Select a tab') }}"
                         >

@@ -91,6 +91,7 @@
                         Filter by mod version:
                     </label>
                     <flux:select
+                        variant="listbox"
                         wire:model.live="selectedModVersionId"
                         id="mod-version-filter"
                         size="sm"

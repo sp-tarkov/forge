@@ -190,6 +190,8 @@
                                     {{ __('Choose which license your mod is released under. This will be displayed on the mod page.') }}
                                 </flux:description>
                                 <flux:select
+                                    variant="listbox"
+                                    searchable
                                     wire:model.blur="license"
                                     placeholder="Choose license..."
                                 >
@@ -207,6 +209,8 @@
                                     {{ __('Select the category that best describes your mod. This helps users find your mod more easily.') }}
                                 </flux:description>
                                 <flux:select
+                                    variant="listbox"
+                                    searchable
                                     wire:model.live="category"
                                     placeholder="Choose category..."
                                 >

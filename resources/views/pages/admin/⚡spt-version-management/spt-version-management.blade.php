@@ -83,6 +83,7 @@
                             wire:model.live="colorFilter"
                             id="colorFilter"
                             size="sm"
+                            variant="listbox"
                         >
                             <flux:select.option value="">All Colors</flux:select.option>
                             <flux:select.option value="green">Green</flux:select.option>
@@ -342,6 +343,7 @@
                     <flux:field>
                         <flux:label for="formColorClass">Color Class</flux:label>
                         <flux:select
+                            variant="listbox"
                             wire:model.defer="formColorClass"
                             id="formColorClass"
                             required
@@ -465,6 +467,7 @@
                     <flux:field>
                         <flux:label for="formColorClassEdit">Color Class</flux:label>
                         <flux:select
+                            variant="listbox"
                             wire:model.defer="formColorClass"
                             id="formColorClassEdit"
                             required

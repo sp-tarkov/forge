@@ -1061,6 +1061,7 @@
                         </div>
                     @else
                         <flux:select
+                            variant="listbox"
                             wire:model="selectedTrackingEventId"
                             label="Select Action"
                         >

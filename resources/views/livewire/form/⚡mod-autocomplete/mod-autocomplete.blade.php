@@ -4,11 +4,11 @@
         variant="combobox"
         :filter="false"
         :placeholder="$placeholder"
-        :label="$label"
+        :label="$label ?: null"
         clearable
     >
         <x-slot name="input">
-            <flux:select.input wire:model.live.debounce.300ms="search" />
+            <flux:select.input wire:model.live="search" />
         </x-slot>
 
         @foreach ($this->filteredMods as $mod)
@@ -16,11 +16,9 @@
         @endforeach
 
         <x-slot name="empty">
-            @if (strlen($search) > 0)
-                <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                    {{ __('No mods found matching ":search"', ['search' => $search]) }}
-                </div>
-            @endif
+            <flux:select.option.empty when-loading="{{ __('Searching...') }}">
+                {{ __('No mods found.') }}
+            </flux:select.option.empty>
         </x-slot>
     </flux:select>
 </div>

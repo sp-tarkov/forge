@@ -61,6 +61,8 @@
                                                 <div class="flex gap-3 items-start">
                                                     <div class="flex-1">
                                                         <flux:select
+                                                            variant="listbox"
+                                                            searchable
                                                             wire:model.live="newModCategoryId"
                                                             placeholder="Choose category..."
                                                         >
@@ -280,10 +282,10 @@
                                 <flux:label>{{ __('Fika Compatibility') }}</flux:label>
                                 <flux:description>{{ __('Specify whether this mod version is compatible with Fika.') }}
                                 </flux:description>
-                                <flux:select wire:model.blur="fikaCompatibilityStatus">
-                                    <option value="compatible">{{ __('Compatible') }}</option>
-                                    <option value="incompatible">{{ __('Incompatible') }}</option>
-                                    <option value="unknown">{{ __('Compatibility Unknown') }}</option>
+                                <flux:select variant="listbox" wire:model.blur="fikaCompatibilityStatus">
+                                    <flux:select.option value="compatible">{{ __('Compatible') }}</flux:select.option>
+                                    <flux:select.option value="incompatible">{{ __('Incompatible') }}</flux:select.option>
+                                    <flux:select.option value="unknown">{{ __('Compatibility Unknown') }}</flux:select.option>
                                 </flux:select>
                                 <flux:error name="fikaCompatibilityStatus" />
                             </flux:field>
@@ -313,7 +315,7 @@
                                                 </flux:button>
                                             </div>
 
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-visible">
                                                 <flux:field>
                                                     <flux:label>{{ __('Mod') }}</flux:label>
                                                     <livewire:form.mod-autocomplete
@@ -321,7 +323,7 @@
                                                         :exclude-mod-id="$mod->id"
                                                         :selected-mod-id="$dependencies[$index]['modId'] ?? ''"
                                                         placeholder="Type to search for a mod..."
-                                                        label="Select dependency mod"
+                                                        label=""
                                                         @mod-selected="updateDependencyModId({{ $index }}, $event.detail.modId)"
                                                     />
                                                     <flux:error name="dependencies.{{ $index }}.modId" />

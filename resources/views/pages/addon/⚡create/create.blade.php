@@ -155,6 +155,8 @@
                                     {{ __('Choose which license your addon is released under. This will be displayed on the addon page.') }}
                                 </flux:description>
                                 <flux:select
+                                    variant="listbox"
+                                    searchable
                                     wire:model.blur="license"
                                     placeholder="Choose license..."
                                 >

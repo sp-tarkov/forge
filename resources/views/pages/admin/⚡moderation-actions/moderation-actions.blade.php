@@ -69,6 +69,8 @@
                             wire:model.live="eventTypeFilter"
                             id="eventTypeFilter"
                             size="sm"
+                            variant="listbox"
+                            searchable
                         >
                             <flux:select.option value="">All Types</flux:select.option>
                             @foreach ($this->moderationEventTypes as $eventType)
@@ -88,6 +90,8 @@
                             wire:model.live="moderatorFilter"
                             id="moderatorFilter"
                             size="sm"
+                            variant="listbox"
+                            searchable
                         >
                             <flux:select.option value="">All Moderators</flux:select.option>
                             @foreach ($this->moderators as $moderator)

@@ -100,6 +100,7 @@
                             wire:model.live="roleFilter"
                             id="roleFilter"
                             size="sm"
+                            variant="listbox"
                         >
                             <flux:select.option value="">All Roles</flux:select.option>
                             @foreach ($this->roles as $role)
@@ -115,6 +116,7 @@
                             class="text-xs"
                         >Status</flux:label>
                         <flux:select
+                            variant="listbox"
                             wire:model.live="statusFilter"
                             id="statusFilter"
                             size="sm"

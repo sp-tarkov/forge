@@ -62,8 +62,15 @@ new class extends Component
     public function filteredMods(): Collection
     {
         if ($this->search === '' || $this->search === '0') {
+            if ($this->selectedModId === '' || $this->selectedModId === '0') {
+                /** @var Collection<int, Mod> */
+                return collect();
+            }
+
             /** @var Collection<int, Mod> */
-            return collect();
+            return Mod::query()
+                ->where('id', $this->selectedModId)
+                ->get();
         }
 
         $query = Mod::query()
