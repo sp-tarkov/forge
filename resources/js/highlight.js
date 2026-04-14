@@ -1,6 +1,9 @@
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 
+// Language classes that should render as plain text without syntax highlighting.
+const plainTextClasses = new Set(['language-text', 'language-txt', 'language-plaintext']);
+
 // Function to highlight code blocks
 function highlightCodeBlocks(container = document) {
     const selector = '.user-markdown pre code, .user-markdown-message pre code, .static-content pre code';
@@ -11,6 +14,12 @@ function highlightCodeBlocks(container = document) {
     codeBlocks.forEach((el) => {
         // Only highlight if not already highlighted
         if (!el.classList.contains('hljs')) {
+            // Skip highlighting for plain text code blocks
+            if ([...el.classList].some((cls) => plainTextClasses.has(cls))) {
+                el.classList.add('hljs');
+                return;
+            }
+
             hljs.highlightElement(el);
         }
     });
