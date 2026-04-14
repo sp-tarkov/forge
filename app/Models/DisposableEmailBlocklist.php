@@ -23,12 +23,14 @@ final class DisposableEmailBlocklist extends Model
     /** @use HasFactory<DisposableEmailBlocklistFactory> */
     use HasFactory;
 
+    private const string CACHE_TAG = 'disposable-emails';
+
     /**
      * Check if a domain is disposable.
      */
     public static function isDisposable(string $domain): bool
     {
-        return Cache::remember('disposable_email_'.$domain, 3600, fn () => self::query()->where('domain', $domain)->exists());
+        return Cache::tags(self::CACHE_TAG)->remember('disposable_email_'.$domain, 3600, fn () => self::query()->where('domain', $domain)->exists());
     }
 
     /**
@@ -36,14 +38,14 @@ final class DisposableEmailBlocklist extends Model
      */
     public static function clearDomainCache(string $domain): void
     {
-        Cache::forget('disposable_email_'.$domain);
+        Cache::tags(self::CACHE_TAG)->forget('disposable_email_'.$domain);
     }
 
     /**
-     * Clear all disposable email caches.
+     * Invalidate all disposable email caches.
      */
     public static function clearAllCaches(): void
     {
-        Cache::flush();
+        Cache::tags(self::CACHE_TAG)->flush();
     }
 }
