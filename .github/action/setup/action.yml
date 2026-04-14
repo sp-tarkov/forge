@@ -73,6 +73,11 @@ runs:
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
     - name: Get NPM Cache Directory
       id: npm-cache
       run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
