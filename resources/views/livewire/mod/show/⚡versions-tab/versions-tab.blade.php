@@ -31,7 +31,7 @@
     @forelse($this->versions as $version)
         @cachedCan('view', $version)
             <div wire:key="mod-show-version-{{ $this->mod->id }}-{{ $version->id }}">
-                <x-mod.version-card :version="$version" />
+                <x-mod.version-card :version="$version" :latest-version-id="$this->latestVersionId" />
             </div>
         @endcachedCan
     @empty

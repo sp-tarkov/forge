@@ -36,7 +36,18 @@ new #[Lazy] class extends Component
     #[Computed]
     public function mod(): Mod
     {
-        return Mod::query()->findOrFail($this->modId);
+        return Mod::query()
+            ->with(['latestVersion', 'latestLegacyVersion'])
+            ->findOrFail($this->modId);
+    }
+
+    /**
+     * Get the latest version ID for comparison in version cards.
+     */
+    #[Computed]
+    public function latestVersionId(): ?int
+    {
+        return ($this->mod->latestVersion ?? $this->mod->latestLegacyVersion)?->id;
     }
 
     /**
@@ -51,7 +62,7 @@ new #[Lazy] class extends Component
 
         return $this->mod // @phpstan-ignore return.type (Livewire computed property caching)
             ->versions()
-            ->with(['latestSptVersion', 'sptVersions', 'latestDependenciesResolved.mod:id,name,slug'])
+            ->with(['latestSptVersion', 'sptVersions', 'latestDependenciesResolved.mod:id,name,slug,thumbnail,thumbnail_hash,owner_id', 'latestDependenciesResolved.mod.owner.role'])
             ->unless($user?->can('viewAny', [ModVersion::class, $this->mod]), function (Builder $query): void {
                 // Include both modern versions (with SPT tags) and legacy versions (empty constraint)
                 $query->where(function (Builder $q): void {
