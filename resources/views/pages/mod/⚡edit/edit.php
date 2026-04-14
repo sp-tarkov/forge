@@ -347,6 +347,25 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Delete the existing thumbnail from the mod.
+     */
+    public function deleteExistingThumbnail(): void
+    {
+        $this->authorize('update', $this->mod);
+
+        if ($this->mod->thumbnail) {
+            /** @var string $diskName */
+            $diskName = config('filesystems.asset_upload', 'public');
+            Storage::disk($diskName)->delete($this->mod->thumbnail);
+            $this->mod->thumbnail = '';
+            $this->mod->thumbnail_hash = '';
+            $this->mod->save();
+
+            Flux::toast(text: 'Thumbnail has been deleted');
+        }
+    }
+
+    /**
      * Add a new source code link input.
      */
     public function addSourceCodeLink(): void

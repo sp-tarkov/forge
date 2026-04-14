@@ -8,6 +8,7 @@ use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 describe('Mod Edit Form', function (): void {
@@ -385,6 +386,51 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         $mod->refresh();
         expect($mod->name)->toBe('Successfully Updated Mod');
         expect($mod->guid)->toBe('com.success.updated');
+    });
+});
+
+describe('Thumbnail Management', function (): void {
+
+    beforeEach(function (): void {
+        config()->set('honeypot.enabled', false);
+        Storage::fake(config('filesystems.asset_upload', 'public'));
+    });
+
+    it('deletes the existing thumbnail from the mod', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->recycle($user)->create([
+            'thumbnail' => 'mods/test-thumbnail.png',
+            'thumbnail_hash' => 'abc123',
+        ]);
+
+        Storage::disk(config('filesystems.asset_upload', 'public'))
+            ->put('mods/test-thumbnail.png', 'fake-image-content');
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->call('deleteExistingThumbnail');
+
+        $mod->refresh();
+        expect($mod->thumbnail)->toBe('')
+            ->and($mod->thumbnail_hash)->toBe('');
+
+        Storage::disk(config('filesystems.asset_upload', 'public'))
+            ->assertMissing('mods/test-thumbnail.png');
+    });
+
+    it('prevents unauthorized users from deleting a thumbnail', function (): void {
+        $owner = User::factory()->create();
+        $unauthorizedUser = User::factory()->create();
+        $mod = Mod::factory()->recycle($owner)->create([
+            'thumbnail' => 'mods/test-thumbnail.png',
+            'thumbnail_hash' => 'abc123',
+        ]);
+
+        $this->actingAs($unauthorizedUser);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->assertForbidden();
     });
 });
 

@@ -51,28 +51,40 @@
                             <flux:field class="col-span-6">
                                 <flux:label>{{ __('Thumbnail') }}</flux:label>
                                 <flux:description>
-                                    {{ __('Optionally upload an image to use as the addon\'s thumbnail. This will be displayed on the addon page and in search results. The image should be square, JPG or PNG, and no larger than 2MB. ') }}
+                                    {{ __('Optionally upload an image to use as the addon\'s thumbnail. This will be displayed on the addon page and in search results. The image should be square, JPG or PNG, and no larger than 2MB.') }}
                                 </flux:description>
-                                <flux:file-upload wire:model="thumbnail">
-                                    <flux:file-upload.dropzone
-                                        heading="{{ __('Drop image here or click to browse') }}"
-                                        text="{{ __('JPG or PNG, square, up to 2MB') }}"
-                                        with-progress
-                                        inline
-                                    />
-                                </flux:file-upload>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <flux:file-upload wire:model="thumbnail" @class(['h-full', 'lg:col-span-2' => !$thumbnail])>
+                                        <flux:file-upload.dropzone
+                                            heading="{{ __('Drop image here or click to browse') }}"
+                                            text="{{ __('JPG or PNG, square, up to 2MB') }}"
+                                            with-progress
+                                            inline
+                                            class="h-full"
+                                        />
+                                    </flux:file-upload>
+                                    @if ($thumbnail)
+                                        <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                                            <img
+                                                src="{{ $thumbnail->temporaryUrl() }}"
+                                                class="size-20 shrink-0 rounded-lg object-cover"
+                                                alt="{{ __('Thumbnail preview') }}"
+                                            >
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $thumbnail->getClientOriginalName() }}</p>
+                                                <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
+                                            </div>
+                                            <flux:button
+                                                size="sm"
+                                                variant="ghost"
+                                                icon="x-mark"
+                                                wire:click="removeThumbnail"
+                                                type="button"
+                                            />
+                                        </div>
+                                    @endif
+                                </div>
                                 <flux:error name="thumbnail" />
-                                @if ($thumbnail)
-                                    <flux:file-item
-                                        :heading="$thumbnail->getClientOriginalName()"
-                                        :image="$thumbnail->temporaryUrl()"
-                                        :size="$thumbnail->getSize()"
-                                    >
-                                        <x-slot name="actions">
-                                            <flux:file-item.remove wire:click="removeThumbnail" />
-                                        </x-slot>
-                                    </flux:file-item>
-                                @endif
                             </flux:field>
 
                             {{-- Name --}}

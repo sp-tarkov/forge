@@ -37,7 +37,7 @@ final class License extends Model
         /** @var array<int, array<string, mixed>> $items */
         $items = Cache::flexible('licenses:ordered', [3600, 7200], fn (): array => self::query()->orderBy('name')->get()->toArray());
 
-        return self::hydrate($items);
+        return self::query()->hydrate($items);
     }
 
     /**

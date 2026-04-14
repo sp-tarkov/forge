@@ -50,6 +50,6 @@ final class PeakVisitor extends Model
             return null;
         }
 
-        return self::hydrate([$item])->first();
+        return self::query()->hydrate([$item])->first();
     }
 }
