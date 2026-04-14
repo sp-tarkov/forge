@@ -499,9 +499,11 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
         return Attribute::make(
             get: function (): string {
                 /** @var string $clean */
-                $clean = Purify::clean($this->description ?? '');
+                $clean = Purify::config('description')->clean(
+                    Markdown::convert($this->description ?? '')->getContent()
+                );
 
-                return Markdown::convert($clean)->getContent();
+                return $clean;
             },
         );
     }
