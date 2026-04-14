@@ -55,7 +55,7 @@
                                     color="auto"
                                     color:seed="{{ $conversation->other_user->id }}"
                                 />
-                                @if ($this->isUserOnline($conversation->other_user->id))
+                                @if ($this->isUserOnline($conversation->other_user))
                                     <span
                                         class="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-900 bg-green-400"
                                     ></span>
@@ -135,11 +135,11 @@
                                     <x-user-name :user="$selectedConversation->other_user" />
                                 </div>
                                 <div class="text-xs">
-                                    @if ($this->isUserOnline($selectedConversation->other_user->id))
+                                    @if ($this->isUserOnline($selectedConversation->other_user))
                                         <span class="text-green-500 dark:text-green-400">{{ __('Online') }}</span>
                                     @else
                                         <span
-                                            class="text-gray-500 dark:text-gray-400">{{ $this->getUserLastSeen($selectedConversation->other_user->id) }}</span>
+                                            class="text-gray-500 dark:text-gray-400">{{ $this->getUserLastSeen($selectedConversation->other_user) }}</span>
                                     @endif
                                 </div>
                             </div>

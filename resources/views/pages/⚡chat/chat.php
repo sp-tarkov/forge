@@ -578,41 +578,32 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * Check if a user is online.
      */
-    public function isUserOnline(int $userId): bool
+    public function isUserOnline(User $otherUser): bool
     {
-        // Don't show online status if blocked
         $currentUser = Auth::user();
-        if ($currentUser) {
-            $otherUser = User::query()->find($userId);
-            if ($otherUser && $currentUser->isBlockedMutually($otherUser)) {
-                return false;
-            }
+        if ($currentUser && $currentUser->isBlockedMutually($otherUser)) {
+            return false;
         }
 
-        return isset($this->onlineUsers[$userId]) && $this->onlineUsers[$userId];
+        return isset($this->onlineUsers[$otherUser->id]) && $this->onlineUsers[$otherUser->id];
     }
 
     /**
      * Get the last seen time for a user.
      */
-    public function getUserLastSeen(int $userId): ?string
+    public function getUserLastSeen(User $otherUser): ?string
     {
-        // Check if users have blocked each other
         $currentUser = Auth::user();
-        if ($currentUser) {
-            $otherUser = User::query()->find($userId);
-            if ($otherUser && $currentUser->isBlockedMutually($otherUser)) {
-                return __('Not available');
-            }
+        if ($currentUser && $currentUser->isBlockedMutually($otherUser)) {
+            return __('Not available');
         }
 
-        if ($this->isUserOnline($userId)) {
+        if ($this->isUserOnline($otherUser)) {
             return null;
         }
 
-        $user = User::query()->select('last_seen_at')->find($userId);
-        if ($user && $user->last_seen_at) {
-            $diffInMinutes = $user->last_seen_at->diffInMinutes(now());
+        if ($otherUser->last_seen_at) {
+            $diffInMinutes = $otherUser->last_seen_at->diffInMinutes(now());
 
             return match (true) {
                 $diffInMinutes < 1 => __('Last seen just now'),
