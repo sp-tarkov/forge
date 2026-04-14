@@ -128,12 +128,11 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     public function calculateDownloads(): void
     {
         $cacheKey = 'mod_downloads_cached_'.$this->id;
-        $hasExistingCache = Cache::has($cacheKey);
 
-        // Get the cached download count (the count that was last indexed in search)
-        // If no cache exists, use the current downloads value as baseline
-        /** @var int $cachedDownloads */
-        $cachedDownloads = Cache::get($cacheKey, $this->downloads);
+        // Get the cached download count in a single call to avoid race conditions.
+        // If no cache exists, $cachedDownloads will be null.
+        /** @var int|null $cachedDownloads */
+        $cachedDownloads = Cache::get($cacheKey);
 
         // Calculate the new actual download count
         $newDownloads = (int) DB::table('mod_versions')
@@ -148,7 +147,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
         $this->refresh();
 
         // Only sync to search if there was a previously cached value and the difference is >= 15
-        if ($hasExistingCache && abs($newDownloads - $cachedDownloads) >= 15) {
+        if ($cachedDownloads !== null && abs($newDownloads - $cachedDownloads) >= 15) {
             $this->searchable();
         }
 
