@@ -13,11 +13,11 @@
             aria-haspopup="true"
         >
             <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
-            @if ($this->fetchUnreadCount() > 0)
+            @if ($this->unreadCount > 0)
                 <span
                     class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white"
                 >
-                    {{ $this->fetchUnreadCount() > 9 ? '9+' : $this->fetchUnreadCount() }}
+                    {{ $this->unreadCount > 9 ? '9+' : $this->unreadCount }}
                 </span>
             @endif
             <span class="sr-only">{{ __('Chat') }}</span>

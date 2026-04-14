@@ -8,6 +8,7 @@ use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component
@@ -386,6 +387,20 @@ new class extends Component
     }
 
     /**
+     * Get the count of unread conversations for the authenticated user.
+     */
+    #[Computed]
+    public function unreadCount(): int
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return 0;
+        }
+
+        return Conversation::query()->visibleTo($user)->notArchivedBy($user)->withUnreadMessages($user)->count();
+    }
+
+    /**
      * Load all conversation hash IDs for the authenticated user.
      */
     private function loadUserConversationHashes(): void
@@ -425,20 +440,6 @@ new class extends Component
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-    }
-
-    /**
-     * Get the count of unread conversations for the authenticated user.
-     */
-    /** @phpstan-ignore method.unused */
-    private function fetchUnreadCount(): int
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return 0;
-        }
-
-        return Conversation::query()->visibleTo($user)->notArchivedBy($user)->withUnreadMessages($user)->count();
     }
 
     /**
