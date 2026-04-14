@@ -9,6 +9,7 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -141,6 +142,24 @@ new class extends Component
     }
 
     /**
+     * Fetch paginated notifications for the authenticated user.
+     *
+     * @return LengthAwarePaginator<int, DatabaseNotification>
+     */
+    /** @phpstan-ignore missingType.generics */
+    #[Computed]
+    public function notifications(): LengthAwarePaginator
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return new LengthAwarePaginator([], 0, 8, null, ['pageName' => 'notificationPage']);
+        }
+
+        /** @var LengthAwarePaginator<int, DatabaseNotification> */
+        return $user->notifications()->orderBy('created_at', 'desc')->paginate(8, pageName: 'notificationPage');
+    }
+
+    /**
      * Updates the unread notification count using a short-lived cache.
      */
     private function loadUnreadCount(): void
@@ -177,22 +196,5 @@ new class extends Component
             NewCommentNotification::class => $data['comment_url'] ?? null,
             default => null,
         };
-    }
-
-    /**
-     * Fetch paginated notifications for the authenticated user.
-     *
-     * @return LengthAwarePaginator<int, DatabaseNotification>
-     */
-    /** @phpstan-ignore method.unused, missingType.generics */
-    private function fetchNotifications(): LengthAwarePaginator
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return new LengthAwarePaginator([], 0, 8, null, ['pageName' => 'notificationPage']);
-        }
-
-        /** @var LengthAwarePaginator<int, DatabaseNotification> */
-        return $user->notifications()->orderBy('created_at', 'desc')->paginate(8, pageName: 'notificationPage');
     }
 };

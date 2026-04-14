@@ -3,17 +3,13 @@
     id="notifications"
     class="p-6"
 >
-    @php
-        $notifications = $this->fetchNotifications();
-    @endphp
-
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ __('Notifications') }}
         </h3>
         <div class="flex items-center gap-3">
-            @if ($notifications->count() > 0)
+            @if ($this->notifications->count() > 0)
                 @if ($unreadCount > 0)
                     <button
                         type="button"
@@ -67,7 +63,7 @@
     </div>
 
     {{-- Notifications List --}}
-    @if ($notifications->isEmpty())
+    @if ($this->notifications->isEmpty())
         <div class="text-center py-12">
             <flux:icon.bell-slash class="mx-auto size-12 text-gray-300 dark:text-gray-700" />
             <h3 class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
@@ -79,7 +75,7 @@
         </div>
     @else
         <div class="space-y-3">
-            @foreach ($notifications as $notification)
+            @foreach ($this->notifications as $notification)
                 <div
                     wire:key="notification-{{ $notification->id }}"
                     class="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
@@ -267,9 +263,9 @@
         </div>
 
         {{-- Pagination --}}
-        @if ($notifications->hasPages())
+        @if ($this->notifications->hasPages())
             <div class="mt-6">
-                {{ $notifications->links(data: ['scrollTo' => '#notifications']) }}
+                {{ $this->notifications->links(data: ['scrollTo' => '#notifications']) }}
             </div>
         @endif
     @endif

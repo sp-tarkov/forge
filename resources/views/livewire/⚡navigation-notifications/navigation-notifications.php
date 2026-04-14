@@ -8,6 +8,7 @@ use App\Notifications\ReportSubmittedNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component
@@ -133,6 +134,24 @@ new class extends Component
     }
 
     /**
+     * Fetch recent unread notifications for the authenticated user.
+     *
+     * @return Collection<int, DatabaseNotification>
+     */
+    /** @phpstan-ignore missingType.generics */
+    #[Computed]
+    public function notifications(): Collection
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return new Collection();
+        }
+
+        /** @var Collection<int, DatabaseNotification> */
+        return $user->unreadNotifications()->orderBy('created_at', 'desc')->limit(10)->get();
+    }
+
+    /**
      * Get the review URL for a notification based on its type.
      */
     private function getReviewUrl(DatabaseNotification $notification): ?string
@@ -159,22 +178,5 @@ new class extends Component
         }
 
         $this->unreadCount = $user->unreadNotifications()->count();
-    }
-
-    /**
-     * Fetch recent unread notifications for the authenticated user.
-     *
-     * @return Collection<int, DatabaseNotification>
-     */
-    /** @phpstan-ignore method.unused, missingType.generics */
-    private function fetchNotifications(): Collection
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return new Collection();
-        }
-
-        /** @var Collection<int, DatabaseNotification> */
-        return $user->unreadNotifications()->orderBy('created_at', 'desc')->limit(10)->get();
     }
 };

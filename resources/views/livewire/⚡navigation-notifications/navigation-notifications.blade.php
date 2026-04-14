@@ -22,10 +22,6 @@
         <span class="sr-only">{{ __('Notifications') }}</span>
     </button>
 
-    @php
-        $notifications = $this->fetchNotifications();
-    @endphp
-
     <div
         x-cloak
         x-show="notificationDropdownOpen"
@@ -57,7 +53,7 @@
                         >{{ __('Marking...') }}</span>
                     </button>
                 @endif
-                @if ($notifications->count() > 0)
+                @if ($this->notifications->count() > 0)
                     <button
                         type="button"
                         wire:click="deleteAll"
@@ -79,9 +75,9 @@
         </div>
 
         {{-- Notification List --}}
-        @if ($notifications->count() > 0)
+        @if ($this->notifications->count() > 0)
             <div class="flex flex-col divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
-                @foreach ($notifications as $notification)
+                @foreach ($this->notifications as $notification)
                     <button
                         type="button"
                         wire:key="nav-notification-{{ $notification->id }}"

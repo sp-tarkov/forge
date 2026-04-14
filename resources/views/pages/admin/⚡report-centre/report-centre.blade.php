@@ -397,11 +397,8 @@
                                                         @foreach ($report->actions as $action)
                                                             <div
                                                                 class="group flex items-start gap-2 text-sm rounded -mx-2 px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                                                @php
-                                                                    $eventType = $action->trackingEvent->getEventType();
-                                                                @endphp
                                                                 <flux:icon
-                                                                    :name="$eventType?->getIcon() ?? 'check'"
+                                                                    :name="$action->trackingEvent->getEventType()?->getIcon() ?? 'check'"
                                                                     class="size-4 mt-0.5 text-gray-400 flex-shrink-0"
                                                                 />
                                                                 <div class="min-w-0 flex-1">

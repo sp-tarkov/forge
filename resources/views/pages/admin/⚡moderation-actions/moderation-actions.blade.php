@@ -187,30 +187,15 @@
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($this->actions as $action)
-                                @php
-                                    $eventType = \App\Enums\TrackingEventType::tryFrom($action->event_name);
-                                @endphp
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                     {{-- Action Type --}}
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-2">
-                                            @php
-                                                $badgeColor = match (true) {
-                                                    str_contains($action->event_name, 'ban') => 'red',
-                                                    str_contains($action->event_name, 'unban') => 'green',
-                                                    str_contains($action->event_name, 'disable') => 'amber',
-                                                    str_contains($action->event_name, 'enable') => 'green',
-                                                    str_contains($action->event_name, 'delete') => 'red',
-                                                    str_contains($action->event_name, 'feature') => 'sky',
-                                                    str_contains($action->event_name, 'publish') => 'green',
-                                                    default => 'gray',
-                                                };
-                                            @endphp
                                             <flux:badge
-                                                color="{{ $badgeColor }}"
+                                                color="{{ $this->getActionBadgeColor($action->event_name) }}"
                                                 size="sm"
                                             >
-                                                {{ $eventType?->label() ?? $action->event_name }}
+                                                {{ $this->getActionLabel($action->event_name) }}
                                             </flux:badge>
                                         </div>
                                     </td>

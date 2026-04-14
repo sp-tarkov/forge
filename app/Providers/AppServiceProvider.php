@@ -18,6 +18,7 @@ use App\Policies\BlockingPolicy;
 use App\Services\CommentSpamChecker;
 use App\Services\DependencyVersionService;
 use App\Services\GeolocationService;
+use App\View\Composers\PaginationComposer;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
@@ -32,6 +33,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
@@ -72,6 +74,9 @@ final class AppServiceProvider extends ServiceProvider
 
         // Register custom Blade directives.
         $this->registerBladeDirectives();
+
+        // Register view composers.
+        View::composer('livewire.pagination.tailwind-narrow', PaginationComposer::class);
 
         // Register layouts directory as anonymous Blade component path.
         Blade::anonymousComponentPath(resource_path('views/layouts'), 'layouts');

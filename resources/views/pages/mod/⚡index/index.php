@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Filters\ModFilter;
 use App\Models\Mod;
 use App\Models\ModCategory;
+use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Collection;
@@ -257,6 +258,20 @@ new #[Layout('layouts::base')] class extends Component
         }
 
         return $count;
+    }
+
+    /**
+     * Get the display version for a mod, preferring modern versions with a legacy fallback.
+     */
+    public function getDisplayVersion(Mod $mod, bool $includeLegacy): ?ModVersion
+    {
+        $version = $mod->latestVersion;
+
+        if ($includeLegacy && ! $version && $mod->latestLegacyVersion) {
+            return $mod->latestLegacyVersion;
+        }
+
+        return $version;
     }
 
     /**

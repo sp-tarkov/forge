@@ -1,22 +1,3 @@
-@props([
-    'name',
-    'modId',
-    'latestVersionId',
-    'downloadUrl',
-    'versionString',
-    'sptVersionFormatted' => null,
-    'sptVersionColorClass' => null,
-    'versionDescriptionHtml',
-    'versionUpdatedAt',
-    'fileSize' => null,
-    'dependencies' => collect(),
-])
-
-@php
-    $hasDependencies = $dependencies->isNotEmpty();
-    $depsModalName = $name . '-deps';
-@endphp
-
 <div class="{{ $name === 'download-show-mobile' ? 'lg:hidden block' : 'hidden lg:block' }}">
     <flux:modal.trigger name="{{ $name }}">
         <button
@@ -108,11 +89,11 @@
                 </div>
 
                 <div class="flex gap-3">
-                    @if ($hasDependencies)
+                    @if ($hasDependencies())
                         <flux:button
                             variant="primary"
                             size="sm"
-                            x-on:click="$flux.modal('{{ $name }}').close(); $nextTick(() => $flux.modal('{{ $depsModalName }}').show())"
+                            x-on:click="$flux.modal('{{ $name }}').close(); $nextTick(() => $flux.modal('{{ $depsModalName() }}').show())"
                             icon="arrow-right"
                         >
                             {{ __('Continue') }}
@@ -133,9 +114,9 @@
     </flux:modal>
 
     {{-- Dependencies Modal --}}
-    @if ($hasDependencies)
+    @if ($hasDependencies())
         <flux:modal
-            name="{{ $depsModalName }}"
+            name="{{ $depsModalName() }}"
             class="md:w-[500px] lg:w-[600px]"
         >
             <div class="space-y-0">
@@ -171,7 +152,7 @@
                                 href="{{ route('mod.show', [$dependency->mod->id, $dependency->mod->slug]) }}"
                                 wire:navigate
                                 class="flex items-center gap-3 group"
-                                x-on:click="$flux.modal('{{ $depsModalName }}').close()"
+                                x-on:click="$flux.modal('{{ $depsModalName() }}').close()"
                             >
                                 @if ($dependency->mod->thumbnail)
                                     <img
@@ -220,7 +201,7 @@
                     <flux:button
                         variant="primary"
                         size="sm"
-                        x-on:click="$flux.modal('{{ $depsModalName }}').close(); window.open('{{ $downloadUrl }}', '_blank')"
+                        x-on:click="$flux.modal('{{ $depsModalName() }}').close(); window.open('{{ $downloadUrl }}', '_blank')"
                         icon="arrow-down"
                     >
                         {{ __('Download') }}

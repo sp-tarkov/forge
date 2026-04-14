@@ -1,15 +1,3 @@
-@php
-    if (! isset($scrollTo)) {
-        $scrollTo = 'body';
-    }
-
-    $scrollIntoViewJsSnippet = ($scrollTo !== false)
-        ? <<<JS
-           (\$el.closest('{$scrollTo}') || document.querySelector('{$scrollTo}')).scrollIntoView()
-        JS
-        : '';
-@endphp
-
 <div>
     @if ($paginator->hasPages())
         <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center justify-between">

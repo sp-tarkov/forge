@@ -50,6 +50,16 @@ new class extends Component
     }
 
     /**
+     * Check if a search result category is visible.
+     */
+    public function isTypeCategoryVisible(string $type): bool
+    {
+        $typeProperty = 'is'.ucfirst($type).'CatVisible';
+
+        return property_exists($this, $typeProperty) && $this->$typeProperty;
+    }
+
+    /**
      * Get the search results using Meilisearch multi-search API.
      *
      * @return array<string, Collection<int, mixed>>

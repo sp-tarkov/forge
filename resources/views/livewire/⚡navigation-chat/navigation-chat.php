@@ -401,29 +401,13 @@ new class extends Component
     }
 
     /**
-     * Load all conversation hash IDs for the authenticated user.
-     */
-    private function loadUserConversationHashes(): void
-    {
-        $user = Auth::user();
-        if (! $user) {
-            return;
-        }
-
-        // Load ALL conversations the user is part of (including archived ones)
-        // We need this for typing indicators to work properly
-        /** @var array<int, string> $hashes */
-        $hashes = Conversation::query()->forUser($user)->pluck('hash_id')->toArray();
-        $this->conversationHashes = $hashes;
-    }
-
-    /**
      * Fetch recent conversations for the authenticated user.
      *
      * @return Collection<int, Conversation>
      */
-    /** @phpstan-ignore method.unused, missingType.generics */
-    private function fetchConversations(): Collection
+    /** @phpstan-ignore missingType.generics */
+    #[Computed]
+    public function conversations(): Collection
     {
         $user = Auth::user();
         if (! $user) {
@@ -447,8 +431,9 @@ new class extends Component
      *
      * @return Collection<int, User>
      */
-    /** @phpstan-ignore method.unused, missingType.generics */
-    private function fetchSearchResults(): Collection
+    /** @phpstan-ignore missingType.generics */
+    #[Computed]
+    public function searchResults(): Collection
     {
         $user = Auth::user();
         if (! $user || $this->searchUser === '' || $this->searchUser === '0') {
@@ -456,5 +441,22 @@ new class extends Component
         }
 
         return User::query()->conversationSearch($user, $this->searchUser)->get();
+    }
+
+    /**
+     * Load all conversation hash IDs for the authenticated user.
+     */
+    private function loadUserConversationHashes(): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return;
+        }
+
+        // Load ALL conversations the user is part of (including archived ones)
+        // We need this for typing indicators to work properly
+        /** @var array<int, string> $hashes */
+        $hashes = Conversation::query()->forUser($user)->pluck('hash_id')->toArray();
+        $this->conversationHashes = $hashes;
     }
 };

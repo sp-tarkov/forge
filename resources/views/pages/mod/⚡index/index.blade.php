@@ -541,15 +541,9 @@
             <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 @foreach ($mods as $mod)
                     <div wire:key="mod-index-{{ $mod->id }}">
-                        @php
-                            $displayVersion = $mod->latestVersion;
-                            if ($includeLegacy && !$displayVersion && $mod->latestLegacyVersion) {
-                                $displayVersion = $mod->latestLegacyVersion;
-                            }
-                        @endphp
                         <x-mod.card
                             :mod="$mod"
-                            :version="$displayVersion"
+                            :version="$this->getDisplayVersion($mod, $includeLegacy)"
                         />
                     </div>
                 @endforeach

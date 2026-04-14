@@ -208,6 +208,31 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     }
 
     /**
+     * Get the badge color for a moderation action event name.
+     */
+    public function getActionBadgeColor(string $eventName): string
+    {
+        return match (true) {
+            str_contains($eventName, 'ban') => 'red',
+            str_contains($eventName, 'unban') => 'green',
+            str_contains($eventName, 'disable') => 'amber',
+            str_contains($eventName, 'enable') => 'green',
+            str_contains($eventName, 'delete') => 'red',
+            str_contains($eventName, 'feature') => 'sky',
+            str_contains($eventName, 'publish') => 'green',
+            default => 'gray',
+        };
+    }
+
+    /**
+     * Get the display label for a moderation action event name.
+     */
+    public function getActionLabel(string $eventName): string
+    {
+        return TrackingEventType::tryFrom($eventName)?->label() ?? $eventName;
+    }
+
+    /**
      * Apply filters to the query.
      *
      * @param  Builder<TrackingEvent>  $query

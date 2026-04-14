@@ -1,7 +1,3 @@
-@php
-    use Illuminate\Support\Str;
-@endphp
-
 <div>
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
@@ -291,16 +287,7 @@
 
                                     {{-- Ban Status Column --}}
                                     <td class="px-2 sm:px-3 py-2 whitespace-nowrap">
-                                        @php
-                                            $activeBan = $user->bans
-                                                ->where('deleted_at', null)
-                                                ->where(function ($ban) {
-                                                    return is_null($ban->expired_at) || $ban->expired_at > now();
-                                                })
-                                                ->first();
-                                        @endphp
-
-                                        @if ($activeBan)
+                                        @if ($activeBan = $this->getActiveBan($user))
                                             <div class="flex items-center gap-2">
                                                 <flux:badge
                                                     color="red"

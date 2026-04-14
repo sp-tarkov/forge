@@ -353,16 +353,13 @@
 
             {{-- Required Dependencies --}}
             @if ($displayVersion?->latestDependenciesResolved->isNotEmpty())
-                @php
-                    $dependencyCount = $displayVersion->latestDependenciesResolved->count();
-                @endphp
                 <div
                     class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        {{ $dependencyCount === 1 ? __('Required Dependency') : __('Required Dependencies') }}
+                        {{ $displayVersion->latestDependenciesResolved->count() === 1 ? __('Required Dependency') : __('Required Dependencies') }}
                     </h2>
                     <p class="mt-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
-                        {{ $dependencyCount === 1
+                        {{ $displayVersion->latestDependenciesResolved->count() === 1
                             ? __('The latest version of this mod requires the following mod to be installed as well.')
                             : __('The latest version of this mod requires the following mods to be installed as well.') }}
                     </p>

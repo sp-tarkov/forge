@@ -275,11 +275,9 @@ it('limits displayed notifications to 10', function (): void {
 
     $component = Livewire::test('navigation-notifications');
 
-    // In SFC components, notifications are fetched inline via fetchNotifications()
-    // We verify the component limits to 10 by checking the instance
+    // Verify the computed property limits to 10 notifications
     $instance = $component->instance();
-    $fetchNotifications = new ReflectionMethod($instance, 'fetchNotifications');
-    expect($fetchNotifications->invoke($instance)->count())->toBe(10);
+    expect($instance->notifications->count())->toBe(10);
 });
 
 it('displays different notification types with correct styling', function (): void {

@@ -133,10 +133,6 @@
                             @if ($this->hasResults)
                                 @foreach ($this->results as $type => $typeResults)
                                     @if ($typeResults->count())
-                                        @php
-                                            $visibilityProperty = 'is' . Str::ucfirst($type) . 'CatVisible';
-                                            $isVisible = $this->$visibilityProperty;
-                                        @endphp
                                         <button
                                             type="button"
                                             wire:click="toggleTypeVisibility('{{ $type }}')"
@@ -149,12 +145,12 @@
                                                 {{ $typeResults->count() }} {{ $typeResults->count() === 1 ? Str::upper($type) : Str::upper(Str::plural($type)) }}
                                             </span>
                                             <flux:icon.chevron-right
-                                                class="size-3 transform transition-transform duration-200 {{ $isVisible ? 'rotate-90' : '' }}"
+                                                class="size-3 transform transition-transform duration-200 {{ $this->isTypeCategoryVisible($type) ? 'rotate-90' : '' }}"
                                             />
                                         </button>
                                         <div
-                                            class="divide-y divide-gray-700/30 overflow-hidden transition-all duration-200 {{ $isVisible ? 'max-h-screen' : 'max-h-0' }}"
-                                            @if (!$isVisible) inert @endif
+                                            class="divide-y divide-gray-700/30 overflow-hidden transition-all duration-200 {{ $this->isTypeCategoryVisible($type) ? 'max-h-screen' : 'max-h-0' }}"
+                                            @if (!$this->isTypeCategoryVisible($type)) inert @endif
                                         >
                                             @foreach ($typeResults as $hit)
                                                 <x-dynamic-component

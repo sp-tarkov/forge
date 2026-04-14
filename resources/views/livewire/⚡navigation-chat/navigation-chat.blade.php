@@ -23,11 +23,6 @@
             <span class="sr-only">{{ __('Chat') }}</span>
         </button>
 
-        @php
-            $conversations = $this->fetchConversations();
-            $searchResults = $this->fetchSearchResults();
-        @endphp
-
         <div
             x-cloak
             x-show="chatDropdownOpen"
@@ -36,7 +31,7 @@
             class="absolute top-11 right-0 z-[100] flex w-full min-w-[20rem] flex-col overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
             role="menu"
         >
-            @if ($conversations->count() > 0)
+            @if ($this->conversations->count() > 0)
                 {{-- Header --}}
                 <div class="flex items-center justify-between px-4 py-3 border-b border-gray-300 dark:border-gray-700">
                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
@@ -46,7 +41,7 @@
 
                 <div class="flex flex-col divide-y divide-slate-300 dark:divide-gray-700">
                     <div class="flex flex-col py-2">
-                        @foreach ($conversations as $conversation)
+                        @foreach ($this->conversations as $conversation)
                             @if ($conversation->other_user)
                                 <button
                                     type="button"
@@ -152,7 +147,7 @@
     <x-new-conversation-modal
         :show-modal="'showNewConversation'"
         :search-user="$searchUser"
-        :search-results="$searchResults"
+        :search-results="$this->searchResults"
     />
 
 </div>

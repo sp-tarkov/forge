@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
@@ -113,7 +114,8 @@ new #[Lazy] class extends Component
      *
      * @return array<string, mixed>
      */
-    public function getStats(): array
+    #[Computed]
+    public function stats(): array
     {
         $cacheKey = $this->getStatsCacheKey();
 
@@ -361,11 +363,21 @@ new #[Lazy] class extends Component
     {
         $validEventNames = collect(TrackingEventType::cases())->map(fn (TrackingEventType $case): string => $case->value)->all();
 
-        return $query->toBase()->select('event_name', DB::raw('COUNT(*) as count'))->whereIn('event_name', $validEventNames)->groupBy('event_name')->orderByDesc('count')->limit(10)->get()
-            ->map(fn (stdClass $row): array => [
-                'event_name' => (string) $row->event_name,
-                'count' => (int) $row->count,
-            ])->all();
+        $results = $query->toBase()
+            ->select('event_name', DB::raw('COUNT(*) as count'))
+            ->whereIn('event_name', $validEventNames)
+            ->groupBy('event_name')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get()
+            ->map(function (stdClass $row): array {
+                /** @var array{event_name: string, count: int} $data */
+                $data = ['event_name' => $row->event_name, 'count' => $row->count];
+
+                return $data;
+            })->all();
+
+        return array_values($results);
     }
 
     /**
@@ -378,11 +390,21 @@ new #[Lazy] class extends Component
      */
     private function getTopBrowsers(Builder $query): array
     {
-        return $query->toBase()->select('browser', DB::raw('COUNT(*) as count'))->whereNotNull('browser')->groupBy('browser')->orderByDesc('count')->limit(10)->get()
-            ->map(fn (stdClass $row): array => [
-                'browser' => (string) $row->browser,
-                'count' => (int) $row->count,
-            ])->all();
+        $results = $query->toBase()
+            ->select('browser', DB::raw('COUNT(*) as count'))
+            ->whereNotNull('browser')
+            ->groupBy('browser')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get()
+            ->map(function (stdClass $row): array {
+                /** @var array{browser: string, count: int} $data */
+                $data = ['browser' => $row->browser, 'count' => $row->count];
+
+                return $data;
+            })->all();
+
+        return array_values($results);
     }
 
     /**
@@ -395,11 +417,21 @@ new #[Lazy] class extends Component
      */
     private function getTopPlatforms(Builder $query): array
     {
-        return $query->toBase()->select('platform', DB::raw('COUNT(*) as count'))->whereNotNull('platform')->groupBy('platform')->orderByDesc('count')->limit(10)->get()
-            ->map(fn (stdClass $row): array => [
-                'platform' => (string) $row->platform,
-                'count' => (int) $row->count,
-            ])->all();
+        $results = $query->toBase()
+            ->select('platform', DB::raw('COUNT(*) as count'))
+            ->whereNotNull('platform')
+            ->groupBy('platform')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get()
+            ->map(function (stdClass $row): array {
+                /** @var array{platform: string, count: int} $data */
+                $data = ['platform' => $row->platform, 'count' => $row->count];
+
+                return $data;
+            })->all();
+
+        return array_values($results);
     }
 
     /**
@@ -412,11 +444,20 @@ new #[Lazy] class extends Component
      */
     private function getTopCountries(Builder $query): array
     {
-        return $query->toBase()->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))->whereNotNull('country_code')->groupBy('country_name', 'country_code')->orderByDesc('count')->limit(10)->get()
-            ->map(fn (stdClass $row): array => [
-                'country_name' => (string) $row->country_name,
-                'country_code' => (string) $row->country_code,
-                'count' => (int) $row->count,
-            ])->all();
+        $results = $query->toBase()
+            ->select('country_name', 'country_code', DB::raw('COUNT(*) as count'))
+            ->whereNotNull('country_code')
+            ->groupBy('country_name', 'country_code')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get()
+            ->map(function (stdClass $row): array {
+                /** @var array{country_name: string, country_code: string, count: int} $data */
+                $data = ['country_name' => $row->country_name, 'country_code' => $row->country_code, 'count' => $row->count];
+
+                return $data;
+            })->all();
+
+        return array_values($results);
     }
 };

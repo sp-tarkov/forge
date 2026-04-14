@@ -211,12 +211,6 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         @if ($version->publish_date)
-                                            @php
-                                                $userTimezone = auth()->user()->timezone ?? 'UTC';
-                                                $publishDateInUserTz = $version->publish_date->setTimezone(
-                                                    $userTimezone,
-                                                );
-                                            @endphp
                                             @if ($version->publish_date->isFuture())
                                                 <div class="flex items-center gap-1">
                                                     <flux:icon.clock
@@ -225,17 +219,17 @@
                                                     />
                                                     <span
                                                         class="text-amber-600 dark:text-amber-400"
-                                                        title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}"
+                                                        title="{{ $this->toUserTimezone($version->publish_date)->format('F j, Y \a\t g:i A T') }}"
                                                     >
-                                                        {{ $publishDateInUserTz->format('M j, Y H:i') }}
+                                                        {{ $this->toUserTimezone($version->publish_date)->format('M j, Y H:i') }}
                                                     </span>
                                                 </div>
                                             @else
                                                 <span
                                                     class="text-green-600 dark:text-green-400"
-                                                    title="{{ $publishDateInUserTz->format('F j, Y \a\t g:i A T') }}"
+                                                    title="{{ $this->toUserTimezone($version->publish_date)->format('F j, Y \a\t g:i A T') }}"
                                                 >
-                                                    {{ $publishDateInUserTz->format('M j, Y') }}
+                                                    {{ $this->toUserTimezone($version->publish_date)->format('M j, Y') }}
                                                 </span>
                                             @endif
                                         @else

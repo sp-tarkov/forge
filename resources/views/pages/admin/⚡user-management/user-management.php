@@ -447,6 +447,23 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
     }
 
     /**
+     * Get the active ban for a user.
+     */
+    public function getActiveBan(User $user): ?Ban
+    {
+        /** @var Collection<int, Ban> $bans */
+        $bans = $user->bans->where('deleted_at', null);
+
+        /** @var Ban|null */
+        return $bans->first(function (Ban $ban): bool {
+            /** @var CarbonInterface|null $expiredAt */
+            $expiredAt = $ban->getAttribute('expired_at');
+
+            return $expiredAt === null || $expiredAt > now();
+        });
+    }
+
+    /**
      * Calculate the expiration date based on the selected duration.
      */
     protected function getExpirationDate(): CarbonInterface

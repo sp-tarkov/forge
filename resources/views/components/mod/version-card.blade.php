@@ -1,10 +1,3 @@
-@props(['version', 'latestVersionId' => null, 'showActions' => null])
-
-@php
-    $isLatest = $latestVersionId !== null && $version->id === $latestVersionId;
-    $modalName = 'version-download-' . $version->id;
-@endphp
-
 <div
     {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black']) }}>
 
@@ -29,7 +22,7 @@
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">
-                <flux:modal.trigger name="{{ $modalName }}">
+                <flux:modal.trigger name="{{ $modalName() }}">
                     <button
                         type="button"
                         class="inline-flex items-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white hover:underline cursor-pointer"
@@ -275,7 +268,7 @@
     </div>
 
     <x-mod.version-download-modal
-        :name="$modalName"
+        :name="$modalName()"
         :download-url="$version->downloadUrl()"
         :version-string="$version->version"
         :spt-version-formatted="$version->latestSptVersion?->version_formatted ?? ($version->spt_version_constraint === '' ? __('Legacy') : null)"
@@ -284,6 +277,6 @@
         :version-updated-at="$version->updated_at"
         :file-size="$version->formatted_file_size"
         :dependencies="$version->latestDependenciesResolved"
-        :is-latest="$isLatest"
+        :is-latest="$isLatest()"
     />
 </div>

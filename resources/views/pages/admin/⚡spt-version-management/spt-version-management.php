@@ -7,6 +7,7 @@ use App\Jobs\UpdateGitHubSptVersionsJob;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
 use App\Support\Version;
+use Carbon\CarbonInterface;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -272,6 +273,16 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
     public function getSelectedVersionProperty(): ?SptVersion
     {
         return $this->selectedVersionId ? SptVersion::query()->withoutGlobalScope(PublishedSptVersionScope::class)->find($this->selectedVersionId) : null;
+    }
+
+    /**
+     * Convert a date to the authenticated user's timezone.
+     */
+    public function toUserTimezone(CarbonInterface $date): CarbonInterface
+    {
+        $timezone = auth()->user()->timezone ?? 'UTC';
+
+        return $date->setTimezone($timezone);
     }
 
     /**
