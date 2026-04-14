@@ -414,11 +414,11 @@
                     class="relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
                 >
                     <flux:icon.bell class="h-5 w-5" />
-                    @if (auth()->user()->unreadNotifications()->count() > 0)
+                    @if (($mobileNotifCount = auth()->user()->unreadNotifications()->count()) > 0)
                         <span
                             class="absolute top-1 left-2 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white"
                         >
-                            {{ auth()->user()->unreadNotifications()->count() > 9 ? '9+' : auth()->user()->unreadNotifications()->count() }}
+                            {{ $mobileNotifCount > 9 ? '9+' : $mobileNotifCount }}
                         </span>
                     @endif
                 </a>
