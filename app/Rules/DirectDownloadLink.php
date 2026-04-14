@@ -41,8 +41,22 @@ final class DirectDownloadLink implements ValidationRule
 
         // Reject raw IP addresses — download links must use a domain name.
         $host = parse_url($value, PHP_URL_HOST);
-        if (is_string($host) && filter_var($host, FILTER_VALIDATE_IP)) {
+        if (! is_string($host) || $host === '') {
+            $fail(__('The download link must have a valid hostname.'));
+
+            return;
+        }
+
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
             $fail(__('The download link must use a domain name, not an IP address.'));
+
+            return;
+        }
+
+        // Resolve hostname and reject private/reserved IPs to prevent SSRF via DNS rebinding.
+        $resolvedIp = gethostbyname($host);
+        if ($resolvedIp === $host || filter_var($resolvedIp, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+            $fail(__('The download link must point to a public server.'));
 
             return;
         }
@@ -51,7 +65,6 @@ final class DirectDownloadLink implements ValidationRule
             // Make HEAD request with redirects and reasonable timeout
             $response = Http::connectTimeout(5)
                 ->timeout(30)
-                ->withoutVerifying() // Some sites may have SSL issues
                 ->head($value);
 
             if (! $response->successful()) {
