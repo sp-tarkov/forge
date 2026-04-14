@@ -195,7 +195,7 @@ return [
             'memory' => 256,
         ],
         'supervisor-long' => [
-            'connection' => 'redis',
+            'connection' => 'redis-long',
             'queue' => ['long'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
@@ -223,7 +223,7 @@ return [
         // not by Horizon on the main application server. Jobs are dispatched to the
         // shared Redis instance and picked up by the verification worker:
         //
-        //   php artisan queue:work redis --queue=verification --tries=2 --timeout=900
+        //   php artisan queue:work redis-verification --queue=verification --tries=2 --timeout=900
     ],
 
     'environments' => [
