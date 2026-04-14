@@ -7,14 +7,18 @@ namespace App\Notifications;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
-final class NewChatMessageNotification extends Notification
+final class NewChatMessageNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * Create a new notification instance.
      *
