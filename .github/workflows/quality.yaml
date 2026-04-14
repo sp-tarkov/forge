@@ -56,6 +56,9 @@ jobs:
         with:
           php-version: 8.5
 
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
       - name: Install NPM Dependencies
         run: npm ci
 
