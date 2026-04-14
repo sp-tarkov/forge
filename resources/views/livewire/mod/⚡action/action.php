@@ -95,7 +95,7 @@ new class extends Component
     /**
      * Get the mod model instance.
      */
-    #[Computed(persist: true)]
+    #[Computed]
     public function mod(): Mod
     {
         return Mod::query()

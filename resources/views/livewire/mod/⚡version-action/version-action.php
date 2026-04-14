@@ -82,7 +82,7 @@ new class extends Component
     /**
      * Get the version model instance.
      */
-    #[Computed(persist: true)]
+    #[Computed]
     public function version(): ModVersion
     {
         return ModVersion::query()

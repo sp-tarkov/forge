@@ -87,7 +87,7 @@ new class extends Component
     /**
      * Get the addon model instance.
      */
-    #[Computed(persist: true)]
+    #[Computed]
     public function addon(): Addon
     {
         return Addon::query()
