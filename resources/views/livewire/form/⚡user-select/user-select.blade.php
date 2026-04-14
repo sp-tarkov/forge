@@ -1,6 +1,6 @@
 <div>
     <flux:pillbox
-        wire:model="selectedUsers"
+        wire:model.live="selectedUsers"
         variant="combobox"
         multiple
         :filter="false"
@@ -10,9 +10,10 @@
     >
         <x-slot name="input">
             <flux:pillbox.input
-                wire:model.live.debounce.300ms="search"
+                wire:model.live="search"
                 :placeholder="count($selectedUsers) >= $maxUsers ? __('Maximum authors reached') : $placeholder"
                 :disabled="count($selectedUsers) >= $maxUsers"
+                class="bg-transparent border-0 p-0 shadow-none focus:ring-0"
             />
         </x-slot>
 
@@ -23,11 +24,9 @@
         @endforeach
 
         <x-slot name="empty">
-            @if (strlen($search) >= 2)
-                <flux:pillbox.option.empty>
-                    {{ __('No users found matching ":search"', ['search' => $search]) }}
-                </flux:pillbox.option.empty>
-            @endif
+            <flux:pillbox.option.empty when-loading="{{ __('Searching...') }}">
+                {{ __('No users found.') }}
+            </flux:pillbox.option.empty>
         </x-slot>
     </flux:pillbox>
 </div>

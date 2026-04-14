@@ -71,8 +71,15 @@ new class extends Component
         $searchTerm = Str::of($this->search)->trim();
 
         if ($searchTerm->length() < 2) {
+            if ($this->selectedUsers === []) {
+                /** @var Collection<int, User> */
+                return collect();
+            }
+
             /** @var Collection<int, User> */
-            return collect();
+            return User::query()
+                ->whereIn('id', $this->selectedUsers)
+                ->get();
         }
 
         /** @var Collection<int, User> */
