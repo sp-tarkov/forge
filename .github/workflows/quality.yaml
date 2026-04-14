@@ -59,8 +59,8 @@ jobs:
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Run Prettier
-        run: npm run format
+      - name: Run Formatter
+        run: npm run lint
 
       - name: Install Pint
         run: composer global require laravel/pint
