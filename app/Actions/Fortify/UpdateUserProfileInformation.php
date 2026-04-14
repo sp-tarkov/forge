@@ -27,7 +27,7 @@ final class UpdateUserProfileInformation implements UpdatesUserProfileInformatio
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
             'cover' => ['nullable', 'mimes:jpg,jpeg,png', 'max:2048'],
             'timezone' => ['required', 'string', 'in:'.implode(',', DateTimeZone::listIdentifiers())],
-            'about' => ['nullable', 'string'],
+            'about' => ['nullable', 'string', 'max:500'],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo']) && $input['photo'] instanceof UploadedFile) {
