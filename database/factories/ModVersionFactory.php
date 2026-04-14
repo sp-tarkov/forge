@@ -44,7 +44,7 @@ final class ModVersionFactory extends Factory
             'version_patch' => $versionPatch,
             'version_labels' => $versionLabels,
             'description' => fake()->text(),
-            'link' => fake()->url(),
+            'link' => 'https://example.com/'.fake()->slug().'.7z',
             'spt_version_constraint' => $this->faker->randomElement(['^1.0.0', '^2.0.0', '>=3.0.0', '<4.0.0']),
             'downloads' => fake()->randomNumber(),
             'disabled' => false,

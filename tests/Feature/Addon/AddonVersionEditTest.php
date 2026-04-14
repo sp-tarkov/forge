@@ -32,7 +32,6 @@ describe('Addon Version Edit Form', function (): void {
         ]);
         $addonVersion = AddonVersion::factory()->create([
             'addon_id' => $addon->id,
-            'link' => 'https://example.com/addon.7z',
             'published_at' => now(),
         ]);
 
