@@ -43,6 +43,13 @@ final class PeakVisitor extends Model
      */
     public static function getPeak(): ?self
     {
-        return Cache::flexible('peak_visitor_data', [3600, 7200], fn (): ?self => self::query()->orderByDesc('count')->first());
+        /** @var array<string, mixed>|null $item */
+        $item = Cache::flexible('peak_visitor_data', [3600, 7200], fn (): ?array => self::query()->orderByDesc('count')->first()?->toArray());
+
+        if ($item === null) {
+            return null;
+        }
+
+        return self::hydrate([$item])->first();
     }
 }
