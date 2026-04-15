@@ -298,6 +298,8 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
         $maxExtractionRatio = config()->integer('verification.max_extraction_ratio', 100);
         $maxExtractedSize = config()->integer('verification.max_extracted_size', 2 * 1024 * 1024 * 1024);
 
+        chmod($this->tempFilePath, 0644);
+
         $command = sprintf(
             'docker run --rm --network=none --memory=512m --cpus=1 -v %s:/input/archive:ro -e ARCHIVE_EXTENSION=%s -e ARCHIVE_SIZE=%s -e MAX_EXTRACTION_RATIO=%s -e MAX_EXTRACTED_SIZE=%s %s',
             escapeshellarg($this->tempFilePath),
