@@ -205,7 +205,7 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
                 'color_class' => $this->formColorClass,
                 'publish_date' => $publishDate,
             ]);
-            Flux::toast(text: 'SPT version created successfully.');
+            Flux::toast(heading: 'Version Created', text: 'SPT version has been created successfully.', variant: 'success');
         }
 
         $this->closeModals();
@@ -221,13 +221,13 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
 
         // Check if version has associated mod versions
         if ($version->modVersions()->exists()) {
-            Flux::toast(text: 'Cannot delete this version as it has associated mod versions.', variant: 'danger');
+            Flux::toast(heading: 'Error', text: 'Cannot delete this version as it has associated mod versions.', variant: 'danger');
 
             return;
         }
 
         $version->delete();
-        Flux::toast(text: 'SPT version deleted successfully.');
+        Flux::toast(heading: 'Version Deleted', text: 'SPT version has been deleted successfully.', variant: 'success');
         $this->resetPage();
     }
 
@@ -237,7 +237,7 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
     public function syncFromGitHub(): void
     {
         dispatch(new UpdateGitHubSptVersionsJob());
-        Flux::toast(text: 'GitHub sync job has been queued. Version data will be updated shortly.');
+        Flux::toast(heading: 'Sync Queued', text: 'GitHub sync job has been queued. Version data will be updated shortly.', variant: 'success');
     }
 
     /**

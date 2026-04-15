@@ -33,6 +33,6 @@ new class extends Component
             'email_chat_notifications_enabled' => $this->emailChatNotificationsEnabled,
         ]);
 
-        Flux::toast(text: 'Saved.');
+        Flux::toast(heading: 'Preferences Saved', text: 'Your notification preferences have been saved.', variant: 'success');
     }
 };

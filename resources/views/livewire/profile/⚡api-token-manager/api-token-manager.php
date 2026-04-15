@@ -114,7 +114,7 @@ new class extends Component
         $this->createApiTokenForm['name'] = '';
         $this->createApiTokenForm['permissions'] = $this->ensureReadAbility(self::DEFAULT_PERMISSIONS);
 
-        Flux::toast(text: 'API token created.');
+        Flux::toast(heading: 'Token Created', text: 'Your API token has been created.', variant: 'success');
     }
 
     /**

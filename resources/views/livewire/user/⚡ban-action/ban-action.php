@@ -133,7 +133,7 @@ new class extends Component
                     reason: $this->reason ?: null,
                 );
 
-                Flux::toast(text: 'User banned and linked to report!');
+                Flux::toast(heading: 'User Banned', text: 'User has been banned and linked to report.', variant: 'success');
                 $this->showBanModal = false;
                 $this->reset(['duration', 'reason', 'selectedReportId']);
 
@@ -149,7 +149,7 @@ new class extends Component
         Track::event(TrackingEventType::USER_BAN, $this->user);
         Track::event(TrackingEventType::USER_BANNED, $this->user);
 
-        Flux::toast(text: 'User successfully banned!');
+        Flux::toast(heading: 'User Banned', text: 'The user has been successfully banned.', variant: 'success');
 
         $this->showBanModal = false;
         $this->reset(['duration', 'reason', 'selectedReportId']);
@@ -169,7 +169,7 @@ new class extends Component
         Track::event(TrackingEventType::USER_UNBAN, $this->user);
         Track::event(TrackingEventType::USER_UNBANNED, $this->user);
 
-        Flux::toast(text: 'User successfully unbanned!');
+        Flux::toast(heading: 'User Unbanned', text: 'The user has been successfully unbanned.', variant: 'success');
 
         $this->showUnbanModal = false;
     }

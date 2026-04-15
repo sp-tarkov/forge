@@ -268,9 +268,9 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::MOD_CREATE, $mod);
 
-        Flux::toast(text: 'Mod has been Successfully Created');
+        Flux::toast(heading: 'Mod Created', text: 'Your mod has been successfully created.', variant: 'success');
 
-        $this->redirect($mod->detail_url);
+        $this->redirect($mod->detail_url, navigate: true);
     }
 
     /**

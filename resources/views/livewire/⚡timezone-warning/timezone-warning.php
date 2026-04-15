@@ -35,7 +35,7 @@ new class extends Component
             $this->showModal = false;
 
             // Flash success message
-            Flux::toast(text: __('Timezone updated successfully to :timezone', ['timezone' => $timezoneToSave]));
+            Flux::toast(heading: 'Timezone Updated', text: __('Your timezone has been updated to :timezone.', ['timezone' => $timezoneToSave]), variant: 'success');
 
             $this->dispatch('$refresh');
         }

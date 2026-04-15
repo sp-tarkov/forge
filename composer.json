@@ -38,6 +38,7 @@
         "spatie/laravel-honeypot": "^4.7.1",
         "sqids/sqids": "^0.5.0",
         "knuckleswtf/scribe": "^5.9",
+        "nunomaduro/essentials": "^1.2",
         "stevebauman/purify": "^6.3.2"
     },
     "require-dev": {
@@ -52,7 +53,6 @@
         "laravel/tinker": "^3.0.2",
         "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.9.3",
-        "nunomaduro/essentials": "^1.2",
         "nunomaduro/pao": "^0.1.8",
         "pestphp/pest": "^4.6.0",
         "pestphp/pest-plugin-browser": "^4.3.1",

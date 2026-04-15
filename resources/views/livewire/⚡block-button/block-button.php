@@ -68,15 +68,15 @@ new class extends Component
             $blockingService->unblockUser($currentUser, $this->user);
             $this->isBlocked = false;
             $this->dispatch('user-unblocked', userId: $this->user->id);
-            Flux::toast(text: 'You have successfully unblocked '.$this->user->name.'.');
+            Flux::toast(heading: 'User Unblocked', text: 'You have successfully unblocked '.$this->user->name.'.', variant: 'success');
         } else {
             $blockingService->blockUser($currentUser, $this->user, $this->blockReason);
             $this->isBlocked = true;
             $this->dispatch('user-blocked', userId: $this->user->id);
-            Flux::toast(text: 'You have successfully blocked '.$this->user->name.'.');
+            Flux::toast(heading: 'User Blocked', text: 'You have successfully blocked '.$this->user->name.'.', variant: 'success');
 
             // Redirect to homepage after blocking since the user profile will now be inaccessible
-            $this->redirect(route('home'));
+            $this->redirect(route('home'), navigate: true);
 
             return;
         }

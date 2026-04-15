@@ -108,7 +108,7 @@ new class extends Component
 
         $this->confirmingLogout = false;
 
-        Flux::toast(text: 'Other browser sessions logged out.');
+        Flux::toast(heading: 'Sessions Logged Out', text: 'All other browser sessions have been logged out.', variant: 'success');
     }
 
     /**

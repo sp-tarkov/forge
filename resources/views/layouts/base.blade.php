@@ -7,7 +7,6 @@
 ])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <meta charset="utf-8">
     <meta
@@ -107,7 +106,10 @@
         href="#main-content"
         class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-white focus:text-gray-900 focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:bg-gray-900 dark:focus:text-gray-100"
     >{{ __('Skip to main content') }}</a>
-    <flux:toast />
+
+    @persist('toast')
+        <flux:toast position="top end" />
+    @endpersist
 
     <div class="flex-grow bg-gray-100 dark:bg-gray-800">
         @if ($variant !== 'simple')

@@ -333,9 +333,9 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::MOD_EDIT, $this->mod);
 
-        Flux::toast(text: 'Mod has been Successfully Updated');
+        Flux::toast(heading: 'Mod Updated', text: 'Your mod has been successfully updated.', variant: 'success');
 
-        $this->redirect($this->mod->detail_url);
+        $this->redirect($this->mod->detail_url, navigate: true);
     }
 
     /**
@@ -361,7 +361,7 @@ new #[Layout('layouts::base')] class extends Component
             $this->mod->thumbnail_hash = '';
             $this->mod->save();
 
-            Flux::toast(text: 'Thumbnail has been deleted');
+            Flux::toast(heading: 'Thumbnail Deleted', text: 'The mod thumbnail has been deleted.', variant: 'success');
         }
     }
 

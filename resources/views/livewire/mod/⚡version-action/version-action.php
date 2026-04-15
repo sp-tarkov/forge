@@ -155,7 +155,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, disabled: true);
 
-        Flux::toast(text: 'Mod version successfully disabled!');
+        Flux::toast(heading: 'Version Disabled', text: 'The mod version has been successfully disabled.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -184,7 +184,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, disabled: false);
 
-        Flux::toast(text: 'Mod version successfully enabled!');
+        Flux::toast(heading: 'Version Enabled', text: 'The mod version has been successfully enabled.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -215,7 +215,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, published: true);
 
-        Flux::toast(text: 'Mod version successfully published!');
+        Flux::toast(heading: 'Version Published', text: 'The mod version has been successfully published.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -244,7 +244,7 @@ new class extends Component
 
         $this->dispatch('mod-version-updated.'.$this->versionId, published: false);
 
-        Flux::toast(text: 'Mod version successfully unpublished!');
+        Flux::toast(heading: 'Version Unpublished', text: 'The mod version has been successfully unpublished.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
