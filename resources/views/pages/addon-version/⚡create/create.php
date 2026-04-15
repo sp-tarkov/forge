@@ -178,6 +178,15 @@ new #[Layout('layouts::base')] class extends Component
     {
         if (isset($this->dependencies[$index])) {
             $this->dependencies[$index]['modId'] = $modId !== null ? (string) $modId : '';
+
+            // Auto-populate constraint with latest version if the constraint is currently empty.
+            if ($modId !== null && $this->dependencies[$index]['constraint'] === '') {
+                $versions = ModVersion::versionNumbers($modId);
+                if ($versions !== []) {
+                    $this->dependencies[$index]['constraint'] = '~'.$versions[0];
+                }
+            }
+
             $this->updateMatchingDependencyVersions($index);
         }
     }

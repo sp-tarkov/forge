@@ -512,6 +512,76 @@ describe('Mod Version Create Form', function (): void {
             $selfDependency = $modVersion->dependencies()->where('dependent_mod_id', $mod->id)->first();
             expect($selfDependency)->toBeNull();
         });
+
+        it('auto-populates version constraint with latest version when selecting a dependency mod', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            $dependencyMod = Mod::factory()->create(['name' => 'Dep Mod']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDays(2),
+            ]);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '2.3.1',
+                'published_at' => now()->subDay(),
+            ]);
+
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            $component->call('addDependency');
+            $component->call('updateDependencyModId', 0, (string) $dependencyMod->id);
+
+            expect($component->get('dependencies.0.constraint'))->toBe('~2.3.1');
+        });
+
+        it('does not overwrite existing constraint when selecting a dependency mod', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            $dependencyMod = Mod::factory()->create(['name' => 'Dep Mod']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            $component->call('addDependency');
+
+            // Set a constraint before selecting a mod
+            $dependencies = $component->get('dependencies');
+            $dependencies[0]['constraint'] = '^1.0.0';
+            $component->set('dependencies', $dependencies);
+
+            $component->call('updateDependencyModId', 0, (string) $dependencyMod->id);
+
+            // Should keep the user's constraint, not overwrite it
+            expect($component->get('dependencies.0.constraint'))->toBe('^1.0.0');
+        });
+
+        it('does not auto-populate constraint when dependency mod has no published versions', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            $dependencyMod = Mod::factory()->create(['name' => 'Empty Dep Mod']);
+
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod]);
+
+            $component->call('addDependency');
+            $component->call('updateDependencyModId', 0, (string) $dependencyMod->id);
+
+            expect($component->get('dependencies.0.constraint'))->toBe('');
+        });
     });
 
     describe('Validation', function (): void {
