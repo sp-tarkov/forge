@@ -37,6 +37,7 @@
         "spatie/laravel-flare": "^2.8.0",
         "spatie/laravel-honeypot": "^4.7.1",
         "sqids/sqids": "^0.5.0",
+        "knuckleswtf/scribe": "^5.9",
         "stevebauman/purify": "^6.3.2"
     },
     "require-dev": {
@@ -44,7 +45,6 @@
         "calebdw/larastan-livewire": "^2.5",
         "driftingly/rector-laravel": "^2.3.0",
         "fakerphp/faker": "^1.24.1",
-        "knuckleswtf/scribe": "^5.9",
         "larastan/larastan": "^3.9.5",
         "laravel/boost": "^2.4.3",
         "laravel/pail": "^1.2.6",
