@@ -9,10 +9,7 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
-
-uses(RefreshDatabase::class);
 
 describe('ModFilter with SPT version publish dates', function (): void {
     it('excludes mods with only unpublished SPT versions for guests', function (): void {

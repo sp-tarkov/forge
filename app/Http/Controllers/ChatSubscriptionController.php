@@ -7,22 +7,18 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
-class ChatSubscriptionController extends Controller
+final class ChatSubscriptionController extends Controller
 {
     /**
      * Handle the unsubscribe request for chat notifications.
      */
-    public function unsubscribe(Request $request, User $user, string $conversationHashId): RedirectResponse
+    public function unsubscribe(User $user, string $conversationHashId): RedirectResponse
     {
-        // Verify the signed URL
-        abort_unless($request->hasValidSignature(), 403);
-
         // Find the conversation by hash ID
         $conversation = Conversation::findByHashId($conversationHashId);
 
-        if ($conversation === null) {
+        if (! $conversation instanceof Conversation) {
             return to_route('home')
                 ->with('error', 'Conversation not found.');
         }

@@ -1,0 +1,33 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/calebdw/larastan-livewire/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+    - phar://phpstan.phar/conf/bleedingEdge.neon
+
+parameters:
+    paths:
+        - app
+        - bootstrap/app.php
+        - config
+        - database
+        - public
+        - resources/views/livewire
+        - resources/views/pages
+        - routes
+
+    level: max
+
+    tmpDir: /tmp/phpstan
+
+    ignoreErrors:
+
+        # MorphMany's TDeclaringModel template is invariant, so $this(Model) cannot
+        # satisfy the interface's expected concrete Model type. This is a known PHPStan
+        # limitation with traits that declare morphMany relationships.
+        # FIX: https://github.com/larastan/larastan/pull/2473
+        -
+            identifier: return.type
+            path: app/Traits/HasComments.php
+        -
+            identifier: generics.notSubtype
+            path: app/Contracts/Commentable.php

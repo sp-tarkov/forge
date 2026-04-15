@@ -14,7 +14,7 @@ use Override;
  *
  * @property SourceCodeLink $resource
  */
-class SourceCodeLinkResource extends JsonResource
+final class SourceCodeLinkResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

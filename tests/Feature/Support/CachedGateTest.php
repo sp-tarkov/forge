@@ -8,9 +8,6 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     // Clear cache before each test

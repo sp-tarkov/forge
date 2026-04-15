@@ -22,7 +22,8 @@ beforeEach(function (): void {
 
     // Set test webhook URL and use sync queue for testing
     config([
-        'discord-alerts.webhook_urls.mods' => 'https://discord.com/api/webhooks/test',
+        'discord-alerts.webhook_urls.mods' => 'https://discord.com/api/webhooks/test-mods',
+        'discord-alerts.webhook_urls.addons' => 'https://discord.com/api/webhooks/test-addons',
         'queue.default' => 'sync', // Use sync queue to execute jobs immediately
     ]);
 });
@@ -57,7 +58,7 @@ it('sends discord notification for newly visible mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was marked as notified
     $mod->refresh();
@@ -76,7 +77,7 @@ it('does not send notification for disabled mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified
     $mod->refresh();
@@ -95,7 +96,7 @@ it('does not send notification for unpublished mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified
     $mod->refresh();
@@ -114,7 +115,7 @@ it('does not send notification for mods without valid SPT versions', function ()
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified
     $mod->refresh();
@@ -146,7 +147,7 @@ it('does not send notification for already notified mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod still has the sent flag as true
     $mod->refresh();
@@ -190,7 +191,7 @@ it('includes all mod details in discord embed', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Verify the mod was marked as notified
     $mod->refresh();
@@ -240,7 +241,7 @@ it('sends discord notification for new mod versions', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert new version was marked as notified
     $newVersion->refresh();
@@ -251,7 +252,7 @@ it('sends discord notification for new mod versions', function (): void {
     expect($oldVersion->discord_notification_sent)->toBeTrue();
 
     // Verify the notification was sent with the correct version (2.0.0)
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -306,7 +307,7 @@ it('sends individual notifications for multiple new versions of same mod', funct
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert both versions were marked as notified
     $version1->refresh();
@@ -318,7 +319,7 @@ it('sends individual notifications for multiple new versions of same mod', funct
     Http::assertSentCount(2);
 
     // Verify each notification contains the correct version
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -331,7 +332,7 @@ it('sends individual notifications for multiple new versions of same mod', funct
         return str_contains($embed['title'] ?? '', 'Version 2.0.0');
     });
 
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -370,7 +371,7 @@ it('marks versions as notified when new mod notification is sent', function (): 
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was notified (first time)
     $mod->refresh();
@@ -406,7 +407,7 @@ it('does not send version notification for disabled versions', function (): void
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified
     $version->refresh();
@@ -438,7 +439,7 @@ it('does not send version notification for unpublished versions', function (): v
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified
     $version->refresh();
@@ -489,14 +490,14 @@ it('does not duplicate spt versions in new mod notification', function (): void 
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was marked as notified
     $mod->refresh();
     expect($mod->discord_notification_sent)->toBeTrue();
 
     // Verify HTTP request was made with unique SPT versions only
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -563,7 +564,7 @@ it('does not send version update notification when new mod is created', function
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was marked as notified
     $mod->refresh();
@@ -579,7 +580,7 @@ it('does not send version update notification when new mod is created', function
     Http::assertSentCount(1);
 
     // Verify it's a new mod notification, not a version update notification
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $content = $body['content'] ?? '';
 
@@ -633,14 +634,14 @@ it('does not duplicate spt versions in mod version update notification', functio
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert new version was marked as notified
     $newVersion->refresh();
     expect($newVersion->discord_notification_sent)->toBeTrue();
 
     // Verify HTTP request was made with unique SPT versions only
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -716,14 +717,14 @@ it('sends notification for lower semantic version uploaded after higher version'
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert the lower version was marked as notified
     $lowerVersion->refresh();
     expect($lowerVersion->discord_notification_sent)->toBeTrue();
 
     // Verify the notification was sent with the CORRECT version (1.0.9, not 1.1.0)
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request): bool {
         $body = json_decode((string) $request->body(), true);
         $embeds = $body['embeds'] ?? [];
 
@@ -762,7 +763,7 @@ it('does not send notification for future-published mods', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert mod was not marked as notified (scope filters it out)
     $mod->refresh();
@@ -794,11 +795,46 @@ it('does not send notification for future-published mod versions', function (): 
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified (scope filters it out)
     $version->refresh();
     expect($version->discord_notification_sent)->toBeFalse();
+});
+
+it('sends mod notifications to the mods webhook url', function (): void {
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    // Create a version with SPT support
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    app()->call($job->handle(...));
+
+    // Verify notification was sent to the mods webhook URL
+    Http::assertSent(fn ($request): bool => str_contains((string) $request->url(), 'test-mods'));
 });
 
 it('sends discord notification for newly published addons', function (): void {
@@ -842,7 +878,7 @@ it('sends discord notification for newly published addons', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was marked as notified
     $addon->refresh();
@@ -861,7 +897,7 @@ it('does not send notification for unpublished addons', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was not marked as notified
     $addon->refresh();
@@ -900,7 +936,7 @@ it('does not send notification for future-published addons', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was not marked as notified (scope filters it out)
     $addon->refresh();
@@ -965,7 +1001,7 @@ it('sends discord notification for new addon versions', function (): void {
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert new version was marked as notified
     $newVersion->refresh();
@@ -1002,7 +1038,7 @@ it('does not send notification for future-published addon versions', function ()
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified (scope filters it out)
     $version->refresh();
@@ -1039,7 +1075,7 @@ it('does not send notification for unpublished addon versions', function (): voi
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert version was not marked as notified
     $version->refresh();
@@ -1118,7 +1154,7 @@ it('marks all published addon versions as notified when new addon notification i
 
     // Run the job
     $job = new SendDiscordNotifications;
-    $job->handle();
+    app()->call($job->handle(...));
 
     // Assert addon was marked as notified
     $addon->refresh();
@@ -1135,4 +1171,214 @@ it('marks all published addon versions as notified when new addon notification i
     $futureVersion->refresh();
     expect($unpublishedVersion->discord_notification_sent)->toBeFalse();
     expect($futureVersion->discord_notification_sent)->toBeFalse();
+});
+
+it('sends addon notifications to the addons webhook url', function (): void {
+    // Create SPT version for mod visibility
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    // Create a mod version with SPT support
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Create an addon that should trigger notification
+    $addon = Addon::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->for($mod, 'mod')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    // Create a published version
+    AddonVersion::factory()
+        ->for($addon)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    app()->call($job->handle(...));
+
+    // Verify addon notification was sent to the addons webhook URL (not the mods URL)
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        if (! str_contains($content, 'addon')) {
+            return false;
+        }
+
+        return str_contains((string) $request->url(), 'test-addons');
+    });
+});
+
+it('includes role mention in new mod notification when role id is configured', function (): void {
+    // Set role ID
+    config(['discord-alerts.mod_notifications_role_id' => '123456789']);
+
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    app()->call($job->handle(...));
+
+    // Verify role mention is included
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        return str_contains($content, '<@&123456789>');
+    });
+});
+
+it('includes role mention in new addon notification when role id is configured', function (): void {
+    // Set addon role ID
+    config(['discord-alerts.addon_notifications_role_id' => '987654321']);
+
+    // Create SPT version for mod visibility
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Create an addon that should trigger notification
+    $addon = Addon::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->for($mod, 'mod')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    AddonVersion::factory()
+        ->for($addon)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    app()->call($job->handle(...));
+
+    // Verify addon role mention is included (not the mod role)
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        if (! str_contains($content, 'addon')) {
+            return false;
+        }
+
+        return str_contains($content, '<@&987654321>');
+    });
+});
+
+it('does not include role mention when role id is not configured', function (): void {
+    // Ensure role IDs are empty
+    config([
+        'discord-alerts.mod_notifications_role_id' => '',
+        'discord-alerts.addon_notifications_role_id' => '',
+    ]);
+
+    // Create SPT version
+    $sptVersion = SptVersion::factory()->create();
+
+    // Create a mod that should trigger notification
+    $mod = Mod::factory()
+        ->for(User::factory()->create(), 'owner')
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+            'discord_notification_sent' => false,
+        ]);
+
+    $modVersion = ModVersion::factory()
+        ->for($mod)
+        ->create([
+            'disabled' => false,
+            'published_at' => now(),
+        ]);
+    $modVersion->sptVersions()->sync($sptVersion);
+
+    // Capture HTTP requests
+    Http::fake([
+        'discord.com/*' => Http::response('', 204),
+    ]);
+
+    // Run the job
+    $job = new SendDiscordNotifications;
+    app()->call($job->handle(...));
+
+    // Verify no role mention is included
+    Http::assertSent(function ($request): bool {
+        $body = json_decode((string) $request->body(), true);
+        $content = $body['content'] ?? '';
+
+        return ! str_contains($content, '<@&');
+    });
 });

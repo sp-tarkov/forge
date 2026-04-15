@@ -1,13 +1,13 @@
-import { Alpine } from "../../vendor/livewire/livewire/dist/livewire.esm";
+import { Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
 
-Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
+Alpine.data('visitorTracker', (initialPeak, initialDate, wire) => ({
     wire: wire,
     visitors: new Map(),
     leavingTimers: new Map(),
     totalCount: 0,
     authCount: 0,
     peakCount: initialPeak || 0,
-    peakDate: initialDate || "",
+    peakDate: initialDate || '',
     connectionError: false,
     channel: null,
     peakChannel: null,
@@ -30,24 +30,24 @@ Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
         this.leavingTimers.forEach((timer) => clearTimeout(timer));
         this.leavingTimers.clear();
         if (this.channel) {
-            window.Echo.leave("visitors");
+            window.Echo.leave('visitors');
             this.channel = null;
         }
         if (this.peakChannel) {
-            window.Echo.leave("peak-visitors");
+            window.Echo.leave('peak-visitors');
             this.peakChannel = null;
         }
     },
 
     joinVisitorChannel() {
         if (!window.Echo) {
-            console.error("Echo not initialized");
+            console.error('Echo not initialized');
             this.connectionError = true;
             return;
         }
 
         try {
-            this.channel = window.Echo.join("visitors")
+            this.channel = window.Echo.join('visitors')
                 .here((users) => {
                     this.leavingTimers.forEach((timer) => clearTimeout(timer));
                     this.leavingTimers.clear();
@@ -77,11 +77,11 @@ Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
                     this.leavingTimers.set(user.id, timer);
                 })
                 .error((error) => {
-                    console.error("Channel error:", error);
+                    console.error('Channel error:', error);
                     this.connectionError = true;
                 });
         } catch (error) {
-            console.error("Failed to join visitors channel:", error);
+            console.error('Failed to join visitors channel:', error);
             this.connectionError = true;
         }
     },
@@ -89,7 +89,7 @@ Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
     listenForPeakUpdates() {
         if (!window.Echo) return;
 
-        this.peakChannel = window.Echo.channel("peak-visitors").listen("PeakVisitorUpdated", (data) => {
+        this.peakChannel = window.Echo.channel('peak-visitors').listen('PeakVisitorUpdated', (data) => {
             this.peakCount = data.count;
             this.peakDate = data.date;
         });
@@ -97,7 +97,7 @@ Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
 
     updateCounts() {
         this.totalCount = this.visitors.size;
-        this.authCount = Array.from(this.visitors.values()).filter((v) => v.type === "authenticated").length;
+        this.authCount = Array.from(this.visitors.values()).filter((v) => v.type === 'authenticated').length;
     },
 
     checkForNewPeak() {
@@ -112,33 +112,33 @@ Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
 
     setupEchoListeners() {
         if (!window.Echo) {
-            console.error("Echo not initialized");
+            console.error('Echo not initialized');
             this.connectionError = true;
             return;
         }
 
         const pusher = window.Echo.connector.pusher;
 
-        pusher.connection.unbind("error");
-        pusher.connection.unbind("unavailable");
-        pusher.connection.unbind("failed");
-        pusher.connection.unbind("disconnected");
-        pusher.connection.unbind("connected");
-        pusher.connection.unbind("state_change");
+        pusher.connection.unbind('error');
+        pusher.connection.unbind('unavailable');
+        pusher.connection.unbind('failed');
+        pusher.connection.unbind('disconnected');
+        pusher.connection.unbind('connected');
+        pusher.connection.unbind('state_change');
 
-        pusher.connection.bind("error", () => {
+        pusher.connection.bind('error', () => {
             this.connectionError = true;
         });
-        pusher.connection.bind("unavailable", () => {
+        pusher.connection.bind('unavailable', () => {
             this.connectionError = true;
         });
-        pusher.connection.bind("failed", () => {
+        pusher.connection.bind('failed', () => {
             this.connectionError = true;
         });
-        pusher.connection.bind("disconnected", () => {
+        pusher.connection.bind('disconnected', () => {
             this.connectionError = true;
         });
-        pusher.connection.bind("connected", () => {
+        pusher.connection.bind('connected', () => {
             this.connectionError = false;
             if (!this.channel) {
                 this.joinVisitorChannel();
@@ -148,8 +148,8 @@ Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
             }
         });
 
-        pusher.connection.bind("state_change", (states) => {
-            if (states.current === "connected" && states.previous !== "connected") {
+        pusher.connection.bind('state_change', (states) => {
+            if (states.current === 'connected' && states.previous !== 'connected') {
                 this.connectionError = false;
                 if (!this.channel) {
                     this.joinVisitorChannel();
@@ -173,8 +173,8 @@ Alpine.data("visitorTracker", (initialPeak, initialDate, wire) => ({
                     this.disconnect();
                 },
             };
-            document.addEventListener("livewire:navigated", this.navigationHandlers.navigated);
-            document.addEventListener("livewire:navigating", this.navigationHandlers.navigating);
+            document.addEventListener('livewire:navigated', this.navigationHandlers.navigated);
+            document.addEventListener('livewire:navigating', this.navigationHandlers.navigating);
         }
     },
 }));

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('oauth_connections', function (Blueprint $table) {
+        Schema::table('oauth_connections', function (Blueprint $table): void {
             $table->boolean('mfa_enabled')
                 ->after('avatar')
                 ->nullable()
@@ -26,7 +26,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('oauth_connections', function (Blueprint $table) {
+        Schema::table('oauth_connections', function (Blueprint $table): void {
             $table->dropColumn('mfa_enabled');
         });
     }

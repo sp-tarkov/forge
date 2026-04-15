@@ -17,7 +17,7 @@ use Knuckles\Scribe\Attributes\UrlParam;
  *
  * Endpoints for retrieving SPT-related data.
  */
-class SptVersionController extends Controller
+final class SptVersionController extends Controller
 {
     /**
      * Get SPT Versions
@@ -108,12 +108,15 @@ class SptVersionController extends Controller
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request): JsonResponse
     {
+        /** @var array<string, mixed>|null $filters */
+        $filters = $request->input('filter');
+
         $queryBuilder = (new SptVersionQueryBuilder)
-            ->withFilters($request->input('filter'))
+            ->withFilters($filters)
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all());
 
-        $sptVersions = $queryBuilder->paginate($request->integer('per_page', 12));
+        $sptVersions = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(SptVersionResource::collection($sptVersions));
     }

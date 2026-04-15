@@ -5,24 +5,29 @@ declare(strict_types=1);
 use App\Console\Commands\CleanupOldNotificationLogs;
 use App\Console\Commands\ForgeHeartbeat;
 use App\Console\Commands\UpdateGeoLiteDatabase;
+use App\Jobs\DetectDownloadChangesJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Jobs\SendDiscordNotifications;
 use App\Jobs\UpdateDisposableEmailBlocklist;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('horizon:snapshot')->everyFiveMinutes();
-Schedule::command(CleanupOldNotificationLogs::class)->daily();
+Schedule::command('horizon:snapshot')->everyFiveMinutes()->onOneServer();
+Schedule::command(CleanupOldNotificationLogs::class)->daily()->onOneServer();
 
-Schedule::command(UpdateGeoLiteDatabase::class)->daily()->at('02:00');
-Schedule::job(new UpdateDisposableEmailBlocklist)->daily()->at('04:00');
+Schedule::command(UpdateGeoLiteDatabase::class)->daily()->at('02:00')->onOneServer()->runInBackground()->environments('production');
+Schedule::job(new UpdateDisposableEmailBlocklist)->daily()->at('04:00')->onOneServer()->environments('production');
 
-Schedule::job(new SendDiscordNotifications)->everyMinute();
-Schedule::job(new ProcessPinnedModVersionPublishDates)->everyMinute();
+Schedule::job(new SendDiscordNotifications)->everyMinute()->onOneServer()->withoutOverlapping()->environments('production');
+Schedule::job(new ProcessPinnedModVersionPublishDates)->everyMinute()->onOneServer()->withoutOverlapping()->environments('production');
 
 if (config('app.forge_heartbeat_url')) {
-    Schedule::command(ForgeHeartbeat::class)->everyMinute();
+    Schedule::command(ForgeHeartbeat::class)->everyMinute()->onOneServer()->withoutOverlapping();
 }
 
-if (config('app.env') === 'local' && config('telescope.enabled')) {
+if (config('verification.enabled')) {
+    Schedule::job(new DetectDownloadChangesJob)->twiceDaily(6, 18)->onOneServer()->withoutOverlapping();
+}
+
+if (app()->isLocal() && config('telescope.enabled')) {
     Schedule::command('telescope:prune --hours=48')->daily();
 }

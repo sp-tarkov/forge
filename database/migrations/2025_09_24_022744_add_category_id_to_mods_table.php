@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->foreignId('category_id')->nullable()->after('license_id')->constrained('mod_categories')->cascadeOnUpdate()->nullOnDelete();
             $table->index('category_id');
         });
@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->dropForeign(['category_id']);
             $table->dropColumn('category_id');
         });

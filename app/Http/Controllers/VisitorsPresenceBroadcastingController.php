@@ -17,7 +17,7 @@ use Override;
  * This controller extends Laravel's default broadcast authentication to allow both authenticated users and guest users
  * (identified by session ID) to participate in the "visitors" presence channel.
  */
-class VisitorsPresenceBroadcastingController extends BroadcastController
+final class VisitorsPresenceBroadcastingController extends BroadcastController
 {
     /**
      * Authenticate the user for broadcasting channels.
@@ -63,14 +63,19 @@ class VisitorsPresenceBroadcastingController extends BroadcastController
 
             // Hash the session ID to prevent leaking the actual session ID
             // Using a deterministic hash so the same session always gets the same ID
-            $maskedSessionId = mb_substr(hash('sha256', $sessionId.config('app.key')), 0, 16);
+            $appKey = config()->string('app.key');
+            $maskedSessionId = mb_substr(hash('sha256', $sessionId.$appKey), 0, 16);
             $guestUser = new Guest($maskedSessionId);
 
             // Set this as the user for the request
             $request->setUserResolver(fn (): Guest => $guestUser);
         }
 
-        // Let Laravel's parent method handle everything else
-        return parent::authenticate($request) ?? response('Unauthorized', 403);
+        // Let Laravel's parent method handle everything else. The parent PHPDoc says Response but the
+        // NullBroadcaster can return null, so we need a fallback for test environments.
+        /** @var Response|JsonResponse|array{id: string, name?: string, type?: string}|null $result */
+        $result = parent::authenticate($request);
+
+        return $result ?? response('Unauthorized', 403);
     }
 }

@@ -6,6 +6,8 @@ namespace Database\Factories;
 
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
+use App\Models\Comment;
+use App\Models\Mod;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -13,7 +15,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Report>
  */
-class ReportFactory extends Factory
+final class ReportFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
@@ -29,7 +31,7 @@ class ReportFactory extends Factory
     {
         return [
             'reporter_id' => User::factory(),
-            'reportable_type' => fake()->randomElement(['App\Models\User', 'App\Models\Mod', 'App\Models\Comment']),
+            'reportable_type' => fake()->randomElement([User::class, Mod::class, Comment::class]),
             'reportable_id' => 1,
             'reason' => fake()->randomElement(ReportReason::cases()),
             'context' => fake()->optional()->sentence(),
@@ -43,7 +45,7 @@ class ReportFactory extends Factory
     public function assigned(?User $user = null): static
     {
         return $this->state(fn (array $attributes): array => [
-            'assignee_id' => $user !== null ? $user->id : User::factory(),
+            'assignee_id' => $user instanceof User ? $user->id : User::factory(),
         ]);
     }
 

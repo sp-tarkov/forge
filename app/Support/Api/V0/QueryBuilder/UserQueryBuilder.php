@@ -11,7 +11,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<User>
  */
-class UserQueryBuilder extends AbstractQueryBuilder
+final class UserQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * @return array<string, string>

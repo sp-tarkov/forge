@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\Api\V0\ApiResponse;
-use App\Models\Dependency;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Services\DependencyService;
@@ -22,9 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @group Mods
  */
-class ModUpdateController extends Controller
+final class ModUpdateController extends Controller
 {
-    public function __construct(protected DependencyService $dependencyService) {}
+    public function __construct(private readonly DependencyService $dependencyService) {}
 
     /**
      * Get Mod Updates
@@ -241,13 +240,12 @@ class ModUpdateController extends Controller
         // Find candidate update
         $candidate = $this->findCandidateUpdate($currentVersion, $sptVersion, $isPrerelease);
 
-        if ($candidate === null) {
-            // Check if current version is compatible with target SPT
-            $currentSptCompatible = $currentVersion->sptVersions()
-                ->where('version', $sptVersion)
-                ->whereNotNull('publish_date')
-                ->where('publish_date', '<=', now())
-                ->exists();
+        if (! $candidate instanceof ModVersion) {
+            // Check if current version is compatible with target SPT (use eager-loaded collection)
+            $currentSptCompatible = $currentVersion->sptVersions
+                ->contains(fn (SptVersion $spt): bool => $spt->version === $sptVersion
+                    && $spt->publish_date !== null
+                    && $spt->publish_date->lte(now()));
 
             if ($currentSptCompatible) {
                 return [
@@ -334,7 +332,8 @@ class ModUpdateController extends Controller
             }
         });
 
-        return $query->orderByDesc('version_major')
+        return $query->with('dependencies')
+            ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')
             ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
@@ -360,9 +359,8 @@ class ModUpdateController extends Controller
                 continue;
             }
 
-            $dependencies = $otherMod->dependencies()
-                ->where('dependent_mod_id', $currentVersion->mod_id)
-                ->get();
+            $dependencies = $otherMod->dependencies
+                ->where('dependent_mod_id', $currentVersion->mod_id);
 
             foreach ($dependencies as $dep) {
                 if (! Semver::satisfies($candidate->version, $dep->constraint)) {
@@ -384,11 +382,8 @@ class ModUpdateController extends Controller
             }
         }
 
-        // Check outgoing dependencies (what this update needs)
-        $candidateDependencies = Dependency::query()
-            ->where('dependable_id', $candidate->id)
-            ->where('dependable_type', ModVersion::class)
-            ->get();
+        // Check outgoing dependencies (what this update needs — eager-loaded in findCandidateUpdate)
+        $candidateDependencies = $candidate->dependencies;
 
         foreach ($candidateDependencies as $dep) {
             $satisfyingVersion = $this->dependencyService->findSatisfyingVersion(
@@ -397,7 +392,7 @@ class ModUpdateController extends Controller
                 $sptVersion
             );
 
-            if ($satisfyingVersion === null) {
+            if (! $satisfyingVersion instanceof ModVersion) {
                 return [
                     'valid' => false,
                     'block_reason' => 'missing_dependency',
@@ -410,8 +405,11 @@ class ModUpdateController extends Controller
         }
 
         // Validate transitive dependencies
+        /** @var Collection<int, Collection<int, string>> $constraintsByModId */
         $constraintsByModId = collect();
-        $dependencyTree = $this->dependencyService->buildDependencyTree($candidate->id, collect(), $constraintsByModId);
+        /** @var Collection<int, int> $processedVersionIds */
+        $processedVersionIds = collect();
+        $dependencyTree = $this->dependencyService->buildDependencyTree($candidate->id, $processedVersionIds, $constraintsByModId);
 
         if (! is_null($dependencyTree)) {
             // Check for conflicts in transitive dependencies
@@ -419,10 +417,11 @@ class ModUpdateController extends Controller
                 $modId = $installedMod->mod_id;
 
                 if ($constraintsByModId->has($modId)) {
+                    /** @var Collection<int, string> $constraints */
                     $constraints = $constraintsByModId->get($modId);
 
                     foreach ($constraints as $constraint) {
-                        if (! Semver::satisfies($installedMod->version, $constraint)) {
+                        if (! Semver::satisfies($installedMod->version, (string) $constraint)) {
                             return [
                                 'valid' => false,
                                 'block_reason' => 'chain_dependency_conflict',
@@ -492,7 +491,7 @@ class ModUpdateController extends Controller
                 'version' => $latestVersion->version,
                 'spt_versions' => $latestVersion->sptVersions->pluck('version')->toArray(),
             ],
-            'block_reason' => $validationResult['block_reason'],
+            'block_reason' => $validationResult['block_reason'] ?? 'unknown',
         ];
 
         if (isset($validationResult['blocking_mods'])) {

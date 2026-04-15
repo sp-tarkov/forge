@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Models\User;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('Auth Login API', function (): void {
+    beforeEach(function (): void {
+        $this->withoutMiddleware([ThrottleRequests::class, ThrottleRequestsWithRedis::class]);
+    });
+
     it('allows a user with correct credentials to log in and receive a token', function (): void {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -110,6 +116,7 @@ describe('Auth Login API', function (): void {
         ]);
 
         $responseOmitted->assertStatus(Response::HTTP_OK);
+
         $tokenOmitted = PersonalAccessToken::query()->where('tokenable_id', $user->id)->first();
         expect($tokenOmitted->abilities)->toEqual($defaultAbilities);
 
@@ -123,6 +130,7 @@ describe('Auth Login API', function (): void {
         ]);
 
         $responseEmpty->assertStatus(Response::HTTP_OK);
+
         $tokenEmpty = PersonalAccessToken::query()->where('tokenable_id', $user->id)->first();
         expect($tokenEmpty->abilities)->toEqual($defaultAbilities);
     });

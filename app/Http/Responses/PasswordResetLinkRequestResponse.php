@@ -10,10 +10,8 @@ use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse as FailedPa
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse as SuccessfulPasswordResetLinkRequestResponseContract;
 use Symfony\Component\HttpFoundation\Response;
 
-class PasswordResetLinkRequestResponse implements FailedPasswordResetLinkRequestResponseContract, SuccessfulPasswordResetLinkRequestResponseContract
+final class PasswordResetLinkRequestResponse implements FailedPasswordResetLinkRequestResponseContract, SuccessfulPasswordResetLinkRequestResponseContract
 {
-    public function __construct(protected string $status) {}
-
     /**
      * Create an HTTP response that represents the object.
      *

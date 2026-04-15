@@ -87,6 +87,7 @@ describe('Conversation archiving', function (): void {
     it('allows blocker to unarchive but prevents it when mutually blocked', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $conversation->archiveFor($this->userA);
+
         $this->userA->block($this->userB);
 
         // Blocker CAN unarchive their own archived conversation
@@ -108,6 +109,7 @@ describe('Conversation archiving', function (): void {
     it('prevents starting conversations with blocked users through unarchiving', function (): void {
         $conversation = Conversation::findOrCreateBetween($this->userA, $this->userB, $this->userA);
         $conversation->archiveFor($this->userA);
+
         $this->userB->block($this->userA);
 
         Livewire::test('pages::chat')

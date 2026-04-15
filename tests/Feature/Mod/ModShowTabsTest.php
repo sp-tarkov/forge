@@ -8,10 +8,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->withoutDefer();
@@ -67,6 +64,53 @@ describe('versions tab', function (): void {
 
         Livewire::withoutLazyLoading()
             ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSuccessful();
+    });
+
+    it('renders a download modal trigger instead of a direct download link', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSee('Version 2.0.0')
+            ->assertSee('Version Notes')
+            ->assertSuccessful();
+    });
+
+    it('shows a warning when downloading an older version', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '1.0.0',
+            'spt_version_constraint' => '1.0.0',
+        ]);
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '1.0.0',
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertSee('This is not the latest version of this mod.')
+            ->assertSuccessful();
+    });
+
+    it('does not show a warning for the latest version', function (): void {
+        SptVersion::factory()->create(['version' => '1.0.0']);
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create([
+            'version' => '1.0.0',
+            'spt_version_constraint' => '1.0.0',
+        ]);
+
+        Livewire::withoutLazyLoading()
+            ->test('mod.show.versions-tab', ['modId' => $mod->id])
+            ->assertDontSee('This is not the latest version of this mod.')
             ->assertSuccessful();
     });
 

@@ -5,6 +5,9 @@ on: [ push, pull_request ]
 permissions:
   contents: read
 
+env:
+  COMPOSER_AUTH: '{"http-basic": {"composer.fluxui.dev": {"username": "${{ secrets.FLUX_USERNAME }}", "password": "${{ secrets.FLUX_LICENSE_KEY }}"}}}'
+
 jobs:
   composer-psr:
     name: Check Namespaces
@@ -16,7 +19,7 @@ jobs:
       - name: Setup
         uses: ./.github/action/setup
         with:
-          php-version: 8.4
+          php-version: 8.5
 
       - name: Install Composer Dependencies
         run: composer install -q --no-interaction --no-progress --prefer-dist
@@ -34,7 +37,7 @@ jobs:
       - name: Setup
         uses: ./.github/action/setup
         with:
-          php-version: 8.4
+          php-version: 8.5
 
       - name: Validate composer.json
         run: composer validate --strict
@@ -51,13 +54,16 @@ jobs:
       - name: Setup
         uses: ./.github/action/setup
         with:
-          php-version: 8.4
+          php-version: 8.5
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
       - name: Install NPM Dependencies
         run: npm ci
 
-      - name: Run Prettier
-        run: npm run format
+      - name: Run Formatter
+        run: npm run lint
 
       - name: Install Pint
         run: composer global require laravel/pint
@@ -84,7 +90,7 @@ jobs:
       - name: Setup
         uses: ./.github/action/setup
         with:
-          php-version: 8.4
+          php-version: 8.5
 
       - name: Install Composer Dependencies
         run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
@@ -107,6 +113,31 @@ jobs:
           commit_user_name: Refringe
           commit_user_email: me@refringe.com
           commit_author: Refringe <me@refringe.com>
+
+  phpstan:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/action/setup
+        with:
+          php-version: 8.5
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: PHPStan Cache
+        uses: actions/cache@v5
+        with:
+          path: /tmp/phpstan
+          key: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon') }}-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon') }}-
+
+      - name: Execute PHPStan Analysis
+        run: php vendor/bin/phpstan analyse --no-progress
 
   security:
     name: Security Check

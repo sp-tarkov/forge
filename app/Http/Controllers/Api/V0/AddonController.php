@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for managing and retrieving addons.
  */
-class AddonController extends Controller
+final class AddonController extends Controller
 {
     /**
      * Get Addons
@@ -128,14 +128,17 @@ class AddonController extends Controller
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request): JsonResponse
     {
+        /** @var array<string, mixed>|null $filters */
+        $filters = $request->input('filter');
+
         $queryBuilder = (new AddonQueryBuilder)
-            ->withFilters($request->input('filter'))
+            ->withFilters($filters)
             ->withIncludes($request->string('include')->explode(',')->all())
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all())
             ->withSearch($request->string('query')->toString());
 
-        $addons = $queryBuilder->paginate($request->integer('per_page', 12));
+        $addons = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(AddonResource::collection($addons));
     }

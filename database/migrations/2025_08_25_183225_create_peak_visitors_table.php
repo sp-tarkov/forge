@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('peak_visitors', function (Blueprint $table) {
+        Schema::create('peak_visitors', function (Blueprint $table): void {
             $table->id();
             $table->unsignedInteger('count')->index();
             $table->timestamps();

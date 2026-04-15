@@ -3,11 +3,8 @@
 declare(strict_types=1);
 
 use App\Rules\DirectDownloadLink;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
-
-uses(RefreshDatabase::class);
 
 describe('DirectDownloadLink validation rule', function (): void {
     it('passes validation for valid 7z download links with content-disposition', function (): void {

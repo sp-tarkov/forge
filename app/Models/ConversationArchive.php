@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Database\Factories\ConversationArchiveFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
  * @property int $id
  * @property int $conversation_id
  * @property int $user_id
- * @property Carbon $archived_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable $archived_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property Conversation $conversation
  * @property User $user
  */
-class ConversationArchive extends Model
+final class ConversationArchive extends Model
 {
     /** @use HasFactory<ConversationArchiveFactory> */
     use HasFactory;

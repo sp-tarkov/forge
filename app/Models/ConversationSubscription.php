@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
+use Database\Factories\ConversationSubscriptionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -14,13 +16,16 @@ use Override;
  * @property int $conversation_id
  * @property int $user_id
  * @property bool $notifications_enabled
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read Conversation $conversation
  * @property-read User $user
  */
-class ConversationSubscription extends Model
+final class ConversationSubscription extends Model
 {
+    /** @use HasFactory<ConversationSubscriptionFactory> */
+    use HasFactory;
+
     /**
      * Get the conversation this subscription belongs to.
      *

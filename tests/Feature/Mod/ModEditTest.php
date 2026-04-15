@@ -8,7 +8,7 @@ use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 describe('Mod Edit Form', function (): void {
@@ -121,8 +121,9 @@ describe('Published At Handling', function (): void {
         $this->actingAs($user);
 
         Livewire::test('pages::mod.edit', ['modId' => $mod->id])
-            ->assertNotSet('publishedAt', null)
-            ->set('publishedAt', '')
+            ->assertNotSet('publishedAtDate', null)
+            ->set('publishedAtDate', '')
+            ->set('publishedAtTime', '')
             ->call('save')
             ->assertHasNoErrors()
             ->assertRedirect();
@@ -138,8 +139,6 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         // Disable honeypot for testing
         config()->set('honeypot.enabled', false);
     });
-
-    uses(RefreshDatabase::class);
 
     it('allows mod owners to access edit page via browser', function (): void {
         $owner = User::factory()->withMfa()->create();
@@ -160,7 +159,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
-    });
+    })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
 
     it('allows mod owners to edit their mods via browser form interaction', function (): void {
         $license = License::factory()->create();
@@ -201,7 +200,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
-    });
+    })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
 
     it('allows mod authors to access and edit mods they are authors of via browser', function (): void {
         $license = License::factory()->create();
@@ -250,7 +249,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         expect($mod->teaser)->toBe('Updated by collaborative author');
         expect($mod->description)->toBe('This mod was updated by one of its authors');
         expect($mod->license_id)->toBe($license->id);
-    });
+    })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
 });
 
 describe('HTTP Tests - Mod Editing Authorization', function (): void {
@@ -259,8 +258,6 @@ describe('HTTP Tests - Mod Editing Authorization', function (): void {
         // Disable honeypot for testing
         config()->set('honeypot.enabled', false);
     });
-
-    uses(RefreshDatabase::class);
 
     it('prevents unauthorized users from editing mods', function (): void {
         $owner = User::factory()->withMfa()->create();
@@ -294,8 +291,6 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
         // Disable honeypot for testing
         config()->set('honeypot.enabled', false);
     });
-
-    uses(RefreshDatabase::class);
 
     it('allows owners to update all mod fields including checkboxes', function (): void {
         $license = License::factory()->create();
@@ -394,6 +389,51 @@ describe('Livewire Tests - Mod Editing Functionality', function (): void {
     });
 });
 
+describe('Thumbnail Management', function (): void {
+
+    beforeEach(function (): void {
+        config()->set('honeypot.enabled', false);
+        Storage::fake(config('filesystems.asset_upload', 'public'));
+    });
+
+    it('deletes the existing thumbnail from the mod', function (): void {
+        $user = User::factory()->withMfa()->create();
+        $mod = Mod::factory()->recycle($user)->create([
+            'thumbnail' => 'mods/test-thumbnail.png',
+            'thumbnail_hash' => 'abc123',
+        ]);
+
+        Storage::disk(config('filesystems.asset_upload', 'public'))
+            ->put('mods/test-thumbnail.png', 'fake-image-content');
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->call('deleteExistingThumbnail');
+
+        $mod->refresh();
+        expect($mod->thumbnail)->toBe('')
+            ->and($mod->thumbnail_hash)->toBe('');
+
+        Storage::disk(config('filesystems.asset_upload', 'public'))
+            ->assertMissing('mods/test-thumbnail.png');
+    });
+
+    it('prevents unauthorized users from deleting a thumbnail', function (): void {
+        $owner = User::factory()->create();
+        $unauthorizedUser = User::factory()->create();
+        $mod = Mod::factory()->recycle($owner)->create([
+            'thumbnail' => 'mods/test-thumbnail.png',
+            'thumbnail_hash' => 'abc123',
+        ]);
+
+        $this->actingAs($unauthorizedUser);
+
+        Livewire::test('pages::mod.edit', ['modId' => $mod->id])
+            ->assertForbidden();
+    });
+});
+
 describe('GUID Requirements for Mod Editing', function (): void {
 
     beforeEach(function (): void {
@@ -411,8 +451,6 @@ describe('GUID Requirements for Mod Editing', function (): void {
         SptVersion::factory()->create(['version' => '4.0.0']);
         SptVersion::factory()->create(['version' => '4.1.0']);
     });
-
-    uses(RefreshDatabase::class);
 
     it('allows editing a mod without GUID when no versions target SPT 4.0.0+', function (): void {
         $this->actingAs($this->user);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\Geolocator;
 use Exception;
 use GeoIp2\Database\Reader;
 use GeoIp2\Exception\AddressNotFoundException;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * Service for IP geolocation lookups.
  */
 #[Singleton]
-class GeolocationService
+final class GeolocationService implements Geolocator
 {
     /**
      * The GeoIP reader instance.
@@ -73,7 +74,7 @@ class GeolocationService
      */
     private function performLookup(string $ip): array
     {
-        if ($this->reader === null) {
+        if (! $this->reader instanceof Reader) {
             Log::warning('GeoIP database not available for lookup', ['ip' => $ip]);
 
             return $this->getDefaultLocationData();

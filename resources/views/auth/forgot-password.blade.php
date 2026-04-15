@@ -22,22 +22,16 @@
             </div>
         @endsession
 
-        <x-validation-errors class="mb-4" />
-
         <form
             method="POST"
             action="{{ route('password.email') }}"
         >
             @csrf
 
-            <div class="block">
-                <x-label
-                    for="email"
-                    value="{{ __('Email') }}"
-                />
-                <x-input
+            <flux:field>
+                <flux:label for="email">{{ __('Email') }}</flux:label>
+                <flux:input
                     id="email"
-                    class="block mt-1 w-full"
                     type="email"
                     name="email"
                     :value="old('email')"
@@ -45,14 +39,14 @@
                     autofocus
                     autocomplete="username"
                 />
-            </div>
+            </flux:field>
 
             <x-honeypot />
 
             <div class="flex items-center justify-end mt-4">
-                <x-button>
+                <flux:button variant="primary" type="submit">
                     {{ __('Email Password Reset Link') }}
-                </x-button>
+                </flux:button>
             </div>
         </form>
     </x-authentication-card>

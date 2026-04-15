@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
-class DisabledScope implements Scope
+/** @implements Scope<Model> */
+final class DisabledScope implements Scope
 {
     /**
      * Apply the scope to a given Eloquent query builder.

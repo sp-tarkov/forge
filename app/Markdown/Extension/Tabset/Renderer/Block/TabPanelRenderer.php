@@ -13,14 +13,14 @@ use League\CommonMark\Util\HtmlElement;
 use League\CommonMark\Xml\XmlNodeRendererInterface;
 use Stringable;
 
-class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterface
+final class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterface
 {
     public const int MAX_TITLE_LEN = 40;
 
     /**
      * Renders the TabPanelNode into HTML.
      */
-    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable|string|null
+    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable
     {
         TabPanelNode::assertInstanceOf($node);
 
@@ -33,9 +33,12 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
             $attrs = [];
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
+
         // Add the "tab-panel" class by merging with existing classes.
-        $existingClasses = $attrs['class'] ?? '';
-        $separator = ! empty($existingClasses) ? ' ' : '';
+        $rawClass = $attrs['class'] ?? '';
+        $existingClasses = is_string($rawClass) ? $rawClass : '';
+        $separator = $existingClasses === '' ? '' : ' ';
         $attrs['class'] = mb_trim($existingClasses.$separator.'tab-panel');
         if (empty($attrs['class'])) {
             unset($attrs['class']);
@@ -60,6 +63,7 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
             $innerHtml .= "\n".$contentWrapperHtml;
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
         return new HtmlElement('div', $attrs, $innerHtml);
     }
 
@@ -73,6 +77,8 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
 
     /**
      * Returns an array of XML attributes for the TabPanelNode.
+     *
+     * @return array<string, array<string>|bool|string>
      */
     public function getXmlAttributes(Node $node): array
     {
@@ -90,6 +96,7 @@ class TabPanelRenderer implements NodeRendererInterface, XmlNodeRendererInterfac
             $xmlAttrs['id'] = 'tab-'.Str::slug($node->tabTitle).'-'.spl_object_hash($node);
         }
 
+        /** @var array<string, array<string>|bool|string> $xmlAttrs */
         return $xmlAttrs;
     }
 }

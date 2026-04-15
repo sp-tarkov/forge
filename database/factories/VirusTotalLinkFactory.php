@@ -6,12 +6,13 @@ namespace Database\Factories;
 
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
+use App\Models\VirusTotalLink;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VirusTotalLink>
+ * @extends Factory<VirusTotalLink>
  */
-class VirusTotalLinkFactory extends Factory
+final class VirusTotalLinkFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -23,11 +24,14 @@ class VirusTotalLinkFactory extends Factory
         $hash = $this->faker->sha256();
 
         return [
-            'url' => "https://www.virustotal.com/gui/file/{$hash}",
+            'url' => 'https://www.virustotal.com/gui/file/'.$hash,
             'label' => $this->faker->optional(0.3, '')->randomElement(['Main File', 'Alternative Download', 'Mirror']),
             'linkable_type' => $this->faker->randomElement([ModVersion::class, AddonVersion::class]),
             'linkable_id' => function (array $attributes) {
-                return $attributes['linkable_type']::factory();
+                /** @var class-string<ModVersion>|class-string<AddonVersion> $modelClass */
+                $modelClass = $attributes['linkable_type'];
+
+                return $modelClass::factory();
             },
         ];
     }

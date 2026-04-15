@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
+use Carbon\CarbonImmutable;
 use Database\Factories\TrackingEventFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -42,8 +42,8 @@ use Override;
  * @property null|string $latitude
  * @property null|string $longitude
  * @property string|null $timezone
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read null|string $event_context attribute
  * @property-read string $event_display_name attribute
  * @property-read null|string $event_url attribute
@@ -51,7 +51,7 @@ use Override;
  * @property User|null $user
  * @property-read Collection<int, Report> $reports
  */
-class TrackingEvent extends Model
+final class TrackingEvent extends Model
 {
     /** @use HasFactory<TrackingEventFactory> */
     use HasFactory;
@@ -128,7 +128,7 @@ class TrackingEvent extends Model
                 }
 
                 $eventType = $this->getEventType();
-                if ($eventType !== null) {
+                if ($eventType instanceof TrackingEventType) {
                     return $eventType->getName();
                 }
 
@@ -152,7 +152,7 @@ class TrackingEvent extends Model
                 $eventType = $this->getEventType();
 
                 // For events without a type, show URL
-                if ($eventType === null) {
+                if (! $eventType instanceof TrackingEventType) {
                     return $this->url ?? null;
                 }
 
@@ -167,8 +167,9 @@ class TrackingEvent extends Model
                     }
 
                     // Fallback to snapshot data if model not available
-                    if (isset($this->event_data['snapshot']['name'])) {
-                        return $this->event_data['snapshot']['name'];
+                    $snapshot = $this->event_data['snapshot'] ?? [];
+                    if (is_array($snapshot) && isset($snapshot['name']) && is_string($snapshot['name'])) {
+                        return $snapshot['name'];
                     }
                 }
 
@@ -229,7 +230,12 @@ class TrackingEvent extends Model
                 }
 
                 // Final fallback to request URL
-                return $this->event_data['url'] ?? $this->url ? url($this->url) : null;
+                $eventUrl = $this->event_data['url'] ?? null;
+                if (is_string($eventUrl)) {
+                    return $eventUrl;
+                }
+
+                return $this->url ? (string) url($this->url) : null;
             }
         );
     }
@@ -241,10 +247,13 @@ class TrackingEvent extends Model
     {
         $snapshot = $this->event_data['snapshot'] ?? [];
 
+        if (! is_array($snapshot)) {
+            return null;
+        }
+
         // Return the most relevant context based on what's available
-        return $snapshot['comment_body'] ??
-               $snapshot['mod_name'] ??
-               $snapshot['version_name'] ??
-               null;
+        $context = $snapshot['comment_body'] ?? $snapshot['mod_name'] ?? $snapshot['version_name'] ?? null;
+
+        return is_string($context) ? $context : null;
     }
 }

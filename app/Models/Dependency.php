@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Observers\DependencyObserver;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\DependencyFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,22 +23,18 @@ use Override;
  * @property int $dependable_id
  * @property int $dependent_mod_id
  * @property string $constraint
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read ModVersion|AddonVersion $dependable
  * @property-read Mod $dependentMod
  * @property-read Collection<int, DependencyResolved> $dependenciesResolved
  */
 #[ObservedBy([DependencyObserver::class])]
-class Dependency extends Model
+#[Table(name: 'dependencies')]
+final class Dependency extends Model
 {
     /** @use HasFactory<DependencyFactory> */
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'dependencies';
 
     /**
      * The polymorphic relationship between the dependency and either a mod version or addon version.

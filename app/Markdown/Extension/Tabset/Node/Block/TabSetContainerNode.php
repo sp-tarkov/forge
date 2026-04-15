@@ -6,7 +6,7 @@ namespace App\Markdown\Extension\Tabset\Node\Block;
 
 use League\CommonMark\Node\Block\AbstractBlock;
 
-class TabSetContainerNode extends AbstractBlock
+final class TabSetContainerNode extends AbstractBlock
 {
     //
 }

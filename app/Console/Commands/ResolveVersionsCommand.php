@@ -9,7 +9,7 @@ use App\Jobs\ResolveDependenciesJob;
 use App\Jobs\ResolveSptVersionsJob;
 use Illuminate\Console\Command;
 
-class ResolveVersionsCommand extends Command
+final class ResolveVersionsCommand extends Command
 {
     protected $signature = 'app:resolve-versions';
 

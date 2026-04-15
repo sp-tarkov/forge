@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<ConversationArchive>
  */
-class ConversationArchiveFactory extends Factory
+final class ConversationArchiveFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -33,11 +33,9 @@ class ConversationArchiveFactory extends Factory
      */
     public function recent(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'archived_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'archived_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
+        ]);
     }
 
     /**
@@ -45,10 +43,8 @@ class ConversationArchiveFactory extends Factory
      */
     public function old(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'archived_at' => $this->faker->dateTimeBetween('-6 months', '-1 month'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'archived_at' => $this->faker->dateTimeBetween('-6 months', '-1 month'),
+        ]);
     }
 }

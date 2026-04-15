@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\VisitorFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -17,21 +18,15 @@ use Override;
  *
  * @property int $id
  * @property int|null $peak_count
- * @property Carbon|null $peak_date
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $peak_date
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
-class Visitor extends Model
+#[Table(name: 'visitor_peaks')]
+final class Visitor extends Model
 {
     /** @use HasFactory<VisitorFactory> */
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'visitor_peaks';
 
     /**
      * Update the peak visitor count.
@@ -41,7 +36,7 @@ class Visitor extends Model
     public static function updatePeak(int $count): void
     {
         /** @var self|null $peak */
-        $peak = static::query()->first();
+        $peak = self::query()->first();
 
         if ($peak) {
             $peak->update([
@@ -49,7 +44,7 @@ class Visitor extends Model
                 'peak_date' => Date::now(),
             ]);
         } else {
-            static::query()->create([
+            self::query()->create([
                 'peak_count' => $count,
                 'peak_date' => Date::now(),
             ]);
@@ -59,12 +54,12 @@ class Visitor extends Model
     /**
      * Get peak visitor statistics.
      *
-     * @return array{count: int, date: Carbon|null}
+     * @return array{count: int, date: CarbonImmutable|null}
      */
     public static function getPeakStats(): array
     {
         /** @var self|null $peak */
-        $peak = static::query()->first();
+        $peak = self::query()->first();
 
         if (! $peak) {
             // Don't create a peak record, just return empty stats

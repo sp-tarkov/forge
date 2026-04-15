@@ -8,11 +8,8 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
 use App\Services\CommentSpamChecker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 function createModerator(): User
 {

@@ -8,12 +8,12 @@ use App\Models\Dependency;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<Dependency>
  */
-class DependencyFactory extends Factory
+final class DependencyFactory extends Factory
 {
     protected $model = Dependency::class;
 
@@ -24,8 +24,8 @@ class DependencyFactory extends Factory
             'dependable_id' => ModVersion::factory(),
             'dependent_mod_id' => Mod::factory(),
             'constraint' => '*',
-            'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
-            'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'created_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
+            'updated_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
         ];
     }
 

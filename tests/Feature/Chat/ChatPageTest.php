@@ -3,10 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 describe('Chat Page Tests', function (): void {
     it('requires authentication to access chat page', function (): void {

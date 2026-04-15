@@ -4,31 +4,25 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Contracts\Commentable;
 use App\Models\CommentSubscription;
 use App\Models\User;
 use App\Support\ModelsThat;
 use App\Traits\HasComments;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
 
-class CommentSubscriptionController extends Controller
+final class CommentSubscriptionController extends Controller
 {
     /**
      * Handle unsubscribe request from email.
      */
-    public function unsubscribe(Request $request): Response
+    public function unsubscribe(User $user, string $commentable_type, string $commentable_id): Response
     {
-        $userId = $request->route('user');
-        $commentableType = $request->route('commentable_type');
-        $commentableId = $request->route('commentable_id');
+        abort_unless(ModelsThat::useTrait(HasComments::class)->contains($commentable_type), 404, 'Unknown commentable type.');
 
-        abort_unless($request->hasValidSignature(), 403, 'Invalid or expired unsubscribe link.');
-
-        $user = User::query()->findOrFail($userId);
-
-        abort_unless(ModelsThat::useTrait(HasComments::class)->contains($commentableType), 404, 'Unknown commentable type.');
-
-        $commentable = $commentableType::findOrFail($commentableId);
+        /** @var Model&Commentable<Model> $commentable */
+        $commentable = $commentable_type::findOrFail($commentable_id);
 
         CommentSubscription::unsubscribe($user, $commentable);
 

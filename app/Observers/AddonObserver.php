@@ -8,9 +8,9 @@ use App\Models\Addon;
 use App\Services\AddonVersionService;
 use Illuminate\Support\Facades\Storage;
 
-class AddonObserver
+final readonly class AddonObserver
 {
-    public function __construct(protected AddonVersionService $addonVersionService) {}
+    public function __construct(private AddonVersionService $addonVersionService) {}
 
     /**
      * Handle the Addon "updated" event.
@@ -32,7 +32,7 @@ class AddonObserver
     {
         // Remove the addon's thumbnail image from storage if it exists.
         if ($addon->thumbnail) {
-            $disk = config('filesystems.asset_upload', 'public');
+            $disk = config()->string('filesystems.asset_upload', 'public');
             if (Storage::disk($disk)->exists($addon->thumbnail)) {
                 Storage::disk($disk)->delete($addon->thumbnail);
             }

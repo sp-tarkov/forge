@@ -5,10 +5,11 @@ declare(strict_types=1);
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
-uses(RefreshDatabase::class);
+it('renders the mods index', function (): void {
+    $this->get('/mods')->assertOk();
+});
 
 describe('basic functionality', function (): void {
     it('can toggle version filters without errors', function (): void {
@@ -312,7 +313,7 @@ describe('checkbox state validation', function (): void {
         $component = Livewire::test('pages::mod.index');
 
         // Helper to check what the blade @checked directives would evaluate to
-        $checkboxStates = function () use ($component) {
+        $checkboxStates = function () use ($component): array {
             $sptVersions = $component->get('sptVersions');
 
             return [

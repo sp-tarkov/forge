@@ -9,71 +9,85 @@
 
 The Forge is a Laravel-based web application that provides a platform for the Single Player Tarkov community to share and discover user-generated content, such as mods, guides, and other tools. It is currently under heavy development. Please review this entire document before attempting to contribute, especially the "Development Discussion" section.
 
-![Alt](https://repobeats.axiom.co/api/embed/622043a870c7a5993d774a4ea1659e6a9898c7cc.svg "Repobeats analytics image")
-
 ## Development Environment Setup
 
-We use [Laravel Sail](https://laravel.com/docs/11.x/sail) to mirror the services that are used in our production server in a local development environment. You can see detailed instructions on how to configure the [full development environment](https://github.com/sp-tarkov/forge/wiki/Full-Windows-Dev-Env) or a [lightweight development environment](https://github.com/sp-tarkov/forge/wiki/Light-Windows-Dev-Env) on the project wiki. The full development environment is recommended.
+We use [Laravel Herd](https://herd.laravel.com) for local development. [Herd Pro](https://herd.laravel.com/pricing) is **recommended** as it includes MySQL, Redis, Meilisearch, and Mailpit out of the box. [Herd Free](https://herd.laravel.com) works for lighter development tasks but lacks these services, so some features (search indexing, queued jobs, etc.) will be limited.
 
-### Available Services:
+### Prerequisites
 
-| Service     | Access Via Application | Access Via Host  |
-|-------------|------------------------|------------------|
-| MySQL       | `mysql:3306`           | `localhost:3306` |
-| Redis       | `redis:6379`           | `localhost:6379` |
-| Meilisearch | `meilisearch:7700`     | `localhost:7700` |
-| Mailpit     | `mailpit:1025`         | `localhost:8025` |
+- [Laravel Herd](https://herd.laravel.com) (Pro recommended)
+- [Composer](https://getcomposer.org) (bundled with Herd)
+- [Node.js & npm](https://nodejs.org) (bundled with Herd)
+
+### Getting Started
+
+1. **Clone the repository** and point Herd to the project directory.
+
+2. **Copy the environment file** and generate an application key:
+   ```
+   # Herd Pro (recommended):
+   cp .env.example .env
+
+   # Herd Free (limited):
+   cp .env.light .env
+   ```
+   If using `.env.light`, update `DB_DATABASE` to the absolute path to your `database/database.sqlite` file.
+
+3. **Install dependencies:**
+   ```
+   composer install
+   npm install
+   ```
+
+4. **Generate an application key:**
+   ```
+   php artisan key:generate
+   ```
+
+5. **Start the Herd Pro services** (if using Herd Pro):
+
+   Open Herd and ensure the following services are running:
+
+   | Service     | Purpose                       | Default Port |
+   |-------------|-------------------------------|--------------|
+   | MySQL       | Database                      | 3306         |
+   | Redis       | Cache, sessions, and queues   | 6379         |
+   | Meilisearch | Full-text search              | 7700         |
+   | Mailpit     | Local email testing           | 8025         |
+   | Reverb      | WebSocket broadcasting        | 443          |
+
+   Create a `forge` database in MySQL:
+   ```
+   mysql -u root -e "CREATE DATABASE IF NOT EXISTS forge"
+   ```
+
+6. **Migrate and seed the database:**
+   ```
+   php artisan migrate:fresh --seed
+   ```
+
+7. **Start the dev server:**
+   ```
+   composer run dev
+   ```
+
+   This starts the application server, queue listener, log viewer, and Vite dev server concurrently.
+
+8. **Sync search indexes** (Herd Pro only, requires Horizon running):
+   ```
+   php artisan horizon
+   php artisan app:search-sync
+   ```
 
 ### Notable Routes
 
-| Service                          | Authentication | Access Via Host              |
-|----------------------------------|----------------|------------------------------|
-| Redis Queue Management (Horizon) | Via User Role  | <http://localhost/horizon>   |
-| Website Status (Pulse)           | Via User Role  | <http://localhost/pulse>     |
-| Meilisearch WebUI                | Local Only     | <http://localhost:7700>      |
-| Mailpit WebUI                    | Local Only     | <http://localhost:8025>      |
-
-Most of these connection settings should already be configured in the `.env.full` or `.env.light` example files. Simply save one of these (depending on your environment) as `.env` and adjust settings as needed.
-
-### Basic Usage Examples
-
-Here are some basic commands to get started with Forge:
-
-```
-# Start the Docker containers in detached mode:
-sail up -d
-```
-
-```
-# View all of the available Artisan commands:
-sail artisan
-```
-
-```
-# Migrate and seed the database with test data:
-sail artisan migrate:fresh –seed
-```
-
-```
-# Run Laravel Horizon (the queue workers/monitor):
-sail artisan horizon
-```
-
-```
-# Sync the local database with the Meilisearch server (requires horizon to be running): 
-sail artisan app:search-sync
-```
-
-```
-# Install NPM dependencies from within the container:
-sail npm install
-```
-
-```
-# Start the development server:
-sail npm run dev
-```
+| Service                          | Authentication |
+|----------------------------------|----------------|
+| Redis Queue Management (Horizon) | Via User Role  |
+| Website Status (Pulse)           | Via User Role  |
+| Meilisearch WebUI (Herd Pro)     | Local Only     |
+| Mailpit WebUI (Herd Pro)         | Local Only     |
 
 ### More Information
 
-For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/11.x/).
+For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/12.x/).

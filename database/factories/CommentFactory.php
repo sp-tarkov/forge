@@ -11,13 +11,13 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 
 /**
  * @extends Factory<Comment>
  */
-class CommentFactory extends Factory
+final class CommentFactory extends Factory
 {
     public function definition(): array
     {
@@ -30,8 +30,8 @@ class CommentFactory extends Factory
             'spam_metadata' => null,
             'spam_checked_at' => null,
             'spam_recheck_count' => 0,
-            'created_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
-            'updated_at' => Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
+            'created_at' => Date::now()->subDays(random_int(0, 30))->subHours(random_int(0, 23)),
+            'updated_at' => Date::now()->subDays(random_int(0, 30))->subHours(random_int(0, 23)),
         ];
     }
 
@@ -47,9 +47,12 @@ class CommentFactory extends Factory
             $body = $attributes['body'];
             unset($attributes['body']);
 
-            return $this->withVersion($body)->create($attributes, $parent);
+            /** @var array<string, mixed> $attributes */
+            return $this->withVersion(is_string($body) ? $body : null)->create($attributes, $parent);
         }
 
+        /** @var (callable(array<string, mixed>): array<string, mixed>)|array<string, mixed> $attributes */
+        /** @var Comment|Collection<int, Comment> */
         return parent::create($attributes, $parent);
     }
 
@@ -59,10 +62,12 @@ class CommentFactory extends Factory
     public function withVersion(?string $body = null): static
     {
         return $this->afterCreating(function (Comment $comment) use ($body): void {
-            $versionBody = $body ?? fake()->paragraphs(rand(1, 3), true);
+            /** @var string $versionBody */
+            $versionBody = $body ?? fake()->paragraphs(random_int(1, 3), true);
 
             // Validate body length
-            $maxLength = (int) config('comments.validation.max_length', 10000);
+            /** @var int $maxLength */
+            $maxLength = config('comments.validation.max_length', 10000);
             if (mb_strlen($versionBody) > $maxLength) {
                 // Delete the comment since version creation failed
                 $comment->forceDelete();
@@ -82,7 +87,7 @@ class CommentFactory extends Factory
      */
     public function reply(Comment $parent): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'parent_id' => $parent->id,
             'commentable_type' => $parent->commentable_type,
             'commentable_id' => $parent->commentable_id,

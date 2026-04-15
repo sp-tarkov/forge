@@ -6,32 +6,43 @@ namespace App\Jobs;
 
 use App\Models\ModVersion;
 use App\Services\SptVersionService;
-use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class ResolveSptVersionsJob implements ShouldQueue
+#[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class ResolveSptVersionsJob implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     /**
      * Resolve the SPT versions for each of the mod versions.
      */
-    public function handle(): void
+    public function handle(SptVersionService $sptVersionService): void
     {
-        $sptVersionService = new SptVersionService;
-
         ModVersion::query()
             ->chunk(100, function (Collection $modVersions) use ($sptVersionService): void {
                 foreach ($modVersions as $modVersion) {
                     $sptVersionService->resolve($modVersion);
                 }
             });
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ResolveSptVersionsJob failed', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

@@ -195,7 +195,7 @@ return [
             'memory' => 256,
         ],
         'supervisor-long' => [
-            'connection' => 'redis',
+            'connection' => 'redis-long',
             'queue' => ['long'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
@@ -206,6 +206,24 @@ return [
             'timeout' => 3600,
             'memory' => 720,
         ],
+        'supervisor-verification-detection' => [
+            'connection' => 'redis',
+            'queue' => ['verification-detection'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'minProcesses' => 1,
+            'balanceMaxShift' => 1,
+            'balanceCooldown' => 3,
+            'tries' => 2,
+            'timeout' => 60,
+            'memory' => 128,
+        ],
+
+        // The verification queue is consumed by a dedicated server running queue:work,
+        // not by Horizon on the main application server. Jobs are dispatched to the
+        // shared Redis instance and picked up by the verification worker:
+        //
+        //   php artisan queue:work redis-verification --queue=verification --tries=2 --timeout=900
     ],
 
     'environments' => [
@@ -216,6 +234,9 @@ return [
             'supervisor-long' => [
                 'maxProcesses' => 5,
             ],
+            'supervisor-verification-detection' => [
+                'maxProcesses' => 10,
+            ],
         ],
         'local' => [
             'supervisor-default' => [
@@ -223,6 +244,9 @@ return [
             ],
             'supervisor-long' => [
                 'maxProcesses' => 2,
+            ],
+            'supervisor-verification-detection' => [
+                'maxProcesses' => 3,
             ],
         ],
     ],

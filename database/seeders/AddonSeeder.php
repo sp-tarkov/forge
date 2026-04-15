@@ -11,11 +11,12 @@ use App\Models\User;
 use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Laravel\Prompts\Progress;
 
 use function Laravel\Prompts\progress;
 
-class AddonSeeder extends Seeder
+final class AddonSeeder extends Seeder
 {
     use SeederHelpers;
 
@@ -63,15 +64,17 @@ class AddonSeeder extends Seeder
      */
     private function seedAddons(Collection $mods, Collection $allUsers): void
     {
-        $this->addons = collect();
+        /** @var Collection<int, Addon> $addons */
+        $addons = collect();
+        $this->addons = $addons;
 
-        Addon::withoutEvents(function () use ($mods, $allUsers) {
+        Addon::withoutEvents(function () use ($mods, $allUsers): void {
             progress(
                 label: 'Creating Addons...',
                 steps: $mods,
-                callback: function (Mod $mod, Progress $progress) use ($allUsers) {
+                callback: function (Mod $mod, Progress $progress) use ($allUsers): void {
                     // Each mod can have 1-3 addons
-                    $addonCount = rand(1, 3);
+                    $addonCount = random_int(1, 3);
 
                     for ($i = 0; $i < $addonCount; $i++) {
                         $addon = Addon::factory()
@@ -82,20 +85,20 @@ class AddonSeeder extends Seeder
                             ]);
 
                         // 20% chance for addon to be disabled
-                        if (rand(1, 100) <= 20) {
+                        if (random_int(1, 100) <= 20) {
                             $addon->disabled = true;
                             $addon->save();
                         }
 
                         // Small chance (10%) of having comments disabled
-                        if (rand(1, 100) <= 10) {
+                        if (random_int(1, 100) <= 10) {
                             $addon->comments_disabled = true;
                             $addon->save();
                         }
 
                         // Small chance (5%) of being detached
-                        if (rand(1, 100) <= 5) {
-                            $addon->detached_at = now()->subDays(rand(0, 30));
+                        if (random_int(1, 100) <= 5) {
+                            $addon->detached_at = Date::now()->subDays(random_int(0, 30));
                             $addon->detached_by_user_id = $mod->owner_id;
                             $addon->save();
                         }
@@ -112,15 +115,17 @@ class AddonSeeder extends Seeder
      */
     private function seedAddonVersions(): void
     {
-        $this->addonVersions = collect();
+        /** @var Collection<int, AddonVersion> $addonVersions */
+        $addonVersions = collect();
+        $this->addonVersions = $addonVersions;
 
-        AddonVersion::withoutEvents(function () {
+        AddonVersion::withoutEvents(function (): void {
             progress(
                 label: 'Creating Addon Versions...',
                 steps: $this->addons,
-                callback: function (Addon $addon, Progress $progress) {
+                callback: function (Addon $addon, Progress $progress): void {
                     // Each addon can have 1-5 versions
-                    $versionCount = rand(1, 5);
+                    $versionCount = random_int(1, 5);
 
                     for ($i = 0; $i < $versionCount; $i++) {
                         $version = AddonVersion::factory()
@@ -128,7 +133,7 @@ class AddonSeeder extends Seeder
                             ->create();
 
                         // 10% chance for version to be disabled
-                        if (rand(1, 100) <= 10) {
+                        if (random_int(1, 100) <= 10) {
                             $version->disabled = true;
                             $version->save();
                         }
@@ -150,10 +155,10 @@ class AddonSeeder extends Seeder
         progress(
             label: 'Attaching authors to addons...',
             steps: $this->addons,
-            callback: function (Addon $addon, Progress $progress) use ($allUsers) {
+            callback: function (Addon $addon, Progress $progress) use ($allUsers): void {
                 // 30% chance to have additional authors (beyond the owner)
-                if (rand(0, 9) < 3) {
-                    $userIds = $allUsers->random(rand(1, 2))->pluck('id')->toArray();
+                if (random_int(0, 9) < 3) {
+                    $userIds = $allUsers->random(random_int(1, 2))->pluck('id')->toArray();
                     if (count($userIds)) {
                         $addon->additionalAuthors()->attach($userIds);
                     }
@@ -170,7 +175,7 @@ class AddonSeeder extends Seeder
         progress(
             label: 'Calculating addon download counts...',
             steps: $this->addons,
-            callback: function (Addon $addon, Progress $progress) {
+            callback: function (Addon $addon, Progress $progress): void {
                 $addon->calculateDownloads();
             }
         );

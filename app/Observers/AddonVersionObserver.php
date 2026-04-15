@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Services\AddonVersionService;
 
-class AddonVersionObserver
+final readonly class AddonVersionObserver
 {
-    public function __construct(protected AddonVersionService $addonVersionService) {}
+    public function __construct(private AddonVersionService $addonVersionService) {}
 
     /**
      * Handle the AddonVersion "created" event.
@@ -45,8 +46,10 @@ class AddonVersionObserver
     /**
      * Update properties on the related Addon.
      */
-    protected function updateRelatedAddon(AddonVersion $addonVersion): void
+    private function updateRelatedAddon(AddonVersion $addonVersion): void
     {
-        $addonVersion->addon?->calculateDownloads();
+        /** @var Addon|null $addon */
+        $addon = $addonVersion->addon;
+        $addon?->calculateDownloads();
     }
 }

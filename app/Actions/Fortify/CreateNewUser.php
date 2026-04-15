@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
-class CreateNewUser implements CreatesNewUsers
+final class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
 

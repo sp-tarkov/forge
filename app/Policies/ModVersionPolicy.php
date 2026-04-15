@@ -8,7 +8,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 
-class ModVersionPolicy
+final class ModVersionPolicy
 {
     /**
      * Determine whether the user can view any mod versions.
@@ -27,11 +27,7 @@ class ModVersionPolicy
             return true;
         }
 
-        if ($modVersion->disabled) {
-            return false;
-        }
-
-        return true;
+        return ! $modVersion->disabled;
     }
 
     /**
@@ -52,7 +48,11 @@ class ModVersionPolicy
             return false;
         }
 
-        return $user->isModOrAdmin() || $modVersion->mod->isAuthorOrOwner($user);
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $modVersion->mod->isAuthorOrOwner($user);
     }
 
     /**
@@ -65,7 +65,11 @@ class ModVersionPolicy
             return false;
         }
 
-        return $user->isAdmin() || $modVersion->mod->owner?->id === $user->id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $modVersion->mod->owner?->id === $user->id;
     }
 
     /**
@@ -99,11 +103,7 @@ class ModVersionPolicy
         }
 
         // Deny if the mod is unpublished, disabled, or the version is disabled.
-        if (! $modVersion->mod->isPublished() || $modVersion->mod->disabled || $modVersion->disabled) {
-            return false;
-        }
-
-        return true;
+        return ! (! $modVersion->mod->isPublished() || $modVersion->mod->disabled || $modVersion->disabled);
     }
 
     /**

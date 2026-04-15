@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Profile\UpdateProfileForm;
 use App\Models\User;
 use Livewire\Livewire;
+
+it('redirects guests from profile to login', function (): void {
+    $this->get('/user/profile')->assertRedirect('/login');
+});
 
 describe('profile information', function (): void {
     it('shows current profile information', function (): void {
         $this->actingAs($user = User::factory()->create(['about' => 'My about content']));
 
-        $testable = Livewire::test(UpdateProfileForm::class);
+        $testable = Livewire::test('profile.update-profile-form');
 
         expect($testable->state['name'])->toEqual($user->name)
             ->and($testable->state['email'])->toEqual($user->email)
@@ -20,7 +23,7 @@ describe('profile information', function (): void {
     it('can update profile information', function (): void {
         $this->actingAs($user = User::factory()->create());
 
-        Livewire::test(UpdateProfileForm::class)
+        Livewire::test('profile.update-profile-form')
             ->set('state', [
                 'name' => 'Test Name',
                 'email' => 'test@example.com',

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\SptVersion;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<SptVersion>
  */
-class SptVersionFactory extends Factory
+final class SptVersionFactory extends Factory
 {
     public function definition(): array
     {
@@ -19,9 +20,9 @@ class SptVersionFactory extends Factory
             'version' => $this->faker->numerify('#.#.#'),
             'color_class' => $this->faker->randomElement(['red', 'green', 'emerald', 'lime', 'yellow', 'grey']),
             'link' => $this->faker->url(),
-            'publish_date' => Carbon::now()->subDays(7), // Default to published (a week ago)
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'publish_date' => Date::now()->subDays(7), // Default to published (a week ago)
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
         ];
     }
 
@@ -30,7 +31,7 @@ class SptVersionFactory extends Factory
      */
     public function unpublished(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'publish_date' => null,
         ]);
     }
@@ -38,19 +39,19 @@ class SptVersionFactory extends Factory
     /**
      * Indicate that the SPT version is scheduled for future publication.
      */
-    public function scheduled(?\Carbon\Carbon $date = null): static
+    public function scheduled(?CarbonInterface $date = null): static
     {
-        return $this->state(fn (array $attributes) => [
-            'publish_date' => $date ?? Carbon::now()->addWeek(),
+        return $this->state(fn (array $attributes): array => [
+            'publish_date' => $date ?? Date::now()->addWeek(),
         ]);
     }
 
     /**
      * Indicate that the SPT version was published at a specific date.
      */
-    public function publishedAt(\Carbon\Carbon $date): static
+    public function publishedAt(CarbonInterface $date): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'publish_date' => $date,
         ]);
     }

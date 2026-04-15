@@ -12,103 +12,120 @@ use App\Policies\AddonPolicy;
 use App\Policies\AddonVersionPolicy;
 use App\Policies\ModPolicy;
 use App\Policies\ModVersionPolicy;
-use Exception;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
+use Throwable;
 
-class SendDiscordNotifications implements ShouldQueue
+#[Timeout(120)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class SendDiscordNotifications implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
     /**
      * Execute the job.
      */
-    public function handle(): void
-    {
-        if (empty(config('discord-alerts.webhook_urls.mods'))) {
+    public function handle(
+        ModPolicy $modPolicy,
+        ModVersionPolicy $versionPolicy,
+        AddonPolicy $addonPolicy,
+        AddonVersionPolicy $addonVersionPolicy,
+    ): void {
+        $modsWebhookConfigured = ! empty(config('discord-alerts.webhook_urls.mods'));
+        $addonsWebhookConfigured = ! empty(config('discord-alerts.webhook_urls.addons'));
+
+        if (! $modsWebhookConfigured && ! $addonsWebhookConfigured) {
             return;
         }
-
-        $modPolicy = new ModPolicy;
-        $versionPolicy = new ModVersionPolicy;
-        $addonPolicy = new AddonPolicy;
-        $addonVersionPolicy = new AddonVersionPolicy;
-
-        // First, handle new mods that haven't sent notification yet
-        $mods = Mod::query()
-            ->where('discord_notification_sent', false)
-            ->where('disabled', false)
-            ->with(['owner', 'category', 'license', 'additionalAuthors', 'versions.latestSptVersion'])
-            ->get()
-            ->filter(fn (Mod $mod): bool => $modPolicy->view(null, $mod));
 
         /** @var array<int> */
         $notifiedModIds = [];
 
-        foreach ($mods as $mod) {
-            try {
-                $this->sendModNotification($mod);
+        if ($modsWebhookConfigured) {
+            // First, handle new mods that haven't sent notification yet
+            $mods = Mod::query()
+                ->where('discord_notification_sent', false)
+                ->where('disabled', false)
+                ->with(['owner', 'category', 'license', 'additionalAuthors', 'versions.latestSptVersion'])
+                ->get()
+                ->filter(fn (Mod $mod): bool => $modPolicy->view(null, $mod));
 
-                // Mark mod as sent
-                $mod->discord_notification_sent = true;
-                $mod->save();
+            foreach ($mods as $mod) {
+                try {
+                    $this->sendModNotification($mod);
 
-                // Mark all published versions of this mod as sent to prevent duplicate version notifications
-                ModVersion::query()
-                    ->where('mod_id', $mod->id)
-                    ->where('disabled', false)
-                    ->update(['discord_notification_sent' => true]);
+                    // Mark mod as sent
+                    $mod->discord_notification_sent = true;
+                    $mod->save();
 
-                $notifiedModIds[] = $mod->id;
+                    // Mark all published versions of this mod as sent to prevent duplicate version notifications
+                    ModVersion::query()
+                        ->where('mod_id', $mod->id)
+                        ->where('disabled', false)
+                        ->whereNotNull('published_at')
+                        ->where('published_at', '<=', now())
+                        ->update(['discord_notification_sent' => true]);
 
-                Log::info('Discord notification sent for mod', ['mod_id' => $mod->id, 'mod_name' => $mod->name]);
-            } catch (Exception $e) {
-                Log::error('Failed to send Discord notification for mod', [
-                    'mod_id' => $mod->id,
-                    'mod_name' => $mod->name,
-                    'error' => $e->getMessage(),
-                ]);
+                    $notifiedModIds[] = $mod->id;
+
+                    Log::info('Discord notification sent for mod', ['mod_id' => $mod->id, 'mod_name' => $mod->name]);
+                } catch (Throwable $e) {
+                    Log::error('Failed to send Discord notification for mod', [
+                        'mod_id' => $mod->id,
+                        'mod_name' => $mod->name,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Handle new versions for mods that have already sent their initial notification
+            $modVersions = ModVersion::query()
+                ->where('discord_notification_sent', false)
+                ->where('disabled', false)
+                ->whereNotIn('mod_id', $notifiedModIds) // Exclude mods just notified
+                ->whereHas('mod', function (Builder $query): void {
+                    $query->where('discord_notification_sent', true)
+                        ->where('disabled', false);
+                })
+                ->with(['mod', 'sptVersions'])
+                ->get()
+                ->filter(fn (ModVersion $modVersion): bool => $modPolicy->view(null, $modVersion->mod) && $versionPolicy->view(null, $modVersion));
+
+            // Send individual notifications for each new version
+            foreach ($modVersions as $modVersion) {
+                try {
+                    $this->sendModVersionNotification($modVersion->mod, $modVersion);
+
+                    // Mark this version as sent
+                    $modVersion->discord_notification_sent = true;
+                    $modVersion->save();
+
+                    Log::info('Discord notification sent for mod version', [
+                        'mod_id' => $modVersion->mod->id,
+                        'mod_name' => $modVersion->mod->name,
+                        'version' => $modVersion->version,
+                    ]);
+                } catch (Throwable $e) {
+                    Log::error('Failed to send Discord notification for mod version', [
+                        'mod_id' => $modVersion->mod->id,
+                        'version' => $modVersion->version,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         }
 
-        // Handle new versions for mods that have already sent their initial notification
-        $modVersions = ModVersion::query()
-            ->where('discord_notification_sent', false)
-            ->where('disabled', false)
-            ->whereNotIn('mod_id', $notifiedModIds) // Exclude mods just notified
-            ->whereHas('mod', function (Builder $query): void {
-                $query->where('discord_notification_sent', true)
-                    ->where('disabled', false);
-            })
-            ->with(['mod', 'sptVersions'])
-            ->get()
-            ->filter(fn (ModVersion $modVersion): bool => $modPolicy->view(null, $modVersion->mod) && $versionPolicy->view(null, $modVersion));
-
-        // Send individual notifications for each new version
-        foreach ($modVersions as $modVersion) {
-            try {
-                $this->sendModVersionNotification($modVersion->mod, $modVersion);
-
-                // Mark this version as sent
-                $modVersion->discord_notification_sent = true;
-                $modVersion->save();
-
-                Log::info('Discord notification sent for mod version', [
-                    'mod_id' => $modVersion->mod->id,
-                    'mod_name' => $modVersion->mod->name,
-                    'version' => $modVersion->version,
-                ]);
-            } catch (Exception $e) {
-                Log::error('Failed to send Discord notification for mod version', [
-                    'mod_id' => $modVersion->mod->id,
-                    'version' => $modVersion->version,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+        if (! $addonsWebhookConfigured) {
+            return;
         }
 
         // Handle new addons that haven't sent notification yet
@@ -134,12 +151,14 @@ class SendDiscordNotifications implements ShouldQueue
                 AddonVersion::query()
                     ->where('addon_id', $addon->id)
                     ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now())
                     ->update(['discord_notification_sent' => true]);
 
                 $notifiedAddonIds[] = $addon->id;
 
                 Log::info('Discord notification sent for addon', ['addon_id' => $addon->id, 'addon_name' => $addon->name]);
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 Log::error('Failed to send Discord notification for addon', [
                     'addon_id' => $addon->id,
                     'addon_name' => $addon->name,
@@ -175,7 +194,7 @@ class SendDiscordNotifications implements ShouldQueue
                     'addon_name' => $addonVersion->addon->name,
                     'version' => $addonVersion->version,
                 ]);
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 Log::error('Failed to send Discord notification for addon version', [
                     'addon_id' => $addonVersion->addon->id,
                     'version' => $addonVersion->version,
@@ -183,6 +202,16 @@ class SendDiscordNotifications implements ShouldQueue
                 ]);
             }
         }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('SendDiscordNotifications job failed permanently', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 
     /**
@@ -206,6 +235,7 @@ class SendDiscordNotifications implements ShouldQueue
             ];
         }
 
+        /** @var array<int, string> $authors */
         $authors = $mod->additionalAuthors->pluck('name')->filter()->toArray();
         if (! empty($authors)) {
             $embed['fields'][] = [
@@ -249,7 +279,7 @@ class SendDiscordNotifications implements ShouldQueue
             $features[] = 'Contains Ads';
         }
 
-        if (! empty($features)) {
+        if ($features !== []) {
             $embed['fields'][] = [
                 'name' => 'Tags',
                 'value' => implode(', ', $features),
@@ -268,8 +298,8 @@ class SendDiscordNotifications implements ShouldQueue
 
         // Build message with optional role mention
         $message = 'A new mod has been posted to the Forge!';
-        $roleId = config('discord-alerts.mod_notifications_role_id');
-        if (! empty($roleId)) {
+        $roleId = config()->string('discord-alerts.mod_notifications_role_id', '');
+        if ($roleId !== '') {
             $message .= sprintf(' <@&%s>', $roleId);
         }
 
@@ -327,7 +357,7 @@ class SendDiscordNotifications implements ShouldQueue
             'embed' => $embed,
         ]);
 
-        // Build message with optional role mention
+        // Build message
         $message = 'A mod has been updated on the Forge!';
 
         // Send the notification
@@ -357,6 +387,7 @@ class SendDiscordNotifications implements ShouldQueue
             ];
         }
 
+        /** @var array<int, string> $authors */
         $authors = $addon->additionalAuthors->pluck('name')->filter()->toArray();
         if (! empty($authors)) {
             $embed['fields'][] = [
@@ -387,7 +418,7 @@ class SendDiscordNotifications implements ShouldQueue
             $features[] = 'Detached';
         }
 
-        if (! empty($features)) {
+        if ($features !== []) {
             $embed['fields'][] = [
                 'name' => 'Tags',
                 'value' => implode(', ', $features),
@@ -406,13 +437,13 @@ class SendDiscordNotifications implements ShouldQueue
 
         // Build message with optional role mention
         $message = 'A new addon has been posted to the Forge!';
-        $roleId = config('discord-alerts.mod_notifications_role_id');
-        if (! empty($roleId)) {
+        $roleId = config()->string('discord-alerts.addon_notifications_role_id', '');
+        if ($roleId !== '') {
             $message .= sprintf(' <@&%s>', $roleId);
         }
 
         // Send the notification
-        DiscordAlert::to('mods')
+        DiscordAlert::to('addons')
             ->withUsername('ForgeBot')
             ->message($message, [$embed]);
     }
@@ -471,7 +502,7 @@ class SendDiscordNotifications implements ShouldQueue
         $message = 'An addon has been updated on the Forge!';
 
         // Send the notification
-        DiscordAlert::to('mods')
+        DiscordAlert::to('addons')
             ->withUsername('ForgeBot')
             ->message($message, [$embed]);
     }

@@ -7,7 +7,7 @@ namespace App\Policies;
 use App\Models\Report;
 use App\Models\User;
 
-class ReportPolicy
+final class ReportPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -32,7 +32,11 @@ class ReportPolicy
             return false;
         }
 
-        return $user->isModOrAdmin() || $user->id === $report->reporter_id;
+        if ($user->isModOrAdmin()) {
+            return true;
+        }
+
+        return $user->id === $report->reporter_id;
     }
 
     /**

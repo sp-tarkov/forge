@@ -10,7 +10,7 @@ use App\Http\Responses\VerifyEmailResponse;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 
-class VerifyEmailController extends Controller
+final class VerifyEmailController extends Controller
 {
     /**
      * Mark the user's email address as verified.
@@ -18,6 +18,7 @@ class VerifyEmailController extends Controller
     public function __invoke(VerifyEmailRequest $request): VerifyEmailResponse
     {
         // Get user from route parameters since they might not be authenticated
+        /** @var User $user */
         $user = User::query()->findOrFail($request->route('id'));
 
         // If already verified, return response indicating it's not newly verified

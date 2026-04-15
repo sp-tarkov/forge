@@ -49,7 +49,7 @@ abstract class AbstractQueryBuilder
     /**
      * The sort parameters for the query.
      *
-     * @var array<string, string>
+     * @var array<string>
      */
     protected array $sorts = [];
 
@@ -122,7 +122,7 @@ abstract class AbstractQueryBuilder
      *
      * @return array<string>
      */
-    public static function getAllAllowedFields(): array
+    final public static function getAllAllowedFields(): array
     {
         return array_merge(
             static::getAllowedFields(),
@@ -135,7 +135,7 @@ abstract class AbstractQueryBuilder
      *
      * @return Builder<TModel>
      */
-    public function apply(): Builder
+    final public function apply(): Builder
     {
         $this->applyFilters();
         $this->applyIncludes();
@@ -152,7 +152,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string, mixed>|null  $filters
      * @return self<TModel>
      */
-    public function withFilters(?array $filters): self
+    final public function withFilters(?array $filters): self
     {
         if ($filters !== null) {
             $this->filters = $filters;
@@ -167,7 +167,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string>|null  $includes
      * @return self<TModel>
      */
-    public function withIncludes(?array $includes): self
+    final public function withIncludes(?array $includes): self
     {
         if ($includes !== null) {
             $this->includes = $includes;
@@ -182,7 +182,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string>|null  $fields
      * @return self<TModel>
      */
-    public function withFields(?array $fields): self
+    final public function withFields(?array $fields): self
     {
         if ($fields !== null) {
             $this->fields = $fields;
@@ -197,7 +197,7 @@ abstract class AbstractQueryBuilder
      * @param  array<string>|null  $sorts
      * @return self<TModel>
      */
-    public function withSorts(?array $sorts): self
+    final public function withSorts(?array $sorts): self
     {
         if ($sorts !== null) {
             $this->sorts = $sorts;
@@ -211,7 +211,7 @@ abstract class AbstractQueryBuilder
      *
      * @return self<TModel>
      */
-    public function withSearch(?string $query): self
+    final public function withSearch(?string $query): self
     {
         if ($query !== null) {
             $this->searchQuery = $query;
@@ -225,7 +225,7 @@ abstract class AbstractQueryBuilder
      *
      * @return Collection<int, TModel>
      */
-    public function get(): Collection
+    final public function get(): Collection
     {
         /** @var Collection<int, TModel> */
         return $this->apply()->get();
@@ -236,7 +236,7 @@ abstract class AbstractQueryBuilder
      *
      * @return LengthAwarePaginator<int, TModel>
      */
-    public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
+    final public function paginate(int $perPage = 12, int $allowed_max = 50): LengthAwarePaginator
     {
         $perPage = min($perPage, $allowed_max);
 
@@ -250,7 +250,7 @@ abstract class AbstractQueryBuilder
      *
      * @throws ModelNotFoundException
      */
-    public function findOrFail(int $id): Model
+    final public function findOrFail(int $id): Model
     {
         return $this->apply()->findOrFail($id);
     }
@@ -281,7 +281,7 @@ abstract class AbstractQueryBuilder
      */
     protected static function parseCommaSeparatedInput(string $value, ?string $castReturn = null): array
     {
-        $values = array_filter(explode(',', $value), fn (string $value): bool => ! empty($value));
+        $values = array_filter(explode(',', $value), fn (string $value): bool => $value !== '' && $value !== '0');
 
         if ($castReturn === null) {
             return $values;
@@ -300,7 +300,7 @@ abstract class AbstractQueryBuilder
      */
     protected function applySearch(): void
     {
-        if (empty($this->searchQuery)) {
+        if ($this->searchQuery === null || $this->searchQuery === '') {
             return;
         }
 
@@ -312,8 +312,12 @@ abstract class AbstractQueryBuilder
             return;
         }
 
-        // Get the search results with their relevance ordering and ranking scores
-        $searchResults = $model->search($this->searchQuery)->options(['showRankingScore' => true])->raw();
+        // Get the search results with their relevance ordering and ranking scores (model uses Searchable trait, verified above)
+        assert(method_exists($model, 'search'));
+        /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
+        $scoutBuilder = $model->search($this->searchQuery);
+        /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */
+        $searchResults = $scoutBuilder->options(['showRankingScore' => true])->raw();
 
         if (empty($searchResults['hits'])) {
             // If no search results, force no records to be returned
@@ -323,7 +327,9 @@ abstract class AbstractQueryBuilder
         }
 
         // Sort results by version segments first, then by ranking score
-        $sortedHits = collect($searchResults['hits'])
+        /** @var array<int, array<string, mixed>> $hits */
+        $hits = $searchResults['hits'];
+        $sortedHits = collect($hits)
             ->sortBy([
                 ['latestVersionMajor', 'desc'],
                 ['latestVersionMinor', 'desc'],
@@ -345,8 +351,8 @@ abstract class AbstractQueryBuilder
         }
 
         // Filter the main query by these IDs and preserve the order from Scout
-        $this->builder->whereIn($model->getQualifiedKeyName(), $orderedIds)
-            ->orderByRaw('FIELD('.$model->getQualifiedKeyName().', '.implode(',', array_map(intval(...), $orderedIds)).')');
+        $this->builder->whereIn($model->getQualifiedKeyName(), $orderedIds);
+        $this->preserveScoutOrder($model, $orderedIds);
     }
 
     /**
@@ -356,7 +362,7 @@ abstract class AbstractQueryBuilder
      */
     protected function applyFilters(): void
     {
-        if (empty($this->filters)) {
+        if ($this->filters === []) {
             return;
         }
 
@@ -366,7 +372,7 @@ abstract class AbstractQueryBuilder
 
         $invalidFilters = array_diff($requestedFilterKeys, $allowedFilterKeys);
 
-        if (! empty($invalidFilters)) {
+        if ($invalidFilters !== []) {
             $invalidFilter = implode(', ', $invalidFilters);
             $validFilters = implode(', ', $allowedFilterKeys);
             throw new InvalidQuery(
@@ -395,16 +401,16 @@ abstract class AbstractQueryBuilder
      */
     protected function applyIncludes(): void
     {
-        if (! empty($this->includes)) {
-            $this->includes = array_filter($this->includes, fn (?string $include): bool => ! empty($include));
-            if (empty($this->includes)) {
+        if ($this->includes !== []) {
+            $this->includes = array_filter($this->includes, fn (?string $include): bool => $include !== null && $include !== '');
+            if ($this->includes === []) {
                 return; // All includes were empty and filtered out, return early.
             }
 
             $allowedIncludes = static::getAllowedIncludes();
 
             // Check if we have a key-value array or a simple array
-            $isKeyValueArray = ! empty($allowedIncludes) && ! is_numeric(key($allowedIncludes));
+            $isKeyValueArray = $allowedIncludes !== [] && ! is_numeric(key($allowedIncludes));
 
             if ($isKeyValueArray) {
                 /** @var array<string, string|array<array<string>>> $allowedIncludes */
@@ -412,7 +418,7 @@ abstract class AbstractQueryBuilder
                 $validIncludes = array_keys($allowedIncludes);
 
                 // Check for invalid includes
-                if (! empty($invalidIncludes)) {
+                if ($invalidIncludes !== []) {
                     $invalidInclude = implode(', ', $invalidIncludes);
                     $validIncludeList = implode(', ', $validIncludes);
                     throw new InvalidQuery(
@@ -437,7 +443,7 @@ abstract class AbstractQueryBuilder
                 $invalidIncludes = array_diff($this->includes, $allowedIncludes);
                 $validIncludes = $allowedIncludes;
 
-                if (! empty($invalidIncludes)) {
+                if ($invalidIncludes !== []) {
                     $invalidInclude = implode(', ', $invalidIncludes);
                     $validIncludeList = implode(', ', $validIncludes);
                     throw new InvalidQuery(
@@ -457,18 +463,18 @@ abstract class AbstractQueryBuilder
      */
     protected function applyFields(): void
     {
-        $fields = array_filter($this->fields, fn (?string $field): bool => ! empty($field));
-        $requiredFields = array_filter(static::getRequiredFields(), fn (string $field): bool => ! empty($field));
+        $fields = array_filter($this->fields, fn (?string $field): bool => $field !== null && $field !== '');
+        $requiredFields = array_filter(static::getRequiredFields(), fn (string $field): bool => $field !== '' && $field !== '0');
 
-        if (! empty($fields)) {
+        if ($fields !== []) {
             // Get fields that need validation (excluding required fields)
             $fieldsToValidate = array_diff($fields, $requiredFields);
 
-            if (! empty($fieldsToValidate)) {
-                $allowedFields = static::getAllAllowedFields();
+            if ($fieldsToValidate !== []) {
+                $allowedFields = self::getAllAllowedFields();
                 $invalidFields = array_diff($fieldsToValidate, $allowedFields);
 
-                if (! empty($invalidFields)) {
+                if ($invalidFields !== []) {
                     $invalidField = implode(', ', $invalidFields);
                     $validFields = implode(', ', $allowedFields);
                     throw new InvalidQuery(
@@ -494,8 +500,10 @@ abstract class AbstractQueryBuilder
             $this->builder->select(array_merge($dbFields, $requiredFields, $requiredDependencies));
         } else {
             // When no fields are specified, include all allowed fields plus required fields
+            // and all dynamic attribute dependencies
             $allowedFields = static::getAllowedFields();
-            $this->builder->select(array_merge($allowedFields, $requiredFields));
+            $dynamicDependencies = array_merge(...array_values(static::getDynamicAttributes()) ?: [[]]);
+            $this->builder->select(array_unique(array_merge($allowedFields, $requiredFields, $dynamicDependencies)));
         }
     }
 
@@ -506,9 +514,9 @@ abstract class AbstractQueryBuilder
      */
     protected function applySorts(): void
     {
-        if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
-            if (empty($this->sorts)) {
+        if ($this->sorts !== []) {
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => $sort !== null && $sort !== '');
+            if ($this->sorts === []) {
                 return; // All sorts were empty and filtered out, return early.
             }
 
@@ -522,7 +530,7 @@ abstract class AbstractQueryBuilder
                 }
             }
 
-            if (! empty($invalidSorts)) {
+            if ($invalidSorts !== []) {
                 $invalidSort = implode(', ', $invalidSorts);
                 $validSorts = implode(', ', $allowedSorts);
                 throw new InvalidQuery(
@@ -536,5 +544,32 @@ abstract class AbstractQueryBuilder
                 $this->builder->orderBy($column, $isReverse ? 'desc' : 'asc');
             }
         }
+    }
+
+    /**
+     * Preserve search result ordering using FIELD() with parameterized bindings.
+     *
+     * @param  TModel  $model
+     * @param  list<int|string>  $orderedIds
+     */
+    private function preserveScoutOrder(Model $model, array $orderedIds): void
+    {
+        // Build CASE WHEN ordering to preserve Scout relevance order without dynamic SQL
+        $intIds = array_map(intval(...), $orderedIds);
+        $bindings = [];
+        $cases = [];
+
+        foreach ($intIds as $position => $id) {
+            $cases[] = 'WHEN ? THEN ?';
+            $bindings[] = $id;
+            $bindings[] = $position;
+        }
+
+        $caseExpression = 'CASE '.$model->getQualifiedKeyName().' '.implode(' ', $cases).' END';
+        $this->builder->getQuery()->orders[] = [
+            'type' => 'Raw',
+            'sql' => $caseExpression,
+        ];
+        $this->builder->getQuery()->addBinding($bindings, 'order');
     }
 }

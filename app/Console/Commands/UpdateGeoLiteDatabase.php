@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 
-class UpdateGeoLiteDatabase extends Command
+final class UpdateGeoLiteDatabase extends Command
 {
     /**
      * The name and signature of the console command.
@@ -36,10 +36,10 @@ class UpdateGeoLiteDatabase extends Command
         }
 
         // Check if credentials are configured
-        $accountId = config('services.maxmind.account_id');
-        $licenseKey = config('services.maxmind.license_key');
+        $accountId = config()->string('services.maxmind.account_id', '');
+        $licenseKey = config()->string('services.maxmind.license_key', '');
 
-        if (! $accountId || ! $licenseKey) {
+        if ($accountId === '' || $licenseKey === '') {
             $message = 'MaxMind credentials not configured. Please set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY environment variables.';
             $this->error($message);
             Log::error('GeoLite2 database update failed: Missing credentials');
@@ -70,7 +70,9 @@ class UpdateGeoLiteDatabase extends Command
             $tempFile = $tempDir.'/GeoLite2-City.tar.gz';
 
             $response = Http::withBasicAuth($accountId, $licenseKey)
+                ->connectTimeout(10)
                 ->timeout(300)
+                ->retry(3, 1000, throw: false)
                 ->get($downloadUrl);
 
             throw_unless($response->successful(),
@@ -187,7 +189,7 @@ class UpdateGeoLiteDatabase extends Command
         }
 
         // Report issues
-        if (! empty($issues)) {
+        if ($issues !== []) {
             $this->error('System diagnostic issues found:');
             foreach ($issues as $issue) {
                 $this->error('  • '.$issue);
@@ -252,7 +254,7 @@ class UpdateGeoLiteDatabase extends Command
 
                 $this->info(sprintf('✓ %s directory ready: %s', $name, $dir));
             } catch (Exception $e) {
-                throw new Exception(sprintf('Failed to create %s directory: %s. Error: %s', $name, $dir, $e->getMessage()));
+                throw new Exception(sprintf('Failed to create %s directory: %s. Error: %s', $name, $dir, $e->getMessage()), $e->getCode(), $e);
             }
         }
     }
@@ -266,6 +268,7 @@ class UpdateGeoLiteDatabase extends Command
 
         try {
             $response = Http::withBasicAuth($accountId, $licenseKey)
+                ->connectTimeout(5)
                 ->timeout(30)
                 ->head($url);
 
@@ -279,7 +282,7 @@ class UpdateGeoLiteDatabase extends Command
 
             $this->info('✓ Network connectivity test passed');
         } catch (Exception $exception) {
-            throw new Exception('Network connectivity test failed: '.$exception->getMessage());
+            throw new Exception('Network connectivity test failed: '.$exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 
@@ -309,15 +312,17 @@ class UpdateGeoLiteDatabase extends Command
         if (empty($extractedFiles)) {
             // List contents for debugging
             $contents = File::glob($tempDir.'/*');
+            /** @var array<string> $contents */
             $contentsInfo = empty($contents) ? 'directory is empty' : 'found: '.implode(', ', array_map(basename(...), $contents));
 
             throw new Exception('Could not find GeoLite2-City.mmdb in extracted files. Directory contents: '.$contentsInfo);
         }
 
+        /** @var string $extractedDatabase */
         $extractedDatabase = $extractedFiles[0];
         $fileSize = File::size($extractedDatabase);
 
-        $this->info(sprintf('✓ Found extracted database: %s (', $extractedDatabase).number_format($fileSize).' bytes)');
+        $this->info(sprintf('✓ Found extracted database: %s (%s bytes)', $extractedDatabase, number_format($fileSize)));
 
         return $extractedDatabase;
     }
@@ -334,7 +339,7 @@ class UpdateGeoLiteDatabase extends Command
                 File::move($databasePath, $backupPath);
                 $this->info('✓ Existing database backed up to: '.$backupPath);
             } catch (Exception $e) {
-                throw new Exception('Failed to backup existing database: '.$e->getMessage());
+                throw new Exception('Failed to backup existing database: '.$e->getMessage(), $e->getCode(), $e);
             }
         }
     }

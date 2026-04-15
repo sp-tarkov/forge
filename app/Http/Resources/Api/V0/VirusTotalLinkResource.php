@@ -14,7 +14,7 @@ use Override;
  *
  * @property VirusTotalLink $resource
  */
-class VirusTotalLinkResource extends JsonResource
+final class VirusTotalLinkResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

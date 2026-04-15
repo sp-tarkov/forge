@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\ModVersion;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ return new class extends Migration
         // Step 1: Add polymorphic columns to mod_dependencies
         Schema::table('mod_dependencies', function (Blueprint $table): void {
             // Add the polymorphic type column with default for existing records
-            $table->string('dependable_type')->default('App\\Models\\ModVersion')->after('id');
+            $table->string('dependable_type')->default(ModVersion::class)->after('id');
             // Add the polymorphic id column (will be populated from mod_version_id)
             $table->unsignedBigInteger('dependable_id')->after('dependable_type');
         });
@@ -56,7 +57,7 @@ return new class extends Migration
         // Step 1: Add polymorphic columns to mod_resolved_dependencies
         Schema::table('mod_resolved_dependencies', function (Blueprint $table): void {
             // Add the polymorphic type column with default for existing records
-            $table->string('dependable_type')->default('App\\Models\\ModVersion')->after('id');
+            $table->string('dependable_type')->default(ModVersion::class)->after('id');
             // Add the polymorphic id column (will be populated from mod_version_id)
             $table->unsignedBigInteger('dependable_id')->after('dependable_type');
         });
@@ -129,7 +130,7 @@ return new class extends Migration
 
         // Populate mod_version_id from dependable_id
         DB::table('mod_resolved_dependencies')
-            ->where('dependable_type', 'App\\Models\\ModVersion')
+            ->where('dependable_type', ModVersion::class)
             ->update([
                 'mod_version_id' => DB::raw('dependable_id'),
             ]);
@@ -166,7 +167,7 @@ return new class extends Migration
 
         // Populate mod_version_id from dependable_id
         DB::table('mod_dependencies')
-            ->where('dependable_type', 'App\\Models\\ModVersion')
+            ->where('dependable_type', ModVersion::class)
             ->update([
                 'mod_version_id' => DB::raw('dependable_id'),
             ]);

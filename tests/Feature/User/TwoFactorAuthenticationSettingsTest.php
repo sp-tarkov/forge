@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Profile\TwoFactorAuthenticationForm;
 use App\Models\User;
 use Laravel\Fortify\Features;
 use Livewire\Livewire;
@@ -13,7 +12,7 @@ describe('two factor authentication', function (): void {
 
         $this->withSession(['auth.password_confirmed_at' => time()]);
 
-        Livewire::test(TwoFactorAuthenticationForm::class)
+        Livewire::test('profile.two-factor-authentication-form')
             ->call('enableTwoFactorAuthentication');
 
         $user = $user->fresh();
@@ -27,7 +26,7 @@ describe('two factor authentication', function (): void {
 
         $this->withSession(['auth.password_confirmed_at' => time()]);
 
-        $component = Livewire::test(TwoFactorAuthenticationForm::class)
+        $component = Livewire::test('profile.two-factor-authentication-form')
             ->call('enableTwoFactorAuthentication')
             ->call('regenerateRecoveryCodes');
 
@@ -44,7 +43,7 @@ describe('two factor authentication', function (): void {
 
         $this->withSession(['auth.password_confirmed_at' => time()]);
 
-        $component = Livewire::test(TwoFactorAuthenticationForm::class)
+        $component = Livewire::test('profile.two-factor-authentication-form')
             ->call('enableTwoFactorAuthentication');
 
         $this->assertNotNull($user->fresh()->two_factor_secret);

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Livewire\Profile\UpdatePasswordForm;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
@@ -133,7 +132,7 @@ describe('password updates for OAuth users', function (): void {
         $this->actingAs($user);
 
         // Test the Livewire component
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state.password', 'newpassword123')
             ->set('state.password_confirmation', 'newpassword123')
             ->call('updatePassword')
@@ -154,14 +153,14 @@ describe('password updates for OAuth users', function (): void {
         $this->actingAs($user);
 
         // Without current password
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state.password', 'newpassword123')
             ->set('state.password_confirmation', 'newpassword123')
             ->call('updatePassword')
             ->assertHasErrors(['current_password' => 'required']);
 
         // With incorrect current password
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state.current_password', 'wrongpassword')
             ->set('state.password', 'newpassword123')
             ->set('state.password_confirmation', 'newpassword123')
@@ -169,7 +168,7 @@ describe('password updates for OAuth users', function (): void {
             ->assertHasErrors(['current_password']);
 
         // With correct current password
-        Livewire::test(UpdatePasswordForm::class)
+        Livewire::test('profile.update-password-form')
             ->set('state.current_password', 'oldpassword')
             ->set('state.password', 'newpassword123')
             ->set('state.password_confirmation', 'newpassword123')

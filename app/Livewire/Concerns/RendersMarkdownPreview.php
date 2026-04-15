@@ -8,6 +8,7 @@ use GrahamCampbell\Markdown\Facades\Markdown;
 use Livewire\Attributes\Renderless;
 use Stevebauman\Purify\Facades\Purify;
 
+/** @phpstan-ignore trait.unused */
 trait RendersMarkdownPreview
 {
     /**
@@ -16,12 +17,13 @@ trait RendersMarkdownPreview
     #[Renderless]
     public function previewMarkdown(string $content, string $purifyConfig = 'description'): string
     {
-        if (empty(mb_trim($content))) {
+        if (mb_trim($content) === '') {
             return '<p class="text-slate-400 dark:text-slate-500 italic">'.__('Nothing to preview.').'</p>';
         }
 
         $html = Markdown::convert($content)->getContent();
 
+        /** @var string */
         return Purify::config($purifyConfig)->clean($html);
     }
 }

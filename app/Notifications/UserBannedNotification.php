@@ -11,7 +11,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Mchev\Banhammer\Models\Ban;
 
-class UserBannedNotification extends Notification implements ShouldQueue
+final class UserBannedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -41,7 +41,7 @@ class UserBannedNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $appName = config('app.name');
+        $appName = config()->string('app.name');
 
         /** @var Carbon|null $expiredAt */
         $expiredAt = $this->ban->getAttribute('expired_at');
@@ -53,16 +53,16 @@ class UserBannedNotification extends Notification implements ShouldQueue
         $message = (new MailMessage)
             ->subject('Your account has been suspended')
             ->greeting('Hello,')
-            ->line("Your account on {$appName} has been suspended.");
+            ->line(sprintf('Your account on %s has been suspended.', $appName));
 
         if ($isPermanent) {
             $message->line('**Duration:** Permanent');
         } else {
-            $message->line("**Duration:** Until {$expiredAt->format('F j, Y \a\t g:i A T')}");
+            $message->line('**Duration:** Until '.$expiredAt->format('F j, Y \a\t g:i A T'));
         }
 
         if ($comment) {
-            $message->line("**Reason:** {$comment}");
+            $message->line('**Reason:** '.$comment);
         }
 
         $message->line('');

@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Contracts\DependencyResolver;
 use App\Models\Dependency;
-use App\Services\DependencyVersionService;
 
-class DependencyObserver
+final readonly class DependencyObserver
 {
-    public function __construct(protected DependencyVersionService $dependencyVersionService) {}
+    public function __construct(private DependencyResolver $dependencyVersionService) {}
 
     /**
      * Handle the Dependency "saved" event.
      */
     public function saved(Dependency $dependency): void
     {
-        $dependable = $dependency->dependable;
-        if ($dependable !== null) {
-            $this->dependencyVersionService->resolve($dependable);
-        }
+        $this->dependencyVersionService->resolve($dependency->dependable);
     }
 
     /**
@@ -27,9 +24,6 @@ class DependencyObserver
      */
     public function deleted(Dependency $dependency): void
     {
-        $dependable = $dependency->dependable;
-        if ($dependable !== null) {
-            $this->dependencyVersionService->resolve($dependable);
-        }
+        $this->dependencyVersionService->resolve($dependency->dependable);
     }
 }

@@ -7,11 +7,8 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Policies\ModVersionPolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->withoutDefer();
@@ -200,7 +197,9 @@ describe('mod publishing functionality', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
+        $publishDateTime = Date::now()->addHour();
+        $publishDate = $publishDateTime->format('Y-m-d');
+        $publishTime = $publishDateTime->format('H:i');
 
         Livewire::actingAs($owner)
             ->test('mod.action', [
@@ -210,13 +209,14 @@ describe('mod publishing functionality', function (): void {
                 'modDisabled' => (bool) $mod->disabled,
                 'modPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertSet('modPublished', true);
 
         $mod->refresh();
         expect($mod->published_at)->not->toBeNull();
-        expect($mod->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate)->format('Y-m-d H:i:s'));
+        expect($mod->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
     });
 
     it('allows mod owners to unpublish a mod', function (): void {
@@ -243,7 +243,8 @@ describe('mod publishing functionality', function (): void {
         $otherUser = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
@@ -254,7 +255,8 @@ describe('mod publishing functionality', function (): void {
                 'modDisabled' => (bool) $mod->disabled,
                 'modPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertForbidden();
 
@@ -277,7 +279,8 @@ describe('mod publishing functionality', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
         $mod->additionalAuthors()->attach($author);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         // Test author can publish
         Livewire::actingAs($author)
@@ -288,7 +291,8 @@ describe('mod publishing functionality', function (): void {
                 'modDisabled' => (bool) $mod->disabled,
                 'modPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertSet('modPublished', true);
 
@@ -531,7 +535,9 @@ describe('mod version publishing functionality', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->addHour()->format('Y-m-d\TH:i');
+        $publishDateTime = Date::now()->addHour();
+        $publishDate = $publishDateTime->format('Y-m-d');
+        $publishTime = $publishDateTime->format('H:i');
 
         Livewire::actingAs($owner)
             ->test('mod.version-action', [
@@ -541,13 +547,14 @@ describe('mod version publishing functionality', function (): void {
                 'versionDisabled' => (bool) $version->disabled,
                 'versionPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertSet('versionPublished', true);
 
         $version->refresh();
         expect($version->published_at)->not->toBeNull();
-        expect($version->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate)->format('Y-m-d H:i:s'));
+        expect($version->published_at->format('Y-m-d H:i:s'))->toBe(Date::parse($publishDate.' '.$publishTime)->format('Y-m-d H:i:s'));
     });
 
     it('allows mod owners to unpublish a version', function (): void {
@@ -583,7 +590,8 @@ describe('mod version publishing functionality', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         // Test unauthorized publish
         Livewire::actingAs($otherUser)
@@ -594,7 +602,8 @@ describe('mod version publishing functionality', function (): void {
                 'versionDisabled' => (bool) $version->disabled,
                 'versionPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertForbidden();
 
@@ -618,7 +627,8 @@ describe('mod version publishing functionality', function (): void {
         $mod->additionalAuthors()->attach($author);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         // Test author can publish
         Livewire::actingAs($author)
@@ -629,7 +639,8 @@ describe('mod version publishing functionality', function (): void {
                 'versionDisabled' => (bool) $version->disabled,
                 'versionPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish')
             ->assertSet('versionPublished', true);
 

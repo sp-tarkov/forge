@@ -1,23 +1,23 @@
 // Function to initialize tabs
 function initializeTabs(container = document) {
     // Find all elements with the "tabset" class within the user-markdown container.
-    const userMarkdownAreas = container.querySelectorAll(".user-markdown");
+    const userMarkdownAreas = container.querySelectorAll('.user-markdown');
 
     // If no user-markdown areas found, try to find tabsets directly
     let tabsets = [];
 
     if (userMarkdownAreas.length > 0) {
         userMarkdownAreas.forEach((area) => {
-            const areaTabs = area.querySelectorAll(".tabset:not([data-tabs-initialized])");
+            const areaTabs = area.querySelectorAll('.tabset:not([data-tabs-initialized])');
             tabsets = [...tabsets, ...areaTabs];
         });
-    } else if (container.classList && container.classList.contains("user-markdown")) {
+    } else if (container.classList && container.classList.contains('user-markdown')) {
         // If the container itself is a user-markdown area
-        tabsets = container.querySelectorAll(".tabset:not([data-tabs-initialized])");
+        tabsets = container.querySelectorAll('.tabset:not([data-tabs-initialized])');
     } else {
         // Try to find tabsets directly in the container
         const directTabsets = container.querySelectorAll
-            ? container.querySelectorAll(".tabset:not([data-tabs-initialized])")
+            ? container.querySelectorAll('.tabset:not([data-tabs-initialized])')
             : [];
         tabsets = [...directTabsets];
     }
@@ -28,30 +28,30 @@ function initializeTabs(container = document) {
 
     tabsets.forEach((tabset) => {
         // Mark this tabset as initialized to prevent duplicate initialization
-        tabset.setAttribute("data-tabs-initialized", "true");
+        tabset.setAttribute('data-tabs-initialized', 'true');
 
         // Generate a unique index for this tabset
         const tabsetIndex = Date.now() + Math.random();
-        const panels = tabset.querySelectorAll(".tab-panel");
+        const panels = tabset.querySelectorAll('.tab-panel');
         if (panels.length === 0) return;
 
         // Create a container for the navigation links.
-        const navigation = document.createElement("div");
-        navigation.className = "tab-navigation";
-        navigation.setAttribute("role", "tablist");
+        const navigation = document.createElement('div');
+        navigation.className = 'tab-navigation';
+        navigation.setAttribute('role', 'tablist');
 
         // Add a unique identifier for potentially multiple tabsets on a page.
-        navigation.setAttribute("aria-label", `Tab Set ${tabsetIndex + 1}`);
+        navigation.setAttribute('aria-label', `Tab Set ${tabsetIndex + 1}`);
 
         // Generate Links and Prepare Panels
         panels.forEach((panel, panelIndex) => {
             const panelId = panel.id;
-            const titleElement = panel.querySelector(".tab-title");
-            const contentElement = panel.querySelector(".tab-content");
+            const titleElement = panel.querySelector('.tab-title');
+            const contentElement = panel.querySelector('.tab-content');
 
             // Basic validation
             if (!panelId) {
-                console.warn("Tab panel is missing an ID, skipping:", panel);
+                console.warn('Tab panel is missing an ID, skipping:', panel);
                 return;
             }
             if (!titleElement) {
@@ -64,13 +64,13 @@ function initializeTabs(container = document) {
             }
 
             // Create the "tab" button
-            const link = document.createElement("button");
-            link.type = "button"; // Prevent form submission
+            const link = document.createElement('button');
+            link.type = 'button'; // Prevent form submission
             link.textContent = titleElement.textContent.trim();
-            link.className = "tab-link";
-            link.setAttribute("role", "tab");
-            link.setAttribute("aria-controls", panelId); // Links button to panel.
-            link.setAttribute("data-target-id", panelId); // Store target ID for easier access.
+            link.className = 'tab-link';
+            link.setAttribute('role', 'tab');
+            link.setAttribute('aria-controls', panelId); // Links button to panel.
+            link.setAttribute('data-target-id', panelId); // Store target ID for easier access.
             // Ensure unique ID for the link itself for aria-labelledby.
             const linkId = `tab-link-${panelId}-${tabsetIndex}`;
             link.id = linkId;
@@ -78,23 +78,23 @@ function initializeTabs(container = document) {
             navigation.appendChild(link);
 
             // Setup Panel and Content Accessibility & Initial State.
-            panel.setAttribute("role", "tabpanel");
-            panel.setAttribute("aria-labelledby", linkId); // Links panel back to button.
+            panel.setAttribute('role', 'tabpanel');
+            panel.setAttribute('aria-labelledby', linkId); // Links panel back to button.
 
             if (panelIndex === 0) {
                 // First tab is active by default.
-                link.classList.add("active");
-                link.setAttribute("aria-selected", "true");
-                contentElement.classList.remove("hidden"); // Ensure it's visible.
+                link.classList.add('active');
+                link.setAttribute('aria-selected', 'true');
+                contentElement.classList.remove('hidden'); // Ensure it's visible.
             } else {
                 // Hide other tabs' content initially.
-                link.setAttribute("aria-selected", "false");
-                contentElement.classList.add("hidden");
+                link.setAttribute('aria-selected', 'false');
+                contentElement.classList.add('hidden');
             }
         });
 
         // Mark navigation as initialized
-        navigation.setAttribute("data-tabs-initialized", "true");
+        navigation.setAttribute('data-tabs-initialized', 'true');
 
         // Insert Navigation and Add Event Listener
 
@@ -102,12 +102,12 @@ function initializeTabs(container = document) {
         tabset.parentNode.insertBefore(navigation, tabset);
 
         // Add a single event listener to the navigation container (event delegation).
-        navigation.addEventListener("click", (event) => {
+        navigation.addEventListener('click', (event) => {
             // Find the button that was clicked, even if a child element was the direct target.
-            const clickedLink = event.target.closest(".tab-link");
+            const clickedLink = event.target.closest('.tab-link');
 
             // Ignore clicks that are not on a tab link or if it's already active.
-            if (!clickedLink || clickedLink.classList.contains("active")) {
+            if (!clickedLink || clickedLink.classList.contains('active')) {
                 return;
             }
 
@@ -117,25 +117,25 @@ function initializeTabs(container = document) {
             // Update Tab States within this specific tabset.
 
             // Deactivate all links and hide all content within this tabset
-            navigation.querySelectorAll(".tab-link").forEach((link) => {
-                link.classList.remove("active");
-                link.setAttribute("aria-selected", "false");
+            navigation.querySelectorAll('.tab-link').forEach((link) => {
+                link.classList.remove('active');
+                link.setAttribute('aria-selected', 'false');
             });
             // Only hide content within the *current* tabset associated with this navigation.
-            tabset.querySelectorAll(".tab-content").forEach((content) => {
-                content.classList.add("hidden");
+            tabset.querySelectorAll('.tab-content').forEach((content) => {
+                content.classList.add('hidden');
             });
 
             // Activate the clicked link.
-            clickedLink.classList.add("active");
-            clickedLink.setAttribute("aria-selected", "true");
+            clickedLink.classList.add('active');
+            clickedLink.setAttribute('aria-selected', 'true');
 
             // Show the target panel's content.
             const targetPanel = tabset.querySelector(`#${targetId}`); // Find panel within the correct tabset
             if (targetPanel) {
-                const targetContent = targetPanel.querySelector(".tab-content");
+                const targetContent = targetPanel.querySelector('.tab-content');
                 if (targetContent) {
-                    targetContent.classList.remove("hidden");
+                    targetContent.classList.remove('hidden');
                 } else {
                     console.error(`Could not find .tab-content within target panel #${targetId}`);
                 }
@@ -147,8 +147,8 @@ function initializeTabs(container = document) {
 }
 
 // Initialize tabs on DOMContentLoaded
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
         initializeTabs();
     });
 } else {
@@ -158,13 +158,13 @@ if (document.readyState === "loading") {
 // Function to register Livewire hooks
 function registerLivewireHooks() {
     // Fires when elements are added during DOM morphing (e.g., lazy-loaded content)
-    Livewire.hook("morph.added", ({ el }) => {
+    Livewire.hook('morph.added', ({ el }) => {
         // Check if the added element contains tabsets
         if (el.nodeType === Node.ELEMENT_NODE) {
             const hasTabset =
-                el.classList?.contains("tabset") ||
-                el.classList?.contains("user-markdown") ||
-                el.querySelector?.(".tabset");
+                el.classList?.contains('tabset') ||
+                el.classList?.contains('user-markdown') ||
+                el.querySelector?.('.tabset');
 
             if (hasTabset) {
                 queueMicrotask(() => {
@@ -175,7 +175,7 @@ function registerLivewireHooks() {
     });
 
     // Fires after a component's DOM has been morphed (e.g., after lazy-load completes)
-    Livewire.hook("morphed", ({ el }) => {
+    Livewire.hook('morphed', ({ el }) => {
         queueMicrotask(() => {
             initializeTabs(el);
         });
@@ -188,16 +188,16 @@ function registerLivewireHooks() {
 if (window.Livewire) {
     registerLivewireHooks();
 } else {
-    document.addEventListener("livewire:init", registerLivewireHooks);
+    document.addEventListener('livewire:init', registerLivewireHooks);
 }
 
 // Listen for Livewire navigation events
-document.addEventListener("livewire:navigated", () => {
+document.addEventListener('livewire:navigated', () => {
     initializeTabs();
 });
 
 // Also listen for any custom events that might indicate content has been updated
-document.addEventListener("content-updated", () => {
+document.addEventListener('content-updated', () => {
     initializeTabs();
 });
 

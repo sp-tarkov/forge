@@ -13,21 +13,21 @@ use App\Notifications\CommentReplyNotification;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class ProcessCommentNotification implements ShouldQueue
+#[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class ProcessCommentNotification implements ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     /**
      * Track users who have been notified in this run to prevent duplicates.
@@ -42,7 +42,9 @@ class ProcessCommentNotification implements ShouldQueue
     public function __construct(
         public Comment $comment
     ) {
-        $this->notifiedUserIds = collect();
+        /** @var Collection<int, int> $emptyCollection */
+        $emptyCollection = collect();
+        $this->notifiedUserIds = $emptyCollection;
     }
 
     /**
@@ -75,13 +77,26 @@ class ProcessCommentNotification implements ShouldQueue
         }
 
         // Reset notified users for this run
-        $this->notifiedUserIds = collect();
+        /** @var Collection<int, int> $emptyCollection */
+        $emptyCollection = collect();
+        $this->notifiedUserIds = $emptyCollection;
 
         // Step 1: Handle direct reply notification (if this is a reply to another comment)
         $this->handleReplyNotification($freshComment);
 
         // Step 2: Handle page subscription notifications
         $this->handleSubscriberNotifications($freshComment, $commentable);
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ProcessCommentNotification job failed', [
+            'comment_id' => $this->comment->id,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 
     /**
@@ -100,9 +115,6 @@ class ProcessCommentNotification implements ShouldQueue
         }
 
         $parentAuthor = $parentComment->user;
-        if ($parentAuthor === null) {
-            return;
-        }
 
         // Don't notify if the parent author is the same as the comment author
         if ($parentAuthor->id === $comment->user_id) {
@@ -127,21 +139,15 @@ class ProcessCommentNotification implements ShouldQueue
 
         try {
             DB::transaction(function () use ($parentAuthor, $comment): void {
-                $notificationType = $parentAuthor->email_reply_notifications_enabled
-                    ? NotificationType::ALL
-                    : NotificationType::DATABASE;
-
-                // Record the notification log entry first
                 NotificationLog::recordSent(
                     $comment,
                     $parentAuthor->id,
                     CommentReplyNotification::class,
-                    $notificationType
+                    NotificationType::ALL
                 );
-
-                // Send the reply notification
-                $parentAuthor->notify(new CommentReplyNotification($comment));
             });
+
+            $parentAuthor->notify(new CommentReplyNotification($comment));
 
             // Mark this user as notified so they don't get a duplicate NewCommentNotification
             $this->notifiedUserIds->push($parentAuthor->id);
@@ -174,9 +180,9 @@ class ProcessCommentNotification implements ShouldQueue
                     CommentReplyNotification::class,
                     NotificationType::DATABASE
                 );
-
-                $user->notify(new CommentReplyNotification($comment));
             });
+
+            $user->notify(new CommentReplyNotification($comment));
 
             $this->notifiedUserIds->push($user->id);
         } catch (Throwable $throwable) {
@@ -230,18 +236,15 @@ class ProcessCommentNotification implements ShouldQueue
                         ? NotificationType::ALL
                         : NotificationType::DATABASE;
 
-                    // Record the notification log entry first
                     NotificationLog::recordSent(
                         $comment,
                         $user->id,
                         NewCommentNotification::class,
                         $notificationType
                     );
-
-                    // Send the notification - if this fails, the transaction rolls back and the log entry is not
-                    // committed, allowing retry to work
-                    $user->notify(new NewCommentNotification($comment));
                 });
+
+                $user->notify(new NewCommentNotification($comment));
             } catch (Throwable $e) {
                 Log::error('Failed to send comment notification', [
                     'comment_id' => $comment->id,

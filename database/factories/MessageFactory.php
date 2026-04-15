@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<Message>
  */
-class MessageFactory extends Factory
+final class MessageFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -31,13 +31,13 @@ class MessageFactory extends Factory
                 'Hey, how are you doing?',
                 'Did you see the latest update?',
                 'Thanks for your help!',
-                'Let me know when you\'re available.',
-                'I\'ll check that out, thanks!',
+                "Let me know when you're available.",
+                "I'll check that out, thanks!",
                 'Sounds good to me!',
                 'Can we discuss this tomorrow?',
                 'I agree with your approach.',
-                'That\'s a great idea!',
-                'I\'m working on it now.',
+                "That's a great idea!",
+                "I'm working on it now.",
             ]),
             'created_at' => $this->faker->dateTimeBetween('-1 month', 'now'),
         ];
@@ -48,22 +48,20 @@ class MessageFactory extends Factory
      */
     public function short(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'content' => $this->faker->randomElement([
-                    'Thanks!',
-                    'Sure!',
-                    'Ok',
-                    'Got it',
-                    'Nice!',
-                    'Cool',
-                    'Agreed',
-                    'Yes',
-                    'No problem',
-                    '👍',
-                ]),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'content' => $this->faker->randomElement([
+                'Thanks!',
+                'Sure!',
+                'Ok',
+                'Got it',
+                'Nice!',
+                'Cool',
+                'Agreed',
+                'Yes',
+                'No problem',
+                '👍',
+            ]),
+        ]);
     }
 
     /**
@@ -71,11 +69,9 @@ class MessageFactory extends Factory
      */
     public function long(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'content' => $this->faker->paragraphs(3, true),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'content' => $this->faker->paragraphs(3, true),
+        ]);
     }
 
     /**
@@ -83,11 +79,9 @@ class MessageFactory extends Factory
      */
     public function recent(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'created_at' => $this->faker->dateTimeBetween('-1 hour', 'now'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'created_at' => $this->faker->dateTimeBetween('-1 hour', 'now'),
+        ]);
     }
 
     /**
@@ -95,10 +89,8 @@ class MessageFactory extends Factory
      */
     public function old(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'created_at' => $this->faker->dateTimeBetween('-6 months', '-1 month'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'created_at' => $this->faker->dateTimeBetween('-6 months', '-1 month'),
+        ]);
     }
 }

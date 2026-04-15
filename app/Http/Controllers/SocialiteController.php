@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\SocialiteService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 
-class SocialiteController extends Controller
+final class SocialiteController extends Controller
 {
     /**
      * The providers that are supported.
      *
      * @var array<int, string>
      */
-    protected array $providers = ['discord'];
+    private array $providers = ['discord'];
 
     public function __construct(private readonly SocialiteService $socialiteService) {}
 
@@ -31,13 +33,10 @@ class SocialiteController extends Controller
             return to_route('login')->withErrors(__('Unsupported OAuth provider.'));
         }
 
+        /** @var AbstractProvider $socialiteProvider */
         $socialiteProvider = Socialite::driver($provider);
 
-        if (method_exists($socialiteProvider, 'scopes')) {
-            return $socialiteProvider->scopes(['identify', 'email'])->redirect();
-        }
-
-        return $socialiteProvider->redirect();
+        return $socialiteProvider->scopes(['identify', 'email'])->redirect();
     }
 
     /**
@@ -56,7 +55,7 @@ class SocialiteController extends Controller
         }
 
         $user = $this->socialiteService->findOrCreateUser($provider, $providerUser);
-        if ($user === null) {
+        if (! $user instanceof User) {
             return to_route('login')
                 ->withErrors('Unable to retrieve email from Discord. Please ensure your Discord account has a verified email address and you have granted email access permission.');
         }

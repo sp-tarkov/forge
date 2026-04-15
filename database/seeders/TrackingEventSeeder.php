@@ -9,12 +9,13 @@ use App\Models\ModVersion;
 use App\Models\TrackingEvent;
 use App\Models\User;
 use Database\Seeders\Traits\SeederHelpers;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\progress;
 
-class TrackingEventSeeder extends Seeder
+final class TrackingEventSeeder extends Seeder
 {
     use SeederHelpers;
 
@@ -43,11 +44,13 @@ class TrackingEventSeeder extends Seeder
      */
     private function seedTrackingEvents(array $counts, Collection $allUsers, Collection $mods, Collection $modVersions): void
     {
-        TrackingEvent::withoutEvents(function () use ($counts, $allUsers, $mods, $modVersions) {
+        /** @var int $trackingEventCount */
+        $trackingEventCount = $counts['trackingEvents'];
+        TrackingEvent::withoutEvents(function () use ($trackingEventCount, $allUsers, $mods, $modVersions): void {
             progress(
                 label: 'Adding Tracking Events...',
-                steps: $counts['trackingEvents'],
-                callback: function (int $step) use ($allUsers, $mods, $modVersions) {
+                steps: $trackingEventCount,
+                callback: function (int $step) use ($allUsers, $mods, $modVersions): void {
                     $this->createTrackingEvent($allUsers, $mods, $modVersions);
                 }
             );
@@ -68,7 +71,7 @@ class TrackingEventSeeder extends Seeder
         $trackable = null;
 
         // 70% chance to be an authenticated user event
-        if (rand(0, 9) < 7) {
+        if (random_int(0, 9) < 7) {
             $user = $allUsers->random();
         }
 
@@ -86,9 +89,11 @@ class TrackingEventSeeder extends Seeder
                 'created_at' => $this->getRandomTimestamp(),
             ]);
 
-        if ($trackable) {
-            $trackingEvent->visitable_type = get_class($trackable);
-            $trackingEvent->visitable_id = $trackable->getKey();
+        if ($trackable instanceof Model) {
+            $trackingEvent->visitable_type = $trackable::class;
+            /** @var int $trackableKey */
+            $trackableKey = $trackable->getKey();
+            $trackingEvent->visitable_id = $trackableKey;
         }
 
         $trackingEvent->saveQuietly();

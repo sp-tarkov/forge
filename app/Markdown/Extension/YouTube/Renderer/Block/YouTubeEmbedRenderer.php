@@ -9,7 +9,7 @@ use League\CommonMark\Node\Node;
 use League\CommonMark\Renderer\ChildNodeRendererInterface;
 use League\CommonMark\Renderer\NodeRendererInterface;
 
-class YouTubeEmbedRenderer implements NodeRendererInterface
+final class YouTubeEmbedRenderer implements NodeRendererInterface
 {
     /**
      * @param  YouTubeEmbedNode  $node

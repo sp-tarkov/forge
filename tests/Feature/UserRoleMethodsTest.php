@@ -3,9 +3,6 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('User Role Check Methods', function (): void {
     it('isMod returns true only for Moderator role', function (): void {

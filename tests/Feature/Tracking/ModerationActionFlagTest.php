@@ -10,11 +10,8 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\TrackingEvent;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->withoutDefer();
@@ -76,7 +73,8 @@ describe('mod publishing - owner vs moderator', function (): void {
         $owner = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         Livewire::actingAs($owner)
             ->test('mod.action', [
@@ -86,7 +84,8 @@ describe('mod publishing - owner vs moderator', function (): void {
                 'modDisabled' => (bool) $mod->disabled,
                 'modPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish');
 
         $event = TrackingEvent::query()
@@ -212,7 +211,8 @@ describe('mod version publishing - owner vs moderator', function (): void {
         $mod = Mod::factory()->create(['owner_id' => $owner->id]);
         $version = ModVersion::factory()->create(['mod_id' => $mod->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         Livewire::actingAs($owner)
             ->test('mod.version-action', [
@@ -222,7 +222,8 @@ describe('mod version publishing - owner vs moderator', function (): void {
                 'versionDisabled' => (bool) $version->disabled,
                 'versionPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish');
 
         $event = TrackingEvent::query()
@@ -269,7 +270,8 @@ describe('addon publishing - owner vs moderator', function (): void {
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
         $addon = Addon::factory()->create(['owner_id' => $owner->id, 'mod_id' => $mod->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         Livewire::actingAs($owner)
             ->test('addon.action', [
@@ -278,7 +280,8 @@ describe('addon publishing - owner vs moderator', function (): void {
                 'addonDisabled' => (bool) $addon->disabled,
                 'addonPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish');
 
         $event = TrackingEvent::query()
@@ -448,7 +451,8 @@ describe('additional author actions - not moderation actions', function (): void
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
         $mod->additionalAuthors()->attach($additionalAuthor);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         Livewire::actingAs($additionalAuthor)
             ->test('mod.action', [
@@ -458,7 +462,8 @@ describe('additional author actions - not moderation actions', function (): void
                 'modDisabled' => (bool) $mod->disabled,
                 'modPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish');
 
         $event = TrackingEvent::query()
@@ -477,7 +482,8 @@ describe('additional author actions - not moderation actions', function (): void
         $mod = Mod::factory()->create(['owner_id' => $owner->id, 'published_at' => null]);
         $mod->additionalAuthors()->attach($additionalAuthorMod);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         Livewire::actingAs($additionalAuthorMod)
             ->test('mod.action', [
@@ -487,7 +493,8 @@ describe('additional author actions - not moderation actions', function (): void
                 'modDisabled' => (bool) $mod->disabled,
                 'modPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish');
 
         $event = TrackingEvent::query()
@@ -506,7 +513,8 @@ describe('mod/admin on their own content - not moderation actions', function ():
         $admin = User::factory()->admin()->create();
         $mod = Mod::factory()->create(['owner_id' => $admin->id, 'published_at' => null]);
 
-        $publishDate = Date::now()->format('Y-m-d\TH:i');
+        $publishDate = Date::now()->format('Y-m-d');
+        $publishTime = Date::now()->format('H:i');
 
         Livewire::actingAs($admin)
             ->test('mod.action', [
@@ -516,7 +524,8 @@ describe('mod/admin on their own content - not moderation actions', function ():
                 'modDisabled' => (bool) $mod->disabled,
                 'modPublished' => false,
             ])
-            ->set('publishedAt', $publishDate)
+            ->set('publishedAtDate', $publishDate)
+            ->set('publishedAtTime', $publishTime)
             ->call('publish');
 
         $event = TrackingEvent::query()

@@ -8,8 +8,10 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\AddonVersion;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 
+/** @phpstan-ignore trait.unused */
 trait ModeratesAddon
 {
     /**
@@ -32,7 +34,7 @@ trait ModeratesAddon
 
         $addon->delete();
 
-        flash()->success('Addon successfully deleted!');
+        Flux::toast(text: 'Addon successfully deleted!');
 
         // Redirect to the parent mod page if the addon was deleted from the detail page.
         if ($route === 'addon.show' && $addon->mod) {
@@ -60,6 +62,6 @@ trait ModeratesAddon
 
         $version->delete();
 
-        flash()->success('Addon version successfully deleted!');
+        Flux::toast(text: 'Addon version successfully deleted!');
     }
 }

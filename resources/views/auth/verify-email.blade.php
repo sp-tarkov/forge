@@ -43,14 +43,15 @@
                     <x-honeypot />
 
                     <div>
-                        <x-button
+                        <flux:button
+                            variant="primary"
                             type="submit"
                             disabled
                             x-bind:disabled="buttonDisabled || submitting"
                             x-text="buttonDisabled ? '{{ __('Please wait...') }}' : (submitting ? '{{ __('Sending...') }}' : '{{ __('Send Verification Email') }}')"
                         >
                             {{ __('Send Verification Email') }}
-                        </x-button>
+                        </flux:button>
                     </div>
                 </form>
             @else

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->bigInteger('content_length')->nullable()->after('link');
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->dropColumn('content_length');
         });
     }

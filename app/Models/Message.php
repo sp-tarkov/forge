@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Jobs\ProcessChatMessageNotification;
+use Carbon\CarbonImmutable;
 use Database\Factories\MessageFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -15,7 +17,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Override;
 use Stevebauman\Purify\Facades\Purify;
@@ -25,8 +26,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $conversation_id
  * @property int $user_id
  * @property string $content
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property string $content_html
  * @property bool $is_mine
  * @property bool $is_read
@@ -37,17 +38,11 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read int $reads_count
  * @property User $user
  */
-class Message extends Model
+#[Appends(['is_mine', 'is_read', 'content_html'])]
+final class Message extends Model
 {
     /** @use HasFactory<MessageFactory> */
     use HasFactory;
-
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var list<string>
-     */
-    protected $appends = ['is_mine', 'is_read', 'content_html'];
 
     /**
      * Get the conversation that owns the message.
@@ -118,7 +113,7 @@ class Message extends Model
     protected static function booted(): void
     {
         // Update the conversation's last message fields when a message is created
-        static::created(function (Message $message): void {
+        self::created(function (Message $message): void {
             $conversation = $message->conversation;
             if ($conversation->exists()) {
                 $conversation->update([
@@ -262,9 +257,14 @@ class Message extends Model
     protected function contentHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('messages')->clean(
-                Markdown::convert($this->content)->getContent()
-            )
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('messages')->clean(
+                    Markdown::convert($this->content)->getContent()
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 }

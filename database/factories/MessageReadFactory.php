@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<MessageRead>
  */
-class MessageReadFactory extends Factory
+final class MessageReadFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -33,11 +33,9 @@ class MessageReadFactory extends Factory
      */
     public function recent(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'read_at' => $this->faker->dateTimeBetween('-1 hour', 'now'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'read_at' => $this->faker->dateTimeBetween('-1 hour', 'now'),
+        ]);
     }
 
     /**
@@ -45,10 +43,8 @@ class MessageReadFactory extends Factory
      */
     public function old(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'read_at' => $this->faker->dateTimeBetween('-1 month', '-1 week'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'read_at' => $this->faker->dateTimeBetween('-1 month', '-1 week'),
+        ]);
     }
 }

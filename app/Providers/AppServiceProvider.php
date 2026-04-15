@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\DependencyResolver;
+use App\Contracts\Geolocator;
+use App\Contracts\SpamChecker;
 use App\Enums\TrackingEventType;
 use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\CachedGate;
@@ -12,17 +15,25 @@ use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
+use App\Services\CommentSpamChecker;
+use App\Services\DependencyVersionService;
+use App\Services\GeolocationService;
+use App\View\Composers\PaginationComposer;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
@@ -34,21 +45,28 @@ use Spatie\LaravelFlare\Facades\Flare;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
-class AppServiceProvider extends ServiceProvider
+final class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        $this->app->bind(SpamChecker::class, CommentSpamChecker::class);
+        $this->app->bind(DependencyResolver::class, DependencyVersionService::class);
+        $this->app->bind(Geolocator::class, GeolocationService::class);
+    }
+
     /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
-        // Allow mass assignment for all models. Be careful!
-        Model::unguard();
+        // Define the API rate limiter.
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip()));
 
-        // Disable lazy loading in non-production environments.
-        Model::preventLazyLoading(! app()->isProduction());
-
-        // Have Laravel automatically eager load Model relationships.
-        Model::automaticallyEagerLoadRelationships();
+        // Define the external API rate limiter for queue jobs that call external services.
+        RateLimiter::for('external-api', fn () => Limit::perMinute(30));
 
         // Register custom macros and mixins.
         $this->registerMacros();
@@ -56,6 +74,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Register custom Blade directives.
         $this->registerBladeDirectives();
+
+        // Register view composers.
+        View::composer('livewire.pagination.tailwind-narrow', PaginationComposer::class);
 
         // Register layouts directory as anonymous Blade component path.
         Blade::anonymousComponentPath(resource_path('views/layouts'), 'layouts');
@@ -70,19 +91,19 @@ class AppServiceProvider extends ServiceProvider
             Route::match(['get', 'post'], 'broadcasting/auth', [VisitorsPresenceBroadcastingController::class, 'authenticate'])
                 ->name('broadcasting.auth')
                 ->middleware('web')
-                ->withoutMiddleware([VerifyCsrfToken::class]);
+                ->withoutMiddleware([PreventRequestForgery::class]);
         });
 
         // This gate determines who can access admin features.
         Gate::define('admin', fn (User $user): bool => $user->isAdmin());
 
         // Define gates for user blocking
-        Gate::define('block', function (User $user, User $target) {
+        Gate::define('block', function (User $user, User $target): Response {
             $policy = new BlockingPolicy;
 
             return $policy->block($user, $target);
         });
-        Gate::define('unblock', function (User $user, User $target) {
+        Gate::define('unblock', function (User $user, User $target): Response {
             $policy = new BlockingPolicy;
 
             return $policy->unblock($user, $target);
@@ -95,18 +116,15 @@ class AppServiceProvider extends ServiceProvider
 
         // Track authentication events
         Event::listen(Login::class, function (Login $event): void {
-            /** @var User|null $user */
             $user = $event->user instanceof User ? $event->user : null;
             Track::event(TrackingEventType::LOGIN, $user);
         });
         Event::listen(Logout::class, function (Logout $event): void {
             // Pass the user as the trackable model to capture user data
-            /** @var User|null $user */
             $user = $event->user instanceof User ? $event->user : null;
             Track::event(TrackingEventType::LOGOUT, $user);
         });
         Event::listen(Registered::class, function (Registered $event): void {
-            /** @var User|null $user */
             $user = $event->user instanceof User ? $event->user : null;
             Track::event(TrackingEventType::REGISTER, $user);
         });
@@ -161,7 +179,7 @@ class AppServiceProvider extends ServiceProvider
                     return;
                 }
                 \$__ogImageAlt = Str::before(\$__ogImageArgs[1] ?? '', ' - ');
-                \$__ogImageDisk = config('filesystems.asset_upload', 'public');
+                \$__ogImageDisk = config()->string('filesystems.asset_upload', 'public');
                 \$__ogImageCacheKey = 'og_image_data:' . \$__ogImageDisk . ':' . \$__ogImagePath;
                 \$__ogImageData = Cache::remember(\$__ogImageCacheKey, 3600, function () use (\$__ogImagePath, \$__ogImageDisk) {
                     try {
@@ -192,12 +210,22 @@ class AppServiceProvider extends ServiceProvider
             ?>");
 
         // Email verification directives
-        Blade::if('verified', fn (): bool => auth()->check() && auth()->user()->hasVerifiedEmail());
-        Blade::if('unverified', fn (): bool => auth()->check() && ! auth()->user()->hasVerifiedEmail());
+        Blade::if('verified', function (): bool {
+            /** @var User|null $user */
+            $user = auth()->user();
+
+            return $user !== null && $user->hasVerifiedEmail();
+        });
+        Blade::if('unverified', function (): bool {
+            /** @var User|null $user */
+            $user = auth()->user();
+
+            return $user !== null && ! $user->hasVerifiedEmail();
+        });
 
         // CachedGate directives
         Blade::if('cachedCan', function (string $ability, mixed ...$arguments): bool {
-            if (empty($arguments)) {
+            if ($arguments === []) {
                 return CachedGate::allows($ability);
             }
 
@@ -206,7 +234,7 @@ class AppServiceProvider extends ServiceProvider
             return CachedGate::allows($ability, $arg);
         });
         Blade::if('cachedCannot', function (string $ability, mixed ...$arguments): bool {
-            if (empty($arguments)) {
+            if ($arguments === []) {
                 return CachedGate::denies($ability);
             }
 

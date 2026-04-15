@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tracking_events', function (Blueprint $table) {
+        Schema::table('tracking_events', function (Blueprint $table): void {
             // Add indexes for geographic filtering (used with LIKE queries)
             $table->index('country_name', 'tracking_events_country_name_index');
             $table->index('region_name', 'tracking_events_region_name_index');
@@ -29,7 +29,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tracking_events', function (Blueprint $table) {
+        Schema::table('tracking_events', function (Blueprint $table): void {
             $table->dropIndex('tracking_events_country_name_index');
             $table->dropIndex('tracking_events_region_name_index');
             $table->dropIndex('tracking_events_city_name_index');

@@ -5,27 +5,35 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\DisposableEmailBlocklist;
-use Exception;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
-class UpdateDisposableEmailBlocklist implements ShouldQueue
+#[Timeout(120)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class UpdateDisposableEmailBlocklist implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
     /**
-     * The number of times the job may be attempted.
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
      */
-    public int $tries = 3;
-
-    /**
-     * The number of seconds the job can run before timing out.
-     */
-    public int $timeout = 120;
+    public function middleware(): array
+    {
+        return [new RateLimited('external-api')];
+    }
 
     /**
      * Execute the job.
@@ -34,7 +42,10 @@ class UpdateDisposableEmailBlocklist implements ShouldQueue
     {
         try {
             // Download the latest blocklist
-            $response = Http::timeout(60)->get('https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/master/disposable_email_blocklist.conf');
+            $response = Http::connectTimeout(5)
+                ->timeout(60)
+                ->retry(3, 1000, throw: false)
+                ->get('https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/master/disposable_email_blocklist.conf');
 
             if (! $response->successful()) {
                 Log::error('Failed to download disposable email blocklist', ['status' => $response->status()]);
@@ -80,9 +91,19 @@ class UpdateDisposableEmailBlocklist implements ShouldQueue
             DisposableEmailBlocklist::clearAllCaches();
 
             Log::info('Successfully updated disposable email blocklist', ['count' => count($domains)]);
-        } catch (Exception $exception) {
-            Log::error('Error updating disposable email blocklist', ['error' => $exception->getMessage()]);
-            throw $exception;
+        } catch (Throwable $throwable) {
+            Log::error('Error updating disposable email blocklist', ['error' => $throwable->getMessage()]);
+            throw $throwable;
         }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('UpdateDisposableEmailBlocklist job failed permanently', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

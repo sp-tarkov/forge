@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<SourceCodeLink>
  */
-class SourceCodeLinkFactory extends Factory
+final class SourceCodeLinkFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
@@ -28,6 +28,7 @@ class SourceCodeLinkFactory extends Factory
     public function definition(): array
     {
         $providers = ['github.com', 'gitlab.com', 'bitbucket.org'];
+        /** @var string $provider */
         $provider = $this->faker->randomElement($providers);
 
         return [

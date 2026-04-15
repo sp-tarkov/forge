@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
+use Carbon\CarbonImmutable;
 use Database\Factories\ReportFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -26,15 +26,15 @@ use Override;
  * @property string|null $context
  * @property ReportStatus $status
  * @property int|null $assignee_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property Model $reportable
  * @property User $reporter
  * @property User|null $assignee
  * @property-read Collection<int, ReportAction> $actions
  * @property-read Collection<int, TrackingEvent> $trackingEvents
  */
-class Report extends Model
+final class Report extends Model
 {
     /** @use HasFactory<ReportFactory> */
     use HasFactory;

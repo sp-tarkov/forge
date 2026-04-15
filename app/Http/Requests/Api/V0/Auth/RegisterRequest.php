@@ -9,7 +9,7 @@ use DateTimeZone;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class RegisterRequest extends FormRequest
+final class RegisterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request. No specific authorization is needed here beyond

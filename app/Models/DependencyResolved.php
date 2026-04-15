@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\DependencyResolvedFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,21 +19,17 @@ use Override;
  * @property int $dependable_id
  * @property int $dependency_id
  * @property int $resolved_mod_version_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read ModVersion|AddonVersion $dependable
  * @property-read Dependency|null $dependency
  * @property-read ModVersion|null $resolvedModVersion
  */
-class DependencyResolved extends Model
+#[Table(name: 'dependencies_resolved')]
+final class DependencyResolved extends Model
 {
     /** @use HasFactory<DependencyResolvedFactory> */
     use HasFactory;
-
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'dependencies_resolved';
 
     /**
      * The polymorphic relationship between the resolved dependency and the parent version.

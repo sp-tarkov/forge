@@ -9,7 +9,6 @@ use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 
@@ -170,6 +169,68 @@ describe('Mod Version Edit Form', function (): void {
             expect($modVersion->dependenciesResolved)->toHaveCount(1);
             expect($modVersion->dependenciesResolved->first()->mod_id)->toBe($dependencyMod2->id);
         });
+
+        it('auto-populates version constraint with latest version when selecting a dependency mod', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+            ]);
+
+            $dependencyMod = Mod::factory()->create(['name' => 'Dep Mod']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '1.0.0',
+                'published_at' => now()->subDays(2),
+            ]);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '2.3.1',
+                'published_at' => now()->subDay(),
+            ]);
+
+            $component = Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion]);
+
+            $component->call('addDependency');
+            $component->call('updateDependencyModId', 0, (string) $dependencyMod->id);
+
+            expect($component->get('dependencies.0.constraint'))->toBe('~2.3.1');
+        });
+
+        it('does not overwrite existing constraint when selecting a dependency mod', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+            ]);
+
+            $dependencyMod = Mod::factory()->create(['name' => 'Dep Mod']);
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '1.0.0',
+                'published_at' => now(),
+            ]);
+
+            $component = Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion]);
+
+            $component->call('addDependency');
+
+            // Set a constraint before selecting a mod
+            $dependencies = $component->get('dependencies');
+            $dependencies[0]['constraint'] = '^1.0.0';
+            $component->set('dependencies', $dependencies);
+
+            $component->call('updateDependencyModId', 0, (string) $dependencyMod->id);
+
+            // Should keep the user's constraint, not overwrite it
+            expect($component->get('dependencies.0.constraint'))->toBe('^1.0.0');
+        });
     });
 
     describe('GUID Requirements', function (): void {
@@ -185,8 +246,6 @@ describe('Mod Version Edit Form', function (): void {
             SptVersion::factory()->create(['version' => '4.0.0']);
             SptVersion::factory()->create(['version' => '4.1.0']);
         });
-
-        uses(RefreshDatabase::class);
 
         it('allows editing mod version with inline GUID save', function (): void {
             $this->actingAs($this->user);
@@ -330,8 +389,9 @@ describe('Mod Version Edit Form', function (): void {
             ]);
 
             Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
-                ->assertNotSet('publishedAt', null)
-                ->set('publishedAt', '')
+                ->assertNotSet('publishedAtDate', null)
+                ->set('publishedAtDate', '')
+                ->set('publishedAtTime', '')
                 ->set('virusTotalLinks', [
                     ['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test Scan'],
                 ])
@@ -356,6 +416,7 @@ describe('Mod Version Edit Form', function (): void {
             Livewire::test('pages::mod-version.edit', ['mod' => $mod, 'modVersion' => $modVersion])
                 ->assertSet('fikaCompatibilityStatus', 'incompatible')
                 ->set('fikaCompatibilityStatus', 'compatible')
+                ->set('link', 'https://example.com/download.7z')
                 ->set('virusTotalLinks', [
                     ['url' => 'https://www.virustotal.com/gui/file/abc123', 'label' => 'Test Scan'],
                 ])

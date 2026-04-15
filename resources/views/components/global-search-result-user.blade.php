@@ -3,31 +3,31 @@
     wire:navigate
     class="{{ $linkClass }}"
     role="listitem"
-    tabindex="0"
+    tabindex="{{ $tabindex ?? 0 }}"
 >
-    <div class="h-6 w-6 self-center">
+    <div class="size-8 shrink-0 self-center">
         <flux:avatar
             src="{{ $result['profile_photo_url'] ?? '' }}"
             color="auto"
             color:seed="{{ $result['id'] }}"
             circle="circle"
-            class="h-6 w-6"
+            class="size-8"
         />
     </div>
-    <div class="grow flex flex-col">
-        <p class="font-medium">{{ $result['name'] }}</p>
+    <div class="grow flex flex-col min-w-0">
+        <span class="text-sm font-medium truncate">{{ $result['name'] }}</span>
         @if (($result['mods_count'] ?? 0) > 0 || ($result['addons_count'] ?? 0) > 0)
-            <p class="text-xs text-gray-500 dark:text-gray-400">
+            <span class="text-xs text-gray-400">
                 @if (($result['mods_count'] ?? 0) > 0)
                     {{ $result['mods_count'] }} {{ Str::plural('mod', $result['mods_count']) }}
                 @endif
                 @if (($result['mods_count'] ?? 0) > 0 && ($result['addons_count'] ?? 0) > 0)
-                    •
+                    &middot;
                 @endif
                 @if (($result['addons_count'] ?? 0) > 0)
                     {{ $result['addons_count'] }} {{ Str::plural('addon', $result['addons_count']) }}
                 @endif
-            </p>
+            </span>
         @endif
     </div>
 </a>

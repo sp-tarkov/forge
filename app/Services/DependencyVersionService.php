@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\DependencyResolver;
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
 use Composer\Semver\Semver;
 
-class DependencyVersionService
+final class DependencyVersionService implements DependencyResolver
 {
     /**
      * Resolve the dependencies for a mod version or addon version.
@@ -38,7 +39,11 @@ class DependencyVersionService
         $dependencies = [];
         foreach ($dependable->dependencies as $dependency) {
             // Skip if the dependency is being deleted or doesn't exist
-            if (! $dependency->exists || ! $dependency->id) {
+            if (! $dependency->exists) {
+                continue;
+            }
+
+            if (! $dependency->id) {
                 continue;
             }
 

@@ -7,8 +7,10 @@ namespace App\Traits\Livewire;
 use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\ModVersion;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 
+/** @phpstan-ignore trait.unused */
 trait ModeratesModVersion
 {
     /**
@@ -31,6 +33,6 @@ trait ModeratesModVersion
 
         $version->delete();
 
-        flash()->success('Mod version successfully deleted!');
+        Flux::toast(text: 'Mod version successfully deleted!');
     }
 }

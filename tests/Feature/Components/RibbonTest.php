@@ -2,10 +2,6 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
-
 describe('Ribbon Blade Component', function (): void {
     it('renders ribbon with color and label', function (): void {
         $view = $this->blade('<x-ribbon color="red" label="Test Label" />');

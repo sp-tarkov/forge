@@ -9,6 +9,7 @@ use App\Models\ModCategory;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Services\SptVersionService;
 
 beforeEach(function (): void {
     // Create test data fresh for each test
@@ -223,7 +224,7 @@ it('filters mods by spt versions', function (): void {
     ]);
 
     // Run the job to resolve SPT versions
-    (new ResolveSptVersionsJob)->handle();
+    (new ResolveSptVersionsJob)->handle(resolve(SptVersionService::class));
 
     $response = $this->get(route('mods.rss', ['versions' => '3.9.1']));
 
@@ -274,7 +275,7 @@ it('handles multiple spt versions with comma separation', function (): void {
     ]);
 
     // Run the job to resolve SPT versions
-    (new ResolveSptVersionsJob)->handle();
+    (new ResolveSptVersionsJob)->handle(resolve(SptVersionService::class));
 
     $response = $this->get(route('mods.rss', ['versions' => '3.9.2,3.8.2']));
 

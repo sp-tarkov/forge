@@ -6,10 +6,8 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 describe('badge count calculation', function (): void {
     it('shows zero for users with null timestamp (first visit)', function (): void {
@@ -158,15 +156,24 @@ describe('badge rendering', function (): void {
     it('shows 99+ when count exceeds 99', function (): void {
         $lastViewed = now()->subHours(2);
         $user = User::factory()->create(['mods_created_viewed_at' => $lastViewed]);
-        SptVersion::factory()->create(['version' => '3.11.4']);
+        $sptVersion = SptVersion::factory()->create(['version' => '3.11.4']);
 
-        // Create 100 mods
-        for ($i = 0; $i < 100; $i++) {
-            $mod = Mod::factory()->create(['created_at' => now()->subHour()]);
-            ModVersion::factory()->recycle($mod)->create([
-                'spt_version_constraint' => '3.11.4',
-            ]);
+        // Create 100 mods efficiently: reuse owner and skip observers/factory hooks
+        $mods = Mod::factory()
+            ->count(100)
+            ->recycle($user)
+            ->createQuietly(['created_at' => now()->subHour()]);
+
+        $pivotData = [];
+        foreach ($mods as $mod) {
+            $version = ModVersion::factory()
+                ->recycle($mod)
+                ->withoutVirusTotalLinks()
+                ->createQuietly(['spt_version_constraint' => '3.11.4']);
+            $pivotData[] = ['mod_version_id' => $version->id, 'spt_version_id' => $sptVersion->id];
         }
+
+        DB::table('mod_version_spt_version')->insert($pivotData);
 
         $component = Livewire::actingAs($user)->test('navigation-created-mods-badge');
 

@@ -4,26 +4,33 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
+use Database\Factories\DisposableEmailBlocklistFactory;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
  * @property string $domain
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  */
-class DisposableEmailBlocklist extends Model
+#[Table(name: 'disposable_email_blocklist')]
+final class DisposableEmailBlocklist extends Model
 {
-    protected $table = 'disposable_email_blocklist';
+    /** @use HasFactory<DisposableEmailBlocklistFactory> */
+    use HasFactory;
+
+    private const string CACHE_TAG = 'disposable-emails';
 
     /**
      * Check if a domain is disposable.
      */
     public static function isDisposable(string $domain): bool
     {
-        return Cache::remember('disposable_email_'.$domain, 3600, fn () => self::query()->where('domain', $domain)->exists());
+        return Cache::tags(self::CACHE_TAG)->remember('disposable_email_'.$domain, 3600, fn () => self::query()->where('domain', $domain)->exists());
     }
 
     /**
@@ -31,14 +38,14 @@ class DisposableEmailBlocklist extends Model
      */
     public static function clearDomainCache(string $domain): void
     {
-        Cache::forget('disposable_email_'.$domain);
+        Cache::tags(self::CACHE_TAG)->forget('disposable_email_'.$domain);
     }
 
     /**
-     * Clear all disposable email caches.
+     * Invalidate all disposable email caches.
      */
     public static function clearAllCaches(): void
     {
-        Cache::flush();
+        Cache::tags(self::CACHE_TAG)->flush();
     }
 }

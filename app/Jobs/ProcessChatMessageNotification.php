@@ -12,12 +12,19 @@ use App\Notifications\NewChatMessageNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class ProcessChatMessageNotification implements ShouldQueue
+#[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class ProcessChatMessageNotification implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -107,11 +114,7 @@ class ProcessChatMessageNotification implements ShouldQueue
             return;
         }
 
-        DB::transaction(function () use ($recipient, $conversation, $unreadMessages): void {
-            // Send the notification
-            $recipient->notify(new NewChatMessageNotification($conversation, $unreadMessages));
-
-            // Update or create the notification log
+        DB::transaction(function () use ($recipient, $conversation): void {
             NotificationLog::query()->updateOrCreate([
                 'notifiable_type' => Conversation::class,
                 'notifiable_id' => $conversation->id,
@@ -122,5 +125,18 @@ class ProcessChatMessageNotification implements ShouldQueue
                 'updated_at' => now(),
             ]);
         });
+
+        $recipient->notify(new NewChatMessageNotification($conversation, $unreadMessages));
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ProcessChatMessageNotification job failed', [
+            'message_id' => $this->message->id,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

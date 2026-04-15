@@ -6,4 +6,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class InvalidVersionNumberException extends Exception {}
+final class InvalidVersionNumberException extends Exception {}

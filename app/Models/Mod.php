@@ -12,8 +12,10 @@ use App\Models\Scopes\PublishedScope;
 use App\Observers\ModObserver;
 use App\Traits\HasComments;
 use App\Traits\HasReports;
+use Carbon\CarbonImmutable;
 use Database\Factories\ModFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -60,9 +61,9 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $addons_disabled
  * @property bool $profile_binding_notice_disabled
  * @property bool $cheat_notice
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $published_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property CarbonImmutable|null $published_at
  * @property-read string $detail_url
  * @property-read string $description_html
  * @property-read bool $addons_enabled
@@ -82,7 +83,10 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModObserver::class])]
-class Mod extends Model implements Commentable, Reportable, Trackable
+#[Appends([
+    'detail_url',
+])]
+final class Mod extends Model implements Commentable, Reportable, Trackable
 {
     /** @use HasComments<self> */
     use HasComments;
@@ -95,10 +99,6 @@ class Mod extends Model implements Commentable, Reportable, Trackable
 
     use Searchable;
     use Visitable;
-
-    protected $appends = [
-        'detail_url',
-    ];
 
     /**
      * The relationship between a mod and its owner (User).
@@ -128,11 +128,11 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     public function calculateDownloads(): void
     {
         $cacheKey = 'mod_downloads_cached_'.$this->id;
-        $hasExistingCache = Cache::has($cacheKey);
 
-        // Get the cached download count (the count that was last indexed in search)
-        // If no cache exists, use the current downloads value as baseline
-        $cachedDownloads = Cache::get($cacheKey, $this->downloads);
+        // Get the cached download count in a single call to avoid race conditions.
+        // If no cache exists, $cachedDownloads will be null.
+        /** @var int|null $cachedDownloads */
+        $cachedDownloads = Cache::get($cacheKey);
 
         // Calculate the new actual download count
         $newDownloads = (int) DB::table('mod_versions')
@@ -147,7 +147,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         $this->refresh();
 
         // Only sync to search if there was a previously cached value and the difference is >= 15
-        if ($hasExistingCache && abs($newDownloads - $cachedDownloads) >= 15) {
+        if ($cachedDownloads !== null && abs($newDownloads - $cachedDownloads) >= 15) {
             $this->searchable();
         }
 
@@ -159,7 +159,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function downloadUrl(bool $absolute = false): ?string
     {
-        $this->load('latestVersion');
+        $this->loadMissing('latestVersion');
 
         if ($this->latestVersion === null) {
             return null;
@@ -273,7 +273,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function toSearchableArray(): array
     {
-        $this->load([
+        $this->loadMissing([
             'latestVersion',
             'latestVersion.latestSptVersion',
         ]);
@@ -287,8 +287,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
             'thumbnail' => $this->thumbnailUrl,
             'featured' => $this->featured,
             'downloads' => $this->downloads,
-            'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at->timestamp,
+            'created_at' => $this->created_at?->timestamp,
+            'updated_at' => $this->updated_at?->timestamp,
             'published_at' => $this->published_at?->timestamp,
             'latestVersion' => $this->latestVersion?->latestSptVersion?->version_formatted,
             'latestVersionColorClass' => $this->latestVersion?->latestSptVersion?->color_class,
@@ -323,12 +323,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
         }
 
         // Check if mod has any versions compatible with active SPT releases
-        if (! $this->hasActiveSptCompatibility()) {
-            return false;
-        }
-
         // All conditions are met; the mod should be searchable.
-        return true;
+        return $this->hasActiveSptCompatibility();
     }
 
     /**
@@ -458,7 +454,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Comments on mods are displayed on the 'comments' tab.
      */
-    public function getCommentTabHash(): ?string
+    public function getCommentTabHash(): string
     {
         return 'comments';
     }
@@ -535,7 +531,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     /**
      * Get contextual information about this trackable resource.
      */
-    public function getTrackingContext(): ?string
+    public function getTrackingContext(): string
     {
         return $this->description;
     }
@@ -545,7 +541,7 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     public function isAuthorOrOwner(?User $user): bool
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -657,7 +653,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     protected function thumbnailUrl(): Attribute
     {
-        $disk = config('filesystems.asset_upload', 'public');
+        /** @var string $disk */
+        $disk = config()->string('filesystems.asset_upload', 'public');
 
         return Attribute::get(fn (): string => $this->thumbnail
             ? Storage::disk($disk)->url($this->thumbnail)
@@ -708,8 +705,8 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     protected function slug(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value) => $value ? Str::lower($value) : '',
-            set: fn (?string $value) => $value ? Str::slug($value) : '',
+            get: fn (mixed $value): string => is_string($value) ? Str::lower($value) : '',
+            set: fn (?string $value): string => $value ? Str::slug($value) : '',
         );
     }
 
@@ -721,11 +718,18 @@ class Mod extends Model implements Commentable, Reportable, Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->description
-                ? Purify::config('description')->clean(
+            get: function (): string {
+                if (! $this->description) {
+                    return '';
+                }
+
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
                     Markdown::convert($this->description)->getContent()
-                )
-                : ''
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 
@@ -735,9 +739,9 @@ class Mod extends Model implements Commentable, Reportable, Trackable
      */
     private function hasActiveSptCompatibility(): bool
     {
-        // Get active SPT versions (last three minor versions) for search
-        $activeSptVersions = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): Collection => SptVersion::getVersionsForLastThreeMinors());
-        $activeSptVersionIds = $activeSptVersions->pluck('version')->toArray();
+        // Get active SPT version strings (last three minor versions) for search — cache strings, not models
+        /** @var array<int, string> $activeSptVersionIds */
+        $activeSptVersionIds = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): array => SptVersion::getVersionsForLastThreeMinors()->pluck('version')->all());
 
         // Use the scope to filter and then check for active SPT versions
         return $this->versions()

@@ -13,7 +13,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('addons', function (Blueprint $table) {
+        Schema::create('addons', function (Blueprint $table): void {
             $table->id();
             $table->foreignIdFor(Mod::class)
                 ->nullable()

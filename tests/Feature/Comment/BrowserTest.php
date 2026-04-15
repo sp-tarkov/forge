@@ -8,10 +8,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\Cache;
-
-uses(DatabaseTruncation::class);
 
 beforeEach(function (): void {
     Cache::flush(); // Prevent rate limiting interference.

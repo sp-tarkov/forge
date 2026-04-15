@@ -13,10 +13,12 @@ use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
 use App\Traits\HasProfilePhoto;
 use App\Traits\HasReports;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -47,21 +49,21 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $discord_id
  * @property string $name
  * @property string $email
- * @property Carbon|null $email_verified_at
+ * @property CarbonImmutable|null $email_verified_at
  * @property string|null $password
  * @property string $about
  * @property int|null $user_role_id
  * @property string|null $profile_photo_path
  * @property string|null $cover_photo_path
  * @property string|null $remember_token
- * @property Carbon|null $last_seen_at
- * @property Carbon|null $mods_updated_viewed_at
- * @property Carbon|null $mods_created_viewed_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property CarbonImmutable|null $last_seen_at
+ * @property CarbonImmutable|null $mods_updated_viewed_at
+ * @property CarbonImmutable|null $mods_created_viewed_at
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
- * @property Carbon|null $two_factor_confirmed_at
+ * @property CarbonImmutable|null $two_factor_confirmed_at
  * @property string|null $timezone
  * @property bool $email_comment_notifications_enabled
  * @property bool $email_reply_notifications_enabled
@@ -79,7 +81,17 @@ use Stevebauman\Purify\Facades\Purify;
  *
  * @implements Commentable<self>
  */
-class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
+#[Appends([
+    'profile_photo_url',
+    'cover_photo_url',
+])]
+#[Hidden([
+    'password',
+    'remember_token',
+    'two_factor_recovery_codes',
+    'two_factor_secret',
+])]
+final class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
 {
     use Bannable;
     use HasApiTokens;
@@ -101,18 +113,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     use Searchable;
     use TwoFactorAuthenticatable;
     use Visitor;
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
-    ];
-
-    protected $appends = [
-        'profile_photo_url',
-        'cover_photo_url',
-    ];
 
     /**
      * Get the storage path for profile photos.
@@ -208,17 +208,6 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     {
         return $this->morphedByMany(Addon::class, 'authorable', 'additional_authors')
             ->withTimestamps();
-    }
-
-    /**
-     * Get all conversations for the user.
-     *
-     * @return HasMany<Conversation, $this>
-     */
-    public function conversations(): HasMany
-    {
-        return $this->hasMany(Conversation::class, 'user1_id')
-            ->orWhere('user2_id', $this->id);
     }
 
     /**
@@ -375,7 +364,11 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function isBlockedMutually(self $user): bool
     {
-        return $this->hasBlocked($user) || $this->isBlockedBy($user);
+        if ($this->hasBlocked($user)) {
+            return true;
+        }
+
+        return $this->isBlockedBy($user);
     }
 
     /**
@@ -449,7 +442,15 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function isModOrAdmin(): bool
     {
-        return $this->isMod() || $this->isSeniorMod() || $this->isAdmin();
+        if ($this->isMod()) {
+            return true;
+        }
+
+        if ($this->isSeniorMod()) {
+            return true;
+        }
+
+        return $this->isAdmin();
     }
 
     /**
@@ -555,11 +556,12 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     public function hasMfaEnabled(): bool
     {
-        return $this->hasEnabledTwoFactorAuthentication()
-            || (
-                $this->oAuthConnections->isNotEmpty()
-                && $this->oAuthConnections->every(fn (OAuthConnection $connection): bool => (bool) $connection->mfa_enabled)
-            );
+        if ($this->hasEnabledTwoFactorAuthentication()) {
+            return true;
+        }
+
+        return $this->oAuthConnections->isNotEmpty()
+        && $this->oAuthConnections->every(fn (OAuthConnection $connection): bool => (bool) $connection->mfa_enabled);
     }
 
     /**
@@ -632,7 +634,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     /**
      * Comments on user profiles are displayed on the 'wall' tab.
      */
-    public function getCommentTabHash(): ?string
+    public function getCommentTabHash(): string
     {
         return 'wall';
     }
@@ -730,10 +732,17 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     protected function profileUrl(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes): string => route('user.show', [
-                'userId' => $attributes['id'],
-                'slug' => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
-            ]),
+            get: function (mixed $value, array $attributes): string {
+                /** @var string $name */
+                $name = $attributes['name'] ?? '';
+                /** @var int|string $id */
+                $id = $attributes['id'] ?? 0;
+
+                return route('user.show', [
+                    'userId' => $id,
+                    'slug' => Str::slug($name) ?: 'user-'.$id,
+                ]);
+            },
         )->shouldCache();
     }
 
@@ -745,7 +754,14 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     protected function slug(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes): string => Str::slug($attributes['name']) ?: 'user-'.$attributes['id'],
+            get: function (mixed $value, array $attributes): string {
+                /** @var string $name */
+                $name = $attributes['name'] ?? '';
+                /** @var int|string $id */
+                $id = $attributes['id'] ?? 0;
+
+                return Str::slug($name) ?: 'user-'.$id;
+            },
         )->shouldCache();
     }
 
@@ -758,7 +774,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     protected function about(): Attribute
     {
         return Attribute::make(
-            get: fn (?string $value): string => $value ?? '', // If DB value is NULL, return ''
+            get: fn (mixed $value): string => is_string($value) ? $value : '', // If DB value is NULL, return ''
             set: fn (?string $value): string => mb_trim($value ?? ''), // Trim whitespace and handle NULL
         );
     }
@@ -771,11 +787,18 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
     protected function aboutHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->about
-                ? Purify::config('comments')->clean(
+            get: function (): string {
+                if (! $this->about) {
+                    return '';
+                }
+
+                /** @var string $clean */
+                $clean = Purify::config('comments')->clean(
                     Markdown::convert($this->about)->getContent()
-                )
-                : ''
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 
@@ -784,7 +807,7 @@ class User extends Authenticatable implements Commentable, MustVerifyEmail, Repo
      */
     protected function profilePhotoDisk(): string
     {
-        return config('filesystems.asset_upload', 'public');
+        return config()->string('filesystems.asset_upload', 'public');
     }
 
     /**

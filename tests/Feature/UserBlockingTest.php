@@ -12,11 +12,8 @@ use App\Models\User;
 use App\Models\UserBlock;
 use App\Policies\UserPolicy;
 use App\Services\UserBlockingService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 describe('User Blocking System', function (): void {
     describe('Basic blocking functionality', function (): void {

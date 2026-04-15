@@ -28,8 +28,6 @@
                 {{ __('Please confirm access to your account by entering one of your emergency recovery codes.') }}
             </div>
 
-            <x-validation-errors class="mb-4" />
-
             <form
                 method="POST"
                 action="{{ route('two-factor.login') }}"
@@ -40,19 +38,13 @@
                     class="mt-4"
                     x-show="! recovery"
                 >
-                    <x-label
-                        for="code"
-                        value="{{ __('Code') }}"
-                    />
-                    <x-input
-                        id="code"
-                        class="block mt-1 w-full"
-                        type="text"
-                        inputmode="numeric"
+                    <flux:otp
                         name="code"
+                        length="6"
+                        label="{{ __('Code') }}"
+                        submit="auto"
                         autofocus
                         x-ref="code"
-                        autocomplete="one-time-code"
                     />
                 </div>
 
@@ -61,13 +53,9 @@
                     x-cloak
                     x-show="recovery"
                 >
-                    <x-label
-                        for="recovery_code"
-                        value="{{ __('Recovery Code') }}"
-                    />
-                    <x-input
+                    <flux:label for="recovery_code">{{ __('Recovery Code') }}</flux:label>
+                    <flux:input
                         id="recovery_code"
-                        class="block mt-1 w-full"
                         type="text"
                         name="recovery_code"
                         x-ref="recovery_code"
@@ -103,9 +91,9 @@
 
                     <x-honeypot />
 
-                    <x-button class="ms-4">
+                    <flux:button variant="primary" type="submit">
                         {{ __('Log in') }}
-                    </x-button>
+                    </flux:button>
                 </div>
             </form>
         </div>

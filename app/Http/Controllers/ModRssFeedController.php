@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 
-class ModRssFeedController extends Controller
+final class ModRssFeedController extends Controller
 {
     /**
      * Generate RSS feed for mods with filtering.
@@ -22,17 +22,17 @@ class ModRssFeedController extends Controller
         // Get the filters from the request
         /** @var array<string, string|array<int, string>> $filters */
         $filters = [
-            'query' => (string) $request->get('query', ''),
-            'order' => (string) $request->get('order', 'created'),
+            'query' => $request->string('query', '')->toString(),
+            'order' => $request->string('order', 'created')->toString(),
             'sptVersions' => $this->parseSptVersions($request),
-            'featured' => (string) $request->get('featured', 'include'),
-            'category' => (string) $request->get('category', ''),
+            'featured' => $request->string('featured', 'include')->toString(),
+            'category' => $request->string('category', '')->toString(),
         ];
 
         // Apply filters using the same ModFilter class
         $modFilter = new ModFilter($filters);
         $mods = $modFilter->apply()
-            ->with(['latestVersion', 'category'])
+            ->with(['latestVersion', 'category', 'owner'])
             ->limit(50)
             ->get();
 
@@ -51,7 +51,7 @@ class ModRssFeedController extends Controller
      */
     private function parseSptVersions(Request $request): string|array
     {
-        /** @var mixed $versions */
+        /** @var string|array<int, string>|null $versions */
         $versions = $request->get('versions');
 
         if (! $versions) {
@@ -98,13 +98,12 @@ class ModRssFeedController extends Controller
      */
     private function generateRssFeed(Request $request, Collection $mods, array $filters): string
     {
-        /** @var string $siteUrl */
-        $siteUrl = config('app.url');
+        $siteUrl = config()->string('app.url');
         $feedTitle = 'The Forge - SPT Mods';
         $feedDescription = $this->generateFeedDescription($filters);
         /** @var array<string, mixed> $queryParams */
         $queryParams = $request->query();
-        $queryString = ! empty($queryParams) ? '?'.http_build_query($queryParams) : '';
+        $queryString = empty($queryParams) ? '' : '?'.http_build_query($queryParams);
         $currentUrl = url()->current().$queryString;
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -133,14 +132,14 @@ class ModRssFeedController extends Controller
             }
 
             $xml .= '<dc:creator>'.htmlspecialchars($mod->owner->name ?? 'Unknown', ENT_XML1).'</dc:creator>';
-            $xml .= '<pubDate>'.$mod->created_at->toRssString().'</pubDate>';
+            $xml .= '<pubDate>'.$mod->created_at?->toRssString().'</pubDate>';
 
             if ($mod->thumbnail_url !== '') {
                 $xml .= '<enclosure url="'.htmlspecialchars((string) $mod->thumbnail_url, ENT_XML1).'" type="image/png" length="0"/>';
             }
 
             if ($latestVersion !== null) {
-                $xml .= '<dc:date>'.$latestVersion->created_at->toIso8601String().'</dc:date>';
+                $xml .= '<dc:date>'.$latestVersion->created_at?->toIso8601String().'</dc:date>';
                 $xml .= '<dc:identifier>v'.htmlspecialchars($latestVersion->version, ENT_XML1).'</dc:identifier>';
             }
 
@@ -148,9 +147,8 @@ class ModRssFeedController extends Controller
         }
 
         $xml .= '</channel>';
-        $xml .= '</rss>';
 
-        return $xml;
+        return $xml.'</rss>';
     }
 
     /**
@@ -180,10 +178,8 @@ class ModRssFeedController extends Controller
             $parts[] = 'in category: '.$filters['category'];
         }
 
-        if (! empty($filters['sptVersions']) && $filters['sptVersions'] !== 'all') {
-            if (is_array($filters['sptVersions'])) {
-                $parts[] = 'for SPT versions: '.implode(', ', $filters['sptVersions']);
-            }
+        if (! empty($filters['sptVersions']) && $filters['sptVersions'] !== 'all' && is_array($filters['sptVersions'])) {
+            $parts[] = 'for SPT versions: '.implode(', ', $filters['sptVersions']);
         }
 
         if (isset($filters['order']) && is_string($filters['order'])) {

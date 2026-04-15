@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\VerificationStatus;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Observers\AddonVersionObserver;
 use App\Support\Version;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\AddonVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
@@ -37,35 +40,35 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $description
  * @property string $link
  * @property int|null $content_length
+ * @property string|null $etag
+ * @property string|null $last_modified_header
+ * @property VerificationStatus|null $verification_status
+ * @property CarbonImmutable|null $last_verified_at
  * @property string $mod_version_constraint
  * @property int $downloads
  * @property bool $disabled
  * @property bool $discord_notification_sent
- * @property Carbon|null $published_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $published_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string $description_html
  * @property-read string|null $formatted_file_size
  * @property-read Addon $addon
  * @property-read Collection<int, ModVersion> $compatibleModVersions
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
+ * @property-read Collection<int, VerificationResult> $verificationResults
+ * @property-read VerificationResult|null $latestVerificationResult
  * @property-read Collection<int, Dependency> $dependencies
  * @property-read Collection<int, ModVersion> $dependenciesResolved
  * @property-read Collection<int, ModVersion> $latestDependenciesResolved
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonVersionObserver::class])]
-class AddonVersion extends Model
+#[Touches(['addon'])]
+final class AddonVersion extends Model
 {
     /** @use HasFactory<AddonVersionFactory> */
     use HasFactory;
-
-    /**
-     * Update the parent addon's updated_at timestamp when the addon version is updated.
-     *
-     * @var string[]
-     */
-    protected $touches = ['addon'];
 
     /**
      * The relationship between an addon version and addon.
@@ -97,6 +100,27 @@ class AddonVersion extends Model
     {
         return $this->morphMany(VirusTotalLink::class, 'linkable')
             ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
+    }
+
+    /**
+     * The relationship between an addon version and its verification results.
+     *
+     * @return MorphMany<VerificationResult, $this>
+     */
+    public function verificationResults(): MorphMany
+    {
+        return $this->morphMany(VerificationResult::class, 'verifiable')->latest();
+    }
+
+    /**
+     * The relationship between an addon version and its latest verification result.
+     *
+     * @return MorphOne<VerificationResult, $this>
+     */
+    public function latestVerificationResult(): MorphOne
+    {
+        return $this->morphOne(VerificationResult::class, 'verifiable')
+            ->latestOfMany();
     }
 
     /**
@@ -195,7 +219,7 @@ class AddonVersion extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::saving(function (AddonVersion $addonVersion): void {
+        self::saving(function (AddonVersion $addonVersion): void {
             // Strip the "v" prefix from the version string if present.
             $addonVersion->version = mb_ltrim($addonVersion->version, 'vV');
 
@@ -224,7 +248,14 @@ class AddonVersion extends Model
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn () => Markdown::convert(Purify::clean($this->description ?? ''))->getContent(),
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
+                    Markdown::convert($this->description ?? '')->getContent()
+                );
+
+                return $clean;
+            },
         );
     }
 
@@ -257,6 +288,8 @@ class AddonVersion extends Model
             'content_length' => 'integer',
             'downloads' => 'integer',
             'disabled' => 'boolean',
+            'verification_status' => VerificationStatus::class,
+            'last_verified_at' => 'datetime',
             'discord_notification_sent' => 'boolean',
             'published_at' => 'datetime',
         ];

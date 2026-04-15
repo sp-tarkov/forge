@@ -9,31 +9,38 @@ use App\Models\SptVersion;
 use App\Support\DataTransferObjects\GitHubSptVersion;
 use App\Support\Version;
 use Composer\Semver\Semver;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
-class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
+#[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     /**
-     * The number of seconds the job can run before timing out.
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
      */
-    public int $timeout = 60;
+    public function middleware(): array
+    {
+        return [new RateLimited('external-api')];
+    }
 
     /**
      * Execute the job.
@@ -46,11 +53,21 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('UpdateGitHubSptVersionsJob failed', [
+            'error' => $exception?->getMessage(),
+        ]);
+    }
+
+    /**
      * Determine the color for the SPT version.
      *
      * @throws InvalidVersionNumberException
      */
-    private static function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
+    private function detectSptVersionColor(string $rawVersion, false|string $rawLatestVersion): string
     {
         if ($rawLatestVersion === false) {
             return 'gray';
@@ -86,8 +103,11 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
         $url = 'https://api.github.com/repos/sp-tarkov/build/releases';
 
         $response = Http::acceptJson()
-            ->withUserAgent(Str::slug(config('app.name').'-'.config('app.env').'-'.config('app.url')))
-            ->withToken(config('services.github.token'))
+            ->connectTimeout(5)
+            ->timeout(30)
+            ->retry(3, 100, throw: false)
+            ->withUserAgent(Str::slug(config()->string('app.name').'-'.config()->string('app.env').'-'.config()->string('app.url')))
+            ->withToken(config()->string('services.github.token'))
             ->get($url);
 
         $response->throwUnlessStatus(200);
@@ -123,7 +143,9 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
     private function processSptVersions(Collection $releases): void
     {
         // Sort the releases by the tag_name using Semver::sort
-        $sortedVersions = Semver::sort($releases->pluck('tag_name')->toArray());
+        /** @var array<int, string> $tagNames */
+        $tagNames = $releases->pluck('tag_name')->toArray();
+        $sortedVersions = Semver::sort($tagNames);
         $latestVersion = end($sortedVersions);
 
         $versionData = [];
@@ -139,7 +161,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
                     'version_patch' => $version->getPatch(),
                     'version_labels' => $version->getLabels(),
                     'link' => $release->html_url,
-                    'color_class' => self::detectSptVersionColor($release->tag_name, $latestVersion),
+                    'color_class' => $this->detectSptVersionColor($release->tag_name, $latestVersion),
                     'created_at' => $publishedAt,
                     'updated_at' => $publishedAt,
                 ];
@@ -167,7 +189,7 @@ class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
             }
 
             // Insert new versions (only allocates IDs for actual new records)
-            if (! empty($insertData)) {
+            if ($insertData !== []) {
                 SptVersion::query()->insert($insertData);
             }
 

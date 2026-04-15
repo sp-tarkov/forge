@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_roles', function (Blueprint $table) {
+        Schema::table('user_roles', function (Blueprint $table): void {
             $table->string('icon')->default('')->after('color_class');
         });
 
@@ -28,7 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('user_roles', function (Blueprint $table) {
+        Schema::table('user_roles', function (Blueprint $table): void {
             $table->dropColumn('icon');
         });
     }

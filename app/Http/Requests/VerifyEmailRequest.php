@@ -7,7 +7,7 @@ namespace App\Http\Requests;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
-class VerifyEmailRequest extends FormRequest
+final class VerifyEmailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,16 +16,12 @@ class VerifyEmailRequest extends FormRequest
     {
         $user = $this->getUserFromRoute();
 
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
         // Verify the hash matches
-        if (! hash_equals(sha1((string) $user->getEmailForVerification()), (string) $this->route('hash'))) {
-            return false;
-        }
-
-        return true;
+        return hash_equals(sha1((string) $user->getEmailForVerification()), (string) $this->route('hash'));
     }
 
     /**
@@ -43,6 +39,7 @@ class VerifyEmailRequest extends FormRequest
      */
     public function getUserFromRoute(): ?User
     {
+        /** @var User|null */
         return User::query()->find($this->route('id'));
     }
 }

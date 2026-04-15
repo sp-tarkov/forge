@@ -2,18 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Contracts\SpamChecker;
 use App\Enums\SpamStatus;
 use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Services\CommentSpamChecker;
 use App\Support\Akismet\SpamCheckResult;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->user = User::factory()->create();
@@ -37,7 +34,7 @@ describe('Automatic Recheck Scheduling', function (): void {
             recheckAfter: '3600' // 1 hour
         );
 
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldReceive('checkSpam')
             ->with($this->comment)
             ->once()
@@ -60,7 +57,7 @@ describe('Automatic Recheck Scheduling', function (): void {
             metadata: ['akismet_response' => 'false']
         );
 
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldReceive('checkSpam')
             ->with($this->comment)
             ->once()
@@ -79,7 +76,7 @@ describe('Automatic Recheck Scheduling', function (): void {
             metadata: ['akismet_response' => 'false']
         );
 
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldReceive('checkSpam')
             ->with($this->comment)
             ->once()
@@ -99,10 +96,10 @@ describe('Automatic Recheck Scheduling', function (): void {
 
     test('stops rechecking after maximum attempts reached', function (): void {
         // Set comment to already have max recheck attempts
-        $maxAttempts = config('comments.spam.max_recheck_attempts', 3);
+        $maxAttempts = config()->integer('comments.spam.max_recheck_attempts', 3);
         $this->comment->update(['spam_recheck_count' => $maxAttempts]);
 
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldNotReceive('checkSpam');
 
         // Try to run another recheck - should be skipped
@@ -118,11 +115,11 @@ describe('Automatic Recheck Scheduling', function (): void {
         Bus::fake();
 
         // Set comment to already have max recheck attempts
-        $maxAttempts = config('comments.spam.max_recheck_attempts', 3);
+        $maxAttempts = config()->integer('comments.spam.max_recheck_attempts', 3);
         $this->comment->update(['spam_recheck_count' => $maxAttempts]);
 
         // Mock the spam checker - should not be called because job is skipped
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldNotReceive('checkSpam');
 
         $recheckJob = new CheckCommentForSpam($this->comment, isRecheck: true);
@@ -142,7 +139,7 @@ describe('Automatic Recheck Scheduling', function (): void {
             recheckAfter: '7200' // 2 hours
         );
 
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldReceive('checkSpam')
             ->with($this->comment)
             ->once()
@@ -169,7 +166,7 @@ describe('Recheck Job Behavior', function (): void {
             'spam_status' => SpamStatus::CLEAN,
         ]);
 
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldNotReceive('checkSpam');
 
         // Regular job should skip already checked comment
@@ -194,7 +191,7 @@ describe('Recheck Job Behavior', function (): void {
             metadata: ['akismet_response' => 'false', 'recheck_reason' => 'scheduled_recheck']
         );
 
-        $mockSpamChecker = Mockery::mock(CommentSpamChecker::class);
+        $mockSpamChecker = Mockery::mock(SpamChecker::class);
         $mockSpamChecker->shouldReceive('checkSpam')
             ->with($this->comment)
             ->once()
@@ -222,7 +219,7 @@ describe('Helper Methods', function (): void {
     });
 
     test('canBeRechecked returns false when at max attempts', function (): void {
-        $maxAttempts = config('comments.spam.max_recheck_attempts', 3);
+        $maxAttempts = config()->integer('comments.spam.max_recheck_attempts', 3);
         $this->comment->update(['spam_recheck_count' => $maxAttempts]);
         expect($this->comment->canBeRechecked())->toBeFalse();
 

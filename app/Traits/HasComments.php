@@ -23,7 +23,7 @@ trait HasComments
     /**
      * The relationship between a model and its comments.
      *
-     * @return MorphMany<Comment, TModel>
+     * @return MorphMany<Comment, static>
      */
     public function comments(): MorphMany
     {
@@ -33,7 +33,7 @@ trait HasComments
     /**
      * The relationship between a model and its root comments.
      *
-     * @return MorphMany<Comment, TModel>
+     * @return MorphMany<Comment, static>
      */
     public function rootComments(): MorphMany
     {
@@ -55,7 +55,7 @@ trait HasComments
     /**
      * Get all comment subscriptions for this commentable.
      *
-     * @return MorphMany<CommentSubscription, TModel>
+     * @return MorphMany<CommentSubscription, static>
      */
     public function commentSubscriptions(): MorphMany
     {
@@ -110,7 +110,7 @@ trait HasComments
      */
     public function loadDescendants(Comment $comment, ?User $user = null): Collection
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             $user = Auth::user();
         }
 
@@ -139,6 +139,7 @@ trait HasComments
     {
         $user = Auth::user();
 
+        /** @var array<int, int> */
         return Comment::query()
             ->selectRaw('root_id, count(*) as reply_count')
             ->where('commentable_type', static::class)

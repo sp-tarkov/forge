@@ -8,10 +8,7 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
 use App\Policies\CommentPolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Queue::fake(); // Prevent spam check jobs from running

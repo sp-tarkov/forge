@@ -18,7 +18,7 @@ use Override;
  *
  * @property EloquentCollection<int, ModVersion>|MissingValue $collection
  */
-class ModDependencyResolvedCollection extends ResourceCollection
+final class ModDependencyResolvedCollection extends ResourceCollection
 {
     /**
      * Indicates if the resource's collection keys should be preserved. The output is a plain array.
@@ -28,10 +28,10 @@ class ModDependencyResolvedCollection extends ResourceCollection
     /**
      * Transform the resource collection into an array.
      *
-     * @return array<int, array<string, mixed>>|MissingValue
+     * @return array<int, array<string, mixed>>
      */
     #[Override]
-    public function toArray(Request $request): array|MissingValue
+    public function toArray(Request $request): array
     {
         if ($this->collection instanceof MissingValue) {
             return [];

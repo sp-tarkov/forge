@@ -10,7 +10,7 @@ use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
 use League\CommonMark\Node\Block\Paragraph;
 use League\CommonMark\Node\Node;
 
-class YouTubeProcessor
+final class YouTubeProcessor
 {
     public function __invoke(DocumentParsedEvent $e): void
     {
@@ -31,7 +31,7 @@ class YouTubeProcessor
                 $url = $children[0]->getUrl();
                 $videoId = $this->extractVideoId($url);
 
-                if (! empty($videoId)) {
+                if ($videoId !== null && $videoId !== '') {
                     // Replace the paragraph with a YouTubeEmbedNode.
                     $youtubeNode = new YouTubeEmbedNode($videoId);
                     $node->replaceWith($youtubeNode);
@@ -73,6 +73,8 @@ class YouTubeProcessor
         // For full `youtube.com` links, extract the v parameter
         parse_str(parse_url($url, PHP_URL_QUERY) ?: '', $params);
 
-        return $params['v'] ?? null;
+        $value = $params['v'] ?? null;
+
+        return is_string($value) ? $value : null;
     }
 }

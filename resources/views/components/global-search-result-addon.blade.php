@@ -3,32 +3,28 @@
     wire:navigate
     class="{{ $linkClass }}"
     role="listitem"
-    tabindex="0"
+    tabindex="{{ $tabindex ?? 0 }}"
 >
     @empty($result['thumbnail'])
-        <div class="h-6 w-6 self-center flex items-center justify-center">
-            <flux:icon.puzzle-piece class="size-5 text-gray-400 dark:text-gray-600" />
+        <div class="size-8 shrink-0 self-center flex items-center justify-center rounded bg-gray-800">
+            <flux:icon.puzzle-piece class="size-4 text-gray-500" />
         </div>
     @else
         <img
             src="{{ $result['thumbnail'] }}"
             alt="{{ $result['name'] }}"
-            class="h-6 w-6 self-center rounded object-cover"
+            class="size-8 shrink-0 self-center rounded object-cover"
         >
     @endempty
-    <div class="grow flex flex-col">
-        <p class="font-medium">{{ $result['name'] }}</p>
+    <div class="grow flex flex-col min-w-0">
+        <span class="text-sm font-medium truncate">{{ $result['name'] }}</span>
         @if (isset($result['mod_name']))
-            <p class="text-xs text-gray-500 dark:text-gray-400">
+            <span class="text-xs text-gray-400">
                 Addon for: {{ $result['mod_name'] }}
-            </p>
+            </span>
         @endif
     </div>
     @if (isset($result['is_detached']) && $result['is_detached'] && auth()->user()?->isModOrAdmin())
-        <span
-            class="ml-auto self-center inline-block bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wide text-nowrap"
-        >
-            Detached
-        </span>
+        <flux:badge size="sm" color="yellow" class="ml-auto shrink-0">Detached</flux:badge>
     @endif
 </a>

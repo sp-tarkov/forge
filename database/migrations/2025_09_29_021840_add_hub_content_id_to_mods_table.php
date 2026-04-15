@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->bigInteger('hub_content_id')->nullable()->after('hub_id')->index();
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->dropColumn('hub_content_id');
         });
     }

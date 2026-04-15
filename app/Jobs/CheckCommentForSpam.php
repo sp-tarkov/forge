@@ -4,27 +4,28 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Contracts\SpamChecker;
 use App\Enums\SpamStatus;
 use App\Models\Comment;
-use App\Services\CommentSpamChecker;
 use App\Support\Akismet\SpamCheckResult;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
  * Background job to check a comment for spam using Akismet.
  */
-class CheckCommentForSpam implements ShouldQueue
+#[Timeout(120)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class CheckCommentForSpam implements ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     /**
      * Create a new job instance.
@@ -35,9 +36,19 @@ class CheckCommentForSpam implements ShouldQueue
     ) {}
 
     /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [new RateLimited('external-api')];
+    }
+
+    /**
      * Execute the job.
      */
-    public function handle(CommentSpamChecker $spamChecker): void
+    public function handle(SpamChecker $spamChecker): void
     {
         // Skip if already checked and this is not a recheck
         if ($this->comment->spam_checked_at !== null && ! $this->isRecheck) {
@@ -57,7 +68,7 @@ class CheckCommentForSpam implements ShouldQueue
         }
 
         // Default to clean if spam checking is disabled.
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             $this->comment->markAsClean(metadata: ['reason' => 'akismet_disabled'], quiet: true);
 
             return;
@@ -94,11 +105,23 @@ class CheckCommentForSpam implements ShouldQueue
     }
 
     /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('CheckCommentForSpam job failed', [
+            'comment_id' => $this->comment->id,
+            'is_recheck' => $this->isRecheck,
+            'error' => $exception?->getMessage(),
+        ]);
+    }
+
+    /**
      * Maximum number of recheck attempts allowed.
      */
     private function getMaxRecheckAttempts(): int
     {
-        return config('comments.spam.max_recheck_attempts', 3);
+        return config()->integer('comments.spam.max_recheck_attempts', 3);
     }
 
     /**

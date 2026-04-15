@@ -15,7 +15,7 @@ use Knuckles\Scribe\Attributes\UrlParam;
 /**
  * @group Mods
  */
-class ModVersionController extends Controller
+final class ModVersionController extends Controller
 {
     /**
      * Get Mod Versions
@@ -250,13 +250,16 @@ class ModVersionController extends Controller
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request, int $modId): JsonResponse
     {
+        /** @var array<string, mixed>|null $filters */
+        $filters = $request->input('filter');
+
         $queryBuilder = new ModVersionQueryBuilder($modId)
-            ->withFilters($request->input('filter'))
+            ->withFilters($filters)
             ->withIncludes($request->string('include')->explode(',')->all())
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all());
 
-        $modVersions = $queryBuilder->paginate($request->integer('per_page', 12));
+        $modVersions = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(ModVersionResource::collection($modVersions));
     }

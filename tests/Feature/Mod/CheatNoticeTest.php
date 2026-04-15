@@ -205,6 +205,7 @@ describe('Cheat Notice', function (): void {
             $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[cheat_notice]=true');
 
             $response->assertOk();
+
             $modIds = collect($response->json('data'))->pluck('id')->all();
             expect($modIds)->toContain($modWithNotice->id);
             expect($modIds)->not->toContain($modWithoutNotice->id);
@@ -223,6 +224,7 @@ describe('Cheat Notice', function (): void {
             $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[cheat_notice]=false');
 
             $response->assertOk();
+
             $modIds = collect($response->json('data'))->pluck('id')->all();
             expect($modIds)->toContain($modWithoutNotice->id);
             expect($modIds)->not->toContain($modWithNotice->id);

@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         // Change the guid column to use case-sensitive collation
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->string('guid')->charset('utf8mb4')->collation('utf8mb4_0900_as_cs')->change();
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         // Revert to the default case-insensitive collation
-        Schema::table('mods', function (Blueprint $table) {
+        Schema::table('mods', function (Blueprint $table): void {
             $table->string('guid')->charset('utf8mb4')->collation('utf8mb4_0900_ai_ci')->change();
         });
     }

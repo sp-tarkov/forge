@@ -7,11 +7,12 @@ namespace App\Actions\Fortify;
 use App\Models\User;
 use App\Rules\NotDisposableEmail;
 use DateTimeZone;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
-class UpdateUserProfileInformation implements UpdatesUserProfileInformation
+final class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
     /**
      * Validate and update the given user's profile information.
@@ -26,14 +27,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
             'cover' => ['nullable', 'mimes:jpg,jpeg,png', 'max:2048'],
             'timezone' => ['required', 'string', 'in:'.implode(',', DateTimeZone::listIdentifiers())],
-            'about' => ['nullable', 'string'],
+            'about' => ['nullable', 'string', 'max:500'],
         ])->validateWithBag('updateProfileInformation');
 
-        if (isset($input['photo'])) {
+        if (isset($input['photo']) && $input['photo'] instanceof UploadedFile) {
             $user->updateProfilePhoto($input['photo']);
         }
 
-        if (isset($input['cover'])) {
+        if (isset($input['cover']) && $input['cover'] instanceof UploadedFile) {
             $user->updateCoverPhoto($input['cover']);
         }
 
@@ -52,9 +53,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     /**
      * Update the given verified user's profile information.
      *
-     * @param  array<string, string>  $input
+     * @param  array<string, mixed>  $input
      */
-    protected function updateVerifiedUser(User $user, array $input): void
+    private function updateVerifiedUser(User $user, array $input): void
     {
         $user->forceFill([
             'name' => $input['name'],

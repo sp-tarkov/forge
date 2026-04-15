@@ -6,14 +6,15 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-uses(RefreshDatabase::class);
-
 afterEach(function (): void {
     Cache::clear();
+});
+
+it('renders the homepage', function (): void {
+    $this->get('/')->assertOk();
 });
 
 describe('homepage featured mods', function (): void {

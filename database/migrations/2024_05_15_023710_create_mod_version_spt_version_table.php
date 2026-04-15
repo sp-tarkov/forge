@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('mod_version_spt_version', function (Blueprint $table) {
+        Schema::create('mod_version_spt_version', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('mod_version_id')->constrained('mod_versions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('spt_version_id')->constrained('spt_versions')->cascadeOnDelete()->cascadeOnUpdate();

@@ -21,9 +21,11 @@ return new class extends Migration
 
         foreach ($mods as $mod) {
             // Handle comma-separated URLs from Hub imports
-            $urls = array_map('trim', explode(',', $mod->source_code_url));
+            /** @var string $sourceCodeUrl */
+            $sourceCodeUrl = $mod->source_code_url;
+            $urls = array_map(trim(...), explode(',', $sourceCodeUrl));
 
-            foreach ($urls as $index => $url) {
+            foreach ($urls as $url) {
                 if (! empty($url)) {
                     DB::table('mod_source_code_links')->insert([
                         'mod_id' => $mod->id,
@@ -48,12 +50,18 @@ return new class extends Migration
             ->orderBy('id')
             ->get();
 
+        /** @var array<int, list<string>> $modUrls */
         $modUrls = [];
         foreach ($links as $link) {
-            if (! isset($modUrls[$link->mod_id])) {
-                $modUrls[$link->mod_id] = [];
+            /** @var int $modId */
+            $modId = $link->mod_id;
+            if (! isset($modUrls[$modId])) {
+                $modUrls[$modId] = [];
             }
-            $modUrls[$link->mod_id][] = $link->url;
+
+            /** @var string $url */
+            $url = $link->url;
+            $modUrls[$modId][] = $url;
         }
 
         foreach ($modUrls as $modId => $urls) {

@@ -15,7 +15,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<Mod>
  */
-class ModQueryBuilder extends AbstractQueryBuilder
+final class ModQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the

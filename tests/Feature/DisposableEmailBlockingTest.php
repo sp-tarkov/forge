@@ -6,14 +6,11 @@ use App\Jobs\UpdateDisposableEmailBlocklist;
 use App\Models\DisposableEmailBlocklist;
 use App\Models\User;
 use App\Rules\NotDisposableEmail;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     // Clear any cached domains
@@ -35,12 +32,12 @@ describe('DisposableEmailBlocklist Model', function (): void {
         // First call should query the database
         DisposableEmailBlocklist::isDisposable('tempmail.com');
 
-        // Check that the result is cached
-        expect(Cache::has('disposable_email_tempmail.com'))->toBeTrue();
+        // Check that the result is cached with tag
+        expect(Cache::tags('disposable-emails')->has('disposable_email_tempmail.com'))->toBeTrue();
 
         // Clear the domain cache
         DisposableEmailBlocklist::clearDomainCache('tempmail.com');
-        expect(Cache::has('disposable_email_tempmail.com'))->toBeFalse();
+        expect(Cache::tags('disposable-emails')->has('disposable_email_tempmail.com'))->toBeFalse();
     });
 });
 

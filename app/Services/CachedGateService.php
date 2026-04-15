@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
  * Caches gate authorization results for the duration of the request to prevent redundant policy checks.
  */
 #[Scoped]
-class CachedGateService
+final class CachedGateService
 {
     /**
      * Request-scoped cache for gate results.
@@ -91,6 +91,7 @@ class CachedGateService
         $results = [];
 
         foreach ($models as $model) {
+            /** @var int|string $key */
             $key = $model->getKey();
             $results[$key] = $this->allows($ability, $model);
         }
@@ -112,6 +113,7 @@ class CachedGateService
         $results = [];
 
         foreach ($models as $model) {
+            /** @var int|string $key */
             $key = $model->getKey();
             $results[$key] = [];
 
@@ -154,6 +156,7 @@ class CachedGateService
     public function clearForModel(Model $model): void
     {
         $modelClass = $model::class;
+        /** @var int|string $modelKey */
         $modelKey = $model->getKey();
         $userId = auth()->id() ?? 'guest';
 
@@ -229,7 +232,9 @@ class CachedGateService
         } elseif (is_array($arguments)) {
             $argsHash = $this->hashArguments($arguments);
         } elseif ($arguments instanceof Model) {
-            $argsHash = $arguments::class.'.'.$arguments->getKey();
+            /** @var int|string $argumentsKey */
+            $argumentsKey = $arguments->getKey();
+            $argsHash = $arguments::class.'.'.$argumentsKey;
         } else {
             $argsHash = md5(serialize($arguments));
         }
@@ -248,7 +253,9 @@ class CachedGateService
 
         foreach ($arguments as $arg) {
             if ($arg instanceof Model) {
-                $normalized[] = $arg::class.'.'.$arg->getKey();
+                /** @var int|string $argKey */
+                $argKey = $arg->getKey();
+                $normalized[] = $arg::class.'.'.$argKey;
             } else {
                 $normalized[] = $arg;
             }

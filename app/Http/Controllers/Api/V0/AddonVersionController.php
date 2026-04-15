@@ -15,7 +15,7 @@ use Knuckles\Scribe\Attributes\UrlParam;
 /**
  * @group Addons
  */
-class AddonVersionController extends Controller
+final class AddonVersionController extends Controller
 {
     /**
      * Get Addon Versions
@@ -111,13 +111,16 @@ class AddonVersionController extends Controller
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request, int $addonId): JsonResponse
     {
+        /** @var array<string, mixed>|null $filters */
+        $filters = $request->input('filter');
+
         $queryBuilder = new AddonVersionQueryBuilder($addonId)
-            ->withFilters($request->input('filter'))
+            ->withFilters($filters)
             ->withIncludes($request->string('include')->explode(',')->all())
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all());
 
-        $addonVersions = $queryBuilder->paginate($request->integer('per_page', 12));
+        $addonVersions = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(AddonVersionResource::collection($addonVersions));
     }

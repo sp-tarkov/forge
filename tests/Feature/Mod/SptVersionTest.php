@@ -8,11 +8,8 @@ use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
-
-uses(RefreshDatabase::class);
 
 describe('SPT version latest minor detection', function (): void {
     it("returns true if the version is part of the latest version's minor releases", function (): void {
@@ -373,6 +370,7 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         // Publish only the first SPT version (4.0.0)
         $sptTomorrow->publish_date = Date::now()->subHour();
         $sptTomorrow->save();
+
         $modVersion->refresh();
 
         // Should still not be visible (waiting for 4.0.1)
@@ -382,6 +380,7 @@ describe('ModVersion pinning to SPT version publish dates', function (): void {
         // Now publish the second SPT version (4.0.1)
         $sptInTwoDays->publish_date = Date::now()->subHour();
         $sptInTwoDays->save();
+
         $modVersion->refresh();
 
         // Should now be visible (all pinned versions are published)
@@ -652,7 +651,7 @@ describe('Mod filtering with SPT version caching', function (): void {
         $guestMods = $guestFilter->apply()->get();
 
         // Filter to only our test mods
-        $testMods = $guestMods->filter(function ($mod) use ($mods) {
+        $testMods = $guestMods->filter(function ($mod) use ($mods): bool {
             $modIds = array_map(fn ($m) => $m->id, $mods);
 
             return in_array($mod->id, $modIds);
@@ -676,7 +675,7 @@ describe('Mod filtering with SPT version caching', function (): void {
         $modMods = $modFilter->apply()->get();
 
         // Filter to only our test mods
-        $modTestMods = $modMods->filter(function ($mod) use ($mods) {
+        $modTestMods = $modMods->filter(function ($mod) use ($mods): bool {
             $modIds = array_map(fn ($m) => $m->id, $mods);
 
             return in_array($mod->id, $modIds);

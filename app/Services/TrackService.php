@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\Geolocator;
 use App\Contracts\Trackable;
 use App\Enums\TrackingEventType;
 use App\Models\TrackingEvent;
@@ -18,7 +19,7 @@ use Throwable;
  * Service for tracking user events and analytics.
  */
 #[Singleton]
-class TrackService
+final readonly class TrackService
 {
     /**
      * Create a new TrackService instance.
@@ -27,7 +28,7 @@ class TrackService
         /**
          * The geolocation service for IP-based location lookups.
          */
-        protected GeolocationService $geolocationService
+        private Geolocator $geolocationService
     ) {}
 
     /**
@@ -107,7 +108,7 @@ class TrackService
      * @param  array<string, mixed>  $additionalData
      * @return array<string, mixed>
      */
-    private function extractEventData(TrackingEventType $eventType, ?Model $trackable, array $additionalData): array
+    private function extractEventData(?Model $trackable, array $additionalData): array
     {
         $eventData = $additionalData;
 
@@ -142,11 +143,12 @@ class TrackService
         }
 
         // Extract contextual information based on the event type and trackable model
-        $eventData = $this->extractEventData($eventType, $trackable, $additionalData);
+        $eventData = $this->extractEventData($trackable, $additionalData);
 
         // For authentication events (login, logout, register), the user is both the visitor and visitable
         $visitorId = Auth::id();
-        $visitorType = Auth::check() ? Auth::user()::class : null;
+        $authenticatedUser = Auth::user();
+        $visitorType = $authenticatedUser !== null ? $authenticatedUser::class : null;
 
         // For events where trackable user should be the visitor
         // - Authentication events: Auth might be cleared (logout and account deletion)
@@ -159,7 +161,7 @@ class TrackService
             TrackingEventType::USER_BANNED,
             TrackingEventType::USER_UNBANNED,
         ];
-        if (in_array($eventType, $userAsVisitorEvents) && $trackable instanceof User) {
+        if (in_array($eventType, $userAsVisitorEvents, true) && $trackable instanceof User) {
             $visitorId = $trackable->getKey();
             $visitorType = $trackable->getMorphClass();
         }

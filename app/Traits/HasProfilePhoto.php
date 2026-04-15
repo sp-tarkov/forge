@@ -49,7 +49,7 @@ trait HasProfilePhoto
      */
     protected function profilePhotoDisk(): string
     {
-        return config('filesystems.asset_upload', 'public');
+        return config()->string('filesystems.asset_upload', 'public');
     }
 
     /**
@@ -59,11 +59,14 @@ trait HasProfilePhoto
      */
     protected function profilePhotoUrl(): Attribute
     {
-        return new Attribute(
+        /** @var Attribute<string, never> $attribute */
+        $attribute = new Attribute(
             get: fn (): string => $this->profile_photo_path
                 ? Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path)
                 : $this->defaultProfilePhotoUrl()
         );
+
+        return $attribute;
     }
 
     /**

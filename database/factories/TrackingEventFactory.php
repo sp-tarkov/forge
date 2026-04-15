@@ -17,9 +17,9 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Factory for creating realistic tracking event test data.
  *
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TrackingEvent>
+ * @extends Factory<TrackingEvent>
  */
-class TrackingEventFactory extends Factory
+final class TrackingEventFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
@@ -33,6 +33,7 @@ class TrackingEventFactory extends Factory
      */
     public function definition(): array
     {
+        /** @var TrackingEventType $eventType */
         $eventType = $this->faker->randomElement(TrackingEventType::cases());
         $isAuthenticated = $this->faker->boolean(70); // 70% chance of authenticated user
 
@@ -76,7 +77,7 @@ class TrackingEventFactory extends Factory
         if ($eventType->requiresTrackable()) {
             $trackable = $this->createTrackableModel($eventType);
             if ($trackable instanceof Trackable) {
-                $data['visitable_type'] = get_class($trackable);
+                $data['visitable_type'] = $trackable::class;
                 $data['visitable_id'] = $trackable->getKey();
 
                 // Generate event data using trait methods
@@ -94,12 +95,10 @@ class TrackingEventFactory extends Factory
      */
     public function anonymous(): static
     {
-        return $this->state(function (array $attributes): array {
-            return [
-                'visitor_type' => null,
-                'visitor_id' => null,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'visitor_type' => null,
+            'visitor_id' => null,
+        ]);
     }
 
     /**
@@ -107,12 +106,10 @@ class TrackingEventFactory extends Factory
      */
     public function authenticated(): static
     {
-        return $this->state(function (array $attributes): array {
-            return [
-                'visitor_type' => User::class,
-                'visitor_id' => User::factory(),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'visitor_type' => User::class,
+            'visitor_id' => User::factory(),
+        ]);
     }
 
     /**
@@ -120,14 +117,14 @@ class TrackingEventFactory extends Factory
      */
     public function eventType(TrackingEventType $eventType): static
     {
-        return $this->state(function (array $attributes) use ($eventType) {
+        return $this->state(function (array $attributes) use ($eventType): array {
             $data = ['event_name' => $eventType->value];
 
             // Add trackable model if required
             if ($eventType->requiresTrackable()) {
                 $trackable = $this->createTrackableModel($eventType);
                 if ($trackable instanceof Trackable) {
-                    $data['visitable_type'] = get_class($trackable);
+                    $data['visitable_type'] = $trackable::class;
                     $data['visitable_id'] = $trackable->getKey();
 
                     // Generate event data using trait methods
@@ -146,11 +143,9 @@ class TrackingEventFactory extends Factory
      */
     public function recent(): static
     {
-        return $this->state(function (array $attributes): array {
-            return [
-                'created_at' => $this->faker->dateTimeBetween('-30 days', 'now'),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'created_at' => $this->faker->dateTimeBetween('-30 days', 'now'),
+        ]);
     }
 
     /**
@@ -158,11 +153,9 @@ class TrackingEventFactory extends Factory
      */
     public function moderationAction(): static
     {
-        return $this->state(function (array $attributes): array {
-            return [
-                'is_moderation_action' => true,
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'is_moderation_action' => true,
+        ]);
     }
 
     /**

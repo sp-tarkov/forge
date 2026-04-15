@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Mod;
 use Illuminate\Http\RedirectResponse;
 
-class FileRedirectController extends Controller
+final class FileRedirectController extends Controller
 {
     /**
      * Redirect from a file URL to the corresponding mod page.

@@ -15,7 +15,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<AddonVersion>
  */
-class AddonVersionQueryBuilder extends AbstractQueryBuilder
+final class AddonVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Create a new AddonVersionQueryBuilder instance.
@@ -24,7 +24,7 @@ class AddonVersionQueryBuilder extends AbstractQueryBuilder
         /**
          * The ID of the addon to filter versions for.
          */
-        protected readonly int $addonId
+        private readonly int $addonId
     ) {
         parent::__construct();
     }
@@ -187,6 +187,7 @@ class AddonVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
+        /** @var array<string> $allVersionNumbers */
         $allVersionNumbers = AddonVersion::query()->where('addon_id', $this->addonId)
             ->pluck('version')
             ->all();
@@ -275,13 +276,13 @@ class AddonVersionQueryBuilder extends AbstractQueryBuilder
     #[Override]
     protected function applySorts(): void
     {
-        if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
-            if (empty($this->sorts)) {
+        if ($this->sorts !== []) {
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => $sort !== null && $sort !== '');
+            if ($this->sorts === []) {
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = static::getAllowedSorts();
+            $allowedSorts = self::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {
@@ -291,7 +292,7 @@ class AddonVersionQueryBuilder extends AbstractQueryBuilder
                 }
             }
 
-            if (! empty($invalidSorts)) {
+            if ($invalidSorts !== []) {
                 $invalidSort = implode(', ', $invalidSorts);
                 $validSorts = implode(', ', $allowedSorts);
                 throw new InvalidQuery(

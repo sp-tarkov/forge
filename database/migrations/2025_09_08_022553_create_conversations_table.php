@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conversations', function (Blueprint $table) {
+        Schema::create('conversations', function (Blueprint $table): void {
             $table->id();
             $table->string('hash_id', 255)->unique()->nullable(); // SQIDS hash
             $table->foreignId('user1_id')->constrained('users')->onDelete('cascade');

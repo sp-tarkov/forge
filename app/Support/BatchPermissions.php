@@ -9,7 +9,7 @@ namespace App\Support;
  *
  * Provides a clean interface for checking pre-computed permissions in views.
  */
-readonly class BatchPermissions
+final readonly class BatchPermissions
 {
     /**
      * @param  array<int|string, array<string, bool>>  $permissions

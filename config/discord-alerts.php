@@ -11,13 +11,20 @@ return [
     'webhook_urls' => [
         'default' => env('DISCORD_ALERT_WEBHOOK'),
         'mods' => env('DISCORD_MODS_WEBHOOK'),
+        'addons' => env('DISCORD_ADDONS_WEBHOOK'),
     ],
 
     /*
      * The Discord role ID to mention for mod notifications.
      * Format: Role ID without the <@&> wrapper
      */
-    'mod_notifications_role_id' => env('DISCORD_MOD_NOTIFICATIONS_ROLE_ID'),
+    'mod_notifications_role_id' => env('DISCORD_MOD_NOTIFICATIONS_ROLE_ID', ''),
+
+    /*
+     * The Discord role ID to mention for addon notifications.
+     * Format: Role ID without the <@&> wrapper
+     */
+    'addon_notifications_role_id' => env('DISCORD_ADDON_NOTIFICATIONS_ROLE_ID', ''),
 
     /*
      * Default avatar is an empty string '' which means it will not be included in the payload.

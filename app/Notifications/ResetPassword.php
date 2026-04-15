@@ -12,7 +12,7 @@ use SensitiveParameter;
 /**
  * This class exists solely to make the original notification queueable.
  */
-class ResetPassword extends OriginalResetPassword implements ShouldQueue
+final class ResetPassword extends OriginalResetPassword implements ShouldQueue
 {
     use Queueable;
 

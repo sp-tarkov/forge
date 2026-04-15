@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         // Add the default value
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->unsignedBigInteger('downloads')->default(0)->change();
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         // Remove the default value
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->unsignedBigInteger('downloads')->change();
         });
     }

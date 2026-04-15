@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for managing and retrieving mods.
  */
-class ModController extends Controller
+final class ModController extends Controller
 {
     /**
      * Get Mods
@@ -346,14 +346,17 @@ class ModController extends Controller
     #[UrlParam('per_page', type: 'integer', description: 'The number of results per page (max 50).', required: false, example: 25)]
     public function index(Request $request): JsonResponse
     {
+        /** @var array<string, mixed>|null $filters */
+        $filters = $request->input('filter');
+
         $queryBuilder = (new ModQueryBuilder)
-            ->withFilters($request->input('filter'))
+            ->withFilters($filters)
             ->withIncludes($request->string('include')->explode(',')->all())
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($request->string('sort')->explode(',')->all())
             ->withSearch($request->string('query')->toString());
 
-        $mods = $queryBuilder->paginate($request->integer('per_page', 12));
+        $mods = $queryBuilder->paginate(min($request->integer('per_page', 12), 50));
 
         return ApiResponse::success(ModResource::collection($mods));
     }

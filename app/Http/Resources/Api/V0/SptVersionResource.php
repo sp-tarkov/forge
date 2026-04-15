@@ -4,24 +4,30 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V0;
 
+use App\Models\SptVersion;
 use App\Support\Api\V0\QueryBuilder\SptVersionQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
-class SptVersionResource extends JsonResource
+/**
+ * @mixin SptVersion
+ *
+ * @property SptVersion $resource
+ */
+final class SptVersionResource extends JsonResource
 {
     /**
      * The fields requested in the request.
      *
      * @var array<int, string>
      */
-    protected array $requestedFields = [];
+    private array $requestedFields = [];
 
     /**
      * Whether to show all fields.
      */
-    protected bool $showAllFields = true;
+    private bool $showAllFields = true;
 
     /**
      * Transform the resource into an array.
@@ -37,7 +43,7 @@ class SptVersionResource extends JsonResource
             ->filter()
             ->all();
 
-        $this->showAllFields = empty($this->requestedFields);
+        $this->showAllFields = $this->requestedFields === [];
 
         $data = [];
 
@@ -78,17 +84,17 @@ class SptVersionResource extends JsonResource
         }
 
         if ($this->shouldInclude('created_at')) {
-            $data['created_at'] = $this->resource->created_at?->toISOString();
+            $data['created_at'] = $this->resource->created_at->toISOString();
         }
 
         if ($this->shouldInclude('updated_at')) {
-            $data['updated_at'] = $this->resource->updated_at?->toISOString();
+            $data['updated_at'] = $this->resource->updated_at->toISOString();
         }
 
         return $data;
     }
 
-    protected function shouldInclude(string $field): bool
+    private function shouldInclude(string $field): bool
     {
         $requiredFields = SptVersionQueryBuilder::getRequiredFields();
 

@@ -103,9 +103,11 @@
 </head>
 
 <body class="font-sans antialiased flex flex-col min-h-screen">
-    @if ($variant !== 'simple')
-        <x-banner />
-    @endif
+    <a
+        href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-white focus:text-gray-900 focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:bg-gray-900 dark:focus:text-gray-100"
+    >{{ __('Skip to main content') }}</a>
+    <flux:toast />
 
     <div class="flex-grow bg-gray-100 dark:bg-gray-800">
         @if ($variant !== 'simple')
@@ -120,7 +122,7 @@
             </header>
         @endif
 
-        <main class="{{ $variant === 'simple' ? '' : 'pb-6 sm:py-12' }}">
+        <main id="main-content" class="{{ $variant === 'simple' ? '' : 'pb-6 sm:py-12' }}">
             {{ $slot }}
         </main>
     </div>

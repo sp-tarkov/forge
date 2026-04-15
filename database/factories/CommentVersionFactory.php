@@ -7,12 +7,12 @@ namespace Database\Factories;
 use App\Models\Comment;
 use App\Models\CommentVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<CommentVersion>
  */
-class CommentVersionFactory extends Factory
+final class CommentVersionFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -23,9 +23,9 @@ class CommentVersionFactory extends Factory
     {
         return [
             'comment_id' => Comment::factory(),
-            'body' => fake()->paragraphs(rand(1, 3), true),
+            'body' => fake()->paragraphs(random_int(1, 3), true),
             'version_number' => 1,
-            'created_at' => Carbon::now(),
+            'created_at' => Date::now(),
         ];
     }
 

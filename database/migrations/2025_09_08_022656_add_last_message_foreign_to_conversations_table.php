@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('conversations', function (Blueprint $table) {
+        Schema::table('conversations', function (Blueprint $table): void {
             $table->foreign('last_message_id')->references('id')->on('messages')->nullOnDelete();
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('conversations', function (Blueprint $table) {
+        Schema::table('conversations', function (Blueprint $table): void {
             $table->dropForeign(['last_message_id']);
         });
     }

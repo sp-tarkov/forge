@@ -10,7 +10,7 @@ use League\CommonMark\Extension\CommonMark\Node\Block\BlockQuote;
 use League\CommonMark\Node\Block\Paragraph;
 use League\CommonMark\Node\Inline\Text;
 
-class StyledBlockquoteProcessor
+final class StyledBlockquoteProcessor
 {
     /**
      * The regex pattern to match styled blockquote markers.
@@ -75,7 +75,11 @@ class StyledBlockquoteProcessor
 
         // Second pass: apply classes and remove markers in reverse order.
         foreach (array_reverse($this->matches) as $match) {
-            if ($match['marker']->parent() === null || $match['blockquote']->parent() === null) {
+            if ($match['marker']->parent() === null) {
+                continue;
+            }
+
+            if ($match['blockquote']->parent() === null) {
                 continue;
             }
 

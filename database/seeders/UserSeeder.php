@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\progress;
 
-class UserSeeder extends Seeder
+final class UserSeeder extends Seeder
 {
     use SeederHelpers;
 
@@ -29,27 +29,33 @@ class UserSeeder extends Seeder
         // Staff Users
         $staffRole = UserRole::query()->firstOrCreate(
             ['name' => 'Staff'],
-            UserRole::factory()->staff()->make()->toArray()
+            UserRole::factory()->staff()->make()->attributesToArray()
         );
         $this->testAccount = User::factory()->for($staffRole, 'role')->create([
             'email' => 'test@example.com',
         ]);
-        User::factory($counts['staff'] - 1)->for($staffRole, 'role')->create();
+        /** @var int $staffCount */
+        $staffCount = $counts['staff'];
+        User::factory($staffCount - 1)->for($staffRole, 'role')->create();
 
-        $this->command->outputComponents()->info("Test account created: {$this->testAccount->email}");
+        $this->command->outputComponents()->info('Test account created: '.$this->testAccount->email);
 
         // Moderator Users
         $moderatorRole = UserRole::query()->firstOrCreate(
             ['name' => 'Moderator'],
-            UserRole::factory()->moderator()->make()->toArray()
+            UserRole::factory()->moderator()->make()->attributesToArray()
         );
-        User::factory($counts['moderator'])->for($moderatorRole, 'role')->create();
+        /** @var int $moderatorCount */
+        $moderatorCount = $counts['moderator'];
+        User::factory($moderatorCount)->for($moderatorRole, 'role')->create();
 
         // Regular Users
-        User::withoutEvents(function () use ($counts) {
+        /** @var int $userCount */
+        $userCount = $counts['user'];
+        User::withoutEvents(function () use ($userCount): void {
             progress(
                 label: 'Adding Users...',
-                steps: $counts['user'],
+                steps: $userCount,
                 callback: fn () => User::factory()->create()
             );
         });
@@ -76,7 +82,7 @@ class UserSeeder extends Seeder
         progress(
             label: 'Adding user follows...',
             steps: $allUsers,
-            callback: function ($user) use ($allUsers) {
+            callback: function ($user) use ($allUsers): void {
                 // Special handling for test account
                 if ($user->id === $this->testAccount->id) {
                     $this->seedTestAccountFollows($user, $allUsers);
@@ -129,16 +135,16 @@ class UserSeeder extends Seeder
      */
     private function seedRandomUserFollows(User $user, Collection $allUsers): void
     {
-        $hasFollowers = rand(0, 100) < 70; // 70% chance to have followers
-        $isFollowing = rand(0, 100) < 70; // 70% chance to be following other users
+        $hasFollowers = random_int(0, 100) < 70; // 70% chance to have followers
+        $isFollowing = random_int(0, 100) < 70; // 70% chance to be following other users
 
         if ($hasFollowers) {
-            $followers = $allUsers->random(rand(1, 10))->pluck('id')->toArray();
+            $followers = $allUsers->random(random_int(1, 10))->pluck('id')->toArray();
             $user->followers()->attach($followers);
         }
 
         if ($isFollowing) {
-            $following = $allUsers->random(rand(1, 10))->pluck('id')->toArray();
+            $following = $allUsers->random(random_int(1, 10))->pluck('id')->toArray();
             $user->following()->attach($following);
         }
     }

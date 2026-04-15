@@ -7,10 +7,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-
-uses(RefreshDatabase::class);
 
 describe('ModVersion isLegacy method', function (): void {
     it('returns true for empty spt_version_constraint', function (): void {
@@ -487,6 +484,7 @@ describe('API include_legacy filter', function (): void {
 
         $response->assertOk();
         $response->assertJsonCount(2, 'data');
+
         $returnedIds = collect($response->json('data'))->pluck('id')->toArray();
         expect($returnedIds)->toContain($legacyMod->id, $modernMod->id);
     });

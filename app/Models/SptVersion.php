@@ -8,7 +8,7 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\SptVersionObserver;
 use App\Support\Version;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\SptVersionFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -34,16 +34,16 @@ use Throwable;
  * @property int $mod_count
  * @property string $link
  * @property string $color_class
- * @property Carbon|null $publish_date
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property CarbonImmutable|null $publish_date
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
  * @property-read Collection<int, ModVersion> $modVersions
  * @property-read string $version_formatted
  * @property-read bool $is_published
  */
 #[ScopedBy([PublishedSptVersionScope::class])]
 #[ObservedBy([SptVersionObserver::class])]
-class SptVersion extends Model
+final class SptVersion extends Model
 {
     /** @use HasFactory<SptVersionFactory> */
     use HasFactory;
@@ -106,9 +106,9 @@ class SptVersion extends Model
         throw_if($matches === [], InvalidVersionNumberException::class, 'Invalid SPT version number: '.$version);
 
         return [
-            'major' => $matches[1] ?? 0,
-            'minor' => $matches[2] ?? 0,
-            'patch' => $matches[3] ?? 0,
+            'major' => (int) $matches[1],
+            'minor' => (int) ($matches[2] ?? 0),
+            'patch' => (int) ($matches[3] ?? 0),
             'labels' => $matches[4] ?? '',
         ];
     }
@@ -141,7 +141,7 @@ class SptVersion extends Model
 
         // Get the absolute latest version to determine the latest minor release
         $latestVersion = self::getLatest();
-        if ($latestVersion === null) {
+        if (! $latestVersion instanceof self) {
             return new Collection;
         }
 
@@ -168,6 +168,7 @@ class SptVersion extends Model
     {
         $cacheKey = $includeUnpublished ? 'spt-versions:all:additional-authors' : 'spt-versions:all:user';
 
+        /** @var array<int, string> */
         return Cache::flexible($cacheKey, [5 * 60, 60 * 60], fn () => self::query()
             ->when($includeUnpublished, fn (Builder $query) => $query->withoutGlobalScope(PublishedSptVersionScope::class))
             ->orderByDesc('version_major')
@@ -197,7 +198,7 @@ class SptVersion extends Model
     /**
      * The relationship between an SPT version and mod version.
      *
-     * @return BelongsToMany<ModVersion, $this>
+     * @return BelongsToMany<ModVersion, $this, ModVersionSptVersion>
      */
     public function modVersions(): BelongsToMany
     {
@@ -226,7 +227,7 @@ class SptVersion extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::saving(function (SptVersion $sptVersion): void {
+        self::saving(function (SptVersion $sptVersion): void {
             // Extract the version sections from the version string.
             try {
                 $version = new Version($sptVersion->version);

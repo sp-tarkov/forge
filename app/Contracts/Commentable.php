@@ -19,14 +19,14 @@ interface Commentable
     /**
      * Get all comments for this commentable model.
      *
-     * @return MorphMany<Comment, TModel>
+     * @return MorphMany<Comment, static>
      */
     public function comments(): MorphMany;
 
     /**
      * Get all root comments for this commentable model.
      *
-     * @return MorphMany<Comment, TModel>
+     * @return MorphMany<Comment, static>
      */
     public function rootComments(): MorphMany;
 

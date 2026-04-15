@@ -13,8 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::hasColumn(config('ban.table'), 'metas')) {
-            Schema::table(config('ban.table'), function (Blueprint $table) {
+        /** @var string $banTable */
+        $banTable = config('ban.table');
+        if (! Schema::hasColumn($banTable, 'metas')) {
+            Schema::table($banTable, function (Blueprint $table): void {
                 $table->json('metas')->nullable();
             });
         }
@@ -25,8 +27,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn(config('ban.table'), 'metas')) {
-            Schema::table(config('ban.table'), function (Blueprint $table) {
+        /** @var string $banTable */
+        $banTable = config('ban.table');
+        if (Schema::hasColumn($banTable, 'metas')) {
+            Schema::table($banTable, function (Blueprint $table): void {
                 $table->dropColumn('metas');
             });
         }

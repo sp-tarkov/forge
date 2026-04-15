@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\UserRoleFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,11 +20,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $description
  * @property string $color_class
  * @property string $icon
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
  * @property-read Collection<int, User> $users
  */
-class UserRole extends Model
+final class UserRole extends Model
 {
     /** @use HasFactory<UserRoleFactory> */
     use HasFactory;

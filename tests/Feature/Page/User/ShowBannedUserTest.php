@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('redirects guests to banned page when viewing banned user profile', function (): void {
     $user = User::factory()->create();

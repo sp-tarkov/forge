@@ -8,9 +8,6 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
 use App\Services\AddonVersionService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->service = resolve(AddonVersionService::class);
@@ -302,6 +299,7 @@ describe('AddonVersionService', function (): void {
 
             // Initially should match v2.0.5
             $addonVersion->refresh();
+
             expect($addonVersion->compatibleModVersions->pluck('id')->toArray())
                 ->toContain($v2_0_5->id);
 
@@ -327,6 +325,7 @@ describe('AddonVersionService', function (): void {
 
             // Should match both versions initially
             $addonVersion->refresh();
+
             expect($addonVersion->compatibleModVersions)->toHaveCount(2);
 
             // Delete one version - should trigger re-resolution
@@ -350,6 +349,7 @@ describe('AddonVersionService', function (): void {
 
             // Should match v2.0.5 initially
             $addonVersion->refresh();
+
             expect($addonVersion->compatibleModVersions->pluck('id')->toArray())
                 ->toContain($v2_0_5->id);
 

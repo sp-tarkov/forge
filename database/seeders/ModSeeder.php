@@ -17,7 +17,7 @@ use Laravel\Prompts\Progress;
 
 use function Laravel\Prompts\progress;
 
-class ModSeeder extends Seeder
+final class ModSeeder extends Seeder
 {
     use SeederHelpers;
 
@@ -39,7 +39,9 @@ class ModSeeder extends Seeder
         $this->initializeFaker();
         $counts = $this->getDefaultCounts();
 
-        $licenses = License::factory($counts['license'])->create();
+        /** @var int $licenseCount */
+        $licenseCount = $counts['license'];
+        $licenses = License::factory($licenseCount)->create();
         $allUsers = User::all();
 
         // Create mods
@@ -86,17 +88,22 @@ class ModSeeder extends Seeder
      */
     private function seedMods(array $counts, Collection $licenses): void
     {
-        $this->mods = collect();
+        /** @var Collection<int, Mod> $mods */
+        $mods = collect();
+        $this->mods = $mods;
+
         $categories = ModCategory::all();
 
-        Mod::withoutEvents(function () use ($counts, $licenses, $categories) {
+        /** @var int $modCount */
+        $modCount = $counts['mod'];
+        Mod::withoutEvents(function () use ($modCount, $licenses, $categories): void {
             $this->mods = collect(progress(
                 label: 'Adding Mods...',
-                steps: $counts['mod'],
+                steps: $modCount,
                 callback: function () use ($licenses, $categories) {
                     $mod = Mod::factory()->recycle([$licenses])->create();
                     // 80% chance of having a category
-                    if ($categories->isNotEmpty() && rand(1, 10) <= 8) {
+                    if ($categories->isNotEmpty() && random_int(1, 10) <= 8) {
                         $mod->category_id = $categories->random()->id;
                         $mod->save();
                     }
@@ -117,8 +124,8 @@ class ModSeeder extends Seeder
         progress(
             label: 'Attaching users to mods...',
             steps: $this->mods,
-            callback: function (Mod $mod, Progress $progress) use ($allUsers) {
-                $userIds = $allUsers->random(rand(0, 2))->pluck('id')->toArray();
+            callback: function (Mod $mod, Progress $progress) use ($allUsers): void {
+                $userIds = $allUsers->random(random_int(0, 2))->pluck('id')->toArray();
                 if (count($userIds)) {
                     $mod->additionalAuthors()->attach($userIds);
                 }
@@ -133,12 +140,16 @@ class ModSeeder extends Seeder
      */
     private function seedModVersions(array $counts): void
     {
-        $this->modVersions = collect();
+        /** @var Collection<int, ModVersion> $modVersions */
+        $modVersions = collect();
+        $this->modVersions = $modVersions;
 
-        ModVersion::withoutEvents(function () use ($counts) {
+        /** @var int $modVersionCount */
+        $modVersionCount = $counts['modVersion'];
+        ModVersion::withoutEvents(function () use ($modVersionCount): void {
             $this->modVersions = collect(progress(
                 label: 'Adding Mod Versions...',
-                steps: $counts['modVersion'],
+                steps: $modVersionCount,
                 callback: fn () => ModVersion::factory()->recycle([$this->mods])->create()
             ));
         });
@@ -149,18 +160,18 @@ class ModSeeder extends Seeder
      */
     private function seedModDependencies(): void
     {
-        Dependency::withoutEvents(function () {
+        Dependency::withoutEvents(function (): void {
             progress(
                 label: 'Adding Mod Dependencies...',
                 steps: $this->modVersions,
-                callback: function (ModVersion $modVersion, Progress $progress) {
+                callback: function (ModVersion $modVersion, Progress $progress): void {
                     // 70% chance has no dependencies
-                    if (rand(0, 9) >= 3) {
+                    if (random_int(0, 9) >= 3) {
                         return;
                     }
 
                     // Choose 1-3 random mods to be dependencies.
-                    $dependencyMods = $this->mods->random(rand(1, 3));
+                    $dependencyMods = $this->mods->random(random_int(1, 3));
                     foreach ($dependencyMods as $dependencyMod) {
                         Dependency::factory()->recycle([$modVersion, $dependencyMod])->create();
                     }

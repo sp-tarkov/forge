@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Contracts\DependencyResolver;
 use App\Models\AddonVersion;
+use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Services\AddonVersionService;
-use App\Services\DependencyVersionService;
 use App\Services\SptVersionService;
 use Illuminate\Database\Eloquent\Builder;
 
-class ModVersionObserver
+final readonly class ModVersionObserver
 {
     public function __construct(
-        protected DependencyVersionService $dependencyVersionService,
-        protected SptVersionService $sptVersionService,
-        protected AddonVersionService $addonVersionService,
+        private DependencyResolver $dependencyVersionService,
+        private SptVersionService $sptVersionService,
+        private AddonVersionService $addonVersionService,
     ) {}
 
     /**
@@ -48,7 +49,7 @@ class ModVersionObserver
     /**
      * Update properties on related SptVersions.
      */
-    protected function updateRelatedSptVersions(ModVersion $modVersion): void
+    private function updateRelatedSptVersions(ModVersion $modVersion): void
     {
         $sptVersions = $modVersion->sptVersions; // These should already be resolved.
 
@@ -60,9 +61,11 @@ class ModVersionObserver
     /**
      * Update properties on the related Mod.
      */
-    protected function updateRelatedMod(ModVersion $modVersion): void
+    private function updateRelatedMod(ModVersion $modVersion): void
     {
-        $modVersion->mod?->calculateDownloads();
+        /** @var Mod|null $mod */
+        $mod = $modVersion->mod;
+        $mod?->fresh()?->calculateDownloads();
     }
 
     /**
@@ -72,7 +75,7 @@ class ModVersionObserver
      * constraints re-evaluated. For example, if an addon has constraint "~2.0.5" and the mod releases version 2.0.6,
      * the addon's resolved compatible versions should automatically include the new version.
      */
-    protected function resolveRelatedAddonVersions(ModVersion $modVersion): void
+    private function resolveRelatedAddonVersions(ModVersion $modVersion): void
     {
         if (! $modVersion->mod_id) {
             return;

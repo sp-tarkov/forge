@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
 /** @mixin VirusTotalLink */
-class VirusTotalLinkResource extends JsonResource
+final class VirusTotalLinkResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

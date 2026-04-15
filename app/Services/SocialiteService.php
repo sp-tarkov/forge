@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as ProviderUser;
 use Throwable;
 
-class SocialiteService
+final class SocialiteService
 {
     /**
      * Find an existing user by OAuth connection or create a new one.
@@ -120,8 +120,11 @@ class SocialiteService
      */
     private function getMfaStatus(string $provider, ProviderUser $providerUser): ?bool
     {
+        /** @var \Laravel\Socialite\Two\User $providerUser */
+        $userData = (array) $providerUser->user;
+
         return match ($provider) {
-            'discord' => $providerUser->user['mfa_enabled'] ?? null,
+            'discord' => isset($userData['mfa_enabled']) ? (bool) $userData['mfa_enabled'] : null,
             default => null,
         };
     }
@@ -135,13 +138,10 @@ class SocialiteService
             return;
         }
 
-        $disk = match (config('app.env')) {
-            'production' => 'r2',
-            default => 'public',
-        };
+        $disk = app()->isProduction() ? 'r2' : 'public';
 
         try {
-            $response = Http::get($avatarUrl);
+            $response = Http::connectTimeout(5)->timeout(30)->get($avatarUrl);
 
             if ($response->failed()) {
                 Log::error('Failed to download avatar', ['url' => $avatarUrl, 'status' => $response->status()]);

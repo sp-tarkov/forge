@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->enum('fika_compatibility', ['compatible', 'incompatible', 'unknown'])
                 ->default('unknown')
                 ->nullable(false)
@@ -26,7 +26,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mod_versions', function (Blueprint $table) {
+        Schema::table('mod_versions', function (Blueprint $table): void {
             $table->dropColumn('fika_compatibility');
         });
     }

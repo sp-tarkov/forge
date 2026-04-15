@@ -17,7 +17,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<ModVersion>
  */
-class ModVersionQueryBuilder extends AbstractQueryBuilder
+final class ModVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Create a new ModVersionQueryBuilder instance.
@@ -26,7 +26,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
         /**
          * The ID of the mod to filter versions for.
          */
-        protected readonly int $modId
+        private readonly int $modId
     ) {
         parent::__construct();
     }
@@ -345,13 +345,13 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
     #[Override]
     protected function applySorts(): void
     {
-        if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
-            if (empty($this->sorts)) {
+        if ($this->sorts !== []) {
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => $sort !== null && $sort !== '');
+            if ($this->sorts === []) {
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = static::getAllowedSorts();
+            $allowedSorts = self::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {
@@ -361,7 +361,7 @@ class ModVersionQueryBuilder extends AbstractQueryBuilder
                 }
             }
 
-            if (! empty($invalidSorts)) {
+            if ($invalidSorts !== []) {
                 $invalidSort = implode(', ', $invalidSorts);
                 $validSorts = implode(', ', $allowedSorts);
                 throw new InvalidQuery(

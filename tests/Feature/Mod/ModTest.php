@@ -8,6 +8,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 describe('mod display', function (): void {
@@ -201,6 +202,9 @@ describe('mod access control', function (): void {
 
         $mod2 = Mod::factory()->create(['published_at' => now()->addDays(1)]); // Published in the future
         $mod2->additionalAuthors()->attach($user);
+
+        // Clear the cached authored mod IDs so PublishedScope picks up the new relationships.
+        Cache::forget(sprintf('user:%d:authored-mod-ids', $user->id));
 
         ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => '1.1.1']);
         ModVersion::factory()->recycle($mod2)->create(['spt_version_constraint' => '1.1.1']);

@@ -12,11 +12,11 @@
 
 ## Horizontal Rules
 
-___
+---
 
 ---
 
-***
+---
 
 ## Typographic replacements
 
@@ -34,9 +34,9 @@ test.. test... test..... test?..... test!....
 
 **This is bold text**
 
-__This is bold text__
+**This is bold text**
 
-*This is italic text*
+_This is italic text_
 
 _This is italic text_
 
@@ -45,22 +45,23 @@ _This is italic text_
 ## Blockquotes
 
 > Blockquotes can also be nested...
->> ...by using additional greater-than signs right next to each other...
+>
+> > ...by using additional greater-than signs right next to each other...
+> >
 > > > ...or with spaces between arrows.
 
 ## Lists
 
 Unordered
 
-+ Create a list by starting a line with `+`, `-`, or `*`
-+ Sub-lists are made by indenting 2 spaces:
+- Create a list by starting a line with `+`, `-`, or `*`
+- Sub-lists are made by indenting 2 spaces:
     - Marker character change forces new list start:
-        * Ac tristique libero volutpat at
-
-        + Facilisis in pretium nisl aliquet
-
+        - Ac tristique libero volutpat at
+        * Facilisis in pretium nisl aliquet
         - Nulla volutpat aliquam velit
-+ Very easy!
+
+- Very easy!
 
 Ordered
 
@@ -68,9 +69,8 @@ Ordered
 2. Consectetur adipiscing elit
 3. Integer molestie lorem at massa
 
-
-1. You can use sequential numbers...
-1. ...or keep all the numbers as `1.`
+4. You can use sequential numbers...
+5. ...or keep all the numbers as `1.`
 
 Start numbering with offset:
 
@@ -96,9 +96,9 @@ Sample text here...
 
 Syntax highlighting
 
-``` js
+```js
 var foo = function (bar) {
-  return bar++;
+    return bar++;
 };
 
 console.log(foo(5));
@@ -107,7 +107,7 @@ console.log(foo(5));
 ## Tables
 
 | Option | Description                                                               |
-|--------|---------------------------------------------------------------------------|
+| ------ | ------------------------------------------------------------------------- |
 | data   | path to data files to supply the data that will be passed into templates. |
 | engine | engine to be used for processing templates. Handlebars is the default.    |
 | ext    | extension to be used for dest files.                                      |
@@ -115,7 +115,7 @@ console.log(foo(5));
 Right aligned columns
 
 | Option |                                                               Description |
-|-------:|--------------------------------------------------------------------------:|
+| -----: | ------------------------------------------------------------------------: |
 |   data | path to data files to supply the data that will be passed into templates. |
 | engine |    engine to be used for processing templates. Handlebars is the default. |
 |    ext |                                      extension to be used for dest files. |
@@ -124,7 +124,7 @@ Right aligned columns
 
 [link text](http://dev.nodeca.com)
 
-[link with title](http://nodeca.github.io/pica/demo/ "title text!")
+[link with title](http://nodeca.github.io/pica/demo/ 'title text!')
 
 Autoconverted link https://github.com/nodeca/pica
 
@@ -138,7 +138,7 @@ Autoconverted link https://github.com/nodeca/pica
 
 ### Stormtroopocat
 
-![Stormtroopocat](https://octodex.github.com/images/stormtroopocat.jpg "The Stormtroopocat")
+![Stormtroopocat](https://octodex.github.com/images/stormtroopocat.jpg 'The Stormtroopocat')
 
 ### Image Footnote Format
 
@@ -148,7 +148,7 @@ Like links, Images also have a footnote style syntax
 
 With a reference later in the document defining the URL location.
 
-[id]: https://octodex.github.com/images/dojocat.jpg  "The Dojocat"
+[id]: https://octodex.github.com/images/dojocat.jpg 'The Dojocat'
 
 {.endtabset}
 
@@ -169,7 +169,7 @@ This should not be in a tab.
 - 19^th^
 - H~2~O
 
-### Footnotes 
+### Footnotes
 
 Footnote 1 link[^first].
 
@@ -193,12 +193,12 @@ Duplicated footnote reference[^second].
 
 Term 1
 
-:   Definition 1
+: Definition 1
 with lazy continuation.
 
-Term 2 with *inline markup*
+Term 2 with _inline markup_
 
-:   Definition 2
+: Definition 2
 
         { some code, part of Definition 2 }
 
@@ -209,17 +209,17 @@ Term 2 with *inline markup*
 ### Custom-Styled Containers
 
 ::: information
-*some information is here*
+_some information is here_
 :::
 
 ::: warning
-*here be dragons*
+_here be dragons_
 :::
 
 ::: success
-*dragons be dead*
+_dragons be dead_
 :::
 
 ::: error
-*error 404 dragons not found*
+_error 404 dragons not found_
 :::

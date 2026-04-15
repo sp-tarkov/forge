@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\SpamChecker;
 use App\Models\Comment;
 use App\Support\Akismet\SpamCheckResult;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +21,7 @@ use Throwable;
 /**
  * Service for checking comments against Akismet spam detection.
  */
-class CommentSpamChecker
+final class CommentSpamChecker implements SpamChecker
 {
     /**
      * The base URL for the Akismet API.
@@ -40,17 +43,18 @@ class CommentSpamChecker
      */
     public function verifyKey(): bool
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return false;
         }
 
-        $cacheKey = 'akismet:verify_key:'.config('akismet.api_key');
+        $apiKey = config()->string('akismet.api_key');
+        $cacheKey = 'akismet:verify_key:'.$apiKey;
 
-        return Cache::remember($cacheKey, now()->addDay(), function () {
+        return Cache::remember($cacheKey, now()->addDay(), function (): bool {
             try {
                 $response = $this->makeRequest('POST', '/1.1/verify-key', [
-                    'key' => config('akismet.api_key'),
-                    'blog' => config('akismet.blog_url'),
+                    'key' => config()->string('akismet.api_key'),
+                    'blog' => config()->string('akismet.blog_url'),
                 ]);
 
                 $isValid = $response->body() === 'valid';
@@ -79,7 +83,7 @@ class CommentSpamChecker
     public function checkSpam(Comment $comment): SpamCheckResult
     {
         // If Akismet is disabled, return not spam but keep a note in the metadata.
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return new SpamCheckResult(
                 isSpam: false,
                 metadata: ['reason' => 'akismet_disabled']
@@ -123,15 +127,13 @@ class CommentSpamChecker
                 $metadata['recheck_after'] = $recheckAfter;
             }
 
-            $result = new SpamCheckResult(
+            return new SpamCheckResult(
                 isSpam: $isSpam,
                 metadata: $metadata,
                 discard: $discard,
                 proTip: $proTip,
                 recheckAfter: $recheckAfter
             );
-
-            return $result;
 
         } catch (Throwable $throwable) {
             // Return safe fallback - assume not spam if API fails
@@ -150,7 +152,7 @@ class CommentSpamChecker
      */
     public function markAsHam(Comment $comment): void
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return;
         }
 
@@ -175,7 +177,7 @@ class CommentSpamChecker
      */
     public function markAsSpam(Comment $comment): void
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return;
         }
 
@@ -202,18 +204,17 @@ class CommentSpamChecker
      */
     public function getUsageLimit(): ?array
     {
-        if (! config('akismet.enabled', false)) {
+        if (! config()->boolean('akismet.enabled', false)) {
             return null;
         }
 
         try {
             $response = $this->makeRequest('GET', '/1.2/usage-limit', [
-                'api_key' => config('akismet.api_key'),
+                'api_key' => config()->string('akismet.api_key'),
             ]);
 
-            $data = $response->json();
-
-            return $data;
+            /** @var array<string, mixed>|null */
+            return $response->json();
         } catch (Throwable $throwable) {
             Log::error('Failed to retrieve Akismet usage limit', [
                 'error' => $throwable->getMessage(),
@@ -233,8 +234,8 @@ class CommentSpamChecker
         // Details on available values:
         // https://akismet.com/developers/detailed-docs/comment-check/
         $payload = [
-            'api_key' => config('akismet.api_key'),
-            'blog' => config('akismet.blog_url'),
+            'api_key' => config()->string('akismet.api_key'),
+            'blog' => config()->string('akismet.blog_url'),
             'user_ip' => $comment->user_ip,
             'user_agent' => $comment->user_agent,
             'referrer' => $comment->referrer,
@@ -243,9 +244,9 @@ class CommentSpamChecker
             'comment_author' => $comment->user->name,
             'comment_author_email' => $comment->user->email,
             'comment_content' => $comment->body,
-            'comment_date_gmt' => $comment->created_at->utc()->toDateTimeString(),
-            'comment_post_modified_gmt' => $comment->commentable->getAttribute('created_at')?->utc()->toDateTimeString(),
-            'blog_lang' => config('app.locale', 'en'),
+            'comment_date_gmt' => $comment->created_at?->utc()->toDateTimeString(),
+            'comment_post_modified_gmt' => $comment->commentable->getAttribute('created_at') instanceof Carbon ? $comment->commentable->getAttribute('created_at')->utc()->toDateTimeString() : null,
+            'blog_lang' => config()->string('app.locale', 'en'),
             'blog_charset' => 'UTF-8',
         ];
 
@@ -254,7 +255,7 @@ class CommentSpamChecker
         }
 
         // Add test flag for non-production environments
-        if (config('app.env', 'local') !== 'production') {
+        if (! app()->isProduction()) {
             $payload['is_test'] = '1';
         }
 
@@ -270,16 +271,16 @@ class CommentSpamChecker
     {
         $client = Http::timeout(self::TIMEOUT_SECONDS)
             ->asForm()
-            ->retry(self::MAX_RETRIES, 100, fn (Exception $exception): bool => $exception instanceof ConnectionException || ($exception instanceof RequestException && $exception->getCode() >= 500));
+            ->retry(
+                self::MAX_RETRIES,
+                100,
+                fn (Throwable $exception, PendingRequest $request, ?string $lastUrl = null): bool => $exception instanceof ConnectionException || ($exception instanceof RequestException && $exception->getCode() >= 500)
+            );
 
         $url = self::BASE_URL.$endpoint;
 
         try {
-            if ($method === 'GET') {
-                $response = $client->get($url, $data);
-            } else {
-                $response = $client->post($url, $data);
-            }
+            $response = $method === 'GET' ? $client->get($url, $data) : $client->post($url, $data);
 
             // Check for rate limiting
             throw_if($response->status() === 429, Exception::class, 'Akismet API rate limit exceeded');

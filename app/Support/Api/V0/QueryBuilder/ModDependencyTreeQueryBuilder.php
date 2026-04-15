@@ -12,14 +12,14 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<Mod>
  */
-class ModDependencyTreeQueryBuilder extends AbstractQueryBuilder
+final class ModDependencyTreeQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * The mod version IDs to resolve dependencies for.
      *
      * @var array<int>
      */
-    protected array $modVersionIds = [];
+    private array $modVersionIds = [];
 
     /**
      * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
@@ -116,7 +116,7 @@ class ModDependencyTreeQueryBuilder extends AbstractQueryBuilder
             ->where('mods.published_at', '<=', now());
 
         // If we have mod version IDs, get their dependencies
-        if (! empty($this->modVersionIds)) {
+        if ($this->modVersionIds !== []) {
             $query->whereExists(function (\Illuminate\Database\Query\Builder $query): void {
                 $query->select(DB::raw(1))
                     ->from('dependencies_resolved')

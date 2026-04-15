@@ -1,6 +1,7 @@
 <nav
     x-data="{ profileDropdownOpen: false, mobileMenuOpen: false }"
     class="relative bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-900 dark:via-black dark:to-gray-950 border-b border-gray-200 dark:border-gray-800 z-50"
+    aria-label="{{ __('Main navigation') }}"
 >
     <div class="absolute inset-0 overflow-hidden">
         <div
@@ -47,14 +48,14 @@
                                 {{ __('Mods') }}
                                 <flux:icon.chevron-down class="size-3 ml-1" />
                             </button>
-                            <flux:menu>
-                                <flux:menu.item
+                            <flux:navmenu>
+                                <flux:navmenu.item
                                     href="{{ route('mods') }}"
                                     wire:navigate
                                     icon="squares-2x2"
-                                >{{ __('Browse All Mods') }}</flux:menu.item>
+                                >{{ __('Browse All Mods') }}</flux:navmenu.item>
                                 @auth
-                                    <flux:menu.item
+                                    <flux:navmenu.item
                                         href="{{ route('mods.recently-created') }}"
                                         wire:navigate
                                         icon="sparkles"
@@ -63,8 +64,8 @@
                                             {{ __('Recently Created') }}
                                             <livewire:navigation-created-mods-badge />
                                         </span>
-                                    </flux:menu.item>
-                                    <flux:menu.item
+                                    </flux:navmenu.item>
+                                    <flux:navmenu.item
                                         href="{{ route('mods.recently-updated') }}"
                                         wire:navigate
                                         icon="arrow-path"
@@ -73,9 +74,9 @@
                                             {{ __('Recently Updated') }}
                                             <livewire:navigation-updated-mods-badge />
                                         </span>
-                                    </flux:menu.item>
+                                    </flux:navmenu.item>
                                 @endauth
-                            </flux:menu>
+                            </flux:navmenu>
                         </flux:dropdown>
                         <a
                             href="https://wiki.sp-tarkov.com/"
@@ -150,20 +151,20 @@
                                     variant="mini"
                                 />
                             </flux:button>
-                            <flux:menu>
-                                <flux:menu.item
+                            <flux:navmenu>
+                                <flux:navmenu.item
                                     icon="sun"
                                     x-on:click="$flux.appearance = 'light'"
-                                >Light</flux:menu.item>
-                                <flux:menu.item
+                                >Light</flux:navmenu.item>
+                                <flux:navmenu.item
                                     icon="moon"
                                     x-on:click="$flux.appearance = 'dark'"
-                                >Dark</flux:menu.item>
-                                <flux:menu.item
+                                >Dark</flux:navmenu.item>
+                                <flux:navmenu.item
                                     icon="computer-desktop"
                                     x-on:click="$flux.appearance = 'system'"
-                                >System</flux:menu.item>
-                            </flux:menu>
+                                >System</flux:navmenu.item>
+                            </flux:navmenu>
                         </flux:dropdown>
 
                         {{-- Notifications Dropdown --}}
@@ -194,114 +195,116 @@
                                 >
                             </button>
 
-                            <flux:menu class="w-56">
+                            <flux:navmenu class="w-56">
                                 {{-- Dashboard --}}
-                                <flux:menu.item
+                                <flux:navmenu.item
                                     icon="home"
                                     href="{{ route('dashboard') }}"
                                     wire:navigate
-                                >{{ __('Dashboard') }}</flux:menu.item>
+                                >{{ __('Dashboard') }}</flux:navmenu.item>
 
-                                {{-- Profile Submenu --}}
-                                <flux:menu.submenu
-                                    heading="{{ __('Profile') }}"
-                                    icon="user"
-                                >
-                                    <flux:menu.item
-                                        icon="user-circle"
-                                        href="{{ auth()->user()->profile_url }}"
-                                        wire:navigate
-                                    >{{ __('View Profile') }}</flux:menu.item>
-                                    <flux:menu.item
-                                        icon="cube-transparent"
-                                        href="{{ auth()->user()->profile_url }}#mods"
-                                        wire:navigate
-                                    >{{ __('My Mods') }}</flux:menu.item>
-                                    <flux:menu.item
-                                        icon="puzzle-piece"
-                                        href="{{ auth()->user()->profile_url }}#addons"
-                                        wire:navigate
-                                    >{{ __('My Addons') }}</flux:menu.item>
-                                    <flux:menu.item
-                                        icon="cog-6-tooth"
-                                        href="{{ route('profile.show') }}"
-                                        wire:navigate
-                                    >{{ __('Edit Profile') }}</flux:menu.item>
-                                    <flux:menu.item
-                                        icon="key"
-                                        href="{{ route('api-tokens.index') }}"
-                                        wire:navigate
-                                    >{{ __('API Tokens') }}</flux:menu.item>
-                                </flux:menu.submenu>
+                                {{-- Profile --}}
+                                <flux:navmenu.separator />
+                                <div class="px-2 py-1.5">
+                                    <div class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">{{ __('Profile') }}</div>
+                                </div>
+                                <flux:navmenu.item
+                                    icon="user-circle"
+                                    href="{{ auth()->user()->profile_url }}"
+                                    wire:navigate
+                                >{{ __('View Profile') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    icon="cube-transparent"
+                                    href="{{ auth()->user()->profile_url }}#mods"
+                                    wire:navigate
+                                >{{ __('My Mods') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    icon="puzzle-piece"
+                                    href="{{ auth()->user()->profile_url }}#addons"
+                                    wire:navigate
+                                >{{ __('My Addons') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    icon="cog-6-tooth"
+                                    href="{{ route('profile.show') }}"
+                                    wire:navigate
+                                >{{ __('Edit Profile') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    icon="key"
+                                    href="{{ route('api-tokens.index') }}"
+                                    wire:navigate
+                                >{{ __('API Tokens') }}</flux:navmenu.item>
 
                                 @if (auth()->user()->isModOrAdmin())
-                                    {{-- Moderation Submenu --}}
-                                    <flux:menu.submenu
-                                        heading="{{ __('Moderation') }}"
-                                        icon="flag"
-                                    >
-                                        <flux:menu.item
-                                            icon="document-text"
-                                            href="{{ route('report-centre') }}"
-                                            wire:navigate
-                                        >{{ __('Report Centre') }}</flux:menu.item>
-                                        <flux:menu.item
-                                            icon="shield-check"
-                                            href="{{ route('moderation-actions') }}"
-                                            wire:navigate
-                                        >{{ __('Moderation Actions') }}</flux:menu.item>
-                                    </flux:menu.submenu>
+                                    {{-- Moderation --}}
+                                    <flux:navmenu.separator />
+                                    <div class="px-2 py-1.5">
+                                        <div class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">{{ __('Moderation') }}</div>
+                                    </div>
+                                    <flux:navmenu.item
+                                        icon="document-text"
+                                        href="{{ route('report-centre') }}"
+                                        wire:navigate
+                                    >{{ __('Report Centre') }}</flux:navmenu.item>
+                                    <flux:navmenu.item
+                                        icon="shield-check"
+                                        href="{{ route('moderation-actions') }}"
+                                        wire:navigate
+                                    >{{ __('Moderation Actions') }}</flux:navmenu.item>
                                 @endif
 
                                 @if (auth()->user()->isAdmin())
-                                    {{-- Staff Submenu --}}
-                                    <flux:menu.submenu
-                                        heading="{{ __('Staff') }}"
+                                    {{-- Staff --}}
+                                    <flux:navmenu.separator />
+                                    <div class="px-2 py-1.5">
+                                        <div class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">{{ __('Staff') }}</div>
+                                    </div>
+                                    <flux:navmenu.item
+                                        icon="cube"
+                                        href="{{ route('admin.spt-versions') }}"
+                                        wire:navigate
+                                    >{{ __('SPT Versions') }}</flux:navmenu.item>
+                                    <flux:navmenu.item
+                                        icon="queue-list"
+                                        href="/horizon"
+                                        wire:navigate
+                                    >{{ __('Horizon Queue') }}</flux:navmenu.item>
+                                    <flux:navmenu.item
+                                        icon="chart-bar"
+                                        href="{{ route('admin.visitor-analytics') }}"
+                                        wire:navigate
+                                    >{{ __('Visitor Analytics') }}</flux:navmenu.item>
+                                    <flux:navmenu.item
+                                        icon="users"
+                                        href="{{ route('admin.user-management') }}"
+                                        wire:navigate
+                                    >{{ __('User Management') }}</flux:navmenu.item>
+                                    <flux:navmenu.item
+                                        icon="user-group"
+                                        href="{{ route('admin.role-management') }}"
+                                        wire:navigate
+                                    >{{ __('Role Management') }}</flux:navmenu.item>
+                                    <flux:navmenu.item
                                         icon="shield-check"
-                                    >
-                                        <flux:menu.item
-                                            icon="cube"
-                                            href="{{ route('admin.spt-versions') }}"
-                                            wire:navigate
-                                        >{{ __('SPT Versions') }}</flux:menu.item>
-                                        <flux:menu.item
-                                            icon="queue-list"
-                                            href="/horizon"
-                                            wire:navigate
-                                        >{{ __('Horizon Queue') }}</flux:menu.item>
-                                        <flux:menu.item
-                                            icon="chart-bar"
-                                            href="{{ route('admin.visitor-analytics') }}"
-                                            wire:navigate
-                                        >{{ __('Visitor Analytics') }}</flux:menu.item>
-                                        <flux:menu.item
-                                            icon="users"
-                                            href="{{ route('admin.user-management') }}"
-                                            wire:navigate
-                                        >{{ __('User Management') }}</flux:menu.item>
-                                        <flux:menu.item
-                                            icon="user-group"
-                                            href="{{ route('admin.role-management') }}"
-                                            wire:navigate
-                                        >{{ __('Role Management') }}</flux:menu.item>
-                                    </flux:menu.submenu>
+                                        href="{{ route('admin.file-verification') }}"
+                                        wire:navigate
+                                    >{{ __('File Verification') }}</flux:navmenu.item>
                                 @endif
 
-                                {{-- Logout (in its own group) --}}
-                                <flux:menu.separator />
+                                {{-- Logout --}}
+                                <flux:navmenu.separator />
                                 <form
                                     method="POST"
                                     action="{{ route('logout') }}"
                                     x-data
                                 >
                                     @csrf
-                                    <flux:menu.item
+                                    <flux:navmenu.item
                                         icon="arrow-right-start-on-rectangle"
                                         href="{{ route('logout') }}"
                                         x-on:click.prevent="$root.submit();"
-                                    >{{ __('Log Out') }}</flux:menu.item>
+                                    >{{ __('Log Out') }}</flux:navmenu.item>
                                 </form>
-                            </flux:menu>
+                            </flux:navmenu>
                         </flux:dropdown>
                     @endauth
                     @guest
@@ -408,11 +411,11 @@
                     class="relative inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
                 >
                     <flux:icon.bell class="h-5 w-5" />
-                    @if (auth()->user()->unreadNotifications()->count() > 0)
+                    @if (($mobileNotifCount = auth()->user()->unreadNotifications()->count()) > 0)
                         <span
                             class="absolute top-1 left-2 flex h-3 w-3 items-center justify-center rounded-full bg-red-600 text-[8px] font-bold text-white"
                         >
-                            {{ auth()->user()->unreadNotifications()->count() > 9 ? '9+' : auth()->user()->unreadNotifications()->count() }}
+                            {{ $mobileNotifCount > 9 ? '9+' : $mobileNotifCount }}
                         </span>
                     @endif
                 </a>
@@ -478,6 +481,10 @@
                         href="{{ route('admin.role-management') }}"
                         :active="request()->routeIs('admin.role-management')"
                     >{{ __('Role Management') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('admin.file-verification') }}"
+                        :active="request()->routeIs('admin.file-verification')"
+                    >{{ __('File Verification') }}</x-responsive-nav-link>
                 @endif
                 <form
                     method="POST"

@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
 /** @mixin ModVersion */
-class ModVersionResource extends JsonResource
+final class ModVersionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

@@ -6,10 +6,7 @@ use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 describe('addon visibility on profile', function (): void {
     beforeEach(function (): void {

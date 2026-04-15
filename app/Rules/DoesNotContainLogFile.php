@@ -7,7 +7,7 @@ namespace App\Rules;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class DoesNotContainLogFile implements ValidationRule
+final class DoesNotContainLogFile implements ValidationRule
 {
     /**
      * Run the validation rule.

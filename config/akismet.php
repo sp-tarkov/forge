@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     // Enable/disable Akismet spam detection
-    'enabled' => env('AKISMET_ENABLED', false),
+    'enabled' => (bool) env('AKISMET_ENABLED', false),
 
     // Your Akismet API key
     'api_key' => env('AKISMET_KEY', ''),
@@ -13,7 +13,7 @@ return [
     'blog_url' => env('AKISMET_SITE_URL', env('APP_URL')),
 
     // Auto-moderation settings
-    'auto_moderate' => env('AKISMET_AUTO_MODERATE', false),
+    'auto_moderate' => (bool) env('AKISMET_AUTO_MODERATE', false),
 
     // How long to keep spam comments in quarantine (days)
     'quarantine_days' => env('SPAM_QUARANTINE_DAYS', 30),

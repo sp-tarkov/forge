@@ -10,12 +10,9 @@ use App\Models\Report;
 use App\Models\User;
 use App\Models\UserRole;
 use App\Notifications\ReportSubmittedNotification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Cache::flush();
@@ -653,7 +650,7 @@ describe('ReportComponent', function (): void {
                 ->set('context', 'This content is inappropriate')
                 ->call('submit');
 
-            Notification::assertSentTo($moderator, ReportSubmittedNotification::class, function ($notification) use ($reporter, $mod) {
+            Notification::assertSentTo($moderator, ReportSubmittedNotification::class, function ($notification) use ($reporter, $mod): bool {
                 $report = $notification->report;
 
                 return $report->reporter_id === $reporter->id &&

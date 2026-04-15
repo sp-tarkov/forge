@@ -27,6 +27,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(IPBanned::class);
 
+        // Use Redis-backed rate limiting (skip in tests where Redis may not be available).
+        if (! app()->runningUnitTests()) {
+            $middleware->throttleWithRedis();
+        }
+
         // Register middleware aliases
         $middleware->alias([
             'auth.banned' => AuthBanned::class,
@@ -54,7 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register the custom exception handler for the API.
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/v0/*') || $request->expectsJson()) {
-                return (new ApiV0ExceptionHandler)->render($e, $request);
+                return (new ApiV0ExceptionHandler)->render($e);
             }
         });
     })

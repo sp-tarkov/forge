@@ -7,7 +7,7 @@ namespace App\Policies;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class BlockingPolicy
+final class BlockingPolicy
 {
     /**
      * Determine if the user can block another user.

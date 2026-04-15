@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class ArtisanCallJob implements ShouldQueue
+#[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class ArtisanCallJob implements ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     /**
      * @param  array<string, mixed>  $arguments
@@ -26,5 +28,17 @@ class ArtisanCallJob implements ShouldQueue
     public function handle(): void
     {
         Artisan::call($this->command, $this->arguments);
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ArtisanCallJob failed', [
+            'command' => $this->command,
+            'arguments' => $this->arguments,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

@@ -19,14 +19,18 @@ use Illuminate\Support\Facades\Route;
 Route::get('/ping', PingController::class)->name('api.v0.ping');
 
 // Authentication
-Route::post('/auth/login', [AuthController::class, 'login'])->name('api.v0.auth.login');
-Route::post('/auth/register', [AuthController::class, 'register'])->name('api.v0.auth.register');
+Route::post('/auth/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('api.v0.auth.login');
+Route::post('/auth/register', [AuthController::class, 'register'])
+    ->middleware('throttle:5,1')
+    ->name('api.v0.auth.register');
 Route::post('/auth/email/resend', [AuthController::class, 'resend'])
     ->middleware('throttle:3,60')
     ->name('api.v0.auth.resend');
 
 // Authenticated (Requires Sanctum Token with read ability)
-Route::middleware(['auth:sanctum', 'abilities:read'])->group(function (): void {
+Route::middleware(['throttle:api', 'auth:sanctum', 'abilities:read'])->group(function (): void {
     // Auth
     Route::get('/auth/user', [AuthController::class, 'user'])->name('api.v0.auth.user');
     Route::get('/auth/abilities', [AuthController::class, 'abilities'])->name('api.v0.auth.abilities');

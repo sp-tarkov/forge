@@ -9,7 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Override;
 
-class LoginRequest extends FormRequest
+final class LoginRequest extends FormRequest
 {
     /* @var array<int, string> ALLOWED_ABILITIES */
     private const array ALLOWED_ABILITIES = ['create', 'read', 'update', 'delete'];

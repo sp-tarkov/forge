@@ -16,7 +16,7 @@ use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\progress;
 
-class ConversationSeeder extends Seeder
+final class ConversationSeeder extends Seeder
 {
     use SeederHelpers;
 
@@ -29,7 +29,7 @@ class ConversationSeeder extends Seeder
         $counts = $this->getDefaultCounts();
 
         $allUsers = User::all();
-        $testAccount = User::where('email', 'test@example.com')->first();
+        $testAccount = User::query()->where('email', 'test@example.com')->first();
 
         // Seed regular conversations
         $this->seedConversations($counts, $allUsers, $testAccount);
@@ -48,10 +48,12 @@ class ConversationSeeder extends Seeder
      */
     private function seedConversations(array $counts, Collection $allUsers, ?User $testAccount): void
     {
+        /** @var int $conversationCount */
+        $conversationCount = $counts['conversations'];
         progress(
             label: 'Adding Conversations and Messages...',
-            steps: $counts['conversations'],
-            callback: function (int $step) use ($allUsers, $testAccount, $counts) {
+            steps: $conversationCount,
+            callback: function (int $step) use ($allUsers, $testAccount, $counts): void {
                 $this->createConversationWithMessages($allUsers, $testAccount, $counts);
             }
         );
@@ -105,13 +107,15 @@ class ConversationSeeder extends Seeder
     private function selectConversationParticipants(Collection $allUsers, ?User $testAccount): array
     {
         // 30% chance to include the test account in the conversation
-        if ($testAccount && rand(0, 9) < 3) {
+        if ($testAccount && random_int(0, 9) < 3) {
             $user1 = $testAccount;
             $user2 = $allUsers->where('id', '!=', $testAccount->id)->random();
         } else {
             // Select two different random users
             $selectedUsers = $allUsers->random(2);
+            /** @var User $user1 */
             $user1 = $selectedUsers->first();
+            /** @var User $user2 */
             $user2 = $selectedUsers->last();
         }
 
@@ -123,7 +127,7 @@ class ConversationSeeder extends Seeder
      */
     private function conversationExists(int $userId1, int $userId2): bool
     {
-        return Conversation::where('user1_id', $userId1)
+        return Conversation::query()->where('user1_id', $userId1)
             ->where('user2_id', $userId2)
             ->exists();
     }
@@ -158,7 +162,10 @@ class ConversationSeeder extends Seeder
      */
     private function createMessages(Conversation $conversation, User $user1, User $user2, array $counts): Collection
     {
-        $messageCount = rand($counts['messagesPerConversation'][0], $counts['messagesPerConversation'][1]);
+        /** @var array{0: int, 1: int} $range */
+        $range = $counts['messagesPerConversation'];
+        $messageCount = random_int($range[0], $range[1]);
+        /** @var Collection<int, Message> $messages */
         $messages = collect();
 
         // Generate chronological timestamps
@@ -203,6 +210,7 @@ class ConversationSeeder extends Seeder
     {
         // Every third message, randomly select the sender
         if ($index % 3 === 0) {
+            /** @var User */
             return $this->faker->randomElement([$user1, $user2]);
         }
 
@@ -215,14 +223,13 @@ class ConversationSeeder extends Seeder
      */
     private function createMessage(Conversation $conversation, User $sender, DateTimeImmutable $timestamp): Message
     {
-        return Message::withoutEvents(function () use ($conversation, $sender, $timestamp) {
-            return Message::factory()->create([
-                'conversation_id' => $conversation->id,
-                'user_id' => $sender->id,
-                'created_at' => $timestamp,
-                'updated_at' => $timestamp,
-            ]);
-        });
+        /** @var Message */
+        return Message::withoutEvents(fn () => Message::factory()->create([
+            'conversation_id' => $conversation->id,
+            'user_id' => $sender->id,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]));
     }
 
     /**
@@ -231,7 +238,7 @@ class ConversationSeeder extends Seeder
     private function maybeMarkMessageAsRead(Message $message, User $sender, User $user1, User $user2, DateTimeImmutable $messageTime): void
     {
         // 70% chance the message is read by the other user
-        if (rand(0, 9) < 7) {
+        if (random_int(0, 9) < 7) {
             $recipient = ($sender->id === $user1->id) ? $user2 : $user1;
 
             // Read time should be after message time
@@ -253,9 +260,11 @@ class ConversationSeeder extends Seeder
     private function maybeArchiveConversation(Conversation $conversation, User $user1, User $user2, Collection $messages): void
     {
         // 20% chance the conversation is archived by one of the users
-        if (rand(0, 9) < 2) {
+        if (random_int(0, 9) < 2) {
+            /** @var User $archivingUser */
             $archivingUser = $this->faker->randomElement([$user1, $user2]);
-            $lastMessageAt = $messages->isNotEmpty() ? $messages->last()->created_at : $conversation->created_at;
+            $lastMessage = $messages->last();
+            $lastMessageAt = $lastMessage instanceof Message ? $lastMessage->created_at : $conversation->created_at;
 
             ConversationArchive::factory()->create([
                 'conversation_id' => $conversation->id,
@@ -280,7 +289,7 @@ class ConversationSeeder extends Seeder
         $userId2 = max($testAccount->id, $randomUser->id);
 
         // Check if conversation already exists
-        $conversation = Conversation::where('user1_id', $userId1)
+        $conversation = Conversation::query()->where('user1_id', $userId1)
             ->where('user2_id', $userId2)
             ->first();
 
@@ -308,14 +317,13 @@ class ConversationSeeder extends Seeder
         $markdownContent = file_get_contents($markdownPath);
 
         // Create initial message from random user with markdown content
-        $markdownMessage = Message::withoutEvents(function () use ($conversation, $randomUser, $markdownContent) {
-            return Message::factory()->create([
-                'conversation_id' => $conversation->id,
-                'user_id' => $randomUser->id,
-                'content' => $markdownContent,
-                'created_at' => now()->subHours(3),
-            ]);
-        });
+        /** @var Message $markdownMessage */
+        $markdownMessage = Message::withoutEvents(fn () => Message::factory()->create([
+            'conversation_id' => $conversation->id,
+            'user_id' => $randomUser->id,
+            'content' => $markdownContent,
+            'created_at' => now()->subHours(3),
+        ]));
 
         // Test account reads the message
         MessageRead::factory()->create([
@@ -325,14 +333,13 @@ class ConversationSeeder extends Seeder
         ]);
 
         // Test account responds
-        $response = Message::withoutEvents(function () use ($conversation, $testAccount) {
-            return Message::factory()->create([
-                'conversation_id' => $conversation->id,
-                'user_id' => $testAccount->id,
-                'content' => "Thanks for sharing this! The **markdown formatting** looks great.\n\nI especially like:\n- The code examples\n- The organized structure\n- The helpful links\n\nI'll give it a try and let you know how it goes!",
-                'created_at' => now()->subHours(2),
-            ]);
-        });
+        /** @var Message $response */
+        $response = Message::withoutEvents(fn () => Message::factory()->create([
+            'conversation_id' => $conversation->id,
+            'user_id' => $testAccount->id,
+            'content' => "Thanks for sharing this! The **markdown formatting** looks great.\n\nI especially like:\n- The code examples\n- The organized structure\n- The helpful links\n\nI'll give it a try and let you know how it goes!",
+            'created_at' => now()->subHours(2),
+        ]));
 
         // Random user reads the response
         MessageRead::factory()->create([
@@ -342,14 +349,13 @@ class ConversationSeeder extends Seeder
         ]);
 
         // Random user sends another message
-        $finalMessage = Message::withoutEvents(function () use ($conversation, $randomUser) {
-            return Message::factory()->create([
-                'conversation_id' => $conversation->id,
-                'user_id' => $randomUser->id,
-                'content' => "You're welcome! Let me know if you need any help with the `configuration settings` or if you run into any ~~problems~~ issues.",
-                'created_at' => now()->subMinutes(30),
-            ]);
-        });
+        /** @var Message $finalMessage */
+        $finalMessage = Message::withoutEvents(fn () => Message::factory()->create([
+            'conversation_id' => $conversation->id,
+            'user_id' => $randomUser->id,
+            'content' => "You're welcome! Let me know if you need any help with the `configuration settings` or if you run into any ~~problems~~ issues.",
+            'created_at' => now()->subMinutes(30),
+        ]));
 
         // Update conversation's last message fields
         $conversation->update([
@@ -357,6 +363,6 @@ class ConversationSeeder extends Seeder
             'last_message_at' => $finalMessage->created_at,
         ]);
 
-        $this->command->outputComponents()->info("Created markdown test conversation between {$randomUser->email} and {$testAccount->email}");
+        $this->command->outputComponents()->info(sprintf('Created markdown test conversation between %s and %s', $randomUser->email, $testAccount->email));
     }
 }

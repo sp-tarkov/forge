@@ -12,12 +12,12 @@ use League\CommonMark\Util\HtmlElement;
 use League\CommonMark\Xml\XmlNodeRendererInterface;
 use Stringable;
 
-class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererInterface
+final class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererInterface
 {
     /**
      * Renders the TabSetContainerNode into HTML.
      */
-    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable|string|null
+    public function render(Node $node, ChildNodeRendererInterface $childRenderer): Stringable
     {
         TabSetContainerNode::assertInstanceOf($node);
 
@@ -27,14 +27,18 @@ class TabSetContainerRenderer implements NodeRendererInterface, XmlNodeRendererI
             $attrs = [];
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
+
         // Add the 'tabset' class by merging with existing classes.
-        $existingClasses = $attrs['class'] ?? '';
-        $separator = ! empty($existingClasses) ? ' ' : '';
+        $rawClass = $attrs['class'] ?? '';
+        $existingClasses = is_string($rawClass) ? $rawClass : '';
+        $separator = $existingClasses === '' ? '' : ' ';
         $attrs['class'] = mb_trim($existingClasses.$separator.'tabset');
         if (empty($attrs['class'])) {
             unset($attrs['class']);
         }
 
+        /** @var array<string, array<string>|bool|string> $attrs */
         return new HtmlElement('div', $attrs, $childRenderer->renderNodes($node->children()));
     }
 

@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
 use Symfony\Component\HttpFoundation\Response;
 
-class VerifyEmailResponse implements VerifyEmailResponseContract
+final readonly class VerifyEmailResponse implements VerifyEmailResponseContract
 {
-    public function __construct(protected bool $justVerified = true) {}
+    public function __construct(private bool $justVerified = true) {}
 
     /**
      * Create an HTTP response that represents the object.

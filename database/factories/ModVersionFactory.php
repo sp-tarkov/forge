@@ -8,14 +8,15 @@ use App\Enums\FikaCompatibility;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\VirusTotalLink;
 use App\Support\Version;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @extends Factory<ModVersion>
  */
-class ModVersionFactory extends Factory
+final class ModVersionFactory extends Factory
 {
     public function definition(): array
     {
@@ -43,15 +44,15 @@ class ModVersionFactory extends Factory
             'version_patch' => $versionPatch,
             'version_labels' => $versionLabels,
             'description' => fake()->text(),
-            'link' => fake()->url(),
+            'link' => 'https://example.com/'.fake()->slug().'.7z',
             'spt_version_constraint' => $this->faker->randomElement(['^1.0.0', '^2.0.0', '>=3.0.0', '<4.0.0']),
             'downloads' => fake()->randomNumber(),
             'disabled' => false,
             'fika_compatibility' => $this->faker->randomElement(FikaCompatibility::cases()),
             'discord_notification_sent' => true,
-            'published_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
-            'created_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
-            'updated_at' => Carbon::now()->subDays(rand(0, 365))->subHours(rand(0, 23)),
+            'published_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
+            'created_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
+            'updated_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
         ];
     }
 
@@ -61,7 +62,7 @@ class ModVersionFactory extends Factory
     public function configure(): static
     {
         return $this->has(
-            \App\Models\VirusTotalLink::factory()->count(1),
+            VirusTotalLink::factory()->count(1),
             'virusTotalLinks'
         );
     }
@@ -71,7 +72,7 @@ class ModVersionFactory extends Factory
      */
     public function disabled(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'disabled' => true,
         ]);
     }
@@ -81,9 +82,9 @@ class ModVersionFactory extends Factory
      */
     public function withoutVirusTotalLinks(): static
     {
-        return $this->afterMaking(function (ModVersion $modVersion) {
+        return $this->afterMaking(function (ModVersion $modVersion): void {
             // Remove any auto-created VirusTotal links
-        })->afterCreating(function (ModVersion $modVersion) {
+        })->afterCreating(function (ModVersion $modVersion): void {
             $modVersion->virusTotalLinks()->delete();
         });
     }

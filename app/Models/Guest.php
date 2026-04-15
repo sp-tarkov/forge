@@ -17,7 +17,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
  * @property-read string $id
  * @property-read bool $is_guest
  */
-class Guest implements Authenticatable
+final class Guest implements Authenticatable
 {
     /**
      * Create a new guest user instance.
@@ -43,7 +43,7 @@ class Guest implements Authenticatable
      */
     public function __isset(string $key): bool
     {
-        return in_array($key, ['id', 'name', 'is_guest']);
+        return in_array($key, ['id', 'name', 'is_guest'], true);
     }
 
     /**

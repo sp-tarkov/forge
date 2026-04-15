@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Pagination\AbstractPaginator;
 use Symfony\Component\HttpFoundation\Response;
 
-class ApiResponse
+final class ApiResponse
 {
     /**
      * Return a success response.
@@ -32,7 +32,7 @@ class ApiResponse
             $data->resource instanceof AbstractPaginator
         ) {
             // If paginated, merge the paginator's structure (data, links, meta)
-            $payload = array_merge($payload, $data->response()->getData(true));
+            $payload = array_merge($payload, (array) $data->response()->getData(true));
         } elseif (is_array($data) || is_object($data) || ! empty($data)) {
             $payload['data'] = $data;
         }

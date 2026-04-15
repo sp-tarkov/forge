@@ -8,7 +8,7 @@ use App\Exceptions\InvalidVersionNumberException;
 use Illuminate\Support\Str;
 use Stringable;
 
-class Version implements Stringable
+final class Version implements Stringable
 {
     /**
      * Parse a semantic version number.
@@ -24,7 +24,7 @@ class Version implements Stringable
         private int $patch = 0,
         private string $labels = '',
     ) {
-        $this->version = Str::ltrim($this->version, 'v');
+        $this->version = Str::ltrim((string) $this->version, 'v');
 
         $this->parse();
     }
@@ -43,7 +43,7 @@ class Version implements Stringable
     public static function cleanSptImport(string $version): self
     {
         // Remove leading 'SPT' and trailing build number. EZ.
-        $cleanedVersion = preg_replace('/^SPT\s+(\d+\.\d+\.\d+).*/', '$1', $version);
+        $cleanedVersion = preg_replace('/^SPT\s+(\d+\.\d+\.\d+).*/', '$1', $version) ?? $version;
 
         return new self($cleanedVersion);
     }
@@ -99,7 +99,7 @@ class Version implements Stringable
 
         // If version is two-part (e.g., "3.9"), prefix with "~"
         if (preg_match('/^\d+\.\d+$/', $version)) {
-            $version = '~'.$version.'.0';
+            return '~'.$version.'.0';
         }
 
         return $version;
@@ -145,7 +145,7 @@ class Version implements Stringable
         // Construct the base version (major.minor.patch)
         $version = $this->major.'.'.$this->minor.'.'.$this->patch;
 
-        if (! empty($this->labels)) {
+        if ($this->labels !== '' && $this->labels !== '0') {
             $version .= $this->labels;
         }
 
@@ -170,11 +170,11 @@ class Version implements Stringable
         $this->patch = (int) $matches['patch'];
 
         $labels = '';
-        if (! empty($matches['prerelease'])) {
+        if (isset($matches['prerelease']) && ($matches['prerelease'] !== '' && $matches['prerelease'] !== '0')) {
             $labels .= Str::trim('-'.$matches['prerelease']);
         }
 
-        if (! empty($matches['buildMetadata'])) {
+        if (isset($matches['buildMetadata']) && $matches['buildMetadata'] !== '0') {
             $labels .= Str::trim('+'.$matches['buildMetadata']);
         }
 

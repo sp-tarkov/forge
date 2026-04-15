@@ -1,5 +1,3 @@
-@props(['version', 'showActions' => null])
-
 <div
     {{ $attributes->merge(['class' => 'relative p-4 mb-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl filter-none group hover:shadow-lg hover:bg-gray-50 dark:hover:bg-black']) }}>
 
@@ -24,22 +22,23 @@
 
         <div class="flex flex-col items-start sm:flex-row sm:justify-between">
             <div class="flex flex-col">
-                <a
-                    href="{{ $version->downloadUrl() }}"
-                    class="inline-flex items-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white hover:underline"
-                    rel="nofollow"
-                >
-                    <span>{{ __('Version') }} {{ $version->version }}</span>
-                    <flux:tooltip
-                        content="Download Mod Version"
-                        position="right"
+                <flux:modal.trigger name="{{ $modalName() }}">
+                    <button
+                        type="button"
+                        class="inline-flex items-center text-3xl font-extrabold text-gray-800 hover:text-black dark:text-gray-200 dark:hover:text-white hover:underline cursor-pointer"
                     >
-                        <flux:icon
-                            icon="arrow-down-on-square-stack"
-                            class="inline-block size-6 ml-2"
-                        />
-                    </flux:tooltip>
-                </a>
+                        <span>{{ __('Version') }} {{ $version->version }}</span>
+                        <flux:tooltip
+                            content="Download Mod Version"
+                            position="right"
+                        >
+                            <flux:icon
+                                icon="arrow-down-on-square-stack"
+                                class="inline-block size-6 ml-2"
+                            />
+                        </flux:tooltip>
+                    </button>
+                </flux:modal.trigger>
                 <div class="mt-3 flex flex-row flex-wrap justify-start items-center gap-2.5">
                     @if ($version->sptVersions->isNotEmpty())
                         <div class="flex flex-wrap gap-1 items-center">
@@ -267,4 +266,17 @@
         --}}
         {!! $version->description_html !!}
     </div>
+
+    <x-mod.version-download-modal
+        :name="$modalName()"
+        :download-url="$version->downloadUrl()"
+        :version-string="$version->version"
+        :spt-version-formatted="$version->latestSptVersion?->version_formatted ?? ($version->spt_version_constraint === '' ? __('Legacy') : null)"
+        :spt-version-color-class="$version->latestSptVersion?->color_class ?? ($version->spt_version_constraint === '' ? 'gray' : null)"
+        :version-description-html="$version->description_html"
+        :version-updated-at="$version->updated_at"
+        :file-size="$version->formatted_file_size"
+        :dependencies="$version->latestDependenciesResolved"
+        :is-latest="$isLatest()"
+    />
 </div>

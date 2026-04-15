@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class ForgeHeartbeat extends Command
+final class ForgeHeartbeat extends Command
 {
     /**
      * The name and signature of the console command.
@@ -30,16 +30,16 @@ class ForgeHeartbeat extends Command
      */
     public function handle(): int
     {
-        $url = config('app.forge_heartbeat_url');
+        $url = config()->string('app.forge_heartbeat_url', '');
 
-        if (! $url) {
+        if ($url === '') {
             $this->error('No URL configured. Please set FORGE_HEARTBEAT_URL in your .env file.');
 
             return Command::FAILURE;
         }
 
         try {
-            $response = Http::timeout(30)->get($url);
+            $response = Http::connectTimeout(5)->timeout(30)->get($url);
 
             if ($response->successful()) {
                 $message = sprintf('Successfully pinged %s - Status: %d', $url, $response->status());

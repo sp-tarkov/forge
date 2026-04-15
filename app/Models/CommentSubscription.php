@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use Carbon\CarbonImmutable;
 use Database\Factories\CommentSubscriptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $user_id
  * @property int $commentable_id
  * @property string $commentable_type
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
  * @property Model $commentable
  * @property User $user
  */
-class CommentSubscription extends Model
+final class CommentSubscription extends Model
 {
     /** @use HasFactory<CommentSubscriptionFactory> */
     use HasFactory;
@@ -46,9 +46,7 @@ class CommentSubscription extends Model
     /**
      * Remove a subscription for a user from a commentable.
      *
-     * @template T of Model
-     *
-     * @param  T&Commentable<T>  $commentable
+     * @param  Model&Commentable<Model>  $commentable
      */
     public static function unsubscribe(User $user, Model&Commentable $commentable): bool
     {

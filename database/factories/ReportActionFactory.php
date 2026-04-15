@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends Factory<ReportAction>
  */
-class ReportActionFactory extends Factory
+final class ReportActionFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.

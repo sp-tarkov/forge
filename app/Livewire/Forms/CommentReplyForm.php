@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Form;
 
-class CommentReplyForm extends Form
+final class CommentReplyForm extends Form
 {
     /**
      * The body of the comment.
@@ -27,8 +27,8 @@ class CommentReplyForm extends Form
      */
     public function rules(): array
     {
-        $minLength = config('comments.validation.min_length', 3);
-        $maxLength = config('comments.validation.max_length', 10000);
+        $minLength = config()->integer('comments.validation.min_length', 3);
+        $maxLength = config()->integer('comments.validation.max_length', 10000);
 
         return [
             'body' => [
@@ -53,6 +53,7 @@ class CommentReplyForm extends Form
         $parentComment = Comment::query()->findOrFail($parentCommentId);
 
         DB::transaction(function () use ($commentable, $parentComment): void {
+            /** @var Comment $comment */
             $comment = $commentable->comments()->create([
                 'user_id' => Auth::id(),
                 'parent_id' => $parentComment->id,

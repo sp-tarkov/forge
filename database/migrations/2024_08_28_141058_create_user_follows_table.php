@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_follows', function (Blueprint $table) {
+        Schema::create('user_follows', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('follower_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('following_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();

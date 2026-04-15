@@ -24,7 +24,7 @@ describe('SPT Version API', function (): void {
         SptVersion::factory()
             ->count(24)
             ->state(new Sequence(
-                ...array_map(fn ($i): array => ['version' => '1.0.'.$i], range(0, 23))
+                ...array_map(fn (int $i): array => ['version' => '1.0.'.$i], range(0, 23))
             ))
             ->create();
 
@@ -49,7 +49,7 @@ describe('SPT Version API', function (): void {
         SptVersion::factory()
             ->count(25)
             ->state(new Sequence(
-                ...array_map(fn ($i): array => ['version' => '2.0.'.$i], range(0, 24))
+                ...array_map(fn (int $i): array => ['version' => '2.0.'.$i], range(0, 24))
             ))
             ->create();
 
@@ -85,6 +85,7 @@ describe('SPT Version API', function (): void {
         $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?filter[spt_version]='.$constraint);
 
         $response->assertOk();
+
         $returnedVersions = collect($response->json('data'))->pluck('version')->all();
         expect($returnedVersions)
             ->toContain('3.8.0')
@@ -171,7 +172,7 @@ describe('SPT Version API', function (): void {
         SptVersion::factory()
             ->count(3)
             ->state(new Sequence(
-                ...array_map(fn ($i): array => ['version' => '3.0.'.$i], range(0, 2))
+                ...array_map(fn (int $i): array => ['version' => '3.0.'.$i], range(0, 2))
             ))
             ->create();
         $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?fields=id,version');

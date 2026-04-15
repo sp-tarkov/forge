@@ -7,7 +7,7 @@ namespace App\Policies;
 use App\Models\Conversation;
 use App\Models\User;
 
-class ConversationPolicy
+final class ConversationPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -112,15 +112,11 @@ class ConversationPolicy
         }
 
         $otherUser = $conversation->getOtherUser($user);
-        if ($otherUser === null) {
+        if (! $otherUser instanceof User) {
             return true;
         }
 
         // Prevent unarchiving if the other user has blocked us
-        if ($user->isBlockedBy($otherUser)) {
-            return false;
-        }
-
-        return true;
+        return ! $user->isBlockedBy($otherUser);
     }
 }

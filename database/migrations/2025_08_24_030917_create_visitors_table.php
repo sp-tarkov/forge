@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('visitors', function (Blueprint $table) {
+        Schema::create('visitors', function (Blueprint $table): void {
             $table->id();
             $table->enum('type', ['visitor', 'peak'])->default('visitor')->index();
             $table->string('session_id')->nullable();

@@ -6,21 +6,25 @@ namespace App\Jobs;
 
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
-use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class ProcessPinnedModVersionPublishDates implements ShouldQueue
+#[Timeout(60)]
+#[Backoff([1, 5, 10])]
+#[Tries(3)]
+final class ProcessPinnedModVersionPublishDates implements ShouldBeUnique, ShouldQueue
 {
-    use Dispatchable;
-    use InteractsWithQueue;
     use Queueable;
-    use SerializesModels;
 
     /**
      * Execute the job.
@@ -33,13 +37,13 @@ class ProcessPinnedModVersionPublishDates implements ShouldQueue
             ->withoutGlobalScope(PublishedSptVersionScope::class)
             ->whereNotNull('publish_date')
             ->where('publish_date', '<=', Date::now())
-            ->whereHas('modVersions', function (mixed $query): void {
+            ->whereHas('modVersions', function (Builder $query): void {
                 $query->withoutGlobalScopes()
-                    ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
+                    ->where('mod_version_spt_version.pinned_to_spt_publish', true);
             })
-            ->with(['modVersions' => function (mixed $query): void {
+            ->with(['modVersions' => function (Relation $query): void {
                 $query->withoutGlobalScopes()
-                    ->whereRaw('mod_version_spt_version.pinned_to_spt_publish = true');
+                    ->wherePivot('pinned_to_spt_publish', true);
             }])
             ->get();
 
@@ -51,20 +55,17 @@ class ProcessPinnedModVersionPublishDates implements ShouldQueue
 
                     // If this SPT version's publish date was the controlling one (latest), or if there are no more
                     // unpublished pinned versions, set the mod version's publish date
-                    if (is_null($latestPinnedDate) || $latestPinnedDate <= Date::now()) {
-                        // All pinned SPT versions are now published
-                        // Set the mod version's published_at to now if it wasn't already set
-                        if (is_null($modVersion->published_at)) {
-                            $modVersion->published_at = Date::now();
-                            $modVersion->save();
-
-                            Log::info('Automatically published mod version', [
-                                'mod_version_id' => $modVersion->id,
-                                'mod_name' => $modVersion->mod->name,
-                                'version' => $modVersion->version,
-                                'triggered_by_spt' => $sptVersion->version,
-                            ]);
-                        }
+                    // All pinned SPT versions are now published
+                    // Set the mod version's published_at to now if it wasn't already set
+                    if ((is_null($latestPinnedDate) || $latestPinnedDate <= Date::now()) && is_null($modVersion->published_at)) {
+                        $modVersion->published_at = Date::now();
+                        $modVersion->save();
+                        Log::info('Automatically published mod version', [
+                            'mod_version_id' => $modVersion->id,
+                            'mod_name' => $modVersion->mod->name,
+                            'version' => $modVersion->version,
+                            'triggered_by_spt' => $sptVersion->version,
+                        ]);
                     }
 
                     // Clear the pinning for this SPT version since it's now published
@@ -79,5 +80,15 @@ class ProcessPinnedModVersionPublishDates implements ShouldQueue
                 }
             });
         }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('ProcessPinnedModVersionPublishDates job failed', [
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }

@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Contracts\DependencyResolver;
 use App\Models\Dependency;
 use App\Models\DependencyResolved;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use App\Services\DependencyVersionService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->withoutDefer();
@@ -125,7 +122,7 @@ describe('Mod Version Dependencies', function (): void {
         it('handles mod versions with no dependencies gracefully', function (): void {
             SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
-            $serviceSpy = $this->spy(DependencyVersionService::class);
+            $serviceSpy = $this->spy(DependencyResolver::class);
 
             $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
@@ -212,7 +209,7 @@ describe('Mod Version Dependencies', function (): void {
             $mod = Mod::factory()->create();
             ModVersion::factory(2)->recycle($mod)->create();
 
-            $serviceSpy = $this->spy(DependencyVersionService::class);
+            $serviceSpy = $this->spy(DependencyResolver::class);
 
             $mod->update(['name' => 'New Mod Name']);
 
@@ -229,7 +226,7 @@ describe('Mod Version Dependencies', function (): void {
 
             $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
-            $serviceSpy = $this->spy(DependencyVersionService::class);
+            $serviceSpy = $this->spy(DependencyResolver::class);
 
             $modVersion->update(['version' => '1.1.0']);
 
@@ -241,7 +238,7 @@ describe('Mod Version Dependencies', function (): void {
 
             $modVersion = ModVersion::factory()->create(['version' => '1.0.0', 'spt_version_constraint' => '3.8.0']);
 
-            $serviceSpy = $this->spy(DependencyVersionService::class);
+            $serviceSpy = $this->spy(DependencyResolver::class);
 
             $modVersion->delete();
 
@@ -257,7 +254,7 @@ describe('Mod Version Dependencies', function (): void {
                 'constraint' => '^1.0',
             ]);
 
-            $serviceSpy = $this->spy(DependencyVersionService::class);
+            $serviceSpy = $this->spy(DependencyResolver::class);
 
             $modDependency->update(['constraint' => '^2.0']);
 
@@ -273,7 +270,7 @@ describe('Mod Version Dependencies', function (): void {
                 'constraint' => '^1.0',
             ]);
 
-            $serviceSpy = $this->spy(DependencyVersionService::class);
+            $serviceSpy = $this->spy(DependencyResolver::class);
 
             $modDependency->delete();
 

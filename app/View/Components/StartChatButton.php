@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Component;
 use Override;
 
-class StartChatButton extends Component
+final class StartChatButton extends Component
 {
     public bool $shouldShow;
 
@@ -50,6 +50,9 @@ class StartChatButton extends Component
             return false;
         }
 
-        return Auth::user()->can('initiateChat', $this->user);
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $user->can('initiateChat', $this->user);
     }
 }

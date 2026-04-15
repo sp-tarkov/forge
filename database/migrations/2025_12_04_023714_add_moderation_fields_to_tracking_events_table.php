@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tracking_events', function (Blueprint $table) {
+        Schema::table('tracking_events', function (Blueprint $table): void {
             $table->boolean('is_moderation_action')->default(false)->after('event_data');
             $table->string('reason', 1000)->nullable()->after('is_moderation_action');
             $table->index('is_moderation_action');
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tracking_events', function (Blueprint $table) {
+        Schema::table('tracking_events', function (Blueprint $table): void {
             $table->dropIndex(['is_moderation_action']);
             $table->dropColumn(['is_moderation_action', 'reason']);
         });

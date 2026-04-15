@@ -142,7 +142,7 @@ return [
     |
     */
 
-    'forge_heartbeat_url' => env('FORGE_HEARTBEAT_URL'),
+    'forge_heartbeat_url' => env('FORGE_HEARTBEAT_URL', ''),
 
     /*
     |--------------------------------------------------------------------------

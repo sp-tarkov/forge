@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
-class PublishedSptVersionScope implements Scope
+/** @implements Scope<Model> */
+final class PublishedSptVersionScope implements Scope
 {
     /**
      * Apply the scope to a given Eloquent query builder.
@@ -28,7 +29,7 @@ class PublishedSptVersionScope implements Scope
         );
 
         // If user is authenticated and is a moderator or admin, show everything.
-        if (Auth::check() && Auth::user()->isModOrAdmin()) {
+        if (Auth::check() && Auth::user()?->isModOrAdmin()) {
             return;
         }
 

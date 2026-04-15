@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Notifications\VerifyEmail;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('Auth Resend Verification API', function (): void {
     beforeEach(function (): void {
-        Cache::flush();
+        $this->withoutMiddleware([ThrottleRequests::class, ThrottleRequestsWithRedis::class]);
     });
+
     it('allows resend request for unverified user and sends notification', function (): void {
         Notification::fake();
 
@@ -98,6 +101,12 @@ describe('Auth Resend Verification API', function (): void {
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY) // 422
             ->assertJsonValidationErrorFor('email');
+    });
+});
+
+describe('Auth Resend Verification Rate Limiting', function (): void {
+    beforeEach(function (): void {
+        Cache::flush();
     });
 
     it('rate limits the public resend endpoint', function (): void {

@@ -6,14 +6,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateEventsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('tracking_events', function (Blueprint $table) {
+        Schema::create('tracking_events', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('event_name')->nullable()->index();
             $table->json('event_data')->nullable();
@@ -45,4 +45,4 @@ class CreateEventsTable extends Migration
     {
         Schema::dropIfExists('tracking_events');
     }
-}
+};

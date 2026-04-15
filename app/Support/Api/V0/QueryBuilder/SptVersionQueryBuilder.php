@@ -14,7 +14,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<SptVersion>
  */
-class SptVersionQueryBuilder extends AbstractQueryBuilder
+final class SptVersionQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Get the allowed filters for this query builder. Keys being the filter names and values being the names of the
@@ -182,13 +182,13 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
     #[Override]
     protected function applySorts(): void
     {
-        if (! empty($this->sorts)) {
-            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => ! empty($sort));
-            if (empty($this->sorts)) {
+        if ($this->sorts !== []) {
+            $this->sorts = array_filter($this->sorts, fn (?string $sort): bool => $sort !== null && $sort !== '');
+            if ($this->sorts === []) {
                 return; // All sorts were empty and filtered out, return early.
             }
 
-            $allowedSorts = static::getAllowedSorts();
+            $allowedSorts = self::getAllowedSorts();
             $invalidSorts = [];
 
             foreach ($this->sorts as $sort) {
@@ -198,7 +198,7 @@ class SptVersionQueryBuilder extends AbstractQueryBuilder
                 }
             }
 
-            if (! empty($invalidSorts)) {
+            if ($invalidSorts !== []) {
                 $invalidSort = implode(', ', $invalidSorts);
                 $validSorts = implode(', ', $allowedSorts);
                 throw new InvalidQuery(

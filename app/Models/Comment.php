@@ -11,6 +11,7 @@ use App\Enums\SpamStatus;
 use App\Observers\CommentObserver;
 use App\Support\Akismet\SpamCheckResult;
 use App\Traits\HasReports;
+use Carbon\CarbonImmutable;
 use Database\Factories\CommentFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Override;
 use Shetabit\Visitor\Models\Visit;
@@ -44,13 +45,13 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int|null $root_id
  * @property SpamStatus $spam_status
  * @property array<string, mixed>|null $spam_metadata
- * @property Carbon|null $spam_checked_at
+ * @property CarbonImmutable|null $spam_checked_at
  * @property int $spam_recheck_count
- * @property Carbon|null $edited_at
- * @property Carbon|null $deleted_at
- * @property Carbon|null $pinned_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $edited_at
+ * @property CarbonImmutable|null $deleted_at
+ * @property CarbonImmutable|null $pinned_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property string $body
  * @property string $body_html
  * @property-read User $user
@@ -72,7 +73,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read CommentVersion|null $latestVersion
  */
 #[ObservedBy([CommentObserver::class])]
-class Comment extends Model implements Reportable, Trackable
+final class Comment extends Model implements Reportable, Trackable
 {
     /** @use HasFactory<CommentFactory> */
     use HasFactory;
@@ -81,6 +82,13 @@ class Comment extends Model implements Reportable, Trackable
     use HasReports;
 
     use Visitable;
+
+    /**
+     * Always eager load latestVersion since the body accessor depends on it.
+     *
+     * @var list<string>
+     */
+    protected $with = ['latestVersion'];
 
     /**
      * The relationship between a comment and it's user.
@@ -263,7 +271,7 @@ class Comment extends Model implements Reportable, Trackable
             return sprintf("Comment on %s's profile", $commentable->name);
         }
 
-        if (method_exists($commentable, 'name') && property_exists($commentable, 'name') && $commentable->name) {
+        if (method_exists($commentable, 'name') && property_exists($commentable, 'name') && is_string($commentable->name) && $commentable->name !== '') {
             return 'Comment on '.$commentable->name;
         }
 
@@ -286,7 +294,7 @@ class Comment extends Model implements Reportable, Trackable
     /**
      * Get contextual information about this trackable resource.
      */
-    public function getTrackingContext(): ?string
+    public function getTrackingContext(): string
     {
         return $this->body;
     }
@@ -296,25 +304,31 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function updateRootId(): void
     {
-        if ($this->isRoot()) {
-            $this->root_id = null;
-        } else {
-            $this->root_id = $this->resolveRootId();
-        }
+        $this->root_id = $this->isRoot() ? null : $this->resolveRootId();
 
         $this->saveQuietly();
     }
 
     /**
-     * A recursive method to update the root_id of all descendants of this comment.
+     * Update the root_id of all descendants of this comment in a single query.
+     *
+     * Uses a recursive CTE to find all descendant IDs, then bulk-updates
+     * them instead of loading and saving each child individually.
      */
     public function updateChildRootIds(): void
     {
-        $this->replies()->each(function (Comment $reply): void {
-            $reply->root_id = $this->root_id;
-            $reply->saveQuietly();
-            $reply->updateChildRootIds();
-        });
+        DB::update(<<<'SQL'
+            UPDATE comments
+            SET root_id = ?
+            WHERE id IN (
+                WITH RECURSIVE descendants AS (
+                    SELECT id FROM comments WHERE parent_id = ?
+                    UNION ALL
+                    SELECT c.id FROM comments c INNER JOIN descendants d ON c.parent_id = d.id
+                )
+                SELECT id FROM descendants
+            )
+            SQL, [$this->root_id, $this->id]);
     }
 
     /**
@@ -364,7 +378,7 @@ class Comment extends Model implements Reportable, Trackable
      */
     public function canBeRechecked(): bool
     {
-        return $this->spam_recheck_count < config('comments.spam.max_recheck_attempts', 3);
+        return $this->spam_recheck_count < config()->integer('comments.spam.max_recheck_attempts', 3);
     }
 
     /**
@@ -431,9 +445,14 @@ class Comment extends Model implements Reportable, Trackable
     protected function bodyHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('comments')->clean(
-                Markdown::convert($this->body)->getContent()
-            )
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('comments')->clean(
+                    Markdown::convert($this->body)->getContent()
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 
@@ -445,7 +464,7 @@ class Comment extends Model implements Reportable, Trackable
     protected function body(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => $this->latestVersion?->body ?? '',
+            get: fn (): string => $this->latestVersion?->body ?? '', // @phpstan-ignore nullsafe.neverNull
         );
     }
 
@@ -491,12 +510,12 @@ class Comment extends Model implements Reportable, Trackable
     protected function visibleToUser(Builder $query, ?User $user = null): void
     {
         // Moderators and admins see everything.
-        if ($user !== null && $user->isModOrAdmin()) {
+        if ($user instanceof User && $user->isModOrAdmin()) {
             return;
         }
 
         // Guests only see clean comments.
-        if ($user === null) {
+        if (! $user instanceof User) {
             $query->clean();
 
             return;
@@ -544,6 +563,9 @@ class Comment extends Model implements Reportable, Trackable
 
     /**
      * Resolve the root_id of this comment by traversing the parent_id chain in a single query.
+     *
+     * Uses a recursive CTE instead of a while-loop to avoid N+1 queries
+     * for deeply nested comment threads.
      */
     private function resolveRootId(): ?int
     {
@@ -551,25 +573,24 @@ class Comment extends Model implements Reportable, Trackable
             return $this->id;
         }
 
-        $currentParentId = $this->parent_id;
-
-        while ($currentParentId !== null) {
-            $parent = self::query()
-                ->where('id', $currentParentId)
-                ->select(['id', 'parent_id'])
-                ->first();
-
-            if ($parent === null) {
-                return $currentParentId;
-            }
-
-            if ($parent->parent_id === null) {
-                return $parent->id;
-            }
-
-            $currentParentId = $parent->parent_id;
+        if ($this->parent_id === null) {
+            return null;
         }
 
-        return null;
+        $result = DB::select(<<<'SQL'
+            WITH RECURSIVE ancestors AS (
+                SELECT id, parent_id
+                FROM comments
+                WHERE id = ?
+                UNION ALL
+                SELECT c.id, c.parent_id
+                FROM comments c
+                INNER JOIN ancestors a ON a.parent_id = c.id
+            )
+            SELECT id FROM ancestors WHERE parent_id IS NULL LIMIT 1
+            SQL, [$this->parent_id]);
+
+        /** @var array<int, object{id: int}> $result */
+        return $result[0]->id ?? $this->parent_id;
     }
 }

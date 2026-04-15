@@ -5,6 +5,9 @@ on: [ push, pull_request ]
 permissions:
   contents: read
 
+env:
+  COMPOSER_AUTH: '{"http-basic": {"composer.fluxui.dev": {"username": "${{ secrets.FLUX_USERNAME }}", "password": "${{ secrets.FLUX_LICENSE_KEY }}"}}}'
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -28,7 +31,7 @@ jobs:
       - name: Setup
         uses: ./.github/action/setup
         with:
-          php-version: 8.4
+          php-version: 8.5
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -88,7 +91,7 @@ jobs:
       - name: Setup
         uses: ./.github/action/setup
         with:
-          php-version: 8.4
+          php-version: 8.5
 
       - name: Install Composer Dependencies
         run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader

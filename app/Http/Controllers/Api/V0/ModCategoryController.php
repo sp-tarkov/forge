@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Endpoints for retrieving mod category data.
  */
-class ModCategoryController extends Controller
+final class ModCategoryController extends Controller
 {
     /**
      * Get Mod Categories
@@ -99,12 +99,15 @@ class ModCategoryController extends Controller
         $sorts = $request->string('sort')->explode(',')->filter()->all();
 
         // Default to sorting by title when no sort is specified
-        if (empty(array_filter($sorts))) {
+        if ($sorts === []) {
             $sorts = ['title'];
         }
 
+        /** @var array<string, mixed>|null $filters */
+        $filters = $request->input('filter');
+
         $queryBuilder = (new ModCategoryQueryBuilder)
-            ->withFilters($request->input('filter'))
+            ->withFilters($filters)
             ->withFields($request->string('fields')->explode(',')->all())
             ->withSorts($sorts);
 

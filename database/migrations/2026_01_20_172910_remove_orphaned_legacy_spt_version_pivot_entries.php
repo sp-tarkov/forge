@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\ModVersion;
 use App\Services\SptVersionService;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -53,7 +54,7 @@ return new class extends Migration
 
             // Delete all pivot entries linked to 0.0.0
             $deletedCount = DB::table('mod_version_spt_version')
-                ->whereIn('spt_version_id', function ($query): void {
+                ->whereIn('spt_version_id', function (Builder $query): void {
                     $query->select('id')
                         ->from('spt_versions')
                         ->where('version', '0.0.0');
@@ -69,11 +70,12 @@ return new class extends Migration
 
         // Re-resolve SPT versions for all affected mod versions
         if (count($modVersionIds) > 0) {
-            $sptVersionService = app(SptVersionService::class);
+            $sptVersionService = resolve(SptVersionService::class);
 
             foreach ($modVersionIds as $modVersionId) {
-                $modVersion = ModVersion::withoutGlobalScopes()->find($modVersionId);
-                if ($modVersion) {
+                /** @var ModVersion|null $modVersion */
+                $modVersion = ModVersion::query()->withoutGlobalScopes()->find($modVersionId);
+                if ($modVersion instanceof ModVersion) {
                     $sptVersionService->resolve($modVersion);
                     Log::info('[Migration] Re-resolved SPT versions for mod version.', [
                         'mod_version_id' => $modVersionId,

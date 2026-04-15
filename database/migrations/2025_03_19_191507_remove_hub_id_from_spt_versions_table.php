@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('spt_versions', function (Blueprint $table) {
+        Schema::table('spt_versions', function (Blueprint $table): void {
             $table->dropUnique('spt_versions_hub_id_unique');
             $table->dropColumn('hub_id');
         });
@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('spt_versions', function (Blueprint $table) {
+        Schema::table('spt_versions', function (Blueprint $table): void {
             $table->bigInteger('hub_id')
                 ->nullable()
                 ->default(null)

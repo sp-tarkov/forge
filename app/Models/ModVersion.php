@@ -6,17 +6,19 @@ namespace App\Models;
 
 use App\Contracts\Trackable;
 use App\Enums\FikaCompatibility;
+use App\Enums\VerificationStatus;
 use App\Exceptions\InvalidVersionNumberException;
 use App\Models\Scopes\PublishedScope;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Observers\ModVersionObserver;
 use App\Support\Version;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Database\Factories\ModVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -26,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -46,13 +49,17 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $description
  * @property string $link
  * @property int|null $content_length
+ * @property string|null $etag
+ * @property string|null $last_modified_header
+ * @property VerificationStatus|null $verification_status
+ * @property CarbonImmutable|null $last_verified_at
  * @property string $spt_version_constraint
  * @property int $downloads
  * @property bool $disabled
  * @property FikaCompatibility $fika_compatibility
- * @property Carbon|null $published_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $published_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string $description_html
  * @property-read Mod $mod
  * @property-read Collection<int, Dependency> $dependencies
@@ -62,22 +69,18 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, SptVersion> $sptVersions
  * @property-read Collection<int, AddonVersion> $compatibleAddonVersions
  * @property-read Collection<int, VirusTotalLink> $virusTotalLinks
+ * @property-read Collection<int, VerificationResult> $verificationResults
+ * @property-read VerificationResult|null $latestVerificationResult
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([ModVersionObserver::class])]
-class ModVersion extends Model implements Trackable
+#[Touches(['mod'])]
+final class ModVersion extends Model implements Trackable
 {
     /** @use HasFactory<ModVersionFactory> */
     use HasFactory;
 
     use Visitable;
-
-    /**
-     * Update the parent mod's updated_at timestamp when the mod version is updated.
-     *
-     * @var string[]
-     */
-    protected $touches = ['mod'];
 
     /**
      * Get all the version numbers for a mod.
@@ -88,6 +91,7 @@ class ModVersion extends Model implements Trackable
      */
     public static function versionNumbers(int $modId): array
     {
+        /** @var array<int, string> */
         return Cache::flexible('mod_version_numbers_'.$modId, [5 * 60, 10 * 60], fn () => self::query()
             ->where('mod_id', $modId)
             ->where('version', '!=', '0.0.0')
@@ -182,7 +186,7 @@ class ModVersion extends Model implements Trackable
     /**
      * The relationship between a mod version and its SPT versions.
      *
-     * @return BelongsToMany<SptVersion, $this>
+     * @return BelongsToMany<SptVersion, $this, ModVersionSptVersion>
      */
     public function sptVersions(): BelongsToMany
     {
@@ -218,6 +222,27 @@ class ModVersion extends Model implements Trackable
     {
         return $this->morphMany(VirusTotalLink::class, 'linkable')
             ->orderByRaw("COALESCE(NULLIF(label, ''), url)");
+    }
+
+    /**
+     * The relationship between a mod version and its verification results.
+     *
+     * @return MorphMany<VerificationResult, $this>
+     */
+    public function verificationResults(): MorphMany
+    {
+        return $this->morphMany(VerificationResult::class, 'verifiable')->latest();
+    }
+
+    /**
+     * The relationship between a mod version and its latest verification result.
+     *
+     * @return MorphOne<VerificationResult, $this>
+     */
+    public function latestVerificationResult(): MorphOne
+    {
+        return $this->morphOne(VerificationResult::class, 'verifiable')
+            ->latestOfMany();
     }
 
     /**
@@ -277,7 +302,7 @@ class ModVersion extends Model implements Trackable
     /**
      * Get contextual information about this trackable resource.
      */
-    public function getTrackingContext(): ?string
+    public function getTrackingContext(): string
     {
         return sprintf('Version %s of %s', $this->version, $this->mod->name);
     }
@@ -294,11 +319,7 @@ class ModVersion extends Model implements Trackable
             return false;
         }
 
-        if ($this->isPinnedToUnpublishedSptVersion()) {
-            return false;
-        }
-
-        return true;
+        return ! $this->isPinnedToUnpublishedSptVersion();
     }
 
     /**
@@ -342,7 +363,7 @@ class ModVersion extends Model implements Trackable
      * Get the latest unpublished SPT version publish date this mod is pinned to.
      * Returns the furthest date in the future to ensure the mod waits for ALL pinned SPT versions.
      */
-    public function getLatestPinnedSptPublishDate(): ?Carbon
+    public function getLatestPinnedSptPublishDate(): ?CarbonImmutable
     {
         /** @var SptVersion|null $sptVersion */
         $sptVersion = $this->sptVersions()
@@ -363,7 +384,7 @@ class ModVersion extends Model implements Trackable
     #[Override]
     protected static function booted(): void
     {
-        static::saving(function (ModVersion $modVersion): void {
+        self::saving(function (ModVersion $modVersion): void {
             // Strip the "v" prefix from the version string if present.
             $modVersion->version = mb_ltrim($modVersion->version, 'vV');
 
@@ -400,6 +421,8 @@ class ModVersion extends Model implements Trackable
             'downloads' => 'integer',
             'disabled' => 'boolean',
             'fika_compatibility' => FikaCompatibility::class,
+            'verification_status' => VerificationStatus::class,
+            'last_verified_at' => 'datetime',
             'discord_notification_sent' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -416,9 +439,14 @@ class ModVersion extends Model implements Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Purify::config('description')->clean(
-                Markdown::convert($this->description)->getContent()
-            )
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
+                    Markdown::convert($this->description)->getContent()
+                );
+
+                return $clean;
+            }
         )->shouldCache();
     }
 

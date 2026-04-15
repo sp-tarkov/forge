@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Translation\PotentiallyTranslatedString;
 use Throwable;
 
-class DirectDownloadLink implements ValidationRule
+final class DirectDownloadLink implements ValidationRule
 {
     /**
      * The detected content length from the validation.
@@ -26,7 +26,7 @@ class DirectDownloadLink implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (! is_string($value) || empty($value)) {
+        if (! is_string($value) || ($value === '' || $value === '0')) {
             $fail(__('The download link must be a valid URL.'));
 
             return;
@@ -39,10 +39,32 @@ class DirectDownloadLink implements ValidationRule
             return;
         }
 
+        // Reject raw IP addresses — download links must use a domain name.
+        $host = parse_url($value, PHP_URL_HOST);
+        if (! is_string($host) || $host === '') {
+            $fail(__('The download link must have a valid hostname.'));
+
+            return;
+        }
+
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $fail(__('The download link must use a domain name, not an IP address.'));
+
+            return;
+        }
+
+        // Resolve hostname and reject private/reserved IPs to prevent SSRF via DNS rebinding.
+        $resolvedIp = gethostbyname($host);
+        if ($resolvedIp === $host || filter_var($resolvedIp, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+            $fail(__('The download link must point to a public server.'));
+
+            return;
+        }
+
         try {
             // Make HEAD request with redirects and reasonable timeout
-            $response = Http::timeout(30)
-                ->withoutVerifying() // Some sites may have SSL issues
+            $response = Http::connectTimeout(5)
+                ->timeout(30)
                 ->head($value);
 
             if (! $response->successful()) {
@@ -68,7 +90,7 @@ class DirectDownloadLink implements ValidationRule
             $urlEndsWithZip = str_ends_with($urlLowercase, '.zip');
             $hasValidDisposition = false;
 
-            if ($contentDisposition) {
+            if ($contentDisposition !== '' && $contentDisposition !== '0') {
                 $hasAttachment = str_contains($contentDisposition, 'attachment');
                 $hasSevenZipFilename = str_contains($contentDisposition, '.7z');
                 $hasZipFilename = str_contains($contentDisposition, '.zip');

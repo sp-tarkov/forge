@@ -7,7 +7,7 @@ namespace App\Support\Purify\Definitions;
 use HTMLPurifier_HTMLDefinition;
 use Stevebauman\Purify\Definitions\Definition;
 
-class ForgeDefinition implements Definition
+final class ForgeDefinition implements Definition
 {
     /**
      * Apply rules to the HTML Purifier definition.

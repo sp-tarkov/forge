@@ -10,8 +10,10 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use DateTimeImmutable;
+use Faker\Factory;
 use Faker\Generator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 trait SeederHelpers
 {
@@ -22,7 +24,7 @@ trait SeederHelpers
      */
     protected function initializeFaker(): void
     {
-        $this->faker = \Faker\Factory::create();
+        $this->faker = Factory::create();
     }
 
     /**
@@ -30,12 +32,13 @@ trait SeederHelpers
      */
     protected function getRandomSpamStatus(): SpamStatus
     {
-        $random = rand(1, 100);
+        $random = random_int(1, 100);
 
         // 85% clean, 10% pending, 5% spam
         if ($random <= 85) {
             return SpamStatus::CLEAN;
         }
+
         if ($random <= 95) {
             return SpamStatus::PENDING;
         }
@@ -49,22 +52,26 @@ trait SeederHelpers
      */
     protected function getRandomEventType(): TrackingEventType
     {
-        $random = rand(1, 100);
+        $random = random_int(1, 100);
 
         if ($random <= 40) {
             // 40% page visits and downloads (most common)
             return TrackingEventType::MOD_DOWNLOAD;
         }
+
         if ($random <= 60) {
             // 20% authentication events
+            /** @var TrackingEventType */
             return $this->faker->randomElement([
                 TrackingEventType::LOGIN,
                 TrackingEventType::LOGOUT,
                 TrackingEventType::REGISTER,
             ]);
         }
+
         if ($random <= 80) {
             // 20% comment interactions
+            /** @var TrackingEventType */
             return $this->faker->randomElement([
                 TrackingEventType::COMMENT_CREATE,
                 TrackingEventType::COMMENT_LIKE,
@@ -74,6 +81,7 @@ trait SeederHelpers
         }
 
         // 20% other events (mod management, versions, etc.)
+        /** @var TrackingEventType */
         return $this->faker->randomElement([
             TrackingEventType::MOD_CREATE,
             TrackingEventType::MOD_EDIT,
@@ -87,8 +95,8 @@ trait SeederHelpers
     /**
      * Get a trackable model for the given event type.
      *
-     * @param  \Illuminate\Support\Collection<int, Mod>  $mods
-     * @param  \Illuminate\Support\Collection<int, ModVersion>  $modVersions
+     * @param  Collection<int, Mod>  $mods
+     * @param  Collection<int, ModVersion>  $modVersions
      */
     protected function getTrackableForEventType(TrackingEventType $eventType, $mods, $modVersions): ?Model
     {
@@ -108,7 +116,7 @@ trait SeederHelpers
             TrackingEventType::COMMENT_SOFT_DELETE,
             TrackingEventType::COMMENT_LIKE,
             TrackingEventType::COMMENT_UNLIKE,
-            TrackingEventType::COMMENT_REPORT => Comment::inRandomOrder()->first(),
+            TrackingEventType::COMMENT_REPORT => Comment::query()->inRandomOrder()->first(),
 
             default => null,
         };
@@ -119,17 +127,19 @@ trait SeederHelpers
      */
     protected function getRandomTimestamp(): DateTimeImmutable
     {
-        $random = rand(1, 100);
+        $random = random_int(1, 100);
 
         // Weight recent events more heavily for realistic analytics
         if ($random <= 30) {
             // 30% in the last week
             return DateTimeImmutable::createFromMutable($this->faker->dateTimeBetween('-1 week', 'now'));
         }
+
         if ($random <= 60) {
             // 30% in the last month
             return DateTimeImmutable::createFromMutable($this->faker->dateTimeBetween('-1 month', '-1 week'));
         }
+
         if ($random <= 85) {
             // 25% in the last 3 months
             return DateTimeImmutable::createFromMutable($this->faker->dateTimeBetween('-3 months', '-1 month'));

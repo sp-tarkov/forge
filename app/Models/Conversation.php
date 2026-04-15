@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Facades\Sqids;
+use Carbon\CarbonImmutable;
 use Database\Factories\ConversationFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -13,7 +15,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Override;
 
@@ -23,10 +24,10 @@ use Override;
  * @property int $user1_id
  * @property int $user2_id
  * @property int|null $created_by
- * @property Carbon|null $last_message_at
+ * @property CarbonImmutable|null $last_message_at
  * @property int|null $last_message_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property User|null $other_user
  * @property int $unread_count
  * @property-read string $url
@@ -39,17 +40,11 @@ use Override;
  * @property User $user1
  * @property User $user2
  */
-class Conversation extends Model
+#[Appends(['other_user', 'unread_count'])]
+final class Conversation extends Model
 {
     /** @use HasFactory<ConversationFactory> */
     use HasFactory;
-
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var list<string>
-     */
-    protected $appends = ['other_user', 'unread_count'];
 
     /**
      * Generate a hash ID for the given numeric ID.
@@ -66,7 +61,7 @@ class Conversation extends Model
     {
         $decoded = Sqids::decode($hashId);
 
-        return ! empty($decoded) ? $decoded[0] : null;
+        return empty($decoded) ? null : $decoded[0];
     }
 
     /**
@@ -74,7 +69,7 @@ class Conversation extends Model
      */
     public static function findByHashId(string $hashId): ?self
     {
-        return static::query()->where('hash_id', $hashId)->first();
+        return self::query()->where('hash_id', $hashId)->first();
     }
 
     /**
@@ -86,11 +81,11 @@ class Conversation extends Model
         $userId1 = min($user1->id, $user2->id);
         $userId2 = max($user1->id, $user2->id);
 
-        return static::query()->firstOrCreate([
+        return self::query()->firstOrCreate([
             'user1_id' => $userId1,
             'user2_id' => $userId2,
         ], [
-            'created_by' => $creator ? $creator->id : $user1->id,
+            'created_by' => $creator instanceof User ? $creator->id : $user1->id,
         ]);
     }
 
@@ -335,9 +330,9 @@ class Conversation extends Model
     #[Override]
     protected static function booted(): void
     {
-        static::created(function (Conversation $conversation): void {
+        self::created(function (Conversation $conversation): void {
             // Generate and save the hash ID after the conversation is created
-            $conversation->hash_id = static::generateHashId($conversation->id);
+            $conversation->hash_id = self::generateHashId($conversation->id);
             $conversation->saveQuietly();
         });
     }
@@ -459,7 +454,10 @@ class Conversation extends Model
 
             // If we have a cached unread_messages_count (from withCount), use it
             if (isset($this->attributes['unread_messages_count'])) {
-                return (int) $this->attributes['unread_messages_count'];
+                /** @var int|string $count */
+                $count = $this->attributes['unread_messages_count'];
+
+                return (int) $count;
             }
 
             // Otherwise calculate it

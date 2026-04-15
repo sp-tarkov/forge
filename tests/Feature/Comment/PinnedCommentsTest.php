@@ -8,9 +8,6 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('Pin Authorization', function (): void {
     it('allows mod owners to pin comments', function (): void {

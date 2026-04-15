@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class NotificationSeeder extends Seeder
+final class NotificationSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -30,7 +30,7 @@ class NotificationSeeder extends Seeder
         }
 
         // Get some mods to comment on
-        $mods = Mod::inRandomOrder()->limit(10)->get();
+        $mods = Mod::query()->inRandomOrder()->limit(10)->get();
 
         if ($mods->isEmpty()) {
             $this->command->error('No mods found. Please run DatabaseSeeder first.');
@@ -39,7 +39,7 @@ class NotificationSeeder extends Seeder
         }
 
         // Get some users who will be commenters
-        $commenters = User::where('id', '!=', $user->id)->inRandomOrder()->limit(10)->get();
+        $commenters = User::query()->where('id', '!=', $user->id)->inRandomOrder()->limit(10)->get();
 
         if ($commenters->isEmpty()) {
             $this->command->error('Not enough users found to create comments. Please run DatabaseSeeder first.');
@@ -47,7 +47,7 @@ class NotificationSeeder extends Seeder
             return;
         }
 
-        $this->command->info("Creating notifications for user: {$user->name}");
+        $this->command->info('Creating notifications for user: '.$user->name);
 
         // Create 10-20 notifications
         $notificationCount = fake()->numberBetween(10, 20);
@@ -60,8 +60,10 @@ class NotificationSeeder extends Seeder
                 $commentable = $mods->random();
             } else {
                 // Comment on a random user's profile
-                $profileUser = User::inRandomOrder()->first();
-                $commentable = $profileUser;
+                $commentable = User::query()->inRandomOrder()->first();
+                if (! $commentable) {
+                    continue;
+                }
             }
 
             // Create a comment
@@ -70,7 +72,7 @@ class NotificationSeeder extends Seeder
 
             $comment = Comment::factory()->create([
                 'user_id' => $commenter->id,
-                'commentable_type' => get_class($commentable),
+                'commentable_type' => $commentable::class,
                 'commentable_id' => $commentable->id,
                 'body' => fake()->paragraph(fake()->numberBetween(1, 3)),
                 'created_at' => $createdAt,
@@ -104,7 +106,7 @@ class NotificationSeeder extends Seeder
             ]);
         }
 
-        $this->command->info("Created {$notificationCount} notifications for {$user->email}!");
+        $this->command->info(sprintf('Created %d notifications for %s!', $notificationCount, $user->email));
     }
 
     /**
@@ -112,6 +114,6 @@ class NotificationSeeder extends Seeder
      */
     private function getCommentUrl(Comment $comment): string
     {
-        return $comment->getUrl();
+        return $comment->getUrl() ?? '';
     }
 }

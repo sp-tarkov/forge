@@ -11,8 +11,10 @@ use App\Models\Scopes\PublishedScope;
 use App\Observers\AddonObserver;
 use App\Traits\HasComments;
 use App\Traits\HasReports;
+use Carbon\CarbonImmutable;
 use Database\Factories\AddonFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -26,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -51,12 +52,12 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $contains_ai_content
  * @property bool $contains_ads
  * @property bool $comments_disabled
- * @property Carbon|null $detached_at
+ * @property CarbonImmutable|null $detached_at
  * @property int|null $detached_by_user_id
  * @property bool $discord_notification_sent
- * @property Carbon|null $published_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $published_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property-read string $detail_url
  * @property-read string $description_html
  * @property-read string|null $thumbnailUrl
@@ -73,7 +74,10 @@ use Stevebauman\Purify\Facades\Purify;
  */
 #[ScopedBy([PublishedScope::class])]
 #[ObservedBy([AddonObserver::class])]
-class Addon extends Model implements Commentable, Reportable, Trackable
+#[Appends([
+    'detail_url',
+])]
+final class Addon extends Model implements Commentable, Reportable, Trackable
 {
     /** @use HasComments<self> */
     use HasComments;
@@ -86,10 +90,6 @@ class Addon extends Model implements Commentable, Reportable, Trackable
 
     use Searchable;
     use Visitable;
-
-    protected $appends = [
-        'detail_url',
-    ];
 
     /**
      * The relationship between an addon and its parent mod.
@@ -199,7 +199,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      */
     public function isAuthorOrOwner(?User $user): bool
     {
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -228,7 +228,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      */
     public function downloadUrl(bool $absolute = false): ?string
     {
-        $this->load('latestVersion');
+        $this->loadMissing('latestVersion');
 
         if ($this->latestVersion === null) {
             return null;
@@ -248,7 +248,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      */
     public function toSearchableArray(): array
     {
-        $this->load(['latestVersion', 'mod']);
+        $this->loadMissing(['latestVersion', 'mod']);
 
         return [
             'id' => $this->id,
@@ -294,12 +294,8 @@ class Addon extends Model implements Commentable, Reportable, Trackable
         }
 
         // Ensure the addon has at least one published version.
-        if (! $this->hasPublishedVersion()) {
-            return false;
-        }
-
         // All conditions are met; the addon should be searchable.
-        return true;
+        return $this->hasPublishedVersion();
     }
 
     /**
@@ -359,7 +355,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     /**
      * Comments on addons are displayed on the 'comments' tab.
      */
-    public function getCommentTabHash(): ?string
+    public function getCommentTabHash(): string
     {
         return 'comments';
     }
@@ -501,7 +497,14 @@ class Addon extends Model implements Commentable, Reportable, Trackable
     protected function descriptionHtml(): Attribute
     {
         return Attribute::make(
-            get: fn () => Markdown::convert(Purify::clean($this->description ?? ''))->getContent(),
+            get: function (): string {
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
+                    Markdown::convert($this->description ?? '')->getContent()
+                );
+
+                return $clean;
+            },
         );
     }
 
@@ -524,7 +527,7 @@ class Addon extends Model implements Commentable, Reportable, Trackable
      */
     protected function thumbnailUrl(): Attribute
     {
-        $disk = config('filesystems.asset_upload', 'public');
+        $disk = config()->string('filesystems.asset_upload', 'public');
 
         return Attribute::get(fn (): string => $this->thumbnail
             ? Storage::disk($disk)->url($this->thumbnail)

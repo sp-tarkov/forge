@@ -59,11 +59,13 @@ Route::middleware('auth.banned')->group(function (): void {
         ->name('user.banned');
 
     // Socialite OAuth Login
-    Route::controller(SocialiteController::class)->group(function (): void {
-        Route::get('/login/{provider}/redirect', 'redirect')
-            ->name('login.socialite');
-        Route::get('/login/{provider}/callback', 'callback');
-    });
+    Route::controller(SocialiteController::class)
+        ->middleware('throttle:10,1')
+        ->group(function (): void {
+            Route::get('/login/{provider}/redirect', 'redirect')
+                ->name('login.socialite');
+            Route::get('/login/{provider}/callback', 'callback');
+        });
 
     // Email verification route without auth requirement (Fortify override)
     Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
@@ -72,10 +74,12 @@ Route::middleware('auth.banned')->group(function (): void {
 
     // Comment unsubscribe route (no auth required for email links)
     Route::get('/comment/unsubscribe/{user}/{commentable_type}/{commentable_id}', [CommentSubscriptionController::class, 'unsubscribe'])
+        ->middleware('signed')
         ->name('comment.unsubscribe');
 
     // Chat unsubscribe route (no auth required for email links)
     Route::get('/chat/unsubscribe/{user}/{conversation}', [ChatSubscriptionController::class, 'unsubscribe'])
+        ->middleware('signed')
         ->name('chat.unsubscribe');
 
     // Authenticated routes
@@ -155,6 +159,7 @@ Route::middleware('auth.banned')->group(function (): void {
             Route::livewire('/admin/user-management', 'pages::admin.user-management')->name('admin.user-management');
             Route::livewire('/admin/role-management', 'pages::admin.role-management')->name('admin.role-management');
             Route::livewire('/admin/spt-versions', 'pages::admin.spt-version-management')->name('admin.spt-versions');
+            Route::livewire('/admin/file-verification', 'pages::admin.file-verification')->name('admin.file-verification');
         });
     });
 

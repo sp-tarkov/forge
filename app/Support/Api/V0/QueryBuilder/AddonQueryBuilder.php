@@ -11,7 +11,7 @@ use Override;
 /**
  * @extends AbstractQueryBuilder<Addon>
  */
-class AddonQueryBuilder extends AbstractQueryBuilder
+final class AddonQueryBuilder extends AbstractQueryBuilder
 {
     /**
      * Get the allowed filters for this query builder.

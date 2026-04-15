@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\NotificationType;
+use Carbon\CarbonImmutable;
 use Database\Factories\NotificationLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Carbon;
 use Override;
 
 /**
@@ -20,11 +20,11 @@ use Override;
  * @property int $user_id
  * @property NotificationType $notification_type
  * @property string $notification_class
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
  * @property Model $notifiable
  */
-class NotificationLog extends Model
+final class NotificationLog extends Model
 {
     /** @use HasFactory<NotificationLogFactory> */
     use HasFactory;

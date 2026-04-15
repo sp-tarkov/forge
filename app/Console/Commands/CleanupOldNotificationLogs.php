@@ -7,7 +7,7 @@ namespace App\Console\Commands;
 use App\Models\NotificationLog;
 use Illuminate\Console\Command;
 
-class CleanupOldNotificationLogs extends Command
+final class CleanupOldNotificationLogs extends Command
 {
     /**
      * The name and signature of the console command.
@@ -33,10 +33,11 @@ class CleanupOldNotificationLogs extends Command
 
         $this->info(sprintf('Cleaning up notification logs older than %d days...', $days));
 
+        /** @var int $deletedCount */
         $deletedCount = NotificationLog::query()->where('created_at', '<', $cutoffDate)->delete();
 
         if ($deletedCount > 0) {
-            $this->info(sprintf('Successfully deleted %s old notification logs.', $deletedCount));
+            $this->info(sprintf('Successfully deleted %d old notification logs.', $deletedCount));
         } else {
             $this->info('No old notification logs found to delete.');
         }

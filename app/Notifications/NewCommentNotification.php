@@ -7,6 +7,8 @@ namespace App\Notifications;
 use App\Contracts\Commentable;
 use App\Models\Comment;
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -14,8 +16,10 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-class NewCommentNotification extends Notification
+final class NewCommentNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * Create a new notification instance.
      */
@@ -42,7 +46,7 @@ class NewCommentNotification extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(User $notifiable): MailMessage
     {
         /** @var Commentable<Model>|null $commentable */
         $commentable = $this->comment->commentable;
@@ -67,10 +71,10 @@ class NewCommentNotification extends Notification
             ->line('')
             ->line('> '.Str::limit($this->comment->body, 500))
             ->line('')
-            ->action('View Comment', $this->comment->getUrl())
+            ->action('View Comment', $this->comment->getUrl() ?? '')
             ->line('')
             ->line(sprintf('You can [unsubscribe](%s) from notifications for this %s.', $unsubscribeUrl, $commentableType))
-            ->salutation('Regards,  '."\n".config('app.name'));
+            ->salutation('Regards,  '."\n".config()->string('app.name'));
     }
 
     /**
