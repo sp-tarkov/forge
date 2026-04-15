@@ -77,7 +77,7 @@
             <div class="p-6 mb-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
                 <div class="text-center text-gray-500 dark:text-gray-400 py-8">
                     <flux:icon.chat-bubble-left-ellipsis class="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    @if ($commentable->comments_disabled)
+                    @if (!$commentable->canReceiveComments())
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{{ __('Comments Disabled') }}
                         </h3>
                         <p>{{ __('Comments are disabled.') }}</p>
