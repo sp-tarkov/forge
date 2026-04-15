@@ -15,12 +15,7 @@ final class UserBlockingService
      */
     public function blockUser(User $blocker, User $blocked, ?string $reason = null): UserBlock
     {
-        return DB::transaction(function () use ($blocker, $blocked, $reason): UserBlock {
-            $block = $blocker->block($blocked, $reason);
-            $this->clearUserCaches($blocker, $blocked);
-
-            return $block;
-        });
+        return DB::transaction(fn (): UserBlock => $blocker->block($blocked, $reason));
     }
 
     /**
@@ -28,22 +23,6 @@ final class UserBlockingService
      */
     public function unblockUser(User $blocker, User $blocked): bool
     {
-        return DB::transaction(function () use ($blocker, $blocked): bool {
-            $result = $blocker->unblock($blocked);
-            if ($result) {
-                $this->clearUserCaches($blocker, $blocked);
-            }
-
-            return $result;
-        });
-    }
-
-    /**
-     * Clear caches for both users.
-     */
-    private function clearUserCaches(User $userOne, User $userTwo): void
-    {
-        cache()->forget(sprintf('user_%d_role_name', $userOne->id));
-        cache()->forget(sprintf('user_%d_role_name', $userTwo->id));
+        return DB::transaction(fn (): bool => $blocker->unblock($blocked));
     }
 }

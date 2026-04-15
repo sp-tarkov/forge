@@ -8,7 +8,6 @@ use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -157,9 +156,6 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
             $user->assignRole($this->selectedRoleId);
         }
 
-        // Clear the cached role name
-        Cache::forget(sprintf('user_%d_role_name', $user->id));
-
         Flux::toast(heading: 'Role Assigned', text: sprintf('Role assigned to %s successfully.', $user->name), variant: 'success');
 
         $this->closeAssignModal();
@@ -193,9 +189,6 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
 
         $user->user_role_id = null;
         $user->save();
-
-        // Clear the cached role name
-        Cache::forget(sprintf('user_%d_role_name', $user->id));
 
         Flux::toast(heading: 'Role Removed', text: sprintf('%s role removed from %s successfully.', $previousRoleName, $user->name), variant: 'success');
 
