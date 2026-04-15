@@ -5,8 +5,7 @@
         "build": "vp build",
         "dev": "vp dev",
         "lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt resources/",
-        "test:lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt --check resources/",
-        "postinstall": "npx playwright install || true"
+        "test:lint": "NODE_OPTIONS='--experimental-strip-types' vp fmt --check resources/"
     },
     "dependencies": {
         "@alpinejs/collapse": "^3.15.11",
