@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
+/** @implements Scope<Model> */
 final class PublishedScope implements Scope
 {
     /**

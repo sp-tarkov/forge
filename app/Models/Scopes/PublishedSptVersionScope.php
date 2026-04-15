@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
+/** @implements Scope<Model> */
 final class PublishedSptVersionScope implements Scope
 {
     /**
