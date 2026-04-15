@@ -161,7 +161,7 @@ new #[Layout('layouts::base')] #[Title('Moderation Actions - The Forge')] class 
     {
         ReportAction::query()->where('tracking_event_id', $trackingEventId)->where('report_id', $reportId)->delete();
 
-        Flux::toast(text: 'Action detached from report.');
+        Flux::toast(heading: 'Action Detached', text: 'The action has been detached from the report.', variant: 'success');
         $this->dispatch('$refresh');
     }
 

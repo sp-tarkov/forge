@@ -377,9 +377,9 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::ADDON_VERSION_EDIT, $this->addonVersion);
 
-        Flux::toast(text: 'Addon Version has been Successfully Updated');
+        Flux::toast(heading: 'Version Updated', text: 'Addon version has been successfully updated.', variant: 'success');
 
-        $this->redirect($this->addonVersion->addon->detail_url);
+        $this->redirect($this->addonVersion->addon->detail_url, navigate: true);
     }
 
     /**

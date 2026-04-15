@@ -462,7 +462,7 @@ new #[Layout('layouts::base')] class extends Component
                 $conversation->unarchiveFor($user);
                 $this->dispatch('conversation-updated')->to('navigation-chat');
             } else {
-                Flux::toast(text: 'Cannot start conversation with this user.', variant: 'danger');
+                Flux::toast(heading: 'Error', text: 'Cannot start a conversation with this user.', variant: 'danger');
                 $this->closeNewConversationModal();
 
                 return;
@@ -768,9 +768,9 @@ new #[Layout('layouts::base')] class extends Component
         $isEnabled = $this->selectedConversation->toggleNotificationForUser($user);
 
         if ($isEnabled) {
-            Flux::toast(text: 'Notifications enabled for this conversation');
+            Flux::toast(heading: 'Notifications Enabled', text: 'Notifications have been enabled for this conversation.', variant: 'success');
         } else {
-            Flux::toast(text: 'Notifications disabled for this conversation');
+            Flux::toast(heading: 'Notifications Disabled', text: 'Notifications have been disabled for this conversation.', variant: 'success');
         }
     }
 
@@ -864,7 +864,7 @@ new #[Layout('layouts::base')] class extends Component
         if ($this->isUserBlocked()) {
             // Unblock the user
             $user->unblock($otherUser);
-            Flux::toast(text: 'User unblocked successfully');
+            Flux::toast(heading: 'User Unblocked', text: 'The user has been successfully unblocked.', variant: 'success');
 
             // Broadcast the unblock event for real-time updates
             broadcast(new UserUnblocked($user, $otherUser))->toOthers();
@@ -872,7 +872,7 @@ new #[Layout('layouts::base')] class extends Component
         } else {
             // Block the user
             $user->block($otherUser, $this->blockReason ?: null);
-            Flux::toast(text: 'User blocked successfully');
+            Flux::toast(heading: 'User Blocked', text: 'The user has been successfully blocked.', variant: 'success');
 
             // Broadcast the block event for real-time updates
             broadcast(new UserBlocked($user, $otherUser))->toOthers();

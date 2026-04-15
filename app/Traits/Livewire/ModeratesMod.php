@@ -33,11 +33,11 @@ trait ModeratesMod
 
         $mod->delete();
 
-        Flux::toast(text: 'Mod successfully deleted!');
+        Flux::toast(heading: 'Mod Deleted', text: 'The mod has been successfully deleted.', variant: 'success');
 
         // Redirect to the listing if the mod was deleted from the detail page.
         if ($route === 'mod.show') {
-            $this->redirectRoute('mods');
+            $this->redirectRoute('mods', navigate: true);
         }
     }
 
@@ -59,6 +59,6 @@ trait ModeratesMod
             reason: $reason ?: null
         );
 
-        Flux::toast(text: 'Mod successfully unfeatured!');
+        Flux::toast(heading: 'Mod Unfeatured', text: 'The mod has been successfully unfeatured.', variant: 'success');
     }
 }

@@ -65,7 +65,7 @@ new class extends Component
 
         Track::event(TrackingEventType::PASSWORD_CHANGE);
 
-        Flux::toast(text: 'Password updated.');
+        Flux::toast(heading: 'Password Updated', text: 'Your password has been updated successfully.', variant: 'success');
     }
 
     /**

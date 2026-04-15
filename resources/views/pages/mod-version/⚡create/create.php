@@ -379,7 +379,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->guidSaved = true;
 
         // Show success message
-        Flux::toast(text: 'Mod GUID has been successfully saved.');
+        Flux::toast(heading: 'GUID Saved', text: 'Mod GUID has been successfully saved.', variant: 'success');
     }
 
     /**
@@ -409,7 +409,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->categorySaved = true;
 
         // Show success message
-        Flux::toast(text: 'Mod category has been successfully saved.');
+        Flux::toast(heading: 'Category Saved', text: 'Mod category has been successfully saved.', variant: 'success');
     }
 
     /**
@@ -526,10 +526,10 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::VERSION_CREATE, $modVersion);
 
-        Flux::toast(text: 'Mod version has been successfully created.');
+        Flux::toast(heading: 'Version Created', text: 'Mod version has been successfully created.', variant: 'success');
 
         // Redirect to the mod version page.
-        $this->redirect(route('mod.show', [$this->mod->id, $this->mod->slug]));
+        $this->redirect(route('mod.show', [$this->mod->id, $this->mod->slug]), navigate: true);
     }
 
     /**

@@ -102,16 +102,18 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
         $verifiable = $originalResult->verifiable;
 
         if (! $verifiable instanceof ModVersion && ! $verifiable instanceof AddonVersion) {
-            Flux::toast(text: 'The associated version no longer exists.', variant: 'danger');
+            Flux::toast(heading: 'Error', text: 'The associated version no longer exists.', variant: 'danger');
 
             return;
         }
 
         $result = VerificationResult::dispatchFor($verifiable, VerificationTrigger::Manual);
 
-        Flux::toast(text: $result instanceof VerificationResult
-            ? 'Re-verification job dispatched.'
-            : 'A verification is already pending for this version.');
+        if ($result instanceof VerificationResult) {
+            Flux::toast(heading: 'Verification Dispatched', text: 'Re-verification job has been dispatched.', variant: 'success');
+        } else {
+            Flux::toast(heading: 'Already Pending', text: 'A verification is already pending for this version.', variant: 'warning');
+        }
     }
 
     /**

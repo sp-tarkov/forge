@@ -33,6 +33,6 @@ trait ModeratesModVersion
 
         $version->delete();
 
-        Flux::toast(text: 'Mod version successfully deleted!');
+        Flux::toast(heading: 'Version Deleted', text: 'The mod version has been successfully deleted.', variant: 'success');
     }
 }

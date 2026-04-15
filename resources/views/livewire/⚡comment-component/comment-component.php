@@ -521,7 +521,7 @@ new class extends Component
             reason: $this->moderationReason ?: null
         );
 
-        Flux::toast(text: 'Comment successfully pinned!');
+        Flux::toast(heading: 'Comment Pinned', text: 'The comment has been successfully pinned.', variant: 'success');
         $this->showPinModal = false;
         $this->pinningCommentId = null;
         $this->moderationReason = '';
@@ -550,7 +550,7 @@ new class extends Component
             reason: $this->moderationReason ?: null
         );
 
-        Flux::toast(text: 'Comment successfully unpinned!');
+        Flux::toast(heading: 'Comment Unpinned', text: 'The comment has been successfully unpinned.', variant: 'success');
         $this->showUnpinModal = false;
         $this->pinningCommentId = null;
         $this->moderationReason = '';
@@ -601,7 +601,7 @@ new class extends Component
         $this->softDeletingCommentId = null;
         $this->moderationReason = '';
 
-        Flux::toast(text: 'Comment successfully deleted!');
+        Flux::toast(heading: 'Comment Deleted', text: 'The comment has been successfully deleted.', variant: 'success');
     }
 
     /**
@@ -643,7 +643,7 @@ new class extends Component
         $this->showModOwnerSoftDeleteModal = false;
         $this->modOwnerSoftDeletingCommentId = null;
 
-        Flux::toast(text: 'Comment successfully deleted!');
+        Flux::toast(heading: 'Comment Deleted', text: 'The comment has been successfully deleted.', variant: 'success');
     }
 
     /**
@@ -683,7 +683,7 @@ new class extends Component
         $this->showModOwnerRestoreModal = false;
         $this->modOwnerRestoringCommentId = null;
 
-        Flux::toast(text: 'Comment successfully restored!');
+        Flux::toast(heading: 'Comment Restored', text: 'The comment has been successfully restored.', variant: 'success');
     }
 
     /**
@@ -731,7 +731,7 @@ new class extends Component
         $this->restoringCommentId = null;
         $this->moderationReason = '';
 
-        Flux::toast(text: 'Comment successfully restored!');
+        Flux::toast(heading: 'Comment Restored', text: 'The comment has been successfully restored.', variant: 'success');
     }
 
     /**
@@ -788,7 +788,7 @@ new class extends Component
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, spam: true);
 
-        Flux::toast(text: 'Comment marked as spam!');
+        Flux::toast(heading: 'Marked as Spam', text: 'The comment has been marked as spam.', variant: 'success');
         $this->showMarkAsSpamModal = false;
         $this->spamActionCommentId = null;
         $this->moderationReason = '';
@@ -822,7 +822,7 @@ new class extends Component
         // Dispatch event to update the ribbon component.
         $this->dispatch('comment-updated', $commentId, spam: false);
 
-        Flux::toast(text: 'Comment marked as clean!');
+        Flux::toast(heading: 'Marked as Clean', text: 'The comment has been marked as clean.', variant: 'success');
         $this->showMarkAsCleanModal = false;
         $this->spamActionCommentId = null;
         $this->moderationReason = '';
@@ -869,7 +869,7 @@ new class extends Component
         $this->showCheckForSpamModal = false;
         $this->spamActionCommentId = null;
 
-        Flux::toast(text: 'Checking comment for spam...');
+        Flux::toast(heading: 'Spam Check', text: 'Checking comment for spam...');
     }
 
     /**
@@ -902,13 +902,13 @@ new class extends Component
 
             // Show the result message based on spam status and metadata.
             if ($comment->isSpam()) {
-                Flux::toast(text: 'Comment has been identified as spam.', variant: 'warning');
+                Flux::toast(heading: 'Spam Detected', text: 'The comment has been identified as spam.', variant: 'warning');
             } elseif ($comment->spam_metadata && isset($comment->spam_metadata['error'])) {
                 /** @var string $errorMessage */
                 $errorMessage = $comment->spam_metadata['error_message'] ?? 'API error';
-                Flux::toast(text: 'Spam check failed: '.$errorMessage, variant: 'danger');
+                Flux::toast(heading: 'Spam Check Failed', text: 'Spam check failed: '.$errorMessage, variant: 'danger');
             } else {
-                Flux::toast(text: 'Comment has been verified as clean.');
+                Flux::toast(heading: 'Comment Clean', text: 'The comment has been verified as clean.', variant: 'success');
             }
         }
     }
@@ -961,7 +961,7 @@ new class extends Component
         $this->hardDeleteDescendantCount = 0;
         $this->moderationReason = '';
 
-        Flux::toast(text: 'Comment thread permanently deleted!');
+        Flux::toast(heading: 'Thread Deleted', text: 'The comment thread has been permanently deleted.', variant: 'success');
     }
 
     /**

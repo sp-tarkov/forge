@@ -278,9 +278,9 @@ new #[Layout('layouts::base')] class extends Component
 
         Track::event(TrackingEventType::ADDON_EDIT, $this->addon);
 
-        Flux::toast(text: 'Addon has been Successfully Updated');
+        Flux::toast(heading: 'Addon Updated', text: 'Your addon has been successfully updated.', variant: 'success');
 
-        $this->redirect($this->addon->detail_url);
+        $this->redirect($this->addon->detail_url, navigate: true);
     }
 
     /**
@@ -306,7 +306,7 @@ new #[Layout('layouts::base')] class extends Component
             $this->addon->thumbnail_hash = null;
             $this->addon->save();
 
-            Flux::toast(text: 'Thumbnail has been deleted');
+            Flux::toast(heading: 'Thumbnail Deleted', text: 'The addon thumbnail has been deleted.', variant: 'success');
         }
     }
 

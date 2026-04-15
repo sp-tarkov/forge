@@ -96,7 +96,7 @@ new class extends Component
             return to_route('profile.show');
         }
 
-        Flux::toast(text: 'Profile updated.');
+        Flux::toast(heading: 'Profile Updated', text: 'Your profile has been updated successfully.', variant: 'success');
 
         $this->dispatch('refresh-navigation-menu');
 

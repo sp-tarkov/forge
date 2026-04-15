@@ -151,7 +151,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
-            Flux::toast(text: 'Cannot ban other staff members.', variant: 'danger');
+            Flux::toast(heading: 'Error', text: 'Cannot ban other staff members.', variant: 'danger');
 
             return;
         }
@@ -219,7 +219,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         // Prevent banning other administrators
         if ($user->isAdmin()) {
-            Flux::toast(text: 'Cannot ban other staff members.', variant: 'danger');
+            Flux::toast(heading: 'Error', text: 'Cannot ban other staff members.', variant: 'danger');
             $this->closeBanModal();
 
             return;
@@ -240,7 +240,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         Track::event(TrackingEventType::USER_BAN, $user);
 
-        Flux::toast(text: sprintf('User %s has been banned successfully.', $user->name));
+        Flux::toast(heading: 'User Banned', text: sprintf('User %s has been banned successfully.', $user->name), variant: 'success');
         $this->closeBanModal();
     }
 
@@ -254,7 +254,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         Track::event(TrackingEventType::USER_UNBAN, $user);
 
-        Flux::toast(text: sprintf('User %s has been unbanned successfully.', $user->name));
+        Flux::toast(heading: 'User Unbanned', text: sprintf('User %s has been unbanned successfully.', $user->name), variant: 'success');
         $this->closeUnbanModal();
     }
 
@@ -265,7 +265,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
     {
         // Prevent banning the user's current IP address
         if ($ip === request()->ip()) {
-            Flux::toast(text: 'Cannot ban your current IP address.', variant: 'danger');
+            Flux::toast(heading: 'Error', text: 'Cannot ban your current IP address.', variant: 'danger');
 
             return;
         }
@@ -282,7 +282,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
             // Unban IP
             $existingBan->delete();
             Track::event(TrackingEventType::IP_UNBAN, additionalData: ['ip' => $ip]);
-            Flux::toast(text: sprintf('IP address %s has been unbanned.', $ip));
+            Flux::toast(heading: 'IP Unbanned', text: sprintf('IP address %s has been unbanned.', $ip), variant: 'success');
         } else {
             // Ban IP with 1 month expiry
             Ban::query()->create([
@@ -295,7 +295,7 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
                 'expired_at' => now()->addMonth(),
             ]);
             Track::event(TrackingEventType::IP_BAN, additionalData: ['ip' => $ip]);
-            Flux::toast(text: sprintf('IP address %s has been banned for 1 month.', $ip));
+            Flux::toast(heading: 'IP Banned', text: sprintf('IP address %s has been banned for 1 month.', $ip), variant: 'success');
         }
 
         // Refresh IP data if we have a selected user

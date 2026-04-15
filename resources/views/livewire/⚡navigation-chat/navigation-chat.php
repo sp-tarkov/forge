@@ -116,7 +116,7 @@ new class extends Component
 
         // Check if either user has blocked the other
         if ($user->hasBlocked($otherUser) || $user->isBlockedBy($otherUser)) {
-            Flux::toast(text: 'You cannot start a conversation with this user.', variant: 'danger');
+            Flux::toast(heading: 'Error', text: 'You cannot start a conversation with this user.', variant: 'danger');
             $this->closeNewConversationModal();
 
             return;

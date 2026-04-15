@@ -34,11 +34,11 @@ trait ModeratesAddon
 
         $addon->delete();
 
-        Flux::toast(text: 'Addon successfully deleted!');
+        Flux::toast(heading: 'Addon Deleted', text: 'The addon has been successfully deleted.', variant: 'success');
 
         // Redirect to the parent mod page if the addon was deleted from the detail page.
         if ($route === 'addon.show' && $addon->mod) {
-            $this->redirectRoute('mod.show', [$addon->mod->id, $addon->mod->slug]);
+            $this->redirectRoute('mod.show', [$addon->mod->id, $addon->mod->slug], navigate: true);
         }
     }
 
@@ -62,6 +62,6 @@ trait ModeratesAddon
 
         $version->delete();
 
-        Flux::toast(text: 'Addon version successfully deleted!');
+        Flux::toast(heading: 'Version Deleted', text: 'The addon version has been successfully deleted.', variant: 'success');
     }
 }

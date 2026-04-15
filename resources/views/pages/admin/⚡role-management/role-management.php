@@ -160,7 +160,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
         // Clear the cached role name
         Cache::forget(sprintf('user_%d_role_name', $user->id));
 
-        Flux::toast(text: sprintf('Role assigned to %s successfully.', $user->name));
+        Flux::toast(heading: 'Role Assigned', text: sprintf('Role assigned to %s successfully.', $user->name), variant: 'success');
 
         $this->closeAssignModal();
     }
@@ -183,7 +183,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
 
         // Prevent admins from removing their own role
         if ($user->id === auth()->id()) {
-            Flux::toast(text: 'You cannot remove your own role.', variant: 'danger');
+            Flux::toast(heading: 'Error', text: 'You cannot remove your own role.', variant: 'danger');
             $this->closeRemoveModal();
 
             return;
@@ -197,7 +197,7 @@ new #[Layout('layouts::base')] #[Title('Role Management - The Forge')] class ext
         // Clear the cached role name
         Cache::forget(sprintf('user_%d_role_name', $user->id));
 
-        Flux::toast(text: sprintf('%s role removed from %s successfully.', $previousRoleName, $user->name));
+        Flux::toast(heading: 'Role Removed', text: sprintf('%s role removed from %s successfully.', $previousRoleName, $user->name), variant: 'success');
 
         $this->closeRemoveModal();
     }

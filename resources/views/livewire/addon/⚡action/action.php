@@ -133,7 +133,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, disabled: true);
 
-        Flux::toast(text: 'Addon successfully disabled!');
+        Flux::toast(heading: 'Addon Disabled', text: 'The addon has been successfully disabled.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -163,7 +163,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, disabled: false);
 
-        Flux::toast(text: 'Addon successfully enabled!');
+        Flux::toast(heading: 'Addon Enabled', text: 'The addon has been successfully enabled.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -195,7 +195,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, published: true);
 
-        Flux::toast(text: 'Addon successfully published!');
+        Flux::toast(heading: 'Addon Published', text: 'The addon has been successfully published.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -225,7 +225,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('addon-updated.'.$this->addonId, published: false);
 
-        Flux::toast(text: 'Addon successfully unpublished!');
+        Flux::toast(heading: 'Addon Unpublished', text: 'The addon has been successfully unpublished.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -256,7 +256,7 @@ new class extends Component
         $this->addonDetached = false;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) Auth::id()));
 
-        Flux::toast(text: 'Addon successfully attached!');
+        Flux::toast(heading: 'Addon Attached', text: 'The addon has been successfully attached.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -287,7 +287,7 @@ new class extends Component
         $this->addonDetached = true;
         $this->clearPermissionCache(sprintf('addon.%d.permissions.%s', $this->addonId, (string) auth()->id()));
 
-        Flux::toast(text: 'Addon successfully detached!');
+        Flux::toast(heading: 'Addon Detached', text: 'The addon has been successfully detached.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;

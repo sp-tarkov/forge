@@ -136,7 +136,7 @@ new class extends Component
 
         $this->dispatch('mod-updated.'.$this->modId, featured: true);
 
-        Flux::toast(text: 'Mod successfully featured!');
+        Flux::toast(heading: 'Mod Featured', text: 'The mod has been successfully featured.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -162,7 +162,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, featured: false);
 
-        Flux::toast(text: 'Mod successfully unfeatured!');
+        Flux::toast(heading: 'Mod Unfeatured', text: 'The mod has been successfully unfeatured.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -192,7 +192,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, disabled: true);
 
-        Flux::toast(text: 'Mod successfully disabled!');
+        Flux::toast(heading: 'Mod Disabled', text: 'The mod has been successfully disabled.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -222,7 +222,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, disabled: false);
 
-        Flux::toast(text: 'Mod successfully enabled!');
+        Flux::toast(heading: 'Mod Enabled', text: 'The mod has been successfully enabled.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -254,7 +254,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, published: true);
 
-        Flux::toast(text: 'Mod successfully published!');
+        Flux::toast(heading: 'Mod Published', text: 'The mod has been successfully published.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
@@ -284,7 +284,7 @@ new class extends Component
         // Dispatch event to update ribbon
         $this->dispatch('mod-updated.'.$this->modId, published: false);
 
-        Flux::toast(text: 'Mod successfully unpublished!');
+        Flux::toast(heading: 'Mod Unpublished', text: 'The mod has been successfully unpublished.', variant: 'success');
 
         $this->moderationReason = '';
         $this->menuOpen = false;
