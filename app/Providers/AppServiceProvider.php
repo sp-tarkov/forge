@@ -8,7 +8,6 @@ use App\Contracts\DependencyResolver;
 use App\Contracts\Geolocator;
 use App\Contracts\SpamChecker;
 use App\Enums\TrackingEventType;
-use App\Exceptions\Api\V0\InvalidQuery;
 use App\Facades\CachedGate;
 use App\Facades\Track;
 use App\Http\Controllers\VisitorsPresenceBroadcastingController;
@@ -20,7 +19,6 @@ use App\Services\DependencyVersionService;
 use App\Services\GeolocationService;
 use App\View\Composers\PaginationComposer;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Registered;
@@ -36,14 +34,10 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Mchev\Banhammer\Middleware\AuthBanned;
 use SocialiteProviders\Discord\Provider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
-use Spatie\LaravelFlare\Facades\Flare;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Throwable;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -128,20 +122,6 @@ final class AppServiceProvider extends ServiceProvider
             $user = $event->user instanceof User ? $event->user : null;
             Track::event(TrackingEventType::REGISTER, $user);
         });
-
-        // Filter out specific exceptions from being reported to Flare.
-        Flare::filterExceptionsUsing(
-            fn (Throwable $throwable): bool => ! in_array(
-                $throwable::class,
-                [
-                    ValidationException::class, // Used for typical API responses.
-                    NotFoundHttpException::class, // Used for typical API responses.
-                    AuthenticationException::class, // Used for typical API responses.
-                    InvalidQuery::class, // Used for typical API responses.
-                ],
-                true
-            )
-        );
 
     }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Models\UserRole;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 describe('RoleManagement Authorization', function (): void {
@@ -185,7 +184,7 @@ describe('RoleManagement Role Assignment', function (): void {
             ->assertSet('userSearch', '');
     });
 
-    it('clears cache after role assignment', function (): void {
+    it('persists role after assignment', function (): void {
         $admin = User::factory()->admin()->create();
         $targetUser = User::factory()->create();
         $moderatorRole = UserRole::query()->firstOrCreate(
@@ -193,16 +192,13 @@ describe('RoleManagement Role Assignment', function (): void {
             ['short_name' => 'Mod', 'description' => 'A moderator', 'color_class' => 'orange', 'icon' => 'wrench']
         );
 
-        // Prime the cache
-        Cache::put(sprintf('user_%d_role_name', $targetUser->id), 'test', 3600);
-
         Livewire::actingAs($admin)
             ->test('pages::admin.role-management')
             ->call('showAssignRoleModal', $targetUser->id)
             ->set('selectedRoleId', $moderatorRole->id)
             ->call('assignRole');
 
-        expect(Cache::has(sprintf('user_%d_role_name', $targetUser->id)))->toBeFalse();
+        expect($targetUser->fresh()->user_role_id)->toBe($moderatorRole->id);
     });
 
     it('can change role from one to another', function (): void {
@@ -256,19 +252,16 @@ describe('RoleManagement Role Removal', function (): void {
         expect($admin->fresh()->user_role_id)->not->toBeNull();
     });
 
-    it('clears cache after role removal', function (): void {
+    it('persists role removal', function (): void {
         $admin = User::factory()->admin()->create();
         $moderator = User::factory()->moderator()->create();
-
-        // Prime the cache
-        Cache::put(sprintf('user_%d_role_name', $moderator->id), 'moderator', 3600);
 
         Livewire::actingAs($admin)
             ->test('pages::admin.role-management')
             ->call('showRemoveRoleModal', $moderator->id)
             ->call('removeRole');
 
-        expect(Cache::has(sprintf('user_%d_role_name', $moderator->id)))->toBeFalse();
+        expect($moderator->fresh()->user_role_id)->toBeNull();
     });
 });
 

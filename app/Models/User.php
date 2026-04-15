@@ -31,7 +31,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -458,10 +457,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
      */
     public function isMod(): bool
     {
-        // Cache role lookup for performance
-        $roleName = $this->rememberRoleName();
-
-        return $roleName === 'moderator';
+        return $this->roleName() === 'moderator';
     }
 
     /**
@@ -469,10 +465,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
      */
     public function isSeniorMod(): bool
     {
-        // Cache role lookup for performance
-        $roleName = $this->rememberRoleName();
-
-        return $roleName === 'senior moderator';
+        return $this->roleName() === 'senior moderator';
     }
 
     /**
@@ -480,10 +473,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
      */
     public function isAdmin(): bool
     {
-        // Cache role lookup for performance
-        $roleName = $this->rememberRoleName();
-
-        return $roleName === 'staff';
+        return $this->roleName() === 'staff';
     }
 
     /**
@@ -524,8 +514,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
         }
 
         $this->role()->associate($roleId);
-
-        Cache::forget(sprintf('user_%d_role_name', $this->id));
+        $this->unsetRelation('role');
 
         return $this->save();
     }
@@ -713,18 +702,6 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     }
 
     /**
-     * Get and cache the user's role name.
-     */
-    protected function rememberRoleName(): ?string
-    {
-        return Cache::remember(sprintf('user_%d_role_name', $this->id), now()->addHour(), function () {
-            $this->loadMissing('role');
-
-            return $this->role ? Str::lower($this->role->name) : null;
-        });
-    }
-
-    /**
      * The link to the user's profile page.
      *
      * @return Attribute<string, never>
@@ -905,5 +882,15 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             ->orderByRaw('CASE WHEN LOWER(name) = LOWER(?) THEN 0 WHEN LOWER(name) LIKE LOWER(?) THEN 1 ELSE 2 END', [$search, $search.'%'])
             ->orderBy('name')
             ->limit(10);
+    }
+
+    /**
+     * Get the user's lowercased role name, loading the relationship if needed.
+     */
+    private function roleName(): ?string
+    {
+        $this->loadMissing('role');
+
+        return $this->role ? Str::lower($this->role->name) : null;
     }
 }
