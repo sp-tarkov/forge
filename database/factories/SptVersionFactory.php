@@ -17,7 +17,7 @@ final class SptVersionFactory extends Factory
     public function definition(): array
     {
         return [
-            'version' => $this->faker->numerify('#.#.#'),
+            'version' => $this->faker->unique()->numerify('#.#.#'),
             'color_class' => $this->faker->randomElement(['red', 'green', 'emerald', 'lime', 'yellow', 'grey']),
             'link' => $this->faker->url(),
             'publish_date' => Date::now()->subDays(7), // Default to published (a week ago)
