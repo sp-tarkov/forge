@@ -13,7 +13,6 @@ use Livewire\Exceptions\TooManyCallsException;
 use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
 use Spatie\Honeypot\ProtectAgainstSpam;
-use Spatie\LaravelFlare\Facades\Flare;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -48,9 +47,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-
-        // Register the Flare exception handler.
-        Flare::handles($exceptions);
 
         // Don't report Livewire payload guard exceptions — these are security
         // limits working as intended (typically triggered by bots/abuse).

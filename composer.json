@@ -34,7 +34,6 @@
         "shetabit/visitor": "^4.5.4",
         "socialiteproviders/discord": "^4.2",
         "spatie/laravel-discord-alerts": "^1.9.1",
-        "spatie/laravel-flare": "^2.8.0",
         "spatie/laravel-honeypot": "^4.7.1",
         "sqids/sqids": "^0.5.0",
         "knuckleswtf/scribe": "^5.9",
