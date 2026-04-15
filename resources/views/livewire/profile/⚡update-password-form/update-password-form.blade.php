@@ -57,7 +57,7 @@
     </x-slot>
 
     <x-slot name="actions">
-        <flux:button variant="primary">
+        <flux:button type="submit" variant="primary">
             {{ __('Save') }}
         </flux:button>
     </x-slot>

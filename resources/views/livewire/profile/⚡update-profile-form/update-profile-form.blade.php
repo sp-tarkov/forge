@@ -159,6 +159,7 @@
 
     <x-slot name="actions">
         <flux:button
+            type="submit"
             variant="primary"
             wire:loading.attr="disabled"
             wire:target="photo,cover"
