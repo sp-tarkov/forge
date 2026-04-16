@@ -45,7 +45,7 @@ final class Handler
             );
         }
 
-        if ($e instanceof InvalidQuery) {
+        if ($e instanceof InvalidQueryException) {
             return ApiResponse::error(
                 $e->getMessage(),
                 Response::HTTP_BAD_REQUEST,

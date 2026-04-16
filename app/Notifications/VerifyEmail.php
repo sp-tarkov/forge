@@ -6,9 +6,11 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\VerifyEmail as OriginalVerifyEmail;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -31,19 +33,23 @@ final class VerifyEmail extends OriginalVerifyEmail implements ShouldQueue
 
     /**
      * Build the verification URL, hashing the email with sha256 instead of sha1.
+     *
+     * @param  Model&MustVerifyEmail  $notifiable
      */
-    protected function verificationUrl($notifiable): string
+    protected function verificationUrl($notifiable): string // @pest-ignore-type
     {
         if (self::$createUrlCallback) {
-            return call_user_func(self::$createUrlCallback, $notifiable);
+            $url = call_user_func(self::$createUrlCallback, $notifiable);
+
+            return is_string($url) ? $url : '';
         }
 
         return URL::temporarySignedRoute(
             'verification.verify',
-            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+            Date::now()->addMinutes(Config::integer('auth.verification.expire', 60)),
             [
                 'id' => $notifiable->getKey(),
-                'hash' => hash('sha256', (string) $notifiable->getEmailForVerification()),
+                'hash' => hash('sha256', $notifiable->getEmailForVerification()),
             ]
         );
     }

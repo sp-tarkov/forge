@@ -52,9 +52,7 @@ final class CommentCreateForm extends Form
     {
         $this->validate();
 
-        if (! $commentable instanceof Model) {
-            throw new InvalidArgumentException('Commentable must be an Eloquent Model instance.');
-        }
+        throw_unless($commentable instanceof Model, InvalidArgumentException::class, 'Commentable must be an Eloquent Model instance.');
 
         return DB::transaction(function () use ($commentable): Comment {
             $comment = new Comment;

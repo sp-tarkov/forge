@@ -7,7 +7,7 @@ use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Services\CommentSpamChecker;
+use App\Services\CommentSpamService;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 
@@ -123,7 +123,7 @@ describe('Comment Spam Ribbon Updates', function (): void {
         Config::set('akismet.enabled', false);
 
         $job = new CheckCommentForSpam($comment, isRecheck: true);
-        $job->handle(resolve(CommentSpamChecker::class));
+        $job->handle(resolve(CommentSpamService::class));
 
         // Verify that the comment was marked as clean
         $comment->refresh();

@@ -6,4 +6,4 @@ namespace App\Exceptions\Api\V0;
 
 use Exception;
 
-final class InvalidQuery extends Exception {}
+final class InvalidQueryException extends Exception {}
