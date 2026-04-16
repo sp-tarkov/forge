@@ -16,7 +16,7 @@ use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-#[Timeout(60)]
+#[Timeout(120)]
 #[Backoff([1, 5, 10])]
 #[Tries(3)]
 final class ResolveSptVersionsJob implements ShouldBeUnique, ShouldQueue
