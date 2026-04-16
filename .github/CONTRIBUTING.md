@@ -37,7 +37,7 @@ We have a number of tests that are run automatically when you submit a pull requ
 
 ### Before Submitting
 
-Before submitting a pull request, run `composer sendit` to execute all quality checks in sequence: Rector, Prettier, Pint, spell check, type coverage, and the full test suite.
+Before submitting a pull request, run `composer sendit` to execute all quality checks in sequence: formatting, linting, and the full test suite.
 
 ```
 composer sendit

@@ -74,10 +74,10 @@
     },
     "scripts": {
         "rector": [
-            "./vendor/bin/rector process --dry-run --config=rector.php"
-        ],
-        "rector-fix": [
             "./vendor/bin/rector process --config=rector.php"
+        ],
+        "rector:check": [
+            "./vendor/bin/rector process --dry-run --config=rector.php"
         ],
         "coverage": [
             "./vendor/bin/pest --type-coverage --min=100"
@@ -88,28 +88,41 @@
         "pint": [
             "./vendor/bin/pint --config pint.json"
         ],
+        "pint:check": [
+            "./vendor/bin/pint --config pint.json --test"
+        ],
         "spell": [
             "typos . --config ./typos.toml && echo 'DONE'"
         ],
-        "lint": [
+        "format": [
+            "@pint",
             "npm run lint"
         ],
-        "lint:check": [
+        "format:check": [
+            "@pint:check",
             "npm run test:lint"
+        ],
+        "lint": [
+            "@rector",
+            "@phpstan",
+            "@coverage",
+            "@spell"
+        ],
+        "lint:check": [
+            "@rector:check",
+            "@phpstan",
+            "@coverage",
+            "@spell"
+        ],
+        "sendit": [
+            "Composer\\Config::disableProcessTimeout",
+            "@format",
+            "@lint",
+            "@php artisan test --parallel"
         ],
         "update:requirements": [
             "composer bump",
             "npx npm-check-updates -u"
-        ],
-        "sendit": [
-            "Composer\\Config::disableProcessTimeout",
-            "composer lint",
-            "composer rector-fix",
-            "composer coverage",
-            "composer phpstan",
-            "composer pint",
-            "composer spell",
-            "@php artisan test --parallel"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
