@@ -14,7 +14,8 @@
         </h2>
         <div class="flex items-center gap-2">
             <flux:button
-                wire:click="markAsRead"
+                x-data
+                x-on:click="Livewire.dispatch('mark-created-as-read')"
                 size="sm"
                 variant="primary"
                 icon="check"

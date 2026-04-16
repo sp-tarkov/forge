@@ -228,31 +228,31 @@ describe('timestamp tracking', function (): void {
 });
 
 describe('markAsRead action', function (): void {
-    it('updates mods_updated_viewed_at when markAsRead is called', function (): void {
+    it('updates mods_updated_viewed_at when the mark-updated-as-read event is dispatched', function (): void {
         $user = User::factory()->create(['mods_updated_viewed_at' => null]);
         SptVersion::factory()->create(['version' => '3.11.4']);
 
         Livewire::actingAs($user)->test('pages::mod.recently-updated')
-            ->call('markAsRead');
+            ->dispatch('mark-updated-as-read');
 
         $user->refresh();
         expect($user->mods_updated_viewed_at)->not->toBeNull();
         expect($user->mods_updated_viewed_at->diffInSeconds(now()))->toBeLessThan(5);
     });
 
-    it('bumps an existing mods_updated_viewed_at timestamp when markAsRead is called', function (): void {
+    it('bumps an existing mods_updated_viewed_at timestamp when the mark-updated-as-read event is dispatched', function (): void {
         $oldTimestamp = now()->subWeek();
         $user = User::factory()->create(['mods_updated_viewed_at' => $oldTimestamp]);
         SptVersion::factory()->create(['version' => '3.11.4']);
 
         Livewire::actingAs($user)->test('pages::mod.recently-updated')
-            ->call('markAsRead');
+            ->dispatch('mark-updated-as-read');
 
         $user->refresh();
         expect($user->mods_updated_viewed_at->gt($oldTimestamp))->toBeTrue();
     });
 
-    it('clears the navigation badge cache when markAsRead is called', function (): void {
+    it('clears the navigation badge cache when the mark-updated-as-read event is dispatched', function (): void {
         $user = User::factory()->create(['mods_updated_viewed_at' => null]);
         SptVersion::factory()->create(['version' => '3.11.4']);
 
@@ -260,12 +260,12 @@ describe('markAsRead action', function (): void {
         Cache::put($cacheKey, 7, now()->addHour());
 
         Livewire::actingAs($user)->test('pages::mod.recently-updated')
-            ->call('markAsRead');
+            ->dispatch('mark-updated-as-read');
 
         expect(Cache::has($cacheKey))->toBeFalse();
     });
 
-    it('leaves the currently visible list intact after markAsRead is called', function (): void {
+    it('leaves the currently visible list intact after the mark-updated-as-read event is dispatched', function (): void {
         $oldTimestamp = now()->subHours(2);
         $user = User::factory()->create(['mods_updated_viewed_at' => $oldTimestamp]);
         SptVersion::factory()->create(['version' => '3.11.4']);
@@ -277,7 +277,7 @@ describe('markAsRead action', function (): void {
         ]);
 
         $component = Livewire::actingAs($user)->test('pages::mod.recently-updated')
-            ->call('markAsRead');
+            ->dispatch('mark-updated-as-read');
 
         $mods = $component->viewData('mods');
         expect($mods->count())->toBe(1);

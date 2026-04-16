@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -62,6 +63,7 @@ new #[Layout('layouts::base')] class extends Component
      * The component's $previousViewedAt is intentionally left untouched so the list
      * remains visible for this visit — the filter only resets on the next mount.
      */
+    #[On('mark-created-as-read')]
     public function markAsRead(): void
     {
         $user = Auth::user();
