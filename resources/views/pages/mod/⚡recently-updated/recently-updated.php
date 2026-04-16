@@ -6,7 +6,6 @@ use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -87,6 +86,22 @@ new #[Layout('layouts::base')] class extends Component
 
         $mods = Mod::query()
             ->select('mods.*')
+            ->addSelect(['latest_version_created_at' => function (QueryBuilder $query) use ($showDisabled): void {
+                $query->select('mod_versions.created_at')
+                    ->from('mod_versions')
+                    ->whereColumn('mod_versions.mod_id', 'mods.id')
+                    ->whereNotNull('mod_versions.published_at')
+                    ->where('mod_versions.disabled', false)
+                    ->whereExists(function (QueryBuilder $subQuery) use ($showDisabled): void {
+                        $subQuery->select(DB::raw(1))
+                            ->from('mod_version_spt_version')
+                            ->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')
+                            ->whereColumn('mod_version_spt_version.mod_version_id', 'mod_versions.id')
+                            ->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
+                    })
+                    ->latest('mod_versions.created_at')
+                    ->limit(1);
+            }])
             ->with(['owner:id,name', 'latestVersion.latestSptVersion'])
             ->unless($showDisabled, fn (Builder $query) => $query->where('mods.disabled', false))
             ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
@@ -99,19 +114,7 @@ new #[Layout('layouts::base')] class extends Component
                     $q->where('created_at', '>', $previousViewedAt);
                 }),
             )
-            ->leftJoin('mod_versions as latest_versions', function (JoinClause $join) use ($showDisabled): void {
-                $join
-                    ->on('latest_versions.mod_id', '=', 'mods.id')
-                    ->whereNotNull('latest_versions.published_at')
-                    ->where('latest_versions.disabled', false)
-                    ->whereExists(function (QueryBuilder $query) use ($showDisabled): void {
-                        $query->select(DB::raw(1))->from('mod_version_spt_version')->join('spt_versions', 'mod_version_spt_version.spt_version_id', '=', 'spt_versions.id')->whereColumn('mod_version_spt_version.mod_version_id', 'latest_versions.id')->unless($showDisabled, fn (QueryBuilder $q) => $q->whereNotNull('spt_versions.publish_date')->where('spt_versions.publish_date', '<=', now()));
-                    })
-                    ->where('latest_versions.created_at', '=', function (QueryBuilder $query): void {
-                        $query->select(DB::raw('MAX(mv2.created_at)'))->from('mod_versions as mv2')->whereColumn('mv2.mod_id', 'mods.id')->whereNotNull('mv2.published_at')->where('mv2.disabled', false);
-                    });
-            })
-            ->latest('latest_versions.created_at')
+            ->orderByDesc('latest_version_created_at')
             ->paginate($this->perPage);
 
         $this->redirectOutOfBoundsPage($mods);
