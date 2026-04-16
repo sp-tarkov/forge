@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Models\User;
 use Flux\Flux;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Livewire\Component;
@@ -12,6 +12,7 @@ use Livewire\WithFileUploads;
 
 new class extends Component
 {
+    use RendersMarkdownPreview;
     use WithFileUploads;
 
     /**
@@ -76,7 +77,7 @@ new class extends Component
     /**
      * Update the user's profile information.
      */
-    public function updateProfileInformation(UpdatesUserProfileInformation $updater): ?RedirectResponse
+    public function updateProfileInformation(UpdatesUserProfileInformation $updater): void
     {
         $this->resetErrorBag();
 
@@ -92,15 +93,30 @@ new class extends Component
                 ])) : $this->state
         );
 
-        if ($this->photo !== null || $this->cover !== null) {
-            return to_route('profile.show');
-        }
+        $this->photo = null;
+        $this->cover = null;
 
         Flux::toast(heading: 'Profile Updated', text: 'Your profile has been updated successfully.', variant: 'success');
 
         $this->dispatch('refresh-navigation-menu');
+    }
 
-        return null;
+    /**
+     * Clear the pending profile photo upload.
+     */
+    public function removePhoto(): void
+    {
+        $this->photo = null;
+        $this->resetErrorBag('photo');
+    }
+
+    /**
+     * Clear the pending cover photo upload.
+     */
+    public function removeCover(): void
+    {
+        $this->cover = null;
+        $this->resetErrorBag('cover');
     }
 
     /**

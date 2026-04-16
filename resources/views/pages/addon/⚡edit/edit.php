@@ -289,6 +289,7 @@ new #[Layout('layouts::base')] class extends Component
     public function removeThumbnail(): void
     {
         $this->thumbnail = null;
+        $this->resetErrorBag('thumbnail');
     }
 
     /**

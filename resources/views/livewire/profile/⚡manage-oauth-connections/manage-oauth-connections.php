@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Flux\Flux;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -70,9 +71,9 @@ new class extends Component
             $this->confirmingConnectionDeletion = false;
             $this->selectedConnectionId = null;
 
-            session()->flash('status', __('OAuth connection removed successfully.'));
+            Flux::toast(heading: 'Connection Removed', text: 'Your OAuth connection has been removed.', variant: 'success');
         } else {
-            session()->flash('error', __('OAuth connection not found.'));
+            Flux::toast(heading: 'Connection Not Found', text: 'We could not find that OAuth connection.', variant: 'danger');
         }
     }
 
