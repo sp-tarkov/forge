@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Flux\Flux;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Session;
@@ -52,12 +53,24 @@ new #[Layout('layouts::base')] class extends Component
         $user = Auth::user();
         abort_unless($user !== null, 403);
 
-        // Capture the previous timestamp before updating (used for filtering)
         $this->previousViewedAt = $user->mods_updated_viewed_at?->toISOString();
+    }
 
-        // Update the user's last viewed timestamp and clear the navigation badge cache
+    /**
+     * Mark the currently visible mods as read by bumping the user's viewed-at timestamp.
+     *
+     * The component's $previousViewedAt is intentionally left untouched so the list
+     * remains visible for this visit — the filter only resets on the next mount.
+     */
+    public function markAsRead(): void
+    {
+        $user = Auth::user();
+        abort_unless($user !== null, 403);
+
         $user->update(['mods_updated_viewed_at' => now()]);
         Cache::forget(sprintf('user:%s:nav-updated-mods-count', $user->id));
+
+        Flux::toast(heading: __('Marked as Read'), text: __("These mods won't be shown here on your next visit."), variant: 'success');
     }
 
     /**

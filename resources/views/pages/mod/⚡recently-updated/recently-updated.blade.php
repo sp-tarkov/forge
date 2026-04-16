@@ -14,11 +14,19 @@
             <flux:icon.arrow-path class="w-5 h-5" />
             {{ __('Recently Updated Mods') }}
         </h2>
-        <flux:button
-            href="{{ route('mods') }}"
-            wire:navigate
-            size="sm"
-        >{{ __('Browse All Mods') }}</flux:button>
+        <div class="flex items-center gap-2">
+            <flux:button
+                wire:click="markAsRead"
+                size="sm"
+                variant="primary"
+                icon="check"
+            >{{ __('Mark as Read') }}</flux:button>
+            <flux:button
+                href="{{ route('mods') }}"
+                wire:navigate
+                size="sm"
+            >{{ __('Browse All Mods') }}</flux:button>
+        </div>
     </div>
 </x-slot>
 

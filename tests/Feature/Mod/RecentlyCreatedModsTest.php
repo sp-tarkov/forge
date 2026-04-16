@@ -6,6 +6,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 describe('authentication', function (): void {
@@ -176,36 +177,33 @@ describe('ordering', function (): void {
 });
 
 describe('timestamp tracking', function (): void {
-    it('updates user mods_created_viewed_at when page is viewed', function (): void {
+    it('does not update user mods_created_viewed_at when page is viewed', function (): void {
         $user = User::factory()->create(['mods_created_viewed_at' => null]);
         SptVersion::factory()->create(['version' => '3.11.4']);
 
-        expect($user->mods_created_viewed_at)->toBeNull();
-
         $this->actingAs($user)->get(route('mods.recently-created'));
 
         $user->refresh();
-        expect($user->mods_created_viewed_at)->not->toBeNull();
-        expect($user->mods_created_viewed_at->diffInSeconds(now()))->toBeLessThan(5);
+        expect($user->mods_created_viewed_at)->toBeNull();
     });
 
-    it('updates existing mods_created_viewed_at timestamp', function (): void {
+    it('does not overwrite existing mods_created_viewed_at timestamp on page view', function (): void {
         $oldTimestamp = now()->subWeek();
         $user = User::factory()->create(['mods_created_viewed_at' => $oldTimestamp]);
+        $storedTimestamp = $user->fresh()->mods_created_viewed_at;
         SptVersion::factory()->create(['version' => '3.11.4']);
 
         $this->actingAs($user)->get(route('mods.recently-created'));
 
         $user->refresh();
-        expect($user->mods_created_viewed_at->gt($oldTimestamp))->toBeTrue();
+        expect($user->mods_created_viewed_at->equalTo($storedTimestamp))->toBeTrue();
     });
 
-    it('captures previous timestamp for filtering before updating', function (): void {
+    it('captures previous timestamp from the user record for filtering', function (): void {
         $oldTimestamp = now()->subHours(2);
         $user = User::factory()->create(['mods_created_viewed_at' => $oldTimestamp]);
         SptVersion::factory()->create(['version' => '3.11.4']);
 
-        // Mod created after old timestamp (should be shown)
         $newMod = Mod::factory()->create(['name' => 'New Mod', 'created_at' => now()->subHour()]);
         ModVersion::factory()->recycle($newMod)->create([
             'spt_version_constraint' => '3.11.4',
@@ -213,10 +211,65 @@ describe('timestamp tracking', function (): void {
 
         $component = Livewire::actingAs($user)->test('pages::mod.recently-created');
 
-        // Should have captured the previous timestamp
         expect($component->get('previousViewedAt'))->not->toBeNull();
 
-        // Mod should be visible (filtered by previous timestamp, not the new one)
+        $mods = $component->viewData('mods');
+        expect($mods->count())->toBe(1);
+        expect($mods[0]->name)->toBe('New Mod');
+    });
+});
+
+describe('markAsRead action', function (): void {
+    it('updates mods_created_viewed_at when markAsRead is called', function (): void {
+        $user = User::factory()->create(['mods_created_viewed_at' => null]);
+        SptVersion::factory()->create(['version' => '3.11.4']);
+
+        Livewire::actingAs($user)->test('pages::mod.recently-created')
+            ->call('markAsRead');
+
+        $user->refresh();
+        expect($user->mods_created_viewed_at)->not->toBeNull();
+        expect($user->mods_created_viewed_at->diffInSeconds(now()))->toBeLessThan(5);
+    });
+
+    it('bumps an existing mods_created_viewed_at timestamp when markAsRead is called', function (): void {
+        $oldTimestamp = now()->subWeek();
+        $user = User::factory()->create(['mods_created_viewed_at' => $oldTimestamp]);
+        SptVersion::factory()->create(['version' => '3.11.4']);
+
+        Livewire::actingAs($user)->test('pages::mod.recently-created')
+            ->call('markAsRead');
+
+        $user->refresh();
+        expect($user->mods_created_viewed_at->gt($oldTimestamp))->toBeTrue();
+    });
+
+    it('clears the navigation badge cache when markAsRead is called', function (): void {
+        $user = User::factory()->create(['mods_created_viewed_at' => null]);
+        SptVersion::factory()->create(['version' => '3.11.4']);
+
+        $cacheKey = sprintf('user:%s:nav-created-mods-count', $user->id);
+        Cache::put($cacheKey, 7, now()->addHour());
+
+        Livewire::actingAs($user)->test('pages::mod.recently-created')
+            ->call('markAsRead');
+
+        expect(Cache::has($cacheKey))->toBeFalse();
+    });
+
+    it('leaves the currently visible list intact after markAsRead is called', function (): void {
+        $oldTimestamp = now()->subHours(2);
+        $user = User::factory()->create(['mods_created_viewed_at' => $oldTimestamp]);
+        SptVersion::factory()->create(['version' => '3.11.4']);
+
+        $newMod = Mod::factory()->create(['name' => 'New Mod', 'created_at' => now()->subHour()]);
+        ModVersion::factory()->recycle($newMod)->create([
+            'spt_version_constraint' => '3.11.4',
+        ]);
+
+        $component = Livewire::actingAs($user)->test('pages::mod.recently-created')
+            ->call('markAsRead');
+
         $mods = $component->viewData('mods');
         expect($mods->count())->toBe(1);
         expect($mods[0]->name)->toBe('New Mod');
