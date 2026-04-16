@@ -312,6 +312,72 @@ describe('disabled mods filtering', function (): void {
     });
 });
 
+describe('ordering', function (): void {
+    it('orders by updated using only SPT-compatible versions', function (): void {
+        $sptVersion = SptVersion::factory()->create(['version' => '1.0.0']);
+
+        // Mod A: has an older compatible version (created first) and a newer incompatible version (no SPT link)
+        $modA = Mod::factory()->create();
+        $modAOldVersion = ModVersion::factory()->recycle($modA)->create([
+            'spt_version_constraint' => '1.0.0',
+            'created_at' => now()->subDays(5),
+        ]);
+        $modANewVersion = ModVersion::factory()->recycle($modA)->create([
+            'spt_version_constraint' => '',
+            'created_at' => now()->subDay(),
+        ]);
+
+        // Mod B: has a single compatible version created between the two
+        $modB = Mod::factory()->create();
+        $modBVersion = ModVersion::factory()->recycle($modB)->create([
+            'spt_version_constraint' => '1.0.0',
+            'created_at' => now()->subDays(3),
+        ]);
+
+        $filters = ['order' => 'updated', 'sptVersions' => [$sptVersion->version]];
+        $result = new ModFilter($filters)->apply()->get();
+
+        // Mod B's compatible version (3 days ago) is newer than Mod A's compatible version (5 days ago)
+        expect($result)->toHaveCount(2)
+            ->and($result->first()->id)->toBe($modB->id)
+            ->and($result->last()->id)->toBe($modA->id);
+    });
+
+    it('orders by created date using mods.created_at', function (): void {
+        $sptVersion = SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modOld = Mod::factory()->create(['created_at' => now()->subDays(5)]);
+        ModVersion::factory()->recycle($modOld)->create(['spt_version_constraint' => '1.0.0']);
+
+        $modNew = Mod::factory()->create(['created_at' => now()->subDay()]);
+        ModVersion::factory()->recycle($modNew)->create(['spt_version_constraint' => '1.0.0']);
+
+        $filters = ['order' => 'created', 'sptVersions' => [$sptVersion->version]];
+        $result = new ModFilter($filters)->apply()->get();
+
+        expect($result)->toHaveCount(2)
+            ->and($result->first()->id)->toBe($modNew->id)
+            ->and($result->last()->id)->toBe($modOld->id);
+    });
+
+    it('orders by downloads descending', function (): void {
+        $sptVersion = SptVersion::factory()->create(['version' => '1.0.0']);
+
+        $modLow = Mod::factory()->create(['downloads' => 10]);
+        ModVersion::factory()->recycle($modLow)->create(['spt_version_constraint' => '1.0.0']);
+
+        $modHigh = Mod::factory()->create(['downloads' => 1000]);
+        ModVersion::factory()->recycle($modHigh)->create(['spt_version_constraint' => '1.0.0']);
+
+        $filters = ['order' => 'downloaded', 'sptVersions' => [$sptVersion->version]];
+        $result = new ModFilter($filters)->apply()->get();
+
+        expect($result)->toHaveCount(2)
+            ->and($result->first()->id)->toBe($modHigh->id)
+            ->and($result->last()->id)->toBe($modLow->id);
+    });
+});
+
 describe('Fika compatibility filtering', function (): void {
     it('shows all mods when Fika compatibility filter is unchecked (false)', function (): void {
         SptVersion::factory()->create(['version' => '1.0.0']);
