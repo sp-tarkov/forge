@@ -64,7 +64,7 @@ final class GeolocationService implements Geolocator
         }
 
         // Cache location lookups for 24 hours
-        return Cache::flexible('geolocation.ip.'.md5($ip), [43200, 86400], fn (): array => $this->performLookup($ip));
+        return Cache::flexible('geolocation.ip.'.hash('sha256', $ip), [43200, 86400], fn (): array => $this->performLookup($ip));
     }
 
     /**

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use LogicException;
 
 /**
  * @template TModel of Model
@@ -313,7 +314,9 @@ abstract class AbstractQueryBuilder
         }
 
         // Get the search results with their relevance ordering and ranking scores (model uses Searchable trait, verified above)
-        assert(method_exists($model, 'search'));
+        if (! method_exists($model, 'search')) {
+            throw new LogicException('Searchable trait is present but search() method is missing.');
+        }
         /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
         $scoutBuilder = $model->search($this->searchQuery);
         /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */

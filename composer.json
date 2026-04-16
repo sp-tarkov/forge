@@ -97,7 +97,7 @@
         "test": [
             "npm install playwright@latest",
             "npx playwright install",
-            "./vendor/bin/pest --parallel"
+            "./vendor/bin/pest --parallel --compact"
         ],
         "format": [
             "@pint",

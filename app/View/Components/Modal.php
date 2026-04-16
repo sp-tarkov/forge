@@ -28,7 +28,7 @@ final class Modal extends Component
         /** @var Stringable|string $wire */
         $wire = $this->attributes->wire('model');
 
-        return $this->id ?? md5((string) $wire);
+        return $this->id ?? hash('sha256', (string) $wire);
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Rules\DoesNotContainLogFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Livewire\Form;
 
 final class CommentCreateForm extends Form
@@ -51,10 +52,13 @@ final class CommentCreateForm extends Form
     {
         $this->validate();
 
+        if (! $commentable instanceof Model) {
+            throw new InvalidArgumentException('Commentable must be an Eloquent Model instance.');
+        }
+
         return DB::transaction(function () use ($commentable): Comment {
             $comment = new Comment;
             $comment->user_id = (int) Auth::id();
-            assert($commentable instanceof Model);
             $comment->commentable()->associate($commentable);
             $comment->save();
 

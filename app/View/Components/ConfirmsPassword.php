@@ -29,7 +29,7 @@ final class ConfirmsPassword extends Component
         /** @var Stringable|string $wire */
         $wire = $this->attributes->wire('then');
 
-        return md5((string) $wire);
+        return hash('sha256', (string) $wire);
     }
 
     /**

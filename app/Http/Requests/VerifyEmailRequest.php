@@ -21,7 +21,7 @@ final class VerifyEmailRequest extends FormRequest
         }
 
         // Verify the hash matches
-        return hash_equals(sha1((string) $user->getEmailForVerification()), (string) $this->route('hash'));
+        return hash_equals(hash('sha256', (string) $user->getEmailForVerification()), (string) $this->route('hash'));
     }
 
     /**

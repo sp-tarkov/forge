@@ -239,8 +239,8 @@ final class RunVerificationJob implements ShouldBeUnique, ShouldQueue
             mkdir($tempDir, 0755, true);
         }
 
-        $tempFile = tempnam($tempDir, 'forge_verify_');
-        if ($tempFile === false) {
+        $tempFile = $tempDir.'/forge_verify_'.bin2hex(random_bytes(16));
+        if (touch($tempFile) === false) {
             return ['ok' => false, 'error' => 'Failed to create temporary file'];
         }
 
