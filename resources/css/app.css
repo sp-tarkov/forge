@@ -311,8 +311,12 @@ button {
         }
     }
 
+    code {
+        @apply rounded bg-gray-200 px-1.5 py-0.5 font-mono text-[0.8em] text-gray-700 dark:bg-gray-700 dark:text-gray-300;
+    }
+
     pre > code {
-        @apply rounded-md text-sm;
+        @apply rounded-md bg-transparent p-0 text-sm text-inherit;
     }
 
     img {
