@@ -1,15 +1,8 @@
 name: forge
 icon: null
 processes:
-  Build Front-end:
-    command: npm run build
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
-  Sync Meilisearch:
-    command: php artisan app:search-sync
+  Update Dependencies:
+    command: npm update && composer update
     working_dir: null
     auto_start: false
     auto_restart: false
@@ -22,8 +15,15 @@ processes:
     auto_restart: false
     restart_when_changed: []
     env: {}
-  Update Dependencies:
-    command: npm update && composer update
+  Run Tests:
+    command: composer test
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Sync Meilisearch:
+    command: php artisan app:search-sync
     working_dir: null
     auto_start: false
     auto_restart: false
@@ -47,6 +47,27 @@ processes:
     - routes/**/*.php
     - database/**/*.php
     env: {}
+  Build Front-end:
+    command: npm run build
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Linting:
+    command: composer lint
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Auto Build Front-end:
+    command: npm run dev
+    working_dir: null
+    auto_start: true
+    auto_restart: true
+    restart_when_changed: []
+    env: {}
   Queue Worker:
     command: php artisan queue:work redis --queue=default,verification,long --memory=512
     working_dir: null
@@ -57,18 +78,4 @@ processes:
     - config/**/*.php
     - routes/**/*.php
     - database/**/*.php
-    env: {}
-  Auto Build Front-end:
-    command: npm run dev
-    working_dir: null
-    auto_start: true
-    auto_restart: true
-    restart_when_changed: []
-    env: {}
-  Linting:
-    command: composer lint
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
     env: {}
