@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Addon;
+use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
@@ -20,6 +21,7 @@ describe('Public Pages', function (): void {
         ]);
         $addon = Addon::factory()->published()->withVersions()->recycle($mod)->create();
         $user = User::factory()->create();
+        Comment::factory()->recycle($mod)->withVersion()->create();
 
         $pages = visit([
             '/',

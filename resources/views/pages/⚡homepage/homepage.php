@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Comment;
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,7 +32,7 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * Render the component.
      *
-     * @return array<string, Collection<int, Mod>>
+     * @return array<string, Collection<int, Mod>|Collection<int, Comment>>
      */
     public function with(): array
     {
@@ -39,6 +40,7 @@ new #[Layout('layouts::base')] class extends Component
             'featured' => $this->featured(),
             'newest' => $this->newest(),
             'updated' => $this->updated(),
+            'recentComments' => $this->recentComments(),
         ];
     }
 
@@ -117,5 +119,32 @@ new #[Layout('layouts::base')] class extends Component
         $query->unless($this->viewDisabled, fn (Builder $q): Builder => $q->where('mods.disabled', false));
 
         return $query->get();
+    }
+
+    /**
+     * Recent comments on mods for the homepage activity feed.
+     *
+     * @return Collection<int, Comment>
+     */
+    protected function recentComments(): Collection
+    {
+        return Comment::query()
+            ->clean()
+            ->visibleToUser(auth()->user())
+            ->whereNull('deleted_at')
+            ->whereHasMorph('commentable', [Mod::class], function (Builder $query): void {
+                $query->withoutGlobalScopes()
+                    ->where('disabled', false)
+                    ->whereNotNull('published_at')
+                    ->where('published_at', '<=', now());
+            })
+            ->with([
+                'user:id,name,user_role_id,profile_photo_path',
+                'user.role:id,name,color_class,icon',
+                'commentable',
+            ])
+            ->latest()
+            ->limit(6)
+            ->get();
     }
 };

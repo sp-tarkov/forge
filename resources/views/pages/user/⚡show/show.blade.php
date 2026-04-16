@@ -27,7 +27,7 @@
                     <img
                         src="{{ $user->profile_photo_url }}"
                         alt="{{ __(':name\'s Profile Picture', ['name' => $user->name]) }}"
-                        class="h-32 w-32 rounded-full ring-4 ring-white dark:ring-gray-800"
+                        class="h-32 w-32 rounded-full ring-4 ring-white dark:ring-gray-800 bg-white dark:bg-gray-800"
                     />
                 </div>
                 <div
