@@ -47,6 +47,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property array<string, mixed>|null $spam_metadata
  * @property CarbonImmutable|null $spam_checked_at
  * @property int $spam_recheck_count
+ * @property CarbonImmutable|null $spam_reviewed_at
+ * @property int|null $spam_reviewed_by
  * @property CarbonImmutable|null $edited_at
  * @property CarbonImmutable|null $deleted_at
  * @property CarbonImmutable|null $pinned_at
@@ -406,6 +408,33 @@ final class Comment extends Model implements Reportable, Trackable
     }
 
     /**
+     * Confirm that an already-spam comment was correctly flagged.
+     *
+     * Records the reviewer so the comment is excluded from the review queue; the original Akismet metadata is left intact.
+     */
+    public function confirmSpamByModerator(int $moderatorId, bool $quiet = false): void
+    {
+        $this->spam_reviewed_at = now();
+        $this->spam_reviewed_by = $moderatorId;
+
+        $quiet ? $this->saveQuietly() : $this->save();
+    }
+
+    /**
+     * Mark an already-reviewed spam comment as needing review again.
+     */
+    public function resetSpamStateForRecheck(bool $quiet = false): void
+    {
+        $this->spam_metadata = null;
+        $this->spam_checked_at = null;
+        $this->spam_recheck_count = 0;
+        $this->spam_reviewed_at = null;
+        $this->spam_reviewed_by = null;
+
+        $quiet ? $this->saveQuietly() : $this->save();
+    }
+
+    /**
      * Get a human-readable display name for the reportable model.
      */
     public function getReportableDisplayName(): string
@@ -502,6 +531,19 @@ final class Comment extends Model implements Reportable, Trackable
     }
 
     /**
+     * Scope a query to only include spam comments awaiting moderator review.
+     *
+     * @param  Builder<Comment>  $query
+     */
+    #[Scope]
+    protected function pendingSpamReview(Builder $query): void
+    {
+        $query->spam()
+            ->whereNull('deleted_at')
+            ->whereNull('spam_reviewed_at');
+    }
+
+    /**
      * Scope a query to only include comments visible to a user.
      *
      * @param  Builder<Comment>  $query
@@ -539,6 +581,7 @@ final class Comment extends Model implements Reportable, Trackable
             'spam_status' => SpamStatus::class,
             'spam_metadata' => 'array',
             'spam_checked_at' => 'datetime',
+            'spam_reviewed_at' => 'datetime',
             'edited_at' => 'datetime',
             'deleted_at' => 'datetime',
             'pinned_at' => 'datetime',

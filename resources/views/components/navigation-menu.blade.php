@@ -246,6 +246,11 @@
                                         wire:navigate
                                     >{{ __('Report Centre') }}</flux:navmenu.item>
                                     <flux:navmenu.item
+                                        icon="shield-exclamation"
+                                        href="{{ route('spam-review') }}"
+                                        wire:navigate
+                                    >{{ __('Spam Review') }}</flux:navmenu.item>
+                                    <flux:navmenu.item
                                         icon="shield-check"
                                         href="{{ route('moderation-actions') }}"
                                         wire:navigate
@@ -455,6 +460,10 @@
                         href="{{ route('report-centre') }}"
                         :active="request()->routeIs('report-centre')"
                     >{{ __('Report Centre') }}</x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('spam-review') }}"
+                        :active="request()->routeIs('spam-review')"
+                    >{{ __('Spam Review') }}</x-responsive-nav-link>
                     <x-responsive-nav-link
                         href="{{ route('moderation-actions') }}"
                         :active="request()->routeIs('moderation-actions')"

@@ -630,3 +630,41 @@ describe('modOwnerRestore Policy Method for Addons', function (): void {
         expect($this->policy->modOwnerRestore($addonOwner, $comment))->toBeFalse();
     });
 });
+
+describe('update Policy Method', function (): void {
+    it('allows the author to edit a clean comment', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+            'spam_status' => SpamStatus::CLEAN,
+        ]);
+
+        expect($this->policy->update($this->user, $comment))->toBeTrue();
+    });
+
+    it('allows the author to edit a pending comment', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+            'spam_status' => SpamStatus::PENDING,
+        ]);
+
+        expect($this->policy->update($this->user, $comment))->toBeTrue();
+    });
+
+    it('blocks the author from editing a spam-flagged comment', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+            'spam_status' => SpamStatus::SPAM,
+        ]);
+
+        expect($this->policy->update($this->user, $comment))->toBeFalse();
+    });
+
+    it('blocks non-authors from editing', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+            'spam_status' => SpamStatus::CLEAN,
+        ]);
+
+        expect($this->policy->update($this->otherUser, $comment))->toBeFalse();
+    });
+});

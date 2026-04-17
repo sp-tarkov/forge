@@ -11,6 +11,7 @@ use App\Http\Controllers\FileRedirectController;
 use App\Http\Controllers\ModRssFeedController;
 use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
+use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\Report;
 use Illuminate\Contracts\View\Factory;
@@ -152,6 +153,10 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::livewire('/moderation-actions', 'pages::admin.moderation-actions')
             ->can('viewAny', Report::class)
             ->name('moderation-actions');
+
+        Route::livewire('/spam-review', 'pages::admin.spam-review')
+            ->can('reviewSpam', Comment::class)
+            ->name('spam-review');
 
         // Authenticated, verified, administrator routes
         Route::middleware('can:admin')->group(function (): void {

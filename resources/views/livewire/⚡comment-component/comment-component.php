@@ -358,13 +358,16 @@ new class extends Component
             'created_at' => now(),
         ]);
 
-        $comment->update([
-            'edited_at' => now(),
-        ]);
+        // Preserve the prior spam_status so a clean comment doesn't flicker out of view during the recheck window; the queued job overwrites it once Akismet resolves.
+        $comment->edited_at = now();
+        $comment->save();
+        $comment->resetSpamStateForRecheck();
 
         // Reload the latestVersion relationship
         $comment->unsetRelation('latestVersion');
         $comment->load('latestVersion');
+
+        dispatch(new CheckCommentForSpam($comment));
 
         Track::event(TrackingEventType::COMMENT_EDIT, $comment);
 
