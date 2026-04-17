@@ -37,6 +37,18 @@ enum FikaCompatibility: string
     }
 
     /**
+     * Get a short label for the status (for form select options).
+     */
+    public function shortLabel(): string
+    {
+        return match ($this) {
+            self::Compatible => 'Compatible',
+            self::Incompatible => 'Incompatible',
+            self::Unknown => 'Compatibility Unknown',
+        };
+    }
+
+    /**
      * Get a human-readable label for the status when displayed at the mod level (details section).
      */
     public function modLabel(): string

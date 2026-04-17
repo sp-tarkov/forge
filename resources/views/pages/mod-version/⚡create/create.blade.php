@@ -282,10 +282,12 @@
                                 <flux:label>{{ __('Fika Compatibility') }}</flux:label>
                                 <flux:description>{{ __('Specify whether this mod version is compatible with Fika.') }}
                                 </flux:description>
-                                <flux:select variant="listbox" wire:model.blur="fikaCompatibilityStatus">
-                                    <flux:select.option value="compatible">{{ __('Compatible') }}</flux:select.option>
-                                    <flux:select.option value="incompatible">{{ __('Incompatible') }}</flux:select.option>
-                                    <flux:select.option value="unknown">{{ __('Compatibility Unknown') }}</flux:select.option>
+                                <flux:select variant="listbox" wire:model="fikaCompatibilityStatus">
+                                    @foreach (\App\Enums\FikaCompatibility::cases() as $fikaOption)
+                                        <flux:select.option value="{{ $fikaOption->value }}">
+                                            {{ __($fikaOption->shortLabel()) }}
+                                        </flux:select.option>
+                                    @endforeach
                                 </flux:select>
                                 <flux:error name="fikaCompatibilityStatus" />
                             </flux:field>

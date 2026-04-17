@@ -192,7 +192,7 @@
                                 <flux:select
                                     variant="listbox"
                                     searchable
-                                    wire:model.blur="license"
+                                    wire:model="license"
                                     placeholder="Choose license..."
                                 >
                                     @foreach ($this->licenses as $license)
