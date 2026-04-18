@@ -14,7 +14,7 @@ use App\Http\Controllers\VisitorsPresenceBroadcastingController;
 use App\Mixins\CarbonMixin;
 use App\Models\User;
 use App\Policies\BlockingPolicy;
-use App\Services\CommentSpamChecker;
+use App\Services\CommentSpamService;
 use App\Services\DependencyVersionService;
 use App\Services\GeolocationService;
 use App\View\Composers\PaginationComposer;
@@ -46,7 +46,7 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(SpamChecker::class, CommentSpamChecker::class);
+        $this->app->bind(SpamChecker::class, CommentSpamService::class);
         $this->app->bind(DependencyResolver::class, DependencyVersionService::class);
         $this->app->bind(Geolocator::class, GeolocationService::class);
     }

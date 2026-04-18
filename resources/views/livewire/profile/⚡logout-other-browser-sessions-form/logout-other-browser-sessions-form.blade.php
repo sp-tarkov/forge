@@ -8,66 +8,34 @@
     </x-slot>
 
     <x-slot name="content">
-        <div class="max-w-xl text-sm text-gray-600 dark:text-gray-400">
+        <flux:text class="max-w-xl">
             {{ __('If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive. If you feel your account has been compromised, you should also update your password.') }}
-        </div>
+        </flux:text>
 
         @if (count($this->sessions) > 0)
-            <div class="mt-5 space-y-6">
-                <!-- Other Browser Sessions -->
+            <div class="mt-5 space-y-3">
                 @foreach ($this->sessions as $session)
-                    <div class="flex items-center">
-                        <div>
+                    <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div class="shrink-0 text-zinc-500 dark:text-zinc-400">
                             @if ($session->is_desktop)
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-8 h-8 text-gray-500"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
-                                    />
-                                </svg>
+                                <flux:icon.computer-desktop class="size-8" />
                             @else
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-8 h-8 text-gray-500"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
-                                    />
-                                </svg>
+                                <flux:icon.device-phone-mobile class="size-8" />
                             @endif
                         </div>
 
-                        <div class="ms-3">
-                            <div class="text-sm text-gray-600 dark:text-gray-400">
-                                {{ $session->platform ?? __('Unknown') }} -
-                                {{ $session->browser ?? __('Unknown') }}
-                            </div>
-
-                            <div>
-                                <div class="text-xs text-gray-500">
-                                    {{ $session->ip_address }},
-
-                                    @if ($session->is_current_device)
-                                        <span class="text-green-500 font-semibold">{{ __('This device') }}</span>
-                                    @else
-                                        {{ __('Last active') }} {{ $session->last_active }}
-                                    @endif
-                                </div>
-                            </div>
+                        <div class="flex-1 min-w-0">
+                            <flux:heading size="sm">
+                                {{ $session->platform ?? __('Unknown') }} — {{ $session->browser ?? __('Unknown') }}
+                            </flux:heading>
+                            <flux:text size="xs">
+                                {{ $session->ip_address }},
+                                @if ($session->is_current_device)
+                                    <span class="text-green-600 dark:text-green-500 font-semibold">{{ __('This device') }}</span>
+                                @else
+                                    {{ __('Last active') }} {{ $session->last_active }}
+                                @endif
+                            </flux:text>
                         </div>
                     </div>
                 @endforeach
@@ -77,15 +45,16 @@
         <div class="flex items-center mt-5">
             <flux:button
                 variant="primary"
+                size="sm"
+                class="my-1.5 text-black dark:text-white hover:bg-cyan-400 dark:hover:bg-cyan-600 bg-cyan-500 dark:bg-cyan-700"
                 wire:click="confirmLogout"
                 wire:loading.attr="disabled"
             >
                 {{ __('Log Out Other Browser Sessions') }}
             </flux:button>
-
         </div>
 
-        <!-- Log Out Other Devices Confirmation Modal -->
+        {{-- Log Out Other Devices Confirmation Modal --}}
         <flux:modal
             wire:model.live="confirmingLogout"
             class="md:w-[500px] lg:w-[600px]"
@@ -136,8 +105,7 @@
                 </div>
 
                 {{-- Footer Actions --}}
-                <div
-                    class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
                     <flux:button
                         wire:click="$toggle('confirmingLogout')"
                         wire:loading.attr="disabled"

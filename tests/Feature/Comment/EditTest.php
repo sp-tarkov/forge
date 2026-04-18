@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\SpamStatus;
+use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -67,6 +70,77 @@ describe('basic editing', function (): void {
         $comment->unsetRelation('latestVersion');
 
         expect($comment->body)->not->toBe("Trying to edit someone else's comment");
+    });
+});
+
+describe('spam state on edit', function (): void {
+    it('preserves the prior spam_status during the recheck and clears the other spam metadata', function (): void {
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'spam_status' => SpamStatus::CLEAN,
+            'spam_metadata' => ['akismet_response' => 'false'],
+            'spam_checked_at' => now(),
+            'spam_recheck_count' => 2,
+            'spam_reviewed_at' => now(),
+            'spam_reviewed_by' => $moderator->id,
+        ]);
+        $comment->versions()->create([
+            'body' => 'Original content',
+            'version_number' => 1,
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('comment-component', ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', 'Rewritten content')
+            ->call('updateComment', $comment->id)
+            ->assertHasNoErrors();
+
+        $comment->refresh();
+
+        expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
+        expect($comment->spam_metadata)->toBeNull();
+        expect($comment->spam_checked_at)->toBeNull();
+        expect($comment->spam_recheck_count)->toBe(0);
+        expect($comment->spam_reviewed_at)->toBeNull();
+        expect($comment->spam_reviewed_by)->toBeNull();
+
+        Queue::assertPushed(CheckCommentForSpam::class, fn (CheckCommentForSpam $job): bool => $job->comment->id === $comment->id && $job->isRecheck === false);
+    });
+
+    it('blocks the author from editing a spam-flagged comment', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+        ]);
+        $comment->update(['spam_status' => SpamStatus::SPAM]);
+        $comment->versions()->create([
+            'body' => 'Spam body',
+            'version_number' => 1,
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('comment-component', ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', 'Rewritten to look legitimate')
+            ->call('updateComment', $comment->id)
+            ->assertForbidden();
+
+        $comment->refresh();
+        $comment->unsetRelation('latestVersion');
+
+        expect($comment->body)->toBe('Spam body');
+        expect($comment->spam_status)->toBe(SpamStatus::SPAM);
     });
 });
 

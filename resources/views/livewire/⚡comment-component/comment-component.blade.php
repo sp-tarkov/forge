@@ -2,31 +2,39 @@
     x-data="{
         init() {
             // Check for deep linked comment on page load
-            const hash = window.location.hash;
-            if (!hash || !hash.includes('comment-')) {
-                return;
-            }
-            const commentId = hash.match(/comment-(\d+)/)?.[1];
-            if (commentId && $wire?.handleDeepLink) {
-                $wire.handleDeepLink(parseInt(commentId, 10));
-                console.log('init');
-            }
+            const match = window.location.hash.match(/comment-(\d+)/);
+            if (!match) return;
+
+            // Defer until Livewire has finished its initial commit so $wire is ready.
+            this.$nextTick(() => {
+                if (this.$wire?.handleDeepLink) {
+                    this.$wire.handleDeepLink(parseInt(match[1], 10));
+                }
+            });
+        },
+        scrollToAnchor(anchorId) {
+            if (!anchorId) return;
+            const deadline = performance.now() + 3000;
+            const attempt = () => {
+                const element = document.getElementById(anchorId);
+                if (element) {
+                    element.scrollIntoView({ block: 'start' });
+                    const highlightTarget = element.parentElement?.parentElement ?? element;
+                    const colorClasses = ['bg-yellow-100', 'dark:bg-sky-700'];
+                    const transitionClasses = ['transition-colors', 'duration-1000'];
+                    highlightTarget.classList.add(...transitionClasses, ...colorClasses);
+                    setTimeout(() => highlightTarget.classList.remove(...colorClasses), 1500);
+                    setTimeout(() => highlightTarget.classList.remove(...transitionClasses), 2500);
+                    return;
+                }
+                if (performance.now() < deadline) {
+                    setTimeout(attempt, 50);
+                }
+            };
+            setTimeout(attempt, 0);
         }
     }"
-    @scroll-to-comment.window="
-        const { commentId } = $event.detail;
-        const elementId = `reply-container-${commentId}`;
-        requestAnimationFrame(() => {
-            const element = document.getElementById(elementId);
-            if (!element) return;
-
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            const highlightClasses = ['bg-yellow-100', 'dark:bg-sky-700', 'transition-colors', 'duration-1000'];
-            element.classList.add(...highlightClasses);
-            setTimeout(() => element.classList.remove(...highlightClasses), 2000);
-        });
-    "
+    @scroll-to-comment.window="scrollToAnchor($event.detail.anchorId)"
 >
     @if ($visibleRootComments->count() === 0)
         <x-comment.empty-state

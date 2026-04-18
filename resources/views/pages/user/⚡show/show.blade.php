@@ -27,7 +27,7 @@
                     <img
                         src="{{ $user->profile_photo_url }}"
                         alt="{{ __(':name\'s Profile Picture', ['name' => $user->name]) }}"
-                        class="h-32 w-32 rounded-full ring-4 ring-white dark:ring-gray-800"
+                        class="h-32 w-32 rounded-full ring-4 ring-white dark:ring-gray-800 bg-white dark:bg-gray-800"
                     />
                 </div>
                 <div
@@ -118,7 +118,16 @@
             {{-- Left Column --}}
             <div
                 x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'wall' }"
-                x-init="$watch('selectedTab', (tab) => { window.location.hash = tab })"
+                x-init="
+                    $watch('selectedTab', (tab) => { window.location.hash = tab });
+                    if (selectedTab === 'wall' && window.location.hash.includes('-comment-')) {
+                        $nextTick(() => {
+                            const lazyEl = $refs.wallTab?.querySelector('[x-intersect]');
+                            const expr = lazyEl?.getAttribute('x-intersect');
+                            if (lazyEl && expr) window.Alpine.evaluate(lazyEl, expr);
+                        });
+                    }
+                "
                 class="lg:col-span-3 flex flex-col gap-6"
             >
                 {{-- Ban Information (Visible to Admins/Moderators Only - Small Screens) --}}
@@ -169,7 +178,7 @@
                 {{-- About --}}
                 @if ($user->about)
                     <div
-                        class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
+                        class="user-markdown p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 text-gray-800 dark:text-gray-200 drop-shadow-2xl">
                         {!! $user->about_html !!}
                     </div>
                 @endif
@@ -219,7 +228,10 @@
                 </div>
 
                 {{-- Wall --}}
-                <div x-show="selectedTab === 'wall'">
+                <div
+                    x-ref="wallTab"
+                    x-show="selectedTab === 'wall'"
+                >
                     <livewire:user.show.wall-tab
                         wire:key="user-wall-tab-{{ $user->id }}"
                         :user-id="$user->id"

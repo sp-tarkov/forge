@@ -74,10 +74,10 @@
     },
     "scripts": {
         "rector": [
-            "./vendor/bin/rector process --dry-run --config=rector.php"
-        ],
-        "rector-fix": [
             "./vendor/bin/rector process --config=rector.php"
+        ],
+        "rector:check": [
+            "./vendor/bin/rector process --dry-run --config=rector.php"
         ],
         "coverage": [
             "./vendor/bin/pest --type-coverage --min=100"
@@ -88,28 +88,46 @@
         "pint": [
             "./vendor/bin/pint --config pint.json"
         ],
+        "pint:check": [
+            "./vendor/bin/pint --config pint.json --test"
+        ],
         "spell": [
             "typos . --config ./typos.toml && echo 'DONE'"
         ],
-        "lint": [
+        "test": [
+            "npm install playwright@latest",
+            "npx playwright install",
+            "./vendor/bin/pest --parallel --compact"
+        ],
+        "format": [
+            "@pint",
             "npm run lint"
         ],
-        "lint:check": [
+        "format:check": [
+            "@pint:check",
             "npm run test:lint"
+        ],
+        "lint": [
+            "@rector",
+            "@phpstan",
+            "@coverage",
+            "@spell"
+        ],
+        "lint:check": [
+            "@rector:check",
+            "@phpstan",
+            "@coverage",
+            "@spell"
+        ],
+        "sendit": [
+            "Composer\\Config::disableProcessTimeout",
+            "@format",
+            "@lint",
+            "@test"
         ],
         "update:requirements": [
             "composer bump",
             "npx npm-check-updates -u"
-        ],
-        "sendit": [
-            "Composer\\Config::disableProcessTimeout",
-            "composer lint",
-            "composer rector-fix",
-            "composer coverage",
-            "composer phpstan",
-            "composer pint",
-            "composer spell",
-            "@php artisan test --parallel"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -132,7 +150,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#86efac,#fde047\" \"php artisan serve\" \"php artisan queue:listen --queue=long,default --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" \"php artisan queue:listen --queue=verification-detection --tries=2 --timeout=60\" \"php artisan queue:listen --queue=verification --tries=2 --timeout=900\" --names=server,queue,logs,vite,verification-detection,verification"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --queue=default,verification-detection,verification,long --tries=2 --timeout=900\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
         ]
     },
     "extra": {

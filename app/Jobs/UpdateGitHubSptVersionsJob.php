@@ -122,13 +122,12 @@ final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
             ->reject(fn (GitHubSptVersion $release): bool => $release->draft || $release->prerelease)
             ->map(function (GitHubSptVersion $release): GitHubSptVersion {
                 try {
-                    $release->tag_name = Version::cleanSptImport($release->tag_name)->getVersion();
+                    return $release->withTagName(Version::cleanSptImport($release->tag_name)->getVersion());
                 } catch (InvalidVersionNumberException $invalidVersionNumberException) {
                     Log::warning(sprintf("Invalid SPT version format from GitHub release '%s': %s", $release->tag_name, $invalidVersionNumberException->getMessage()));
-                    $release->tag_name = ''; // Filtered out
-                }
 
-                return $release;
+                    return $release->withTagName(''); // Filtered out
+                }
             })
             ->filter(fn (GitHubSptVersion $release): bool => $release->tag_name !== '');
 

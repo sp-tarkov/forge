@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Mod;
 use App\Traits\Livewire\ModeratesMod;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -52,12 +54,25 @@ new #[Layout('layouts::base')] class extends Component
         $user = Auth::user();
         abort_unless($user !== null, 403);
 
-        // Capture the previous timestamp before updating (used for filtering)
         $this->previousViewedAt = $user->mods_created_viewed_at?->toISOString();
+    }
 
-        // Update the user's last viewed timestamp and clear the navigation badge cache
+    /**
+     * Mark the currently visible mods as read by bumping the user's viewed-at timestamp.
+     *
+     * The component's $previousViewedAt is intentionally left untouched so the list
+     * remains visible for this visit — the filter only resets on the next mount.
+     */
+    #[On('mark-created-as-read')]
+    public function markAsRead(): void
+    {
+        $user = Auth::user();
+        abort_unless($user !== null, 403);
+
         $user->update(['mods_created_viewed_at' => now()]);
         Cache::forget(sprintf('user:%s:nav-created-mods-count', $user->id));
+
+        Flux::toast(heading: __('Marked as Read'), text: __("These mods won't be shown here on your next visit."), variant: 'success');
     }
 
     /**

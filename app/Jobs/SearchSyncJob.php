@@ -28,7 +28,7 @@ final class SearchSyncJob implements ShouldBeUnique, ShouldQueue
     {
         Bus::chain([
             new ArtisanCallJob('cache:clear'),
-            (new ResolveSptVersionsJob)->onQueue('long'),
+            new ResolveSptVersionsJob,
             new ArtisanCallJob('scout:delete-all-indexes'),
             new ArtisanCallJob('scout:sync-index-settings'),
             new ArtisanCallJob('scout:import', ['model' => Addon::class]),

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Notifications\CommentReplyNotification;
 use App\Notifications\NewCommentNotification;
 use App\Notifications\ReportSubmittedNotification;
 use Livewire\Livewire;
@@ -172,6 +173,32 @@ it('redirects to review url when reviewing a comment notification', function ():
         ->assertRedirect($commentUrl);
 
     // Verify the notification was marked as read
+    expect($this->user->notifications()->find($notificationId)->read_at)->not->toBeNull();
+});
+
+it('redirects to review url when reviewing a reply notification', function (): void {
+    $notificationId = fake()->uuid();
+    $commentUrl = '/mod/test-mod#comments-comment-456';
+
+    $this->user->notifications()->create([
+        'id' => $notificationId,
+        'type' => CommentReplyNotification::class,
+        'data' => [
+            'commenter_name' => 'Reply User',
+            'commentable_title' => 'Test Mod',
+            'comment_body' => 'Reply comment',
+            'comment_url' => $commentUrl,
+            'is_reply' => true,
+        ],
+        'read_at' => null,
+    ]);
+
+    $this->actingAs($this->user);
+
+    Livewire::test('navigation-notifications')
+        ->call('reviewNotification', $notificationId)
+        ->assertRedirect($commentUrl);
+
     expect($this->user->notifications()->find($notificationId)->read_at)->not->toBeNull();
 });
 

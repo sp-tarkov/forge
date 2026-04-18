@@ -21,7 +21,7 @@ use Throwable;
 /**
  * Service for checking comments against Akismet spam detection.
  */
-final class CommentSpamChecker implements SpamChecker
+final class CommentSpamService implements SpamChecker
 {
     /**
      * The base URL for the Akismet API.

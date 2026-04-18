@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\FikaCompatibility;
 use App\Models\License;
 use App\Models\Mod;
 use App\Models\ModCategory;
@@ -1533,6 +1534,42 @@ describe('Mod Version Create Form', function (): void {
             // Check newly added dependency
             expect($dependencies[1]['modId'])->toBe((string) $dependencyMod2->id);
             expect($dependencies[1]['constraint'])->toBe('^2.0.0');
+        });
+    });
+
+    describe('Browser Tests - Fika Compatibility', function (): void {
+        it('saves fika compatibility value when changed via the listbox', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $license = License::factory()->create();
+            $category = ModCategory::factory()->create();
+            SptVersion::factory()->create(['version' => '3.9.0']);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $user->id,
+                'license_id' => $license->id,
+                'category_id' => $category->id,
+            ]);
+
+            $this->actingAs($user);
+
+            $page = visit(route('mod.version.create', ['mod' => $mod->id]));
+
+            $page->assertSee('Create Mod Version')
+                ->assertNoJavascriptErrors()
+                ->click('Compatibility Unknown')
+                ->waitForText('Compatible')
+                ->click('Compatible')
+                ->fill('version', '1.0.0')
+                ->fill('textarea[name="description"]', 'Initial release')
+                ->fill('input[type="url"][placeholder*="your-mod-archive"]', 'https://example.com/download.7z')
+                ->fill('input[placeholder="~3.11.0"]', '~3.9.0')
+                ->fill('input[placeholder*="virustotal"]', 'https://www.virustotal.com/gui/file/abc123')
+                ->click('Create Version')
+                ->waitForText($mod->name);
+
+            $modVersion = ModVersion::query()->where('mod_id', $mod->id)->first();
+            expect($modVersion)->not->toBeNull();
+            expect($modVersion->fika_compatibility)->toBe(FikaCompatibility::Compatible);
         });
     });
 });

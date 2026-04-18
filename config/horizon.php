@@ -194,18 +194,6 @@ return [
             'timeout' => 120,
             'memory' => 256,
         ],
-        'supervisor-long' => [
-            'connection' => 'redis-long',
-            'queue' => ['long'],
-            'balance' => 'auto',
-            'autoScalingStrategy' => 'time',
-            'minProcesses' => 1,
-            'balanceMaxShift' => 1,
-            'balanceCooldown' => 3,
-            'tries' => 3,
-            'timeout' => 3600,
-            'memory' => 720,
-        ],
         'supervisor-verification-detection' => [
             'connection' => 'redis',
             'queue' => ['verification-detection'],
@@ -231,9 +219,6 @@ return [
             'supervisor-default' => [
                 'maxProcesses' => 20,
             ],
-            'supervisor-long' => [
-                'maxProcesses' => 5,
-            ],
             'supervisor-verification-detection' => [
                 'maxProcesses' => 10,
             ],
@@ -241,9 +226,6 @@ return [
         'local' => [
             'supervisor-default' => [
                 'maxProcesses' => 5,
-            ],
-            'supervisor-long' => [
-                'maxProcesses' => 2,
             ],
             'supervisor-verification-detection' => [
                 'maxProcesses' => 3,

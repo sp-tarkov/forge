@@ -247,6 +247,7 @@
                         :title="__('Featured Mods')"
                         :button-text="__('View All')"
                         button-link="/mods?featured=only&order=&query=&versions="
+                        padding="pb-4"
                     />
                     <div class="my-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                         @foreach ($featured as $mod)
@@ -294,6 +295,61 @@
                             </div>
                         @endforeach
                     </div>
+
+                    @if ($recentComments->isNotEmpty())
+                        <x-page-content-title :title="__('Recent Comment Activity')" />
+
+                        <div class="mb-8 -mt-2">
+                            <flux:timeline size="lg" align="center" class="[&_[data-flux-timeline-line-leading]>div]:!bg-gray-200 dark:[&_[data-flux-timeline-line-leading]>div]:!bg-gray-800 [&_[data-flux-timeline-line-trailing]>div]:!bg-gray-200 dark:[&_[data-flux-timeline-line-trailing]>div]:!bg-gray-800">
+                                @foreach ($recentComments as $comment)
+                                    <flux:timeline.item wire:key="homepage-comment-{{ $comment->id }}" class="rounded-lg px-2 -mx-2 transition-colors duration-150 hover:bg-gray-200 dark:hover:bg-black/40">
+                                        <flux:timeline.indicator variant="bare" @class(['pt-4' => $loop->first, 'pb-4' => $loop->last])>
+                                            <a href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}">
+                                                <flux:avatar
+                                                    circle="circle"
+                                                    src="{{ $comment->user->profile_photo_url }}"
+                                                    color="auto"
+                                                    color:seed="{{ $comment->user->id }}"
+                                                    size="sm"
+                                                />
+                                            </a>
+                                        </flux:timeline.indicator>
+
+                                        <flux:timeline.content @class(['pt-4' => $loop->first, 'pb-4' => $loop->last])>
+                                            <div class="flex flex-wrap items-center gap-x-1 text-sm">
+                                                <a
+                                                    href="{{ route('user.show', ['userId' => $comment->user->id, 'slug' => $comment->user->slug]) }}"
+                                                    class="font-semibold text-gray-900 dark:text-gray-100 hover:underline"
+                                                >
+                                                    <x-user-name :user="$comment->user" />
+                                                </a>
+                                                <span class="text-gray-500 dark:text-gray-400">{{ __('commented on') }}</span>
+                                                <a
+                                                    href="{{ $comment->commentable->getCommentableUrl() }}"
+                                                    class="font-medium text-cyan-600 dark:text-cyan-400 hover:underline truncate max-w-48 sm:max-w-xs"
+                                                >
+                                                    {{ $comment->commentable->name }}
+                                                </a>
+                                            </div>
+
+                                            <a
+                                                href="{{ $comment->getUrl() }}"
+                                                class="block mt-1"
+                                            >
+                                                <div class="user-markdown text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                    {!! strip_tags($comment->body_html, '<b><code><em><i><mark><s><small><span><strong><sub><sup><u>') !!}
+                                                </div>
+                                            </a>
+
+                                            <div class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                                                <x-time :datetime="$comment->created_at" />
+                                            </div>
+                                        </flux:timeline.content>
+                                    </flux:timeline.item>
+                                @endforeach
+                            </flux:timeline>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

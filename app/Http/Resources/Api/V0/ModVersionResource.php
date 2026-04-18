@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V0;
 
+use App\Http\Resources\Api\V0\Collections\ModDependencyResolvedCollection;
 use App\Models\ModVersion;
 use App\Support\Api\V0\QueryBuilder\ModVersionQueryBuilder;
 use Illuminate\Http\Request;

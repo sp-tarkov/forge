@@ -8,63 +8,27 @@
     </x-slot>
 
     <x-slot name="content">
-        <div class="max-w-xl">
-            <div class="flex items-center">
-                <input
-                    type="checkbox"
+        <flux:field>
+            <flux:checkbox.group label="{{ __('Email Notifications') }}">
+                <flux:checkbox
                     wire:model.live="emailCommentNotificationsEnabled"
                     wire:change="updateNotificationPreferences"
-                    id="email-comment-notifications"
-                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-900 dark:border-gray-700"
+                    label="{{ __('Comment Notifications') }}"
+                    description="{{ __('Receive email notifications when someone comments on content you are subscribed to.') }}"
                 />
-                <label
-                    for="email-comment-notifications"
-                    class="ml-2 text-sm text-gray-700 dark:text-gray-300"
-                >
-                    {{ __('Comment Email Notifications') }}
-                </label>
-            </div>
-            <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {{ __('Receive email notifications when someone comments on content you are subscribed to.') }}
-            </div>
-
-            <div class="flex items-center mt-6">
-                <input
-                    type="checkbox"
+                <flux:checkbox
                     wire:model.live="emailReplyNotificationsEnabled"
                     wire:change="updateNotificationPreferences"
-                    id="email-reply-notifications"
-                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-900 dark:border-gray-700"
+                    label="{{ __('Reply Notifications') }}"
+                    description="{{ __('Receive email notifications when someone replies directly to your comments.') }}"
                 />
-                <label
-                    for="email-reply-notifications"
-                    class="ml-2 text-sm text-gray-700 dark:text-gray-300"
-                >
-                    {{ __('Reply Email Notifications') }}
-                </label>
-            </div>
-            <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {{ __('Receive email notifications when someone replies directly to your comments.') }}
-            </div>
-
-            <div class="flex items-center mt-6">
-                <input
-                    type="checkbox"
+                <flux:checkbox
                     wire:model.live="emailChatNotificationsEnabled"
                     wire:change="updateNotificationPreferences"
-                    id="email-chat-notifications"
-                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-900 dark:border-gray-700"
+                    label="{{ __('Chat Notifications') }}"
+                    description="{{ __('Receive email notifications when you have unread chat messages.') }}"
                 />
-                <label
-                    for="email-chat-notifications"
-                    class="ml-2 text-sm text-gray-700 dark:text-gray-300"
-                >
-                    {{ __('Chat Email Notifications') }}
-                </label>
-            </div>
-            <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {{ __('Receive email notifications when you have unread chat messages.') }}
-            </div>
-        </div>
+            </flux:checkbox.group>
+        </flux:field>
     </x-slot>
 </x-action-section>

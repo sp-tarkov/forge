@@ -12,11 +12,20 @@
             <flux:icon.sparkles class="w-5 h-5" />
             {{ __('Recently Created Mods') }}
         </h2>
-        <flux:button
-            href="{{ route('mods') }}"
-            wire:navigate
-            size="sm"
-        >{{ __('Browse All Mods') }}</flux:button>
+        <div class="flex items-center gap-2">
+            <flux:button
+                x-data
+                x-on:click="Livewire.dispatch('mark-created-as-read')"
+                size="sm"
+                variant="primary"
+                icon="check"
+            >{{ __('Mark as Read') }}</flux:button>
+            <flux:button
+                href="{{ route('mods') }}"
+                wire:navigate
+                size="sm"
+            >{{ __('Browse All Mods') }}</flux:button>
+        </div>
     </div>
 </x-slot>
 

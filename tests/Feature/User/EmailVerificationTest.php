@@ -38,7 +38,7 @@ describe('email verification', function (): void {
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1((string) $user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', (string) $user->email)]
         );
 
         $response = $this->actingAs($user)->get($verificationUrl);
@@ -58,7 +58,7 @@ describe('email verification', function (): void {
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1('wrong-email')]
+            ['id' => $user->id, 'hash' => hash('sha256', 'wrong-email')]
         );
 
         $this->actingAs($user)->get($verificationUrl);
@@ -76,7 +76,7 @@ describe('email verification', function (): void {
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1((string) $user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', (string) $user->email)]
         );
 
         // Visit the verification URL without being authenticated
@@ -103,7 +103,7 @@ describe('email verification', function (): void {
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1((string) $user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', (string) $user->email)]
         );
 
         // Ensure we're not authenticated
@@ -130,7 +130,7 @@ describe('email verification', function (): void {
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1((string) $user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', (string) $user->email)]
         );
 
         // Visit the verification URL without being authenticated
@@ -157,7 +157,7 @@ describe('email verification', function (): void {
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1((string) $user->email)]
+            ['id' => $user->id, 'hash' => hash('sha256', (string) $user->email)]
         );
 
         // Visit the verification URL while authenticated

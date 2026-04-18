@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Traits\Livewire\ConfirmsPasswords;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
@@ -84,6 +85,8 @@ new class extends Component
         $this->showingQrCode = false;
         $this->showingConfirmation = false;
         $this->showingRecoveryCodes = true;
+
+        Flux::toast(heading: 'Two Factor Authentication Enabled', text: 'Store your recovery codes in a secure password manager.', variant: 'success');
     }
 
     /**
@@ -110,6 +113,8 @@ new class extends Component
         $generate(Auth::user());
 
         $this->showingRecoveryCodes = true;
+
+        Flux::toast(heading: 'Recovery Codes Regenerated', text: 'Your previous recovery codes are no longer valid.', variant: 'success');
     }
 
     /**
@@ -126,6 +131,8 @@ new class extends Component
         $this->showingQrCode = false;
         $this->showingConfirmation = false;
         $this->showingRecoveryCodes = false;
+
+        Flux::toast(heading: 'Two Factor Authentication Disabled', text: 'Two factor authentication has been turned off for your account.', variant: 'success');
     }
 
     /**

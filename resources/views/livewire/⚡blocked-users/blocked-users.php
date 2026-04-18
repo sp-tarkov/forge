@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\UserBlock;
 use App\Services\UserBlockingService;
+use Flux\Flux;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -34,6 +35,8 @@ new class extends Component
             $blockingService->unblockUser($currentUser, $blockedUser);
 
             $this->dispatch('user-unblocked', userId: $userId);
+
+            Flux::toast(heading: 'User Unblocked', text: $blockedUser->name.' has been unblocked.', variant: 'success');
         }
     }
 

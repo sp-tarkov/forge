@@ -14,6 +14,42 @@ use Illuminate\Database\Eloquent\Model;
 final class CommentPolicy
 {
     /**
+     * Abilities that require the user to have a verified email address.
+     *
+     * @var list<string>
+     */
+    private const array REQUIRES_VERIFIED_EMAIL = [
+        'create',
+        'react',
+        'restore',
+        'viewActions',
+        'softDelete',
+        'hardDelete',
+        'markAsSpam',
+        'markAsHam',
+        'reviewSpam',
+        'confirmSpam',
+        'checkForSpam',
+        'report',
+    ];
+
+    /**
+     * Deny listed abilities up front when the user's email is not verified.
+     */
+    public function before(?User $user, string $ability): ?bool
+    {
+        if (! in_array($ability, self::REQUIRES_VERIFIED_EMAIL, true)) {
+            return null;
+        }
+
+        if (! $user instanceof User || ! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return null;
+    }
+
+    /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
@@ -83,11 +119,6 @@ final class CommentPolicy
      */
     public function create(User $user, ?Commentable $commentable = null): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // Commentable is required
         if (! $commentable instanceof Commentable) {
             return false;
@@ -116,6 +147,11 @@ final class CommentPolicy
      */
     public function update(User $user, Comment $comment): bool
     {
+        // Spam-flagged comments cannot be edited; the author cannot revise content into clean text to escape the review queue
+        if ($comment->isSpam()) {
+            return false;
+        }
+
         // Only the comment author can edit their own comment
         return $user->id === $comment->user_id;
     }
@@ -157,11 +193,6 @@ final class CommentPolicy
      */
     public function restore(User $user, Comment $comment): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // Comment must be soft-deleted to be restored
         if (! $comment->isDeleted()) {
             return false;
@@ -184,11 +215,6 @@ final class CommentPolicy
      */
     public function react(User $user, Comment $comment): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // The user must not be the author of the comment.
         if ($user->id === $comment->user_id) {
             return false;
@@ -234,11 +260,6 @@ final class CommentPolicy
     {
         // Must be logged in
         if (! $user instanceof User) {
-            return false;
-        }
-
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
             return false;
         }
 
@@ -298,11 +319,6 @@ final class CommentPolicy
      */
     public function softDelete(User $user, Comment $comment): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // Comment must not yet be deleted
         if ($comment->isDeleted()) {
             return false;
@@ -439,11 +455,6 @@ final class CommentPolicy
      */
     public function hardDelete(User $user, Comment $comment): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // Must be administrator
         return $user->isAdmin();
     }
@@ -453,11 +464,6 @@ final class CommentPolicy
      */
     public function markAsSpam(User $user, Comment $comment): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // Comment must not yet be marked as spam
         if ($comment->isSpam()) {
             return false;
@@ -472,13 +478,36 @@ final class CommentPolicy
      */
     public function markAsHam(User $user, Comment $comment): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
+        // Comment must be marked as spam to mark as ham
+        if (! $comment->isSpam()) {
             return false;
         }
 
-        // Comment must be marked as spam to mark as ham
+        // Must be moderator or admin
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can access the spam review queue.
+     */
+    public function reviewSpam(User $user): bool
+    {
+        // Must be moderator or admin
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can confirm a comment that is already flagged as spam.
+     */
+    public function confirmSpam(User $user, Comment $comment): bool
+    {
+        // Comment must be flagged as spam
         if (! $comment->isSpam()) {
+            return false;
+        }
+
+        // Comment must not yet be deleted
+        if ($comment->isDeleted()) {
             return false;
         }
 
@@ -491,11 +520,6 @@ final class CommentPolicy
      */
     public function checkForSpam(User $user, Comment $comment): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // Must be moderator or admin
         if (! $user->isModOrAdmin()) {
             return false;
@@ -578,11 +602,6 @@ final class CommentPolicy
      */
     public function report(User $user, Model $reportable): bool
     {
-        // Must have verified email address
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
         // Moderators and administrators cannot create reports.
         if ($user->isModOrAdmin()) {
             return false;

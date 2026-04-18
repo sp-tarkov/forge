@@ -39,7 +39,7 @@ describe('GeolocationService', function (): void {
 
         it('caches location lookups for public IPs', function (): void {
             Cache::shouldReceive('flexible')
-                ->with('geolocation.ip.'.md5('8.8.8.8'), [43200, 86400], Closure::class)
+                ->with('geolocation.ip.'.hash('sha256', '8.8.8.8'), [43200, 86400], Closure::class)
                 ->once()
                 ->andReturn([
                     'country_code' => 'US',
@@ -61,7 +61,7 @@ describe('GeolocationService', function (): void {
         });
 
         it('returns cached data on subsequent calls', function (): void {
-            $cacheKey = 'geolocation.ip.'.md5('8.8.8.8');
+            $cacheKey = 'geolocation.ip.'.hash('sha256', '8.8.8.8');
             $expectedData = [
                 'country_code' => 'US',
                 'country_name' => 'United States',

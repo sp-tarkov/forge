@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Api\V0\QueryBuilder;
 
-use App\Exceptions\Api\V0\InvalidQuery;
+use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
@@ -177,7 +177,7 @@ final class SptVersionQueryBuilder extends AbstractQueryBuilder
     /**
      * Apply the sorts to the query.
      *
-     * @throws InvalidQuery
+     * @throws InvalidQueryException
      */
     #[Override]
     protected function applySorts(): void
@@ -201,7 +201,7 @@ final class SptVersionQueryBuilder extends AbstractQueryBuilder
             if ($invalidSorts !== []) {
                 $invalidSort = implode(', ', $invalidSorts);
                 $validSorts = implode(', ', $allowedSorts);
-                throw new InvalidQuery(
+                throw new InvalidQueryException(
                     sprintf('Invalid sort parameter(s): %s. Valid sorts are: %s', $invalidSort, $validSorts)
                 );
             }

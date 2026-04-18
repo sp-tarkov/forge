@@ -48,15 +48,6 @@
                                     {{ __('Optionally upload an image to use as the mod\'s thumbnail. This will be displayed on the mod page and in search results. The image should be square, JPG or PNG, and no larger than 2MB.') }}
                                 </flux:description>
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                    <flux:file-upload wire:model="thumbnail" @class(['h-full', 'lg:col-span-2' => !$thumbnail && !$mod->thumbnail])>
-                                        <flux:file-upload.dropzone
-                                            heading="{{ __('Drop image here or click to browse') }}"
-                                            text="{{ __('JPG or PNG, square, up to 2MB') }}"
-                                            with-progress
-                                            inline
-                                            class="h-full"
-                                        />
-                                    </flux:file-upload>
                                     @if ($thumbnail)
                                         <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
                                             <img
@@ -97,6 +88,15 @@
                                             />
                                         </div>
                                     @endif
+                                    <flux:file-upload wire:model="thumbnail" @class(['h-full', 'lg:col-span-2' => !$thumbnail && !$mod->thumbnail])>
+                                        <flux:file-upload.dropzone
+                                            heading="{{ __('Drop image here or click to browse') }}"
+                                            text="{{ __('JPG or PNG, square, up to 2MB') }}"
+                                            with-progress
+                                            inline
+                                            class="h-full"
+                                        />
+                                    </flux:file-upload>
                                 </div>
                                 <flux:error name="thumbnail" />
                             </flux:field>
@@ -192,7 +192,7 @@
                                 <flux:select
                                     variant="listbox"
                                     searchable
-                                    wire:model.blur="license"
+                                    wire:model="license"
                                     placeholder="Choose license..."
                                 >
                                     @foreach ($this->licenses as $license)

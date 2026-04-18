@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Api\V0\QueryBuilder;
 
-use App\Exceptions\Api\V0\InvalidQuery;
+use App\Exceptions\Api\V0\InvalidQueryException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use LogicException;
 
 /**
  * @template TModel of Model
@@ -313,7 +314,8 @@ abstract class AbstractQueryBuilder
         }
 
         // Get the search results with their relevance ordering and ranking scores (model uses Searchable trait, verified above)
-        assert(method_exists($model, 'search'));
+        throw_unless(method_exists($model, 'search'), LogicException::class, 'Searchable trait is present but search() method is missing.');
+
         /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */
         $scoutBuilder = $model->search($this->searchQuery);
         /** @var array{hits?: array<int, array<string, mixed>>} $searchResults */
@@ -358,7 +360,7 @@ abstract class AbstractQueryBuilder
     /**
      * Apply the filters to the query.
      *
-     * @throws InvalidQuery
+     * @throws InvalidQueryException
      */
     protected function applyFilters(): void
     {
@@ -375,7 +377,7 @@ abstract class AbstractQueryBuilder
         if ($invalidFilters !== []) {
             $invalidFilter = implode(', ', $invalidFilters);
             $validFilters = implode(', ', $allowedFilterKeys);
-            throw new InvalidQuery(
+            throw new InvalidQueryException(
                 sprintf('Invalid filter(s): %s. Valid filters are: %s', $invalidFilter, $validFilters)
             );
         }
@@ -397,7 +399,7 @@ abstract class AbstractQueryBuilder
     /**
      * Apply includes to the query.
      *
-     * @throws InvalidQuery
+     * @throws InvalidQueryException
      */
     protected function applyIncludes(): void
     {
@@ -421,7 +423,7 @@ abstract class AbstractQueryBuilder
                 if ($invalidIncludes !== []) {
                     $invalidInclude = implode(', ', $invalidIncludes);
                     $validIncludeList = implode(', ', $validIncludes);
-                    throw new InvalidQuery(
+                    throw new InvalidQueryException(
                         sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludeList)
                     );
                 }
@@ -446,7 +448,7 @@ abstract class AbstractQueryBuilder
                 if ($invalidIncludes !== []) {
                     $invalidInclude = implode(', ', $invalidIncludes);
                     $validIncludeList = implode(', ', $validIncludes);
-                    throw new InvalidQuery(
+                    throw new InvalidQueryException(
                         sprintf('Invalid parameter(s): %s. Valid parameters are: %s', $invalidInclude, $validIncludeList)
                     );
                 }
@@ -459,7 +461,7 @@ abstract class AbstractQueryBuilder
     /**
      * Apply the fields to the query.
      *
-     * @throws InvalidQuery
+     * @throws InvalidQueryException
      */
     protected function applyFields(): void
     {
@@ -477,7 +479,7 @@ abstract class AbstractQueryBuilder
                 if ($invalidFields !== []) {
                     $invalidField = implode(', ', $invalidFields);
                     $validFields = implode(', ', $allowedFields);
-                    throw new InvalidQuery(
+                    throw new InvalidQueryException(
                         sprintf('Invalid field(s): %s. Valid fields are: %s', $invalidField, $validFields)
                     );
                 }
@@ -510,7 +512,7 @@ abstract class AbstractQueryBuilder
     /**
      * Apply the sorts to the query.
      *
-     * @throws InvalidQuery
+     * @throws InvalidQueryException
      */
     protected function applySorts(): void
     {
@@ -533,7 +535,7 @@ abstract class AbstractQueryBuilder
             if ($invalidSorts !== []) {
                 $invalidSort = implode(', ', $invalidSorts);
                 $validSorts = implode(', ', $allowedSorts);
-                throw new InvalidQuery(
+                throw new InvalidQueryException(
                     sprintf('Invalid sort parameter(s): %s. Valid sorts are: %s', $invalidSort, $validSorts)
                 );
             }

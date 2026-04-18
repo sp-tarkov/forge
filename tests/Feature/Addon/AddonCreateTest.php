@@ -171,4 +171,32 @@ describe('Addon Create Form', function (): void {
             expect($addon->sourceCodeLinks)->not->toBeNull();
         });
     });
+
+    describe('Browser Tests - License', function (): void {
+        it('saves license value when selected via the listbox', function (): void {
+            $owner = User::factory()->withMfa()->create();
+            $license = License::factory()->create(['name' => 'MIT License']);
+            $mod = Mod::factory()->addonsEnabled()->create();
+
+            $this->actingAs($owner);
+
+            $page = visit(route('addon.create', ['mod' => $mod->id]));
+
+            $page->assertSee('Addon Information')
+                ->assertNoJavascriptErrors()
+                ->fill('name', 'Test Addon')
+                ->fill('teaser', 'Test teaser text')
+                ->fill('textarea[name="description"]', 'Full addon description here')
+                ->click('internal:role=combobox[name="License"i]')
+                ->waitForText('MIT License')
+                ->click('MIT License')
+                ->fill('input[placeholder*="github.com/username"]', 'https://github.com/test/test')
+                ->click('button[type="submit"]')
+                ->waitForText('Addon Created');
+
+            $addon = Addon::query()->where('name', 'Test Addon')->first();
+            expect($addon)->not->toBeNull();
+            expect($addon->license_id)->toBe($license->id);
+        });
+    });
 });

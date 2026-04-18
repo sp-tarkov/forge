@@ -78,19 +78,6 @@ return [
             ],
         ],
 
-        'redis-long' => [
-            'driver' => 'redis',
-            'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
-            'queue' => 'long',
-            'retry_after' => 3630, // Must exceed supervisor-long timeout (3600)
-            'block_for' => null,
-            'after_commit' => false,
-            'options' => [
-                'serializer' => 0,
-                'compression' => 0,
-            ],
-        ],
-
         'redis-verification' => [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),

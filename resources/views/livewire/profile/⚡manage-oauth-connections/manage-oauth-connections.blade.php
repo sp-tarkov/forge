@@ -8,38 +8,33 @@
     </x-slot>
 
     <x-slot name="content">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <flux:heading size="lg">
             {{ __('You can manage your OAuth connections here') }}
-        </h3>
+        </flux:heading>
 
         @if ($user->password === null)
-            <div class="mt-3 max-w-xl text-sm text-gray-600 dark:text-gray-400">
-                <p>{{ __('Before you can remove a connection you must have an account password set.') }}</p>
-            </div>
+            <flux:callout
+                icon="information-circle"
+                color="sky"
+                inline
+                class="mt-3"
+            >
+                <flux:callout.text>
+                    {{ __('Before you can remove a connection you must have an account password set.') }}
+                </flux:callout.text>
+            </flux:callout>
         @endif
 
-        @if (session()->has('status'))
-            <div class="mt-3 font-medium text-sm text-green-600 dark:text-green-400">
-                {{ session('status') }}
-            </div>
-        @endif
-
-        @if (session()->has('error'))
-            <div class="mt-3 font-medium text-sm text-red-600 dark:text-red-400">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <div class="mt-5 space-y-6">
+        <div class="mt-5 space-y-3">
             @forelse ($user->oauthConnections as $connection)
-                <div class="flex items-center text-gray-600 dark:text-gray-400">
-                    <div>
+                <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                    <div class="shrink-0 text-zinc-600 dark:text-zinc-300">
                         @switch ($connection->provider)
                             @case ('discord')
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="currentColor"
-                                    class="w-4 h-4"
+                                    class="size-6"
                                     viewBox="0 0 16 16"
                                 >
                                     <path
@@ -49,36 +44,27 @@
                             @break
 
                             @default
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="w-4 h-4"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-                                    />
-                                </svg>
+                                <flux:icon.link class="size-6" />
                         @endswitch
                     </div>
 
-                    <div class="ms-3">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            {{ ucfirst($connection->provider) }} - {{ $connection->name }} - {{ $connection->email }}
-                        </div>
-                        <div class="text-xs text-gray-500">
+                    <div class="flex-1 min-w-0">
+                        <flux:heading size="sm" class="truncate">
+                            {{ ucfirst($connection->provider) }} — {{ $connection->name }}
+                        </flux:heading>
+                        <flux:text size="sm" class="truncate">
+                            {{ $connection->email }}
+                        </flux:text>
+                        <flux:text size="xs" class="mt-0.5">
                             {{ __('Connected') }} {{ $connection->created_at->format('M d, Y') }}
-                        </div>
+                        </flux:text>
                     </div>
 
-                    <div class="ms-auto">
+                    <div class="shrink-0">
                         @can('delete', $connection)
                             <flux:button
                                 variant="danger"
+                                size="sm"
                                 wire:click="confirmConnectionDeletion({{ $connection->id }})"
                                 wire:loading.attr="disabled"
                             >
@@ -87,70 +73,67 @@
                         @endcan
                     </div>
                 </div>
-                @empty
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('You have no connected accounts.') }}
-                    </div>
-                @endforelse
-            </div>
+            @empty
+                <flux:text>{{ __('You have no connected accounts.') }}</flux:text>
+            @endforelse
+        </div>
 
-            <!-- Confirmation Modal -->
-            <flux:modal
-                wire:model="confirmingConnectionDeletion"
-                class="md:w-[500px] lg:w-[600px]"
-            >
-                <div class="space-y-0">
-                    {{-- Header Section --}}
-                    <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
-                        <div class="flex items-center gap-3">
-                            <flux:icon
-                                name="link-slash"
-                                class="w-8 h-8 text-red-600"
-                            />
-                            <div>
-                                <flux:heading
-                                    size="xl"
-                                    class="text-gray-900 dark:text-gray-100"
-                                >
-                                    {{ __('Remove Connected Account') }}
-                                </flux:heading>
-                                <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
-                                    {{ __('This action cannot be undone') }}
-                                </flux:text>
-                            </div>
+        {{-- Confirmation Modal --}}
+        <flux:modal
+            wire:model="confirmingConnectionDeletion"
+            class="md:w-[500px] lg:w-[600px]"
+        >
+            <div class="space-y-0">
+                {{-- Header Section --}}
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+                    <div class="flex items-center gap-3">
+                        <flux:icon
+                            name="link-slash"
+                            class="w-8 h-8 text-red-600"
+                        />
+                        <div>
+                            <flux:heading
+                                size="xl"
+                                class="text-gray-900 dark:text-gray-100"
+                            >
+                                {{ __('Remove Connected Account') }}
+                            </flux:heading>
+                            <flux:text class="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                {{ __('This action cannot be undone') }}
+                            </flux:text>
                         </div>
                     </div>
-
-                    {{-- Content Section --}}
-                    <div class="space-y-4">
-                        <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
-                            {{ __('You will not be able to sign in using this connected account after it has been removed. Are you sure you want to remove this connected account?') }}
-                        </flux:text>
-                    </div>
-
-                    {{-- Footer Actions --}}
-                    <div
-                        class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
-                        <flux:button
-                            wire:click="$toggle('confirmingConnectionDeletion')"
-                            wire:loading.attr="disabled"
-                            variant="outline"
-                            size="sm"
-                        >
-                            {{ __('Cancel') }}
-                        </flux:button>
-                        <flux:button
-                            wire:click="deleteConnection"
-                            wire:loading.attr="disabled"
-                            variant="primary"
-                            size="sm"
-                            icon="link-slash"
-                            class="bg-red-600 hover:bg-red-700 text-white"
-                        >
-                            {{ __('Remove') }}
-                        </flux:button>
-                    </div>
                 </div>
-            </flux:modal>
-        </x-slot>
-    </x-action-section>
+
+                {{-- Content Section --}}
+                <div class="space-y-4">
+                    <flux:text class="text-gray-700 dark:text-gray-300 text-sm">
+                        {{ __('You will not be able to sign in using this connected account after it has been removed. Are you sure you want to remove this connected account?') }}
+                    </flux:text>
+                </div>
+
+                {{-- Footer Actions --}}
+                <div class="flex justify-end items-center pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 gap-3">
+                    <flux:button
+                        wire:click="$toggle('confirmingConnectionDeletion')"
+                        wire:loading.attr="disabled"
+                        variant="outline"
+                        size="sm"
+                    >
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button
+                        wire:click="deleteConnection"
+                        wire:loading.attr="disabled"
+                        variant="primary"
+                        size="sm"
+                        icon="link-slash"
+                        class="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                        {{ __('Remove') }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
+    </x-slot>
+</x-action-section>

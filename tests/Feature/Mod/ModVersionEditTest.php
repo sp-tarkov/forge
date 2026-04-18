@@ -428,4 +428,41 @@ describe('Mod Version Edit Form', function (): void {
             expect($modVersion->fika_compatibility->value)->toBe('compatible');
         });
     });
+
+    describe('Browser Tests - Fika Compatibility', function (): void {
+        it('saves fika compatibility value when changed via the listbox', function (): void {
+            $user = User::factory()->withMfa()->create();
+            $license = License::factory()->create();
+            $category = ModCategory::factory()->create();
+            SptVersion::factory()->create(['version' => '3.9.0']);
+
+            $mod = Mod::factory()->create([
+                'owner_id' => $user->id,
+                'license_id' => $license->id,
+                'category_id' => $category->id,
+            ]);
+
+            $modVersion = ModVersion::factory()->create([
+                'mod_id' => $mod->id,
+                'version' => '1.0.0',
+                'spt_version_constraint' => '~3.9.0',
+                'fika_compatibility' => FikaCompatibility::Unknown,
+            ]);
+
+            $this->actingAs($user);
+
+            $page = visit(route('mod.version.edit', ['mod' => $mod->id, 'modVersion' => $modVersion->id]));
+
+            $page->assertSee('Edit Mod Version')
+                ->assertNoJavascriptErrors()
+                ->click('Compatibility Unknown')
+                ->waitForText('Compatible')
+                ->click('Compatible')
+                ->click('Save Changes')
+                ->waitForText($mod->name);
+
+            $modVersion->refresh();
+            expect($modVersion->fika_compatibility)->toBe(FikaCompatibility::Compatible);
+        });
+    });
 });

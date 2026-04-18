@@ -108,7 +108,9 @@
     >{{ __('Skip to main content') }}</a>
 
     @persist('toast')
-        <flux:toast position="top end" />
+        <flux:toast.group position="top end">
+            <flux:toast />
+        </flux:toast.group>
     @endpersist
 
     <div class="flex-grow bg-gray-100 dark:bg-gray-800">

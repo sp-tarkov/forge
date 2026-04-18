@@ -236,7 +236,7 @@ final class CachedGateService
             $argumentsKey = $arguments->getKey();
             $argsHash = $arguments::class.'.'.$argumentsKey;
         } else {
-            $argsHash = md5(serialize($arguments));
+            $argsHash = hash('sha256', serialize($arguments));
         }
 
         return sprintf('gate.%s.%s.%s', $userId, $ability, $argsHash);
@@ -261,6 +261,6 @@ final class CachedGateService
             }
         }
 
-        return md5(serialize($normalized));
+        return hash('sha256', serialize($normalized));
     }
 }

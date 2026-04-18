@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Resources\Api\V0;
+namespace App\Http\Resources\Api\V0\Collections;
 
+use App\Http\Resources\Api\V0\ModResource;
+use App\Http\Resources\Api\V0\ModVersionResource;
 use App\Models\ModVersion;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;

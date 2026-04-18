@@ -9,35 +9,32 @@
 
     <x-slot name="content">
         @if ($this->blockedUsers->isEmpty())
-            <div class="text-sm text-gray-600 dark:text-gray-400">
-                {{ __('You haven\'t blocked any users.') }}
-            </div>
+            <flux:text>{{ __('You haven\'t blocked any users.') }}</flux:text>
         @else
-            <div class="space-y-2">
+            <div class="space-y-3">
                 @foreach ($this->blockedUsers as $block)
-                    <div
-                        class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center space-x-4">
+                    <div class="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div class="flex items-center gap-4 min-w-0">
                             <img
-                                class="h-12 w-12 rounded-full"
+                                class="size-12 shrink-0 rounded-full object-cover"
                                 src="{{ $block->blocked->profile_photo_url }}"
                                 alt="{{ $block->blocked->name }}"
                             >
-                            <div>
-                                <div class="text-base font-medium text-gray-900 dark:text-gray-100">
+                            <div class="min-w-0">
+                                <flux:heading size="sm" class="truncate">
                                     {{ $block->blocked->name }}
-                                </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                </flux:heading>
+                                <flux:text size="sm">
                                     {{ __('Blocked') }} {{ $block->created_at->diffForHumans() }}
-                                </div>
+                                </flux:text>
                                 @if ($block->reason)
-                                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    <flux:text size="sm" class="mt-1">
                                         {{ __('Reason:') }} {{ $block->reason }}
-                                    </div>
+                                    </flux:text>
                                 @endif
                             </div>
                         </div>
-                        <div>
+                        <div class="shrink-0">
                             <flux:button
                                 wire:click="unblockUser({{ $block->blocked->id }})"
                                 variant="outline"

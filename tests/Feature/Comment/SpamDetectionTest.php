@@ -7,7 +7,7 @@ use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
-use App\Services\CommentSpamChecker;
+use App\Services\CommentSpamService;
 use App\Support\Akismet\SpamCheckResult;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
@@ -92,7 +92,7 @@ describe('spam checker behavior', function (): void {
             'user_id' => $user->id,
         ]);
 
-        $spamChecker = resolve(CommentSpamChecker::class);
+        $spamChecker = resolve(CommentSpamService::class);
         $result = $spamChecker->checkSpam($comment);
 
         expect($result->isSpam)->toBeFalse();
