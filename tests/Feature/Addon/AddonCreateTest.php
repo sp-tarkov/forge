@@ -16,6 +16,49 @@ it('renders the addon guidelines page', function (): void {
         ->assertOk();
 });
 
+it('renders the addon path-check page', function (): void {
+    $user = User::factory()->withMfa()->create();
+    $mod = Mod::factory()->addonsEnabled()->create();
+
+    $this->actingAs($user)
+        ->get(route('addon.path-check', $mod->id))
+        ->assertOk()
+        ->assertSeeText('Choose the Right Path')
+        ->assertSeeText('An add-on fits')
+        ->assertSeeText('This should be its own mod');
+});
+
+it('routes users from guidelines to path-check after acknowledgment', function (): void {
+    $user = User::factory()->withMfa()->create();
+    $mod = Mod::factory()->addonsEnabled()->create();
+
+    $this->actingAs($user);
+
+    Livewire::test('pages::addon.guidelines-acknowledgment', ['mod' => $mod])
+        ->call('agree')
+        ->assertRedirect(route('addon.path-check', ['mod' => $mod->id]));
+});
+
+it('routes users from path-check to addon create on proceed', function (): void {
+    $user = User::factory()->withMfa()->create();
+    $mod = Mod::factory()->addonsEnabled()->create();
+
+    $this->actingAs($user);
+
+    Livewire::test('pages::addon.path-check', ['mod' => $mod])
+        ->call('proceed')
+        ->assertRedirect(route('addon.create', ['mod' => $mod->id]));
+});
+
+it('blocks unauthorized users from the addon path-check page', function (): void {
+    $user = User::factory()->withMfa()->create();
+    $mod = Mod::factory()->create(['addons_disabled' => true]);
+
+    $this->actingAs($user)
+        ->get(route('addon.path-check', $mod->id))
+        ->assertForbidden();
+});
+
 it('renders the addon version create page', function (): void {
     $user = User::factory()->withMfa()->create();
     $mod = Mod::factory()->addonsEnabled()->create();

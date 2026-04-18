@@ -25,12 +25,12 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * User agrees to guidelines and proceeds to addon creation.
+     * User confirms an addon is the right path and proceeds to addon creation.
      */
-    public function agree(): void
+    public function proceed(): void
     {
         $this->authorize('create', [Addon::class, $this->mod]);
 
-        $this->redirect(route('addon.path-check', ['mod' => $this->mod->id]));
+        $this->redirect(route('addon.create', ['mod' => $this->mod->id]));
     }
 };

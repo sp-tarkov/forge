@@ -123,6 +123,10 @@ Route::middleware('auth.banned')->group(function (): void {
             ->where(['mod' => '[0-9]+'])
             ->name('addon.guidelines');
 
+        Route::livewire('/addon/path-check/{mod}', 'pages::addon.path-check')
+            ->where(['mod' => '[0-9]+'])
+            ->name('addon.path-check');
+
         Route::livewire('/addon/create/{mod}', 'pages::addon.create')
             ->where(['mod' => '[0-9]+'])
             ->name('addon.create');
