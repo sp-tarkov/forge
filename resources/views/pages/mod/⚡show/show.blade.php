@@ -238,7 +238,16 @@
             {{-- Tabs --}}
             <div
                 x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'description' }"
-                x-init="$watch('selectedTab', (tab) => { window.location.hash = tab })"
+                x-init="
+                    $watch('selectedTab', (tab) => { window.location.hash = tab });
+                    if (selectedTab === 'comments' && window.location.hash.includes('-comment-')) {
+                        $nextTick(() => {
+                            const lazyEl = $refs.commentsTab?.querySelector('[x-intersect]');
+                            const expr = lazyEl?.getAttribute('x-intersect');
+                            if (lazyEl && expr) window.Alpine.evaluate(lazyEl, expr);
+                        });
+                    }
+                "
                 class="lg:col-span-2 flex flex-col gap-6"
             >
                 <div>
@@ -321,7 +330,10 @@
 
                 {{-- Comments --}}
                 @if (!$mod->comments_disabled || auth()->user()?->isModOrAdmin() || $mod->isAuthorOrOwner(auth()->user()))
-                    <div x-show="selectedTab === 'comments'">
+                    <div
+                        x-ref="commentsTab"
+                        x-show="selectedTab === 'comments'"
+                    >
                         <livewire:mod.show.comments-tab
                             wire:key="comments-tab-{{ $mod->id }}"
                             :mod-id="$mod->id"

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Notifications\CommentReplyNotification;
 use App\Notifications\NewChatMessageNotification;
 use App\Notifications\NewCommentNotification;
 use App\Notifications\ReportSubmittedNotification;
@@ -193,7 +194,8 @@ new class extends Component
         return match ($notification->type) {
             ReportSubmittedNotification::class => $data['reportable_url'] ?? null,
             NewChatMessageNotification::class => $data['conversation_url'] ?? null,
-            NewCommentNotification::class => $data['comment_url'] ?? null,
+            NewCommentNotification::class,
+            CommentReplyNotification::class => $data['comment_url'] ?? null,
             default => null,
         };
     }

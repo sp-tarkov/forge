@@ -118,7 +118,16 @@
             {{-- Left Column --}}
             <div
                 x-data="{ selectedTab: window.location.hash ? (window.location.hash.includes('-comment-') ? window.location.hash.substring(1).split('-comment-')[0] : window.location.hash.substring(1)) : 'wall' }"
-                x-init="$watch('selectedTab', (tab) => { window.location.hash = tab })"
+                x-init="
+                    $watch('selectedTab', (tab) => { window.location.hash = tab });
+                    if (selectedTab === 'wall' && window.location.hash.includes('-comment-')) {
+                        $nextTick(() => {
+                            const lazyEl = $refs.wallTab?.querySelector('[x-intersect]');
+                            const expr = lazyEl?.getAttribute('x-intersect');
+                            if (lazyEl && expr) window.Alpine.evaluate(lazyEl, expr);
+                        });
+                    }
+                "
                 class="lg:col-span-3 flex flex-col gap-6"
             >
                 {{-- Ban Information (Visible to Admins/Moderators Only - Small Screens) --}}
@@ -219,7 +228,10 @@
                 </div>
 
                 {{-- Wall --}}
-                <div x-show="selectedTab === 'wall'">
+                <div
+                    x-ref="wallTab"
+                    x-show="selectedTab === 'wall'"
+                >
                     <livewire:user.show.wall-tab
                         wire:key="user-wall-tab-{{ $user->id }}"
                         :user-id="$user->id"

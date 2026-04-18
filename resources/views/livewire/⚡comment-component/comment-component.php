@@ -1159,6 +1159,23 @@ new class extends Component
             return;
         }
 
+        // Jump to the page that contains the target's root comment so it is actually rendered.
+        $rootId = $comment->root_id ?? $comment->id;
+        $rootIds = $this->commentable->rootComments()
+            ->visibleToUser(Auth::user())
+            ->pluck('comments.id')
+            ->all();
+
+        $position = array_search($rootId, $rootIds, true);
+        if (is_int($position)) {
+            $targetPage = intdiv($position, 10) + 1;
+            $currentRaw = $this->getPage('commentPage');
+            $currentPage = is_numeric($currentRaw) ? (int) $currentRaw : 1;
+            if ($currentPage !== $targetPage) {
+                $this->setPage($targetPage, 'commentPage');
+            }
+        }
+
         // If it's a descendant comment, we need to load its root's descendants.
         if ($comment->root_id) {
             $this->showDescendants[$comment->root_id] = true;
@@ -1166,7 +1183,7 @@ new class extends Component
         }
 
         // Dispatch event to scroll to the comment after render. This is caught with AlpineJS.
-        $this->dispatch('scroll-to-comment', commentId: $commentId);
+        $this->dispatch('scroll-to-comment', anchorId: $this->getCommentHashId($commentId));
     }
 
     /**
