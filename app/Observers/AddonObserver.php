@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\Addon;
+use App\Models\ModListItem;
 use App\Services\AddonVersionService;
 use Illuminate\Support\Facades\Storage;
 
@@ -37,5 +38,11 @@ final readonly class AddonObserver
                 Storage::disk($disk)->delete($addon->thumbnail);
             }
         }
+
+        // Polymorphic relations are not cascaded by the DB; remove list references here.
+        ModListItem::query()
+            ->where('listable_type', Addon::class)
+            ->where('listable_id', $addon->id)
+            ->delete();
     }
 }

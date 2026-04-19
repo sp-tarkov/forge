@@ -14,6 +14,22 @@
         </h2>
         <div class="flex items-center gap-2">
             @auth
+                <livewire:mod-favourite-button
+                    :mod-id="$mod->id"
+                    wire:key="mod-show-favourite-{{ $mod->id }}"
+                />
+                <flux:modal.trigger name="mod-add-to-list-mod-{{ $mod->id }}">
+                    <flux:button
+                        icon="bookmark-square"
+                        size="sm"
+                        variant="outline"
+                    >{{ __('Add to list') }}</flux:button>
+                </flux:modal.trigger>
+                <livewire:mod-add-to-list
+                    :source-id="$mod->id"
+                    source-type="mod"
+                    wire:key="mod-show-add-to-list-{{ $mod->id }}"
+                />
                 @if ($mod->addons_enabled)
                     @if (auth()->user()->hasMfaEnabled())
                         <flux:button

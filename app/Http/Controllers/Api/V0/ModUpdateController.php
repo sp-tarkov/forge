@@ -382,7 +382,7 @@ final class ModUpdateController extends Controller
             }
         }
 
-        // Check outgoing dependencies (what this update needs — eager-loaded in findCandidateUpdate)
+        // Check outgoing dependencies (what this update needs; eager-loaded in findCandidateUpdate)
         $candidateDependencies = $candidate->dependencies;
 
         foreach ($candidateDependencies as $dep) {

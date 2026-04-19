@@ -50,7 +50,7 @@
 
                     <div class="flex-1 min-w-0">
                         <flux:heading size="sm" class="truncate">
-                            {{ ucfirst($connection->provider) }} — {{ $connection->name }}
+                            {{ ucfirst($connection->provider) }}: {{ $connection->name }}
                         </flux:heading>
                         <flux:text size="sm" class="truncate">
                             {{ $connection->email }}

@@ -6,6 +6,7 @@ namespace App\Observers;
 
 use App\Contracts\DependencyResolver;
 use App\Models\Mod;
+use App\Models\ModListItem;
 use App\Models\SptVersion;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -46,6 +47,12 @@ final readonly class ModObserver
                 Storage::disk($disk)->delete($mod->thumbnail);
             }
         }
+
+        // Polymorphic relations are not cascaded by the DB; remove list references here.
+        ModListItem::query()
+            ->where('listable_type', Mod::class)
+            ->where('listable_id', $mod->id)
+            ->delete();
     }
 
     /**

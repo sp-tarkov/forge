@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
  * indexes, these result in full table scans on 8M+ rows (26s+ per page load).
  *
  * Changes:
- * 1. Convert browser, platform, device from TEXT to VARCHAR(255) — current max
+ * 1. Convert browser, platform, device from TEXT to VARCHAR(255). Current max
  *    lengths are 9, 12, 13 chars respectively, so VARCHAR(255) is generous.
  *    TEXT columns cannot be efficiently indexed for GROUP BY operations.
  * 2. Add composite indexes pairing created_at with each grouped column so MySQL

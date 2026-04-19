@@ -61,7 +61,7 @@ new #[Layout('layouts::base')] class extends Component
      * Mark the currently visible mods as read by bumping the user's viewed-at timestamp.
      *
      * The component's $previousViewedAt is intentionally left untouched so the list
-     * remains visible for this visit — the filter only resets on the next mount.
+     * remains visible for this visit. The filter only resets on the next mount.
      */
     #[On('mark-created-as-read')]
     public function markAsRead(): void

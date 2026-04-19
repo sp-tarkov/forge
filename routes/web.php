@@ -14,6 +14,7 @@ use App\Http\Controllers\ModVersionController;
 use App\Http\Controllers\SocialiteController;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\Report;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -56,6 +57,18 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::livewire('/user/{userId}/{slug}', 'pages::user.show')
         ->where(['userId' => '[0-9]+'])
         ->name('user.show');
+
+    Route::livewire('/lists', 'pages::list.index')
+        ->can('viewAny', ModList::class)
+        ->name('list.index');
+
+    Route::livewire('/list/{listId}/{slug}/{shareToken}', 'pages::list.show')
+        ->where(['listId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+', 'shareToken' => '[A-Za-z0-9]{32}'])
+        ->name('list.show.shared');
+
+    Route::livewire('/list/{listId}/{slug}', 'pages::list.show')
+        ->where(['listId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
+        ->name('list.show');
 
     Route::livewire('/user-banned', 'pages::user.banned')
         ->name('user.banned');
@@ -148,6 +161,14 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::livewire('/addon/{addon}/version/{addonVersion}/edit', 'pages::addon-version.edit')
             ->where(['addon' => '[0-9]+', 'addonVersion' => '[0-9]+'])
             ->name('addon.version.edit');
+
+        Route::livewire('/list/create', 'pages::list.create')
+            ->can('create', ModList::class)
+            ->name('list.create');
+
+        Route::livewire('/list/{listId}/edit', 'pages::list.edit')
+            ->where(['listId' => '[0-9]+'])
+            ->name('list.edit');
 
         Route::livewire('/chat/{conversationHash?}', 'pages::chat')
             ->where(['conversationHash' => '[a-zA-Z0-9]+'])

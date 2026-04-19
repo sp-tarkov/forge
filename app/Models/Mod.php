@@ -216,6 +216,16 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * The relationship between a mod and the list items that reference it.
+     *
+     * @return MorphMany<ModListItem, $this>
+     */
+    public function listItems(): MorphMany
+    {
+        return $this->morphMany(ModListItem::class, 'listable');
+    }
+
+    /**
      * The relationship between a mod and its enabled addons.
      *
      * @return HasMany<Addon, $this>
@@ -766,7 +776,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
      */
     private function hasActiveSptCompatibility(): bool
     {
-        // Get active SPT version strings (last three minor versions) for search — cache strings, not models
+        // Get active SPT version strings (last three minor versions) for search; cache strings, not models.
         /** @var array<int, string> $activeSptVersionIds */
         $activeSptVersionIds = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): array => SptVersion::getVersionsForLastThreeMinors()->pluck('version')->all());
 
