@@ -44,17 +44,7 @@ new #[Layout('layouts::base')] class extends Component
      */
     public function getModCount(): int
     {
-        $viewer = Auth::user();
-
-        $query = $this->user->ownedAndAuthoredMods();
-
-        if (! $viewer?->can('viewDisabledUserMods', $this->user)) {
-            $query->whereDisabled(false)->whereHas('versions', function (Builder $versionQuery): void {
-                $versionQuery->where('disabled', false)->whereNotNull('published_at');
-            });
-        }
-
-        return $query->count();
+        return $this->user->visibleModsFor(auth()->user())->count('mods.id');
     }
 
     /**
@@ -62,15 +52,7 @@ new #[Layout('layouts::base')] class extends Component
      */
     public function getAddonCount(): int
     {
-        $viewer = Auth::user();
-
-        $query = $this->user->ownedAndAuthoredAddons();
-
-        if (! $viewer?->can('viewDisabledUserAddons', $this->user)) {
-            $query->where('addons.disabled', false)->whereNotNull('addons.published_at')->where('addons.published_at', '<=', now());
-        }
-
-        return $query->count();
+        return $this->user->visibleAddonsFor(auth()->user())->count('addons.id');
     }
 
     /**

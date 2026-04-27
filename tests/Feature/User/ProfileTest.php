@@ -446,6 +446,261 @@ describe('addon visibility on profile', function (): void {
     });
 });
 
+describe('mod and addon tab counts', function (): void {
+    beforeEach(function (): void {
+        Livewire::withoutLazyLoading();
+
+        $this->owner = User::factory()->create();
+        $this->stranger = User::factory()->create();
+        $this->additionalAuthor = User::factory()->create();
+        $this->moderator = User::factory()->moderator()->create();
+        $this->admin = User::factory()->admin()->create();
+        $this->otherOwner = User::factory()->create();
+
+        seedProfileMods($this->owner, $this->additionalAuthor, $this->otherOwner);
+        seedProfileAddons($this->owner, $this->additionalAuthor, $this->otherOwner);
+    });
+
+    it('keeps mod and addon tab counts in sync with the rendered list for each viewer role', function (
+        string $role,
+        int $expectedMods,
+        int $expectedAddons,
+    ): void {
+        $viewer = match ($role) {
+            'guest' => null,
+            'stranger' => $this->stranger,
+            'additionalAuthor' => $this->additionalAuthor,
+            'owner' => $this->owner,
+            'moderator' => $this->moderator,
+            'admin' => $this->admin,
+        };
+
+        if ($viewer instanceof User) {
+            $this->actingAs($viewer);
+        }
+
+        $page = Livewire::test('pages::user.show', [
+            'userId' => $this->owner->id,
+            'slug' => $this->owner->slug,
+        ]);
+
+        expect($page->instance()->getModCount())
+            ->toBe($expectedMods, sprintf('mod tab count for %s', $role));
+        expect($page->instance()->getAddonCount())
+            ->toBe($expectedAddons, sprintf('addon tab count for %s', $role));
+
+        $modsTab = Livewire::test('user.show.mods-tab', [
+            'userId' => $this->owner->id,
+        ]);
+
+        expect($modsTab->instance()->mods->total())
+            ->toBe($expectedMods, sprintf('mods paginator total for %s', $role))
+            ->and(count($modsTab->instance()->mods->items()))
+            ->toBe($expectedMods, sprintf('mods rendered items for %s', $role));
+
+        $addonsTab = Livewire::test('user.show.addons-tab', [
+            'userId' => $this->owner->id,
+        ]);
+
+        expect($addonsTab->instance()->addons->total())
+            ->toBe($expectedAddons, sprintf('addons paginator total for %s', $role))
+            ->and(count($addonsTab->instance()->addons->items()))
+            ->toBe($expectedAddons, sprintf('addons rendered items for %s', $role));
+    })->with([
+        'guest' => ['guest', 3, 3],
+        'authenticated stranger' => ['stranger', 3, 3],
+        'additional author of profile content' => ['additionalAuthor', 3, 3],
+        'profile owner' => ['owner', 9, 6],
+        'moderator' => ['moderator', 9, 6],
+        'admin' => ['admin', 9, 6],
+    ]);
+});
+
+/**
+ * Seed nine mods covering every status the profile mods tab should account for.
+ *
+ * Public to all viewers (3): Mod A, Mod H, Mod I.
+ * Owner / mod / admin only (6): Mod B, Mod C, Mod D, Mod E, Mod F, Mod G.
+ *
+ * Mod H carries two additional authors so the LEFT JOIN duplicates rows,
+ * exposing the COUNT(*) vs DISTINCT divergence the tab numbers depend on.
+ */
+function seedProfileMods(User $owner, User $additionalAuthor, User $otherOwner): void
+{
+    // A: published mod with one published, enabled version. Visible to everyone.
+    $modA = Mod::factory()->for($owner, 'owner')->create([
+        'name' => 'Mod A Public',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    ModVersion::factory()->recycle($modA)->create([
+        'disabled' => false,
+        'published_at' => now()->subDay(),
+    ]);
+
+    // B: published mod with no versions. Hidden by the version filter.
+    Mod::factory()->for($owner, 'owner')->create([
+        'name' => 'Mod B No Versions',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+
+    // C: published mod whose only version is disabled.
+    $modC = Mod::factory()->for($owner, 'owner')->create([
+        'name' => 'Mod C Only Disabled Version',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    ModVersion::factory()->recycle($modC)->create([
+        'disabled' => true,
+        'published_at' => now()->subDay(),
+    ]);
+
+    // D: published mod whose only version is unpublished.
+    $modD = Mod::factory()->for($owner, 'owner')->create([
+        'name' => 'Mod D Only Unpublished Version',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    ModVersion::factory()->recycle($modD)->create([
+        'disabled' => false,
+        'published_at' => null,
+    ]);
+
+    // E: unpublished mod (no published_at) with a published version.
+    $modE = Mod::factory()->for($owner, 'owner')->create([
+        'name' => 'Mod E Unpublished',
+        'published_at' => null,
+        'disabled' => false,
+    ]);
+    ModVersion::factory()->recycle($modE)->create([
+        'disabled' => false,
+        'published_at' => now()->subDay(),
+    ]);
+
+    // F: scheduled mod (future published_at).
+    $modF = Mod::factory()->for($owner, 'owner')->create([
+        'name' => 'Mod F Scheduled',
+        'published_at' => now()->addWeek(),
+        'disabled' => false,
+    ]);
+    ModVersion::factory()->recycle($modF)->create([
+        'disabled' => false,
+        'published_at' => now()->subDay(),
+    ]);
+
+    // G: disabled mod (mod-level disabled flag).
+    $modG = Mod::factory()->for($owner, 'owner')->disabled()->create([
+        'name' => 'Mod G Disabled',
+        'published_at' => now()->subDay(),
+    ]);
+    ModVersion::factory()->recycle($modG)->create([
+        'disabled' => false,
+        'published_at' => now()->subDay(),
+    ]);
+
+    // H: public mod owned by the profile, with TWO additional authors.
+    // The LEFT JOIN against additional_authors emits 2 rows for this mod;
+    // a COUNT(*) without DISTINCT inflates the tab number.
+    $modH = Mod::factory()->for($owner, 'owner')->create([
+        'name' => 'Mod H Public Multi-Author',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    ModVersion::factory()->recycle($modH)->create([
+        'disabled' => false,
+        'published_at' => now()->subDay(),
+    ]);
+    $modH->additionalAuthors()->attach([
+        $additionalAuthor->id,
+        User::factory()->create()->id,
+    ]);
+
+    // I: public mod owned by another user, with the profile owner attached
+    // as an additional author. Should appear on the profile owner's page.
+    $modI = Mod::factory()->for($otherOwner, 'owner')->create([
+        'name' => 'Mod I Authored Elsewhere',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    ModVersion::factory()->recycle($modI)->create([
+        'disabled' => false,
+        'published_at' => now()->subDay(),
+    ]);
+    $modI->additionalAuthors()->attach($owner);
+}
+
+/**
+ * Seed six addons covering every status the addons tab should account for.
+ *
+ * Public to all viewers (3): Addon A, Addon E, Addon F.
+ * Owner / mod / admin only (3): Addon B, Addon C, Addon D.
+ */
+function seedProfileAddons(User $owner, User $additionalAuthor, User $otherOwner): void
+{
+    // Parent mod is intentionally owned by $otherOwner so it doesn't pollute
+    // the profile owner's mod count: the addon matrix should only affect addons.
+    $parentMod = Mod::factory()->for($otherOwner, 'owner')->create([
+        'published_at' => now()->subDay(),
+    ]);
+
+    // A: published, enabled, owned.
+    $addonA = Addon::factory()->for($parentMod)->for($owner, 'owner')->create([
+        'name' => 'Addon A Public',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    AddonVersion::factory()->recycle($addonA)->create();
+
+    // B: disabled.
+    $addonB = Addon::factory()->for($parentMod)->for($owner, 'owner')->create([
+        'name' => 'Addon B Disabled',
+        'published_at' => now()->subDay(),
+        'disabled' => true,
+    ]);
+    AddonVersion::factory()->recycle($addonB)->create();
+
+    // C: unpublished.
+    $addonC = Addon::factory()->for($parentMod)->for($owner, 'owner')->create([
+        'name' => 'Addon C Unpublished',
+        'published_at' => null,
+        'disabled' => false,
+    ]);
+    AddonVersion::factory()->recycle($addonC)->create();
+
+    // D: scheduled (future publish).
+    $addonD = Addon::factory()->for($parentMod)->for($owner, 'owner')->create([
+        'name' => 'Addon D Scheduled',
+        'published_at' => now()->addWeek(),
+        'disabled' => false,
+    ]);
+    AddonVersion::factory()->recycle($addonD)->create();
+
+    // E: published, owned, with TWO additional authors. LEFT JOIN duplicator.
+    $addonE = Addon::factory()->for($parentMod)->for($owner, 'owner')->create([
+        'name' => 'Addon E Public Multi-Author',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    AddonVersion::factory()->recycle($addonE)->create();
+    $addonE->additionalAuthors()->attach([
+        $additionalAuthor->id,
+        User::factory()->create()->id,
+    ]);
+
+    // F: published, owned by another user, owner is additional author.
+    $otherMod = Mod::factory()->for($otherOwner, 'owner')->create([
+        'published_at' => now()->subDay(),
+    ]);
+    $addonF = Addon::factory()->for($otherMod)->for($otherOwner, 'owner')->create([
+        'name' => 'Addon F Authored Elsewhere',
+        'published_at' => now()->subDay(),
+        'disabled' => false,
+    ]);
+    AddonVersion::factory()->recycle($addonF)->create();
+    $addonF->additionalAuthors()->attach($owner);
+}
+
 describe('profile wall comments', function (): void {
     beforeEach(function (): void {
         Livewire::withoutLazyLoading();

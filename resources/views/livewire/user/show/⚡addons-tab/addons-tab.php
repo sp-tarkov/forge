@@ -6,7 +6,6 @@ use App\Models\Addon;
 use App\Models\User;
 use App\Traits\Livewire\ModeratesAddon;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Component;
@@ -47,18 +46,16 @@ new #[Lazy] class extends Component
     #[Computed]
     public function addons(): LengthAwarePaginator
     {
-        $user = $this->user;
-        $viewer = Auth::user();
-
-        $query = $user
-            ->ownedAndAuthoredAddons()
+        $query = $this->user->visibleAddonsFor(auth()->user())
             ->with(['owner', 'additionalAuthors', 'latestVersion', 'mod:id,name,slug', 'mod.latestVersion:id,mod_id,version_major,version_minor,version_patch', 'versions.compatibleModVersions'])
             ->orderBy('addons.downloads', 'desc');
 
-        if (! $viewer?->can('viewDisabledUserAddons', $user)) {
-            $query->where('addons.disabled', false)->whereNotNull('addons.published_at')->where('addons.published_at', '<=', now());
-        }
+        // Total with addons.id so the LEFT JOIN against additional_authors doesn't inflate the paginator total.
+        $total = $query->toBase()->getCountForPagination(['addons.id']);
 
-        return $query->paginate(perPage: 10, pageName: 'addonPage')->fragment('addons'); // @phpstan-ignore return.type (Livewire computed property caching)
+        $paginator = $query->paginate(perPage: 10, pageName: 'addonPage', total: $total);
+        $paginator->fragment('addons');
+
+        return $paginator;
     }
 };
