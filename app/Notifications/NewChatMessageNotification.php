@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Contracts\Presentable;
+use App\Enums\NotificationColorRole;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Notifications\Messages\NotificationMailMessage;
+use App\Support\DataTransferObjects\HeadlineSegment;
+use App\Support\DataTransferObjects\NotificationPresentation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
-final class NewChatMessageNotification extends Notification implements ShouldQueue
+final class NewChatMessageNotification extends Notification implements Presentable, ShouldQueue
 {
     use Queueable;
 
@@ -28,6 +33,42 @@ final class NewChatMessageNotification extends Notification implements ShouldQue
         public Conversation $conversation,
         public Collection $unreadMessages
     ) {}
+
+    public static function presentDatabaseNotification(DatabaseNotification $record): NotificationPresentation
+    {
+        /** @var array{sender_name?: string, message_count?: int, conversation_url?: string, latest_message_preview?: string} $data */
+        $data = $record->data;
+
+        $sender = $data['sender_name'] ?? __('Someone');
+        $count = (int) ($data['message_count'] ?? 1);
+        $preview = $data['latest_message_preview'] ?? '';
+
+        if ($count > 1) {
+            $headline = [
+                HeadlineSegment::strong($sender),
+                HeadlineSegment::muted(' '.__('sent you').' '),
+                HeadlineSegment::accent(__(':count new messages', ['count' => $count])),
+            ];
+            $summary = __('sent you :count messages', ['count' => $count]);
+        } else {
+            $headline = [
+                HeadlineSegment::strong($sender),
+                HeadlineSegment::muted(' '.__('sent you a').' '),
+                HeadlineSegment::accent(__('new message')),
+            ];
+            $summary = __('sent you a message');
+        }
+
+        return new NotificationPresentation(
+            iconName: 'chat-bubble-left-right',
+            iconColorRole: NotificationColorRole::Purple,
+            headline: $headline,
+            summary: $summary,
+            preview: $preview !== '' ? Str::limit($preview, 150) : null,
+            previewQuoted: true,
+            url: $data['conversation_url'] ?? null,
+        );
+    }
 
     /**
      * Get the notification's delivery channels.
@@ -48,35 +89,34 @@ final class NewChatMessageNotification extends Notification implements ShouldQue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(User $notifiable): MailMessage
+    public function toMail(User $notifiable): NotificationMailMessage
     {
         $sender = $this->conversation->getOtherUser($notifiable);
         $senderName = $sender instanceof User ? $sender->name : 'Someone';
         $messageCount = $this->unreadMessages->count();
 
-        // Get the most recent message for preview
         $latestMessage = $this->unreadMessages->last();
         $messagePreview = $latestMessage !== null ? Str::limit($latestMessage->content, 150) : '';
 
-        // Create unsubscribe URL
         $unsubscribeUrl = URL::signedRoute('chat.unsubscribe', [
             'user' => $notifiable->id,
             'conversation' => $this->conversation->hash_id,
         ]);
 
-        $mailMessage = (new MailMessage)
-            ->subject($messageCount > 1
-                ? sprintf('%d new messages from %s', $messageCount, $senderName)
-                : sprintf('New message from %s', $senderName))
-            ->greeting('Hello!');
+        $subject = $messageCount > 1
+            ? sprintf('%d new messages from %s', $messageCount, $senderName)
+            : sprintf('New message from %s', $senderName);
+
+        $mailMessage = (new NotificationMailMessage)
+            ->subject($subject)
+            ->greeting($subject);
 
         if ($messageCount > 1) {
             $mailMessage->line(sprintf('**%s** sent you %d new messages.', $senderName, $messageCount));
 
-            // Show message previews with better formatting
             foreach ($this->unreadMessages->take(3) as $index => $message) {
                 if ($index === 0) {
-                    $mailMessage->line(''); // Add spacing before messages
+                    $mailMessage->line('');
                 }
 
                 $mailMessage->line('> '.Str::limit($message->content, 200));
@@ -95,11 +135,8 @@ final class NewChatMessageNotification extends Notification implements ShouldQue
         }
 
         return $mailMessage
-            ->line('')
             ->action('View Conversation', $this->conversation->url)
-            ->line('')
-            ->line(sprintf('You can [unsubscribe](%s) from notifications for this conversation.', $unsubscribeUrl))
-            ->salutation('Regards,  '."\n".config()->string('app.name'));
+            ->footer(sprintf('You can [unsubscribe](%s) from notifications for this conversation.', $unsubscribeUrl));
     }
 
     /**

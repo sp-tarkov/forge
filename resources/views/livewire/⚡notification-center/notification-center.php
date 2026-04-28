@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Notifications\CommentReplyNotification;
-use App\Notifications\NewChatMessageNotification;
-use App\Notifications\NewCommentNotification;
-use App\Notifications\ReportSubmittedNotification;
+use App\Services\NotificationPresentationService;
+use App\Support\DataTransferObjects\NotificationPresentation;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -127,19 +125,25 @@ new class extends Component
             return;
         }
 
-        // Mark as read if not already
         if (! $notification->read_at) {
             $notification->markAsRead();
             $this->clearUnreadCountCache();
             $this->loadUnreadCount();
         }
 
-        // Get the appropriate review URL based on notification type
-        $url = $this->getReviewUrl($notification);
+        $url = $this->presentationFor($notification)->url;
 
         if ($url) {
             $this->redirect($url, navigate: true);
         }
+    }
+
+    /**
+     * Build the dashboard presentation for a stored notification.
+     */
+    public function presentationFor(DatabaseNotification $notification): NotificationPresentation
+    {
+        return resolve(NotificationPresentationService::class)->present($notification);
     }
 
     /**
@@ -181,22 +185,5 @@ new class extends Component
     private function clearUnreadCountCache(): void
     {
         Cache::forget('user:'.Auth::id().':unread-notification-count');
-    }
-
-    /**
-     * Get the review URL for a notification based on its type.
-     */
-    private function getReviewUrl(DatabaseNotification $notification): ?string
-    {
-        /** @var array{reportable_url?: string, conversation_url?: string, comment_url?: string} $data */
-        $data = $notification->data;
-
-        return match ($notification->type) {
-            ReportSubmittedNotification::class => $data['reportable_url'] ?? null,
-            NewChatMessageNotification::class => $data['conversation_url'] ?? null,
-            NewCommentNotification::class,
-            CommentReplyNotification::class => $data['comment_url'] ?? null,
-            default => null,
-        };
     }
 };

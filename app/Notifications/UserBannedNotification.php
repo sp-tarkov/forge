@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Contracts\Presentable;
+use App\Enums\NotificationColorRole;
+use App\Notifications\Messages\NotificationMailMessage;
+use App\Support\DataTransferObjects\HeadlineSegment;
+use App\Support\DataTransferObjects\NotificationPresentation;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notification;
 use Mchev\Banhammer\Models\Ban;
 
-final class UserBannedNotification extends Notification implements ShouldQueue
+final class UserBannedNotification extends Notification implements Presentable, ShouldQueue
 {
     use Queueable;
 
@@ -21,6 +26,29 @@ final class UserBannedNotification extends Notification implements ShouldQueue
     public function __construct(
         public Ban $ban
     ) {}
+
+    public static function presentDatabaseNotification(DatabaseNotification $record): NotificationPresentation
+    {
+        /** @var array{reason?: ?string, is_permanent?: bool} $data */
+        $data = $record->data;
+
+        $isPermanent = (bool) ($data['is_permanent'] ?? false);
+        $reason = $data['reason'] ?? null;
+        $duration = $isPermanent ? __('permanent') : __('temporary');
+
+        return new NotificationPresentation(
+            iconName: 'no-symbol',
+            iconColorRole: NotificationColorRole::Red,
+            headline: [
+                HeadlineSegment::strong(__('Account suspension')),
+                HeadlineSegment::muted(' - '),
+                HeadlineSegment::accent($duration),
+            ],
+            summary: $isPermanent ? __('Permanent suspension') : __('Temporary suspension'),
+            preview: $reason !== null && $reason !== '' ? $reason : null,
+            previewQuoted: true,
+        );
+    }
 
     /**
      * Get the notification's delivery channels.
@@ -39,7 +67,7 @@ final class UserBannedNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): NotificationMailMessage
     {
         $appName = config()->string('app.name');
 
@@ -50,10 +78,12 @@ final class UserBannedNotification extends Notification implements ShouldQueue
         /** @var string|null $comment */
         $comment = $this->ban->getAttribute('comment');
 
-        $message = (new MailMessage)
-            ->subject('Your account has been suspended')
-            ->greeting('Hello,')
-            ->line(sprintf('Your account on %s has been suspended.', $appName));
+        $subject = 'Your account has been suspended';
+
+        $message = (new NotificationMailMessage)
+            ->subject($subject)
+            ->greeting($subject)
+            ->line(sprintf('Your %s account has been suspended with the following details:', $appName));
 
         if ($isPermanent) {
             $message->line('**Duration:** Permanent');
@@ -73,7 +103,7 @@ final class UserBannedNotification extends Notification implements ShouldQueue
             $message->line('Your access will be automatically restored when the suspension period ends.');
         }
 
-        return $message->salutation("Regards,\n".$appName);
+        return $message;
     }
 
     /**

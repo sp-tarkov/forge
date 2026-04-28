@@ -5,18 +5,23 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Contracts\Commentable;
+use App\Contracts\Presentable;
+use App\Enums\NotificationColorRole;
 use App\Models\Comment;
 use App\Models\User;
+use App\Notifications\Messages\NotificationMailMessage;
+use App\Support\DataTransferObjects\HeadlineSegment;
+use App\Support\DataTransferObjects\NotificationPresentation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-final class NewCommentNotification extends Notification implements ShouldQueue
+final class NewCommentNotification extends Notification implements Presentable, ShouldQueue
 {
     use Queueable;
 
@@ -26,6 +31,30 @@ final class NewCommentNotification extends Notification implements ShouldQueue
     public function __construct(
         public Comment $comment
     ) {}
+
+    public static function presentDatabaseNotification(DatabaseNotification $record): NotificationPresentation
+    {
+        /** @var array{commenter_name?: string, commentable_title?: string, comment_url?: string, comment_body?: string} $data */
+        $data = $record->data;
+
+        $commenter = $data['commenter_name'] ?? __('Someone');
+        $title = $data['commentable_title'] ?? __('your content');
+        $body = $data['comment_body'] ?? '';
+
+        return new NotificationPresentation(
+            iconName: 'chat-bubble-left-ellipsis',
+            iconColorRole: NotificationColorRole::Blue,
+            headline: [
+                HeadlineSegment::strong($commenter),
+                HeadlineSegment::muted(' '.__('commented on').' '),
+                HeadlineSegment::accent(Str::limit($title, 40)),
+            ],
+            summary: __('commented on').' '.Str::limit($title, 30),
+            preview: $body !== '' ? Str::limit($body, 150) : null,
+            previewQuoted: true,
+            url: $data['comment_url'] ?? null,
+        );
+    }
 
     /**
      * Get the notification's delivery channels.
@@ -46,7 +75,7 @@ final class NewCommentNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(User $notifiable): MailMessage
+    public function toMail(User $notifiable): NotificationMailMessage
     {
         /** @var Commentable<Model>|null $commentable */
         $commentable = $this->comment->commentable;
@@ -57,24 +86,20 @@ final class NewCommentNotification extends Notification implements ShouldQueue
         $commentableTitle = $commentable->getTitle();
         $commenterName = $this->comment->user->name;
 
-        // Create unsubscribe URL
         $unsubscribeUrl = URL::signedRoute('comment.unsubscribe', [
             'user' => $notifiable->id,
             'commentable_type' => $this->comment->commentable_type,
             'commentable_id' => $this->comment->commentable_id,
         ]);
 
-        return (new MailMessage)
+        return (new NotificationMailMessage)
             ->subject('New comment on '.$commentableTitle)
-            ->greeting('Hello!')
+            ->greeting('New comment on '.$commentableTitle)
             ->line(sprintf('**%s** posted a new comment on %s **%s**.', $commenterName, $commentableType, $commentableTitle))
             ->line('')
             ->line('> '.Str::limit($this->comment->body, 500))
-            ->line('')
             ->action('View Comment', $this->comment->getUrl() ?? '')
-            ->line('')
-            ->line(sprintf('You can [unsubscribe](%s) from notifications for this %s.', $unsubscribeUrl, $commentableType))
-            ->salutation('Regards,  '."\n".config()->string('app.name'));
+            ->footer(sprintf('You can [unsubscribe](%s) from notifications for this %s.', $unsubscribeUrl, $commentableType));
     }
 
     /**

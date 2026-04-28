@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Notifications\CommentReplyNotification;
-use App\Notifications\NewChatMessageNotification;
-use App\Notifications\NewCommentNotification;
-use App\Notifications\ReportSubmittedNotification;
+use App\Services\NotificationPresentationService;
+use App\Support\DataTransferObjects\NotificationPresentation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
@@ -51,14 +49,12 @@ new class extends Component
             return;
         }
 
-        // Mark as read if not already
         if (! $notification->read_at) {
             $notification->markAsRead();
             $this->loadUnreadCount();
         }
 
-        // Get the appropriate review URL based on notification type
-        $url = $this->getReviewUrl($notification);
+        $url = $this->presentationFor($notification)->url;
 
         if ($url) {
             $this->redirect($url, navigate: true);
@@ -135,6 +131,14 @@ new class extends Component
     }
 
     /**
+     * Build the nav-dropdown presentation for a stored notification.
+     */
+    public function presentationFor(DatabaseNotification $notification): NotificationPresentation
+    {
+        return resolve(NotificationPresentationService::class)->present($notification);
+    }
+
+    /**
      * Fetch recent unread notifications for the authenticated user.
      *
      * @return Collection<int, DatabaseNotification>
@@ -150,23 +154,6 @@ new class extends Component
 
         /** @var Collection<int, DatabaseNotification> */
         return $user->unreadNotifications()->orderBy('created_at', 'desc')->limit(10)->get();
-    }
-
-    /**
-     * Get the review URL for a notification based on its type.
-     */
-    private function getReviewUrl(DatabaseNotification $notification): ?string
-    {
-        /** @var array{reportable_url?: string, conversation_url?: string, comment_url?: string} $data */
-        $data = $notification->data;
-
-        return match ($notification->type) {
-            ReportSubmittedNotification::class => $data['reportable_url'] ?? null,
-            NewChatMessageNotification::class => $data['conversation_url'] ?? null,
-            NewCommentNotification::class,
-            CommentReplyNotification::class => $data['comment_url'] ?? null,
-            default => null,
-        };
     }
 
     /**

@@ -78,85 +78,10 @@
         @if ($this->notifications->count() > 0)
             <div class="flex flex-col divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
                 @foreach ($this->notifications as $notification)
-                    <button
-                        type="button"
-                        wire:key="nav-notification-{{ $notification->id }}"
-                        wire:click="reviewNotification('{{ $notification->id }}')"
-                        x-on:click="notificationDropdownOpen = false"
-                        class="flex items-start gap-3 px-4 py-3 text-left hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors"
-                    >
-                        {{-- Notification Type Icon --}}
-                        <div class="flex-shrink-0 mt-0.5">
-                            @if ($notification->type === 'App\Notifications\ReportSubmittedNotification')
-                                <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                                    <flux:icon.exclamation-triangle class="w-4 h-4 text-white" />
-                                </div>
-                            @elseif ($notification->type === 'App\Notifications\NewChatMessageNotification')
-                                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                                    <flux:icon.chat-bubble-left-right class="w-4 h-4 text-white" />
-                                </div>
-                            @else
-                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                    <flux:icon.chat-bubble-left-ellipsis class="w-4 h-4 text-white" />
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Notification Content --}}
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    @if ($notification->type === 'App\Notifications\ReportSubmittedNotification')
-                                        {{ $notification->data['reporter_name'] ?? __('Someone') }}
-                                    @elseif ($notification->type === 'App\Notifications\NewChatMessageNotification')
-                                        {{ $notification->data['sender_name'] ?? __('Someone') }}
-                                    @else
-                                        {{ $notification->data['commenter_name'] ?? __('Someone') }}
-                                    @endif
-                                </span>
-                                <span
-                                    class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0"
-                                    title="{{ $notification->created_at->setTimezone(auth()->user()->timezone ?? 'UTC')->format('F j, Y \a\t g:i A T') }}"
-                                >
-                                    {{ $notification->created_at->setTimezone(auth()->user()->timezone ?? 'UTC')->diffForHumans(short: true) }}
-                                </span>
-                            </div>
-
-                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">
-                                @if ($notification->type === 'App\Notifications\ReportSubmittedNotification')
-                                    {{ __('reported') }}
-                                    {{ Str::limit($notification->data['reportable_title'] ?? __('content'), 30) }}
-                                @elseif ($notification->type === 'App\Notifications\NewChatMessageNotification')
-                                    @if (($notification->data['message_count'] ?? 1) > 1)
-                                        {{ __('sent you') }} {{ $notification->data['message_count'] }}
-                                        {{ __('messages') }}
-                                    @else
-                                        {{ __('sent you a message') }}
-                                    @endif
-                                @else
-                                    {{ __('commented on') }}
-                                    {{ Str::limit($notification->data['commentable_title'] ?? __('your content'), 30) }}
-                                @endif
-                            </p>
-
-                            {{-- Preview text --}}
-                            @if ($notification->type === 'App\Notifications\ReportSubmittedNotification' && ($notification->data['context'] ?? null))
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1 italic truncate">
-                                    "{{ Str::limit($notification->data['context'], 50) }}"
-                                </p>
-                            @elseif (
-                                $notification->type === 'App\Notifications\NewChatMessageNotification' &&
-                                    ($notification->data['latest_message_preview'] ?? null))
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1 italic truncate">
-                                    "{{ Str::limit($notification->data['latest_message_preview'], 50) }}"
-                                </p>
-                            @elseif ($notification->type === 'App\Notifications\NewCommentNotification' && ($notification->data['comment_body'] ?? null))
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1 italic truncate">
-                                    "{{ Str::limit($notification->data['comment_body'], 50) }}"
-                                </p>
-                            @endif
-                        </div>
-                    </button>
+                    <x-notification-row.nav
+                        :notification="$notification"
+                        :presentation="$this->presentationFor($notification)"
+                    />
                 @endforeach
             </div>
 
