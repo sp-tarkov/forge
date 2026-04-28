@@ -633,15 +633,47 @@
                         </li>
                     @endif
                     @if ($mod->contains_ai_content)
-                        <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
-                            <flux:icon.check-circle
-                                variant="micro"
-                                class="grow-0 size-4 text-green-600 dark:text-green-500"
-                            />
-                            <h3 class="grow text-gray-900 dark:text-gray-100">
-                                {{ __('Includes AI Generated Content') }}
-                            </h3>
-                        </li>
+                        @if ($mod->custom_ai_disclosure)
+                            <li
+                                class="px-4 py-4 last:pb-0 sm:px-0"
+                                x-data="{ expanded: false }"
+                            >
+                                <button
+                                    type="button"
+                                    @click="expanded = !expanded"
+                                    :aria-expanded="expanded.toString()"
+                                    class="flex flex-row gap-2 items-center w-full text-left cursor-pointer"
+                                >
+                                    <flux:icon.check-circle
+                                        variant="micro"
+                                        class="grow-0 size-4 text-green-600 dark:text-green-500"
+                                    />
+                                    <h3 class="grow text-gray-900 dark:text-gray-100">
+                                        {{ __('Includes AI Generated Content') }}
+                                    </h3>
+                                    <flux:icon.chevron-down
+                                        variant="micro"
+                                        class="grow-0 size-4 text-gray-500 dark:text-gray-400 transition-transform"
+                                        x-bind:class="expanded ? 'rotate-180' : ''"
+                                    />
+                                </button>
+                                <div
+                                    x-show="expanded"
+                                    x-collapse
+                                    class="mt-2 ms-6 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line"
+                                >{{ $mod->custom_ai_disclosure }}</div>
+                            </li>
+                        @else
+                            <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
+                                <flux:icon.check-circle
+                                    variant="micro"
+                                    class="grow-0 size-4 text-green-600 dark:text-green-500"
+                                />
+                                <h3 class="grow text-gray-900 dark:text-gray-100">
+                                    {{ __('Includes AI Generated Content') }}
+                                </h3>
+                            </li>
+                        @endif
                     @endif
                 </ul>
                 <livewire:report-component

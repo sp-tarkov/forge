@@ -56,6 +56,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $featured
  * @property bool $contains_ai_content
  * @property bool $contains_ai_content_locked
+ * @property string|null $custom_ai_disclosure
  * @property bool $contains_ads
  * @property bool $disabled
  * @property bool $comments_disabled

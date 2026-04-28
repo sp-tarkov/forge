@@ -92,6 +92,11 @@ new #[Layout('layouts::base')] class extends Component
     public bool $containsAiContentLocked = false;
 
     /**
+     * The custom AI disclosure message.
+     */
+    public string $customAiDisclosure = '';
+
+    /**
      * Whether the addon contains ads.
      */
     public bool $containsAds = false;
@@ -158,6 +163,7 @@ new #[Layout('layouts::base')] class extends Component
 
         $this->containsAiContent = (bool) $this->addon->contains_ai_content;
         $this->containsAiContentLocked = (bool) $this->addon->contains_ai_content_locked;
+        $this->customAiDisclosure = $this->addon->custom_ai_disclosure ?? '';
         $this->containsAds = (bool) $this->addon->contains_ads;
         $this->commentsDisabled = (bool) $this->addon->comments_disabled;
 
@@ -248,6 +254,10 @@ new #[Layout('layouts::base')] class extends Component
         } elseif (! $this->addon->contains_ai_content_locked) {
             $this->addon->contains_ai_content = $this->containsAiContent;
         }
+
+        $this->addon->custom_ai_disclosure = $this->addon->contains_ai_content && $this->customAiDisclosure !== ''
+            ? $this->customAiDisclosure
+            : null;
 
         $this->addon->contains_ads = $this->containsAds;
         $this->addon->comments_disabled = $this->commentsDisabled;
@@ -398,6 +408,7 @@ new #[Layout('layouts::base')] class extends Component
             'publishedAtTime' => 'nullable|date_format:H:i',
             'containsAiContent' => 'boolean',
             'containsAiContentLocked' => 'boolean',
+            'customAiDisclosure' => 'nullable|string|max:1000',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',
