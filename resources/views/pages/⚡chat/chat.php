@@ -612,7 +612,7 @@ new #[Layout('layouts::base')] class extends Component
                 $diffInMinutes < 60 => __('Last seen :minutes minutes ago', ['minutes' => (int) $diffInMinutes]),
                 $diffInMinutes < 120 => __('Last seen 1 hour ago'),
                 $diffInMinutes < 1440 => __('Last seen :hours hours ago', ['hours' => (int) floor($diffInMinutes / 60)]),
-                default => __('Last seen :date', ['date' => $diffInMinutes]),
+                default => __('Last seen :date', ['date' => $otherUser->last_seen_at->dynamicFormat(includeTime: false)]),
             };
         }
 
