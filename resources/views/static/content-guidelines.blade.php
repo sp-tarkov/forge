@@ -75,7 +75,7 @@
         />
     </x-slot>
 
-    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> January 21, 2026</p>
+    <p><strong>Effective Date:</strong> August 26, 2025<br><strong>Last Updated:</strong> April 27, 2026</p>
 
     <h2 id="overview">1. Overview</h2>
     <p>These Content Guidelines establish the technical and quality standards for all files, mods, and content submitted
@@ -347,6 +347,9 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
     <p>Authors must be prepared to explain any part of their submitted code, debug issues that arise, and modify
         functionality as needed. This level of ownership is impossible when AI generates significant portions of the
         codebase without the author's deep understanding of the implementation details.</p>
+    <p>Any usage of LLM-based assistance, including but not limited to code completion, code generation, text
+        generation, and image generation requires that the "Contains AI Content" flag be enabled in the mod
+        properties.</p>
 
     <h2 id="executable-security">5. Executable Files and Security</h2>
 
@@ -649,5 +652,5 @@ public override SemanticVersioning.Range SptVersion { get; } = new("4.0.0");</co
             >Community Standards</a>, and <a href="{{ route('static.dmca') }}">DMCA Copyright Notice</a> to govern
             content on The Forge.</em></p>
 
-    <p><em>Last updated: January 21, 2026</em></p>
+    <p><em>Last updated: April 27, 2026</em></p>
 </x-layouts::static-toc>

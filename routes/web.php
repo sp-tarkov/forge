@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AddonVersionController;
+use App\Http\Controllers\AnnouncementSubscriptionController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Chat\StartConversationController;
 use App\Http\Controllers\ChatSubscriptionController;
@@ -82,6 +83,11 @@ Route::middleware('auth.banned')->group(function (): void {
     Route::get('/chat/unsubscribe/{user}/{conversation}', [ChatSubscriptionController::class, 'unsubscribe'])
         ->middleware('signed')
         ->name('chat.unsubscribe');
+
+    // Announcement unsubscribe route (no auth required for email links)
+    Route::get('/announcement/unsubscribe/{user}', [AnnouncementSubscriptionController::class, 'unsubscribe'])
+        ->middleware('signed')
+        ->name('announcement.unsubscribe');
 
     // Authenticated routes
     Route::middleware(['auth', AuthenticateSession::class, 'verified'])->group(function (): void {

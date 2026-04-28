@@ -66,6 +66,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $timezone
  * @property bool $email_comment_notifications_enabled
  * @property bool $email_reply_notifications_enabled
+ * @property bool $email_announcement_notifications_enabled
  * @property bool $email_chat_notifications_enabled
  * @property-read string $cover_photo_url attribute
  * @property-read string $profile_photo_url attribute
@@ -849,6 +850,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             'password' => 'hashed',
             'email_comment_notifications_enabled' => 'boolean',
             'email_reply_notifications_enabled' => 'boolean',
+            'email_announcement_notifications_enabled' => 'boolean',
             'email_chat_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

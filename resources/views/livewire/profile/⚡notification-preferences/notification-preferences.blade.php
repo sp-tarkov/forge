@@ -11,6 +11,12 @@
         <flux:field>
             <flux:checkbox.group label="{{ __('Email Notifications') }}">
                 <flux:checkbox
+                    wire:model.live="emailAnnouncementNotificationsEnabled"
+                    wire:change="updateNotificationPreferences"
+                    label="{{ __('Announcement Notifications') }}"
+                    description="{{ __('Receive email notifications about important site announcements such as policy updates.') }}"
+                />
+                <flux:checkbox
                     wire:model.live="emailCommentNotificationsEnabled"
                     wire:change="updateNotificationPreferences"
                     label="{{ __('Comment Notifications') }}"
