@@ -55,6 +55,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $conflict Dynamic property for dependency tree endpoint indicating version constraint conflicts
  * @property bool $featured
  * @property bool $contains_ai_content
+ * @property bool $contains_ai_content_locked
  * @property bool $contains_ads
  * @property bool $disabled
  * @property bool $comments_disabled
@@ -684,6 +685,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
             'category_id' => 'integer',
             'featured' => 'boolean',
             'contains_ai_content' => 'boolean',
+            'contains_ai_content_locked' => 'boolean',
             'contains_ads' => 'boolean',
             'disabled' => 'boolean',
             'comments_disabled' => 'boolean',

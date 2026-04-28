@@ -50,6 +50,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $downloads
  * @property bool $disabled
  * @property bool $contains_ai_content
+ * @property bool $contains_ai_content_locked
  * @property bool $contains_ads
  * @property bool $comments_disabled
  * @property CarbonImmutable|null $detached_at
@@ -545,6 +546,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
         return [
             'disabled' => 'boolean',
             'contains_ai_content' => 'boolean',
+            'contains_ai_content_locked' => 'boolean',
             'contains_ads' => 'boolean',
             'comments_disabled' => 'boolean',
             'discord_notification_sent' => 'boolean',

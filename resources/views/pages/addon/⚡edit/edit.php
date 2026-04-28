@@ -87,6 +87,11 @@ new #[Layout('layouts::base')] class extends Component
     public bool $containsAiContent = false;
 
     /**
+     * Whether the contains AI content flag is locked by staff.
+     */
+    public bool $containsAiContentLocked = false;
+
+    /**
      * Whether the addon contains ads.
      */
     public bool $containsAds = false;
@@ -152,6 +157,7 @@ new #[Layout('layouts::base')] class extends Component
         }
 
         $this->containsAiContent = (bool) $this->addon->contains_ai_content;
+        $this->containsAiContentLocked = (bool) $this->addon->contains_ai_content_locked;
         $this->containsAds = (bool) $this->addon->contains_ads;
         $this->commentsDisabled = (bool) $this->addon->comments_disabled;
 
@@ -174,6 +180,24 @@ new #[Layout('layouts::base')] class extends Component
     public function updateAuthorIds(array $ids): void
     {
         $this->authorIds = $ids;
+    }
+
+    /**
+     * Whether the current user can lock or unlock the AI content flag.
+     */
+    #[Computed]
+    public function canLockAiContent(): bool
+    {
+        return auth()->user()?->can('lockAiContent', $this->addon) ?? false;
+    }
+
+    /**
+     * Whether the AI content flag is currently locked and the user cannot change it.
+     */
+    #[Computed]
+    public function aiContentLockedForUser(): bool
+    {
+        return $this->addon->contains_ai_content_locked && ! $this->canLockAiContent;
     }
 
     /**
@@ -217,7 +241,14 @@ new #[Layout('layouts::base')] class extends Component
         $this->addon->teaser = $this->teaser;
         $this->addon->description = $this->description;
         $this->addon->license_id = (int) $this->license;
-        $this->addon->contains_ai_content = $this->containsAiContent;
+
+        if ($this->canLockAiContent) {
+            $this->addon->contains_ai_content_locked = $this->containsAiContentLocked;
+            $this->addon->contains_ai_content = $this->containsAiContentLocked ? true : $this->containsAiContent;
+        } elseif (! $this->addon->contains_ai_content_locked) {
+            $this->addon->contains_ai_content = $this->containsAiContent;
+        }
+
         $this->addon->contains_ads = $this->containsAds;
         $this->addon->comments_disabled = $this->commentsDisabled;
         $this->addon->published_at = $publishedAtCarbon;
@@ -366,6 +397,7 @@ new #[Layout('layouts::base')] class extends Component
             'publishedAtDate' => 'nullable|date',
             'publishedAtTime' => 'nullable|date_format:H:i',
             'containsAiContent' => 'boolean',
+            'containsAiContentLocked' => 'boolean',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'subscribeToComments' => 'boolean',

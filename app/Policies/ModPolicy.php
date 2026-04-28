@@ -198,6 +198,18 @@ final class ModPolicy
     }
 
     /**
+     * Determine whether the user can lock or unlock the contains_ai_content flag.
+     */
+    public function lockAiContent(User $user, Mod $mod): bool
+    {
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isAdmin();
+    }
+
+    /**
      * Determine whether the user can view actions for the model. Example: Edit, Delete, etc.
      */
     public function viewActions(User $user, Mod $mod): bool
