@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 /**
  * MailMessage variant that supports small subcopy-styled footer lines (e.g. unsubscribe + email preferences) rendered
- * below the main body via the customised resources/views/vendor/notifications/email.blade.php template.
+ * below the main body via the customized resources/views/vendor/notifications/email.blade.php template.
  */
 final class NotificationMailMessage extends MailMessage
 {
@@ -38,7 +38,7 @@ final class NotificationMailMessage extends MailMessage
      *
      * @return array<string, mixed>
      */
-    public function toArray()
+    public function toArray() // @pest-ignore-type
     {
         /** @var array<string, mixed> $parent */
         $parent = parent::toArray();

@@ -12,14 +12,14 @@ describe('Addon Show Page Custom AI Disclosure', function (): void {
         $this->mod = Mod::factory()->create();
     });
 
-    it('renders the custom AI disclosure as an expandable section when present', function (): void {
+    it('renders the custom AI disclosure as an expandable section with markdown rendered to HTML when present', function (): void {
         $addon = Addon::factory()
             ->for($this->mod)
             ->published()
             ->hasVersions(1, ['published_at' => now()])
             ->create([
                 'contains_ai_content' => true,
-                'custom_ai_disclosure' => 'This addon used AI to draft README content.',
+                'custom_ai_disclosure' => "Used **AI** for documentation.\n\n- See [docs](https://example.com).",
             ]);
 
         $response = $this->actingAs($this->user)
@@ -27,8 +27,10 @@ describe('Addon Show Page Custom AI Disclosure', function (): void {
 
         $response->assertOk()
             ->assertSeeText('Includes AI Generated Content')
-            ->assertSeeText('This addon used AI to draft README content.')
-            ->assertSee(':aria-expanded="expanded.toString()"', false);
+            ->assertSee(':aria-expanded="expanded.toString()"', false)
+            ->assertSee('<strong>AI</strong>', false)
+            ->assertSee('<li>See <a', false)
+            ->assertSee('href="https://example.com"', false);
     });
 
     it('renders the simple AI disclosure line when AI content is enabled but no custom message exists', function (): void {

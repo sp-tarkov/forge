@@ -53,11 +53,11 @@ describe('mod display', function (): void {
         ], absolute: false));
     });
 
-    it('renders the custom AI disclosure as an expandable section when present', function (): void {
+    it('renders the custom AI disclosure as an expandable section with markdown rendered to HTML when present', function (): void {
         SptVersion::factory()->create(['version' => '3.8.0']);
         $mod = Mod::factory()->create([
             'contains_ai_content' => true,
-            'custom_ai_disclosure' => 'This mod used AI to generate placeholder text.',
+            'custom_ai_disclosure' => "Used **Midjourney** for trader portraits.\n\n- Refined by hand for [consistency](https://example.com).",
         ]);
         ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '3.8.0']);
 
@@ -65,8 +65,10 @@ describe('mod display', function (): void {
 
         $response->assertOk()
             ->assertSeeText('Includes AI Generated Content')
-            ->assertSeeText('This mod used AI to generate placeholder text.')
-            ->assertSee(':aria-expanded="expanded.toString()"', false);
+            ->assertSee(':aria-expanded="expanded.toString()"', false)
+            ->assertSee('<strong>Midjourney</strong>', false)
+            ->assertSee('<li>Refined by hand for <a', false)
+            ->assertSee('href="https://example.com"', false);
     });
 
     it('renders the simple AI disclosure line when AI content is enabled but no custom message exists', function (): void {

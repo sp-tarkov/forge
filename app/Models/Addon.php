@@ -62,6 +62,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property CarbonImmutable|null $updated_at
  * @property-read string $detail_url
  * @property-read string $description_html
+ * @property-read string $custom_ai_disclosure_html
  * @property-read string|null $thumbnailUrl
  * @property-read Mod|null $mod
  * @property-read User|null $owner
@@ -508,6 +509,29 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
                 return $clean;
             },
         );
+    }
+
+    /**
+     * Generate the cleaned HTML version of the custom AI disclosure.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function customAiDisclosureHtml(): Attribute
+    {
+        return Attribute::make(
+            get: function (): string {
+                if (! $this->custom_ai_disclosure) {
+                    return '';
+                }
+
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
+                    Markdown::convert($this->custom_ai_disclosure)->getContent()
+                );
+
+                return $clean;
+            },
+        )->shouldCache();
     }
 
     /**
