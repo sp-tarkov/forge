@@ -22,7 +22,7 @@
         "chokidar": "^5.0.0",
         "concurrently": "^9.2.1",
         "laravel-echo": "^2.3.4",
-        "laravel-vite-plugin": "^3.0.1",
+        "laravel-vite-plugin": "^3.1.0",
         "npm-check-updates": "^22.0.1",
         "playwright": "^1.59.1",
         "pusher-js": "^8.5.0",
