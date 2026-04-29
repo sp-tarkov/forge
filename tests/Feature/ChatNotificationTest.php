@@ -324,8 +324,8 @@ it('generates correct URLs in email', function (): void {
     ]);
 
     $foundUnsubscribe = false;
-    foreach ($mailMessage->outroLines as $line) {
-        if (str_contains((string) $line, $expectedUnsubscribeUrl)) {
+    foreach ($mailMessage->footerLines as $line) {
+        if (str_contains($line, $expectedUnsubscribeUrl)) {
             $foundUnsubscribe = true;
             break;
         }
