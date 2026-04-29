@@ -198,7 +198,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
-    })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
+    });
 
     it('allows mod owners to edit their mods via browser form interaction', function (): void {
         $license = License::factory()->create();
@@ -239,7 +239,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
             ->assertSee('Mod Information')
             ->assertSee('Update Mod')
             ->assertNoJavascriptErrors();
-    })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
+    });
 
     it('allows mod authors to access and edit mods they are authors of via browser', function (): void {
         $license = License::factory()->create();
@@ -288,7 +288,7 @@ describe('Browser Tests - Mod Editing Authorization', function (): void {
         expect($mod->teaser)->toBe('Updated by collaborative author');
         expect($mod->description)->toBe('This mod was updated by one of its authors');
         expect($mod->license_id)->toBe($license->id);
-    })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
+    });
 });
 
 describe('HTTP Tests - Mod Editing Authorization', function (): void {

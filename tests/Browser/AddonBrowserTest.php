@@ -51,16 +51,16 @@ describe('Addon Browser Tests', function (): void {
 
             $this->actingAs($user);
 
-            $page = visit(route('addon.guidelines', ['mod' => $mod->id]));
+            $page = visit(route('addon.create', ['mod' => $mod->id]));
 
-            $page->assertSee('Important Guidelines')
-                ->click('I Understand')
-                ->assertSee('Create Addon')
+            $page->waitForText('Addon Information')
                 ->assertNoJavascriptErrors()
                 ->fill('name', 'Test Addon')
                 ->fill('teaser', 'A test addon created via browser test')
                 ->fill('textarea[name="description"]', 'This is a comprehensive test of the addon creation flow')
-                ->select('license', (string) $license->id)
+                ->click('Choose license...')
+                ->waitForText($license->name)
+                ->click($license->name)
                 ->fill('input[placeholder="https://github.com/username/addon-name"]', 'https://github.com/test/addon')
                 ->click('Create Addon')
                 ->assertSee('Test Addon');
@@ -68,7 +68,7 @@ describe('Addon Browser Tests', function (): void {
             $addon = Addon::query()->where('name', 'Test Addon')->first();
             expect($addon)->not->toBeNull();
             expect($addon->name)->toBe('Test Addon');
-        })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
+        });
 
         it('shows validation errors when creating addon with invalid data', function (): void {
             $user = User::factory()->withMfa()->create();
@@ -76,16 +76,15 @@ describe('Addon Browser Tests', function (): void {
 
             $this->actingAs($user);
 
-            $page = visit(route('addon.guidelines', ['mod' => $mod->id]));
+            $page = visit(route('addon.create', ['mod' => $mod->id]));
 
-            $page->click('I Understand')
-                ->waitForText('Addon Information')
+            $page->waitForText('Addon Information')
                 ->click('Create Addon')
                 ->waitForText('The name field is required')
                 ->assertSee('The teaser field is required')
                 ->assertSee('The description field is required')
                 ->assertNoJavascriptErrors();
-        })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
+        });
     });
 
     describe('Addon Display', function (): void {
@@ -259,7 +258,7 @@ describe('Addon Browser Tests', function (): void {
 
             $addon->refresh();
             expect($addon->name)->toBe('Updated Name');
-        })->skip('Flux Pro bug: combobox empty slot in nested Livewire component causes _durableAttributeObserver error in headless browsers');
+        });
 
         it('prevents non-owner from accessing edit page', function (): void {
             $user = User::factory()->create();
