@@ -1077,13 +1077,16 @@ describe('Comment Subscription Tests', function (): void {
         $this->actingAs($user);
 
         $page = visit($mod->detail_url.'#comments')
-            ->waitForText($mod->name);
+            ->on()->desktop()
+            ->inDarkMode()
+            ->waitForText('Subscribe');
 
-        $page->assertSee($mod->name)
+        $page->assertSee('Subscribe')
             ->click('@subscription-toggle')
+            ->waitForText('Subscribed')
             ->assertSee('Subscribed')
-            ->navigate($mod->detail_url.'#comments') // Navigate to refresh the page
-            ->assertSee($mod->name)
+            ->navigate($mod->detail_url.'#comments')
+            ->waitForText('Subscribed')
             ->assertSee('Subscribed')
             ->assertNoJavaScriptErrors();
     });
