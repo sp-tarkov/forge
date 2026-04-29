@@ -33,6 +33,7 @@
         "livewire/livewire": "^4.2.4",
         "mchev/banhammer": "^2.5.0",
         "meilisearch/meilisearch-php": "^1.16.1",
+        "mobiledetect/mobiledetectlib": "~4.8.10",
         "nunomaduro/essentials": "^1.2",
         "shetabit/visitor": "^4.5.4",
         "socialiteproviders/discord": "^4.2",
