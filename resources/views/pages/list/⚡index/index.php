@@ -7,6 +7,7 @@ use App\Models\SptVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -65,8 +66,19 @@ new #[Layout('layouts::base')] class extends Component
     #[Computed]
     public function sptVersionOptions(): Collection
     {
+        $isAdmin = auth()->user()?->isModOrAdmin() ?? false;
+        $cacheKey = $isAdmin ? 'spt-versions:filter-ids:admin' : 'spt-versions:filter-ids:user';
+
+        /** @var array<int, int> $ids */
+        $ids = Cache::flexible(
+            $cacheKey,
+            [5 * 60, 10 * 60],
+            fn (): array => SptVersion::getVersionsForLastThreeMinors($isAdmin)->pluck('id')->all(),
+        );
+
         return SptVersion::query()
             ->select(['id', 'version', 'version_major', 'version_minor', 'version_patch', 'version_labels', 'color_class'])
+            ->whereIn('id', $ids)
             ->orderByDesc('version_major')
             ->orderByDesc('version_minor')
             ->orderByDesc('version_patch')

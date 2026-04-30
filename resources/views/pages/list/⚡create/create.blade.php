@@ -20,7 +20,7 @@
             <flux:input
                 wire:model="form.title"
                 :label="__('Title')"
-                :placeholder="__('e.g., My Favourite QoL Mods')"
+                :placeholder="__('My Favourite QoL Mods')"
                 required
                 maxlength="{{ config('mod-lists.validation.title_max') }}"
             />
@@ -44,18 +44,20 @@
                 @endforeach
             </flux:select>
 
-            <flux:select
-                wire:model="form.spt_version_id"
-                :label="__('Target SPT version (optional)')"
-                :description="__('If set, list items will show the version compatible with this SPT release.')"
-            >
-                <flux:select.option value="">{{ __('Latest compatible version') }}</flux:select.option>
-                @foreach ($form->availableSptVersions() as $version)
-                    <flux:select.option value="{{ $version->id }}">
-                        {{ $version->version }}
-                    </flux:select.option>
-                @endforeach
-            </flux:select>
+            <flux:field>
+                <flux:label badge="Optional">{{ __('Target SPT Version') }}</flux:label>
+                <flux:description>
+                    {{ __('If set, list items will show the version compatible with this SPT release.') }}
+                </flux:description>
+                <flux:select wire:model="form.spt_version_id">
+                    <flux:select.option value="">{{ __('Latest compatible version') }}</flux:select.option>
+                    @foreach ($form->availableSptVersions() as $version)
+                        <flux:select.option value="{{ $version->id }}">
+                            {{ $version->version }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+            </flux:field>
 
             <div class="flex items-center justify-end gap-3 pt-2">
                 <flux:button
@@ -69,7 +71,7 @@
                     type="submit"
                     variant="primary"
                 >
-                    {{ __('Create list') }}
+                    {{ __('Create List') }}
                 </flux:button>
             </div>
         </form>

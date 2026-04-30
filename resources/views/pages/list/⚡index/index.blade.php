@@ -6,40 +6,44 @@
     {{ __('Discover user-curated mod lists. Browse collections of mods grouped by theme, compatibility, or personal taste.') }}
 </x-slot>
 
-<x-slot:header></x-slot>
-
-<div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8 py-6 space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ __('Mod Lists') }}</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-                {{ __('Curated collections of mods created by the community.') }}
-            </p>
-        </div>
+<x-slot:header>
+    <div class="flex items-center justify-between w-full">
+        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+            <flux:icon.list-bullet class="w-5 h-5" />
+            {{ __('Mod Lists') }}
+        </h2>
         @auth
             <flux:button
-                variant="primary"
-                icon="plus"
+                size="sm"
                 :href="route('list.create')"
                 wire:navigate
             >
-                {{ __('New List') }}
+                {{ __('Create New List') }}
             </flux:button>
         @endauth
     </div>
+</x-slot>
 
-    <flux:callout
-        icon="information-circle"
-        color="zinc"
-        inline
-    >
-        <flux:callout.heading>{{ __('About mod lists') }}</flux:callout.heading>
-        <flux:callout.text>
-            {{ __('Mod lists are user-curated collections, not officially tested combinations. Always read each mod\'s page for installation and compatibility notes. If mods in a list don\'t play well together, it\'s not the responsibility of the individual mod authors to fix.') }}
-        </flux:callout.text>
-    </flux:callout>
+<div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
+    <div class="px-4 py-8 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 overflow-hidden shadow-xl dark:shadow-gray-900 rounded-none sm:rounded-lg space-y-6">
+        <div>
+            <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">{{ __('Mod Lists') }}</h1>
+            <p class="mt-4 text-base text-gray-800 dark:text-gray-300">
+                {{ __('Collections of mods grouped together by other community members.') }}
+            </p>
+        </div>
 
-    <div class="p-4 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
+        <flux:callout
+            icon="information-circle"
+            color="sky"
+            inline
+        >
+            <flux:callout.heading>{{ __('About Mod Lists') }}</flux:callout.heading>
+            <flux:callout.text>
+                {{ __('Mod lists are user-curated collections, not officially tested combinations. Always read each mod\'s page for installation and compatibility notes. If mods in a list don\'t play well together, it\'s not the responsibility of the individual mod authors to fix.') }}
+            </flux:callout.text>
+        </flux:callout>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div class="md:col-span-2">
                 <flux:input
@@ -85,7 +89,7 @@
                     wire:key="list-index-card-{{ $list->id }}"
                     href="{{ $list->detailUrl() }}"
                     wire:navigate
-                    class="flex flex-col overflow-hidden bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl hover:bg-gray-50 dark:hover:bg-black"
+                    class="flex flex-col overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-900 drop-shadow-2xl hover:bg-gray-50 dark:hover:bg-black"
                 >
                     @if ($list->thumbnail)
                         <img
@@ -133,7 +137,7 @@
             {{ $this->lists->links() }}
         </div>
     @else
-        <div class="p-8 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-center">
+        <div class="p-8 bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-900 drop-shadow-2xl text-center">
             <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
             <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {{ __('No lists match your filters') }}

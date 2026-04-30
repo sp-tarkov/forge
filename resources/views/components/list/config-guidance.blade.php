@@ -1,4 +1,5 @@
 <flux:callout
+    {{ $attributes }}
     icon="light-bulb"
     color="sky"
     inline
