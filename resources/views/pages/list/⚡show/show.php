@@ -156,10 +156,12 @@ new #[Layout('layouts::base')] class extends Component
         $ids = [];
 
         foreach ($this->grouped as $group) {
-            if ($group['mod_item'] === null || $group['mod'] === null) {
+            if ($group['mod_item'] === null) {
                 continue;
             }
-
+            if ($group['mod'] === null) {
+                continue;
+            }
             $version = $group['mod']->latestVersion;
             if ($version === null) {
                 continue;
