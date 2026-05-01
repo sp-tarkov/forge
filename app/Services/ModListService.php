@@ -43,10 +43,10 @@ final class ModListService
         $this->assertWithinCapacity($modList, $projectedCount);
 
         return DB::transaction(function () use ($modList, $mod, $note, $deps): ModListItem {
-            $primary = $this->createItem($modList, Mod::class, $mod->id, $note, false);
+            $primary = $this->createItem($modList, Mod::class, $mod->id, $note);
 
             foreach ($deps as $dep) {
-                $this->createItem($modList, Mod::class, $dep->id, null, true);
+                $this->createItem($modList, Mod::class, $dep->id, null);
             }
 
             return $primary;
@@ -81,10 +81,10 @@ final class ModListService
 
         return DB::transaction(function () use ($modList, $addon, $note, $needsParent): ModListItem {
             if ($needsParent && $addon->mod_id !== null) {
-                $this->createItem($modList, Mod::class, $addon->mod_id, null, false);
+                $this->createItem($modList, Mod::class, $addon->mod_id, null);
             }
 
-            return $this->createItem($modList, Addon::class, $addon->id, $note, false);
+            return $this->createItem($modList, Addon::class, $addon->id, $note);
         });
     }
 
@@ -105,7 +105,7 @@ final class ModListService
         }
 
         $this->assertWithinCapacity($favourites, $favourites->itemCount() + 1);
-        $this->createItem($favourites, Mod::class, $mod->id, null, false);
+        $this->createItem($favourites, Mod::class, $mod->id, null);
 
         return true;
     }
@@ -223,7 +223,6 @@ final class ModListService
         string $listableType,
         int $listableId,
         ?string $note,
-        bool $addedAsDependency,
     ): ModListItem {
         /** @var ModListItem $item */
         $item = ModListItem::query()->firstOrCreate(
@@ -235,7 +234,6 @@ final class ModListService
             [
                 'note' => $note,
                 'position' => $this->nextPosition($modList),
-                'added_as_dependency' => $addedAsDependency,
             ],
         );
 

@@ -65,7 +65,15 @@ new #[Layout('layouts::base')] class extends Component
             'items.listable' => function (MorphTo $morph): void {
                 $morph->morphWith([
                     Mod::class => ['owner:id,name', 'latestVersion', 'latestVersion.latestSptVersion', 'latestVersion.latestDependenciesResolved.mod:id,name,slug'],
-                    Addon::class => ['owner:id,name', 'latestVersion', 'mod:id,name,slug'],
+                    Addon::class => [
+                        'owner:id,name',
+                        'latestVersion',
+                        'mod',
+                        'mod.owner:id,name',
+                        'mod.latestVersion',
+                        'mod.latestVersion.latestSptVersion',
+                        'mod.latestVersion.latestDependenciesResolved.mod:id,name,slug',
+                    ],
                 ]);
             },
         ]);
@@ -119,6 +127,73 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Item counts (mods + addons) for the list summary line.
+     *
+     * @return array{mods: int, addons: int}
+     */
+    #[Computed]
+    public function itemCounts(): array
+    {
+        $this->modList->loadMissing('items');
+
+        return [
+            'mods' => $this->modList->items->where('listable_type', Mod::class)->count(),
+            'addons' => $this->modList->items->where('listable_type', Addon::class)->count(),
+        ];
+    }
+
+    /**
+     * Mod IDs that are a dependency of another top-level mod in this list.
+     *
+     * Computed from each top-level mod's resolved dependencies, so the badge
+     * reflects the live state regardless of how an item was added.
+     *
+     * @return Collection<int, int>
+     */
+    #[Computed]
+    public function dependencyModIds(): Collection
+    {
+        $ids = [];
+
+        foreach ($this->grouped as $group) {
+            if ($group['mod_item'] === null || $group['mod'] === null) {
+                continue;
+            }
+
+            $version = $group['mod']->latestVersion;
+            if ($version === null) {
+                continue;
+            }
+
+            foreach ($version->latestDependenciesResolved as $depVersion) {
+                $ids[$depVersion->mod_id] = $depVersion->mod_id;
+            }
+        }
+
+        return new Collection(array_values($ids));
+    }
+
+    /**
+     * Mod IDs that are top-level mod items in this list.
+     *
+     * Used by the dependency badge to tell whether each resolved dependency
+     * is already on the list.
+     *
+     * @return Collection<int, int>
+     */
+    #[Computed]
+    public function listModIds(): Collection
+    {
+        $this->modList->loadMissing('items');
+
+        /** @var Collection<int, int> */
+        return $this->modList->items
+            ->where('listable_type', Mod::class)
+            ->pluck('listable_id')
+            ->values();
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function with(): array
@@ -126,6 +201,9 @@ new #[Layout('layouts::base')] class extends Component
         return [
             'grouped' => $this->grouped,
             'canManage' => $this->canManage,
+            'itemCounts' => $this->itemCounts,
+            'dependencyModIds' => $this->dependencyModIds,
+            'listModIds' => $this->listModIds,
         ];
     }
 };

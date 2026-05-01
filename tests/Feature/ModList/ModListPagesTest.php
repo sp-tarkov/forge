@@ -3,7 +3,14 @@
 declare(strict_types=1);
 
 use App\Enums\ListVisibility;
+use App\Models\Addon;
+use App\Models\Dependency;
+use App\Models\DependencyResolved;
+use App\Models\Mod;
 use App\Models\ModList;
+use App\Models\ModListItem;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -60,6 +67,236 @@ describe('list.show page', function (): void {
         $response = $this->get(route('list.show', ['listId' => $list->id, 'slug' => 'wrong-slug']));
 
         $response->assertRedirect(route('list.show', ['listId' => $list->id, 'slug' => $list->slug]));
+    });
+
+    it('renders an addon whose parent mod is not a top-level item', function (): void {
+        $list = ModList::factory()->public()->create();
+
+        $orphanParentMod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $orphanParentMod->id]);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee($addon->name);
+    });
+
+    it('renders a mod row with name, owner, and per-item note', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mod = Mod::factory()->create();
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'note' => 'Owner curated note for this mod.',
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee($mod->name);
+        $response->assertSee($mod->owner->name);
+        $response->assertSee('Owner curated note for this mod.');
+    });
+
+    it('shows the remove button only to the list owner', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $guestResponse = $this->get($list->detailUrl());
+        $guestResponse->assertOk();
+        $guestResponse->assertDontSee('removeItem('.$item->id.')', false);
+
+        $ownerResponse = $this->actingAs($owner)->get($list->detailUrl());
+        $ownerResponse->assertOk();
+        $ownerResponse->assertSee('removeItem('.$item->id.')', false);
+    });
+
+    it('flags a mod as a dependency when another list item requires it, regardless of how it was added', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mainMod = Mod::factory()->create(['name' => 'Main Mod']);
+        $mainModVersion = ModVersion::factory()->recycle($mainMod)->create([
+            'version' => '1.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $depMod = Mod::factory()->create(['name' => 'Helper Library']);
+        $depModVersion = ModVersion::factory()->recycle($depMod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $dependency = Dependency::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependent_mod_id' => $depMod->id,
+            'constraint' => '^2.0.0',
+        ]);
+        $dependency->saveQuietly();
+
+        DependencyResolved::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependency_id' => $dependency->id,
+            'resolved_mod_version_id' => $depModVersion->id,
+        ])->saveQuietly();
+
+        $list = ModList::factory()->public()->create();
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+        ]);
+
+        // The dependency mod is added manually (no cascade), but is still
+        // required by Main Mod, so the badge should appear.
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $depMod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('Helper Library');
+        $response->assertSee('Dependency');
+    });
+
+    it('marks the dependency badge satisfied when all required mods are on the list', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mainMod = Mod::factory()->create(['name' => 'Main Mod']);
+        $mainModVersion = ModVersion::factory()->recycle($mainMod)->create([
+            'version' => '1.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $depMod = Mod::factory()->create(['name' => 'Helper Library']);
+        $depModVersion = ModVersion::factory()->recycle($depMod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $dependency = Dependency::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependent_mod_id' => $depMod->id,
+            'constraint' => '^2.0.0',
+        ]);
+        $dependency->saveQuietly();
+
+        DependencyResolved::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependency_id' => $dependency->id,
+            'resolved_mod_version_id' => $depModVersion->id,
+        ])->saveQuietly();
+
+        $list = ModList::factory()->public()->create();
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+        ]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $depMod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('1 dependency');
+        $response->assertSee('Helper Library');
+    });
+
+    it('marks the dependency badge unsatisfied when a required mod is missing from the list', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $mainMod = Mod::factory()->create(['name' => 'Main Mod']);
+        $mainModVersion = ModVersion::factory()->recycle($mainMod)->create([
+            'version' => '1.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $depMod = Mod::factory()->create(['name' => 'Missing Helper']);
+        $depModVersion = ModVersion::factory()->recycle($depMod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $dependency = Dependency::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependent_mod_id' => $depMod->id,
+            'constraint' => '^2.0.0',
+        ]);
+        $dependency->saveQuietly();
+
+        DependencyResolved::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependency_id' => $dependency->id,
+            'resolved_mod_version_id' => $depModVersion->id,
+        ])->saveQuietly();
+
+        $list = ModList::factory()->public()->create();
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('1 dependency');
+        $response->assertSee('Missing Helper');
+    });
+
+    it('summarises mod and addon counts in the header line', function (): void {
+        $list = ModList::factory()->public()->create();
+
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('1 mod');
+        $response->assertSee('1 addon');
     });
 });
 

@@ -56,6 +56,7 @@
             <div>
                 <flux:select
                     wire:model.live="sptVersionId"
+                    variant="listbox"
                     :placeholder="__('All SPT versions')"
                     label:sr-only="{{ __('SPT version') }}"
                 >

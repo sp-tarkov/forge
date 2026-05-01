@@ -21,7 +21,6 @@ return new class extends Migration
             $table->unsignedBigInteger('listable_id');
             $table->string('note', 280)->nullable();
             $table->unsignedInteger('position')->default(0);
-            $table->boolean('added_as_dependency')->default(false);
             $table->timestamps();
 
             $table->unique(['mod_list_id', 'listable_type', 'listable_id'], 'mod_list_items_listable_unique');

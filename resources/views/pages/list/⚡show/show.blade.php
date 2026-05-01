@@ -6,25 +6,74 @@
     {{ __(':title: a curated mod list by :owner on The Forge.', ['title' => $modList->title, 'owner' => $modList->owner?->name ?? __('Unknown')]) }}
 </x-slot>
 
-<x-slot:header></x-slot>
+<x-slot:header>
+    <div class="flex items-center justify-between w-full">
+        <h2
+            class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2"
+        >
+            @if ($modList->isFavourites())
+                <flux:icon.heart class="w-5 h-5 text-rose-500" />
+                {{ __('Favourites') }}
+            @else
+                <flux:icon.list-bullet class="w-5 h-5" />
+                {{ __('Mod List') }}
+            @endif
+        </h2>
+        @if ($canManage)
+            <div class="flex items-center gap-2">
+                @if ($modList->visibility === \App\Enums\ListVisibility::Hidden)
+                    <flux:modal.trigger name="list-share-link-{{ $modList->id }}">
+                        <flux:button
+                            icon="link"
+                            variant="outline"
+                            size="sm"
+                        >
+                            {{ __('Share link') }}
+                        </flux:button>
+                    </flux:modal.trigger>
+                @endif
+                <flux:button
+                    icon="pencil"
+                    variant="outline"
+                    size="sm"
+                    :href="route('list.edit', ['listId' => $modList->id])"
+                    wire:navigate
+                >
+                    {{ __('Edit') }}
+                </flux:button>
+            </div>
+        @endif
+    </div>
+</x-slot>
 
 <div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8 py-6 space-y-6">
-    {{-- Header --}}
-    <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
-        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+    {{-- List info --}}
+    <div
+        class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
+    >
+        <div class="flex items-start gap-4">
             @if ($modList->isFavourites())
-                <div class="shrink-0 size-24 rounded-lg bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
-                    <flux:icon.heart class="size-12 text-rose-500" />
+                <div
+                    class="shrink-0 size-16 rounded-lg bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center"
+                >
+                    <flux:icon.heart class="size-8 text-rose-500" />
                 </div>
             @elseif ($modList->thumbnail)
                 <img
                     src="{{ $modList->thumbnailUrl }}"
                     alt="{{ $modList->title }}"
-                    class="shrink-0 size-24 rounded-lg object-cover"
+                    class="shrink-0 size-16 rounded-lg object-cover"
                 >
+            @else
+                <div
+                    class="shrink-0 size-16 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
+                >
+                    <flux:icon.list-bullet class="size-8 text-gray-400" />
+                </div>
             @endif
+
             <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2 flex-wrap">
+                <div class="flex flex-wrap items-center gap-2">
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {{ $modList->title }}
                     </h1>
@@ -42,15 +91,6 @@
                             {{ __('SPT') }} {{ $modList->sptVersion->version }}
                         </span>
                     @endif
-                    @if ($modList->is_default)
-                        <flux:badge
-                            size="sm"
-                            color="pink"
-                            icon="heart"
-                        >
-                            {{ __('Favourites') }}
-                        </flux:badge>
-                    @endif
                 </div>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     {{ __('by') }}
@@ -61,43 +101,31 @@
                     >
                         {{ $modList->owner?->name ?? __('Unknown') }}
                     </a>
-                    · <x-time :datetime="$modList->updated_at" />
+                    <span aria-hidden="true">·</span>
+                    <x-time :datetime="$modList->updated_at" />
+                    @if ($itemCounts['mods'] > 0)
+                        <span aria-hidden="true">·</span>
+                        {{ trans_choice(':count mod|:count mods', $itemCounts['mods'], ['count' => $itemCounts['mods']]) }}
+                    @endif
+                    @if ($itemCounts['addons'] > 0)
+                        <span aria-hidden="true">·</span>
+                        {{ trans_choice(':count addon|:count addons', $itemCounts['addons'], ['count' => $itemCounts['addons']]) }}
+                    @endif
                 </p>
                 @if ($modList->description_html)
-                    <div class="user-markdown mt-4">
+                    <div class="user-markdown mt-3 text-sm">
                         {!! $modList->description_html !!}
                     </div>
                 @endif
             </div>
-
-            @if ($canManage)
-                <div class="flex items-center gap-2">
-                    @if ($modList->visibility === \App\Enums\ListVisibility::Hidden)
-                        <flux:modal.trigger name="list-share-link-{{ $modList->id }}">
-                            <flux:button
-                                icon="link"
-                                variant="outline"
-                            >
-                                {{ __('Share link') }}
-                            </flux:button>
-                        </flux:modal.trigger>
-                    @endif
-                    <flux:button
-                        icon="pencil"
-                        variant="outline"
-                        :href="route('list.edit', ['listId' => $modList->id])"
-                        wire:navigate
-                    >
-                        {{ __('Edit') }}
-                    </flux:button>
-                </div>
-            @endif
         </div>
     </div>
 
-    {{-- Body --}}
+    {{-- Items --}}
     @if ($grouped->isEmpty())
-        <div class="p-8 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-center">
+        <div
+            class="p-8 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl text-center"
+        >
             @if ($modList->isFavourites())
                 <flux:icon.heart class="mx-auto size-12 text-rose-400" />
                 <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -138,57 +166,24 @@
         </div>
     @else
         <div
-            class="space-y-4"
-            @if ($canManage) x-data="{ order: @js($grouped->map(fn ($group) => $group['mod']?->id)->filter()->values()->all()) }" @endif
+            class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden"
         >
-            @foreach ($grouped as $groupKey => $group)
-                @php($mod = $group['mod'])
-                @php($modItem = $group['mod_item'])
-                @php($addons = $group['addons'])
+            <ul class="divide-y divide-gray-200 dark:divide-gray-800">
+                @foreach ($grouped as $groupKey => $group)
+                    @php($mod = $group['mod'])
+                    @php($modItem = $group['mod_item'])
+                    @php($addons = $group['addons'])
 
-                <div
-                    wire:key="list-group-{{ $groupKey }}"
-                    class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden"
-                >
-                    @if ($mod)
-                        <div class="relative">
-                            <x-mod.card
+                    <li wire:key="list-group-{{ $groupKey }}">
+                        @if ($mod)
+                            <x-mod.list-row
                                 :mod="$mod"
                                 :version="$mod->latestVersion"
-                                section="list"
-                                class="shadow-none drop-shadow-none"
-                            />
-
-                            <div class="absolute top-2 right-2 flex items-center gap-1">
-                                @if ($modItem && $modItem->added_as_dependency)
-                                    <flux:badge
-                                        size="sm"
-                                        color="zinc"
-                                        icon="link"
-                                    >
-                                        {{ __('Dependency') }}
-                                    </flux:badge>
-                                @endif
-
-                                @if ($mod->latestVersion && $mod->latestVersion->latestDependenciesResolved->isNotEmpty())
-                                    <flux:tooltip>
-                                        <flux:badge
-                                            size="sm"
-                                            color="amber"
-                                            icon="link"
-                                        >
-                                            {{ __('Requires :count', ['count' => $mod->latestVersion->latestDependenciesResolved->count()]) }}
-                                        </flux:badge>
-                                        <flux:tooltip.content>
-                                            <div class="text-xs space-y-1">
-                                                @foreach ($mod->latestVersion->latestDependenciesResolved as $depVersion)
-                                                    <div>· {{ $depVersion->mod?->name }}</div>
-                                                @endforeach
-                                            </div>
-                                        </flux:tooltip.content>
-                                    </flux:tooltip>
-                                @endif
-
+                                :note="$modItem?->note"
+                                :is-dependency="$dependencyModIds->contains($mod->id)"
+                                :dependency-versions="$mod->latestVersion?->latestDependenciesResolved"
+                                :list-mod-ids="$listModIds"
+                            >
                                 @if ($canManage && $modItem)
                                     <flux:button
                                         icon="x-mark"
@@ -199,53 +194,45 @@
                                         wire:confirm="{{ __('Remove this mod (and its addons) from the list?') }}"
                                     />
                                 @endif
+                            </x-mod.list-row>
+                        @else
+                            <div class="p-3 sm:p-4 text-sm italic text-gray-500 dark:text-gray-400">
+                                {{ __('This mod is no longer available.') }}
                             </div>
+                        @endif
 
-                            @if ($modItem?->note)
-                                <div class="border-t border-gray-200 dark:border-gray-800 px-4 py-2 text-sm italic text-gray-700 dark:text-gray-300">
-                                    <flux:icon.chat-bubble-left class="inline size-4 mr-1 text-gray-400" />
-                                    {{ $modItem->note }}
-                                </div>
-                            @endif
-                        </div>
-                    @else
-                        <div class="p-4 text-sm italic text-gray-500 dark:text-gray-400">
-                            {{ __('This mod is no longer available.') }}
-                        </div>
-                    @endif
-
-                    {{-- Nested addons --}}
-                    @if ($addons->isNotEmpty())
-                        <div class="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 px-4 py-3 space-y-2">
-                            <div class="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                <flux:icon.puzzle-piece class="size-3.5" />
-                                {{ __(Str::plural('Addon', $addons->count())) }}
-                            </div>
-                            @foreach ($addons as $addonItem)
-                                @php($addon = $addonItem->listable)
-                                @if ($addon)
-                                    <x-addon.list-item
-                                        :addon="$addon"
-                                        :note="$addonItem->note"
-                                        :wire-key="'list-addon-'.$addonItem->id"
-                                    >
-                                        @if ($canManage)
-                                            <flux:button
-                                                icon="x-mark"
-                                                variant="subtle"
-                                                size="sm"
-                                                square
-                                                wire:click="removeItem({{ $addonItem->id }})"
-                                                wire:confirm="{{ __('Remove this addon from the list?') }}"
-                                            />
-                                        @endif
-                                    </x-addon.list-item>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            @endforeach
+                        @if ($addons->isNotEmpty())
+                            <ul
+                                class="pl-6 sm:pl-8 pr-3 sm:pr-4 pb-3 sm:pb-4 space-y-1 ml-6 sm:ml-8 border-l-2 border-gray-100 dark:border-gray-900"
+                            >
+                                @foreach ($addons as $addonItem)
+                                    @php($addon = $addonItem->listable)
+                                    @if ($addon)
+                                        <li>
+                                            <x-addon.list-item
+                                                :addon="$addon"
+                                                :note="$addonItem->note"
+                                                :wire-key="'list-addon-'.$addonItem->id"
+                                            >
+                                                @if ($canManage)
+                                                    <flux:button
+                                                        icon="x-mark"
+                                                        variant="subtle"
+                                                        size="sm"
+                                                        square
+                                                        wire:click="removeItem({{ $addonItem->id }})"
+                                                        wire:confirm="{{ __('Remove this addon from the list?') }}"
+                                                    />
+                                                @endif
+                                            </x-addon.list-item>
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
         </div>
     @endif
 

@@ -19,7 +19,6 @@ use Override;
  * @property int $listable_id
  * @property string|null $note
  * @property int $position
- * @property bool $added_as_dependency
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Mod|Addon|null $listable
@@ -75,7 +74,6 @@ final class ModListItem extends Model
     protected function casts(): array
     {
         return [
-            'added_as_dependency' => 'boolean',
             'position' => 'integer',
             'listable_id' => 'integer',
             'created_at' => 'datetime',

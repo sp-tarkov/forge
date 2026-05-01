@@ -36,7 +36,7 @@ describe('ModListService addMod', function (): void {
         expect($list->fresh()->itemCount())->toBe(1);
     });
 
-    it('stores an added-as-dependency flag on cascaded deps', function (): void {
+    it('cascades dependency mods alongside the primary mod', function (): void {
         $user = User::factory()->create();
         $list = ModList::factory()->for($user, 'owner')->public()->create();
         $mod = Mod::factory()->create();
@@ -44,13 +44,8 @@ describe('ModListService addMod', function (): void {
 
         resolve(ModListService::class)->addMod($list, $mod, null, collect([$dep]));
 
-        $depItem = $list->items()
-            ->where('listable_type', Mod::class)
-            ->where('listable_id', $dep->id)
-            ->first();
-
-        expect($depItem)->not->toBeNull();
-        expect($depItem->added_as_dependency)->toBeTrue();
+        expect($list->fresh()->itemCount())->toBe(2);
+        expect($list->containsMod($dep->id))->toBeTrue();
     });
 
     it('throws when cascade would exceed the per-list cap', function (): void {

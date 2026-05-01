@@ -22,7 +22,6 @@ final class ModListItemFactory extends Factory
             'listable_id' => Mod::factory(),
             'note' => null,
             'position' => 0,
-            'added_as_dependency' => false,
         ];
     }
 }

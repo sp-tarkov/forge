@@ -20,7 +20,6 @@ describe('ModListButton heart state', function (): void {
                 'listable_type' => Mod::class,
                 'listable_id' => $mod->id,
                 'position' => 1,
-                'added_as_dependency' => false,
             ]);
 
         $component = Livewire::actingAs($user)->test('mod-list-button', ['modId' => $mod->id]);
@@ -79,7 +78,6 @@ describe('ModListButton toggleList without dependencies', function (): void {
             'listable_type' => Mod::class,
             'listable_id' => $mod->id,
             'position' => 1,
-            'added_as_dependency' => false,
         ]);
 
         Livewire::actingAs($user)
