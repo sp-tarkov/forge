@@ -17,7 +17,7 @@
         "http-interop/http-factory-guzzle": "^1.2.1",
         "knuckleswtf/scribe": "^5.9",
         "laravel/fortify": "^1.36.2",
-        "laravel/framework": "^13.6",
+        "laravel/framework": "^13.8",
         "laravel/horizon": "^5.46.0",
         "laravel/nightwatch": "^1.26.1",
         "laravel/octane": "^2.17.2",
@@ -173,9 +173,11 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "repositories": [{
-        "name": "flux-pro",
-        "type": "composer",
-        "url": "https://composer.fluxui.dev"
-    }]
+    "repositories": [
+        {
+            "name": "flux-pro",
+            "type": "composer",
+            "url": "https://composer.fluxui.dev"
+        }
+    ]
 }
