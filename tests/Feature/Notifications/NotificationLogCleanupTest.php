@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\CleanupOldNotificationLogs;
 use App\Enums\NotificationType;
 use App\Models\Comment;
 use App\Models\NotificationLog;
@@ -46,7 +47,7 @@ it('removes old notification logs', function (): void {
     ]);
 
     // Run the cleanup command with default 30 days retention
-    $this->artisan('notifications:cleanup-logs')
+    $this->artisan(CleanupOldNotificationLogs::class)
         ->expectsOutput('Cleaning up notification logs older than 30 days...')
         ->expectsOutput('Successfully deleted 2 old notification logs.')
         ->assertExitCode(0);
@@ -74,7 +75,7 @@ it('accepts custom retention days', function (): void {
     $log->update(['created_at' => now()->subDays(15)]);
 
     // Run with 10 days retention (should delete the 15-day-old log)
-    $this->artisan('notifications:cleanup-logs', ['--days' => 10])
+    $this->artisan(CleanupOldNotificationLogs::class, ['--days' => 10])
         ->expectsOutput('Cleaning up notification logs older than 10 days...')
         ->expectsOutput('Successfully deleted 1 old notification logs.')
         ->assertExitCode(0);
@@ -96,7 +97,7 @@ it('handles no old logs gracefully', function (): void {
     ]);
 
     // Run the cleanup command
-    $this->artisan('notifications:cleanup-logs')
+    $this->artisan(CleanupOldNotificationLogs::class)
         ->expectsOutput('Cleaning up notification logs older than 30 days...')
         ->expectsOutput('No old notification logs found to delete.')
         ->assertExitCode(0);
@@ -116,7 +117,7 @@ it('works with different notifiable types', function (): void {
     $oldUserLog->update(['created_at' => now()->subDays(35)]);
 
     // Run cleanup
-    $this->artisan('notifications:cleanup-logs')
+    $this->artisan(CleanupOldNotificationLogs::class)
         ->expectsOutput('Cleaning up notification logs older than 30 days...')
         ->expectsOutput('Successfully deleted 1 old notification logs.')
         ->assertExitCode(0);
