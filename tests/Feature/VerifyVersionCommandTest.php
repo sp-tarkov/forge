@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\VerifyVersionCommand;
 use App\Enums\VerificationStatus;
 use App\Jobs\RunVerificationJob;
 use App\Models\Mod;
@@ -18,7 +19,7 @@ it('dispatches verification job for a valid mod version', function (): void {
         'link' => 'https://example.com/mod.zip',
     ]);
 
-    $this->artisan('app:verify-version', ['type' => 'mod_version', 'id' => $modVersion->id])
+    $this->artisan(VerifyVersionCommand::class, ['type' => 'mod_version', 'id' => $modVersion->id])
         ->expectsOutput(sprintf('Verification job dispatched for mod_version #%d.', $modVersion->id))
         ->assertSuccessful();
 
@@ -29,12 +30,12 @@ it('dispatches verification job for a valid mod version', function (): void {
 });
 
 it('fails for non-existent version', function (): void {
-    $this->artisan('app:verify-version', ['type' => 'mod_version', 'id' => 99999])
+    $this->artisan(VerifyVersionCommand::class, ['type' => 'mod_version', 'id' => 99999])
         ->assertFailed();
 });
 
 it('fails for invalid type', function (): void {
-    $this->artisan('app:verify-version', ['type' => 'invalid_type', 'id' => 1])
+    $this->artisan(VerifyVersionCommand::class, ['type' => 'invalid_type', 'id' => 1])
         ->assertFailed();
 });
 
@@ -44,6 +45,6 @@ it('fails for version with no download link', function (): void {
         'link' => '',
     ]);
 
-    $this->artisan('app:verify-version', ['type' => 'mod_version', 'id' => $modVersion->id])
+    $this->artisan(VerifyVersionCommand::class, ['type' => 'mod_version', 'id' => $modVersion->id])
         ->assertFailed();
 });
