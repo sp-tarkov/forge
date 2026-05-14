@@ -4,14 +4,19 @@
     x-on:keydown.esc.window="notificationDropdownOpen = false"
     class="relative"
 >
-    <button
-        type="button"
+    <flux:button
+        variant="subtle"
+        square="true"
+        class="group relative"
         x-on:click="notificationDropdownOpen = !notificationDropdownOpen"
-        class="relative rounded-md p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
-        :aria-expanded="notificationDropdownOpen"
+        x-bind:aria-expanded="notificationDropdownOpen"
         aria-haspopup="true"
+        aria-label="{{ __('Notifications') }}"
     >
-        <flux:icon.bell class="h-5 w-5" />
+        <flux:icon.bell
+            variant="mini"
+            class="text-zinc-500 dark:text-white"
+        />
         @if ($unreadCount > 0)
             <span
                 class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white"
@@ -19,8 +24,7 @@
                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}
             </span>
         @endif
-        <span class="sr-only">{{ __('Notifications') }}</span>
-    </button>
+    </flux:button>
 
     <div
         x-cloak
