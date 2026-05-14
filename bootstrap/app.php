@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
+use App\Http\Middleware\SanitizeBroadcastSocketId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v0',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(SanitizeBroadcastSocketId::class);
+
         $middleware->append(IPBanned::class);
 
         // Use Redis-backed rate limiting (skip in tests where Redis may not be available).
