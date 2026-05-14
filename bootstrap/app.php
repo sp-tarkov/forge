@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
+use App\Http\Middleware\RejectMalformedUtf8;
 use App\Http\Middleware\SanitizeBroadcastSocketId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,7 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v0',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->prepend(SanitizeBroadcastSocketId::class);
+        $middleware->prepend([
+            RejectMalformedUtf8::class,
+            SanitizeBroadcastSocketId::class,
+        ]);
 
         $middleware->append(IPBanned::class);
 
