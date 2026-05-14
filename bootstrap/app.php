@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
+use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Http\Middleware\RejectMalformedUtf8;
 use App\Http\Middleware\SanitizeBroadcastSocketId;
 use Illuminate\Foundation\Application;
@@ -11,6 +12,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
+use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Exceptions\TooManyCallsException;
 use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
@@ -55,9 +57,17 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
-        // Don't report Livewire payload guard exceptions — these are security
+        // Don't report Livewire payload guard exceptions. These are security
         // limits working as intended (typically triggered by bots/abuse).
         $exceptions->dontReport(TooManyCallsException::class);
+
+        // Invalid API query parameters are user errors that already render a
+        // 400 response; they don't represent a server-side bug.
+        $exceptions->dontReport(InvalidQueryException::class);
+
+        // Livewire method-not-found errors on the update endpoint are
+        // overwhelmingly automated SQLi/XSS probes targeting wire methods.
+        $exceptions->dontReport(MethodNotFoundException::class);
 
         // Register the custom exception handler for the API.
         $exceptions->render(function (Throwable $e, Request $request) {
