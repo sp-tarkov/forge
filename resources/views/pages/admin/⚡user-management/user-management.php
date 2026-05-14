@@ -93,7 +93,9 @@ new #[Layout('layouts::base')] #[Title('User Management - The Forge')] class ext
 
         $this->applyFilters($query);
 
-        return $query->orderBy($this->sortBy, $this->sortDirection)->paginate(25);
+        $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderBy($this->sortBy, $direction)->paginate(25);
     }
 
     /**

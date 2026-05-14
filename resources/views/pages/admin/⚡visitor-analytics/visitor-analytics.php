@@ -147,8 +147,10 @@ new #[Layout('layouts::base')] #[Title('Event Analytics - The Forge')] class ext
 
         $this->applyFilters($query);
 
+        $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
         return $query
-            ->orderBy('tracking_events.'.$this->sortBy, $this->sortDirection)
+            ->orderBy('tracking_events.'.$this->sortBy, $direction)
             ->simplePaginate(50);
     }
 
