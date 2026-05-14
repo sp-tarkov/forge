@@ -65,11 +65,13 @@
                                     </flux:file-upload>
                                     @if ($thumbnail)
                                         <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
-                                            <img
-                                                src="{{ $thumbnail->temporaryUrl() }}"
-                                                class="size-20 shrink-0 rounded-lg object-cover"
-                                                alt="{{ __('Thumbnail preview') }}"
-                                            >
+                                            @if ($thumbnail->isPreviewable())
+                                                <img
+                                                    src="{{ $thumbnail->temporaryUrl() }}"
+                                                    class="size-20 shrink-0 rounded-lg object-cover"
+                                                    alt="{{ __('Thumbnail preview') }}"
+                                                >
+                                            @endif
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $thumbnail->getClientOriginalName() }}</p>
                                                 <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($thumbnail->getSize(), 1) }}</p>
