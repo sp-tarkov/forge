@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mixins;
 
+use App\Support\Timezone;
 use Carbon\Carbon;
 use Closure;
 
@@ -24,10 +25,7 @@ final class CarbonMixin
          * @param  bool  $verbose  Whether to use verbose formatting
          */
         return function (bool $includeTime = true, bool $verbose = true): string {
-            // Get the user's timezone, fallback to app timezone if not authenticated or no timezone set
-            $userTimezone = auth()->user() ? auth()->user()->timezone : null;
-            $appTimezone = config()->string('app.timezone', 'UTC');
-            $userTimezone ??= $appTimezone;
+            $userTimezone = Timezone::resolve(auth()->user()?->timezone);
 
             // Convert the date to the user's timezone
             $localDate = $this->copy()->setTimezone($userTimezone);

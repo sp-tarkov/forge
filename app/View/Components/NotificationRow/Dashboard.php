@@ -7,6 +7,7 @@ namespace App\View\Components\NotificationRow;
 use App\Enums\HeadlineEmphasis;
 use App\Support\DataTransferObjects\HeadlineSegment;
 use App\Support\DataTransferObjects\NotificationPresentation;
+use App\Support\Timezone;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Component;
@@ -63,9 +64,8 @@ final class Dashboard extends Component
 
     private function userTimezone(): string
     {
-        $user = Auth::user();
-        $timezone = $user?->getAttribute('timezone');
+        $timezone = Auth::user()?->getAttribute('timezone');
 
-        return is_string($timezone) ? $timezone : 'UTC';
+        return Timezone::resolve(is_string($timezone) ? $timezone : null);
     }
 }
