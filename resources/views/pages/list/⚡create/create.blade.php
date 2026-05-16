@@ -34,6 +34,7 @@
             />
 
             <flux:select
+                variant="listbox"
                 wire:model="form.visibility"
                 :label="__('Visibility')"
             >
@@ -49,7 +50,11 @@
                 <flux:description>
                     {{ __('If set, list items will show the version compatible with this SPT release.') }}
                 </flux:description>
-                <flux:select wire:model="form.spt_version_id">
+                <flux:select
+                    variant="listbox"
+                    searchable
+                    wire:model="form.spt_version_id"
+                >
                     <flux:select.option value="">{{ __('Latest compatible version') }}</flux:select.option>
                     @foreach ($form->availableSptVersions() as $version)
                         <flux:select.option value="{{ $version->id }}">

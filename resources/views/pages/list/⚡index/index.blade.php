@@ -86,52 +86,11 @@
     @if ($this->lists->total() > 0)
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach ($this->lists as $list)
-                <a
+                <x-list.card
                     wire:key="list-index-card-{{ $list->id }}"
-                    href="{{ $list->detailUrl() }}"
-                    wire:navigate
-                    class="flex flex-col overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-900 drop-shadow-2xl hover:bg-gray-50 dark:hover:bg-black"
-                >
-                    @if ($list->thumbnail)
-                        <img
-                            src="{{ $list->thumbnailUrl }}"
-                            alt="{{ $list->title }}"
-                            class="aspect-[16/9] w-full object-cover"
-                        >
-                    @else
-                        <div class="aspect-[16/9] w-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
-                            <flux:icon.list-bullet class="size-10 text-gray-400" />
-                        </div>
-                    @endif
-                    <div class="flex flex-col flex-1 p-4">
-                    <div class="flex items-start justify-between gap-2">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {{ $list->title }}
-                        </h2>
-                        @if ($list->sptVersion)
-                            <span
-                                class="badge-version {{ $list->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap"
-                            >
-                                {{ $list->sptVersion->version }}
-                            </span>
-                        @endif
-                    </div>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        {{ __('by :owner', ['owner' => $list->owner?->name ?? __('Unknown')]) }}
-                    </p>
-                    @if ($list->description)
-                        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
-                            {{ Str::limit(strip_tags($list->description), 160) }}
-                        </p>
-                    @endif
-                    <div class="mt-auto pt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                        <flux:icon.list-bullet class="size-4" />
-                        <span>{{ $list->items_count }} {{ __(Str::plural('item', $list->items_count)) }}</span>
-                        <span aria-hidden="true">·</span>
-                        <x-time :datetime="$list->updated_at" />
-                    </div>
-                    </div>
-                </a>
+                    :list="$list"
+                    :show-owner="true"
+                />
             @endforeach
         </div>
         <div>

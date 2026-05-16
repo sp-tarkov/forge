@@ -39,52 +39,11 @@
     @if ($this->lists->total() > 0)
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($this->lists as $list)
-                <a
+                <x-list.card
                     wire:key="user-lists-card-{{ $list->id }}"
-                    href="{{ $list->detailUrl() }}"
-                    wire:navigate
-                    class="flex flex-col p-4 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl hover:bg-gray-50 dark:hover:bg-black"
-                >
-                    <div class="flex items-start gap-3">
-                        @if ($list->isFavourites())
-                            <div class="shrink-0 size-12 rounded-lg bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
-                                <flux:icon.heart class="size-6 text-rose-500" />
-                            </div>
-                        @elseif ($list->thumbnail)
-                            <img
-                                src="{{ $list->thumbnailUrl }}"
-                                alt="{{ $list->title }}"
-                                class="shrink-0 size-12 rounded-lg object-cover"
-                            >
-                        @else
-                            <div class="shrink-0 size-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                <flux:icon.list-bullet class="size-6 text-gray-400" />
-                            </div>
-                        @endif
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2 justify-between">
-                                <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
-                                    {{ $list->title }}
-                                </h3>
-                                <flux:icon
-                                    :name="$list->visibility->icon()"
-                                    class="size-4 text-gray-500 shrink-0"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    @if ($list->sptVersion)
-                        <div class="mt-2">
-                            <span class="badge-version {{ $list->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium">
-                                {{ $list->sptVersion->version }}
-                            </span>
-                        </div>
-                    @endif
-                    <div class="mt-auto pt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                        <flux:icon.list-bullet class="size-3.5" />
-                        <span>{{ $list->items_count }} {{ __(Str::plural('item', $list->items_count)) }}</span>
-                    </div>
-                </a>
+                    :list="$list"
+                    :show-owner="false"
+                />
             @endforeach
         </div>
         <div class="mt-4">
