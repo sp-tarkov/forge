@@ -50,6 +50,14 @@ final class ModListSeeder extends Seeder
     {
         $this->initializeFaker();
 
+        $userCount = User::query()->count();
+        if ($userCount === 0) {
+            return;
+        }
+
+        // Favourites lists are created explicitly because seeders run with model events disabled, bypassing the User observer.
+        $this->seedFavouritesLists();
+
         /** @var Collection<int, int> $modIds */
         $modIds = Mod::query()->where('disabled', false)->pluck('id')->values();
 
@@ -67,11 +75,6 @@ final class ModListSeeder extends Seeder
             return;
         }
 
-        $userCount = User::query()->count();
-        if ($userCount === 0) {
-            return;
-        }
-
         /** @var Collection<int, int> $userIds */
         $userIds = User::query()
             ->inRandomOrder()
@@ -84,6 +87,58 @@ final class ModListSeeder extends Seeder
 
         $this->seedUserLists($userIds, $modIds, $addonIds, $sptVersionIds);
         $this->seedFavouritesItems($userIds, $modIds, $addonIds);
+    }
+
+    /**
+     * Bulk-insert the immutable default Favourites list for every user that lacks one.
+     *
+     * The User observer creates this list on registration, but seeders run with
+     * model events disabled, so it must be created explicitly here.
+     */
+    private function seedFavouritesLists(): void
+    {
+        $now = Date::now();
+        $title = config()->string('mod-lists.favourites.title', 'Favourites');
+        $slug = config()->string('mod-lists.favourites.slug', 'favourites');
+
+        /** @var Collection<int, int> $existingOwnerIds */
+        $existingOwnerIds = ModList::query()
+            ->where('is_default', true)
+            ->pluck('owner_id');
+
+        $query = User::query()->orderBy('id');
+        if ($existingOwnerIds->isNotEmpty()) {
+            $query->whereNotIn('id', $existingOwnerIds);
+        }
+
+        /** @var Collection<int, int> $userIds */
+        $userIds = $query->pluck('id');
+
+        $rows = [];
+        foreach ($userIds as $userId) {
+            $rows[] = [
+                'owner_id' => $userId,
+                'title' => $title,
+                'slug' => $slug,
+                'description' => null,
+                'description_html' => null,
+                'visibility' => ListVisibility::Private->value,
+                'spt_version_id' => null,
+                'share_token' => null,
+                'is_default' => true,
+                'comments_disabled' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if ($rows === []) {
+            return;
+        }
+
+        foreach (array_chunk($rows, self::LIST_INSERT_CHUNK) as $chunk) {
+            ModList::query()->insert($chunk);
+        }
     }
 
     /**

@@ -159,9 +159,11 @@ new #[Layout('layouts::base')] class extends Component
             if ($group['mod_item'] === null) {
                 continue;
             }
+
             if ($group['mod'] === null) {
                 continue;
             }
+
             $version = $group['mod']->latestVersion;
             if ($version === null) {
                 continue;
