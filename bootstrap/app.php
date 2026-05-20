@@ -14,6 +14,7 @@ use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Exceptions\TooManyCallsException;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
 use Spatie\Honeypot\ProtectAgainstSpam;
@@ -68,6 +69,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Livewire method-not-found errors on the update endpoint are
         // overwhelmingly automated SQLi/XSS probes targeting wire methods.
         $exceptions->dontReport(MethodNotFoundException::class);
+
+        // Attempts to write a #[Locked] Livewire property come from bots
+        // replaying stale or malformed update payloads. The locked-property
+        // guard is working as intended, so this is not a server-side bug.
+        $exceptions->dontReport(CannotUpdateLockedPropertyException::class);
 
         // Register the custom exception handler for the API.
         $exceptions->render(function (Throwable $e, Request $request) {
