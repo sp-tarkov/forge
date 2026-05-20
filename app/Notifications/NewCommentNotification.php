@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\Messages\NotificationMailMessage;
 use App\Support\DataTransferObjects\HeadlineSegment;
 use App\Support\DataTransferObjects\NotificationPresentation;
+use App\Traits\ThrottlesOutboundEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,7 @@ use RuntimeException;
 final class NewCommentNotification extends Notification implements Presentable, ShouldQueue
 {
     use Queueable;
+    use ThrottlesOutboundEmail;
 
     /**
      * Create a new notification instance.

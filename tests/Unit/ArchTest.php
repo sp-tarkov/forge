@@ -7,6 +7,7 @@ use App\Exceptions\Api\V0\Handler;
 use App\Http\Controllers\Controller;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Traits\ThrottlesOutboundEmail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 arch()->preset()->php();
@@ -91,6 +92,11 @@ arch('database notifications implement Presentable')
         VerifyEmail::class,   // Mail-only; mirrors Laravel parent.
         'App\Notifications\Messages', // Mail message value types, not notifications.
     ]);
+
+arch('notifications throttle outbound email')
+    ->expect('App\Notifications')
+    ->toUseTrait(ThrottlesOutboundEmail::class)
+    ->ignoring('App\Notifications\Messages'); // Mail message value types, not notifications.
 
 arch('exceptions suffix')
     ->expect('App\Exceptions')

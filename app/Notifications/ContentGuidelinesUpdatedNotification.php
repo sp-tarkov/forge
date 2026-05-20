@@ -10,28 +10,18 @@ use App\Models\User;
 use App\Notifications\Messages\NotificationMailMessage;
 use App\Support\DataTransferObjects\HeadlineSegment;
 use App\Support\DataTransferObjects\NotificationPresentation;
-use Carbon\CarbonImmutable;
+use App\Traits\ThrottlesOutboundEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Notification;
-use Illuminate\Queue\Attributes\MaxExceptions;
-use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
-// Caps genuine send failures; rate-limited releases are not exceptions and never count towards this.
-#[MaxExceptions(3)]
 final class ContentGuidelinesUpdatedNotification extends Notification implements Presentable, ShouldQueue
 {
     use Queueable;
-
-    private CarbonImmutable $retryDeadline;
-
-    public function __construct()
-    {
-        $this->retryDeadline = CarbonImmutable::now()->addHours(3);
-    }
+    use ThrottlesOutboundEmail;
 
     public static function presentDatabaseNotification(DatabaseNotification $record): NotificationPresentation
     {
@@ -53,18 +43,6 @@ final class ContentGuidelinesUpdatedNotification extends Notification implements
     }
 
     /**
-     * Determine the time at which the queued mail job should stop retrying.
-     *
-     * The SES rate limiter releases over-quota jobs back onto the queue, which
-     * increments the attempt count, so a time-based deadline is used instead of
-     * a fixed try count that the throttled retries would quickly exhaust.
-     */
-    public function retryUntil(): CarbonImmutable
-    {
-        return $this->retryDeadline;
-    }
-
-    /**
      * Get the notification's delivery channels.
      *
      * @return array<int, string>
@@ -80,19 +58,6 @@ final class ContentGuidelinesUpdatedNotification extends Notification implements
         }
 
         return $channels;
-    }
-
-    /**
-     * Get the job middleware the queued notification should pass through.
-     *
-     * The SES rate limiter is applied only to the mail channel so the database
-     * channel is never throttled.
-     *
-     * @return array<int, object>
-     */
-    public function middleware(object $notifiable, string $channel): array
-    {
-        return $channel === 'mail' ? [new RateLimited('announcement-email')] : [];
     }
 
     /**
