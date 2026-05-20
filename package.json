@@ -32,6 +32,7 @@
     },
     "overrides": {
         "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-        "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+        "vitest": "npm:@voidzero-dev/vite-plus-test@latest",
+        "ws": "^8.20.1"
     }
 }
