@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Notifications\Messages\NotificationMailMessage;
 use Illuminate\Auth\Notifications\VerifyEmail as OriginalVerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -11,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -20,6 +22,23 @@ use Illuminate\Support\Facades\URL;
 final class VerifyEmail extends OriginalVerifyEmail implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * Build the verification email using our standard branded template.
+     *
+     * @param  Model&MustVerifyEmail  $notifiable
+     */
+    public function toMail($notifiable): NotificationMailMessage // @pest-ignore-type
+    {
+        $verificationUrl = $this->verificationUrl($notifiable);
+
+        return (new NotificationMailMessage)
+            ->subject(Lang::get('Verify Email Address'))
+            ->greeting(Lang::get('Verify Email Address'))
+            ->line(Lang::get('Please click the button below to verify your email address.'))
+            ->action(Lang::get('Verify Email Address'), $verificationUrl)
+            ->footer(Lang::get('If you did not create an account, no further action is required.'));
+    }
 
     /**
      * Get the array representation of the notification.

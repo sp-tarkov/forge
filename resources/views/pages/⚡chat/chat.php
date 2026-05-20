@@ -13,9 +13,12 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Flux\Flux;
+use Illuminate\Broadcasting\BroadcastException;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -122,7 +125,7 @@ new #[Layout('layouts::base')] class extends Component
         // Only switch conversation if we don't already have one selected or if the hash doesn't match the current selection
         if ($this->conversationHash && (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash)) {
             $this->switchConversation($this->conversationHash);
-        } elseif (! $this->selectedConversation && ! $this->conversationHash) {
+        } elseif (! $this->selectedConversation instanceof Conversation) {
             $this->redirectToLatestIfExists();
         }
     }
@@ -162,7 +165,7 @@ new #[Layout('layouts::base')] class extends Component
         $conversation->markReadBy($user);
 
         // Broadcast that messages have been read
-        broadcast(new MessageRead($conversation, $user))->toOthers();
+        $this->broadcastSafely(new MessageRead($conversation, $user));
 
         $this->pagesLoaded = 1;
 
@@ -254,7 +257,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->selectedConversation->markReadBy($user);
 
         // Broadcast that messages have been read
-        broadcast(new MessageRead($this->selectedConversation, $user))->toOthers();
+        $this->broadcastSafely(new MessageRead($this->selectedConversation, $user));
 
         // Refresh messages to include the new one
         $this->dispatch('messages-updated');
@@ -332,8 +335,8 @@ new #[Layout('layouts::base')] class extends Component
         $this->selectedConversation = $conversation;
 
         // Broadcast the message to other users
-        broadcast(new MessageSent($message, $user))->toOthers();
-        broadcast(new ConversationUpdated($conversation))->toOthers();
+        $this->broadcastSafely(new MessageSent($message, $user));
+        $this->broadcastSafely(new ConversationUpdated($conversation));
 
         $this->dispatch('messages-updated'); // Trigger scroll
         $this->dispatch('conversation-updated')->to('navigation-chat'); // Update navigation dropdown
@@ -495,7 +498,7 @@ new #[Layout('layouts::base')] class extends Component
 
         if (! $this->isTyping && $user) {
             $this->isTyping = true;
-            broadcast(new UserStartedTyping($this->selectedConversation, $user))->toOthers();
+            $this->broadcastSafely(new UserStartedTyping($this->selectedConversation, $user));
         }
     }
 
@@ -512,7 +515,7 @@ new #[Layout('layouts::base')] class extends Component
 
         if ($user) {
             $this->isTyping = false;
-            broadcast(new UserStoppedTyping($this->selectedConversation, $user))->toOthers();
+            $this->broadcastSafely(new UserStoppedTyping($this->selectedConversation, $user));
         }
     }
 
@@ -612,7 +615,7 @@ new #[Layout('layouts::base')] class extends Component
                 $diffInMinutes < 60 => __('Last seen :minutes minutes ago', ['minutes' => (int) $diffInMinutes]),
                 $diffInMinutes < 120 => __('Last seen 1 hour ago'),
                 $diffInMinutes < 1440 => __('Last seen :hours hours ago', ['hours' => (int) floor($diffInMinutes / 60)]),
-                default => __('Last seen :date', ['date' => $diffInMinutes]),
+                default => __('Last seen :date', ['date' => $otherUser->last_seen_at->dynamicFormat(includeTime: false)]),
             };
         }
 
@@ -867,7 +870,7 @@ new #[Layout('layouts::base')] class extends Component
             Flux::toast(heading: 'User Unblocked', text: 'The user has been successfully unblocked.', variant: 'success');
 
             // Broadcast the unblock event for real-time updates
-            broadcast(new UserUnblocked($user, $otherUser))->toOthers();
+            $this->broadcastSafely(new UserUnblocked($user, $otherUser));
             $this->dispatch('user-unblocked', userId: $otherUser->id)->to('navigation-chat');
         } else {
             // Block the user
@@ -875,7 +878,7 @@ new #[Layout('layouts::base')] class extends Component
             Flux::toast(heading: 'User Blocked', text: 'The user has been successfully blocked.', variant: 'success');
 
             // Broadcast the block event for real-time updates
-            broadcast(new UserBlocked($user, $otherUser))->toOthers();
+            $this->broadcastSafely(new UserBlocked($user, $otherUser));
             $this->dispatch('user-blocked', userId: $otherUser->id)->to('navigation-chat');
         }
 
@@ -1029,5 +1032,27 @@ new #[Layout('layouts::base')] class extends Component
         }
 
         return User::query()->conversationSearch($user, $this->searchUser)->get();
+    }
+
+    /**
+     * Broadcast an event without letting a websocket outage crash the request.
+     *
+     * Chat broadcast events implement ShouldBroadcast, so they are normally
+     * handed off to a queue worker. If the broadcast still resolves inline (for
+     * example on a sync queue) and the websocket server is unreachable, a
+     * BroadcastException would otherwise bubble up and return an HTTP 500. The
+     * message is already persisted to the database at this point, so a failed
+     * realtime push should degrade gracefully instead of breaking the page.
+     */
+    private function broadcastSafely(ShouldBroadcast $event): void
+    {
+        try {
+            broadcast($event)->toOthers();
+        } catch (BroadcastException $broadcastException) {
+            Log::warning('Chat broadcast failed; realtime update skipped.', [
+                'event' => $event::class,
+                'exception' => $broadcastException->getMessage(),
+            ]);
+        }
     }
 };

@@ -425,23 +425,63 @@
                         </li>
                     @endif
                     @if ($addon->contains_ai_content)
-                        <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
-                            <svg
-                                class="grow-0 w-[16px] h-[16px]"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
+                        @if ($addon->custom_ai_disclosure)
+                            <li
+                                class="px-4 py-4 last:pb-0 sm:px-0"
+                                x-data="{ expanded: false }"
                             >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
-                            <h3 class="grow text-gray-900 dark:text-gray-100">
-                                {{ __('Includes AI Generated Content') }}
-                            </h3>
-                        </li>
+                                <button
+                                    type="button"
+                                    @click="expanded = !expanded"
+                                    :aria-expanded="expanded.toString()"
+                                    class="flex flex-row gap-2 items-center w-full text-left cursor-pointer"
+                                >
+                                    <svg
+                                        class="grow-0 w-[16px] h-[16px]"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 16 16"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z"
+                                            clip-rule="evenodd"
+                                        />
+                                    </svg>
+                                    <h3 class="grow text-gray-900 dark:text-gray-100">
+                                        {{ __('Includes AI Generated Content') }}
+                                    </h3>
+                                    <flux:icon.chevron-up
+                                        variant="micro"
+                                        class="grow-0 size-4 text-gray-500 dark:text-gray-400 transition-transform"
+                                        x-bind:class="expanded ? 'rotate-180' : ''"
+                                    />
+                                </button>
+                                <div
+                                    x-show="expanded"
+                                    x-collapse
+                                    class="user-markdown mt-2 ms-6 text-sm text-gray-700 dark:text-gray-300"
+                                >{!! $addon->custom_ai_disclosure_html !!}</div>
+                            </li>
+                        @else
+                            <li class="px-4 py-4 last:pb-0 sm:px-0 flex flex-row gap-2 items-center">
+                                <svg
+                                    class="grow-0 w-[16px] h-[16px]"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 16 16"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                                <h3 class="grow text-gray-900 dark:text-gray-100">
+                                    {{ __('Includes AI Generated Content') }}
+                                </h3>
+                            </li>
+                        @endif
                     @endif
                 </ul>
                 <livewire:report-component

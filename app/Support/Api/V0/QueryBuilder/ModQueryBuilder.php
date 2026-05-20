@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Enums\FikaCompatibility;
+use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Models\Mod;
 use App\Models\SptVersion;
 use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Override;
+use UnexpectedValueException;
 
 /**
  * @extends AbstractQueryBuilder<Mod>
@@ -418,6 +420,8 @@ final class ModQueryBuilder extends AbstractQueryBuilder
      * Filter by SPT version.
      *
      * @param  Builder<Mod>  $query
+     *
+     * @throws InvalidQueryException
      */
     protected function filterBySptVersion(Builder $query, ?string $version): void
     {
@@ -426,7 +430,13 @@ final class ModQueryBuilder extends AbstractQueryBuilder
         }
 
         $validSptVersions = SptVersion::allValidVersions();
-        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+
+        try {
+            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+        } catch (UnexpectedValueException $unexpectedValueException) {
+            throw new InvalidQueryException(sprintf('Invalid spt_version filter: %s. Provide a valid semver version or constraint.', $version), $unexpectedValueException->getCode(), previous: $unexpectedValueException);
+        }
+
         $this->applySptVersionCondition($query, $compatibleSptVersions);
     }
 

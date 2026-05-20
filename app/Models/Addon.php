@@ -50,6 +50,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property int $downloads
  * @property bool $disabled
  * @property bool $contains_ai_content
+ * @property bool $contains_ai_content_locked
+ * @property string|null $custom_ai_disclosure
  * @property bool $contains_ads
  * @property bool $comments_disabled
  * @property CarbonImmutable|null $detached_at
@@ -60,6 +62,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property CarbonImmutable|null $updated_at
  * @property-read string $detail_url
  * @property-read string $description_html
+ * @property-read string $custom_ai_disclosure_html
  * @property-read string|null $thumbnailUrl
  * @property-read Mod|null $mod
  * @property-read User|null $owner
@@ -509,6 +512,29 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Generate the cleaned HTML version of the custom AI disclosure.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function customAiDisclosureHtml(): Attribute
+    {
+        return Attribute::make(
+            get: function (): string {
+                if (! $this->custom_ai_disclosure) {
+                    return '';
+                }
+
+                /** @var string $clean */
+                $clean = Purify::config('description')->clean(
+                    Markdown::convert($this->custom_ai_disclosure)->getContent()
+                );
+
+                return $clean;
+            },
+        )->shouldCache();
+    }
+
+    /**
      * Get the fully qualified URL of the addon.
      *
      * @return Attribute<string, never>
@@ -545,6 +571,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
         return [
             'disabled' => 'boolean',
             'contains_ai_content' => 'boolean',
+            'contains_ai_content_locked' => 'boolean',
             'contains_ads' => 'boolean',
             'comments_disabled' => 'boolean',
             'discord_notification_sent' => 'boolean',

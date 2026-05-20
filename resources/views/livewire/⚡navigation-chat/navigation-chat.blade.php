@@ -5,14 +5,19 @@
         x-on:close-chat-dropdown.window="chatDropdownOpen = false"
         class="relative"
     >
-        <button
-            type="button"
+        <flux:button
+            variant="subtle"
+            square="true"
+            class="group relative"
             x-on:click="chatDropdownOpen = !chatDropdownOpen"
-            class="relative rounded-md p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out"
-            :aria-expanded="chatDropdownOpen"
+            x-bind:aria-expanded="chatDropdownOpen"
             aria-haspopup="true"
+            aria-label="{{ __('Chat') }}"
         >
-            <flux:icon.chat-bubble-left-ellipsis class="h-5 w-5" />
+            <flux:icon.chat-bubble-left-ellipsis
+                variant="mini"
+                class="text-zinc-500 dark:text-white"
+            />
             @if ($this->unreadCount > 0)
                 <span
                     class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white"
@@ -20,8 +25,7 @@
                     {{ $this->unreadCount > 9 ? '9+' : $this->unreadCount }}
                 </span>
             @endif
-            <span class="sr-only">{{ __('Chat') }}</span>
-        </button>
+        </flux:button>
 
         <div
             x-cloak

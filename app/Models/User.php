@@ -66,6 +66,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string|null $timezone
  * @property bool $email_comment_notifications_enabled
  * @property bool $email_reply_notifications_enabled
+ * @property bool $email_announcement_notifications_enabled
  * @property bool $email_chat_notifications_enabled
  * @property-read string $cover_photo_url attribute
  * @property-read string $profile_photo_url attribute
@@ -178,6 +179,27 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     }
 
     /**
+     * Build a query for the mods that should appear on this user's profile for the given viewer.
+     *
+     * Wraps {@see self::ownedAndAuthoredMods()} with the same disabled/version filter the profile mods tab applies, so
+     * the tab count and the rendered list are guaranteed to operate on a single builder.
+     *
+     * @return Builder<Mod>
+     */
+    public function visibleModsFor(?self $viewer): Builder
+    {
+        $query = $this->ownedAndAuthoredMods();
+
+        if (! $viewer?->can('viewDisabledUserMods', $this)) {
+            $query->whereDisabled(false)->whereHas('versions', function (Builder $versionQuery): void {
+                $versionQuery->where('disabled', false)->whereNotNull('published_at');
+            });
+        }
+
+        return $query;
+    }
+
+    /**
      * Build a query including addons the user owns or is an additional author of.
      *
      * @return Builder<Addon>
@@ -196,6 +218,27 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             ->whereNull('addons.detached_at')
             ->select('addons.*')
             ->distinct();
+    }
+
+    /**
+     * Build a query for the addons that should appear on this user's profile for the given viewer.
+     *
+     * Wraps {@see self::ownedAndAuthoredAddons()} with the disabled/published-at filter the profile addons tab applies,
+     * so the tab count and the rendered list are guaranteed to operate on a single builder.
+     *
+     * @return Builder<Addon>
+     */
+    public function visibleAddonsFor(?self $viewer): Builder
+    {
+        $query = $this->ownedAndAuthoredAddons();
+
+        if (! $viewer?->can('viewDisabledUserAddons', $this)) {
+            $query->where('addons.disabled', false)
+                ->whereNotNull('addons.published_at')
+                ->where('addons.published_at', '<=', now());
+        }
+
+        return $query;
     }
 
     /**
@@ -807,6 +850,7 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
             'password' => 'hashed',
             'email_comment_notifications_enabled' => 'boolean',
             'email_reply_notifications_enabled' => 'boolean',
+            'email_announcement_notifications_enabled' => 'boolean',
             'email_chat_notifications_enabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

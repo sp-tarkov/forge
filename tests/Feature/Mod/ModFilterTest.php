@@ -363,11 +363,11 @@ describe('ordering', function (): void {
     it('orders by downloads descending', function (): void {
         $sptVersion = SptVersion::factory()->create(['version' => '1.0.0']);
 
-        $modLow = Mod::factory()->create(['downloads' => 10]);
-        ModVersion::factory()->recycle($modLow)->create(['spt_version_constraint' => '1.0.0']);
+        $modLow = Mod::factory()->create();
+        ModVersion::factory()->recycle($modLow)->create(['spt_version_constraint' => '1.0.0', 'downloads' => 10]);
 
-        $modHigh = Mod::factory()->create(['downloads' => 1000]);
-        ModVersion::factory()->recycle($modHigh)->create(['spt_version_constraint' => '1.0.0']);
+        $modHigh = Mod::factory()->create();
+        ModVersion::factory()->recycle($modHigh)->create(['spt_version_constraint' => '1.0.0', 'downloads' => 1000]);
 
         $filters = ['order' => 'downloaded', 'sptVersions' => [$sptVersion->version]];
         $result = new ModFilter($filters)->apply()->get();

@@ -410,6 +410,28 @@ describe('Mod Index API', function (): void {
         $response->assertOk()->assertJsonCount(0, 'data');
     });
 
+    it('returns a 400 instead of a 500 for an unparsable spt_version constraint', function (string $garbage): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[spt_version]='.urlencode($garbage));
+
+        $response->assertBadRequest()
+            ->assertJsonStructure([
+                'success',
+                'code',
+                'message',
+            ])
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('code', 'INVALID_QUERY_PARAMETER')
+            ->assertJsonFragment(['message' => sprintf('Invalid spt_version filter: %s. Provide a valid semver version or constraint.', $garbage)]);
+    })->with([
+        'discord mention' => '<@771305116467855421>',
+        'lone caret' => '^',
+        'gibberish' => 'not-a-version',
+        'angle bracket junk' => '@771305116467855421>',
+    ]);
+
     it('returns only the fields requested', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 

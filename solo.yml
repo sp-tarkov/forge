@@ -8,6 +8,63 @@ processes:
     auto_restart: false
     restart_when_changed: []
     env: {}
+  Sync Meilisearch:
+    command: php artisan app:search-sync
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Build Front-end:
+    command: npm run build
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Scheduler:
+    command: php artisan schedule:work
+    working_dir: null
+    auto_start: false
+    auto_restart: true
+    restart_when_changed:
+    - app/**/*.php
+    - config/**/*.php
+    - routes/**/*.php
+    - database/**/*.php
+    env: {}
+  Queue Worker:
+    command: php artisan queue:work redis --queue=default,verification,long --memory=512
+    working_dir: null
+    auto_start: true
+    auto_restart: true
+    restart_when_changed:
+    - app/**/*.php
+    - config/**/*.php
+    - routes/**/*.php
+    - database/**/*.php
+    env: {}
+  Logs:
+    command: php artisan pail -v
+    working_dir: null
+    auto_start: true
+    auto_restart: true
+    restart_when_changed: []
+    env: {}
+  Auto Build Front-end:
+    command: npm run dev
+    working_dir: null
+    auto_start: true
+    auto_restart: true
+    restart_when_changed: []
+    env: {}
+  Download R2 Assets:
+    command: php artisan app:download-r2-assets
+    working_dir: null
+    auto_start: true
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
   Formatting:
     command: composer format
     working_dir: null
@@ -22,60 +79,10 @@ processes:
     auto_restart: false
     restart_when_changed: []
     env: {}
-  Sync Meilisearch:
-    command: php artisan app:search-sync
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
-  Logs:
-    command: php artisan pail -v
-    working_dir: null
-    auto_start: true
-    auto_restart: true
-    restart_when_changed: []
-    env: {}
-  Scheduler:
-    command: php artisan schedule:work
-    working_dir: null
-    auto_start: false
-    auto_restart: true
-    restart_when_changed:
-    - app/**/*.php
-    - config/**/*.php
-    - routes/**/*.php
-    - database/**/*.php
-    env: {}
-  Build Front-end:
-    command: npm run build
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
   Linting:
     command: composer lint
     working_dir: null
     auto_start: false
     auto_restart: false
     restart_when_changed: []
-    env: {}
-  Auto Build Front-end:
-    command: npm run dev
-    working_dir: null
-    auto_start: true
-    auto_restart: true
-    restart_when_changed: []
-    env: {}
-  Queue Worker:
-    command: php artisan queue:work redis --queue=default,verification,long --memory=512
-    working_dir: null
-    auto_start: true
-    auto_restart: true
-    restart_when_changed:
-    - app/**/*.php
-    - config/**/*.php
-    - routes/**/*.php
-    - database/**/*.php
     env: {}

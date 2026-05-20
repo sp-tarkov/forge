@@ -3,13 +3,18 @@
 declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
+use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Http\Middleware\RejectMalformedUtf8;
+use App\Http\Middleware\SanitizeBroadcastSocketId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
+use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Exceptions\TooManyCallsException;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
 use Spatie\Honeypot\ProtectAgainstSpam;
@@ -24,6 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v0',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend([
+            RejectMalformedUtf8::class,
+            SanitizeBroadcastSocketId::class,
+        ]);
+
         $middleware->append(IPBanned::class);
 
         // Use Redis-backed rate limiting (skip in tests where Redis may not be available).
@@ -48,9 +58,22 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
-        // Don't report Livewire payload guard exceptions — these are security
+        // Don't report Livewire payload guard exceptions. These are security
         // limits working as intended (typically triggered by bots/abuse).
         $exceptions->dontReport(TooManyCallsException::class);
+
+        // Invalid API query parameters are user errors that already render a
+        // 400 response; they don't represent a server-side bug.
+        $exceptions->dontReport(InvalidQueryException::class);
+
+        // Livewire method-not-found errors on the update endpoint are
+        // overwhelmingly automated SQLi/XSS probes targeting wire methods.
+        $exceptions->dontReport(MethodNotFoundException::class);
+
+        // Attempts to write a #[Locked] Livewire property come from bots
+        // replaying stale or malformed update payloads. The locked-property
+        // guard is working as intended, so this is not a server-side bug.
+        $exceptions->dontReport(CannotUpdateLockedPropertyException::class);
 
         // Register the custom exception handler for the API.
         $exceptions->render(function (Throwable $e, Request $request) {

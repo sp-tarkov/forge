@@ -31,6 +31,6 @@ new #[Layout('layouts::base')] class extends Component
     {
         $this->authorize('create', [Addon::class, $this->mod]);
 
-        $this->redirect(route('addon.create', ['mod' => $this->mod->id]));
+        $this->redirect(route('addon.path-check', ['mod' => $this->mod->id]));
     }
 };

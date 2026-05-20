@@ -90,6 +90,11 @@ new #[Layout('layouts::base')] class extends Component
     public bool $containsAiContent = false;
 
     /**
+     * The custom AI disclosure message.
+     */
+    public string $customAiDisclosure = '';
+
+    /**
      * Whether the mod contains ads.
      */
     public bool $containsAds = false;
@@ -218,6 +223,7 @@ new #[Layout('layouts::base')] class extends Component
             'license_id' => $this->license,
             'category_id' => (int) $this->category,
             'contains_ai_content' => $this->containsAiContent,
+            'custom_ai_disclosure' => $this->containsAiContent && $this->customAiDisclosure !== '' ? $this->customAiDisclosure : null,
             'contains_ads' => $this->containsAds,
             'comments_disabled' => $this->commentsDisabled,
             'addons_disabled' => $this->addonsDisabled,
@@ -323,6 +329,7 @@ new #[Layout('layouts::base')] class extends Component
             'publishedAtDate' => 'nullable|date',
             'publishedAtTime' => 'nullable|date_format:H:i',
             'containsAiContent' => 'boolean',
+            'customAiDisclosure' => 'nullable|string|max:1000',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'addonsDisabled' => 'boolean',

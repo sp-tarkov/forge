@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AddonVersionController;
+use App\Http\Controllers\AnnouncementSubscriptionController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Chat\StartConversationController;
 use App\Http\Controllers\ChatSubscriptionController;
@@ -83,6 +84,11 @@ Route::middleware('auth.banned')->group(function (): void {
         ->middleware('signed')
         ->name('chat.unsubscribe');
 
+    // Announcement unsubscribe route (no auth required for email links)
+    Route::get('/announcement/unsubscribe/{user}', [AnnouncementSubscriptionController::class, 'unsubscribe'])
+        ->middleware('signed')
+        ->name('announcement.unsubscribe');
+
     // Authenticated routes
     Route::middleware(['auth', AuthenticateSession::class, 'verified'])->group(function (): void {
 
@@ -122,6 +128,10 @@ Route::middleware('auth.banned')->group(function (): void {
         Route::livewire('/addon/guidelines/{mod}', 'pages::addon.guidelines-acknowledgment')
             ->where(['mod' => '[0-9]+'])
             ->name('addon.guidelines');
+
+        Route::livewire('/addon/path-check/{mod}', 'pages::addon.path-check')
+            ->where(['mod' => '[0-9]+'])
+            ->name('addon.path-check');
 
         Route::livewire('/addon/create/{mod}', 'pages::addon.create')
             ->where(['mod' => '[0-9]+'])

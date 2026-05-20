@@ -249,6 +249,18 @@ final class AddonPolicy
     }
 
     /**
+     * Determine whether the user can lock or unlock the contains_ai_content flag.
+     */
+    public function lockAiContent(User $user, Addon $addon): bool
+    {
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isAdmin();
+    }
+
+    /**
      * Determine whether the user can report an addon.
      *
      * Authentication and email verification are required.

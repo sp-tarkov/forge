@@ -60,7 +60,7 @@ describe('Mail Message Content', function (): void {
         $mailMessage = $notification->toMail($user);
 
         expect($mailMessage->subject)->toBe('Your account has been suspended')
-            ->and($mailMessage->greeting)->toBe('Hello,')
+            ->and($mailMessage->greeting)->toBe('Your account has been suspended')
             ->and($mailMessage->introLines[0])->toContain('has been suspended')
             ->and($mailMessage->introLines[1])->toContain('Until')
             ->and($mailMessage->introLines[2])->toContain('Violated community guidelines')

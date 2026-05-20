@@ -9,7 +9,7 @@
         "ext-curl": "*",
         "ext-imagick": "*",
         "ext-intl": "*",
-        "aws/aws-sdk-php": "^3.379.0",
+        "aws/aws-sdk-php": "^3.379.7",
         "composer/semver": "^3.4.4",
         "elgigi/commonmark-emoji": "^2.0",
         "geoip2/geoip2": "^3.3",
@@ -17,10 +17,10 @@
         "http-interop/http-factory-guzzle": "^1.2.1",
         "knuckleswtf/scribe": "^5.9",
         "laravel/fortify": "^1.36.2",
-        "laravel/framework": "^13.5",
-        "laravel/horizon": "^5.45.6",
-        "laravel/nightwatch": "^1.26",
-        "laravel/octane": "^2.17.1",
+        "laravel/framework": "^13.9",
+        "laravel/horizon": "^5.46.0",
+        "laravel/nightwatch": "^1.26.1",
+        "laravel/octane": "^2.17.2",
         "laravel/reverb": "^1.10.0",
         "laravel/sanctum": "^4.3.1",
         "laravel/scout": "^10.25",
@@ -28,11 +28,12 @@
         "laravel/socialite": "^5.26.1",
         "league/flysystem-aws-s3-v3": "^3.32",
         "league/html-to-markdown": "^5.1.1",
-        "livewire/flux": "^2.13.2",
-        "livewire/flux-pro": "^2.13.2",
+        "livewire/flux": "^2.14.1",
+        "livewire/flux-pro": "^2.14.1",
         "livewire/livewire": "^4.2.4",
         "mchev/banhammer": "^2.5.0",
         "meilisearch/meilisearch-php": "^1.16.1",
+        "mobiledetect/mobiledetectlib": "~4.8.10",
         "nunomaduro/essentials": "^1.2",
         "shetabit/visitor": "^4.5.4",
         "socialiteproviders/discord": "^4.2",
@@ -42,22 +43,22 @@
         "stevebauman/purify": "^6.3.2"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^4.2.6",
+        "barryvdh/laravel-debugbar": "^4.2.8",
         "calebdw/larastan-livewire": "^2.5",
         "driftingly/rector-laravel": "^2.3.0",
         "fakerphp/faker": "^1.24.1",
-        "larastan/larastan": "^3.9.5",
-        "laravel/boost": "^2.4.3",
+        "larastan/larastan": "^3.9.6",
+        "laravel/boost": "^2.4.5",
         "laravel/pail": "^1.2.6",
-        "laravel/pint": "^1.29.0",
+        "laravel/pao": "^1.0",
+        "laravel/pint": "^1.29.1",
         "laravel/tinker": "^3.0.2",
         "mockery/mockery": "^1.6.12",
-        "nunomaduro/collision": "^8.9.3",
-        "nunomaduro/pao": "^0.1.8",
-        "pestphp/pest": "^4.6.0",
+        "nunomaduro/collision": "^8.9.4",
+        "pestphp/pest": "^4.6.3",
         "pestphp/pest-plugin-browser": "^4.3.1",
         "pestphp/pest-plugin-type-coverage": "^4.0.4",
-        "rector/rector": "^2.4.1",
+        "rector/rector": "^2.4.2",
         "roave/security-advisories": "dev-latest"
     },
     "autoload": {
@@ -137,8 +138,7 @@
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
             "@php artisan vendor:publish --tag=livewire:assets --ansi --force",
             "@php artisan boost:update --ansi",
-            "@php artisan clear",
-            "@update:requirements"
+            "@php artisan clear"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -173,9 +173,11 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "repositories": [{
-        "name": "flux-pro",
-        "type": "composer",
-        "url": "https://composer.fluxui.dev"
-    }]
+    "repositories": [
+        {
+            "name": "flux-pro",
+            "type": "composer",
+            "url": "https://composer.fluxui.dev"
+        }
+    ]
 }

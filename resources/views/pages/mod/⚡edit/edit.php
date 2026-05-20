@@ -99,6 +99,16 @@ new #[Layout('layouts::base')] class extends Component
     public bool $containsAiContent = false;
 
     /**
+     * Whether the contains AI content flag is locked by staff.
+     */
+    public bool $containsAiContentLocked = false;
+
+    /**
+     * The custom AI disclosure message.
+     */
+    public string $customAiDisclosure = '';
+
+    /**
      * Whether the mod contains ads.
      */
     public bool $containsAds = false;
@@ -176,6 +186,8 @@ new #[Layout('layouts::base')] class extends Component
         }
 
         $this->containsAiContent = (bool) $this->mod->contains_ai_content;
+        $this->containsAiContentLocked = (bool) $this->mod->contains_ai_content_locked;
+        $this->customAiDisclosure = $this->mod->custom_ai_disclosure ?? '';
         $this->containsAds = (bool) $this->mod->contains_ads;
         $this->commentsDisabled = (bool) $this->mod->comments_disabled;
         $this->disableProfileBindingNotice = (bool) $this->mod->profile_binding_notice_disabled;
@@ -197,6 +209,24 @@ new #[Layout('layouts::base')] class extends Component
     public function updateAuthorIds(array $ids): void
     {
         $this->authorIds = $ids;
+    }
+
+    /**
+     * Whether the current user can lock or unlock the AI content flag.
+     */
+    #[Computed]
+    public function canLockAiContent(): bool
+    {
+        return auth()->user()?->can('lockAiContent', $this->mod) ?? false;
+    }
+
+    /**
+     * Whether the AI content flag is currently locked and the user cannot change it.
+     */
+    #[Computed]
+    public function aiContentLockedForUser(): bool
+    {
+        return $this->mod->contains_ai_content_locked && ! $this->canLockAiContent;
     }
 
     /**
@@ -283,7 +313,18 @@ new #[Layout('layouts::base')] class extends Component
         $this->mod->description = $this->description;
         $this->mod->license_id = (int) $this->license;
         $this->mod->category_id = (int) $this->category;
-        $this->mod->contains_ai_content = $this->containsAiContent;
+
+        if ($this->canLockAiContent) {
+            $this->mod->contains_ai_content_locked = $this->containsAiContentLocked;
+            $this->mod->contains_ai_content = $this->containsAiContentLocked ? true : $this->containsAiContent;
+        } elseif (! $this->mod->contains_ai_content_locked) {
+            $this->mod->contains_ai_content = $this->containsAiContent;
+        }
+
+        $this->mod->custom_ai_disclosure = $this->mod->contains_ai_content && $this->customAiDisclosure !== ''
+            ? $this->customAiDisclosure
+            : null;
+
         $this->mod->contains_ads = $this->containsAds;
         $this->mod->comments_disabled = $this->commentsDisabled;
         $this->mod->profile_binding_notice_disabled = $this->disableProfileBindingNotice;
@@ -410,6 +451,8 @@ new #[Layout('layouts::base')] class extends Component
             'publishedAtDate' => 'nullable|date',
             'publishedAtTime' => 'nullable|date_format:H:i',
             'containsAiContent' => 'boolean',
+            'containsAiContentLocked' => 'boolean',
+            'customAiDisclosure' => 'nullable|string|max:1000',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'authorIds' => 'array|max:10',

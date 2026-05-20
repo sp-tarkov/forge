@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Contracts\Presentable;
 use App\Exceptions\Api\V0\Handler;
 use App\Http\Controllers\Controller;
 use App\Notifications\ResetPassword;
@@ -79,6 +80,16 @@ arch('notifications suffix')
     ->ignoring([
         ResetPassword::class, // Mirrors the parent Laravel notification name.
         VerifyEmail::class,   // Mirrors the parent Laravel notification name.
+        'App\Notifications\Messages', // Mail message value types, not notifications.
+    ]);
+
+arch('database notifications implement Presentable')
+    ->expect('App\Notifications')
+    ->toImplement(Presentable::class)
+    ->ignoring([
+        ResetPassword::class, // Mail-only; mirrors Laravel parent.
+        VerifyEmail::class,   // Mail-only; mirrors Laravel parent.
+        'App\Notifications\Messages', // Mail message value types, not notifications.
     ]);
 
 arch('exceptions suffix')

@@ -332,6 +332,108 @@ describe('Mod Create Form', function (): void {
         });
     });
 
+    describe('Custom AI Disclosure', function (): void {
+        beforeEach(function (): void {
+            $this->user = User::factory()->withMfa()->create();
+            $this->license = License::factory()->create();
+            $this->category = ModCategory::factory()->create();
+            $this->actingAs($this->user);
+        });
+
+        it('persists the custom AI disclosure when AI content is enabled and a message is provided', function (): void {
+            Livewire::test('pages::mod.create')
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'AI Disclosure Mod')
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $this->license->id)
+                ->set('category', (string) $this->category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', true)
+                ->set('customAiDisclosure', 'Used AI to draft documentation.')
+                ->set('containsAds', false)
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $mod = Mod::query()->where('name', 'AI Disclosure Mod')->first();
+            expect($mod)->not->toBeNull();
+            expect($mod->contains_ai_content)->toBeTrue();
+            expect($mod->custom_ai_disclosure)->toBe('Used AI to draft documentation.');
+        });
+
+        it('persists null when AI content is enabled but no disclosure message is provided', function (): void {
+            Livewire::test('pages::mod.create')
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'AI No Message Mod')
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $this->license->id)
+                ->set('category', (string) $this->category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', true)
+                ->set('customAiDisclosure', '')
+                ->set('containsAds', false)
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $mod = Mod::query()->where('name', 'AI No Message Mod')->first();
+            expect($mod)->not->toBeNull();
+            expect($mod->contains_ai_content)->toBeTrue();
+            expect($mod->custom_ai_disclosure)->toBeNull();
+        });
+
+        it('persists null when AI content is disabled even if a disclosure message is provided', function (): void {
+            Livewire::test('pages::mod.create')
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'No AI Mod')
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $this->license->id)
+                ->set('category', (string) $this->category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', false)
+                ->set('customAiDisclosure', 'Some leftover text the user typed before unchecking.')
+                ->set('containsAds', false)
+                ->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $mod = Mod::query()->where('name', 'No AI Mod')->first();
+            expect($mod)->not->toBeNull();
+            expect($mod->contains_ai_content)->toBeFalse();
+            expect($mod->custom_ai_disclosure)->toBeNull();
+        });
+
+        it('rejects a custom AI disclosure longer than 1000 characters', function (): void {
+            Livewire::test('pages::mod.create')
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('name', 'Too Long Mod')
+                ->set('teaser', 'Test teaser')
+                ->set('description', 'Test description')
+                ->set('license', (string) $this->license->id)
+                ->set('category', (string) $this->category->id)
+                ->set('sourceCodeLinks.0.url', 'https://github.com/test/repo')
+                ->set('sourceCodeLinks.0.label', '')
+                ->set('containsAiContent', true)
+                ->set('customAiDisclosure', str_repeat('a', 1001))
+                ->call('save')
+                ->assertHasErrors(['customAiDisclosure']);
+        });
+    });
+
     describe('Browser Tests - License', function (): void {
         it('saves license value when selected via the listbox', function (): void {
             $owner = User::factory()->withMfa()->create();

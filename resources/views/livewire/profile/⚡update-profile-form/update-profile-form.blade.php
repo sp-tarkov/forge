@@ -17,11 +17,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 @if ($photo)
                     <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
-                        <img
-                            src="{{ $photo->temporaryUrl() }}"
-                            class="size-20 shrink-0 rounded-lg object-cover"
-                            alt="{{ __('Profile picture preview') }}"
-                        >
+                        @if ($photo->isPreviewable())
+                            <img
+                                src="{{ $photo->temporaryUrl() }}"
+                                class="size-20 shrink-0 rounded-lg object-cover"
+                                alt="{{ __('Profile picture preview') }}"
+                            >
+                        @endif
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $photo->getClientOriginalName() }}</p>
                             <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($photo->getSize(), 1) }}</p>
@@ -80,11 +82,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 @if ($cover)
                     <div class="flex items-center gap-4 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
-                        <img
-                            src="{{ $cover->temporaryUrl() }}"
-                            class="size-20 shrink-0 rounded-lg object-cover"
-                            alt="{{ __('Cover picture preview') }}"
-                        >
+                        @if ($cover->isPreviewable())
+                            <img
+                                src="{{ $cover->temporaryUrl() }}"
+                                class="size-20 shrink-0 rounded-lg object-cover"
+                                alt="{{ __('Cover picture preview') }}"
+                            >
+                        @endif
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">{{ $cover->getClientOriginalName() }}</p>
                             <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ Number::fileSize($cover->getSize(), 1) }}</p>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Notifications\CommentReplyNotification;
+use App\Notifications\ContentGuidelinesUpdatedNotification;
 use App\Notifications\NewCommentNotification;
 use App\Notifications\ReportSubmittedNotification;
 use Livewire\Livewire;
@@ -422,6 +423,50 @@ it('users can only see their own notifications', function (): void {
     Livewire::test('navigation-notifications')
         ->assertSee('My Notification')
         ->assertDontSee('Other User Notification');
+});
+
+it('renders content guidelines notification with title and body', function (): void {
+    $this->user->notifications()->create([
+        'id' => fake()->uuid(),
+        'type' => ContentGuidelinesUpdatedNotification::class,
+        'data' => [
+            'title' => 'Content Guidelines Updated',
+            'body' => 'Our Content Guidelines have been updated. The AI-Generated Content Policy now requires the "Contains AI Content" flag for any LLM-assisted content.',
+            'url' => route('static.content-guidelines'),
+        ],
+        'read_at' => null,
+    ]);
+
+    $this->actingAs($this->user);
+
+    Livewire::test('navigation-notifications')
+        ->assertSee('Content Guidelines Updated')
+        ->assertDontSee('Someone')
+        ->assertDontSee('commented on');
+});
+
+it('redirects to guidelines url when reviewing a content guidelines notification', function (): void {
+    $notificationId = fake()->uuid();
+    $guidelinesUrl = route('static.content-guidelines');
+
+    $this->user->notifications()->create([
+        'id' => $notificationId,
+        'type' => ContentGuidelinesUpdatedNotification::class,
+        'data' => [
+            'title' => 'Content Guidelines Updated',
+            'body' => 'Body text.',
+            'url' => $guidelinesUrl,
+        ],
+        'read_at' => null,
+    ]);
+
+    $this->actingAs($this->user);
+
+    Livewire::test('navigation-notifications')
+        ->call('reviewNotification', $notificationId)
+        ->assertRedirect($guidelinesUrl);
+
+    expect($this->user->notifications()->find($notificationId)->read_at)->not->toBeNull();
 });
 
 it('handles gracefully when reviewing non-existent notification', function (): void {

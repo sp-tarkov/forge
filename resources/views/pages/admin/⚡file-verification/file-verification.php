@@ -48,6 +48,18 @@ new #[Layout('layouts::base')] #[Title('File Verification - The Forge')] class e
     public function results(): LengthAwarePaginator
     {
         $query = VerificationResult::query()
+            ->select([
+                'id',
+                'verifiable_type',
+                'verifiable_id',
+                'status',
+                'trigger',
+                'download_ok',
+                'archive_ok',
+                'file_tree',
+                'created_at',
+                'updated_at',
+            ])
             ->with(['verifiable' => fn (MorphTo $morphTo) => $morphTo->morphWith([ // @phpstan-ignore argument.type
                 ModVersion::class => ['mod'],
                 AddonVersion::class => ['addon'],

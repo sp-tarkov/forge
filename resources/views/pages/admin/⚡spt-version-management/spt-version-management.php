@@ -76,13 +76,15 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
 
         $this->applyFilters($query);
 
+        $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
         return $query
-            ->orderBy($this->sortBy, $this->sortDirection)
+            ->orderBy($this->sortBy, $direction)
             ->when($this->sortBy !== 'version_major', function (Builder $q): void {
                 $q->orderBy('version_major', 'desc')->orderBy('version_minor', 'desc')->orderBy('version_patch', 'desc');
             })
-            ->when($this->sortBy === 'version_major', function (Builder $q): void {
-                $q->orderBy('version_minor', $this->sortDirection)->orderBy('version_patch', $this->sortDirection);
+            ->when($this->sortBy === 'version_major', function (Builder $q) use ($direction): void {
+                $q->orderBy('version_minor', $direction)->orderBy('version_patch', $direction);
             })
             ->paginate(25);
     }
