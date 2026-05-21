@@ -9,11 +9,14 @@ use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
+use App\Models\User;
 use App\Services\ModListService;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -50,6 +53,12 @@ new class extends Component
      * @var array<int, int> Mod IDs checked for cascade
      */
     public array $selectedDependencyIds = [];
+
+    /**
+     * Latest status message announced to assistive technology via an
+     * aria-live region after a list mutation.
+     */
+    public string $statusMessage = '';
 
     public function mount(int $sourceId, string $sourceType = 'mod'): void
     {
@@ -102,39 +111,50 @@ new class extends Component
     }
 
     /**
+     * The ids of the viewer's lists that already contain the source.
+     *
+     * Resolved with a single query so per-row membership checks in the modal
+     * do not each issue their own lookup.
+     *
+     * @return array<int, int>
+     */
+    #[Computed]
+    public function membershipListIds(): array
+    {
+        $user = Auth::user();
+        if ($user === null) {
+            return [];
+        }
+
+        /** @var array<int, int> $ids */
+        $ids = ModListItem::query()
+            ->where('listable_type', $this->sourceType === 'mod' ? Mod::class : Addon::class)
+            ->where('listable_id', $this->sourceId)
+            ->whereIn('mod_list_id', $user->modLists()->select('id'))
+            ->pluck('mod_list_id')
+            ->flip()
+            ->all();
+
+        return $ids;
+    }
+
+    /**
      * Whether the given list already contains the source mod or addon.
      */
     public function membershipFor(int $listId): bool
     {
-        $list = ModList::query()->find($listId);
-        if ($list === null) {
-            return false;
-        }
-
-        return $this->sourceType === 'mod'
-            ? $list->containsMod($this->sourceId)
-            : $list->containsAddon($this->sourceId);
+        return isset($this->membershipListIds[$listId]);
     }
 
     /**
      * Whether the source mod or addon is on at least one of the viewer's lists.
      *
-     * Drives the reactive fill state of the trigger heart. Resolved with a
-     * single existence query scoped to the authenticated user's lists.
+     * Drives the reactive fill state of the trigger heart.
      */
     #[Computed]
     public function isOnAnyList(): bool
     {
-        $user = Auth::user();
-        if ($user === null) {
-            return false;
-        }
-
-        return ModListItem::query()
-            ->where('listable_type', $this->sourceType === 'mod' ? Mod::class : Addon::class)
-            ->where('listable_id', $this->sourceId)
-            ->whereIn('mod_list_id', $user->modLists()->select('id'))
-            ->exists();
+        return $this->membershipListIds !== [];
     }
 
     /**
@@ -169,7 +189,8 @@ new class extends Component
                 return;
             }
 
-            $deps = $suggested->filter(fn (Mod $m): bool => in_array($m->id, $this->selectedDependencyIds, true));
+            $selectedIds = array_map(intval(...), $this->selectedDependencyIds);
+            $deps = $suggested->filter(fn (Mod $m): bool => in_array((int) $m->id, $selectedIds, true));
 
             Gate::authorize('addItem', $list);
 
@@ -237,7 +258,9 @@ new class extends Component
 
             $service->removeItem($list, $item);
 
-            unset($this->isOnAnyList, $this->userLists);
+            unset($this->isOnAnyList, $this->userLists, $this->membershipListIds);
+
+            $this->statusMessage = __('Removed from :title.', ['title' => $list->title]);
 
             Flux::toast(
                 heading: __('Removed'),
@@ -281,29 +304,37 @@ new class extends Component
 
     /**
      * Create a new list inline and add the source mod or addon to it.
+     *
+     * List creation and the first add run in one transaction so a failed add
+     * never leaves an empty orphan list behind.
      */
     public function createAndAdd(ModListService $service): void
     {
         $user = Auth::user();
-        if ($user === null) {
+        if (! $user instanceof User) {
             return;
         }
 
         $this->validate([
-            'newTitle' => ['required', 'string', 'min:1', 'max:120'],
+            'newTitle' => ['required', 'string', 'min:1', 'max:'.config()->integer('mod-lists.validation.title_max', 120)],
             'newVisibility' => ['required', Rule::enum(ListVisibility::class)],
         ]);
 
         Gate::authorize('create', ModList::class);
 
-        $list = new ModList;
-        $list->owner_id = $user->id;
-        $list->title = mb_trim($this->newTitle);
-        $list->visibility = ListVisibility::from($this->newVisibility);
-        $list->save();
+        if (! $this->withinCreationRateLimit()) {
+            return;
+        }
+
+        DB::transaction(function () use ($user, $service): void {
+            $list = $service->createList($user, $this->newTitle, ListVisibility::from($this->newVisibility));
+
+            $this->addToList($list->id, $service);
+        });
 
         $this->cancelCreatingNew();
-        $this->addToList($list->id, $service);
+
+        unset($this->userLists, $this->isOnAnyList, $this->membershipListIds);
     }
 
     private function resetSubFlow(): void
@@ -313,11 +344,13 @@ new class extends Component
         $this->selectedDependencyIds = [];
         $this->note = '';
 
-        unset($this->isOnAnyList, $this->userLists);
+        unset($this->isOnAnyList, $this->userLists, $this->membershipListIds);
     }
 
     private function toastAdded(ModList $list): void
     {
+        $this->statusMessage = __('Added to :title.', ['title' => $list->title]);
+
         Flux::toast(
             heading: __('Added'),
             text: __('Added to ":title".', ['title' => $list->title]),
@@ -327,12 +360,38 @@ new class extends Component
 
     private function toastListFull(): void
     {
-        $max = config()->integer('mod-lists.max_items_per_list', 250);
+        $max = ModList::maxItemsPerList();
 
         Flux::toast(
             heading: __('List full'),
             text: __('This list is full (:count items max). Remove an item or use another list.', ['count' => $max]),
             variant: 'warning',
         );
+    }
+
+    /**
+     * Guard list creation against rapid-fire abuse. Staff are exempt.
+     */
+    private function withinCreationRateLimit(): bool
+    {
+        $user = Auth::user();
+        if (! $user instanceof User || $user->isModOrAdmin()) {
+            return true;
+        }
+
+        $key = 'mod-list-creation:'.$user->id;
+        $max = config()->integer('mod-lists.rate_limiting.create_max_attempts', 15);
+
+        if (RateLimiter::tooManyAttempts($key, $max)) {
+            $this->addError('newTitle', __('You are creating lists too quickly. Please wait :seconds seconds and try again.', [
+                'seconds' => RateLimiter::availableIn($key),
+            ]));
+
+            return false;
+        }
+
+        RateLimiter::hit($key, config()->integer('mod-lists.rate_limiting.create_duration_seconds', 60));
+
+        return true;
     }
 };

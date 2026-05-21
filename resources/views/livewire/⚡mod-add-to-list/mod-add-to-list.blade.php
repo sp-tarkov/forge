@@ -22,6 +22,11 @@
         class="md:w-[520px]"
     >
         <div class="space-y-4">
+            <div
+                aria-live="polite"
+                class="sr-only"
+            >{{ $statusMessage }}</div>
+
             <div>
                 <flux:heading size="lg">{{ __('Add to a list') }}</flux:heading>
                 <flux:subheading>
@@ -34,23 +39,22 @@
             </div>
 
             @if ($showDependencyStep && $sourceType === 'mod')
-                <div class="space-y-3">
-                    <div class="text-sm">
-                        {{ trans_choice('This mod requires :count other mod. Add it to the list too?|This mod requires :count other mods. Add them to the list too?', $this->suggestedDependencies->count(), ['count' => $this->suggestedDependencies->count()]) }}
-                    </div>
-                    <div class="space-y-2">
+                <div
+                    class="space-y-3"
+                    x-init="$nextTick(() => $el.querySelector('input, button')?.focus())"
+                >
+                    <flux:checkbox.group
+                        wire:model="selectedDependencyIds"
+                        :label="trans_choice('This mod requires :count other mod. Add it to the list too?|This mod requires :count other mods. Add them to the list too?', $this->suggestedDependencies->count(), ['count' => $this->suggestedDependencies->count()])"
+                        class="space-y-2"
+                    >
                         @foreach ($this->suggestedDependencies as $dep)
-                            <label class="flex items-center gap-2 rounded-md p-2 bg-gray-50 dark:bg-gray-900">
-                                <input
-                                    type="checkbox"
-                                    value="{{ $dep->id }}"
-                                    wire:model="selectedDependencyIds"
-                                    class="rounded border-gray-300 dark:border-gray-600"
-                                >
-                                <span class="text-sm">{{ $dep->name }}</span>
-                            </label>
+                            <flux:checkbox
+                                value="{{ $dep->id }}"
+                                :label="$dep->name"
+                            />
                         @endforeach
-                    </div>
+                    </flux:checkbox.group>
                     <div class="flex justify-end gap-3 pt-2">
                         <flux:button
                             variant="ghost"
@@ -73,7 +77,10 @@
                     </div>
                 </div>
             @elseif ($creatingNew)
-                <div class="space-y-3">
+                <div
+                    class="space-y-3"
+                    x-init="$nextTick(() => $el.querySelector('input')?.focus())"
+                >
                     <flux:input
                         wire:model="newTitle"
                         :label="__('New list title')"
