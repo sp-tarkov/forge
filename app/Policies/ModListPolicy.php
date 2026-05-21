@@ -56,9 +56,7 @@ final class ModListPolicy
             return false;
         }
 
-        $max = config()->integer('mod-lists.max_lists_per_user', 50);
-
-        return $user->modLists()->count() < $max;
+        return $user->modLists()->count() < ModList::maxListsPerUser();
     }
 
     /**
@@ -111,9 +109,7 @@ final class ModListPolicy
             return false;
         }
 
-        $max = config()->integer('mod-lists.max_items_per_list', 250);
-
-        return $modList->items()->count() < $max;
+        return $modList->items()->count() < ModList::maxItemsPerList();
     }
 
     /**
@@ -200,9 +196,17 @@ final class ModListPolicy
             return false;
         }
 
-        // Owners cannot report their own list.
-        if ($reportable instanceof ModList && $this->isOwner($user, $reportable)) {
-            return false;
+        if ($reportable instanceof ModList) {
+            // Owners cannot report their own list.
+            if ($this->isOwner($user, $reportable)) {
+                return false;
+            }
+
+            // A list the user is not allowed to view cannot be reported; this
+            // blocks reports against private lists the reporter cannot see.
+            if (! $this->view($user, $reportable)) {
+                return false;
+            }
         }
 
         // Check if the reportable model has the required method.

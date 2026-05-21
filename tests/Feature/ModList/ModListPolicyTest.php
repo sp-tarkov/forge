@@ -250,4 +250,60 @@ describe('ModListPolicy report', function (): void {
 
         expect($user->can('report', $list))->toBeFalse();
     });
+
+    it('disallows reporting a private list the reporter cannot view', function (): void {
+        $reporter = User::factory()->create(['email_verified_at' => now()]);
+        $list = ModList::factory()->private()->create();
+
+        expect($reporter->can('report', $list))->toBeFalse();
+    });
+
+    it('disallows reporting a hidden list without the share token', function (): void {
+        $reporter = User::factory()->create(['email_verified_at' => now()]);
+        $list = ModList::factory()->hidden()->create();
+
+        expect($reporter->can('report', $list))->toBeFalse();
+    });
+
+    it('allows reporting a public list owned by someone else', function (): void {
+        $reporter = User::factory()->create(['email_verified_at' => now()]);
+        $list = ModList::factory()->public()->create();
+
+        expect($reporter->can('report', $list))->toBeTrue();
+    });
+});
+
+describe('ModListPolicy regenerateShareToken', function (): void {
+    it('allows the owner of a hidden list', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->hidden()->create();
+
+        expect($owner->can('regenerateShareToken', $list))->toBeTrue();
+    });
+
+    it('disallows the owner of a non-hidden list', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        expect($owner->can('regenerateShareToken', $list))->toBeFalse();
+    });
+
+    it('disallows non-owners of a hidden list', function (): void {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->hidden()->create();
+
+        expect($other->can('regenerateShareToken', $list))->toBeFalse();
+    });
+});
+
+describe('ModListPolicy updateItemNote', function (): void {
+    it('allows the owner and disallows everyone else', function (): void {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        expect($owner->can('updateItemNote', $list))->toBeTrue();
+        expect($other->can('updateItemNote', $list))->toBeFalse();
+    });
 });
