@@ -147,6 +147,46 @@ final class ModListService
     }
 
     /**
+     * Reorder a subset of top-level mod items relative to one another.
+     *
+     * Only the position slots already occupied by the supplied mod items are
+     * rewritten, so reordering a paginated subset never disturbs the positions
+     * of items that are not in the subset (e.g. items on other pages).
+     *
+     * @param  array<int, int>  $orderedModIds
+     */
+    public function reorderWithinPositions(ModList $modList, array $orderedModIds): void
+    {
+        DB::transaction(function () use ($modList, $orderedModIds): void {
+            $items = ModListItem::query()
+                ->where('mod_list_id', $modList->id)
+                ->where('listable_type', Mod::class)
+                ->whereIn('listable_id', $orderedModIds)
+                ->get()
+                ->keyBy('listable_id');
+
+            $slots = $items
+                ->pluck('position')
+                ->sort()
+                ->values()
+                ->all();
+
+            foreach ($orderedModIds as $index => $modId) {
+                $item = $items->get($modId);
+                if ($item === null) {
+                    continue;
+                }
+
+                if (! isset($slots[$index])) {
+                    continue;
+                }
+
+                $item->update(['position' => $slots[$index]]);
+            }
+        });
+    }
+
+    /**
      * Resolve the suggested dependency mods to cascade when adding a mod to the list.
      *
      * @return Collection<int, Mod>

@@ -275,6 +275,119 @@ describe('list.show page', function (): void {
         $response->assertSee('Missing Helper');
     });
 
+    it('paginates group cards, keeping later items off page one', function (): void {
+        $list = ModList::factory()->public()->create();
+
+        $mods = Mod::factory()->count(30)->create();
+        foreach ($mods->values() as $index => $mod) {
+            ModListItem::factory()->create([
+                'mod_list_id' => $list->id,
+                'listable_type' => Mod::class,
+                'listable_id' => $mod->id,
+                'position' => $index,
+            ]);
+        }
+
+        $firstPageMod = $mods->first();
+        $secondPageMod = $mods->last();
+
+        $pageOne = $this->get($list->detailUrl());
+        $pageOne->assertOk();
+        $pageOne->assertSee($firstPageMod->name);
+        $pageOne->assertDontSee($secondPageMod->name);
+
+        $pageTwo = $this->get($list->detailUrl().'?page=2');
+        $pageTwo->assertOk();
+        $pageTwo->assertSee($secondPageMod->name);
+        $pageTwo->assertDontSee($firstPageMod->name);
+    });
+
+    it('reports list-wide counts even when the list spans multiple pages', function (): void {
+        $list = ModList::factory()->public()->create();
+
+        $mods = Mod::factory()->count(30)->create();
+        foreach ($mods->values() as $index => $mod) {
+            ModListItem::factory()->create([
+                'mod_list_id' => $list->id,
+                'listable_type' => Mod::class,
+                'listable_id' => $mod->id,
+                'position' => $index,
+            ]);
+        }
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('30 mods');
+    });
+
+    it('keeps dependency badges satisfied when the required mod is on another page', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $depMod = Mod::factory()->create(['name' => 'Cross Page Helper']);
+        $depModVersion = ModVersion::factory()->recycle($depMod)->create([
+            'version' => '2.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $mainMod = Mod::factory()->create(['name' => 'Cross Page Main']);
+        $mainModVersion = ModVersion::factory()->recycle($mainMod)->create([
+            'version' => '1.0.0',
+            'spt_version_constraint' => '3.8.0',
+        ]);
+
+        $dependency = Dependency::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependent_mod_id' => $depMod->id,
+            'constraint' => '^2.0.0',
+        ]);
+        $dependency->saveQuietly();
+
+        DependencyResolved::factory()->make([
+            'dependable_id' => $mainModVersion->id,
+            'dependency_id' => $dependency->id,
+            'resolved_mod_version_id' => $depModVersion->id,
+        ])->saveQuietly();
+
+        $list = ModList::factory()->public()->create();
+
+        // Dependency mod sits at the very front (page one); the main mod is
+        // pushed onto page two by 24 filler mods in between.
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $depMod->id,
+            'position' => 0,
+        ]);
+
+        $filler = Mod::factory()->count(24)->create();
+        foreach ($filler->values() as $index => $mod) {
+            ModListItem::factory()->create([
+                'mod_list_id' => $list->id,
+                'listable_type' => Mod::class,
+                'listable_id' => $mod->id,
+                'position' => $index + 1,
+            ]);
+        }
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+            'position' => 25,
+        ]);
+
+        $pageTwo = $this->get($list->detailUrl().'?page=2');
+
+        $pageTwo->assertOk();
+        $pageTwo->assertSee('Cross Page Main');
+        // The required mod lives on page one, but the badge must still show
+        // satisfied because membership is checked list-wide.
+        $pageTwo->assertSee('1 dependency');
+    });
+
     it('summarises mod and addon counts in the header line', function (): void {
         $list = ModList::factory()->public()->create();
 

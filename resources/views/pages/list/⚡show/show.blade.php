@@ -166,10 +166,11 @@
         </div>
     @else
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-            @foreach ($grouped as $groupKey => $group)
+            @foreach ($grouped as $group)
                 @php($mod = $group['mod'])
                 @php($modItem = $group['mod_item'])
                 @php($addons = $group['addons'])
+                @php($groupKey = $modItem?->id ?? 'detached-'.$addons->first()?->id)
 
                 <div
                     wire:key="list-group-{{ $groupKey }}"
@@ -233,6 +234,12 @@
                 </div>
             @endforeach
         </div>
+
+        @if ($grouped->hasPages())
+            <div>
+                {{ $grouped->links() }}
+            </div>
+        @endif
     @endif
 
     @if (! $modList->isFavourites() && $modList->visibility !== \App\Enums\ListVisibility::Private)
