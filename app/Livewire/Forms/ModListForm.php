@@ -71,7 +71,8 @@ final class ModListForm extends Form
 
             if (! $list->is_default) {
                 $list->title = mb_trim($this->title);
-                $list->description = $this->description === '' ? null : $this->description;
+                $description = mb_trim($this->description);
+                $list->description = $description === '' ? null : $description;
             } else {
                 // Favourites lists don't carry a curator-written description.
                 $list->description = null;
