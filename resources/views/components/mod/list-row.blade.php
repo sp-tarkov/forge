@@ -1,15 +1,3 @@
-@props([
-    'mod',
-    'version' => null,
-    'note' => null,
-    'dependencyVersions' => null,
-    'isDependency' => false,
-    'listModIds' => null,
-    'wireKey' => null,
-])
-
-@php($version ??= $mod->latestVersion)
-
 <div
     @if ($wireKey) wire:key="{{ $wireKey }}" @endif
     {{ $attributes->merge(['class' => 'flex items-start gap-3 p-3 sm:p-4']) }}
@@ -63,15 +51,13 @@
             @endif
         </div>
 
-        @php($hasSptBadge = $version?->latestSptVersion || ($version && $version->spt_version_constraint === ''))
-        @php($hasDepsBadge = $dependencyVersions && $dependencyVersions->isNotEmpty())
-        @if ($hasSptBadge || $isDependency || $hasDepsBadge)
+        @if ($hasSptBadge() || $isDependency || $hasDependencyBadge())
             <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
                 @if ($version?->latestSptVersion)
                     <span
                         class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium whitespace-nowrap"
                     >
-                        {{ $version->latestSptVersion->version_formatted }}
+                        <span class="sr-only">{{ __('SPT version') }}&nbsp;</span>{{ $version->latestSptVersion->version_formatted }}
                     </span>
                 @elseif ($version && $version->spt_version_constraint === '')
                     <span
@@ -89,30 +75,20 @@
                         {{ __('Dependency') }}
                     </flux:badge>
                 @endif
-                @if ($hasDepsBadge)
-                    @php($depCount = $dependencyVersions->count())
-                    @php($missingDeps = $listModIds
-                        ? $dependencyVersions->reject(fn ($depVersion) => $listModIds->contains($depVersion->mod_id))
-                        : $dependencyVersions)
-                    @php($missingCount = $missingDeps->count())
-                    @php($depsAllSatisfied = $missingDeps->isEmpty())
-                    @php($depBadgeLabel = $depsAllSatisfied
-                        ? trans_choice(':count dependency satisfied|:count dependencies satisfied', $depCount, ['count' => $depCount])
-                        : trans_choice(':count missing dependency|:count missing dependencies', $missingCount, ['count' => $missingCount]))
+                @if ($hasDependencyBadge())
                     <flux:tooltip>
                         <flux:badge
                             size="sm"
-                            :color="$depsAllSatisfied ? 'emerald' : 'red'"
-                            :icon="$depsAllSatisfied ? 'check' : 'x-mark'"
+                            :color="$dependenciesSatisfied() ? 'emerald' : 'red'"
+                            :icon="$dependenciesSatisfied() ? 'check' : 'x-mark'"
                         >
-                            {{ $depBadgeLabel }}
+                            {{ $dependencyBadgeLabel() }}
                         </flux:badge>
                         <flux:tooltip.content>
                             <div class="text-xs space-y-1">
                                 @foreach ($dependencyVersions as $depVersion)
-                                    @php($inList = $listModIds && $listModIds->contains($depVersion->mod_id))
                                     <div class="flex items-center gap-1">
-                                        @if ($inList)
+                                        @if ($dependencyOnList($depVersion))
                                             <flux:icon.check class="size-3 text-emerald-500" />
                                             <span class="sr-only">{{ __('On list:') }}</span>
                                         @else
