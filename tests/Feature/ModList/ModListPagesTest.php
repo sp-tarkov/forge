@@ -388,6 +388,106 @@ describe('list.show page', function (): void {
         $pageTwo->assertSee('1 dependency');
     });
 
+    it('exposes the drag handle only to the list owner', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mod = Mod::factory()->create();
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $guestResponse = $this->get($list->detailUrl());
+        $guestResponse->assertOk();
+        $guestResponse->assertDontSee('wire:sort:handle', false);
+
+        $ownerResponse = $this->actingAs($owner)->get($list->detailUrl());
+        $ownerResponse->assertOk();
+        $ownerResponse->assertSee('wire:sort:handle', false);
+    });
+
+    it('reorders mods on the current page via the drag handler', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mods = Mod::factory()->count(3)->create();
+        foreach ($mods->values() as $index => $mod) {
+            ModListItem::factory()->create([
+                'mod_list_id' => $list->id,
+                'listable_type' => Mod::class,
+                'listable_id' => $mod->id,
+                'position' => $index,
+            ]);
+        }
+
+        $movedMod = $mods->last();
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('reorder', $movedMod->id, 0);
+
+        $movedItem = ModListItem::query()
+            ->where('mod_list_id', $list->id)
+            ->where('listable_id', $movedMod->id)
+            ->sole();
+
+        expect($movedItem->position)->toBe(0);
+    });
+
+    it('leaves other-page item positions intact when reordering a page', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mods = Mod::factory()->count(30)->create();
+        foreach ($mods->values() as $index => $mod) {
+            ModListItem::factory()->create([
+                'mod_list_id' => $list->id,
+                'listable_type' => Mod::class,
+                'listable_id' => $mod->id,
+                'position' => $index,
+            ]);
+        }
+
+        $secondPageMod = $mods->last();
+        $secondPageItemBefore = ModListItem::query()
+            ->where('mod_list_id', $list->id)
+            ->where('listable_id', $secondPageMod->id)
+            ->sole();
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('reorder', $mods->first()->id, 5);
+
+        $secondPageItemAfter = ModListItem::query()
+            ->where('mod_list_id', $list->id)
+            ->where('listable_id', $secondPageMod->id)
+            ->sole();
+
+        expect($secondPageItemAfter->position)->toBe($secondPageItemBefore->position);
+    });
+
+    it('blocks non-owners from reordering', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mod = Mod::factory()->create();
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'position' => 0,
+        ]);
+
+        $other = User::factory()->create();
+
+        Livewire::actingAs($other)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('reorder', $mod->id, 0)
+            ->assertForbidden();
+    });
+
     it('summarises mod and addon counts in the header line', function (): void {
         $list = ModList::factory()->public()->create();
 

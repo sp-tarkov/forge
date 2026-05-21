@@ -165,15 +165,20 @@
             @endif
         </div>
     @else
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div
+            @if ($canManage) wire:sort="reorder" @endif
+            class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start"
+        >
             @foreach ($grouped as $group)
                 @php($mod = $group['mod'])
                 @php($modItem = $group['mod_item'])
                 @php($addons = $group['addons'])
                 @php($groupKey = $modItem?->id ?? 'detached-'.$addons->first()?->id)
+                @php($isSortable = $canManage && $mod && $modItem)
 
                 <div
                     wire:key="list-group-{{ $groupKey }}"
+                    @if ($isSortable) wire:sort:item="{{ $mod->id }}" @endif
                     class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden"
                 >
                     @if ($mod)
@@ -185,12 +190,23 @@
                             :dependency-versions="$mod->latestVersion?->latestDependenciesResolved"
                             :list-mod-ids="$listModIds"
                         >
+                            @if ($isSortable)
+                                <button
+                                    type="button"
+                                    wire:sort:handle
+                                    aria-label="{{ __('Drag to reorder') }}"
+                                    class="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 touch-none"
+                                >
+                                    <flux:icon.bars-3 variant="micro" />
+                                </button>
+                            @endif
                             @if ($canManage && $modItem)
                                 <flux:button
                                     icon="x-mark"
                                     variant="subtle"
                                     size="sm"
                                     square
+                                    wire:sort:ignore
                                     wire:click="removeItem({{ $modItem->id }})"
                                     wire:confirm="{{ __('Remove this mod (and its addons) from the list?') }}"
                                 />
