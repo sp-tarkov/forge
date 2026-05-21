@@ -25,6 +25,11 @@ return [
         'note_max' => 280,
     ],
 
+    'rate_limiting' => [
+        'create_max_attempts' => (int) env('MOD_LISTS_CREATE_MAX_ATTEMPTS', 15),
+        'create_duration_seconds' => (int) env('MOD_LISTS_CREATE_DURATION', 60),
+    ],
+
     'favourites' => [
         'title' => 'Favourites',
         'slug' => 'favourites',
