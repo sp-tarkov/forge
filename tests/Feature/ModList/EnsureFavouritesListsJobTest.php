@@ -14,7 +14,7 @@ describe('EnsureFavouritesListsJob', function (): void {
 
         expect($user->favouritesList()->exists())->toBeFalse();
 
-        EnsureFavouritesListsJob::dispatchSync();
+        dispatch_sync(new EnsureFavouritesListsJob());
 
         $favourites = $user->favouritesList()->sole();
 
@@ -26,7 +26,7 @@ describe('EnsureFavouritesListsJob', function (): void {
     it('does not create a duplicate for users that already have a Favourites list', function (): void {
         $user = User::factory()->create();
 
-        EnsureFavouritesListsJob::dispatchSync();
+        dispatch_sync(new EnsureFavouritesListsJob());
 
         expect(ModList::query()->where('owner_id', $user->id)->where('is_default', true)->count())->toBe(1);
     });
@@ -41,7 +41,7 @@ describe('EnsureFavouritesListsJob', function (): void {
         $squatter = ModList::factory()->for($user, 'owner')->create(['title' => $title]);
         expect($squatter->slug)->toBe($slug);
 
-        EnsureFavouritesListsJob::dispatchSync();
+        dispatch_sync(new EnsureFavouritesListsJob());
 
         $favourites = $user->favouritesList()->sole();
 
