@@ -16,26 +16,18 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 final class ModListService
 {
     /**
      * Create (or return the existing) immutable default Favourites list for a user.
      *
-     * This is the single canonical definition of the Favourites row shape. If the
-     * user already owns a list using the canonical slug on a non-default list, the
-     * new list receives a suffixed slug so the (owner_id, slug) unique index holds.
+     * The slug is left for ModListObserver to derive and de-duplicate, so there
+     * is no check-then-insert race against the (owner_id, slug) unique index.
      */
     public function ensureFavouritesFor(User $user): ModList
     {
         $title = config()->string('mod-lists.favourites.title', 'Favourites');
-        $slug = config()->string('mod-lists.favourites.slug', 'favourites');
-
-        $slugTaken = ModList::query()
-            ->where('owner_id', $user->id)
-            ->where('slug', $slug)
-            ->exists();
 
         /** @var ModList $modList */
         $modList = ModList::query()->firstOrCreate(
@@ -45,13 +37,32 @@ final class ModListService
             ],
             [
                 'title' => $title,
-                'slug' => $slugTaken ? $slug.'-'.Str::lower(Str::random(6)) : $slug,
                 'visibility' => ListVisibility::Private,
                 'comments_disabled' => false,
             ],
         );
 
         return $modList;
+    }
+
+    /**
+     * Create a new (non-default) curated list for a user.
+     *
+     * Centralizes list creation so inline and full-form callers persist a list
+     * with the same normalized shape.
+     */
+    public function createList(User $owner, string $title, ListVisibility $visibility): ModList
+    {
+        $list = new ModList;
+        $list->owner_id = $owner->id;
+        $list->title = mb_trim($title);
+        $list->visibility = $visibility;
+        $list->is_default = false;
+        // Private lists never surface a comment thread.
+        $list->comments_disabled = $visibility === ListVisibility::Private;
+        $list->save();
+
+        return $list;
     }
 
     /**
@@ -67,23 +78,29 @@ final class ModListService
         ?string $note = null,
         Collection|array $dependenciesToAdd = [],
     ): ModListItem {
-        $deps = $dependenciesToAdd instanceof Collection ? $dependenciesToAdd : collect($dependenciesToAdd);
-        $deps = $deps
+        // Resolve current membership once so neither the dependency filter nor
+        // the capacity projection issues an existence query per candidate.
+        $existingModIds = $this->existingModIds($modList);
+
+        $deps = ($dependenciesToAdd instanceof Collection ? $dependenciesToAdd : collect($dependenciesToAdd))
             ->reject(fn (Mod $candidate): bool => $candidate->id === $mod->id)
-            ->reject(fn (Mod $candidate): bool => $modList->containsMod($candidate->id))
+            ->reject(fn (Mod $candidate): bool => isset($existingModIds[$candidate->id]))
+            ->unique('id')
             ->values();
 
-        $projectedCount = $modList->itemCount();
-        $projectedCount += $modList->containsMod($mod->id) ? 0 : 1;
-        $projectedCount += $deps->count();
+        $projectedCount = $modList->itemCount()
+            + (isset($existingModIds[$mod->id]) ? 0 : 1)
+            + $deps->count();
 
         $this->assertWithinCapacity($modList, $projectedCount);
 
         return DB::transaction(function () use ($modList, $mod, $note, $deps): ModListItem {
-            $primary = $this->createItem($modList, Mod::class, $mod->id, $note);
+            $position = $this->nextPosition($modList);
+
+            $primary = $this->createItem($modList, Mod::class, $mod->id, $note, $position);
 
             foreach ($deps as $dep) {
-                $this->createItem($modList, Mod::class, $dep->id, null);
+                $this->createItem($modList, Mod::class, $dep->id, null, ++$position);
             }
 
             return $primary;
@@ -110,18 +127,20 @@ final class ModListService
 
         throw_if($needsParent && ! $includeParentMod, ParentModMissingException::class, $modList, $addon);
 
-        $projectedCount = $modList->itemCount();
-        $projectedCount += $modList->containsAddon($addon->id) ? 0 : 1;
-        $projectedCount += $needsParent ? 1 : 0;
+        $projectedCount = $modList->itemCount()
+            + ($modList->containsAddon($addon->id) ? 0 : 1)
+            + ($needsParent ? 1 : 0);
 
         $this->assertWithinCapacity($modList, $projectedCount);
 
         return DB::transaction(function () use ($modList, $addon, $note, $needsParent): ModListItem {
+            $position = $this->nextPosition($modList);
+
             if ($needsParent && $addon->mod_id !== null) {
-                $this->createItem($modList, Mod::class, $addon->mod_id, null);
+                $this->createItem($modList, Mod::class, $addon->mod_id, null, $position++);
             }
 
-            return $this->createItem($modList, Addon::class, $addon->id, $note);
+            return $this->createItem($modList, Addon::class, $addon->id, $note, $position);
         });
     }
 
@@ -142,7 +161,7 @@ final class ModListService
         }
 
         $this->assertWithinCapacity($favourites, $favourites->itemCount() + 1);
-        $this->createItem($favourites, Mod::class, $mod->id, null);
+        $this->createItem($favourites, Mod::class, $mod->id, null, $this->nextPosition($favourites));
 
         return true;
     }
@@ -166,61 +185,54 @@ final class ModListService
     }
 
     /**
-     * Reorder top-level mod items within a list. Accepts an array of mod ids.
-     *
-     * @param  array<int, int>  $orderedModIds
-     */
-    public function reorder(ModList $modList, array $orderedModIds): void
-    {
-        DB::transaction(function () use ($modList, $orderedModIds): void {
-            foreach ($orderedModIds as $index => $modId) {
-                ModListItem::query()
-                    ->where('mod_list_id', $modList->id)
-                    ->where('listable_type', Mod::class)
-                    ->where('listable_id', $modId)
-                    ->update(['position' => $index]);
-            }
-        });
-    }
-
-    /**
      * Reorder a subset of top-level mod items relative to one another.
      *
      * Only the position slots already occupied by the supplied mod items are
      * rewritten, so reordering a paginated subset never disturbs the positions
-     * of items that are not in the subset (e.g. items on other pages).
+     * of items that are not in the subset (e.g. items on other pages). All
+     * position updates are flushed in a single upsert statement.
      *
      * @param  array<int, int>  $orderedModIds
      */
     public function reorderWithinPositions(ModList $modList, array $orderedModIds): void
     {
-        DB::transaction(function () use ($modList, $orderedModIds): void {
-            $items = ModListItem::query()
-                ->where('mod_list_id', $modList->id)
-                ->where('listable_type', Mod::class)
-                ->whereIn('listable_id', $orderedModIds)
-                ->get()
-                ->keyBy('listable_id');
+        $items = ModListItem::query()
+            ->where('mod_list_id', $modList->id)
+            ->where('listable_type', Mod::class)
+            ->whereIn('listable_id', $orderedModIds)
+            ->get()
+            ->keyBy('listable_id');
 
-            $slots = $items
-                ->pluck('position')
-                ->sort()
-                ->values()
-                ->all();
+        $slots = $items
+            ->pluck('position')
+            ->sort()
+            ->values()
+            ->all();
 
-            foreach ($orderedModIds as $index => $modId) {
-                $item = $items->get($modId);
-                if ($item === null) {
-                    continue;
-                }
-
-                if (! isset($slots[$index])) {
-                    continue;
-                }
-
-                $item->update(['position' => $slots[$index]]);
+        /** @var array<int, array{id: int, mod_list_id: int, listable_type: string, listable_id: int, position: int}> $rows */
+        $rows = [];
+        foreach ($orderedModIds as $index => $modId) {
+            $item = $items->get($modId);
+            if ($item === null) {
+                continue;
             }
-        });
+
+            if (! isset($slots[$index])) {
+                continue;
+            }
+
+            $rows[] = [
+                'id' => $item->id,
+                'mod_list_id' => $item->mod_list_id,
+                'listable_type' => $item->listable_type,
+                'listable_id' => $item->listable_id,
+                'position' => $slots[$index],
+            ];
+        }
+
+        if ($rows !== []) {
+            ModListItem::query()->upsert($rows, ['id'], ['position']);
+        }
     }
 
     /**
@@ -240,6 +252,8 @@ final class ModListService
             ->with('mod:id,name,slug,thumbnail,thumbnail_hash,owner_id')
             ->get();
 
+        $existingModIds = $this->existingModIds($modList);
+
         /** @var Collection<int, Mod> $mods */
         $mods = new Collection;
         $seen = [];
@@ -249,7 +263,7 @@ final class ModListService
                 continue;
             }
 
-            if ($modList->containsMod($depMod->id)) {
+            if (isset($existingModIds[$depMod->id])) {
                 continue;
             }
 
@@ -283,23 +297,42 @@ final class ModListService
     }
 
     /**
+     * Load the ids of every mod already present on the list, keyed for O(1) lookup.
+     *
+     * @return array<int, int>
+     */
+    private function existingModIds(ModList $modList): array
+    {
+        /** @var array<int, int> $ids */
+        $ids = ModListItem::query()
+            ->where('mod_list_id', $modList->id)
+            ->where('listable_type', Mod::class)
+            ->pluck('listable_id')
+            ->flip()
+            ->all();
+
+        return $ids;
+    }
+
+    /**
      * @throws ModListCapacityExceededException
      */
     private function assertWithinCapacity(ModList $modList, int $projectedCount): void
     {
-        $max = config()->integer('mod-lists.max_items_per_list', 250);
+        $max = ModList::maxItemsPerList();
 
         throw_if($projectedCount > $max, ModListCapacityExceededException::class, $modList, $projectedCount, $max);
     }
 
     /**
-     * Internal helper to create (or no-op on duplicate) a list item.
+     * Internal helper to create (or no-op on duplicate) a list item at a position.
      */
     private function createItem(
         ModList $modList,
         string $listableType,
         int $listableId,
         ?string $note,
+        int $position,
     ): ModListItem {
         /** @var ModListItem $item */
         $item = ModListItem::query()->firstOrCreate(
@@ -310,13 +343,16 @@ final class ModListService
             ],
             [
                 'note' => $note,
-                'position' => $this->nextPosition($modList),
+                'position' => $position,
             ],
         );
 
         return $item;
     }
 
+    /**
+     * Resolve the next free position slot for the list (one past the current max).
+     */
     private function nextPosition(ModList $modList): int
     {
         /** @var int|null $max */

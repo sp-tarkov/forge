@@ -187,3 +187,103 @@ describe('ModListService ensureFavouritesFor', function (): void {
         expect($favourites->visibility)->toBe(ListVisibility::Private);
     });
 });
+
+describe('ModListService reorderWithinPositions', function (): void {
+    it('rewrites occupied slots in the supplied order', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $modA = Mod::factory()->create();
+        $modB = Mod::factory()->create();
+        $modC = Mod::factory()->create();
+
+        $svc = resolve(ModListService::class);
+        $svc->addMod($list, $modA);
+        $svc->addMod($list, $modB);
+        $svc->addMod($list, $modC);
+
+        $svc->reorderWithinPositions($list, [$modC->id, $modA->id, $modB->id]);
+
+        $ordered = $list->items()->get()->pluck('listable_id')->all();
+        expect($ordered)->toBe([$modC->id, $modA->id, $modB->id]);
+    });
+
+    it('leaves positions of items outside the subset untouched', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mods = Mod::factory()->count(4)->create();
+
+        $svc = resolve(ModListService::class);
+        foreach ($mods as $mod) {
+            $svc->addMod($list, $mod);
+        }
+
+        $lastPositionBefore = $list->items()->where('listable_id', $mods[3]->id)->value('position');
+
+        $svc->reorderWithinPositions($list, [$mods[1]->id, $mods[0]->id]);
+
+        expect($list->items()->where('listable_id', $mods[3]->id)->value('position'))->toBe($lastPositionBefore);
+
+        $firstTwo = $list->items()
+            ->whereIn('listable_id', [$mods[0]->id, $mods[1]->id])
+            ->orderBy('position')
+            ->pluck('listable_id')
+            ->all();
+        expect($firstTwo)->toBe([$mods[1]->id, $mods[0]->id]);
+    });
+
+    it('ignores mod ids that are not on the list', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+
+        $svc = resolve(ModListService::class);
+        $svc->addMod($list, $mod);
+
+        $svc->reorderWithinPositions($list, [999999, $mod->id]);
+
+        expect($list->fresh()->containsMod($mod->id))->toBeTrue();
+    });
+});
+
+describe('ModListService addAddon capacity', function (): void {
+    it('throws when adding an addon plus its parent would exceed the cap', function (): void {
+        config()->set('mod-lists.max_items_per_list', 1);
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
+
+        expect(fn () => resolve(ModListService::class)->addAddon($list, $addon, null, includeParentMod: true))
+            ->toThrow(ModListCapacityExceededException::class);
+
+        expect($list->fresh()->itemCount())->toBe(0);
+    });
+});
+
+describe('ModListService toggleFavourite capacity', function (): void {
+    it('throws when Favourites is already full', function (): void {
+        config()->set('mod-lists.max_items_per_list', 1);
+        $user = User::factory()->create();
+        $fav = $user->favouritesList;
+
+        $svc = resolve(ModListService::class);
+        $svc->toggleFavourite($fav, Mod::factory()->create());
+
+        expect(fn () => $svc->toggleFavourite($fav->fresh(), Mod::factory()->create()))
+            ->toThrow(ModListCapacityExceededException::class);
+    });
+});
+
+describe('ModListService createList', function (): void {
+    it('creates a list owned by the user with normalized state', function (): void {
+        $user = User::factory()->create();
+
+        $list = resolve(ModListService::class)->createList($user, '  Spaced Title  ', ListVisibility::Private);
+
+        expect($list->owner_id)->toBe($user->id);
+        expect($list->title)->toBe('Spaced Title');
+        expect($list->visibility)->toBe(ListVisibility::Private);
+        expect($list->comments_disabled)->toBeTrue();
+        expect($list->is_default)->toBeFalse();
+    });
+});

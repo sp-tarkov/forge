@@ -68,4 +68,27 @@ describe('ModList slug + share token lifecycle', function (): void {
 
         expect($list->fresh()->share_token)->not->toBeNull();
     });
+
+    it('regenerates the slug when the title changes', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create(['title' => 'First Title']);
+        $originalSlug = $list->slug;
+
+        $list->title = 'A Completely Different Title';
+        $list->save();
+
+        expect($list->fresh()->slug)->not->toBe($originalSlug);
+        expect($list->fresh()->slug)->toBe('a-completely-different-title');
+    });
+
+    it('keeps the slug stable when a non-title field changes', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $originalSlug = $list->slug;
+
+        $list->description = 'An updated description.';
+        $list->save();
+
+        expect($list->fresh()->slug)->toBe($originalSlug);
+    });
 });
