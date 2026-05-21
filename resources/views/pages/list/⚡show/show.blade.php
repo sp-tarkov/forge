@@ -46,7 +46,7 @@
     </div>
 </x-slot>
 
-<div class="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8 py-6 space-y-6">
+<div class="mx-auto max-w-7xl sm:px-6 lg:px-8 py-6 space-y-6">
     {{-- List info --}}
     <div
         class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
@@ -165,74 +165,73 @@
             @endif
         </div>
     @else
-        <div
-            class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden"
-        >
-            <ul class="divide-y divide-gray-200 dark:divide-gray-800">
-                @foreach ($grouped as $groupKey => $group)
-                    @php($mod = $group['mod'])
-                    @php($modItem = $group['mod_item'])
-                    @php($addons = $group['addons'])
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            @foreach ($grouped as $groupKey => $group)
+                @php($mod = $group['mod'])
+                @php($modItem = $group['mod_item'])
+                @php($addons = $group['addons'])
 
-                    <li wire:key="list-group-{{ $groupKey }}">
-                        @if ($mod)
-                            <x-mod.list-row
-                                :mod="$mod"
-                                :version="$mod->latestVersion"
-                                :note="$modItem?->note"
-                                :is-dependency="$dependencyModIds->contains($mod->id)"
-                                :dependency-versions="$mod->latestVersion?->latestDependenciesResolved"
-                                :list-mod-ids="$listModIds"
-                            >
-                                @if ($canManage && $modItem)
-                                    <flux:button
-                                        icon="x-mark"
-                                        variant="subtle"
-                                        size="sm"
-                                        square
-                                        wire:click="removeItem({{ $modItem->id }})"
-                                        wire:confirm="{{ __('Remove this mod (and its addons) from the list?') }}"
-                                    />
+                <div
+                    wire:key="list-group-{{ $groupKey }}"
+                    class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden"
+                >
+                    @if ($mod)
+                        <x-mod.list-row
+                            :mod="$mod"
+                            :version="$mod->latestVersion"
+                            :note="$modItem?->note"
+                            :is-dependency="$dependencyModIds->contains($mod->id)"
+                            :dependency-versions="$mod->latestVersion?->latestDependenciesResolved"
+                            :list-mod-ids="$listModIds"
+                        >
+                            @if ($canManage && $modItem)
+                                <flux:button
+                                    icon="x-mark"
+                                    variant="subtle"
+                                    size="sm"
+                                    square
+                                    wire:click="removeItem({{ $modItem->id }})"
+                                    wire:confirm="{{ __('Remove this mod (and its addons) from the list?') }}"
+                                />
+                            @endif
+                        </x-mod.list-row>
+                    @else
+                        <div class="p-3 sm:p-4 text-sm italic text-gray-500 dark:text-gray-400">
+                            {{ __('This mod is no longer available.') }}
+                        </div>
+                    @endif
+
+                    @if ($addons->isNotEmpty())
+                        <ul
+                            class="pl-4 pr-3 sm:pr-4 pb-3 sm:pb-4 space-y-1 border-l-2 border-gray-100 dark:border-gray-900"
+                        >
+                            @foreach ($addons as $addonItem)
+                                @php($addon = $addonItem->listable)
+                                @if ($addon)
+                                    <li>
+                                        <x-addon.list-item
+                                            :addon="$addon"
+                                            :note="$addonItem->note"
+                                            :wire-key="'list-addon-'.$addonItem->id"
+                                        >
+                                            @if ($canManage)
+                                                <flux:button
+                                                    icon="x-mark"
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    square
+                                                    wire:click="removeItem({{ $addonItem->id }})"
+                                                    wire:confirm="{{ __('Remove this addon from the list?') }}"
+                                                />
+                                            @endif
+                                        </x-addon.list-item>
+                                    </li>
                                 @endif
-                            </x-mod.list-row>
-                        @else
-                            <div class="p-3 sm:p-4 text-sm italic text-gray-500 dark:text-gray-400">
-                                {{ __('This mod is no longer available.') }}
-                            </div>
-                        @endif
-
-                        @if ($addons->isNotEmpty())
-                            <ul
-                                class="pl-6 sm:pl-8 pr-3 sm:pr-4 pb-3 sm:pb-4 space-y-1 ml-6 sm:ml-8 border-l-2 border-gray-100 dark:border-gray-900"
-                            >
-                                @foreach ($addons as $addonItem)
-                                    @php($addon = $addonItem->listable)
-                                    @if ($addon)
-                                        <li>
-                                            <x-addon.list-item
-                                                :addon="$addon"
-                                                :note="$addonItem->note"
-                                                :wire-key="'list-addon-'.$addonItem->id"
-                                            >
-                                                @if ($canManage)
-                                                    <flux:button
-                                                        icon="x-mark"
-                                                        variant="subtle"
-                                                        size="sm"
-                                                        square
-                                                        wire:click="removeItem({{ $addonItem->id }})"
-                                                        wire:confirm="{{ __('Remove this addon from the list?') }}"
-                                                    />
-                                                @endif
-                                            </x-addon.list-item>
-                                        </li>
-                                    @endif
-                                @endforeach
-                            </ul>
-                        @endif
-                    </li>
-                @endforeach
-            </ul>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            @endforeach
         </div>
     @endif
 
