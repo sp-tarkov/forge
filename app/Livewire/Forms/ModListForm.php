@@ -77,7 +77,11 @@ final class ModListForm extends Form
                 $list->description = null;
             }
 
-            $list->visibility = ListVisibility::from($this->visibility);
+            // The default Favourites list is locked to Private and its
+            // visibility can never be changed, even if the form submits another value.
+            $list->visibility = $list->is_default
+                ? ListVisibility::Private
+                : ListVisibility::from($this->visibility);
             $list->spt_version_id = $this->spt_version_id;
             // Favourites and private lists never surface a comment thread; normalize to disabled.
             $list->comments_disabled = $list->is_default

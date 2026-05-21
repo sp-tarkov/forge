@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\ListVisibility;
 use App\Exceptions\ModListCapacityExceededException;
 use App\Exceptions\ParentModMissingException;
 use App\Models\Addon;
@@ -173,5 +174,16 @@ describe('ModListService cascade from model deletion', function (): void {
 
         $addonItems = ModListItem::query()->where('listable_type', Addon::class)->count();
         expect($addonItems)->toBe(0);
+    });
+});
+
+describe('ModListService ensureFavouritesFor', function (): void {
+    it('creates the Favourites list with private visibility', function (): void {
+        $user = User::factory()->create();
+
+        $favourites = resolve(ModListService::class)->ensureFavouritesFor($user);
+
+        expect($favourites->is_default)->toBeTrue();
+        expect($favourites->visibility)->toBe(ListVisibility::Private);
     });
 });

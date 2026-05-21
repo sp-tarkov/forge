@@ -720,6 +720,34 @@ describe('Mod List reports', function (): void {
         expect($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
     });
 
+    it('does not offer a delete action for a reported default Favourites list', function (): void {
+        $reporter = User::factory()->create();
+        $owner = User::factory()->create();
+        $favourites = $owner->favouritesList;
+
+        $report = Report::factory()->create([
+            'reporter_id' => $reporter->id,
+            'reportable_type' => ModList::class,
+            'reportable_id' => $favourites->id,
+            'status' => ReportStatus::PENDING,
+            'assignee_id' => $this->adminUser->id,
+        ]);
+
+        $this->actingAs($this->adminUser);
+
+        Livewire::test('pages::admin.report-centre')
+            ->assertSuccessful()
+            ->assertDontSee('Delete List');
+
+        // Even if the action is forced, the policy refuses to delete a default list.
+        Livewire::test('pages::admin.report-centre')
+            ->call('openActionModal', $report->id, 'delete_mod_list')
+            ->call('executeAction')
+            ->assertForbidden();
+
+        expect(ModList::query()->find($favourites->id))->not->toBeNull();
+    });
+
     it('renders without error when a reported mod list has been deleted', function (): void {
         $reporter = User::factory()->create();
         $modList = ModList::factory()->public()->create(['title' => 'Orphaned List']);

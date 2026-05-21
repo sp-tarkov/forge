@@ -396,16 +396,18 @@
                                                                     </flux:button>
                                                                 @endcan
                                                             @endif
-                                                            @can('delete', $report->reportable)
-                                                                <flux:button
-                                                                    size="xs"
-                                                                    variant="danger"
-                                                                    icon="trash"
-                                                                    wire:click="openActionModal({{ $report->id }}, 'delete_mod_list')"
-                                                                >
-                                                                    Delete List
-                                                                </flux:button>
-                                                            @endcan
+                                                            @unless ($report->reportable->is_default)
+                                                                @can('delete', $report->reportable)
+                                                                    <flux:button
+                                                                        size="xs"
+                                                                        variant="danger"
+                                                                        icon="trash"
+                                                                        wire:click="openActionModal({{ $report->id }}, 'delete_mod_list')"
+                                                                    >
+                                                                        Delete List
+                                                                    </flux:button>
+                                                                @endcan
+                                                            @endunless
                                                             @if ($report->reportable->owner)
                                                                 @if ($report->reportable->owner->isBanned())
                                                                     @can('unban', $report->reportable->owner)

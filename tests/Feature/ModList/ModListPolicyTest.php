@@ -132,18 +132,27 @@ describe('ModListPolicy delete', function (): void {
         expect($other->can('delete', $list))->toBeFalse();
     });
 
-    it('allows moderators and admins to delete any list including a default Favourites list', function (): void {
+    it('allows moderators and admins to delete a non-default list', function (): void {
         $owner = User::factory()->create();
         $moderator = User::factory()->moderator()->create();
         $admin = User::factory()->admin()->create();
 
         $curated = ModList::factory()->for($owner, 'owner')->public()->create();
-        $favourites = $owner->favouritesList;
 
         expect($moderator->can('delete', $curated))->toBeTrue();
-        expect($moderator->can('delete', $favourites))->toBeTrue();
         expect($admin->can('delete', $curated))->toBeTrue();
-        expect($admin->can('delete', $favourites))->toBeTrue();
+    });
+
+    it('denies everyone, including staff, from deleting a default Favourites list', function (): void {
+        $owner = User::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
+
+        $favourites = $owner->favouritesList;
+
+        expect($owner->can('delete', $favourites))->toBeFalse();
+        expect($moderator->can('delete', $favourites))->toBeFalse();
+        expect($admin->can('delete', $favourites))->toBeFalse();
     });
 });
 
@@ -177,13 +186,24 @@ describe('ModListPolicy rename/delete immutability of Favourites', function (): 
         expect($user->can('delete', $favourites))->toBeFalse();
     });
 
-    it('allows changing Favourites visibility', function (): void {
+    it('disallows changing Favourites visibility for anyone', function (): void {
         $user = User::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
         $favourites = $user->favouritesList;
 
-        $this->actingAs($user);
+        expect($user->can('changeVisibility', $favourites))->toBeFalse();
+        expect($moderator->can('changeVisibility', $favourites))->toBeFalse();
+        expect($admin->can('changeVisibility', $favourites))->toBeFalse();
+    });
 
-        expect($user->can('changeVisibility', $favourites))->toBeTrue();
+    it('allows the owner to change a non-default list visibility', function (): void {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        expect($owner->can('changeVisibility', $list))->toBeTrue();
+        expect($other->can('changeVisibility', $list))->toBeFalse();
     });
 });
 

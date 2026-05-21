@@ -111,6 +111,8 @@
             <flux:select
                 wire:model="form.visibility"
                 :label="__('Visibility')"
+                :disabled="$modList->is_default"
+                :description="$modList->is_default ? __('Your Favourites list is always private and only visible to you.') : null"
             >
                 @foreach (\App\Enums\ListVisibility::cases() as $visibility)
                     <flux:select.option value="{{ $visibility->value }}">

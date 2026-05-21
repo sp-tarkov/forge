@@ -608,4 +608,18 @@ describe('list.edit page', function (): void {
 
         expect($user->can('delete', $favourites))->toBeFalse();
     });
+
+    it('keeps the default Favourites list private even when the form submits another visibility', function (): void {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $favourites = $user->favouritesList;
+
+        $this->actingAs($user);
+
+        Livewire::test('pages::list.edit', ['listId' => $favourites->id])
+            ->set('form.visibility', ListVisibility::Public->value)
+            ->call('save');
+
+        $favourites->refresh();
+        expect($favourites->visibility)->toBe(ListVisibility::Private);
+    });
 });

@@ -82,10 +82,15 @@ final class ModListPolicy
     /**
      * Determine whether the user can change the list's visibility.
      *
-     * Allowed on all lists including Favourites.
+     * The default Favourites list is locked to Private and its visibility can
+     * never be changed by anyone. Every other list the owner controls.
      */
     public function changeVisibility(User $user, ModList $modList): bool
     {
+        if ($modList->is_default) {
+            return false;
+        }
+
         return $this->isOwner($user, $modList);
     }
 
@@ -138,17 +143,14 @@ final class ModListPolicy
     /**
      * Determine whether the user can delete the list.
      *
-     * The owner can delete their own lists, except the default Favourites
-     * list. Moderators and administrators can delete any list, including a
-     * default Favourites list, as a moderation action.
+     * The default Favourites list can never be deleted by anyone, including
+     * staff. Any other list can be deleted by its owner or, as a moderation
+     * action, by a moderator or administrator.
      */
     public function delete(User $user, ModList $modList): bool
     {
-        if ($this->isOwner($user, $modList) && ! $modList->is_default) {
-            return true;
-        }
-
-        return $user->isModOrAdmin();
+        return ! $modList->is_default
+            && ($this->isOwner($user, $modList) || $user->isModOrAdmin());
     }
 
     /**
