@@ -9,6 +9,7 @@ use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Services\ModListService;
+use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -17,8 +18,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 /**
- * Add-to-list modal. The `source` property identifies whether the modal was
- * triggered from a mod or addon detail page.
+ * Add-to-list modal shared by the mod and addon detail pages.
+ *
+ * The `sourceType` property identifies whether the modal was triggered from a
+ * mod or an addon. Existing lists can be toggled inline, a new list can be
+ * created on the spot, and adding a mod with unmet dependencies routes through
+ * a per-dependency checkbox step before the write happens.
  */
 new class extends Component
 {
@@ -45,8 +50,6 @@ new class extends Component
      */
     public array $selectedDependencyIds = [];
 
-    public ?string $flashMessage = null;
-
     public function mount(int $sourceId, string $sourceType = 'mod'): void
     {
         $this->sourceId = $sourceId;
@@ -64,29 +67,23 @@ new class extends Component
             return new Collection;
         }
 
-        $rows = $user->modLists()
+        return $user->modLists()
             ->withCount('items')
             ->when($this->search !== '', fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
             ->orderByDesc('is_default')
             ->orderBy('title')
             ->get();
-
-        /** @var Collection<int, ModList> $lists */
-        $lists = new Collection;
-        foreach ($rows as $row) {
-            $lists->push($row);
-        }
-
-        return $lists;
     }
 
     /**
+     * The dependency mods offered for the cascade step.
+     *
      * @return Collection<int, Mod>
      */
     #[Computed]
     public function suggestedDependencies(): Collection
     {
-        if (! $this->activeListId || $this->sourceType !== 'mod') {
+        if ($this->activeListId === null || $this->sourceType !== 'mod') {
             return new Collection;
         }
 
@@ -103,6 +100,9 @@ new class extends Component
         return resolve(ModListService::class)->suggestedDependencies($list, $mod);
     }
 
+    /**
+     * Whether the given list already contains the source mod or addon.
+     */
     public function membershipFor(int $listId): bool
     {
         $list = ModList::query()->find($listId);
@@ -115,10 +115,14 @@ new class extends Component
             : $list->containsAddon($this->sourceId);
     }
 
+    /**
+     * Add the source mod or addon to the chosen list.
+     *
+     * When the source is a mod with unmet dependencies, the first call opens
+     * the dependency-cascade step instead of writing immediately.
+     */
     public function addToList(int $listId, ModListService $service): void
     {
-        $this->flashMessage = null;
-
         $user = Auth::user();
         if ($user === null) {
             return;
@@ -137,12 +141,7 @@ new class extends Component
 
             if ($suggested->isNotEmpty() && ! $this->showDependencyStep) {
                 $this->activeListId = $listId;
-                $ids = [];
-                foreach ($suggested as $dep) {
-                    $ids[] = (int) $dep->id;
-                }
-
-                $this->selectedDependencyIds = $ids;
+                $this->selectedDependencyIds = $suggested->map(fn (Mod $dep): int => (int) $dep->id)->all();
                 $this->showDependencyStep = true;
 
                 return;
@@ -154,28 +153,45 @@ new class extends Component
 
             try {
                 $service->addMod($list, $mod, $this->note === '' ? null : $this->note, $deps);
-                $this->flashMessage = __('Added to ":title".', ['title' => $list->title]);
-                $this->resetSubFlow();
-            } catch (ModListCapacityExceededException $e) {
-                $this->flashMessage = $e->getMessage();
+            } catch (ModListCapacityExceededException) {
+                $this->toastListFull();
+
+                return;
             }
+
+            $this->toastAdded($list);
+            $this->resetSubFlow();
 
             return;
         }
 
-        // Addon flow
         $addon = Addon::query()->findOrFail($this->sourceId);
 
         Gate::authorize('addItem', $list);
 
         try {
             $service->addAddon($list, $addon, $this->note === '' ? null : $this->note, includeParentMod: true);
-            $this->flashMessage = __('Added to ":title".', ['title' => $list->title]);
-        } catch (ParentModMissingException|ModListCapacityExceededException $e) {
-            $this->flashMessage = $e->getMessage();
+        } catch (ModListCapacityExceededException) {
+            $this->toastListFull();
+
+            return;
+        } catch (ParentModMissingException) {
+            Flux::toast(
+                heading: __('Could not add'),
+                text: __('This addon needs its parent mod, which could not be added.'),
+                variant: 'danger',
+            );
+
+            return;
         }
+
+        $this->toastAdded($list);
+        $this->resetSubFlow();
     }
 
+    /**
+     * Remove the source mod or addon from the chosen list.
+     */
     public function removeFromList(int $listId, ModListService $service): void
     {
         $user = Auth::user();
@@ -198,10 +214,18 @@ new class extends Component
             Gate::authorize('removeItem', $list);
 
             $service->removeItem($list, $item);
-            $this->flashMessage = __('Removed from ":title".', ['title' => $list->title]);
+
+            Flux::toast(
+                heading: __('Removed'),
+                text: __('Removed from ":title".', ['title' => $list->title]),
+                variant: 'success',
+            );
         }
     }
 
+    /**
+     * Confirm the dependency-cascade step and complete the deferred add.
+     */
     public function confirmDependencies(ModListService $service): void
     {
         if ($this->activeListId === null) {
@@ -211,6 +235,9 @@ new class extends Component
         $this->addToList($this->activeListId, $service);
     }
 
+    /**
+     * Dismiss the dependency-cascade step without writing anything.
+     */
     public function cancelDependencyStep(): void
     {
         $this->resetSubFlow();
@@ -228,6 +255,9 @@ new class extends Component
         $this->newVisibility = 'private';
     }
 
+    /**
+     * Create a new list inline and add the source mod or addon to it.
+     */
     public function createAndAdd(ModListService $service): void
     {
         $user = Auth::user();
@@ -258,5 +288,27 @@ new class extends Component
         $this->activeListId = null;
         $this->selectedDependencyIds = [];
         $this->note = '';
+
+        unset($this->userLists);
+    }
+
+    private function toastAdded(ModList $list): void
+    {
+        Flux::toast(
+            heading: __('Added'),
+            text: __('Added to ":title".', ['title' => $list->title]),
+            variant: 'success',
+        );
+    }
+
+    private function toastListFull(): void
+    {
+        $max = config()->integer('mod-lists.max_items_per_list', 250);
+
+        Flux::toast(
+            heading: __('List full'),
+            text: __('This list is full (:count items max). Remove an item or use another list.', ['count' => $max]),
+            variant: 'warning',
+        );
     }
 };

@@ -16,23 +16,13 @@
                 </flux:subheading>
             </div>
 
-            @if ($flashMessage)
-                <flux:callout
-                    variant="success"
-                    icon="check-circle"
-                >
-                    {{ $flashMessage }}
-                </flux:callout>
-            @endif
-
             @if ($showDependencyStep && $sourceType === 'mod')
-                @php($deps = $this->suggestedDependencies)
                 <div class="space-y-3">
                     <div class="text-sm">
-                        {{ __('This mod requires :count other mod(s). Add them to the list too?', ['count' => $deps->count()]) }}
+                        {{ trans_choice('This mod requires :count other mod. Add it to the list too?|This mod requires :count other mods. Add them to the list too?', $this->suggestedDependencies->count(), ['count' => $this->suggestedDependencies->count()]) }}
                     </div>
                     <div class="space-y-2">
-                        @foreach ($deps as $dep)
+                        @foreach ($this->suggestedDependencies as $dep)
                             <label class="flex items-center gap-2 rounded-md p-2 bg-gray-50 dark:bg-gray-900">
                                 <input
                                     type="checkbox"
@@ -115,8 +105,10 @@
 
                 <div class="max-h-72 overflow-y-auto space-y-1">
                     @forelse ($this->userLists as $list)
-                        @php($isMember = $this->membershipFor($list->id))
-                        <div class="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900">
+                        <div
+                            wire:key="add-to-list-row-{{ $list->id }}"
+                            class="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900"
+                        >
                             <div class="flex items-center gap-2 min-w-0">
                                 @if ($list->isFavourites())
                                     <div class="shrink-0 size-8 rounded bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
@@ -145,7 +137,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if ($isMember)
+                            @if ($this->membershipFor($list->id))
                                 <flux:button
                                     size="sm"
                                     variant="outline"

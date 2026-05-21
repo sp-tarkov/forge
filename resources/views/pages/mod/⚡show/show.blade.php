@@ -14,9 +14,20 @@
         </h2>
         <div class="flex items-center gap-2">
             @auth
-                <livewire:mod-list-button
-                    :mod-id="$mod->id"
-                    wire:key="mod-show-list-button-{{ $mod->id }}"
+                <flux:modal.trigger name="mod-add-to-list-mod-{{ $mod->id }}">
+                    <flux:button
+                        icon="heart"
+                        size="sm"
+                        square="true"
+                        variant="outline"
+                        :aria-label="__('Save to a list')"
+                        :title="__('Save to a list')"
+                    />
+                </flux:modal.trigger>
+                <livewire:mod-add-to-list
+                    :source-id="$mod->id"
+                    source-type="mod"
+                    wire:key="mod-show-add-to-list-{{ $mod->id }}"
                 />
                 @if ($mod->addons_enabled)
                     @if (auth()->user()->hasMfaEnabled())
