@@ -507,7 +507,7 @@ describe('list.show page', function (): void {
             ->assertSet('statusMessage', 'Removed Removable Mod from list.');
     });
 
-    it('summarises mod and addon counts in the header line', function (): void {
+    it('summarizes mod and addon counts in the header line', function (): void {
         $list = ModList::factory()->public()->create();
 
         $mod = Mod::factory()->create();
