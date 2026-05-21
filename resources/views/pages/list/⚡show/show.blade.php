@@ -8,7 +8,7 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2
+        <div
             class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2"
         >
             @if ($modList->isFavourites())
@@ -18,7 +18,7 @@
                 <flux:icon.list-bullet class="w-5 h-5" />
                 {{ __('Mod List') }}
             @endif
-        </h2>
+        </div>
         @if ($canManage)
             <div class="flex items-center gap-2">
                 @if ($modList->visibility === \App\Enums\ListVisibility::Hidden)
@@ -47,6 +47,11 @@
 </x-slot>
 
 <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 py-6 space-y-6">
+    <div
+        aria-live="polite"
+        class="sr-only"
+    >{{ $statusMessage }}</div>
+
     {{-- List info --}}
     <div
         class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
@@ -61,7 +66,7 @@
             @elseif ($modList->thumbnail)
                 <img
                     src="{{ $modList->thumbnailUrl }}"
-                    alt="{{ $modList->title }}"
+                    alt=""
                     class="shrink-0 size-16 rounded-lg object-cover"
                 >
             @else
@@ -128,9 +133,9 @@
         >
             @if ($modList->isFavourites())
                 <flux:icon.heart class="mx-auto size-12 text-rose-400" />
-                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <h2 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {{ __('No favourites yet') }}
-                </h3>
+                </h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     @if ($canManage)
                         {{ __('Click the heart icon on any mod page to save it here.') }}
@@ -140,9 +145,9 @@
                 </p>
             @else
                 <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
-                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <h2 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {{ __('This list is empty') }}
-                </h3>
+                </h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     @if ($canManage)
                         {{ __('Browse mods and use the "Add to list" action to start curating.') }}
@@ -194,7 +199,7 @@
                                 <button
                                     type="button"
                                     wire:sort:handle
-                                    aria-label="{{ __('Drag to reorder') }}"
+                                    aria-label="{{ __('Reorder :name', ['name' => $mod->name]) }}"
                                     class="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 touch-none"
                                 >
                                     <flux:icon.bars-3 variant="micro" />
@@ -206,6 +211,7 @@
                                     variant="subtle"
                                     size="sm"
                                     square
+                                    :aria-label="__('Remove :name from list', ['name' => $mod->name])"
                                     wire:sort:ignore
                                     wire:click="removeItem({{ $modItem->id }})"
                                     wire:confirm="{{ __('Remove this mod (and its addons) from the list?') }}"
@@ -237,6 +243,7 @@
                                                     variant="subtle"
                                                     size="sm"
                                                     square
+                                                    :aria-label="__('Remove :name from list', ['name' => $addon->name])"
                                                     wire:click="removeItem({{ $addonItem->id }})"
                                                     wire:confirm="{{ __('Remove this addon from the list?') }}"
                                                 />

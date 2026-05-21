@@ -53,9 +53,9 @@
         <div class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl">
             <div class="text-center py-8">
                 <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
-                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <h2 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {{ __('No lists yet') }}
-                </h3>
+                </h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     @if ($this->isOwner)
                         {{ __('Create a list to start organizing your favourite mods.') }}

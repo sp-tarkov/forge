@@ -36,6 +36,12 @@ new #[Layout('layouts::base')] class extends Component
 
     public ?string $shareToken = null;
 
+    /**
+     * Latest status message announced to assistive technology via an
+     * aria-live region after a list mutation (e.g. removing an item).
+     */
+    public string $statusMessage = '';
+
     public function mount(int $listId, string $slug, ?string $shareToken = null): void
     {
         $this->modList = ModList::query()
@@ -205,9 +211,9 @@ new #[Layout('layouts::base')] class extends Component
      * Eager-load constraint for the polymorphic listable relation, scoping the
      * heavy nested relations loaded for each Mod / Addon group card.
      *
-     * @return \Closure(Relation<*, *, *>): void
+     * @return Closure(Relation<*, *, *>):void
      */
-    private function listableMorphConstraint(): \Closure
+    private function listableMorphConstraint(): Closure
     {
         return function (Relation $relation): void {
             if (! $relation instanceof MorphTo) {
@@ -237,12 +243,18 @@ new #[Layout('layouts::base')] class extends Component
         Gate::authorize('removeItem', $this->modList);
 
         /** @var ModListItem|null $item */
-        $item = $this->modList->items()->find($itemId);
+        $item = $this->modList->items()->with('listable')->find($itemId);
         if ($item === null) {
             return;
         }
 
+        $removedName = $item->listable?->name;
+
         $service->removeItem($this->modList, $item);
+
+        $this->statusMessage = $removedName === null
+            ? __('Item removed from list.')
+            : __('Removed :name from list.', ['name' => $removedName]);
 
         unset($this->grouped, $this->listItemRows);
     }

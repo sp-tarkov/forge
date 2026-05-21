@@ -226,7 +226,7 @@ describe('list.show page', function (): void {
         $response = $this->get($list->detailUrl());
 
         $response->assertOk();
-        $response->assertSee('1 dependency');
+        $response->assertSee('1 dependency satisfied');
         $response->assertSee('Helper Library');
     });
 
@@ -271,7 +271,7 @@ describe('list.show page', function (): void {
         $response = $this->get($list->detailUrl());
 
         $response->assertOk();
-        $response->assertSee('1 dependency');
+        $response->assertSee('1 missing dependency');
         $response->assertSee('Missing Helper');
     });
 
@@ -385,7 +385,7 @@ describe('list.show page', function (): void {
         $pageTwo->assertSee('Cross Page Main');
         // The required mod lives on page one, but the badge must still show
         // satisfied because membership is checked list-wide.
-        $pageTwo->assertSee('1 dependency');
+        $pageTwo->assertSee('1 dependency satisfied');
     });
 
     it('exposes the drag handle only to the list owner', function (): void {
@@ -486,6 +486,25 @@ describe('list.show page', function (): void {
             ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
             ->call('reorder', $mod->id, 0)
             ->assertForbidden();
+    });
+
+    it('announces an aria-live status message after removing an item', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $mod = Mod::factory()->create(['name' => 'Removable Mod']);
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'position' => 0,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->assertSet('statusMessage', '')
+            ->call('removeItem', $item->id)
+            ->assertSet('statusMessage', 'Removed Removable Mod from list.');
     });
 
     it('summarises mod and addon counts in the header line', function (): void {

@@ -49,6 +49,7 @@
                                     size="sm"
                                     variant="ghost"
                                     icon="x-mark"
+                                    :aria-label="__('Remove selected thumbnail')"
                                     wire:click="removeThumbnail"
                                     type="button"
                                 />
@@ -68,6 +69,7 @@
                                     size="sm"
                                     variant="ghost"
                                     icon="trash"
+                                    :aria-label="__('Delete current thumbnail')"
                                     wire:click="deleteExistingThumbnail"
                                     wire:confirm="{{ __('Are you sure you want to delete the current thumbnail?') }}"
                                     type="button"

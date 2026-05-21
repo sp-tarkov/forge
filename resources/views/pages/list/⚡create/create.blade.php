@@ -62,6 +62,7 @@
                         </flux:select.option>
                     @endforeach
                 </flux:select>
+                <flux:error name="form.spt_version_id" />
             </flux:field>
 
             <div class="flex items-center justify-end gap-3 pt-2">

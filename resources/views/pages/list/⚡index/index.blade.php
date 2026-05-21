@@ -8,10 +8,10 @@
 
 <x-slot:header>
     <div class="flex items-center justify-between w-full">
-        <h2 class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
+        <div class="font-semibold text-xl text-gray-900 dark:text-gray-200 leading-tight flex items-center gap-2">
             <flux:icon.list-bullet class="w-5 h-5" />
             {{ __('Mod Lists') }}
-        </h2>
+        </div>
         @auth
             <flux:button
                 size="sm"
@@ -99,9 +99,9 @@
     @else
         <div class="p-8 bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-900 drop-shadow-2xl text-center">
             <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
-            <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+            <h2 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {{ __('No lists match your filters') }}
-            </h3>
+            </h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {{ __('Try broadening your search or clearing filters.') }}
             </p>
