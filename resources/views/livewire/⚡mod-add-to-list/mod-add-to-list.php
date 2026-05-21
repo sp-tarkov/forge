@@ -8,6 +8,7 @@ use App\Exceptions\ParentModMissingException;
 use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModList;
+use App\Models\ModListItem;
 use App\Services\ModListService;
 use Flux\Flux;
 use Illuminate\Support\Collection;
@@ -116,6 +117,27 @@ new class extends Component
     }
 
     /**
+     * Whether the source mod or addon is on at least one of the viewer's lists.
+     *
+     * Drives the reactive fill state of the trigger heart. Resolved with a
+     * single existence query scoped to the authenticated user's lists.
+     */
+    #[Computed]
+    public function isOnAnyList(): bool
+    {
+        $user = Auth::user();
+        if ($user === null) {
+            return false;
+        }
+
+        return ModListItem::query()
+            ->where('listable_type', $this->sourceType === 'mod' ? Mod::class : Addon::class)
+            ->where('listable_id', $this->sourceId)
+            ->whereIn('mod_list_id', $user->modLists()->select('id'))
+            ->exists();
+    }
+
+    /**
      * Add the source mod or addon to the chosen list.
      *
      * When the source is a mod with unmet dependencies, the first call opens
@@ -215,6 +237,8 @@ new class extends Component
 
             $service->removeItem($list, $item);
 
+            unset($this->isOnAnyList, $this->userLists);
+
             Flux::toast(
                 heading: __('Removed'),
                 text: __('Removed from ":title".', ['title' => $list->title]),
@@ -289,7 +313,7 @@ new class extends Component
         $this->selectedDependencyIds = [];
         $this->note = '';
 
-        unset($this->userLists);
+        unset($this->isOnAnyList, $this->userLists);
     }
 
     private function toastAdded(ModList $list): void

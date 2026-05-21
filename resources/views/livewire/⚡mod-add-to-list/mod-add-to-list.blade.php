@@ -1,5 +1,22 @@
 <div>
     @auth
+    @if ($sourceType === 'mod')
+        <flux:modal.trigger name="mod-add-to-list-{{ $sourceType }}-{{ $sourceId }}">
+            <flux:button
+                size="sm"
+                square="true"
+                variant="outline"
+                :aria-label="$this->isOnAnyList ? __('Saved to a list') : __('Save to a list')"
+                :title="$this->isOnAnyList ? __('Saved to a list') : __('Save to a list')"
+            >
+                <flux:icon.heart
+                    :variant="$this->isOnAnyList ? 'solid' : 'outline'"
+                    @class(['size-4', 'text-rose-500' => $this->isOnAnyList])
+                />
+            </flux:button>
+        </flux:modal.trigger>
+    @endif
+
     <flux:modal
         name="mod-add-to-list-{{ $sourceType }}-{{ $sourceId }}"
         class="md:w-[520px]"

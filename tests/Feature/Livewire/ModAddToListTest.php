@@ -85,6 +85,110 @@ describe('ModAddToList membership toggle for mods', function (): void {
     });
 });
 
+describe('ModAddToList heart membership indicator', function (): void {
+    it('reports the mod is not on any list when absent', function (): void {
+        $user = User::factory()->create();
+        ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+
+        $component = Livewire::actingAs($user)->test('mod-add-to-list', ['sourceId' => $mod->id]);
+
+        expect($component->instance()->isOnAnyList)->toBeFalse();
+    });
+
+    it('reports the mod is on a list when present', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+
+        $list->items()->create([
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'position' => 1,
+        ]);
+
+        $component = Livewire::actingAs($user)->test('mod-add-to-list', ['sourceId' => $mod->id]);
+
+        expect($component->instance()->isOnAnyList)->toBeTrue();
+    });
+
+    it('ignores lists owned by another user', function (): void {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        $otherList = ModList::factory()->for($other, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+
+        $otherList->items()->create([
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'position' => 1,
+        ]);
+
+        $component = Livewire::actingAs($user)->test('mod-add-to-list', ['sourceId' => $mod->id]);
+
+        expect($component->instance()->isOnAnyList)->toBeFalse();
+    });
+
+    it('reflects the indicator turning on after adding the mod', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+
+        $component = Livewire::actingAs($user)->test('mod-add-to-list', ['sourceId' => $mod->id]);
+
+        expect($component->instance()->isOnAnyList)->toBeFalse();
+
+        $component->call('addToList', $list->id);
+
+        expect($component->instance()->isOnAnyList)->toBeTrue();
+    });
+
+    it('reflects the indicator turning off after removing the mod', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+
+        $list->items()->create([
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'position' => 1,
+        ]);
+
+        $component = Livewire::actingAs($user)->test('mod-add-to-list', ['sourceId' => $mod->id]);
+
+        expect($component->instance()->isOnAnyList)->toBeTrue();
+
+        $component->call('removeFromList', $list->id);
+
+        expect($component->instance()->isOnAnyList)->toBeFalse();
+    });
+
+    it('reports the addon is on a list when present', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $addon = Addon::factory()->create();
+
+        $list->items()->create([
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+            'position' => 1,
+        ]);
+
+        $component = Livewire::actingAs($user)
+            ->test('mod-add-to-list', ['sourceId' => $addon->id, 'sourceType' => 'addon']);
+
+        expect($component->instance()->isOnAnyList)->toBeTrue();
+    });
+
+    it('reports false for a guest viewer', function (): void {
+        $mod = Mod::factory()->create();
+
+        $component = Livewire::test('mod-add-to-list', ['sourceId' => $mod->id]);
+
+        expect($component->instance()->isOnAnyList)->toBeFalse();
+    });
+});
+
 describe('ModAddToList membership toggle for addons', function (): void {
     it('adds an addon to a list and cascades its parent mod', function (): void {
         $user = User::factory()->create();
