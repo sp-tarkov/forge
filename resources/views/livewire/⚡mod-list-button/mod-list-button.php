@@ -10,6 +10,7 @@ use App\Services\ModListService;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -159,6 +160,8 @@ new class extends Component
                 ->first();
 
             if ($item !== null) {
+                Gate::authorize('removeItem', $list);
+
                 $service->removeItem($list, $item);
                 Flux::toast(
                     heading: __('Removed'),
@@ -229,6 +232,8 @@ new class extends Component
 
     private function commitAdd(ModListService $service, ModList $list, Mod $mod, bool $includeDeps): void
     {
+        Gate::authorize('addItem', $list);
+
         $deps = $includeDeps
             ? $service->suggestedDependencies($list, $mod)
             : new Collection;

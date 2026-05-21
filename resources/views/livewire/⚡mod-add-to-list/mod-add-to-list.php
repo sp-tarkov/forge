@@ -11,6 +11,7 @@ use App\Models\ModList;
 use App\Services\ModListService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -149,6 +150,8 @@ new class extends Component
 
             $deps = $suggested->filter(fn (Mod $m): bool => in_array($m->id, $this->selectedDependencyIds, true));
 
+            Gate::authorize('addItem', $list);
+
             try {
                 $service->addMod($list, $mod, $this->note === '' ? null : $this->note, $deps);
                 $this->flashMessage = __('Added to ":title".', ['title' => $list->title]);
@@ -162,6 +165,9 @@ new class extends Component
 
         // Addon flow
         $addon = Addon::query()->findOrFail($this->sourceId);
+
+        Gate::authorize('addItem', $list);
+
         try {
             $service->addAddon($list, $addon, $this->note === '' ? null : $this->note, includeParentMod: true);
             $this->flashMessage = __('Added to ":title".', ['title' => $list->title]);
@@ -189,6 +195,8 @@ new class extends Component
             ->first();
 
         if ($item !== null) {
+            Gate::authorize('removeItem', $list);
+
             $service->removeItem($list, $item);
             $this->flashMessage = __('Removed from ":title".', ['title' => $list->title]);
         }
@@ -232,12 +240,7 @@ new class extends Component
             'newVisibility' => ['required', Rule::enum(ListVisibility::class)],
         ]);
 
-        $max = config()->integer('mod-lists.max_lists_per_user', 50);
-        if ($user->modLists()->count() >= $max) {
-            $this->flashMessage = __('You have reached the maximum of :count lists.', ['count' => $max]);
-
-            return;
-        }
+        Gate::authorize('create', ModList::class);
 
         $list = new ModList;
         $list->owner_id = $user->id;
