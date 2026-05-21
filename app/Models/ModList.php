@@ -285,7 +285,9 @@ final class ModList extends Model implements Commentable
     }
 
     /**
-     * Get the URL to view this list.
+     * Get the URL to view this commentable model.
+     *
+     * Satisfies the Commentable contract by delegating to detailUrl().
      */
     public function getCommentableUrl(): string
     {
@@ -323,26 +325,6 @@ final class ModList extends Model implements Commentable
     {
         return $query->where('visibility', ListVisibility::Public)
             ->where('is_default', false);
-    }
-
-    /**
-     * Scope a query to lists visible to a specific viewer.
-     *
-     * Public lists are always visible; hidden/private lists only to the owner.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    protected function scopeVisibleTo(Builder $query, ?User $viewer): Builder
-    {
-        if (! $viewer instanceof User) {
-            return $query->where('visibility', ListVisibility::Public);
-        }
-
-        return $query->where(function (Builder $q) use ($viewer): void {
-            $q->where('visibility', ListVisibility::Public)
-                ->orWhere('owner_id', $viewer->id);
-        });
     }
 
     /**
