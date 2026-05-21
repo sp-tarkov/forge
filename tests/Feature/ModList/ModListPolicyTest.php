@@ -46,6 +46,105 @@ describe('ModListPolicy view', function (): void {
         $this->app->instance('request', Request::create('/list/'.$list->id.'/'.$list->slug, 'GET', ['share_token' => 'bogus']));
         expect($other->can('view', $list))->toBeFalse();
     });
+
+    it('hides a disabled public list from the public', function (): void {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->disabled()->create();
+
+        $this->actingAs($other);
+        expect($other->can('view', $list))->toBeFalse();
+    });
+
+    it('allows the owner and staff to view a disabled list', function (): void {
+        $owner = User::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->disabled()->create();
+
+        $this->actingAs($owner);
+        expect($owner->can('view', $list))->toBeTrue();
+
+        $this->actingAs($moderator);
+        expect($moderator->can('view', $list))->toBeTrue();
+
+        $this->actingAs($admin);
+        expect($admin->can('view', $list))->toBeTrue();
+    });
+
+    it('denies a disabled hidden list even with a valid share token', function (): void {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->hidden()->disabled()->create();
+
+        $this->actingAs($other);
+        $this->app->instance('request', Request::create('/list/'.$list->id.'/'.$list->slug, 'GET', ['share_token' => $list->share_token]));
+
+        expect($other->can('view', $list))->toBeFalse();
+    });
+});
+
+describe('ModListPolicy disable/enable', function (): void {
+    it('allows moderators and admins to disable and enable a list', function (): void {
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
+        $list = ModList::factory()->public()->create();
+
+        expect($moderator->can('disable', $list))->toBeTrue();
+        expect($moderator->can('enable', $list))->toBeTrue();
+        expect($admin->can('disable', $list))->toBeTrue();
+        expect($admin->can('enable', $list))->toBeTrue();
+    });
+
+    it('denies regular users and the owner from disabling or enabling a list', function (): void {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        expect($owner->can('disable', $list))->toBeFalse();
+        expect($owner->can('enable', $list))->toBeFalse();
+        expect($other->can('disable', $list))->toBeFalse();
+        expect($other->can('enable', $list))->toBeFalse();
+    });
+
+    it('denies unverified moderators from disabling or enabling a list', function (): void {
+        $moderator = User::factory()->moderator()->unverified()->create();
+        $list = ModList::factory()->public()->create();
+
+        expect($moderator->can('disable', $list))->toBeFalse();
+        expect($moderator->can('enable', $list))->toBeFalse();
+    });
+});
+
+describe('ModListPolicy delete', function (): void {
+    it('allows the owner to delete their own non-default list', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        expect($owner->can('delete', $list))->toBeTrue();
+    });
+
+    it('denies a regular non-owner from deleting a list', function (): void {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        expect($other->can('delete', $list))->toBeFalse();
+    });
+
+    it('allows moderators and admins to delete any list including a default Favourites list', function (): void {
+        $owner = User::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
+
+        $curated = ModList::factory()->for($owner, 'owner')->public()->create();
+        $favourites = $owner->favouritesList;
+
+        expect($moderator->can('delete', $curated))->toBeTrue();
+        expect($moderator->can('delete', $favourites))->toBeTrue();
+        expect($admin->can('delete', $curated))->toBeTrue();
+        expect($admin->can('delete', $favourites))->toBeTrue();
+    });
 });
 
 describe('ModListPolicy capacity', function (): void {

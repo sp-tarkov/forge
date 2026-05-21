@@ -24,10 +24,19 @@ final class ModListPolicy
      *
      * Public lists are visible to everyone. Hidden lists require either
      * ownership or a matching share_token on the current request. Private
-     * lists are visible only to the owner.
+     * lists are visible only to the owner. A list disabled by a moderator is
+     * hidden from everyone except its owner and staff, regardless of
+     * visibility or share token.
      */
     public function view(?User $user, ModList $modList): bool
     {
+        if ($modList->disabled) {
+            if ($this->isOwner($user, $modList)) {
+                return true;
+            }
+            return $user?->isModOrAdmin() ?? false;
+        }
+
         return match ($modList->visibility) {
             ListVisibility::Public => true,
             ListVisibility::Hidden => $this->isOwner($user, $modList) || $this->hasValidShareToken($modList),
@@ -128,11 +137,47 @@ final class ModListPolicy
     /**
      * Determine whether the user can delete the list.
      *
-     * The default Favourites list is undeletable.
+     * The owner can delete their own lists, except the default Favourites
+     * list. Moderators and administrators can delete any list, including a
+     * default Favourites list, as a moderation action.
      */
     public function delete(User $user, ModList $modList): bool
     {
-        return $this->isOwner($user, $modList) && ! $modList->is_default;
+        if ($this->isOwner($user, $modList) && ! $modList->is_default) {
+            return true;
+        }
+
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can disable the list.
+     *
+     * Disabling is a staff-only moderation action.
+     */
+    public function disable(User $user, ModList $modList): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isModOrAdmin();
+    }
+
+    /**
+     * Determine whether the user can enable the list.
+     *
+     * Enabling is a staff-only moderation action.
+     */
+    public function enable(User $user, ModList $modList): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        return $user->isModOrAdmin();
     }
 
     /**

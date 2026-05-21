@@ -40,6 +40,7 @@ use Override;
  * @property string|null $share_token
  * @property bool $is_default
  * @property bool $comments_disabled
+ * @property bool $disabled
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read string $thumbnailUrl
@@ -247,9 +248,14 @@ final class ModList extends Model implements Commentable, Reportable
 
     /**
      * Only public, non-default (i.e. non-Favourites) lists are searchable.
+     * Lists disabled by a moderator are never searchable.
      */
     public function shouldBeSearchable(): bool
     {
+        if ($this->disabled) {
+            return false;
+        }
+
         return $this->visibility === ListVisibility::Public && ! $this->is_default;
     }
 
@@ -342,18 +348,21 @@ final class ModList extends Model implements Commentable, Reportable
     /**
      * Scope a query to only public lists (includes public Favourites).
      * Used for visibility checks where Favourites should still count.
+     * Lists disabled by a moderator are excluded.
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
     protected function scopePublic(Builder $query): Builder
     {
-        return $query->where('visibility', ListVisibility::Public);
+        return $query->where('visibility', ListVisibility::Public)
+            ->where('disabled', false);
     }
 
     /**
      * Scope a query to lists surfaced in public discovery (index, search, featured).
      * Favourites (is_default) are always excluded from discovery, even when public.
+     * Lists disabled by a moderator are excluded.
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
@@ -361,7 +370,8 @@ final class ModList extends Model implements Commentable, Reportable
     protected function scopeDiscoverable(Builder $query): Builder
     {
         return $query->where('visibility', ListVisibility::Public)
-            ->where('is_default', false);
+            ->where('is_default', false)
+            ->where('disabled', false);
     }
 
     /**
@@ -391,6 +401,7 @@ final class ModList extends Model implements Commentable, Reportable
             'visibility' => ListVisibility::class,
             'is_default' => 'boolean',
             'comments_disabled' => 'boolean',
+            'disabled' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

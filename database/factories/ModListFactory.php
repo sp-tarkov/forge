@@ -56,6 +56,13 @@ final class ModListFactory extends Factory
         ]);
     }
 
+    public function disabled(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'disabled' => true,
+        ]);
+    }
+
     public function favourites(): static
     {
         return $this->state(fn (array $attributes): array => [

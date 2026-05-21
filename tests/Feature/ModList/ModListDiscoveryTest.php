@@ -57,4 +57,32 @@ describe('Scout searchability', function (): void {
 
         expect($list->shouldBeSearchable())->toBeFalse();
     });
+
+    it('marks a disabled public list as not searchable', function (): void {
+        $list = ModList::factory()->public()->disabled()->create();
+
+        expect($list->shouldBeSearchable())->toBeFalse();
+    });
+});
+
+describe('disabled lists are hidden from public scopes', function (): void {
+    it('excludes a disabled list from the discoverable scope', function (): void {
+        $visible = ModList::factory()->public()->create();
+        $disabled = ModList::factory()->public()->disabled()->create();
+
+        $ids = ModList::query()->discoverable()->pluck('id');
+
+        expect($ids)->toContain($visible->id);
+        expect($ids)->not->toContain($disabled->id);
+    });
+
+    it('excludes a disabled list from the public scope', function (): void {
+        $visible = ModList::factory()->public()->create();
+        $disabled = ModList::factory()->public()->disabled()->create();
+
+        $ids = ModList::query()->public()->pluck('id');
+
+        expect($ids)->toContain($visible->id);
+        expect($ids)->not->toContain($disabled->id);
+    });
 });

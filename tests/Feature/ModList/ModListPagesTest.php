@@ -61,6 +61,28 @@ describe('list.show page', function (): void {
         $response->assertForbidden();
     });
 
+    it('forbids the public from viewing a disabled list', function (): void {
+        $list = ModList::factory()->public()->disabled()->create();
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertForbidden();
+    });
+
+    it('allows the owner and staff to view a disabled list', function (): void {
+        $owner = User::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->disabled()->create();
+
+        $ownerResponse = $this->actingAs($owner)->get($list->detailUrl());
+        $ownerResponse->assertOk();
+        $ownerResponse->assertSee('disabled by the moderation team');
+
+        $modResponse = $this->actingAs($moderator)->get($list->detailUrl());
+        $modResponse->assertOk();
+        $modResponse->assertSee('disabled by the moderation team');
+    });
+
     it('redirects to canonical slug when mismatched', function (): void {
         $list = ModList::factory()->public()->create();
 
