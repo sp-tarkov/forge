@@ -277,6 +277,11 @@ final class AddonPolicy
             return false;
         }
 
+        // Owners and authors cannot report their own addon.
+        if ($reportable instanceof Addon && $reportable->isAuthorOrOwner($user)) {
+            return false;
+        }
+
         // Check if the reportable model has the required method.
         if (! method_exists($reportable, 'hasBeenReportedBy')) {
             return false;

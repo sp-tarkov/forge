@@ -223,4 +223,11 @@ describe('ModListPolicy report', function (): void {
 
         expect($user->can('report', $list))->toBeFalse();
     });
+
+    it('disallows the owner from reporting their own list', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->public()->create(['owner_id' => $user->id]);
+
+        expect($user->can('report', $list))->toBeFalse();
+    });
 });

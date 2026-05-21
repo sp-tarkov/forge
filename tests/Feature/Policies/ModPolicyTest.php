@@ -402,3 +402,25 @@ describe('viewActions', function (): void {
         expect($this->policy->viewActions($this->moderator, $mod))->toBeFalse();
     });
 });
+
+describe('report', function (): void {
+    it('returns true for a verified user who is not the owner or author', function (): void {
+        $mod = Mod::factory()->create();
+
+        expect($this->policy->report($this->user, $mod))->toBeTrue();
+    });
+
+    it('returns false for the mod owner', function (): void {
+        $mod = Mod::factory()->create(['owner_id' => $this->user->id]);
+
+        expect($this->policy->report($this->user, $mod))->toBeFalse();
+    });
+
+    it('returns false for an additional author', function (): void {
+        $author = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $mod->additionalAuthors()->attach($author);
+
+        expect($this->policy->report($author, $mod))->toBeFalse();
+    });
+});

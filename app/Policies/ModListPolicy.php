@@ -34,6 +34,7 @@ final class ModListPolicy
             if ($this->isOwner($user, $modList)) {
                 return true;
             }
+
             return $user?->isModOrAdmin() ?? false;
         }
 
@@ -194,6 +195,11 @@ final class ModListPolicy
 
         // Moderators and administrators cannot create reports.
         if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Owners cannot report their own list.
+        if ($reportable instanceof ModList && $this->isOwner($user, $reportable)) {
             return false;
         }
 

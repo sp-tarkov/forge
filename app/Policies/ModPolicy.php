@@ -234,6 +234,11 @@ final class ModPolicy
             return false;
         }
 
+        // Owners and authors cannot report their own mod.
+        if ($reportable instanceof Mod && $reportable->isAuthorOrOwner($user)) {
+            return false;
+        }
+
         // Check if the reportable model has the required method.
         if (! method_exists($reportable, 'hasBeenReportedBy')) {
             return false;

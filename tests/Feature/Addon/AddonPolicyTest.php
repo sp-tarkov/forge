@@ -371,4 +371,28 @@ describe('Addon Policy', function (): void {
             expect($user->can('detach', $addon))->toBeFalse();
         });
     });
+
+    describe('Report Policy', function (): void {
+        it('allows a verified user who is not the owner or author to report an addon', function (): void {
+            $user = User::factory()->create();
+            $addon = Addon::factory()->create();
+
+            expect($user->can('report', $addon))->toBeTrue();
+        });
+
+        it('prevents the addon owner from reporting their own addon', function (): void {
+            $owner = User::factory()->create();
+            $addon = Addon::factory()->for($owner, 'owner')->create();
+
+            expect($owner->can('report', $addon))->toBeFalse();
+        });
+
+        it('prevents an additional author from reporting the addon', function (): void {
+            $author = User::factory()->create();
+            $addon = Addon::factory()->create();
+            $addon->additionalAuthors()->attach($author);
+
+            expect($author->can('report', $addon))->toBeFalse();
+        });
+    });
 });
