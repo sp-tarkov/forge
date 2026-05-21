@@ -7,6 +7,7 @@ namespace App\Policies;
 use App\Enums\ListVisibility;
 use App\Models\ModList;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 
 final class ModListPolicy
 {
@@ -132,6 +133,32 @@ final class ModListPolicy
     public function delete(User $user, ModList $modList): bool
     {
         return $this->isOwner($user, $modList) && ! $modList->is_default;
+    }
+
+    /**
+     * Determine whether the user can report a mod list.
+     *
+     * Authentication and email verification are required.
+     */
+    public function report(User $user, Model $reportable): bool
+    {
+        // Must have verified email address
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        // Moderators and administrators cannot create reports.
+        if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Check if the reportable model has the required method.
+        if (! method_exists($reportable, 'hasBeenReportedBy')) {
+            return false;
+        }
+
+        // User cannot report the same item more than once.
+        return ! $reportable->hasBeenReportedBy($user->id);
     }
 
     private function isOwner(?User $user, ModList $modList): bool

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use App\Contracts\Reportable;
 use App\Enums\ListVisibility;
 use App\Observers\ModListObserver;
 use App\Traits\HasComments;
+use App\Traits\HasReports;
 use Carbon\CarbonImmutable;
 use Database\Factories\ModListFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -49,13 +51,16 @@ use Override;
  * @implements Commentable<self>
  */
 #[ObservedBy([ModListObserver::class])]
-final class ModList extends Model implements Commentable
+final class ModList extends Model implements Commentable, Reportable
 {
     /** @use HasComments<self> */
     use HasComments;
 
     /** @use HasFactory<ModListFactory> */
     use HasFactory;
+
+    /** @use HasReports<ModList> */
+    use HasReports;
 
     use Searchable;
 
@@ -300,6 +305,38 @@ final class ModList extends Model implements Commentable
     public function getCommentTabHash(): string
     {
         return 'comments';
+    }
+
+    /**
+     * Get a human-readable display name for the reportable model.
+     */
+    public function getReportableDisplayName(): string
+    {
+        return 'mod list';
+    }
+
+    /**
+     * Get the title of the reportable model.
+     */
+    public function getReportableTitle(): string
+    {
+        return $this->title ?? 'mod list #'.$this->id;
+    }
+
+    /**
+     * Get an excerpt of the reportable content for display in notifications.
+     */
+    public function getReportableExcerpt(): ?string
+    {
+        return $this->description ? Str::words($this->description, 15, '...') : null;
+    }
+
+    /**
+     * Get the URL to view the reportable content.
+     */
+    public function getReportableUrl(): string
+    {
+        return $this->detailUrl();
     }
 
     /**

@@ -19,8 +19,8 @@
                 {{ __('Mod List') }}
             @endif
         </div>
-        @if ($canManage)
-            <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
+            @if ($canManage)
                 @if ($modList->visibility === \App\Enums\ListVisibility::Hidden)
                     <flux:modal.trigger name="list-share-link-{{ $modList->id }}">
                         <flux:button
@@ -41,8 +41,13 @@
                 >
                     {{ __('Edit') }}
                 </flux:button>
-            </div>
-        @endif
+            @endif
+            <livewire:report-component
+                variant="link"
+                :reportable-id="$modList->id"
+                :reportable-type="\App\Models\ModList::class"
+            />
+        </div>
     </div>
 </x-slot>
 

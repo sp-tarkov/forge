@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\ModList;
+use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -84,5 +85,43 @@ describe('ModListPolicy rename/delete immutability of Favourites', function (): 
         $this->actingAs($user);
 
         expect($user->can('changeVisibility', $favourites))->toBeTrue();
+    });
+});
+
+describe('ModListPolicy report', function (): void {
+    it('allows a verified user to report a list', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->public()->create();
+
+        expect($user->can('report', $list))->toBeTrue();
+    });
+
+    it('disallows unverified users from reporting a list', function (): void {
+        $user = User::factory()->unverified()->create();
+        $list = ModList::factory()->public()->create();
+
+        expect($user->can('report', $list))->toBeFalse();
+    });
+
+    it('disallows moderators and admins from reporting a list', function (): void {
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
+        $list = ModList::factory()->public()->create();
+
+        expect($moderator->can('report', $list))->toBeFalse();
+        expect($admin->can('report', $list))->toBeFalse();
+    });
+
+    it('disallows reporting the same list twice', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->public()->create();
+
+        Report::factory()->create([
+            'reporter_id' => $user->id,
+            'reportable_type' => $list::class,
+            'reportable_id' => $list->id,
+        ]);
+
+        expect($user->can('report', $list))->toBeFalse();
     });
 });

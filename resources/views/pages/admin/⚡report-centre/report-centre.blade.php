@@ -372,6 +372,32 @@
                                                                     @endcan
                                                                 @endif
                                                             @endif
+                                                        @elseif ($report->reportable_type === 'App\Models\ModList')
+                                                            @if ($report->reportable->owner)
+                                                                @if ($report->reportable->owner->isBanned())
+                                                                    @can('unban', $report->reportable->owner)
+                                                                        <flux:button
+                                                                            size="xs"
+                                                                            variant="filled"
+                                                                            icon="shield-check"
+                                                                            wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                                        >
+                                                                            Unban Owner
+                                                                        </flux:button>
+                                                                    @endcan
+                                                                @else
+                                                                    @can('ban', $report->reportable->owner)
+                                                                        <flux:button
+                                                                            size="xs"
+                                                                            variant="danger"
+                                                                            icon="no-symbol"
+                                                                            wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                                        >
+                                                                            Ban Owner
+                                                                        </flux:button>
+                                                                    @endcan
+                                                                @endif
+                                                            @endif
                                                         @endif
 
                                                         <flux:button
@@ -593,6 +619,23 @@
                                                             class="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">
                                                             {{ \Illuminate\Support\Str::limit($report->reportable->teaser, 120) }}
                                                         </p>
+                                                    </div>
+                                                @elseif($report->reportable_type === 'App\Models\ModList')
+                                                    <div class="space-y-2">
+                                                        <div class="flex items-center space-x-2">
+                                                            <flux:icon.list-bullet class="size-4 text-amber-500" />
+                                                            <span
+                                                                class="text-sm font-medium text-gray-900 dark:text-white"
+                                                            >Mod List</span>
+                                                        </div>
+                                                        <p class="text-sm text-gray-900 dark:text-white font-medium">
+                                                            {{ $report->reportable->getReportableTitle() }}</p>
+                                                        @if ($report->reportable->getReportableExcerpt())
+                                                            <p
+                                                                class="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">
+                                                                {{ $report->reportable->getReportableExcerpt() }}
+                                                            </p>
+                                                        @endif
                                                     </div>
                                                 @endif
                                             @else

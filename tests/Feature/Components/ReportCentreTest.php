@@ -7,6 +7,7 @@ use App\Enums\ReportStatus;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\Report;
 use App\Models\User;
 use Livewire\Livewire;
@@ -569,4 +570,94 @@ it('renders without error when addon owner is deleted', function (): void {
     Livewire::test('pages::admin.report-centre')
         ->assertSuccessful()
         ->assertSee($addon->name);
+});
+
+describe('Mod List reports', function (): void {
+    it('displays mod list content preview correctly', function (): void {
+        $reporter = User::factory()->create();
+        $modList = ModList::factory()->public()->create([
+            'title' => 'Curated Essentials',
+            'description' => 'A handpicked collection of must-have mods for every playthrough.',
+        ]);
+
+        Report::factory()->create([
+            'reporter_id' => $reporter->id,
+            'reportable_type' => ModList::class,
+            'reportable_id' => $modList->id,
+            'reason' => ReportReason::SPAM,
+        ]);
+
+        $this->actingAs($this->adminUser);
+
+        Livewire::test('pages::admin.report-centre')
+            ->assertSee('Curated Essentials')
+            ->assertSee('Mod List')
+            ->assertSee('A handpicked collection of must-have mods');
+    });
+
+    it('can mark a mod list report as resolved', function (): void {
+        $reporter = User::factory()->create();
+        $modList = ModList::factory()->public()->create();
+
+        $report = Report::factory()->create([
+            'reporter_id' => $reporter->id,
+            'reportable_type' => ModList::class,
+            'reportable_id' => $modList->id,
+            'status' => ReportStatus::PENDING,
+        ]);
+
+        $this->actingAs($this->adminUser);
+
+        Livewire::test('pages::admin.report-centre')
+            ->call('markAsResolved', $report->id);
+
+        expect($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
+    });
+
+    it('can ban the mod list owner from a report', function (): void {
+        $reporter = User::factory()->create();
+        $owner = User::factory()->create();
+        $modList = ModList::factory()->public()->create(['owner_id' => $owner->id]);
+
+        $report = Report::factory()->create([
+            'reporter_id' => $reporter->id,
+            'reportable_type' => ModList::class,
+            'reportable_id' => $modList->id,
+            'status' => ReportStatus::PENDING,
+            'assignee_id' => $this->adminUser->id,
+        ]);
+
+        $this->actingAs($this->adminUser);
+
+        Livewire::test('pages::admin.report-centre')
+            ->call('openActionModal', $report->id, 'ban_user')
+            ->set('banDuration', '24_hours')
+            ->set('resolveAfterAction', true)
+            ->call('executeAction');
+
+        expect($owner->fresh()->isBanned())->toBeTrue();
+        expect($report->fresh()->status)->toBe(ReportStatus::RESOLVED);
+    });
+
+    it('renders without error when a reported mod list has been deleted', function (): void {
+        $reporter = User::factory()->create();
+        $modList = ModList::factory()->public()->create(['title' => 'Orphaned List']);
+
+        Report::factory()->create([
+            'reporter_id' => $reporter->id,
+            'reportable_type' => ModList::class,
+            'reportable_id' => $modList->id,
+            'status' => ReportStatus::PENDING,
+            'assignee_id' => $this->adminUser->id,
+        ]);
+
+        // Deleting the list (or its owner, which cascades) leaves the report with a null reportable.
+        $modList->delete();
+
+        $this->actingAs($this->adminUser);
+
+        Livewire::test('pages::admin.report-centre')
+            ->assertSuccessful()
+            ->assertSee('Content has been deleted');
+    });
 });

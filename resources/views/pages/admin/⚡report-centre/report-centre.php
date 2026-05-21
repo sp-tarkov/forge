@@ -8,6 +8,7 @@ use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\Report;
 use App\Models\ReportAction;
 use App\Models\TrackingEvent;
@@ -527,6 +528,11 @@ new #[Layout('layouts::base')] class extends Component
         // For comments, ban the author
         if ($reportable instanceof Comment) {
             return $reportable->user;
+        }
+
+        // For mod lists, ban the owner
+        if ($reportable instanceof ModList && $reportable->owner !== null) {
+            return $reportable->owner;
         }
 
         throw new RuntimeException('Cannot determine user to ban from report.');
