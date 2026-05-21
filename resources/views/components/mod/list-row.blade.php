@@ -18,11 +18,13 @@
         href="{{ $mod->detail_url }}"
         wire:navigate
         class="shrink-0"
+        aria-hidden="true"
+        tabindex="-1"
     >
         @if ($mod->thumbnail)
             <img
                 src="{{ $mod->thumbnailUrl }}"
-                alt="{{ $mod->name }}"
+                alt=""
                 class="size-14 sm:size-16 rounded-md object-cover"
             >
         @else
@@ -92,14 +94,18 @@
                     @php($missingDeps = $listModIds
                         ? $dependencyVersions->reject(fn ($depVersion) => $listModIds->contains($depVersion->mod_id))
                         : $dependencyVersions)
+                    @php($missingCount = $missingDeps->count())
                     @php($depsAllSatisfied = $missingDeps->isEmpty())
+                    @php($depBadgeLabel = $depsAllSatisfied
+                        ? trans_choice(':count dependency satisfied|:count dependencies satisfied', $depCount, ['count' => $depCount])
+                        : trans_choice(':count missing dependency|:count missing dependencies', $missingCount, ['count' => $missingCount]))
                     <flux:tooltip>
                         <flux:badge
                             size="sm"
                             :color="$depsAllSatisfied ? 'emerald' : 'red'"
                             :icon="$depsAllSatisfied ? 'check' : 'x-mark'"
                         >
-                            {{ trans_choice(':count dependency|:count dependencies', $depCount, ['count' => $depCount]) }}
+                            {{ $depBadgeLabel }}
                         </flux:badge>
                         <flux:tooltip.content>
                             <div class="text-xs space-y-1">
@@ -108,8 +114,10 @@
                                     <div class="flex items-center gap-1">
                                         @if ($inList)
                                             <flux:icon.check class="size-3 text-emerald-500" />
+                                            <span class="sr-only">{{ __('On list:') }}</span>
                                         @else
                                             <flux:icon.x-mark class="size-3 text-red-500" />
+                                            <span class="sr-only">{{ __('Missing:') }}</span>
                                         @endif
                                         <span>{{ $depVersion->mod?->name }}</span>
                                     </div>

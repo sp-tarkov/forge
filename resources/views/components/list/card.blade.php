@@ -3,10 +3,8 @@
     'showOwner' => true,
 ])
 
-<a
-    {{ $attributes->merge(['class' => 'flex flex-col overflow-hidden bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl hover:bg-gray-50 dark:hover:bg-black']) }}
-    href="{{ $list->detailUrl() }}"
-    wire:navigate
+<div
+    {{ $attributes->merge(['class' => 'relative flex flex-col overflow-hidden bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl hover:bg-gray-50 dark:hover:bg-black']) }}
 >
     @if ($list->isFavourites())
         <div class="aspect-[16/9] w-full bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-950/40 dark:to-rose-900/20 flex items-center justify-center">
@@ -15,7 +13,7 @@
     @elseif ($list->thumbnail)
         <img
             src="{{ $list->thumbnailUrl }}"
-            alt="{{ $list->title }}"
+            alt=""
             class="aspect-[16/9] w-full object-cover"
         >
     @else
@@ -27,7 +25,13 @@
     <div class="flex flex-col flex-1 p-4">
         <div class="flex items-start justify-between gap-2">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-                {{ $list->title }}
+                <a
+                    href="{{ $list->detailUrl() }}"
+                    wire:navigate
+                    class="after:absolute after:inset-0 focus-visible:outline-none focus-visible:underline focus-visible:decoration-2"
+                >
+                    {{ $list->title }}
+                </a>
             </h3>
             @if ($list->sptVersion)
                 <span class="badge-version {{ $list->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap">
@@ -63,4 +67,4 @@
             <x-time :datetime="$list->updated_at" />
         </div>
     </div>
-</a>
+</div>

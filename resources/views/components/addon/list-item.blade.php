@@ -12,11 +12,13 @@
         href="{{ route('addon.show', [$addon->id, $addon->slug]) }}"
         wire:navigate
         class="shrink-0"
+        aria-hidden="true"
+        tabindex="-1"
     >
         @if ($addon->thumbnail)
             <img
                 src="{{ $addon->thumbnailUrl }}"
-                alt="{{ $addon->name }}"
+                alt=""
                 class="size-10 rounded object-cover"
             >
         @else
