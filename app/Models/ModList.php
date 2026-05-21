@@ -74,6 +74,22 @@ final class ModList extends Model implements Commentable, Reportable
     }
 
     /**
+     * The maximum number of items a single list may hold.
+     */
+    public static function maxItemsPerList(): int
+    {
+        return config()->integer('mod-lists.max_items_per_list', 250);
+    }
+
+    /**
+     * The maximum number of lists a single user may own (Favourites included).
+     */
+    public static function maxListsPerUser(): int
+    {
+        return config()->integer('mod-lists.max_lists_per_user', 50);
+    }
+
+    /**
      * Whether this list is the user's immutable default Favourites list.
      */
     public function isFavourites(): bool
@@ -118,12 +134,7 @@ final class ModList extends Model implements Commentable, Reportable
      */
     public function containsMod(Mod|int $mod): bool
     {
-        $modId = $mod instanceof Mod ? $mod->id : $mod;
-
-        return $this->items()
-            ->where('listable_type', Mod::class)
-            ->where('listable_id', $modId)
-            ->exists();
+        return $this->containsListable(Mod::class, $mod instanceof Mod ? $mod->id : $mod);
     }
 
     /**
@@ -131,12 +142,7 @@ final class ModList extends Model implements Commentable, Reportable
      */
     public function containsAddon(Addon|int $addon): bool
     {
-        $addonId = $addon instanceof Addon ? $addon->id : $addon;
-
-        return $this->items()
-            ->where('listable_type', Addon::class)
-            ->where('listable_id', $addonId)
-            ->exists();
+        return $this->containsListable(Addon::class, $addon instanceof Addon ? $addon->id : $addon);
     }
 
     /**
@@ -232,6 +238,12 @@ final class ModList extends Model implements Commentable, Reportable
     {
         $this->loadMissing(['owner', 'sptVersion']);
 
+        if (! array_key_exists('items_count', $this->attributes)) {
+            $this->loadCount('items');
+        }
+
+        $itemCount = $this->attributes['items_count'] ?? 0;
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -240,7 +252,7 @@ final class ModList extends Model implements Commentable, Reportable
             'owner_id' => $this->owner_id,
             'owner_name' => $this->owner?->name,
             'spt_version' => $this->sptVersion?->version_formatted,
-            'item_count' => $this->itemCount(),
+            'item_count' => is_numeric($itemCount) ? (int) $itemCount : 0,
             'created_at' => $this->created_at?->timestamp,
             'updated_at' => $this->updated_at?->timestamp,
         ];
@@ -326,7 +338,7 @@ final class ModList extends Model implements Commentable, Reportable
      */
     public function getReportableTitle(): string
     {
-        return $this->title ?? 'mod list #'.$this->id;
+        return $this->title;
     }
 
     /**
@@ -343,6 +355,18 @@ final class ModList extends Model implements Commentable, Reportable
     public function getReportableUrl(): string
     {
         return $this->detailUrl();
+    }
+
+    /**
+     * Eager-load the relations and counts needed for Scout indexing so a bulk
+     * reindex does not issue a separate query per list.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['owner:id,name', 'sptVersion'])->withCount('items');
     }
 
     /**
@@ -405,5 +429,20 @@ final class ModList extends Model implements Commentable, Reportable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Check whether the list contains a given listable record.
+     *
+     * Queries the items table directly so the existence check carries none of
+     * the ordering overhead baked into the items() relation.
+     */
+    private function containsListable(string $listableType, int $listableId): bool
+    {
+        return ModListItem::query()
+            ->where('mod_list_id', $this->id)
+            ->where('listable_type', $listableType)
+            ->where('listable_id', $listableId)
+            ->exists();
     }
 }
