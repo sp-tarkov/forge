@@ -98,7 +98,7 @@ new #[Layout('layouts::base')] class extends Component
      * orphan-addon items). Heavy relations are eager-loaded only for the page
      * being rendered.
      *
-     * @return LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>}>
+     * @return LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool}>
      */
     #[Computed]
     public function grouped(): LengthAwarePaginator
@@ -147,9 +147,27 @@ new #[Layout('layouts::base')] class extends Component
 
         $this->modList->setRelation('items', $this->loadPageItems($pageAnchorIds));
 
-        $groups = $this->modList->groupedItems()->values();
+        // Each group carries its own render-time derivations (a stable key and
+        // whether it is drag-sortable) so the Blade template stays logic-free.
+        $canManage = $this->canManage;
+        $groups = $this->modList->groupedItems()
+            ->values()
+            ->map(function (array $group) use ($canManage): array {
+                $modItem = $group['mod_item'];
+                $firstAddon = $group['addons']->first();
+                $firstAddonId = $firstAddon instanceof ModListItem ? $firstAddon->id : 0;
 
-        /** @var LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>}> $paginator */
+                $group['group_key'] = $modItem instanceof ModListItem
+                    ? $modItem->id
+                    : 'detached-'.$firstAddonId;
+                $group['is_sortable'] = $canManage
+                    && $group['mod'] instanceof Mod
+                    && $modItem instanceof ModListItem;
+
+                return $group;
+            });
+
+        /** @var LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool}> $paginator */
         $paginator = new LengthAwarePaginator(
             $groups,
             $total,
@@ -288,6 +306,8 @@ new #[Layout('layouts::base')] class extends Component
         array_splice($pageModIds, $position, 0, [$modId]);
 
         $service->reorderWithinPositions($this->modList, $pageModIds);
+
+        $this->statusMessage = __('List order updated.');
 
         unset($this->grouped, $this->listItemRows);
     }

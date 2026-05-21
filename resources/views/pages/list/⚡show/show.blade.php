@@ -192,45 +192,39 @@
             class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start"
         >
             @foreach ($grouped as $group)
-                @php($mod = $group['mod'])
-                @php($modItem = $group['mod_item'])
-                @php($addons = $group['addons'])
-                @php($groupKey = $modItem?->id ?? 'detached-'.$addons->first()?->id)
-                @php($isSortable = $canManage && $mod && $modItem)
-
                 <div
-                    wire:key="list-group-{{ $groupKey }}"
-                    @if ($isSortable) wire:sort:item="{{ $mod->id }}" @endif
+                    wire:key="list-group-{{ $group['group_key'] }}"
+                    @if ($group['is_sortable']) wire:sort:item="{{ $group['mod']->id }}" @endif
                     class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden"
                 >
-                    @if ($mod)
+                    @if ($group['mod'])
                         <x-mod.list-row
-                            :mod="$mod"
-                            :version="$mod->latestVersion"
-                            :note="$modItem?->note"
-                            :is-dependency="$dependencyModIds->contains($mod->id)"
-                            :dependency-versions="$mod->latestVersion?->latestDependenciesResolved"
+                            :mod="$group['mod']"
+                            :version="$group['mod']->latestVersion"
+                            :note="$group['mod_item']?->note"
+                            :is-dependency="$dependencyModIds->contains($group['mod']->id)"
+                            :dependency-versions="$group['mod']->latestVersion?->latestDependenciesResolved"
                             :list-mod-ids="$listModIds"
                         >
-                            @if ($isSortable)
+                            @if ($group['is_sortable'])
                                 <button
                                     type="button"
                                     wire:sort:handle
-                                    aria-label="{{ __('Reorder :name', ['name' => $mod->name]) }}"
+                                    aria-label="{{ __('Reorder :name', ['name' => $group['mod']->name]) }}"
                                     class="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 touch-none"
                                 >
                                     <flux:icon.bars-3 variant="micro" />
                                 </button>
                             @endif
-                            @if ($canManage && $modItem)
+                            @if ($canManage && $group['mod_item'])
                                 <flux:button
                                     icon="x-mark"
                                     variant="subtle"
                                     size="sm"
                                     square
-                                    :aria-label="__('Remove :name from list', ['name' => $mod->name])"
+                                    :aria-label="__('Remove :name from list', ['name' => $group['mod']->name])"
                                     wire:sort:ignore
-                                    wire:click="removeItem({{ $modItem->id }})"
+                                    wire:click="removeItem({{ $group['mod_item']->id }})"
                                     wire:confirm="{{ __('Remove this mod (and its addons) from the list?') }}"
                                 />
                             @endif
@@ -241,16 +235,15 @@
                         </div>
                     @endif
 
-                    @if ($addons->isNotEmpty())
+                    @if ($group['addons']->isNotEmpty())
                         <ul
                             class="pl-4 pr-3 sm:pr-4 pb-3 sm:pb-4 space-y-1 border-l-2 border-gray-100 dark:border-gray-900"
                         >
-                            @foreach ($addons as $addonItem)
-                                @php($addon = $addonItem->listable)
-                                @if ($addon)
+                            @foreach ($group['addons'] as $addonItem)
+                                @if ($addonItem->listable)
                                     <li>
                                         <x-addon.list-item
-                                            :addon="$addon"
+                                            :addon="$addonItem->listable"
                                             :note="$addonItem->note"
                                             :wire-key="'list-addon-'.$addonItem->id"
                                         >
@@ -315,11 +308,31 @@
                     <flux:heading size="lg">{{ __('Share this list') }}</flux:heading>
                     <flux:subheading>{{ __('Anyone with this link can view the list.') }}</flux:subheading>
                 </div>
-                <flux:input
-                    readonly
-                    :value="$modList->shareUrl()"
-                    onclick="this.select()"
-                />
+                <div
+                    class="flex items-center gap-2"
+                    x-data="{ copied: false }"
+                >
+                    <flux:input
+                        readonly
+                        :value="$modList->shareUrl()"
+                        onclick="this.select()"
+                        class="flex-1"
+                        label:sr-only="{{ __('Share link') }}"
+                    />
+                    <flux:button
+                        icon="clipboard-document"
+                        variant="outline"
+                        :aria-label="__('Copy share link')"
+                        @click="navigator.clipboard.writeText(@js($modList->shareUrl())); copied = true; setTimeout(() => copied = false, 2000)"
+                    >
+                        <span x-text="copied ? @js(__('Copied')) : @js(__('Copy'))">{{ __('Copy') }}</span>
+                    </flux:button>
+                </div>
+                <div
+                    aria-live="polite"
+                    class="sr-only"
+                    x-text="copied ? @js(__('Share link copied to clipboard.')) : ''"
+                ></div>
                 <div class="flex justify-between">
                     <flux:button
                         variant="ghost"
