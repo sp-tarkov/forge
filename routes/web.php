@@ -63,11 +63,11 @@ Route::middleware('auth.banned')->group(function (): void {
         ->name('list.index');
 
     Route::livewire('/list/{listId}/{slug}/{shareToken}', 'pages::list.show')
-        ->where(['listId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+', 'shareToken' => '[A-Za-z0-9]{32}'])
+        ->where(['listId' => '[0-9]+', 'slug' => '(?!edit$)[a-z0-9-]+', 'shareToken' => '[A-Za-z0-9]{32}'])
         ->name('list.show.shared');
 
     Route::livewire('/list/{listId}/{slug}', 'pages::list.show')
-        ->where(['listId' => '[0-9]+', 'slug' => '(?!edit)[a-z0-9-]+'])
+        ->where(['listId' => '[0-9]+', 'slug' => '(?!edit$)[a-z0-9-]+'])
         ->name('list.show');
 
     Route::livewire('/user-banned', 'pages::user.banned')
