@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('slug');
             $table->longText('description')->nullable();
             $table->longText('description_html')->nullable();
+            $table->string('thumbnail', 500)->nullable();
+            $table->string('thumbnail_hash')->nullable();
             $table->string('visibility', 16)->default(ListVisibility::Private->value);
             $table->foreignIdFor(SptVersion::class)
                 ->nullable()
@@ -31,6 +33,7 @@ return new class extends Migration
                 ->cascadeOnUpdate();
             $table->string('share_token', 32)->nullable()->unique();
             $table->boolean('is_default')->default(false);
+            $table->boolean('comments_disabled')->default(false);
             $table->timestamps();
 
             $table->index(['owner_id', 'visibility']);
