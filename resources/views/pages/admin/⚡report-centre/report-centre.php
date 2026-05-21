@@ -500,7 +500,7 @@ new #[Layout('layouts::base')] class extends Component
             return;
         }
 
-        $this->authorize('disable', $modList);
+        $this->authorize('enable', $modList);
 
         $service = resolve(ReportActionService::class);
 
