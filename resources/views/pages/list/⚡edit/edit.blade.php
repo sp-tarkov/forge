@@ -94,6 +94,7 @@
                 wire:model="form.title"
                 :label="__('Title')"
                 :readonly="$modList->is_default"
+                :description="$modList->is_default ? __('Your Favourites list has a fixed title and cannot be renamed.') : null"
                 required
                 maxlength="{{ config('mod-lists.validation.title_max') }}"
             />

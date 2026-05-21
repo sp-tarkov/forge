@@ -28,6 +28,7 @@
                 <a
                     href="{{ $list->detailUrl() }}"
                     wire:navigate
+                    title="{{ $list->title }}"
                     class="after:absolute after:inset-0 focus-visible:outline-none focus-visible:underline focus-visible:decoration-2"
                 >
                     {{ $list->title }}
@@ -35,7 +36,7 @@
             </h3>
             @if ($list->sptVersion)
                 <span class="badge-version {{ $list->sptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap">
-                    {{ $list->sptVersion->version }}
+                    <span class="sr-only">{{ __('SPT version') }}&nbsp;</span>{{ $list->sptVersion->version }}
                 </span>
             @endif
         </div>

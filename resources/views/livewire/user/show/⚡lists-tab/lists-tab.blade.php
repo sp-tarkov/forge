@@ -2,7 +2,9 @@
     <div
         id="lists"
         class="space-y-4"
+        aria-busy="true"
     >
+        <span class="sr-only">{{ __('Loading lists…') }}</span>
         <flux:skeleton class="h-10 w-64 rounded" />
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @for ($i = 0; $i < 3; $i++)
