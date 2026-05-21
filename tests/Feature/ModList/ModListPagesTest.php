@@ -623,3 +623,109 @@ describe('list.edit page', function (): void {
         expect($favourites->visibility)->toBe(ListVisibility::Private);
     });
 });
+
+describe('list.create page save', function (): void {
+    it('creates a list owned by the acting user and redirects to it', function (): void {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $this->actingAs($user);
+
+        Livewire::test('pages::list.create')
+            ->set('form.title', 'My Brand New List')
+            ->set('form.visibility', ListVisibility::Public->value)
+            ->call('save')
+            ->assertRedirect();
+
+        $list = ModList::query()->where('title', 'My Brand New List')->first();
+        expect($list)->not->toBeNull();
+        expect($list->owner_id)->toBe($user->id);
+        expect($list->is_default)->toBeFalse();
+    });
+
+    it('rejects an over-length title', function (): void {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $this->actingAs($user);
+
+        Livewire::test('pages::list.create')
+            ->set('form.title', str_repeat('a', 200))
+            ->call('save')
+            ->assertHasErrors('form.title');
+    });
+
+    it('rejects a non-existent SPT version', function (): void {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $this->actingAs($user);
+
+        Livewire::test('pages::list.create')
+            ->set('form.title', 'A Valid Title')
+            ->set('form.spt_version_id', 999999)
+            ->call('save')
+            ->assertHasErrors('form.spt_version_id');
+    });
+});
+
+describe('list.show empty state', function (): void {
+    it('renders an empty state for a list with no items', function (): void {
+        $list = ModList::factory()->public()->create();
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('This list is empty');
+    });
+});
+
+describe('list.index filtering', function (): void {
+    it('shows public lists but hides private and hidden ones', function (): void {
+        ModList::factory()->public()->create(['title' => 'Visible Public List']);
+        ModList::factory()->private()->create(['title' => 'Secret Private List']);
+        ModList::factory()->hidden()->create(['title' => 'Concealed Hidden List']);
+
+        $response = $this->get(route('list.index'));
+
+        $response->assertOk();
+        $response->assertSee('Visible Public List');
+        $response->assertDontSee('Secret Private List');
+        $response->assertDontSee('Concealed Hidden List');
+    });
+
+    it('excludes default Favourites lists from discovery even when public', function (): void {
+        $user = User::factory()->create();
+        $favourites = $user->favouritesList;
+        $favourites->update(['visibility' => ListVisibility::Public]);
+
+        ModList::factory()->public()->create(['title' => 'Regular Discoverable List']);
+
+        $response = $this->get(route('list.index'));
+
+        $response->assertOk();
+        $response->assertSee('Regular Discoverable List');
+        $response->assertDontSee($favourites->title);
+    });
+});
+
+describe('user lists-tab visibility', function (): void {
+    it('shows only discoverable lists to non-owners', function (): void {
+        $owner = User::factory()->create();
+        ModList::factory()->for($owner, 'owner')->public()->create(['title' => 'Owner Public List']);
+        ModList::factory()->for($owner, 'owner')->private()->create(['title' => 'Owner Private List']);
+
+        $viewer = User::factory()->create();
+        $this->actingAs($viewer);
+
+        Livewire::test('user.show.lists-tab', ['userId' => $owner->id])
+            ->call('$refresh')
+            ->assertSee('Owner Public List')
+            ->assertDontSee('Owner Private List');
+    });
+
+    it('shows private lists to the owner', function (): void {
+        $owner = User::factory()->create();
+        ModList::factory()->for($owner, 'owner')->private()->create(['title' => 'Owner Private List']);
+
+        $this->actingAs($owner);
+
+        Livewire::test('user.show.lists-tab', ['userId' => $owner->id])
+            ->call('$refresh')
+            ->assertSee('Owner Private List');
+    });
+});
