@@ -57,6 +57,18 @@
         class="sr-only"
     >{{ $statusMessage }}</div>
 
+    @if ($modList->disabled && ($canManage || auth()->user()?->isModOrAdmin()))
+        <flux:callout
+            icon="exclamation-triangle"
+            color="red"
+            inline
+        >
+            <flux:callout.text>
+                {{ __('This list has been disabled by the moderation team and is hidden from everyone else. As :role, you can still view it.', ['role' => auth()->user()?->isModOrAdmin() ? 'a staff member or moderator' : 'the list owner']) }}
+            </flux:callout.text>
+        </flux:callout>
+    @endif
+
     {{-- List info --}}
     <div
         class="p-4 sm:p-6 bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl"
