@@ -43,7 +43,11 @@ new #[Lazy] class extends Component
             ->withCount('items');
 
         if (! $isOwner) {
-            $query->public();
+            // Non-owners see only discoverable lists: public, non-default, and
+            // not moderator-disabled. The discoverable scope structurally
+            // excludes the private default Favourites list regardless of its
+            // stored visibility.
+            $query->discoverable();
         }
 
         $query->orderByDesc('is_default')
