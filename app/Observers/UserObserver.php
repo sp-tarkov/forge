@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
-use App\Enums\ListVisibility;
-use App\Models\ModList;
 use App\Models\User;
+use App\Services\ModListService;
 
-final class UserObserver
+final readonly class UserObserver
 {
+    public function __construct(private ModListService $modListService) {}
+
     /**
      * Handle the User "created" event.
      *
@@ -17,19 +18,6 @@ final class UserObserver
      */
     public function created(User $user): void
     {
-        $title = config()->string('mod-lists.favourites.title', 'Favourites');
-        $slug = config()->string('mod-lists.favourites.slug', 'favourites');
-
-        ModList::query()->firstOrCreate(
-            [
-                'owner_id' => $user->id,
-                'is_default' => true,
-            ],
-            [
-                'title' => $title,
-                'slug' => $slug,
-                'visibility' => ListVisibility::Private,
-            ]
-        );
+        $this->modListService->ensureFavouritesFor($user);
     }
 }

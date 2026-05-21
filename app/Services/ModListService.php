@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\ListVisibility;
 use App\Exceptions\ModListCapacityExceededException;
 use App\Exceptions\ParentModMissingException;
 use App\Models\Addon;
@@ -11,12 +12,48 @@ use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
 use App\Models\ModVersion;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 final class ModListService
 {
+    /**
+     * Create (or return the existing) immutable default Favourites list for a user.
+     *
+     * This is the single canonical definition of the Favourites row shape. If the
+     * user already owns a list using the canonical slug on a non-default list, the
+     * new list receives a suffixed slug so the (owner_id, slug) unique index holds.
+     */
+    public function ensureFavouritesFor(User $user): ModList
+    {
+        $title = config()->string('mod-lists.favourites.title', 'Favourites');
+        $slug = config()->string('mod-lists.favourites.slug', 'favourites');
+
+        $slugTaken = ModList::query()
+            ->where('owner_id', $user->id)
+            ->where('slug', $slug)
+            ->exists();
+
+        /** @var ModList $modList */
+        $modList = ModList::query()->firstOrCreate(
+            [
+                'owner_id' => $user->id,
+                'is_default' => true,
+            ],
+            [
+                'title' => $title,
+                'slug' => $slugTaken ? $slug.'-'.Str::lower(Str::random(6)) : $slug,
+                'visibility' => ListVisibility::Private,
+                'comments_disabled' => false,
+            ],
+        );
+
+        return $modList;
+    }
+
     /**
      * Add a mod to the list, optionally cascading its dependencies.
      *
