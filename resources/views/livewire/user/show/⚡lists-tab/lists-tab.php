@@ -49,7 +49,10 @@ new #[Lazy] class extends Component
         $query->orderByDesc('is_default')
             ->latest('updated_at');
 
-        return $query->paginate(10)->fragment('lists'); // @phpstan-ignore return.type
+        /** @var LengthAwarePaginator<int, ModList> $paginator */
+        $paginator = $query->paginate(10)->fragment('lists');
+
+        return $paginator;
     }
 
     #[Computed]
