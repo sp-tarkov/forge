@@ -44,7 +44,7 @@
             wire:key="note-display-{{ $itemId }}"
             class="mt-2 flex items-start gap-3"
         >
-            <div class="{{ $iconColumnClass }} shrink-0 flex justify-start pt-0.5">
+            <div class="{{ $iconColumnClass }} shrink-0 flex justify-end pt-0.5">
                 <flux:icon.chat-bubble-left class="size-3 text-gray-400" />
             </div>
             <div class="flex-1 min-w-0 flex items-start gap-1.5">
