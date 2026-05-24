@@ -55,13 +55,13 @@
             <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
                 @if ($version?->latestSptVersion)
                     <span
-                        class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium whitespace-nowrap"
+                        class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap"
                     >
                         <span class="sr-only">{{ __('SPT version') }}&nbsp;</span>{{ $version->latestSptVersion->version_formatted }}
                     </span>
                 @elseif ($version && $version->spt_version_constraint === '')
                     <span
-                        class="badge-version gray inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium whitespace-nowrap"
+                        class="badge-version gray inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap"
                     >
                         {{ __('Legacy SPT') }}
                     </span>

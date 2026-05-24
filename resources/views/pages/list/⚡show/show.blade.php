@@ -189,7 +189,7 @@
     @else
         <div
             @if ($canManage) wire:sort="reorder" @endif
-            class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start"
+            class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch"
         >
             @foreach ($grouped as $group)
                 <div
@@ -290,7 +290,10 @@
     @endif
 
     @if (! $modList->isFavourites() && $modList->visibility !== \App\Enums\ListVisibility::Private)
-        <div id="comments">
+        <div
+            id="comments"
+            class="space-y-6"
+        >
             @if ($modList->comments_disabled && ($canManage || auth()->user()?->isModOrAdmin()))
                 <flux:callout
                     icon="exclamation-triangle"
