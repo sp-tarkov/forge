@@ -120,12 +120,15 @@
                     label:sr-only="{{ __('Filter lists') }}"
                 />
 
-                <flux:textarea
-                    wire:model="note"
-                    :label="__('Note (optional)')"
-                    rows="2"
-                    maxlength="280"
-                />
+                <flux:field>
+                    <flux:label badge="Optional">{{ __('Note') }}</flux:label>
+                    <flux:textarea
+                        wire:model="note"
+                        rows="2"
+                        maxlength="280"
+                    />
+                    <flux:error name="note" />
+                </flux:field>
 
                 <div class="max-h-72 overflow-y-auto space-y-1">
                     @forelse ($this->userLists as $list)
