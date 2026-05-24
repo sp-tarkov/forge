@@ -233,77 +233,6 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Eager-load the fully hydrated item rows (with heavy nested relations) for
-     * the group anchors on the current page, plus the addon items belonging to
-     * each anchored parent mod.
-     *
-     * @param  array<int, int>  $anchorIds
-     * @return EloquentCollection<int, ModListItem>
-     */
-    private function loadPageItems(array $anchorIds): EloquentCollection
-    {
-        if ($anchorIds === []) {
-            return new EloquentCollection;
-        }
-
-        $anchorItems = $this->modList->items()
-            ->whereIn('id', $anchorIds)
-            ->get();
-
-        $pageModIds = $anchorItems
-            ->where('listable_type', Mod::class)
-            ->pluck('listable_id')
-            ->all();
-
-        $addonItemIds = $pageModIds === []
-            ? []
-            : $this->modList->items()
-                ->where('listable_type', Addon::class)
-                ->whereIn('listable_id', Addon::query()->whereIn('mod_id', $pageModIds)->select('id'))
-                ->pluck('id')
-                ->all();
-
-        /** @var array<int, int> $pageItemIds */
-        $pageItemIds = $anchorItems->pluck('id')->merge($addonItemIds)->all();
-
-        /** @var EloquentCollection<int, ModListItem> $items */
-        $items = $this->modList->items()
-            ->whereIn('id', $pageItemIds)
-            ->with(['listable' => $this->listableMorphConstraint()])
-            ->get();
-
-        return $items;
-    }
-
-    /**
-     * Eager-load constraint for the polymorphic listable relation, scoping the
-     * heavy nested relations loaded for each Mod / Addon group card.
-     *
-     * @return Closure(Relation<*, *, *>):void
-     */
-    private function listableMorphConstraint(): Closure
-    {
-        return function (Relation $relation): void {
-            if (! $relation instanceof MorphTo) {
-                return;
-            }
-
-            $relation->morphWith([
-                Mod::class => ['owner:id,name', 'latestVersion', 'latestVersion.latestSptVersion', 'latestVersion.latestDependenciesResolved.mod:id,name,slug'],
-                Addon::class => [
-                    'owner:id,name',
-                    'latestVersion',
-                    'mod',
-                    'mod.owner:id,name',
-                    'mod.latestVersion',
-                    'mod.latestVersion.latestSptVersion',
-                    'mod.latestVersion.latestDependenciesResolved.mod:id,name,slug',
-                ],
-            ]);
-        };
-    }
-
-    /**
      * Remove an item (mod or addon) from the list.
      */
     public function removeItem(int $itemId, ModListService $service): void
@@ -525,5 +454,76 @@ new #[Layout('layouts::base')] class extends Component
             'listModIds' => $this->listModIds,
             'hasIncompatibleMods' => $this->hasIncompatibleMods,
         ];
+    }
+
+    /**
+     * Eager-load the fully hydrated item rows (with heavy nested relations) for
+     * the group anchors on the current page, plus the addon items belonging to
+     * each anchored parent mod.
+     *
+     * @param  array<int, int>  $anchorIds
+     * @return EloquentCollection<int, ModListItem>
+     */
+    private function loadPageItems(array $anchorIds): EloquentCollection
+    {
+        if ($anchorIds === []) {
+            return new EloquentCollection;
+        }
+
+        $anchorItems = $this->modList->items()
+            ->whereIn('id', $anchorIds)
+            ->get();
+
+        $pageModIds = $anchorItems
+            ->where('listable_type', Mod::class)
+            ->pluck('listable_id')
+            ->all();
+
+        $addonItemIds = $pageModIds === []
+            ? []
+            : $this->modList->items()
+                ->where('listable_type', Addon::class)
+                ->whereIn('listable_id', Addon::query()->whereIn('mod_id', $pageModIds)->select('id'))
+                ->pluck('id')
+                ->all();
+
+        /** @var array<int, int> $pageItemIds */
+        $pageItemIds = $anchorItems->pluck('id')->merge($addonItemIds)->all();
+
+        /** @var EloquentCollection<int, ModListItem> $items */
+        $items = $this->modList->items()
+            ->whereIn('id', $pageItemIds)
+            ->with(['listable' => $this->listableMorphConstraint()])
+            ->get();
+
+        return $items;
+    }
+
+    /**
+     * Eager-load constraint for the polymorphic listable relation, scoping the
+     * heavy nested relations loaded for each Mod / Addon group card.
+     *
+     * @return Closure(Relation<*, *, *>):void
+     */
+    private function listableMorphConstraint(): Closure
+    {
+        return function (Relation $relation): void {
+            if (! $relation instanceof MorphTo) {
+                return;
+            }
+
+            $relation->morphWith([
+                Mod::class => ['owner:id,name', 'latestVersion', 'latestVersion.latestSptVersion', 'latestVersion.latestDependenciesResolved.mod:id,name,slug'],
+                Addon::class => [
+                    'owner:id,name',
+                    'latestVersion',
+                    'mod',
+                    'mod.owner:id,name',
+                    'mod.latestVersion',
+                    'mod.latestVersion.latestSptVersion',
+                    'mod.latestVersion.latestDependenciesResolved.mod:id,name,slug',
+                ],
+            ]);
+        };
     }
 };
