@@ -1,6 +1,5 @@
 @props([
     'addon',
-    'note' => null,
     'wireKey' => null,
 ])
 
@@ -46,12 +45,7 @@
         <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
             {{ __('by :owner', ['owner' => $addon->owner?->name ?? __('Unknown')]) }}
         </div>
-        @if ($note)
-            <div class="text-xs italic text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2">
-                <flux:icon.chat-bubble-left class="inline size-3 mr-0.5 text-gray-400" />
-                {{ $note }}
-            </div>
-        @endif
+        {{ $note ?? '' }}
     </div>
 
     <div class="shrink-0 flex items-center gap-1">

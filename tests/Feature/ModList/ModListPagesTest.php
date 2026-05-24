@@ -554,6 +554,146 @@ describe('list.show page', function (): void {
     });
 });
 
+describe('list.show note editing', function (): void {
+    it('lets the owner open the inline note editor', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'note' => 'Existing note.',
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('startEditingNote', $item->id)
+            ->assertSet('editingNoteItemId', $item->id)
+            ->assertSet('noteDraft', 'Existing note.');
+    });
+
+    it('saves an edited note for the owner', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('startEditingNote', $item->id)
+            ->set('noteDraft', '  Curated pick  ')
+            ->call('saveNote')
+            ->assertSet('editingNoteItemId', null)
+            ->assertSet('statusMessage', 'Note updated.');
+
+        expect($item->fresh()->note)->toBe('Curated pick');
+    });
+
+    it('clears the note when the draft is emptied', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'note' => 'Going away.',
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('startEditingNote', $item->id)
+            ->set('noteDraft', '')
+            ->call('saveNote')
+            ->assertSet('statusMessage', 'Note removed.');
+
+        expect($item->fresh()->note)->toBeNull();
+    });
+
+    it('cancels editing without persisting changes', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+            'note' => 'Untouched.',
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('startEditingNote', $item->id)
+            ->set('noteDraft', 'Discarded edit')
+            ->call('cancelEditingNote')
+            ->assertSet('editingNoteItemId', null)
+            ->assertSet('noteDraft', '');
+
+        expect($item->fresh()->note)->toBe('Untouched.');
+    });
+
+    it('rejects an over-length note', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('startEditingNote', $item->id)
+            ->set('noteDraft', str_repeat('a', config()->integer('mod-lists.validation.note_max') + 1))
+            ->call('saveNote')
+            ->assertHasErrors('noteDraft');
+
+        expect($item->fresh()->note)->toBeNull();
+    });
+
+    it('blocks non-owners from editing a note', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        Livewire::actingAs(User::factory()->create())
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('startEditingNote', $item->id)
+            ->assertForbidden();
+    });
+
+    it('offers an add-note affordance to the owner only', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+        $item = ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $this->get($list->detailUrl())
+            ->assertOk()
+            ->assertDontSee('startEditingNote('.$item->id.')', false);
+
+        $this->actingAs($owner)
+            ->get($list->detailUrl())
+            ->assertOk()
+            ->assertSee('startEditingNote('.$item->id.')', false);
+    });
+});
+
 describe('list.create page', function (): void {
     it('redirects guests to login', function (): void {
         $response = $this->get(route('list.create'));

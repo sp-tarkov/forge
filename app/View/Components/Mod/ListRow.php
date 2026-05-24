@@ -27,7 +27,6 @@ final class ListRow extends Component
     public function __construct(
         public Mod $mod,
         ?ModVersion $version = null,
-        public ?string $note = null,
         public ?Collection $dependencyVersions = null,
         public bool $isDependency = false,
         public ?Collection $listModIds = null,

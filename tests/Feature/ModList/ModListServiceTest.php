@@ -43,7 +43,7 @@ describe('ModListService addMod', function (): void {
         $mod = Mod::factory()->create();
         $dep = Mod::factory()->create();
 
-        resolve(ModListService::class)->addMod($list, $mod, null, collect([$dep]));
+        resolve(ModListService::class)->addMod($list, $mod, collect([$dep]));
 
         expect($list->fresh()->itemCount())->toBe(2);
         expect($list->containsMod($dep->id))->toBeTrue();
@@ -58,7 +58,7 @@ describe('ModListService addMod', function (): void {
         $dep1 = Mod::factory()->create();
         $dep2 = Mod::factory()->create();
 
-        expect(fn () => resolve(ModListService::class)->addMod($list, $mod, null, collect([$dep1, $dep2])))
+        expect(fn () => resolve(ModListService::class)->addMod($list, $mod, collect([$dep1, $dep2])))
             ->toThrow(ModListCapacityExceededException::class);
 
         expect($list->fresh()->itemCount())->toBe(0);
@@ -82,7 +82,7 @@ describe('ModListService addAddon', function (): void {
         $mod = Mod::factory()->create();
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
 
-        resolve(ModListService::class)->addAddon($list, $addon, null, includeParentMod: true);
+        resolve(ModListService::class)->addAddon($list, $addon, includeParentMod: true);
 
         expect($list->fresh()->itemCount())->toBe(2);
         expect($list->containsMod($mod->id))->toBeTrue();
@@ -253,7 +253,7 @@ describe('ModListService addAddon capacity', function (): void {
         $mod = Mod::factory()->create();
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
 
-        expect(fn () => resolve(ModListService::class)->addAddon($list, $addon, null, includeParentMod: true))
+        expect(fn () => resolve(ModListService::class)->addAddon($list, $addon, includeParentMod: true))
             ->toThrow(ModListCapacityExceededException::class);
 
         expect($list->fresh()->itemCount())->toBe(0);
@@ -271,6 +271,23 @@ describe('ModListService toggleFavourite capacity', function (): void {
 
         expect(fn () => $svc->toggleFavourite($fav->fresh(), Mod::factory()->create()))
             ->toThrow(ModListCapacityExceededException::class);
+    });
+});
+
+describe('ModListService updateNote', function (): void {
+    it('updates and clears an item note', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mod = Mod::factory()->create();
+
+        $svc = resolve(ModListService::class);
+        $item = $svc->addMod($list, $mod);
+
+        $svc->updateNote($item, 'Pinned for newcomers');
+        expect($item->fresh()->note)->toBe('Pinned for newcomers');
+
+        $svc->updateNote($item, null);
+        expect($item->fresh()->note)->toBeNull();
     });
 });
 

@@ -201,11 +201,18 @@
                         <x-mod.list-row
                             :mod="$group['mod']"
                             :version="$group['mod']->latestVersion"
-                            :note="$group['mod_item']?->note"
                             :is-dependency="$dependencyModIds->contains($group['mod']->id)"
                             :dependency-versions="$group['mod']->latestVersion?->latestDependenciesResolved"
                             :list-mod-ids="$listModIds"
                         >
+                            <x-slot:note>
+                                <x-list.item-note
+                                    :item-id="$group['mod_item']?->id"
+                                    :note="$group['mod_item']?->note"
+                                    :can-manage="$canManage"
+                                    :editing="$group['mod_item'] !== null && $editingNoteItemId === $group['mod_item']->id"
+                                />
+                            </x-slot:note>
                             @if ($group['is_sortable'])
                                 <button
                                     type="button"
@@ -244,9 +251,16 @@
                                     <li>
                                         <x-addon.list-item
                                             :addon="$addonItem->listable"
-                                            :note="$addonItem->note"
                                             :wire-key="'list-addon-'.$addonItem->id"
                                         >
+                                            <x-slot:note>
+                                                <x-list.item-note
+                                                    :item-id="$addonItem->id"
+                                                    :note="$addonItem->note"
+                                                    :can-manage="$canManage"
+                                                    :editing="$editingNoteItemId === $addonItem->id"
+                                                />
+                                            </x-slot:note>
                                             @if ($canManage)
                                                 <flux:button
                                                     icon="x-mark"

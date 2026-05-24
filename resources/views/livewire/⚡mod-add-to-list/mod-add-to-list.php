@@ -45,8 +45,6 @@ new class extends Component
 
     public ?int $activeListId = null;
 
-    public string $note = '';
-
     public bool $showDependencyStep = false;
 
     /**
@@ -195,7 +193,7 @@ new class extends Component
             Gate::authorize('addItem', $list);
 
             try {
-                $service->addMod($list, $mod, $this->note === '' ? null : $this->note, $deps);
+                $service->addMod($list, $mod, $deps);
             } catch (ModListCapacityExceededException) {
                 $this->toastListFull();
 
@@ -213,7 +211,7 @@ new class extends Component
         Gate::authorize('addItem', $list);
 
         try {
-            $service->addAddon($list, $addon, $this->note === '' ? null : $this->note, includeParentMod: true);
+            $service->addAddon($list, $addon, includeParentMod: true);
         } catch (ModListCapacityExceededException) {
             $this->toastListFull();
 
@@ -342,7 +340,6 @@ new class extends Component
         $this->showDependencyStep = false;
         $this->activeListId = null;
         $this->selectedDependencyIds = [];
-        $this->note = '';
 
         unset($this->isOnAnyList, $this->userLists, $this->membershipListIds);
     }

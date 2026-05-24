@@ -105,12 +105,7 @@
             </div>
         @endif
 
-        @if ($note)
-            <div class="mt-1.5 text-xs italic text-gray-600 dark:text-gray-400 line-clamp-2">
-                <flux:icon.chat-bubble-left class="inline size-3 mr-0.5 text-gray-400" />
-                {{ $note }}
-            </div>
-        @endif
+        {{ $note ?? '' }}
     </div>
 
     <div class="shrink-0 flex items-center gap-1">

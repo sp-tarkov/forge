@@ -42,6 +42,17 @@ new #[Layout('layouts::base')] class extends Component
      */
     public string $statusMessage = '';
 
+    /**
+     * The id of the list item whose note is currently being edited inline, or
+     * null when no note editor is open.
+     */
+    public ?int $editingNoteItemId = null;
+
+    /**
+     * Working copy of the note text bound to the open inline note editor.
+     */
+    public string $noteDraft = '';
+
     public function mount(int $listId, string $slug, ?string $shareToken = null): void
     {
         $this->modList = ModList::query()
@@ -275,6 +286,64 @@ new #[Layout('layouts::base')] class extends Component
             : __('Removed :name from list.', ['name' => $removedName]);
 
         unset($this->grouped, $this->listItemRows);
+    }
+
+    /**
+     * Open the inline note editor for a list item.
+     */
+    public function startEditingNote(int $itemId): void
+    {
+        Gate::authorize('updateItemNote', $this->modList);
+
+        /** @var ModListItem|null $item */
+        $item = $this->modList->items()->find($itemId);
+        if ($item === null) {
+            return;
+        }
+
+        $this->editingNoteItemId = $item->id;
+        $this->noteDraft = (string) $item->note;
+        $this->resetErrorBag('noteDraft');
+    }
+
+    /**
+     * Close the inline note editor without saving.
+     */
+    public function cancelEditingNote(): void
+    {
+        $this->reset(['editingNoteItemId', 'noteDraft']);
+        $this->resetErrorBag('noteDraft');
+    }
+
+    /**
+     * Persist the edited note. An empty draft clears the note.
+     */
+    public function saveNote(ModListService $service): void
+    {
+        if ($this->editingNoteItemId === null) {
+            return;
+        }
+
+        Gate::authorize('updateItemNote', $this->modList);
+
+        $this->validate([
+            'noteDraft' => ['nullable', 'string', 'max:'.config()->integer('mod-lists.validation.note_max', 280)],
+        ]);
+
+        /** @var ModListItem|null $item */
+        $item = $this->modList->items()->find($this->editingNoteItemId);
+        if ($item === null) {
+            return;
+        }
+
+        $note = mb_trim($this->noteDraft);
+        $service->updateNote($item, $note === '' ? null : $note);
+
+        $this->statusMessage = $note === '' ? __('Note removed.') : __('Note updated.');
+
+        $this->reset(['editingNoteItemId', 'noteDraft']);
+
+        unset($this->grouped);
     }
 
     /**

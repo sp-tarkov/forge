@@ -75,7 +75,6 @@ final class ModListService
     public function addMod(
         ModList $modList,
         Mod $mod,
-        ?string $note = null,
         Collection|array $dependenciesToAdd = [],
     ): ModListItem {
         // Resolve current membership once so neither the dependency filter nor
@@ -94,13 +93,13 @@ final class ModListService
 
         $this->assertWithinCapacity($modList, $projectedCount);
 
-        return DB::transaction(function () use ($modList, $mod, $note, $deps): ModListItem {
+        return DB::transaction(function () use ($modList, $mod, $deps): ModListItem {
             $position = $this->nextPosition($modList);
 
-            $primary = $this->createItem($modList, Mod::class, $mod->id, $note, $position);
+            $primary = $this->createItem($modList, Mod::class, $mod->id, $position);
 
             foreach ($deps as $dep) {
-                $this->createItem($modList, Mod::class, $dep->id, null, ++$position);
+                $this->createItem($modList, Mod::class, $dep->id, ++$position);
             }
 
             return $primary;
@@ -120,7 +119,6 @@ final class ModListService
     public function addAddon(
         ModList $modList,
         Addon $addon,
-        ?string $note = null,
         bool $includeParentMod = false,
     ): ModListItem {
         $needsParent = $addon->mod_id !== null && ! $modList->containsMod($addon->mod_id);
@@ -133,15 +131,24 @@ final class ModListService
 
         $this->assertWithinCapacity($modList, $projectedCount);
 
-        return DB::transaction(function () use ($modList, $addon, $note, $needsParent): ModListItem {
+        return DB::transaction(function () use ($modList, $addon, $needsParent): ModListItem {
             $position = $this->nextPosition($modList);
 
             if ($needsParent && $addon->mod_id !== null) {
-                $this->createItem($modList, Mod::class, $addon->mod_id, null, $position++);
+                $this->createItem($modList, Mod::class, $addon->mod_id, $position++);
             }
 
-            return $this->createItem($modList, Addon::class, $addon->id, $note, $position);
+            return $this->createItem($modList, Addon::class, $addon->id, $position);
         });
+    }
+
+    /**
+     * Update (or clear) the per-item curator note.
+     */
+    public function updateNote(ModListItem $item, ?string $note): void
+    {
+        $item->note = $note;
+        $item->save();
     }
 
     /**
@@ -161,7 +168,7 @@ final class ModListService
         }
 
         $this->assertWithinCapacity($favourites, $favourites->itemCount() + 1);
-        $this->createItem($favourites, Mod::class, $mod->id, null, $this->nextPosition($favourites));
+        $this->createItem($favourites, Mod::class, $mod->id, $this->nextPosition($favourites));
 
         return true;
     }
@@ -331,7 +338,6 @@ final class ModListService
         ModList $modList,
         string $listableType,
         int $listableId,
-        ?string $note,
         int $position,
     ): ModListItem {
         /** @var ModListItem $item */
@@ -342,7 +348,6 @@ final class ModListService
                 'listable_id' => $listableId,
             ],
             [
-                'note' => $note,
                 'position' => $position,
             ],
         );
