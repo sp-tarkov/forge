@@ -12,7 +12,9 @@ use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
+use App\Support\DataTransferObjects\ResolvedListVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -286,21 +288,181 @@ final class ModListService
     }
 
     /**
-     * Pick the ModVersion a list would show for a given mod:
-     *  - The list's SPT-compatible version if the list has an spt_version_id
-     *  - Otherwise the mod's latest published version
+     * Resolve which ModVersion a list should display for the given mod and
+     * whether that pick is incompatible with the list's target SPT version.
+     *
+     * Delegates to the bulk resolver so the single-mod and page-level paths
+     * share one selection rule.
+     */
+    public function resolveListVersion(ModList $modList, Mod $mod): ResolvedListVersion
+    {
+        $resolved = $this->resolveListVersions($modList, new Collection([$mod]))->get($mod->id);
+
+        return $resolved instanceof ResolvedListVersion
+            ? $resolved
+            : new ResolvedListVersion(null, false);
+    }
+
+    /**
+     * Resolve the displayed ModVersion (and incompatibility flag) for a page
+     * of mods in a bounded number of queries.
+     *
+     * When the list has no target SPT version, every mod resolves to its
+     * `latestVersion` with no additional queries and `isIncompatible` false.
+     *
+     * When the list has a target SPT version, two queries are issued:
+     *   1. The newest version of each mod that has the target SPT linked
+     *      via the pivot (an exact compatibility match).
+     *   2. For mods missing an exact match, the newest version whose
+     *      `latestSptVersion` is the nearest-lower-or-equal SPT to the
+     *      target.
+     * Mods that have no version with any SPT ≤ target fall back to
+     * `latestVersion` and are flagged incompatible.
+     *
+     * @param  Collection<int, Mod>  $mods
+     * @return Collection<int, ResolvedListVersion> keyed by mod id
+     */
+    public function resolveListVersions(ModList $modList, Collection $mods): Collection
+    {
+        if ($mods->isEmpty()) {
+            return new Collection;
+        }
+
+        $sptVersionId = $modList->spt_version_id;
+        if ($sptVersionId === null) {
+            return $mods->mapWithKeys(function (Mod $mod): array {
+                $mod->loadMissing('latestVersion');
+
+                return [$mod->id => new ResolvedListVersion($mod->latestVersion, false)];
+            });
+        }
+
+        $modList->loadMissing('sptVersion');
+        $targetSptVersion = $modList->sptVersion instanceof SptVersion ? $modList->sptVersion : null;
+
+        /** @var array<int, int> $modIds */
+        $modIds = $mods->pluck('id')->all();
+
+        $exactMatches = $this->bulkExactMatches($modIds, $sptVersionId);
+
+        /** @var array<int, int> $missingModIds */
+        $missingModIds = array_values(array_diff($modIds, $exactMatches->keys()->all()));
+
+        $closestMatches = new Collection;
+        if ($missingModIds !== [] && $targetSptVersion instanceof SptVersion) {
+            $closestMatches = $this->bulkClosestMatches($missingModIds, $targetSptVersion);
+        }
+
+        return $mods->mapWithKeys(function (Mod $mod) use ($exactMatches, $closestMatches, $targetSptVersion): array {
+            $exact = $exactMatches->get($mod->id);
+            if ($exact instanceof ModVersion) {
+                // Exact pivot match: the card badge shows the list's target
+                // SPT, not the resolved version's `latestSptVersion`, so a
+                // version that also supports newer SPTs does not get a
+                // higher badge than the list it sits on.
+                return [$mod->id => new ResolvedListVersion($exact, false, $targetSptVersion)];
+            }
+
+            $closest = $closestMatches->get($mod->id);
+            if ($closest instanceof ModVersion) {
+                return [$mod->id => new ResolvedListVersion($closest, true)];
+            }
+
+            $mod->loadMissing('latestVersion');
+
+            return [$mod->id => new ResolvedListVersion($mod->latestVersion, true)];
+        });
+    }
+
+    /**
+     * Whether any top-level mod on the list lacks a version compatible with
+     * the list's target SPT version. Always false when the list has no
+     * target. A single existence query, scoped to the whole list (not just
+     * the current page).
+     */
+    public function listHasIncompatibleMods(ModList $modList): bool
+    {
+        if ($modList->spt_version_id === null) {
+            return false;
+        }
+
+        return Mod::query()
+            ->whereIn('id', ModListItem::query()
+                ->where('mod_list_id', $modList->id)
+                ->where('listable_type', Mod::class)
+                ->select('listable_id'))
+            ->whereDoesntHave('versions', fn (Builder $q): Builder => $q
+                ->where('disabled', false)
+                ->whereHas('sptVersions', fn (Builder $s): Builder => $s->where('spt_versions.id', $modList->spt_version_id)))
+            ->exists();
+    }
+
+    /**
+     * Pick the ModVersion a list would show for a given mod, for callers
+     * that only need the version (e.g. dependency resolution).
      */
     private function resolveModVersion(ModList $modList, Mod $mod): ?ModVersion
     {
-        if ($modList->spt_version_id !== null) {
-            return $mod->versions()
-                ->whereHas('sptVersions', fn (Builder $q): Builder => $q->where('spt_versions.id', $modList->spt_version_id))
-                ->first();
-        }
+        return $this->resolveListVersion($modList, $mod)->version;
+    }
 
-        $mod->loadMissing('latestVersion');
+    /**
+     * For each given mod id, the newest version that has the target SPT
+     * version linked via the pivot (an exact compatibility match).
+     *
+     * @param  array<int, int>  $modIds
+     * @return Collection<int, ModVersion> keyed by mod id
+     */
+    private function bulkExactMatches(array $modIds, int $sptVersionId): Collection
+    {
+        return ModVersion::query()
+            ->where('disabled', false)
+            ->whereIn('mod_id', $modIds)
+            ->whereHas('sptVersions', fn (Builder $q): Builder => $q->where('spt_versions.id', $sptVersionId))
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->get()
+            ->groupBy('mod_id')
+            ->map(function (Collection $versions): ModVersion {
+                $first = $versions->first();
+                assert($first instanceof ModVersion);
 
-        return $mod->latestVersion;
+                return $first;
+            });
+    }
+
+    /**
+     * For each given mod id, the newest version whose `latestSptVersion` is
+     * the nearest-lower-or-equal SPT to the target.
+     *
+     * @param  array<int, int>  $modIds
+     * @return Collection<int, ModVersion> keyed by mod id
+     */
+    private function bulkClosestMatches(array $modIds, SptVersion $target): Collection
+    {
+        return ModVersion::query()
+            ->where('disabled', false)
+            ->whereIn('mod_id', $modIds)
+            ->whereHas('latestSptVersion', fn (Builder $q): Builder => $q->whereRaw(
+                '(spt_versions.version_major, spt_versions.version_minor, spt_versions.version_patch) <= (?, ?, ?)',
+                [$target->version_major, $target->version_minor, $target->version_patch],
+            ))
+            ->orderByDesc('version_major')
+            ->orderByDesc('version_minor')
+            ->orderByDesc('version_patch')
+            ->orderByRaw('CASE WHEN version_labels = ? THEN 0 ELSE 1 END', [''])
+            ->orderBy('version_labels')
+            ->get()
+            ->groupBy('mod_id')
+            ->map(function (Collection $versions): ModVersion {
+                $first = $versions->first();
+                assert($first instanceof ModVersion);
+
+                return $first;
+            });
     }
 
     /**

@@ -51,13 +51,13 @@
             @endif
         </div>
 
-        @if ($hasSptBadge() || $isDependency || $hasDependencyBadge())
+        @if ($hasSptBadge() || $isDependency || $hasDependencyBadge() || $showIncompatibleIndicator())
             <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                @if ($version?->latestSptVersion)
+                @if ($sptBadge)
                     <span
-                        class="badge-version {{ $version->latestSptVersion->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap"
+                        class="badge-version {{ $sptBadge->color_class }} inline-flex items-center rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap"
                     >
-                        <span class="sr-only">{{ __('SPT version') }}&nbsp;</span>{{ $version->latestSptVersion->version_formatted }}
+                        <span class="sr-only">{{ __('SPT version') }}&nbsp;</span>{{ $sptBadge->version_formatted }}
                     </span>
                 @elseif ($version && $version->spt_version_constraint === '')
                     <span
@@ -98,6 +98,22 @@
                                         <span>{{ $depVersion->mod?->name }}</span>
                                     </div>
                                 @endforeach
+                            </div>
+                        </flux:tooltip.content>
+                    </flux:tooltip>
+                @endif
+                @if ($showIncompatibleIndicator())
+                    <flux:tooltip>
+                        <flux:badge
+                            size="sm"
+                            color="amber"
+                            icon="exclamation-triangle"
+                        >
+                            {{ __('Not compatible') }}
+                        </flux:badge>
+                        <flux:tooltip.content>
+                            <div class="text-xs">
+                                {{ __("No version of this mod matches the list's target SPT version. The closest available version is shown.") }}
                             </div>
                         </flux:tooltip.content>
                     </flux:tooltip>

@@ -6,7 +6,10 @@ use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Services\ModListService;
+use App\Support\DataTransferObjects\ResolvedListVersion;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -109,7 +112,7 @@ new #[Layout('layouts::base')] class extends Component
      * orphan-addon items). Heavy relations are eager-loaded only for the page
      * being rendered.
      *
-     * @return LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool}>
+     * @return LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool, resolved_version: ?ModVersion, version_incompatible: bool, display_spt_version: ?SptVersion}>
      */
     #[Computed]
     public function grouped(): LengthAwarePaginator
@@ -158,27 +161,63 @@ new #[Layout('layouts::base')] class extends Component
 
         $this->modList->setRelation('items', $this->loadPageItems($pageAnchorIds));
 
-        // Each group carries its own render-time derivations (a stable key and
-        // whether it is drag-sortable) so the Blade template stays logic-free.
+        // Resolve the version each mod card should display against the list's
+        // target SPT version (bulk, N+1-safe). Returns latestVersion across
+        // the board when the list has no target SPT.
+        $pageMods = $this->modList->items
+            ->where('listable_type', Mod::class)
+            ->map(fn (ModListItem $item): ?Mod => $item->listable instanceof Mod ? $item->listable : null)
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        $resolvedVersions = resolve(ModListService::class)->resolveListVersions($this->modList, $pageMods);
+
+        // Batch-load the badge and dependency relations on the resolved
+        // versions in one pass so the per-card render stays lazy-load free.
+        $loadableVersions = $resolvedVersions
+            ->map(fn (ResolvedListVersion $resolved): ?ModVersion => $resolved->version)
+            ->filter()
+            ->values();
+        if ($loadableVersions->isNotEmpty()) {
+            EloquentCollection::make($loadableVersions->all())->loadMissing([
+                'latestSptVersion',
+                'latestDependenciesResolved.mod:id,name,slug',
+            ]);
+        }
+
+        // Each group carries its own render-time derivations (a stable key,
+        // whether it is drag-sortable, and the version the card should show)
+        // so the Blade template stays logic-free.
         $canManage = $this->canManage;
         $groups = $this->modList->groupedItems()
             ->values()
-            ->map(function (array $group) use ($canManage): array {
+            ->map(function (array $group) use ($canManage, $resolvedVersions): array {
                 $modItem = $group['mod_item'];
                 $firstAddon = $group['addons']->first();
                 $firstAddonId = $firstAddon instanceof ModListItem ? $firstAddon->id : 0;
 
-                $group['group_key'] = $modItem instanceof ModListItem
-                    ? $modItem->id
-                    : 'detached-'.$firstAddonId;
-                $group['is_sortable'] = $canManage
-                    && $group['mod'] instanceof Mod
-                    && $modItem instanceof ModListItem;
+                $resolved = $group['mod'] instanceof Mod
+                    ? $resolvedVersions->get($group['mod']->id)
+                    : null;
 
-                return $group;
+                return [
+                    'mod' => $group['mod'],
+                    'mod_item' => $modItem,
+                    'addons' => $group['addons'],
+                    'group_key' => $modItem instanceof ModListItem
+                        ? $modItem->id
+                        : 'detached-'.$firstAddonId,
+                    'is_sortable' => $canManage
+                        && $group['mod'] instanceof Mod
+                        && $modItem instanceof ModListItem,
+                    'resolved_version' => $resolved instanceof ResolvedListVersion ? $resolved->version : null,
+                    'version_incompatible' => $resolved instanceof ResolvedListVersion && $resolved->isIncompatible,
+                    'display_spt_version' => $resolved instanceof ResolvedListVersion ? $resolved->displaySptVersion : null,
+                ];
             });
 
-        /** @var LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool}> $paginator */
+        /** @var LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool, resolved_version: ?ModVersion, version_incompatible: bool, display_spt_version: ?SptVersion}> $paginator */
         $paginator = new LengthAwarePaginator(
             $groups,
             $total,
@@ -285,7 +324,7 @@ new #[Layout('layouts::base')] class extends Component
             ? __('Item removed from list.')
             : __('Removed :name from list.', ['name' => $removedName]);
 
-        unset($this->grouped, $this->listItemRows);
+        unset($this->grouped, $this->listItemRows, $this->hasIncompatibleMods);
     }
 
     /**
@@ -431,12 +470,8 @@ new #[Layout('layouts::base')] class extends Component
                 continue;
             }
 
-            if ($group['mod'] === null) {
-                continue;
-            }
-
-            $version = $group['mod']->latestVersion;
-            if ($version === null) {
+            $version = $group['resolved_version'];
+            if (! $version instanceof ModVersion) {
                 continue;
             }
 
@@ -467,6 +502,17 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Whether the list has a target SPT version and at least one mod on the
+     * whole list lacks a version compatible with that target. Drives the
+     * list-level "contains incompatible mods" warning callout.
+     */
+    #[Computed]
+    public function hasIncompatibleMods(): bool
+    {
+        return resolve(ModListService::class)->listHasIncompatibleMods($this->modList);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function with(): array
@@ -477,6 +523,7 @@ new #[Layout('layouts::base')] class extends Component
             'itemCounts' => $this->itemCounts,
             'dependencyModIds' => $this->dependencyModIds,
             'listModIds' => $this->listModIds,
+            'hasIncompatibleMods' => $this->hasIncompatibleMods,
         ];
     }
 };

@@ -9,8 +9,12 @@ use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
+use App\Models\ModVersion;
+use App\Models\SptVersion;
 use App\Models\User;
 use App\Services\ModListService;
+use App\Support\DataTransferObjects\ResolvedListVersion;
+use Illuminate\Support\Facades\DB;
 
 describe('ModListService addMod', function (): void {
     it('adds a mod to a list', function (): void {
@@ -302,5 +306,239 @@ describe('ModListService createList', function (): void {
         expect($list->visibility)->toBe(ListVisibility::Private);
         expect($list->comments_disabled)->toBeTrue();
         expect($list->is_default)->toBeFalse();
+    });
+});
+
+describe('ModListService resolveListVersion', function (): void {
+    it('returns latestVersion with isIncompatible=false when the list has no target SPT', function (): void {
+        $spt = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => null]);
+
+        $mod = Mod::factory()->create();
+        $modVersion = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $modVersion->sptVersions()->sync([$spt->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
+
+        expect($resolved)->toBeInstanceOf(ResolvedListVersion::class);
+        expect($resolved->version?->id)->toBe($modVersion->id);
+        expect($resolved->isIncompatible)->toBeFalse();
+    });
+
+    it('returns the exact-match version, not the latest, when the mod supports the target SPT', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $newerSptVer = ModVersion::factory()->recycle($mod)->create(['version' => '2.0.0']);
+        $newerSptVer->sptVersions()->sync([$older->id]);
+        $matchingVer = ModVersion::factory()->recycle($mod)->create(['version' => '1.5.0']);
+        $matchingVer->sptVersions()->sync([$target->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
+
+        expect($resolved->version?->id)->toBe($matchingVer->id);
+        expect($resolved->isIncompatible)->toBeFalse();
+    });
+
+    it('returns the nearest-lower-SPT version with isIncompatible=true when there is no exact match', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $olderVer = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $olderVer->sptVersions()->sync([$older->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
+
+        expect($resolved->version?->id)->toBe($olderVer->id);
+        expect($resolved->isIncompatible)->toBeTrue();
+    });
+
+    it('returns latestVersion with isIncompatible=true when the mod only supports newer SPTs', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $newer = SptVersion::factory()->state(['version' => '4.0.13'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $newerVer = ModVersion::factory()->recycle($mod)->create(['version' => '5.0.0']);
+        $newerVer->sptVersions()->sync([$newer->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
+
+        expect($resolved->version?->id)->toBe($newerVer->id);
+        expect($resolved->isIncompatible)->toBeTrue();
+    });
+
+    it('pins displaySptVersion to the list target on an exact match even when the version supports newer SPTs', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $newer = SptVersion::factory()->state(['version' => '4.0.13'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $version->sptVersions()->sync([$target->id, $newer->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
+
+        expect($resolved->version?->id)->toBe($version->id);
+        expect($resolved->isIncompatible)->toBeFalse();
+        expect($resolved->displaySptVersion?->id)->toBe($target->id);
+    });
+
+    it("leaves displaySptVersion null on a closest-fallback match so the card shows the version's own SPT", function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $olderVer = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $olderVer->sptVersions()->sync([$older->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
+
+        expect($resolved->displaySptVersion)->toBeNull();
+    });
+
+    it('leaves displaySptVersion null when the list has no target SPT', function (): void {
+        $spt = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => null]);
+
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $version->sptVersions()->sync([$spt->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersion($list, $mod);
+
+        expect($resolved->displaySptVersion)->toBeNull();
+    });
+});
+
+describe('ModListService resolveListVersions (bulk)', function (): void {
+    it('returns the correct entry per mod for a mixed set', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $newer = SptVersion::factory()->state(['version' => '4.0.13'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $compatMod = Mod::factory()->create();
+        $compatVer = ModVersion::factory()->recycle($compatMod)->create(['version' => '1.0.0']);
+        $compatVer->sptVersions()->sync([$target->id]);
+
+        $olderMod = Mod::factory()->create();
+        $olderVer = ModVersion::factory()->recycle($olderMod)->create(['version' => '1.0.0']);
+        $olderVer->sptVersions()->sync([$older->id]);
+
+        $newerOnlyMod = Mod::factory()->create();
+        $newerOnlyVer = ModVersion::factory()->recycle($newerOnlyMod)->create(['version' => '5.0.0']);
+        $newerOnlyVer->sptVersions()->sync([$newer->id]);
+
+        $resolved = resolve(ModListService::class)->resolveListVersions(
+            $list,
+            collect([$compatMod, $olderMod, $newerOnlyMod]),
+        );
+
+        expect($resolved->get($compatMod->id)->version?->id)->toBe($compatVer->id);
+        expect($resolved->get($compatMod->id)->isIncompatible)->toBeFalse();
+        expect($resolved->get($olderMod->id)->version?->id)->toBe($olderVer->id);
+        expect($resolved->get($olderMod->id)->isIncompatible)->toBeTrue();
+        expect($resolved->get($newerOnlyMod->id)->version?->id)->toBe($newerOnlyVer->id);
+        expect($resolved->get($newerOnlyMod->id)->isIncompatible)->toBeTrue();
+    });
+
+    it('issues a bounded number of queries regardless of mod count', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+        $list->loadMissing('sptVersion');
+
+        $mods = collect();
+        for ($i = 0; $i < 8; $i++) {
+            $mod = Mod::factory()->create();
+            $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+            $version->sptVersions()->sync([($i % 2 === 0 ? $target : $older)->id]);
+            $mods->push($mod);
+        }
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        resolve(ModListService::class)->resolveListVersions($list, $mods);
+
+        // Two queries: one for exact matches, one for closest fallbacks. Any
+        // other read (e.g. the target SptVersion) is loaded ahead of time.
+        expect(count(DB::getQueryLog()))->toBeLessThanOrEqual(2);
+
+        DB::disableQueryLog();
+    });
+
+    it('issues no extra queries when the list has no target SPT', function (): void {
+        $list = ModList::factory()->public()->create(['spt_version_id' => null]);
+
+        $mods = collect();
+        for ($i = 0; $i < 4; $i++) {
+            $mod = Mod::factory()->create();
+            $spt = SptVersion::factory()->state(['version' => '3.'.$i.'.0'])->create();
+            $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+            $version->sptVersions()->sync([$spt->id]);
+            $mods->push($mod->load('latestVersion'));
+        }
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        resolve(ModListService::class)->resolveListVersions($list, $mods);
+
+        expect(DB::getQueryLog())->toBeEmpty();
+
+        DB::disableQueryLog();
+    });
+});
+
+describe('ModListService listHasIncompatibleMods', function (): void {
+    it('returns false when the list has no target SPT version', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create(['spt_version_id' => null]);
+        $mod = Mod::factory()->create();
+        resolve(ModListService::class)->addMod($list, $mod);
+
+        expect(resolve(ModListService::class)->listHasIncompatibleMods($list))->toBeFalse();
+    });
+
+    it('returns false when every mod has a version compatible with the target', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create(['spt_version_id' => $target->id]);
+
+        for ($i = 0; $i < 3; $i++) {
+            $mod = Mod::factory()->create();
+            $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+            $version->sptVersions()->sync([$target->id]);
+            resolve(ModListService::class)->addMod($list, $mod);
+        }
+
+        expect(resolve(ModListService::class)->listHasIncompatibleMods($list))->toBeFalse();
+    });
+
+    it('returns true when at least one mod lacks a compatible version', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create(['spt_version_id' => $target->id]);
+
+        $compatMod = Mod::factory()->create();
+        $compatVer = ModVersion::factory()->recycle($compatMod)->create(['version' => '1.0.0']);
+        $compatVer->sptVersions()->sync([$target->id]);
+
+        $incompatMod = Mod::factory()->create();
+        $incompatVer = ModVersion::factory()->recycle($incompatMod)->create(['version' => '1.0.0']);
+        $incompatVer->sptVersions()->sync([$older->id]);
+
+        resolve(ModListService::class)->addMod($list, $compatMod);
+        resolve(ModListService::class)->addMod($list, $incompatMod);
+
+        expect(resolve(ModListService::class)->listHasIncompatibleMods($list))->toBeTrue();
     });
 });

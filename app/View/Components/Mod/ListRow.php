@@ -6,6 +6,7 @@ namespace App\View\Components\Mod;
 
 use App\Models\Mod;
 use App\Models\ModVersion;
+use App\Models\SptVersion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\View\Component;
@@ -21,6 +22,16 @@ final class ListRow extends Component
     public ?ModVersion $version;
 
     /**
+     * The SPT version to render on the card badge. Set by callers (e.g. the
+     * list show page) when the card sits inside a list with a target SPT and
+     * the resolved version is an exact compatibility match, so the badge
+     * shows the curator's target SPT even when the resolved version also
+     * supports newer SPTs. Falls back to the version's own `latestSptVersion`
+     * when null.
+     */
+    public ?SptVersion $sptBadge;
+
+    /**
      * @param  Collection<int, ModVersion>|null  $dependencyVersions  Resolved dependency versions for the mod.
      * @param  Collection<int, int>|null  $listModIds  Mod ids already present on the list, used to flag missing dependencies.
      */
@@ -29,10 +40,13 @@ final class ListRow extends Component
         ?ModVersion $version = null,
         public ?Collection $dependencyVersions = null,
         public bool $isDependency = false,
+        public bool $incompatible = false,
+        ?SptVersion $displaySptVersion = null,
         public ?Collection $listModIds = null,
         public ?string $wireKey = null,
     ) {
         $this->version = $version ?? $mod->latestVersion;
+        $this->sptBadge = $displaySptVersion ?? $this->version?->latestSptVersion;
     }
 
     /**
@@ -40,7 +54,7 @@ final class ListRow extends Component
      */
     public function hasSptBadge(): bool
     {
-        return $this->version?->latestSptVersion !== null
+        return $this->sptBadge instanceof SptVersion
             || ($this->version instanceof ModVersion && $this->version->spt_version_constraint === '');
     }
 
@@ -50,6 +64,16 @@ final class ListRow extends Component
     public function hasDependencyBadge(): bool
     {
         return $this->dependencyVersions instanceof Collection && $this->dependencyVersions->isNotEmpty();
+    }
+
+    /**
+     * Whether the row should render the "not compatible with list SPT
+     * version" indicator. True only when the parent list has a target SPT
+     * version that the resolved version does not match.
+     */
+    public function showIncompatibleIndicator(): bool
+    {
+        return $this->incompatible;
     }
 
     /**

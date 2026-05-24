@@ -694,6 +694,200 @@ describe('list.show note editing', function (): void {
     });
 });
 
+describe('list.show SPT-version resolution', function (): void {
+    it('renders the target-compatible version on the card, not the latest', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $newer = SptVersion::factory()->state(['version' => '4.0.13'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $newerVer = ModVersion::factory()->recycle($mod)->create(['version' => '2.0.0']);
+        $newerVer->sptVersions()->sync([$newer->id]);
+        $targetVer = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $targetVer->sptVersions()->sync([$target->id]);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertDontSee('SPT 4.0.13');
+        $response->assertDontSee('2.0.0');
+    });
+
+    it('renders the list target SPT on the card badge when the version also supports newer SPTs', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $newer = SptVersion::factory()->state(['version' => '4.0.13'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $version->sptVersions()->sync([$target->id, $newer->id]);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        // The version is compatible with both SPTs, but the card sits on a
+        // list targeting 3.11.4, so the badge must read 3.11.4 (not 4.0.13).
+        $response->assertDontSee('SPT 4.0.13');
+    });
+
+    it('renders the not-compatible indicator on a card with no version for the target SPT', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $olderVer = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $olderVer->sptVersions()->sync([$older->id]);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('Not compatible');
+    });
+
+    it('renders the list-level warning callout when at least one mod is incompatible', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $compatMod = Mod::factory()->create();
+        $compatVer = ModVersion::factory()->recycle($compatMod)->create(['version' => '1.0.0']);
+        $compatVer->sptVersions()->sync([$target->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $compatMod->id,
+        ]);
+
+        $incompatMod = Mod::factory()->create();
+        $incompatVer = ModVersion::factory()->recycle($incompatMod)->create(['version' => '1.0.0']);
+        $incompatVer->sptVersions()->sync([$older->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $incompatMod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('Some mods on this list have no version compatible with SPT 3.11.4');
+    });
+
+    it('omits the warning callout when every mod is compatible', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $version->sptVersions()->sync([$target->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertDontSee('Some mods on this list have no version compatible');
+        $response->assertDontSee('Not compatible');
+    });
+
+    it('omits the warning and indicator when the list has no target SPT version', function (): void {
+        $spt = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => null]);
+
+        $mod = Mod::factory()->create();
+        $version = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $version->sptVersions()->sync([$spt->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertDontSee('Some mods on this list have no version compatible');
+        $response->assertDontSee('Not compatible');
+    });
+
+    it('renders addons regardless of the list target SPT (addons are not SPT-resolved)', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $mod = Mod::factory()->create();
+        $modVer = ModVersion::factory()->recycle($mod)->create(['version' => '1.0.0']);
+        $modVer->sptVersions()->sync([$target->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mod->id,
+        ]);
+
+        $addon = Addon::factory()->create(['mod_id' => $mod->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee($addon->name);
+    });
+
+    it('renders for the owner via Livewire without triggering a lazy-loading violation', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
+        $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create(['spt_version_id' => $target->id]);
+
+        $compatMod = Mod::factory()->create();
+        $compatVer = ModVersion::factory()->recycle($compatMod)->create(['version' => '1.0.0']);
+        $compatVer->sptVersions()->sync([$target->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $compatMod->id,
+        ]);
+
+        $incompatMod = Mod::factory()->create();
+        $incompatVer = ModVersion::factory()->recycle($incompatMod)->create(['version' => '1.0.0']);
+        $incompatVer->sptVersions()->sync([$older->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $incompatMod->id,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->assertSet('hasIncompatibleMods', true);
+    });
+});
+
 describe('list.create page', function (): void {
     it('redirects guests to login', function (): void {
         $response = $this->get(route('list.create'));

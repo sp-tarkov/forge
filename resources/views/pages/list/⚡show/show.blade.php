@@ -143,6 +143,18 @@
         </div>
     </div>
 
+    @if ($hasIncompatibleMods && $modList->sptVersion)
+        <flux:callout
+            icon="exclamation-triangle"
+            color="amber"
+            inline
+        >
+            <flux:callout.text>
+                {{ __('Some mods on this list have no version compatible with SPT :version. The closest available version is shown for those mods.', ['version' => $modList->sptVersion->version]) }}
+            </flux:callout.text>
+        </flux:callout>
+    @endif
+
     {{-- Items --}}
     @if ($grouped->isEmpty())
         <div
@@ -200,9 +212,11 @@
                     @if ($group['mod'])
                         <x-mod.list-row
                             :mod="$group['mod']"
-                            :version="$group['mod']->latestVersion"
+                            :version="$group['resolved_version']"
                             :is-dependency="$dependencyModIds->contains($group['mod']->id)"
-                            :dependency-versions="$group['mod']->latestVersion?->latestDependenciesResolved"
+                            :dependency-versions="$group['resolved_version']?->latestDependenciesResolved"
+                            :incompatible="$group['version_incompatible']"
+                            :display-spt-version="$group['display_spt_version']"
                             :list-mod-ids="$listModIds"
                         >
                             <x-slot:note>
