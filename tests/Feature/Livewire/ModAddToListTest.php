@@ -282,6 +282,54 @@ describe('ModAddToList dependency cascade', function (): void {
         expect($fresh->containsMod($depMod->id))->toBeFalse();
     });
 
+    it('closes the modal after confirming all dependencies', function (): void {
+        [$user, $mod, $list] = setupModWithDependency();
+
+        Livewire::actingAs($user)
+            ->test('mod-add-to-list', ['sourceId' => $mod->id])
+            ->call('addToList', $list->id)
+            ->call('confirmDependencies')
+            ->assertSet('showDependencyStep', false)
+            ->assertDispatched('modal-close', name: 'mod-add-to-list-mod-'.$mod->id);
+    });
+
+    it('adds only the mod and closes the modal via the mod-only action', function (): void {
+        [$user, $mod, $list, $depMod] = setupModWithDependency();
+
+        Livewire::actingAs($user)
+            ->test('mod-add-to-list', ['sourceId' => $mod->id])
+            ->call('addToList', $list->id)
+            ->call('addModOnly')
+            ->assertSet('showDependencyStep', false)
+            ->assertDispatched('modal-close', name: 'mod-add-to-list-mod-'.$mod->id);
+
+        $fresh = $list->fresh();
+        expect($fresh->containsMod($mod->id))->toBeTrue();
+        expect($fresh->containsMod($depMod->id))->toBeFalse();
+    });
+
+    it('keeps the modal open when the dependency cascade exceeds capacity', function (): void {
+        config()->set('mod-lists.max_items_per_list', 2);
+
+        [$user, $mod, $list] = setupModWithDependency();
+
+        $filler = Mod::factory()->create();
+        $list->items()->create([
+            'listable_type' => Mod::class,
+            'listable_id' => $filler->id,
+            'position' => 1,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('mod-add-to-list', ['sourceId' => $mod->id])
+            ->call('addToList', $list->id)
+            ->call('confirmDependencies')
+            ->assertSet('showDependencyStep', true)
+            ->assertNotDispatched('modal-close');
+
+        expect($list->fresh()->containsMod($mod->id))->toBeFalse();
+    });
+
     it('writes nothing when the dependency step is cancelled', function (): void {
         [$user, $mod, $list, $depMod] = setupModWithDependency();
 

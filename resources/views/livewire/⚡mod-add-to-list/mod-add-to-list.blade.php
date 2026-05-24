@@ -64,7 +64,7 @@
                         </flux:button>
                         <flux:button
                             variant="outline"
-                            wire:click="$set('selectedDependencyIds', [])"
+                            wire:click="addModOnly"
                         >
                             {{ __('Add mod only') }}
                         </flux:button>
