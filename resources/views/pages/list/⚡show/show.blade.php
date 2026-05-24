@@ -273,6 +273,7 @@
                                                     :note="$addonItem->note"
                                                     :can-manage="$canManage"
                                                     :editing="$editingNoteItemId === $addonItem->id"
+                                                    icon-column-class="w-10"
                                                 />
                                             </x-slot:note>
                                             @if ($canManage)

@@ -1,28 +1,29 @@
 <div
     @if ($wireKey) wire:key="{{ $wireKey }}" @endif
-    {{ $attributes->merge(['class' => 'flex items-start gap-3 p-3 sm:p-4']) }}
+    {{ $attributes->merge(['class' => 'p-3 sm:p-4']) }}
 >
-    <a
-        href="{{ $mod->detail_url }}"
-        wire:navigate
-        class="shrink-0"
-        aria-hidden="true"
-        tabindex="-1"
-    >
-        @if ($mod->thumbnail)
-            <img
-                src="{{ $mod->thumbnailUrl }}"
-                alt=""
-                class="size-14 sm:size-16 rounded-md object-cover"
-            >
-        @else
-            <div class="size-14 sm:size-16 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <flux:icon.cube-transparent class="size-7 text-gray-400 dark:text-gray-600" />
-            </div>
-        @endif
-    </a>
+    <div class="flex items-start gap-3">
+        <a
+            href="{{ $mod->detail_url }}"
+            wire:navigate
+            class="shrink-0"
+            aria-hidden="true"
+            tabindex="-1"
+        >
+            @if ($mod->thumbnail)
+                <img
+                    src="{{ $mod->thumbnailUrl }}"
+                    alt=""
+                    class="size-14 sm:size-16 rounded-md object-cover"
+                >
+            @else
+                <div class="size-14 sm:size-16 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <flux:icon.cube-transparent class="size-7 text-gray-400 dark:text-gray-600" />
+                </div>
+            @endif
+        </a>
 
-    <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2 min-w-0">
             <a
                 href="{{ $mod->detail_url }}"
@@ -121,10 +122,12 @@
             </div>
         @endif
 
-        {{ $note ?? '' }}
+        </div>
+
+        <div class="shrink-0 flex items-center gap-1">
+            {{ $slot }}
+        </div>
     </div>
 
-    <div class="shrink-0 flex items-center gap-1">
-        {{ $slot }}
-    </div>
+    {{ $note ?? '' }}
 </div>
