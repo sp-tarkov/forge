@@ -120,11 +120,14 @@
                     label:sr-only="{{ __('Filter lists') }}"
                 />
 
-                <div class="max-h-72 overflow-y-auto space-y-1">
+                <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->userLists as $list)
                         <div
                             wire:key="add-to-list-row-{{ $list->id }}"
-                            class="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-900"
+                            @class([
+                                'flex items-center justify-between gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-900',
+                                'border-t border-gray-200 dark:border-gray-700' => ! $loop->first,
+                            ])
                         >
                             <div class="flex items-center gap-2 min-w-0">
                                 @if ($list->isFavourites())
@@ -157,7 +160,7 @@
                             @if ($this->membershipFor($list->id))
                                 <flux:button
                                     size="sm"
-                                    variant="outline"
+                                    variant="danger"
                                     wire:click="removeFromList({{ $list->id }})"
                                 >
                                     {{ __('Remove') }}
@@ -166,6 +169,7 @@
                                 <flux:button
                                     size="sm"
                                     variant="primary"
+                                    color="green"
                                     wire:click="addToList({{ $list->id }})"
                                 >
                                     {{ __('Add') }}
@@ -179,16 +183,18 @@
                     @endforelse
                 </div>
 
-                <div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 pt-3">
+                <div class="flex items-center justify-between">
                     <flux:button
-                        variant="ghost"
                         icon="plus"
                         wire:click="startCreatingNew"
                     >
                         {{ __('Create new list') }}
                     </flux:button>
                     <flux:modal.close>
-                        <flux:button variant="outline">{{ __('Done') }}</flux:button>
+                        <flux:button
+                            variant="primary"
+                            color="blue"
+                        >{{ __('Done') }}</flux:button>
                     </flux:modal.close>
                 </div>
             @endif
