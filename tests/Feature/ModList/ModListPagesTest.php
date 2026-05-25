@@ -554,6 +554,161 @@ describe('list.show page', function (): void {
     });
 });
 
+describe('list.show missing dependencies', function (): void {
+    it('shows the owner the add-missing-dependencies button when deps are missing', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        [$mainMod, $mainVer] = makeListPageMod('Main Mod');
+        [$depMod] = makeListPageMod('Missing Helper');
+        linkListPageDependency($mainVer, $depMod);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+        ]);
+
+        $response = $this->actingAs($owner)->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('Add missing dependencies');
+    });
+
+    it('hides the add-missing-dependencies button when every dep is already on the list', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        [$mainMod, $mainVer] = makeListPageMod('Main Mod');
+        [$depMod] = makeListPageMod('Already Present Helper');
+        linkListPageDependency($mainVer, $depMod);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+        ]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $depMod->id,
+        ]);
+
+        $response = $this->actingAs($owner)->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertDontSee('Add missing dependencies');
+    });
+
+    it('hides the add-missing-dependencies button from non-owners', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        [$mainMod, $mainVer] = makeListPageMod('Main Mod');
+        [$depMod] = makeListPageMod('Missing Helper');
+        linkListPageDependency($mainVer, $depMod);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+        ]);
+
+        $other = User::factory()->create();
+        $response = $this->actingAs($other)->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertDontSee('Add missing dependencies');
+    });
+
+    it('adds every missing dependency when the owner confirms', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        [$mainMod, $mainVer] = makeListPageMod('Main Mod');
+        [$depA, $depAVer] = makeListPageMod('Dep A');
+        [$depB] = makeListPageMod('Dep B');
+        linkListPageDependency($mainVer, $depA);
+        linkListPageDependency($depAVer, $depB);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('addMissingDependencies')
+            ->assertSet('statusMessage', '2 missing dependencies added to list.');
+
+        $list = $list->fresh();
+        expect($list->containsMod($depA->id))->toBeTrue();
+        expect($list->containsMod($depB->id))->toBeTrue();
+    });
+
+    it('forbids non-owners from calling addMissingDependencies', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $other = User::factory()->create();
+
+        Livewire::actingAs($other)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('addMissingDependencies')
+            ->assertForbidden();
+    });
+
+    it('warns the owner with a toast when the bulk add would exceed the list cap', function (): void {
+        $this->withoutDefer();
+
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        config()->set('mod-lists.max_items_per_list', 2);
+
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        [$mainMod, $mainVer] = makeListPageMod('Main Mod');
+        [$depA, $depAVer] = makeListPageMod('Dep A');
+        [$depB] = makeListPageMod('Dep B');
+        linkListPageDependency($mainVer, $depA);
+        linkListPageDependency($depAVer, $depB);
+
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Mod::class,
+            'listable_id' => $mainMod->id,
+            'position' => 0,
+        ]);
+
+        Livewire::actingAs($owner)
+            ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
+            ->call('addMissingDependencies');
+
+        // Nothing got added, original mod stays alone.
+        expect($list->fresh()->itemCount())->toBe(1);
+        expect($list->fresh()->containsMod($depA->id))->toBeFalse();
+        expect($list->fresh()->containsMod($depB->id))->toBeFalse();
+    });
+});
+
 describe('list.show note editing', function (): void {
     it('lets the owner open the inline note editor', function (): void {
         $owner = User::factory()->create();
@@ -1144,3 +1299,29 @@ describe('user lists-tab visibility', function (): void {
             ->assertSee('Owner Private List');
     });
 });
+
+/**
+ * Build a Mod with a single ModVersion wired to an SPT version. The caller
+ * must ensure an SptVersion with version '3.8.0' exists.
+ *
+ * @return array{0: Mod, 1: ModVersion}
+ */
+function makeListPageMod(string $name): array
+{
+    $mod = Mod::factory()->create(['name' => $name]);
+    $version = ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.0.0',
+        'spt_version_constraint' => '3.8.0',
+    ]);
+
+    return [$mod, $version];
+}
+
+/**
+ * Link a ModVersion to another mod via a Dependency row. The DependencyObserver
+ * populates `dependencies_resolved` so `latestDependenciesResolved` returns it.
+ */
+function linkListPageDependency(ModVersion $from, Mod $to): void
+{
+    Dependency::factory()->recycle([$from, $to])->create(['constraint' => '*']);
+}

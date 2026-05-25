@@ -8,8 +8,10 @@ use App\Models\ModList;
 use App\Models\ModListItem;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
+use App\Exceptions\ModListCapacityExceededException;
 use App\Services\ModListService;
 use App\Support\DataTransferObjects\ResolvedListVersion;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -269,6 +271,59 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Add every missing dependency mod to the list in one transaction.
+     *
+     * The set is recomputed at action time rather than trusting the rendered
+     * snapshot so a concurrent edit (e.g. the owner added a mod in another
+     * tab) cannot smuggle stale ids past the capacity check.
+     */
+    public function addMissingDependencies(ModListService $service): void
+    {
+        Gate::authorize('addItem', $this->modList);
+
+        $missing = $service->missingDependenciesForList($this->modList);
+        if ($missing->isEmpty()) {
+            $this->dispatch('modal-close', name: 'list-missing-dependencies-'.$this->modList->id);
+
+            return;
+        }
+
+        try {
+            $added = $service->addMods($this->modList, $missing);
+        } catch (ModListCapacityExceededException) {
+            $max = ModList::maxItemsPerList();
+
+            Flux::toast(
+                heading: __('List full'),
+                text: __('Adding the missing dependencies would exceed the :count item cap. Remove items or use another list.', ['count' => $max]),
+                variant: 'warning',
+            );
+
+            return;
+        }
+
+        $this->statusMessage = trans_choice(
+            ':count missing dependency added to list.|:count missing dependencies added to list.',
+            $added,
+            ['count' => $added],
+        );
+
+        Flux::toast(
+            heading: __('Dependencies added'),
+            text: trans_choice(
+                'Added :count missing dependency to the list.|Added :count missing dependencies to the list.',
+                $added,
+                ['count' => $added],
+            ),
+            variant: 'success',
+        );
+
+        $this->dispatch('modal-close', name: 'list-missing-dependencies-'.$this->modList->id);
+
+        unset($this->grouped, $this->listItemRows, $this->hasIncompatibleMods, $this->missingDependencies, $this->dependencyModIds, $this->listModIds);
+    }
+
+    /**
      * Open the inline note editor for a list item.
      */
     public function startEditingNote(int $itemId): void
@@ -454,6 +509,25 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Dependency mods that the list's existing mods require but which are not
+     * themselves on the list. Walks the dependency graph from every top-level
+     * mod on the list so transitive dependencies surface too.
+     *
+     * Only computed for the list owner since it powers an owner-only action.
+     *
+     * @return Collection<int, Mod>
+     */
+    #[Computed]
+    public function missingDependencies(): Collection
+    {
+        if (! $this->canManage) {
+            return new Collection;
+        }
+
+        return resolve(ModListService::class)->missingDependenciesForList($this->modList);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function with(): array
@@ -465,6 +539,7 @@ new #[Layout('layouts::base')] class extends Component
             'dependencyModIds' => $this->dependencyModIds,
             'listModIds' => $this->listModIds,
             'hasIncompatibleMods' => $this->hasIncompatibleMods,
+            'missingDependencies' => $this->missingDependencies,
         ];
     }
 

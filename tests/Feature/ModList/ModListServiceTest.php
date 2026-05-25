@@ -129,6 +129,110 @@ describe('ModListService suggestedDependencies', function (): void {
     });
 });
 
+describe('ModListService missingDependenciesForList', function (): void {
+    it('returns missing dependencies for every top-level mod on the list', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+
+        [$modA, $verA] = makeModWithVersion('A');
+        [$modB, $verB] = makeModWithVersion('B');
+        [$modC] = makeModWithVersion('C');
+        [$modD] = makeModWithVersion('D');
+        linkModDependency($verA, $modB);
+        linkModDependency($verB, $modC);
+
+        // modA and modD are both top-level on the list. The graph walk should
+        // surface modB and modC (transitively from modA) but not modA/modD.
+        resolve(ModListService::class)->addMod($list, $modA);
+        resolve(ModListService::class)->addMod($list, $modD);
+
+        $missing = resolve(ModListService::class)->missingDependenciesForList($list->fresh());
+
+        expect($missing->pluck('id')->sort()->values()->all())->toBe(collect([$modB->id, $modC->id])->sort()->values()->all());
+    });
+
+    it('returns an empty collection when every dependency is already present', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+
+        [$modA, $verA] = makeModWithVersion('A');
+        [$modB] = makeModWithVersion('B');
+        linkModDependency($verA, $modB);
+
+        resolve(ModListService::class)->addMod($list, $modA);
+        resolve(ModListService::class)->addMod($list, $modB);
+
+        $missing = resolve(ModListService::class)->missingDependenciesForList($list->fresh());
+
+        expect($missing)->toBeEmpty();
+    });
+
+    it('returns an empty collection when the list has no top-level mods', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+
+        $missing = resolve(ModListService::class)->missingDependenciesForList($list);
+
+        expect($missing)->toBeEmpty();
+    });
+});
+
+describe('ModListService addMods', function (): void {
+    it('adds many mods in one transaction and returns the added count', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mods = Mod::factory()->count(3)->create();
+
+        $added = resolve(ModListService::class)->addMods($list, $mods);
+
+        expect($added)->toBe(3);
+        expect($list->fresh()->itemCount())->toBe(3);
+        foreach ($mods as $mod) {
+            expect($list->containsMod($mod->id))->toBeTrue();
+        }
+    });
+
+    it('skips mods already on the list and returns only the count of new additions', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $existing = Mod::factory()->create();
+        $newOne = Mod::factory()->create();
+
+        resolve(ModListService::class)->addMod($list, $existing);
+
+        $added = resolve(ModListService::class)->addMods($list, collect([$existing, $newOne]));
+
+        expect($added)->toBe(1);
+        expect($list->fresh()->itemCount())->toBe(2);
+    });
+
+    it('returns zero and writes nothing when given an empty collection', function (): void {
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+
+        $added = resolve(ModListService::class)->addMods($list, collect());
+
+        expect($added)->toBe(0);
+        expect($list->fresh()->itemCount())->toBe(0);
+    });
+
+    it('throws when the bulk add would exceed the per-list cap', function (): void {
+        config()->set('mod-lists.max_items_per_list', 2);
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+        $mods = Mod::factory()->count(3)->create();
+
+        expect(fn () => resolve(ModListService::class)->addMods($list, $mods))
+            ->toThrow(ModListCapacityExceededException::class);
+
+        expect($list->fresh()->itemCount())->toBe(0);
+    });
+});
+
 describe('ModListService addAddon', function (): void {
     it('throws ParentModMissing when parent is not in the list and cascade is not opted in', function (): void {
         $user = User::factory()->create();

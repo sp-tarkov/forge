@@ -32,6 +32,17 @@
                         </flux:button>
                     </flux:modal.trigger>
                 @endif
+                @if ($missingDependencies->isNotEmpty())
+                    <flux:modal.trigger name="list-missing-dependencies-{{ $modList->id }}">
+                        <flux:button
+                            icon="puzzle-piece"
+                            variant="outline"
+                            size="sm"
+                        >
+                            {{ __('Add missing dependencies') }}
+                        </flux:button>
+                    </flux:modal.trigger>
+                @endif
                 <flux:button
                     icon="pencil"
                     variant="outline"
@@ -328,6 +339,52 @@
                 />
             @endif
         </div>
+    @endif
+
+    @if ($canManage && $missingDependencies->isNotEmpty())
+        <flux:modal
+            name="list-missing-dependencies-{{ $modList->id }}"
+            class="md:w-[500px]"
+        >
+            <div class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('Add missing dependencies') }}</flux:heading>
+                    <flux:subheading>
+                        {{ trans_choice(
+                            'The following :count mod is required by something on this list but is not yet on it. Add it?|The following :count mods are required by something on this list but are not yet on it. Add them?',
+                            $missingDependencies->count(),
+                            ['count' => $missingDependencies->count()],
+                        ) }}
+                    </flux:subheading>
+                </div>
+                <ul class="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800 rounded-md border border-gray-100 dark:border-gray-800">
+                    @foreach ($missingDependencies as $depMod)
+                        <li
+                            wire:key="missing-dep-{{ $depMod->id }}"
+                            class="flex items-center gap-3 p-2"
+                        >
+                            <div class="shrink-0 size-8 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                <flux:icon.cube class="size-4 text-gray-500" />
+                            </div>
+                            <div class="min-w-0 text-sm font-medium truncate">
+                                {{ $depMod->name }}
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+                <div class="flex justify-end gap-3 pt-2">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button
+                        variant="primary"
+                        wire:click="addMissingDependencies"
+                    >
+                        {{ __('Add all') }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
     @endif
 
     @if ($canManage && $modList->visibility === \App\Enums\ListVisibility::Hidden)

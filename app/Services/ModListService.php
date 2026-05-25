@@ -256,39 +256,70 @@ final class ModListService
      */
     public function suggestedDependencies(ModList $modList, Mod $mod): Collection
     {
-        $visited = $this->existingModIds($modList);
-        $visited[$mod->id] = $mod->id;
+        return $this->walkDependencyGraph($modList, new Collection([$mod]));
+    }
 
-        /** @var Collection<int, Mod> $mods */
-        $mods = new Collection;
-        $queue = [$mod];
+    /**
+     * Resolve every dependency mod that the list's existing mods depend on
+     * but which isn't itself on the list.
+     *
+     * Walks the dependency graph from every top-level mod currently on the list
+     * so transitive dependencies-of-dependencies are picked up too.
+     *
+     * @return Collection<int, Mod>
+     */
+    public function missingDependenciesForList(ModList $modList): Collection
+    {
+        /** @var Collection<int, Mod> $topLevel */
+        $topLevel = Mod::query()
+            ->whereIn('id', ModListItem::query()
+                ->where('mod_list_id', $modList->id)
+                ->where('listable_type', Mod::class)
+                ->select('listable_id'))
+            ->get();
 
-        while ($queue !== []) {
-            $current = array_shift($queue);
-
-            $modVersion = $this->resolveModVersion($modList, $current);
-            if (! $modVersion instanceof ModVersion) {
-                continue;
-            }
-
-            $deps = $modVersion->latestDependenciesResolved()
-                ->with('mod:id,name,slug,thumbnail,thumbnail_hash,owner_id')
-                ->get();
-
-            foreach ($deps as $depVersion) {
-                $depMod = $depVersion->mod;
-
-                if (isset($visited[$depMod->id])) {
-                    continue;
-                }
-
-                $visited[$depMod->id] = $depMod->id;
-                $mods->push($depMod);
-                $queue[] = $depMod;
-            }
+        if ($topLevel->isEmpty()) {
+            return new Collection;
         }
 
-        return $mods;
+        return $this->walkDependencyGraph($modList, $topLevel);
+    }
+
+    /**
+     * Add many dependency mods to the list in one transaction.
+     *
+     * Skips mods already present, enforces the per-list cap against the
+     * projected count, and assigns sequential positions starting from the
+     * next free slot. Returns the number of mods actually added.
+     *
+     * @param  Collection<int, Mod>|array<int, Mod>  $mods
+     *
+     * @throws ModListCapacityExceededException
+     */
+    public function addMods(ModList $modList, Collection|array $mods): int
+    {
+        $existingModIds = $this->existingModIds($modList);
+
+        $toAdd = ($mods instanceof Collection ? $mods : collect($mods))
+            ->reject(fn (Mod $candidate): bool => isset($existingModIds[$candidate->id]))
+            ->unique('id')
+            ->values();
+
+        if ($toAdd->isEmpty()) {
+            return 0;
+        }
+
+        $this->assertWithinCapacity($modList, $modList->itemCount() + $toAdd->count());
+
+        return DB::transaction(function () use ($modList, $toAdd): int {
+            $position = $this->nextPosition($modList);
+
+            foreach ($toAdd as $mod) {
+                $this->createItem($modList, Mod::class, $mod->id, $position++);
+            }
+
+            return $toAdd->count();
+        });
     }
 
     /**
@@ -407,6 +438,54 @@ final class ModListService
     private function resolveModVersion(ModList $modList, Mod $mod): ?ModVersion
     {
         return $this->resolveListVersion($modList, $mod)->version;
+    }
+
+    /**
+     * BFS walk of the dependency graph starting from a set of seed mods, returning
+     * every dependency mod that is not already on the list. Cycles and mods already
+     * on the list are skipped via a shared visited set.
+     *
+     * @param  Collection<int, Mod>  $startingMods
+     * @return Collection<int, Mod>
+     */
+    private function walkDependencyGraph(ModList $modList, Collection $startingMods): Collection
+    {
+        $visited = $this->existingModIds($modList);
+
+        foreach ($startingMods as $start) {
+            $visited[$start->id] = $start->id;
+        }
+
+        /** @var Collection<int, Mod> $mods */
+        $mods = new Collection;
+        $queue = $startingMods->values()->all();
+
+        while ($queue !== []) {
+            $current = array_shift($queue);
+
+            $modVersion = $this->resolveModVersion($modList, $current);
+            if (! $modVersion instanceof ModVersion) {
+                continue;
+            }
+
+            $deps = $modVersion->latestDependenciesResolved()
+                ->with('mod:id,name,slug,thumbnail,thumbnail_hash,owner_id')
+                ->get();
+
+            foreach ($deps as $depVersion) {
+                $depMod = $depVersion->mod;
+
+                if (isset($visited[$depMod->id])) {
+                    continue;
+                }
+
+                $visited[$depMod->id] = $depMod->id;
+                $mods->push($depMod);
+                $queue[] = $depMod;
+            }
+        }
+
+        return $mods;
     }
 
     /**
