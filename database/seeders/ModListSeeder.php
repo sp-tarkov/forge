@@ -360,18 +360,27 @@ final class ModListSeeder extends Seeder
         if ($addonShare > 0) {
             $remaining = $this->maxItemsPerList - count($rows);
             foreach ($addonIds->shuffle()->take($addonShare) as $addonId) {
-                if ($remaining <= 0) {
-                    break;
+                $parentModId = $addonModMap->get($addonId);
+                if ($parentModId === null) {
+                    // The $addonModMap pre-filter excludes addons without a
+                    // parent mod, so this branch is unreachable in practice.
+                    // Skip defensively rather than seed a parent-less addon.
+                    continue;
                 }
 
-                $parentModId = $addonModMap->get($addonId);
-                if ($parentModId !== null && ! isset($addedModIds[$parentModId])) {
-                    if ($remaining < 2) {
-                        // Need room for both the parent mod and the addon to
-                        // preserve the no-orphan invariant.
-                        break;
-                    }
+                $needsParent = ! isset($addedModIds[$parentModId]);
+                $slotsNeeded = $needsParent ? 2 : 1;
 
+                if ($remaining < $slotsNeeded) {
+                    // Not enough capacity for both this addon and its parent
+                    // (or just the addon itself). Skip this candidate and try
+                    // the next one rather than aborting the loop, which keeps
+                    // the no-orphan invariant intact without giving up on the
+                    // remaining addon budget.
+                    continue;
+                }
+
+                if ($needsParent) {
                     $rows[] = $this->modRow($listId, $parentModId, $position++, $now);
                     $addedModIds[$parentModId] = true;
                     $remaining--;
