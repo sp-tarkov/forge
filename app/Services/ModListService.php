@@ -198,9 +198,8 @@ final class ModListService
      * Reorder a subset of top-level mod items relative to one another.
      *
      * Only the position slots already occupied by the supplied mod items are
-     * rewritten, so reordering a paginated subset never disturbs the positions
-     * of items that are not in the subset (e.g. items on other pages). All
-     * position updates are flushed in a single upsert statement.
+     * rewritten, so items omitted from the subset keep their existing
+     * positions. All position updates are flushed in a single upsert statement.
      *
      * @param  array<int, int>  $orderedModIds
      */

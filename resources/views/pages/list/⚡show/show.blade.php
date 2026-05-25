@@ -308,11 +308,6 @@
             @endforeach
         </div>
 
-        @if ($grouped->hasPages())
-            <div>
-                {{ $grouped->links() }}
-            </div>
-        @endif
     @endif
 
     @if (! $modList->isFavourites() && $modList->visibility !== \App\Enums\ListVisibility::Private)

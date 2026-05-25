@@ -15,28 +15,14 @@ use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 new #[Layout('layouts::base')] class extends Component
 {
-    use WithPagination;
-
-    /**
-     * Number of group cards (parent mods + orphan-addon groups) shown per page.
-     */
-    private const int PER_PAGE = 24;
-
-    /**
-     * Query-string parameter name used for the items paginator.
-     */
-    private const string PAGE_NAME = 'page';
-
     public ModList $modList;
 
     public ?string $shareToken = null;
@@ -108,69 +94,27 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Paginated group cards (mods with nested addons) for the current page.
+     * Group cards (mods with nested addons) for the entire list.
      *
-     * Pagination operates on the top-level group anchors (parent-mod items and
-     * orphan-addon items). Heavy relations are eager-loaded only for the page
-     * being rendered.
+     * Lists are capped (see ModList::maxItemsPerList) so the whole list renders
+     * in a single pass. This keeps drag-and-drop reorder working across the
+     * full list without page boundaries.
      *
-     * @return LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool, resolved_version: ?ModVersion, version_incompatible: bool, display_spt_version: ?SptVersion}>
+     * @return Collection<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool, resolved_version: ?ModVersion, version_incompatible: bool, display_spt_version: ?SptVersion}>
      */
     #[Computed]
-    public function grouped(): LengthAwarePaginator
+    public function grouped(): Collection
     {
-        $rows = $this->listItemRows;
-
-        $modParentIds = $rows
-            ->where('listable_type', Mod::class)
-            ->pluck('listable_id')
-            ->all();
-
-        $addonItemIds = $rows
-            ->where('listable_type', Addon::class)
-            ->pluck('id')
-            ->all();
-
-        $addonParentMap = $addonItemIds === []
-            ? new Collection
-            : Addon::query()
-                ->select(['id', 'mod_id'])
-                ->whereIn('id', $rows->where('listable_type', Addon::class)->pluck('listable_id'))
-                ->get()
-                ->keyBy('id');
-
-        // A "group anchor" is either a top-level mod item, or an addon item
-        // whose parent mod is not itself a top-level item on the list.
-        $anchorRows = $rows->filter(function (ModListItem $row) use ($modParentIds, $addonParentMap): bool {
-            if ($row->listable_type === Mod::class) {
-                return true;
-            }
-
-            $parentModId = $addonParentMap->get($row->listable_id)?->mod_id;
-
-            return $parentModId === null || ! in_array($parentModId, $modParentIds, true);
-        })->values();
-
-        $page = LengthAwarePaginator::resolveCurrentPage(self::PAGE_NAME);
-        $perPage = self::PER_PAGE;
-        $total = $anchorRows->count();
-
-        /** @var array<int, int> $pageAnchorIds */
-        $pageAnchorIds = $anchorRows
-            ->forPage($page, $perPage)
-            ->pluck('id')
-            ->all();
-
-        $this->modList->setRelation('items', $this->loadPageItems($pageAnchorIds));
+        $this->modList->setRelation('items', $this->loadAllItems());
 
         // Resolve the version each mod card should display against the list's
-        // target SPT version (bulk, N+1-safe). Returns latestVersion across
-        // the board when the list has no target SPT.
+        // target SPT version (bulk, N+1-safe). Returns latestVersion across the
+        // board when the list has no target SPT.
         //
-        // Orphan-addon group anchors render the addon's parent mod as the
-        // card, so their parent mod must also be fed to the resolver or the
-        // card falls through to the mod's unfiltered latestVersion.
-        $pageMods = $this->modList->items
+        // Orphan-addon group anchors render the addon's parent mod as the card,
+        // so their parent mod must also be fed to the resolver or the card
+        // falls through to the mod's unfiltered latestVersion.
+        $listMods = $this->modList->items
             ->map(function (ModListItem $item): ?Mod {
                 if ($item->listable instanceof Mod) {
                     return $item->listable;
@@ -186,7 +130,7 @@ new #[Layout('layouts::base')] class extends Component
             ->unique('id')
             ->values();
 
-        $resolvedVersions = resolve(ModListService::class)->resolveListVersions($this->modList, $pageMods);
+        $resolvedVersions = resolve(ModListService::class)->resolveListVersions($this->modList, $listMods);
 
         // Batch-load the badge and dependency relations on the resolved
         // versions in one pass so the per-card render stays lazy-load free.
@@ -204,7 +148,8 @@ new #[Layout('layouts::base')] class extends Component
         // Each group carries its own render-time derivations (a stable key, whether it is drag-sortable, and the
         // version the card should show) so the Blade template stays logic-free.
         $canManage = $this->canManage;
-        $groups = $this->modList->groupedItems()
+
+        return $this->modList->groupedItems()
             ->values()
             ->map(function (array $group) use ($canManage, $resolvedVersions): array {
                 $modItem = $group['mod_item'];
@@ -230,20 +175,6 @@ new #[Layout('layouts::base')] class extends Component
                     'display_spt_version' => $resolved instanceof ResolvedListVersion ? $resolved->displaySptVersion : null,
                 ];
             });
-
-        /** @var LengthAwarePaginator<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool, resolved_version: ?ModVersion, version_incompatible: bool, display_spt_version: ?SptVersion}> $paginator */
-        $paginator = new LengthAwarePaginator(
-            $groups,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path' => LengthAwarePaginator::resolveCurrentPath(),
-                'pageName' => self::PAGE_NAME,
-            ],
-        );
-
-        return $paginator;
     }
 
     /**
@@ -382,34 +313,32 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Reorder top-level mods on the current page via the drag-drop handler.
+     * Reorder top-level mods via the drag-drop handler.
      *
      * Livewire's wire:sort calls this with the dragged mod id and its new
-     * zero-based position within the page. The page's mod items are reordered
-     * relative to one another and persisted back onto their existing position
-     * slots, so items on other pages keep their positions intact.
+     * zero-based position. The list's mod items are reordered relative to one
+     * another and persisted back onto their existing position slots.
      */
     public function reorder(int $modId, int $position, ModListService $service): void
     {
         Gate::authorize('reorder', $this->modList);
 
-        $pageModIds = $this->grouped
-            ->getCollection()
+        $modIds = $this->grouped
             ->map(fn (array $group): ?ModListItem => $group['mod_item'])
             ->filter()
             ->map(fn (ModListItem $item): int => $item->listable_id)
             ->values()
             ->all();
 
-        $movedFrom = array_search($modId, $pageModIds, true);
+        $movedFrom = array_search($modId, $modIds, true);
         if ($movedFrom === false) {
             return;
         }
 
-        array_splice($pageModIds, $movedFrom, 1);
-        array_splice($pageModIds, $position, 0, [$modId]);
+        array_splice($modIds, $movedFrom, 1);
+        array_splice($modIds, $position, 0, [$modId]);
 
-        $service->reorderWithinPositions($this->modList, $pageModIds);
+        $service->reorderWithinPositions($this->modList, $modIds);
 
         $this->statusMessage = __('List order updated.');
 
@@ -451,8 +380,7 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * Mod IDs that are a dependency of another top-level mod in this list.
      *
-     * Computed across the page's rendered groups. The badge reflects the live
-     * resolved-dependency state of the mods visible on the current page.
+     * Computed across every rendered group on the list.
      *
      * @return Collection<int, int>
      */
@@ -482,8 +410,8 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * Mod IDs that are top-level mod items anywhere in this list.
      *
-     * Derived from the lightweight list-wide row set so the dependency badge's
-     * "present on list" check considers the entire list, not just this page.
+     * Derived from the lightweight list-wide row set used by the dependency
+     * badge's "present on list" check.
      *
      * @return Collection<int, int>
      */
@@ -544,42 +472,15 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Eager-load the fully hydrated item rows (with heavy nested relations) for
-     * the group anchors on the current page, plus the addon items belonging to
-     * each anchored parent mod.
+     * Eager-load every item on the list with the heavy nested relations needed
+     * to render its group card.
      *
-     * @param  array<int, int>  $anchorIds
      * @return EloquentCollection<int, ModListItem>
      */
-    private function loadPageItems(array $anchorIds): EloquentCollection
+    private function loadAllItems(): EloquentCollection
     {
-        if ($anchorIds === []) {
-            return new EloquentCollection;
-        }
-
-        $anchorItems = $this->modList->items()
-            ->whereIn('id', $anchorIds)
-            ->get();
-
-        $pageModIds = $anchorItems
-            ->where('listable_type', Mod::class)
-            ->pluck('listable_id')
-            ->all();
-
-        $addonItemIds = $pageModIds === []
-            ? []
-            : $this->modList->items()
-                ->where('listable_type', Addon::class)
-                ->whereIn('listable_id', Addon::query()->whereIn('mod_id', $pageModIds)->select('id'))
-                ->pluck('id')
-                ->all();
-
-        /** @var array<int, int> $pageItemIds */
-        $pageItemIds = $anchorItems->pluck('id')->merge($addonItemIds)->all();
-
         /** @var EloquentCollection<int, ModListItem> $items */
         $items = $this->modList->items()
-            ->whereIn('id', $pageItemIds)
             ->with(['listable' => $this->listableMorphConstraint()])
             ->get();
 

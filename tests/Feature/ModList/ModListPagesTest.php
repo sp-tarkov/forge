@@ -297,7 +297,7 @@ describe('list.show page', function (): void {
         $response->assertSee('Missing Helper');
     });
 
-    it('paginates group cards, keeping later items off page one', function (): void {
+    it('renders every group card on a single page', function (): void {
         $list = ModList::factory()->public()->create();
 
         $mods = Mod::factory()->count(30)->create();
@@ -310,21 +310,14 @@ describe('list.show page', function (): void {
             ]);
         }
 
-        $firstPageMod = $mods->first();
-        $secondPageMod = $mods->last();
+        $response = $this->get($list->detailUrl());
 
-        $pageOne = $this->get($list->detailUrl());
-        $pageOne->assertOk();
-        $pageOne->assertSee($firstPageMod->name);
-        $pageOne->assertDontSee($secondPageMod->name);
-
-        $pageTwo = $this->get($list->detailUrl().'?page=2');
-        $pageTwo->assertOk();
-        $pageTwo->assertSee($secondPageMod->name);
-        $pageTwo->assertDontSee($firstPageMod->name);
+        $response->assertOk();
+        $response->assertSee($mods->first()->name);
+        $response->assertSee($mods->last()->name);
     });
 
-    it('reports list-wide counts even when the list spans multiple pages', function (): void {
+    it('reports list-wide counts for larger lists', function (): void {
         $list = ModList::factory()->public()->create();
 
         $mods = Mod::factory()->count(30)->create();
@@ -343,18 +336,18 @@ describe('list.show page', function (): void {
         $response->assertSee('30 mods');
     });
 
-    it('keeps dependency badges satisfied when the required mod is on another page', function (): void {
+    it('renders the dependency-satisfied badge when both mods are on the list', function (): void {
         $this->withoutDefer();
 
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
-        $depMod = Mod::factory()->create(['name' => 'Cross Page Helper']);
+        $depMod = Mod::factory()->create(['name' => 'Required Helper']);
         $depModVersion = ModVersion::factory()->recycle($depMod)->create([
             'version' => '2.0.0',
             'spt_version_constraint' => '3.8.0',
         ]);
 
-        $mainMod = Mod::factory()->create(['name' => 'Cross Page Main']);
+        $mainMod = Mod::factory()->create(['name' => 'Main Mod']);
         $mainModVersion = ModVersion::factory()->recycle($mainMod)->create([
             'version' => '1.0.0',
             'spt_version_constraint' => '3.8.0',
@@ -375,8 +368,6 @@ describe('list.show page', function (): void {
 
         $list = ModList::factory()->public()->create();
 
-        // Dependency mod sits at the very front (page one); the main mod is
-        // pushed onto page two by 24 filler mods in between.
         ModListItem::factory()->create([
             'mod_list_id' => $list->id,
             'listable_type' => Mod::class,
@@ -384,30 +375,18 @@ describe('list.show page', function (): void {
             'position' => 0,
         ]);
 
-        $filler = Mod::factory()->count(24)->create();
-        foreach ($filler->values() as $index => $mod) {
-            ModListItem::factory()->create([
-                'mod_list_id' => $list->id,
-                'listable_type' => Mod::class,
-                'listable_id' => $mod->id,
-                'position' => $index + 1,
-            ]);
-        }
-
         ModListItem::factory()->create([
             'mod_list_id' => $list->id,
             'listable_type' => Mod::class,
             'listable_id' => $mainMod->id,
-            'position' => 25,
+            'position' => 1,
         ]);
 
-        $pageTwo = $this->get($list->detailUrl().'?page=2');
+        $response = $this->get($list->detailUrl());
 
-        $pageTwo->assertOk();
-        $pageTwo->assertSee('Cross Page Main');
-        // The required mod lives on page one, but the badge must still show
-        // satisfied because membership is checked list-wide.
-        $pageTwo->assertSee('1 dependency satisfied');
+        $response->assertOk();
+        $response->assertSee('Main Mod');
+        $response->assertSee('1 dependency satisfied');
     });
 
     it('exposes the drag handle only to the list owner', function (): void {
@@ -430,7 +409,7 @@ describe('list.show page', function (): void {
         $ownerResponse->assertSee('wire:sort:handle', false);
     });
 
-    it('reorders mods on the current page via the drag handler', function (): void {
+    it('reorders mods via the drag handler', function (): void {
         $owner = User::factory()->create();
         $list = ModList::factory()->for($owner, 'owner')->public()->create();
 
@@ -458,7 +437,7 @@ describe('list.show page', function (): void {
         expect($movedItem->position)->toBe(0);
     });
 
-    it('leaves other-page item positions intact when reordering a page', function (): void {
+    it('reorders mods across the full list, not just a window', function (): void {
         $owner = User::factory()->create();
         $list = ModList::factory()->for($owner, 'owner')->public()->create();
 
@@ -472,22 +451,18 @@ describe('list.show page', function (): void {
             ]);
         }
 
-        $secondPageMod = $mods->last();
-        $secondPageItemBefore = ModListItem::query()
-            ->where('mod_list_id', $list->id)
-            ->where('listable_id', $secondPageMod->id)
-            ->sole();
+        $lastMod = $mods->last();
 
         Livewire::actingAs($owner)
             ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
-            ->call('reorder', $mods->first()->id, 5);
+            ->call('reorder', $lastMod->id, 0);
 
-        $secondPageItemAfter = ModListItem::query()
+        $movedItem = ModListItem::query()
             ->where('mod_list_id', $list->id)
-            ->where('listable_id', $secondPageMod->id)
+            ->where('listable_id', $lastMod->id)
             ->sole();
 
-        expect($secondPageItemAfter->position)->toBe($secondPageItemBefore->position);
+        expect($movedItem->position)->toBe(0);
     });
 
     it('blocks non-owners from reordering', function (): void {
