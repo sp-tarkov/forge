@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Concerns\RendersMarkdownPreview;
 use App\Livewire\Forms\ModListForm;
 use App\Models\ModList;
 use Flux\Flux;
@@ -14,6 +15,7 @@ use Livewire\WithFileUploads;
 
 new #[Layout('layouts::base')] class extends Component
 {
+    use RendersMarkdownPreview;
     use WithFileUploads;
 
     public ModList $modList;
