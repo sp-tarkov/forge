@@ -73,15 +73,15 @@
                                                     <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Current Thumbnail') }}</p>
                                                     <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Upload a new image to replace, or delete the current one.') }}</p>
                                                 </div>
-                                                <flux:button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    icon="trash"
-                                                    :aria-label="__('Delete current thumbnail')"
-                                                    wire:click="deleteExistingThumbnail"
-                                                    wire:confirm="{{ __('Are you sure you want to delete the current thumbnail?') }}"
-                                                    type="button"
-                                                />
+                                                <flux:modal.trigger name="list-delete-thumbnail-{{ $modList->id }}">
+                                                    <flux:button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        icon="trash"
+                                                        :aria-label="__('Delete current thumbnail')"
+                                                        type="button"
+                                                    />
+                                                </flux:modal.trigger>
                                             </div>
                                         @endif
                                         <flux:file-upload wire:model="thumbnail" @class(['h-full', 'lg:col-span-2' => !$thumbnail && !$modList->thumbnail])>
@@ -201,15 +201,15 @@
                     <div class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t-2 border-transparent dark:border-t-gray-700 sm:px-6 shadow-sm sm:rounded-bl-md sm:rounded-br-md gap-4">
                         <div>
                             @if (! $modList->is_default)
-                                <flux:button
-                                    type="button"
-                                    size="sm"
-                                    variant="danger"
-                                    wire:click="delete"
-                                    wire:confirm="{{ __('Delete this list? This cannot be undone.') }}"
-                                >
-                                    {{ __('Delete list') }}
-                                </flux:button>
+                                <flux:modal.trigger name="list-delete-{{ $modList->id }}">
+                                    <flux:button
+                                        type="button"
+                                        size="sm"
+                                        variant="danger"
+                                    >
+                                        {{ __('Delete list') }}
+                                    </flux:button>
+                                </flux:modal.trigger>
                             @endif
                         </div>
                         <div class="flex items-center gap-3">
@@ -235,4 +235,60 @@
             </div>
         </div>
     </div>
+
+    @if ($modList->thumbnail)
+        <flux:modal
+            name="list-delete-thumbnail-{{ $modList->id }}"
+            class="md:w-[500px]"
+        >
+            <div class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('Delete current thumbnail?') }}</flux:heading>
+                    <flux:subheading>
+                        {{ __('The list will fall back to a default placeholder until you upload a new image.') }}
+                    </flux:subheading>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button
+                        type="button"
+                        variant="danger"
+                        wire:click="deleteExistingThumbnail"
+                    >
+                        {{ __('Delete thumbnail') }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
+    @endif
+
+    @if (! $modList->is_default)
+        <flux:modal
+            name="list-delete-{{ $modList->id }}"
+            class="md:w-[500px]"
+        >
+            <div class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('Delete this list?') }}</flux:heading>
+                    <flux:subheading>
+                        {{ __('":title" and all its items will be permanently deleted. This cannot be undone.', ['title' => $modList->title]) }}
+                    </flux:subheading>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button
+                        type="button"
+                        variant="danger"
+                        wire:click="delete"
+                    >
+                        {{ __('Delete list') }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
+    @endif
 </div>

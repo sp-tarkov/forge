@@ -300,8 +300,7 @@
                                     square
                                     :aria-label="__('Remove :name from list', ['name' => $group['mod']->name])"
                                     wire:sort:ignore
-                                    wire:click="removeItem({{ $group['mod_item']->id }})"
-                                    wire:confirm="{{ __('Remove this mod (and its addons) from the list?') }}"
+                                    wire:click="confirmRemoveItem({{ $group['mod_item']->id }})"
                                 />
                             @endif
                         </x-mod.list-row>
@@ -339,8 +338,7 @@
                                                     size="sm"
                                                     square
                                                     :aria-label="__('Remove :name from list', ['name' => $addonItem->listable->name])"
-                                                    wire:click="removeItem({{ $addonItem->id }})"
-                                                    wire:confirm="{{ __('Remove this addon from the list?') }}"
+                                                    wire:click="confirmRemoveItem({{ $addonItem->id }})"
                                                 />
                                             @endif
                                         </x-addon.list-item>
@@ -379,6 +377,49 @@
                 />
             @endif
         </div>
+    @endif
+
+    @if ($canManage)
+        <flux:modal
+            name="list-remove-item-{{ $modList->id }}"
+            class="md:w-[500px]"
+        >
+            <div class="space-y-4">
+                <div>
+                    <flux:heading size="lg">
+                        @if ($pendingRemovalIsAddon)
+                            {{ __('Remove addon from list?') }}
+                        @else
+                            {{ __('Remove mod from list?') }}
+                        @endif
+                    </flux:heading>
+                    <flux:subheading>
+                        @if ($pendingRemovalIsAddon)
+                            {{ __('":name" will be removed from this list.', ['name' => $pendingRemovalName]) }}
+                        @else
+                            {{ __('":name" and any of its addons on this list will be removed.', ['name' => $pendingRemovalName]) }}
+                        @endif
+                    </flux:subheading>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <flux:modal.close>
+                        <flux:button
+                            type="button"
+                            variant="ghost"
+                        >
+                            {{ __('Cancel') }}
+                        </flux:button>
+                    </flux:modal.close>
+                    <flux:button
+                        type="button"
+                        variant="danger"
+                        wire:click="removeItem"
+                    >
+                        {{ __('Remove') }}
+                    </flux:button>
+                </div>
+            </div>
+        </flux:modal>
     @endif
 
     @if ($canManage && $missingDependencies->isNotEmpty())
@@ -463,17 +504,42 @@
                     x-text="copied ? @js(__('Share link copied to clipboard.')) : ''"
                 ></div>
                 <div class="flex justify-between">
-                    <flux:button
-                        variant="ghost"
-                        size="sm"
-                        wire:click="regenerateShareToken"
-                        wire:confirm="{{ __('Regenerate the share link? The existing link will stop working.') }}"
-                    >
-                        {{ __('Regenerate link') }}
-                    </flux:button>
+                    <flux:modal.trigger name="list-regenerate-share-{{ $modList->id }}">
+                        <flux:button
+                            variant="ghost"
+                            size="sm"
+                        >
+                            {{ __('Regenerate link') }}
+                        </flux:button>
+                    </flux:modal.trigger>
                     <flux:modal.close>
                         <flux:button variant="outline">{{ __('Close') }}</flux:button>
                     </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+
+        <flux:modal
+            name="list-regenerate-share-{{ $modList->id }}"
+            class="md:w-[500px]"
+        >
+            <div class="space-y-4">
+                <div>
+                    <flux:heading size="lg">{{ __('Regenerate share link?') }}</flux:heading>
+                    <flux:subheading>
+                        {{ __('The existing link will stop working. Anyone you have already shared the current link with will need the new one.') }}
+                    </flux:subheading>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button
+                        variant="primary"
+                        wire:click="regenerateShareToken"
+                    >
+                        {{ __('Regenerate link') }}
+                    </flux:button>
                 </div>
             </div>
         </flux:modal>

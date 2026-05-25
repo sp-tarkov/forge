@@ -13,6 +13,7 @@ use App\Services\ModListService;
 use App\Support\DataTransferObjects\ResolvedListVersion;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
@@ -43,6 +44,24 @@ new #[Layout('layouts::base')] class extends Component
      * Working copy of the note text bound to the open inline note editor.
      */
     public string $noteDraft = '';
+
+    /**
+     * The id of the list item the user is being asked to confirm removal of,
+     * or null when the remove-item confirmation modal is closed.
+     */
+    public ?int $pendingRemovalItemId = null;
+
+    /**
+     * Display name of the listable behind the pending removal, used to label
+     * the confirmation modal.
+     */
+    public string $pendingRemovalName = '';
+
+    /**
+     * Whether the pending removal is an addon (true) or a top-level mod
+     * (false), used to switch the modal copy and warn about cascaded addons.
+     */
+    public bool $pendingRemovalIsAddon = false;
 
     public function mount(int $listId, string $slug, ?string $shareToken = null): void
     {
@@ -186,15 +205,45 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Remove an item (mod or addon) from the list.
+     * Open the remove-item confirmation modal for the given list item.
      */
-    public function removeItem(int $itemId, ModListService $service): void
+    public function confirmRemoveItem(int $itemId): void
     {
         Gate::authorize('removeItem', $this->modList);
 
         /** @var ModListItem|null $item */
         $item = $this->modList->items()->with('listable')->find($itemId);
         if ($item === null) {
+            return;
+        }
+
+        $this->pendingRemovalItemId = $item->id;
+        $this->pendingRemovalName = $item->listable instanceof Model
+            ? (string) $item->listable->name
+            : (string) __('this item');
+        $this->pendingRemovalIsAddon = $item->listable instanceof Addon;
+
+        $this->dispatch('modal-show', name: 'list-remove-item-'.$this->modList->id);
+    }
+
+    /**
+     * Remove the item the user just confirmed in the remove-item modal.
+     */
+    public function removeItem(ModListService $service): void
+    {
+        Gate::authorize('removeItem', $this->modList);
+
+        $itemId = $this->pendingRemovalItemId;
+        if ($itemId === null) {
+            return;
+        }
+
+        /** @var ModListItem|null $item */
+        $item = $this->modList->items()->with('listable')->find($itemId);
+        if ($item === null) {
+            $this->reset(['pendingRemovalItemId', 'pendingRemovalName', 'pendingRemovalIsAddon']);
+            $this->dispatch('modal-close', name: 'list-remove-item-'.$this->modList->id);
+
             return;
         }
 
@@ -205,6 +254,10 @@ new #[Layout('layouts::base')] class extends Component
         $this->statusMessage = $removedName === null
             ? __('Item removed from list.')
             : __('Removed :name from list.', ['name' => $removedName]);
+
+        $this->reset(['pendingRemovalItemId', 'pendingRemovalName', 'pendingRemovalIsAddon']);
+
+        $this->dispatch('modal-close', name: 'list-remove-item-'.$this->modList->id);
 
         unset($this->grouped, $this->listItemRows, $this->hasIncompatibleMods);
     }
@@ -364,6 +417,8 @@ new #[Layout('layouts::base')] class extends Component
         $this->modList->save();
 
         $this->shareToken = $this->modList->share_token;
+
+        $this->dispatch('modal-close', name: 'list-regenerate-share-'.$this->modList->id);
     }
 
     /**

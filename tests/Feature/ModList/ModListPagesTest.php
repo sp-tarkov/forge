@@ -142,11 +142,11 @@ describe('list.show page', function (): void {
 
         $guestResponse = $this->get($list->detailUrl());
         $guestResponse->assertOk();
-        $guestResponse->assertDontSee('removeItem('.$item->id.')', false);
+        $guestResponse->assertDontSee('confirmRemoveItem('.$item->id.')', false);
 
         $ownerResponse = $this->actingAs($owner)->get($list->detailUrl());
         $ownerResponse->assertOk();
-        $ownerResponse->assertSee('removeItem('.$item->id.')', false);
+        $ownerResponse->assertSee('confirmRemoveItem('.$item->id.')', false);
     });
 
     it('flags a mod as a dependency when another list item requires it, regardless of how it was added', function (): void {
@@ -500,7 +500,8 @@ describe('list.show page', function (): void {
         Livewire::actingAs($owner)
             ->test('pages::list.show', ['listId' => $list->id, 'slug' => $list->slug])
             ->assertSet('statusMessage', '')
-            ->call('removeItem', $item->id)
+            ->call('confirmRemoveItem', $item->id)
+            ->call('removeItem')
             ->assertSet('statusMessage', 'Removed Removable Mod from list.');
     });
 

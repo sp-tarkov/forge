@@ -90,6 +90,8 @@ new #[Layout('layouts::base')] class extends Component
 
             Flux::toast(heading: 'Thumbnail Deleted', text: 'The list thumbnail has been deleted.', variant: 'success');
         }
+
+        $this->dispatch('modal-close', name: 'list-delete-thumbnail-'.$this->modList->id);
     }
 
     public function delete(): void
