@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\ListVisibility;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\User;
 use Database\Seeders\Traits\SeederHelpers;
 use Illuminate\Database\Seeder;
@@ -29,6 +31,11 @@ final class CommentSeeder extends Seeder
 
         $mods = Mod::all();
         $addons = Addon::query()->where('comments_disabled', false)->get();
+        $lists = ModList::query()
+            ->where('is_default', false)
+            ->where('comments_disabled', false)
+            ->whereIn('visibility', [ListVisibility::Public, ListVisibility::Hidden])
+            ->get();
         $allUsers = User::all();
 
         // Add comments to mods
@@ -36,6 +43,9 @@ final class CommentSeeder extends Seeder
 
         // Add comments to addons
         $this->seedCommentsForAddons($addons, $allUsers);
+
+        // Add comments to mod lists
+        $this->seedCommentsForLists($lists, $allUsers);
 
         // Add reactions to all comments
         $this->seedCommentReactions($allUsers);
@@ -104,6 +114,49 @@ final class CommentSeeder extends Seeder
     }
 
     /**
+     * Seed comments for mod lists.
+     *
+     * @param  Collection<int, ModList>  $lists
+     * @param  Collection<int, User>  $allUsers
+     */
+    private function seedCommentsForLists(Collection $lists, Collection $allUsers): void
+    {
+        if ($lists->isEmpty()) {
+            return;
+        }
+
+        Comment::withoutEvents(function () use ($lists, $allUsers): void {
+            progress(
+                label: 'Adding Mod List Comments...',
+                steps: $lists,
+                callback: function (ModList $list, Progress $progress) use ($allUsers): void {
+                    $this->seedListComments($list, $allUsers);
+                }
+            );
+        });
+    }
+
+    /**
+     * Seed comments for a single mod list.
+     *
+     * @param  Collection<int, User>  $allUsers
+     */
+    private function seedListComments(ModList $list, Collection $allUsers): void
+    {
+        // Create 1-10 parent comments (lists tend to draw less traffic than mods)
+        $parentCommentCount = random_int(1, 10);
+
+        for ($i = 0; $i < $parentCommentCount; $i++) {
+            $comment = $this->createComment($list, $allUsers);
+
+            // For each comment, 25% chance to have replies
+            if (random_int(0, 9) < 3) {
+                $this->createReplies($comment, $allUsers);
+            }
+        }
+    }
+
+    /**
      * Seed comments for a single mod.
      *
      * @param  Collection<int, User>  $allUsers
@@ -128,7 +181,7 @@ final class CommentSeeder extends Seeder
      *
      * @param  Collection<int, User>  $allUsers
      */
-    private function createComment(Addon|Mod $commentable, Collection $allUsers): Comment
+    private function createComment(Addon|Mod|ModList $commentable, Collection $allUsers): Comment
     {
         $spamStatus = $this->getRandomSpamStatus();
         $isDeleted = random_int(0, 100) < 10; // 10% chance to be deleted

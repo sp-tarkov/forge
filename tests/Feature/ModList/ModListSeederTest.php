@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\ListVisibility;
+use App\Models\Addon;
+use App\Models\Mod;
 use App\Models\ModList;
+use App\Models\ModListItem;
+use App\Models\SptVersion;
 use App\Models\User;
 use Database\Seeders\ModListSeeder;
 use Illuminate\Database\Eloquent\Collection;
@@ -38,5 +42,45 @@ describe('ModListSeeder Favourites lists', function (): void {
         $this->seed(ModListSeeder::class);
 
         expect(ModList::query()->where('owner_id', $user->id)->where('is_default', true)->count())->toBe(1);
+    });
+});
+
+describe('ModListSeeder item rows', function (): void {
+    it('never seeds an addon without its parent mod also on the same list', function (): void {
+        // Regression: orphan-addon list items (addon on the list, parent mod
+        // not on the list) bypass the SPT-version resolver on the show page.
+        // The real add-to-list flow refuses to create them, so the seeder
+        // must not produce them either.
+        SptVersion::factory()->count(3)->create();
+        User::factory()->count(5)->create();
+        Mod::factory()->count(10)->create();
+        Addon::factory()->count(20)->create();
+
+        $this->seed(ModListSeeder::class);
+
+        /** @var Illuminate\Support\Collection<int, ModListItem> $addonItems */
+        $addonItems = ModListItem::query()
+            ->where('listable_type', Addon::class)
+            ->with('listable')
+            ->get();
+
+        expect($addonItems)->not->toBeEmpty('seeder must produce at least some addon items to exercise this invariant');
+
+        foreach ($addonItems as $addonItem) {
+            $parentModId = $addonItem->listable instanceof Addon ? $addonItem->listable->mod_id : null;
+            if ($parentModId === null) {
+                continue;
+            }
+
+            $hasParent = ModListItem::query()
+                ->where('mod_list_id', $addonItem->mod_list_id)
+                ->where('listable_type', Mod::class)
+                ->where('listable_id', $parentModId)
+                ->exists();
+
+            expect($hasParent)->toBeTrue(
+                sprintf('Addon item %d (addon %d) is on list %d but its parent mod %d is not.', $addonItem->id, $addonItem->listable_id, $addonItem->mod_list_id, $parentModId),
+            );
+        }
     });
 });

@@ -164,9 +164,22 @@ new #[Layout('layouts::base')] class extends Component
         // Resolve the version each mod card should display against the list's
         // target SPT version (bulk, N+1-safe). Returns latestVersion across
         // the board when the list has no target SPT.
+        //
+        // Orphan-addon group anchors render the addon's parent mod as the
+        // card, so their parent mod must also be fed to the resolver or the
+        // card falls through to the mod's unfiltered latestVersion.
         $pageMods = $this->modList->items
-            ->where('listable_type', Mod::class)
-            ->map(fn (ModListItem $item): ?Mod => $item->listable instanceof Mod ? $item->listable : null)
+            ->map(function (ModListItem $item): ?Mod {
+                if ($item->listable instanceof Mod) {
+                    return $item->listable;
+                }
+
+                if ($item->listable instanceof Addon && $item->listable->mod instanceof Mod) {
+                    return $item->listable->mod;
+                }
+
+                return null;
+            })
             ->filter()
             ->unique('id')
             ->values();

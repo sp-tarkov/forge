@@ -61,12 +61,15 @@ final class ModListSeeder extends Seeder
         /** @var Collection<int, int> $modIds */
         $modIds = Mod::query()->where('disabled', false)->pluck('id')->values();
 
-        /** @var Collection<int, int> $addonIds */
-        $addonIds = Addon::query()
+        /** @var Collection<int, int> $addonModMap addon id => parent mod id */
+        $addonModMap = Addon::query()
             ->where('disabled', false)
             ->whereNull('detached_at')
-            ->pluck('id')
-            ->values();
+            ->whereNotNull('mod_id')
+            ->pluck('mod_id', 'id');
+
+        /** @var Collection<int, int> $addonIds */
+        $addonIds = $addonModMap->keys()->values();
 
         /** @var Collection<int, int> $sptVersionIds */
         $sptVersionIds = SptVersion::query()->pluck('id')->values();
@@ -85,8 +88,8 @@ final class ModListSeeder extends Seeder
         $this->maxItemsPerList = config()->integer('mod-lists.max_items_per_list', 250);
         $this->noteMax = config()->integer('mod-lists.validation.note_max', 280);
 
-        $this->seedUserLists($userIds, $modIds, $addonIds, $sptVersionIds);
-        $this->seedFavouritesItems($userIds, $modIds, $addonIds);
+        $this->seedUserLists($userIds, $modIds, $addonIds, $addonModMap, $sptVersionIds);
+        $this->seedFavouritesItems($userIds, $modIds, $addonIds, $addonModMap);
     }
 
     /**
@@ -150,12 +153,14 @@ final class ModListSeeder extends Seeder
      * @param  Collection<int, int>  $userIds
      * @param  Collection<int, int>  $modIds
      * @param  Collection<int, int>  $addonIds
+     * @param  Collection<int, int>  $addonModMap  addon id => parent mod id
      * @param  Collection<int, int>  $sptVersionIds
      */
     private function seedUserLists(
         Collection $userIds,
         Collection $modIds,
         Collection $addonIds,
+        Collection $addonModMap,
         Collection $sptVersionIds,
     ): void {
         $now = Date::now();
@@ -199,7 +204,7 @@ final class ModListSeeder extends Seeder
                 continue;
             }
 
-            foreach ($this->buildItemRows($listId, $modIds, $addonIds, $now, max: 25) as $item) {
+            foreach ($this->buildItemRows($listId, $modIds, $addonIds, $addonModMap, $now, max: 25) as $item) {
                 $itemRows[] = $item;
             }
         }
@@ -222,11 +227,13 @@ final class ModListSeeder extends Seeder
      * @param  Collection<int, int>  $userIds
      * @param  Collection<int, int>  $modIds
      * @param  Collection<int, int>  $addonIds
+     * @param  Collection<int, int>  $addonModMap  addon id => parent mod id
      */
     private function seedFavouritesItems(
         Collection $userIds,
         Collection $modIds,
         Collection $addonIds,
+        Collection $addonModMap,
     ): void {
         $sampleOwnerIds = $userIds
             ->shuffle()
@@ -245,7 +252,7 @@ final class ModListSeeder extends Seeder
         $now = Date::now();
         $itemRows = [];
         foreach ($favourites as $favourite) {
-            foreach ($this->buildItemRows($favourite->id, $modIds, $addonIds, $now, max: 12) as $item) {
+            foreach ($this->buildItemRows($favourite->id, $modIds, $addonIds, $addonModMap, $now, max: 12) as $item) {
                 $itemRows[] = $item;
             }
         }
@@ -306,14 +313,20 @@ final class ModListSeeder extends Seeder
     /**
      * Build raw item rows for a list.
      *
+     * Mirrors the real add-to-list flow: every addon's parent mod is added
+     * alongside the addon (the modal forces this via ParentModMissingException),
+     * so seed data exercises the same group-anchor layout as production lists.
+     *
      * @param  Collection<int, int>  $modIds
      * @param  Collection<int, int>  $addonIds
+     * @param  Collection<int, int>  $addonModMap  addon id => parent mod id
      * @return array<int, array<string, mixed>>
      */
     private function buildItemRows(
         int $listId,
         Collection $modIds,
         Collection $addonIds,
+        Collection $addonModMap,
         CarbonInterface $now,
         int $max = 25,
     ): array {
@@ -335,23 +348,35 @@ final class ModListSeeder extends Seeder
 
         $rows = [];
         $position = 0;
+        $addedModIds = [];
 
         if ($modShare > 0) {
             foreach ($modIds->shuffle()->take($modShare) as $modId) {
-                $rows[] = [
-                    'mod_list_id' => $listId,
-                    'listable_type' => Mod::class,
-                    'listable_id' => $modId,
-                    'note' => $this->maybe(30) ? $this->shortNote() : null,
-                    'position' => $position++,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
+                $rows[] = $this->modRow($listId, $modId, $position++, $now);
+                $addedModIds[$modId] = true;
             }
         }
 
         if ($addonShare > 0) {
+            $remaining = $this->maxItemsPerList - count($rows);
             foreach ($addonIds->shuffle()->take($addonShare) as $addonId) {
+                if ($remaining <= 0) {
+                    break;
+                }
+
+                $parentModId = $addonModMap->get($addonId);
+                if ($parentModId !== null && ! isset($addedModIds[$parentModId])) {
+                    if ($remaining < 2) {
+                        // Need room for both the parent mod and the addon to
+                        // preserve the no-orphan invariant.
+                        break;
+                    }
+
+                    $rows[] = $this->modRow($listId, $parentModId, $position++, $now);
+                    $addedModIds[$parentModId] = true;
+                    $remaining--;
+                }
+
                 $rows[] = [
                     'mod_list_id' => $listId,
                     'listable_type' => Addon::class,
@@ -361,10 +386,29 @@ final class ModListSeeder extends Seeder
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
+                $remaining--;
             }
         }
 
         return $rows;
+    }
+
+    /**
+     * Build a single Mod list-item row.
+     *
+     * @return array<string, mixed>
+     */
+    private function modRow(int $listId, int $modId, int $position, CarbonInterface $now): array
+    {
+        return [
+            'mod_list_id' => $listId,
+            'listable_type' => Mod::class,
+            'listable_id' => $modId,
+            'note' => $this->maybe(30) ? $this->shortNote() : null,
+            'position' => $position,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
     }
 
     /**

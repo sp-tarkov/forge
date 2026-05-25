@@ -858,6 +858,65 @@ describe('list.show SPT-version resolution', function (): void {
         $response->assertSee($addon->name);
     });
 
+    it('resolves an orphan-addon parent mod against the list target SPT', function (): void {
+        // Regression: when only an addon is on the list (its parent mod is
+        // rendered as a group anchor), the parent mod must still go through
+        // resolveListVersions so the card shows the target-compatible version
+        // and the "Not compatible" indicator when applicable.
+        $target = SptVersion::factory()->state(['version' => '3.1.1'])->create();
+        $older = SptVersion::factory()->state(['version' => '2.3.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $parentMod = Mod::factory()->create(['name' => 'Orphan Parent Mod']);
+
+        // Newest version of the parent mod has no support for the target SPT.
+        $newerIncompatVer = ModVersion::factory()->recycle($parentMod)->create(['version' => '9.8.2']);
+        $newerIncompatVer->sptVersions()->sync([$older->id]);
+
+        // An older version IS pivot-linked to the list's target SPT.
+        $targetCompatibleVer = ModVersion::factory()->recycle($parentMod)->create(['version' => '7.0.5']);
+        $targetCompatibleVer->sptVersions()->sync([$target->id]);
+
+        $addon = Addon::factory()->create(['mod_id' => $parentMod->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        // The card must show the resolved older-compatible version, not the
+        // unfiltered latestVersion.
+        $response->assertSee('7.0.5');
+        $response->assertDontSee('9.8.2');
+        // And no "Not compatible" indicator when an exact pivot match exists.
+        $response->assertDontSee('Not compatible');
+    });
+
+    it('marks an orphan-addon parent mod incompatible when no version matches the target SPT', function (): void {
+        $target = SptVersion::factory()->state(['version' => '3.1.1'])->create();
+        $older = SptVersion::factory()->state(['version' => '2.3.0'])->create();
+        $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
+
+        $parentMod = Mod::factory()->create();
+        $olderVer = ModVersion::factory()->recycle($parentMod)->create(['version' => '1.0.0']);
+        $olderVer->sptVersions()->sync([$older->id]);
+
+        $addon = Addon::factory()->create(['mod_id' => $parentMod->id]);
+        ModListItem::factory()->create([
+            'mod_list_id' => $list->id,
+            'listable_type' => Addon::class,
+            'listable_id' => $addon->id,
+        ]);
+
+        $response = $this->get($list->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('Not compatible');
+    });
+
     it('renders for the owner via Livewire without triggering a lazy-loading violation', function (): void {
         $target = SptVersion::factory()->state(['version' => '3.11.4'])->create();
         $older = SptVersion::factory()->state(['version' => '3.10.0'])->create();
