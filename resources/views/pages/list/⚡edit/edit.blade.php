@@ -90,14 +90,31 @@
                 </flux:field>
             @endunless
 
-            <flux:input
-                wire:model="form.title"
-                :label="__('Title')"
-                :readonly="$modList->is_default"
-                :description="$modList->is_default ? __('Your Favourites list has a fixed title and cannot be renamed.') : null"
-                required
-                maxlength="{{ config('mod-lists.validation.title_max') }}"
-            />
+            <flux:field>
+                <flux:label>
+                    {{ __('Title') }}
+                    @if ($modList->is_default)
+                        <flux:badge
+                            color="red"
+                            icon="lock-closed"
+                            size="sm"
+                            class="ms-1.5"
+                        >{{ __('Locked') }}</flux:badge>
+                    @endif
+                </flux:label>
+                @if ($modList->is_default)
+                    <flux:description>
+                        {{ __('Your Favourites list has a fixed title and cannot be renamed.') }}
+                    </flux:description>
+                @endif
+                <flux:input
+                    wire:model="form.title"
+                    :disabled="$modList->is_default"
+                    required
+                    maxlength="{{ config('mod-lists.validation.title_max') }}"
+                />
+                <flux:error name="form.title" />
+            </flux:field>
 
             @unless ($modList->isFavourites())
                 <flux:textarea
@@ -109,22 +126,44 @@
                 />
             @endunless
 
-            <flux:select
-                wire:model="form.visibility"
-                :label="__('Visibility')"
-                :disabled="$modList->is_default"
-                :description="$modList->is_default ? __('Your Favourites list is always private and only visible to you.') : null"
-            >
-                @foreach (\App\Enums\ListVisibility::cases() as $visibility)
-                    <flux:select.option value="{{ $visibility->value }}">
-                        {{ __($visibility->label()) }}: {{ __($visibility->description()) }}
-                    </flux:select.option>
-                @endforeach
-            </flux:select>
+            <flux:field>
+                <flux:label>
+                    {{ __('Visibility') }}
+                    @if ($modList->is_default)
+                        <flux:badge
+                            color="red"
+                            icon="lock-closed"
+                            size="sm"
+                            class="ms-1.5"
+                        >{{ __('Locked') }}</flux:badge>
+                    @endif
+                </flux:label>
+                @if ($modList->is_default)
+                    <flux:description>
+                        {{ __('Your Favourites list is always private and only visible to you.') }}
+                    </flux:description>
+                @endif
+                <flux:select
+                    variant="listbox"
+                    wire:model="form.visibility"
+                    :disabled="$modList->is_default"
+                >
+                    @foreach (\App\Enums\ListVisibility::cases() as $visibility)
+                        <flux:select.option value="{{ $visibility->value }}">
+                            {{ __($visibility->label()) }}: {{ __($visibility->description()) }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="form.visibility" />
+            </flux:field>
 
             <flux:field>
                 <flux:label badge="Optional">{{ __('Target SPT version') }}</flux:label>
-                <flux:select wire:model="form.spt_version_id">
+                <flux:select
+                    variant="listbox"
+                    searchable
+                    wire:model="form.spt_version_id"
+                >
                     <flux:select.option value="">{{ __('Latest compatible version') }}</flux:select.option>
                     @foreach ($form->availableSptVersions() as $version)
                         <flux:select.option value="{{ $version->id }}">

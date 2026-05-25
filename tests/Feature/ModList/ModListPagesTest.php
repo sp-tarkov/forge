@@ -1013,6 +1013,30 @@ describe('list.edit page', function (): void {
         $favourites->refresh();
         expect($favourites->visibility)->toBe(ListVisibility::Private);
     });
+
+    it('shows locked badges and disables the title and visibility controls for the Favourites list', function (): void {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $favourites = $user->favouritesList;
+
+        $response = $this->actingAs($user)->get(route('list.edit', ['listId' => $favourites->id]));
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Title', 'Locked', 'Visibility', 'Locked'], false);
+        $response->assertSee('Your Favourites list has a fixed title and cannot be renamed.');
+        $response->assertSee('Your Favourites list is always private and only visible to you.');
+    });
+
+    it('does not render locked badges for a normal list', function (): void {
+        $owner = User::factory()->create(['email_verified_at' => now()]);
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        $response = $this->actingAs($owner)->get(route('list.edit', ['listId' => $list->id]));
+
+        $response->assertOk();
+        $response->assertDontSee('Locked');
+        $response->assertDontSee('Your Favourites list has a fixed title and cannot be renamed.');
+        $response->assertDontSee('Your Favourites list is always private and only visible to you.');
+    });
 });
 
 describe('list.create page save', function (): void {
