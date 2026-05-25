@@ -248,41 +248,44 @@ final class ModListService
     /**
      * Resolve the suggested dependency mods to cascade when adding a mod to the list.
      *
+     * Walks the dependency graph breadth-first so a dependency's own dependencies
+     * are surfaced in the same prompt. Cycles and mods already on the list are
+     * skipped via a shared visited set.
+     *
      * @return Collection<int, Mod>
      */
     public function suggestedDependencies(ModList $modList, Mod $mod): Collection
     {
-        $modVersion = $this->resolveModVersion($modList, $mod);
-
-        if (! $modVersion instanceof ModVersion) {
-            return new Collection;
-        }
-
-        $deps = $modVersion->latestDependenciesResolved()
-            ->with('mod:id,name,slug,thumbnail,thumbnail_hash,owner_id')
-            ->get();
-
-        $existingModIds = $this->existingModIds($modList);
+        $visited = $this->existingModIds($modList);
+        $visited[$mod->id] = $mod->id;
 
         /** @var Collection<int, Mod> $mods */
         $mods = new Collection;
-        $seen = [];
-        foreach ($deps as $depVersion) {
-            $depMod = $depVersion->mod;
-            if ($depMod->id === $mod->id) {
+        $queue = [$mod];
+
+        while ($queue !== []) {
+            $current = array_shift($queue);
+
+            $modVersion = $this->resolveModVersion($modList, $current);
+            if (! $modVersion instanceof ModVersion) {
                 continue;
             }
 
-            if (isset($existingModIds[$depMod->id])) {
-                continue;
-            }
+            $deps = $modVersion->latestDependenciesResolved()
+                ->with('mod:id,name,slug,thumbnail,thumbnail_hash,owner_id')
+                ->get();
 
-            if (isset($seen[$depMod->id])) {
-                continue;
-            }
+            foreach ($deps as $depVersion) {
+                $depMod = $depVersion->mod;
 
-            $seen[$depMod->id] = true;
-            $mods->push($depMod);
+                if (isset($visited[$depMod->id])) {
+                    continue;
+                }
+
+                $visited[$depMod->id] = $depMod->id;
+                $mods->push($depMod);
+                $queue[] = $depMod;
+            }
         }
 
         return $mods;

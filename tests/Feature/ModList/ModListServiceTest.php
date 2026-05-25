@@ -6,6 +6,7 @@ use App\Enums\ListVisibility;
 use App\Exceptions\ModListCapacityExceededException;
 use App\Exceptions\ParentModMissingException;
 use App\Models\Addon;
+use App\Models\Dependency;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
@@ -66,6 +67,65 @@ describe('ModListService addMod', function (): void {
             ->toThrow(ModListCapacityExceededException::class);
 
         expect($list->fresh()->itemCount())->toBe(0);
+    });
+});
+
+describe('ModListService suggestedDependencies', function (): void {
+    it('walks the dependency graph recursively across transitive links', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+
+        [$modA, $verA] = makeModWithVersion('A');
+        [$modB, $verB] = makeModWithVersion('B');
+        [$modC] = makeModWithVersion('C');
+        linkModDependency($verA, $modB);
+        linkModDependency($verB, $modC);
+
+        $suggested = resolve(ModListService::class)->suggestedDependencies($list, $modA);
+
+        expect($suggested->pluck('id')->all())->toBe([$modB->id, $modC->id]);
+    });
+
+    it('omits mods already on the list and stops walking through them', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+
+        [$modA, $verA] = makeModWithVersion('A');
+        [$modB, $verB] = makeModWithVersion('B');
+        [$modC] = makeModWithVersion('C');
+        linkModDependency($verA, $modB);
+        linkModDependency($verB, $modC);
+
+        $list->items()->create([
+            'listable_type' => Mod::class,
+            'listable_id' => $modB->id,
+            'position' => 1,
+        ]);
+
+        $suggested = resolve(ModListService::class)->suggestedDependencies($list, $modA);
+
+        expect($suggested->pluck('id')->all())->toBe([]);
+        unset($modC);
+    });
+
+    it('breaks cycles without revisiting mods', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+
+        $user = User::factory()->create();
+        $list = ModList::factory()->for($user, 'owner')->public()->create();
+
+        [$modA, $verA] = makeModWithVersion('A');
+        [$modB, $verB] = makeModWithVersion('B');
+        linkModDependency($verA, $modB);
+        linkModDependency($verB, $modA);
+
+        $suggested = resolve(ModListService::class)->suggestedDependencies($list, $modA);
+
+        expect($suggested->pluck('id')->all())->toBe([$modB->id]);
     });
 });
 
@@ -542,3 +602,30 @@ describe('ModListService listHasIncompatibleMods', function (): void {
         expect(resolve(ModListService::class)->listHasIncompatibleMods($list))->toBeTrue();
     });
 });
+
+/**
+ * Build a Mod with a single ModVersion wired to an SPT version so
+ * `Mod::latestVersion` (which requires a linked SPT) resolves it.
+ * The caller must ensure an SptVersion with version '3.8.0' exists.
+ *
+ * @return array{0: Mod, 1: ModVersion}
+ */
+function makeModWithVersion(string $name): array
+{
+    $mod = Mod::factory()->create(['name' => $name]);
+    $version = ModVersion::factory()->recycle($mod)->create([
+        'version' => '1.0.0',
+        'spt_version_constraint' => '3.8.0',
+    ]);
+
+    return [$mod, $version];
+}
+
+/**
+ * Link a ModVersion to another mod via a Dependency row. The DependencyObserver
+ * populates `dependencies_resolved` for us when the row is created.
+ */
+function linkModDependency(ModVersion $from, Mod $to): void
+{
+    Dependency::factory()->recycle([$from, $to])->create(['constraint' => '*']);
+}
