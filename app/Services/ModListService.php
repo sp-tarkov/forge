@@ -18,6 +18,7 @@ use App\Support\DataTransferObjects\ResolvedListVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 
 final class ModListService
 {
@@ -426,12 +427,7 @@ final class ModListService
             ->orderBy('version_labels')
             ->get()
             ->groupBy('mod_id')
-            ->map(function (Collection $versions): ModVersion {
-                $first = $versions->first();
-                assert($first instanceof ModVersion);
-
-                return $first;
-            });
+            ->map(fn (Collection $versions): ModVersion => $versions->first() ?? throw new LogicException('Grouped collection cannot be empty'));
     }
 
     /**
@@ -457,12 +453,7 @@ final class ModListService
             ->orderBy('version_labels')
             ->get()
             ->groupBy('mod_id')
-            ->map(function (Collection $versions): ModVersion {
-                $first = $versions->first();
-                assert($first instanceof ModVersion);
-
-                return $first;
-            });
+            ->map(fn (Collection $versions): ModVersion => $versions->first() ?? throw new LogicException('Grouped collection cannot be empty'));
     }
 
     /**
