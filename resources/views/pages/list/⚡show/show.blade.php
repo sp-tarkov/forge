@@ -282,7 +282,7 @@
                                                     variant="subtle"
                                                     size="sm"
                                                     square
-                                                    :aria-label="__('Remove :name from list', ['name' => $addon->name])"
+                                                    :aria-label="__('Remove :name from list', ['name' => $addonItem->listable->name])"
                                                     wire:click="removeItem({{ $addonItem->id }})"
                                                     wire:confirm="{{ __('Remove this addon from the list?') }}"
                                                 />
