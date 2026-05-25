@@ -53,6 +53,10 @@
                     {{ __('Edit') }}
                 </flux:button>
             @endif
+            <livewire:list-fork
+                :source-id="$modList->id"
+                :wire:key="'list-fork-trigger-'.$modList->id"
+            />
             <livewire:report-component
                 variant="link"
                 :reportable-id="$modList->id"
@@ -124,6 +128,19 @@
                             {{ __('SPT') }} {{ $modList->sptVersion->version }}
                         </span>
                     @endif
+                    @if (($modList->public_forks_count ?? 0) > 0)
+                        <flux:badge
+                            size="sm"
+                            icon="share"
+                            color="sky"
+                        >
+                            {{ trans_choice(
+                                'Forked :count time|Forked :count times',
+                                $modList->public_forks_count,
+                                ['count' => $modList->public_forks_count],
+                            ) }}
+                        </flux:badge>
+                    @endif
                 </div>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     {{ __('by') }}
@@ -145,6 +162,33 @@
                         {{ trans_choice(':count addon|:count addons', $itemCounts['addons'], ['count' => $itemCounts['addons']]) }}
                     @endif
                 </p>
+                @if ($modList->forked_from_list_id)
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                        <flux:icon.share
+                            variant="micro"
+                            class="size-3.5"
+                        />
+                        @if ($forkedFromSource && $forkedFromViewable)
+                            {{ __('Forked from') }}
+                            <a
+                                href="{{ $forkedFromSource->detailUrl() }}"
+                                wire:navigate
+                                class="font-medium hover:underline"
+                            >{{ $forkedFromSource->title }}</a>
+                            {{ __('by') }}
+                            <a
+                                href="{{ $forkedFromSource->owner?->profile_url }}"
+                                wire:navigate
+                                class="font-medium hover:underline"
+                            >{{ $forkedFromSource->owner?->name ?? __('Unknown') }}</a>
+                        @elseif ($forkedFromSource)
+                            {{ __('Forked from a list by') }}
+                            <span class="font-medium">{{ $forkedFromSource->owner?->name ?? __('Unknown') }}</span>
+                        @else
+                            {{ __('Forked from a list that has since been removed.') }}
+                        @endif
+                    </p>
+                @endif
                 @if ($modList->description_html)
                     <div class="user-markdown mt-3 text-sm">
                         {!! $modList->description_html !!}
@@ -269,7 +313,7 @@
 
                     @if ($group['addons']->isNotEmpty())
                         <ul
-                            class="pl-4 pr-3 sm:pr-4 pb-3 sm:pb-4 space-y-1 border-l-2 border-gray-100 dark:border-gray-900"
+                            class="-mt-1 sm:-mt-2 pb-3 sm:pb-4 space-y-0.5"
                         >
                             @foreach ($group['addons'] as $addonItem)
                                 @if ($addonItem->listable)
@@ -284,7 +328,8 @@
                                                     :note="$addonItem->note"
                                                     :can-manage="$canManage"
                                                     :editing="$editingNoteItemId === $addonItem->id"
-                                                    icon-column-class="w-10"
+                                                    icon-column-class="w-11 sm:w-12"
+                                                    margin-top-class="mt-0.5"
                                                 />
                                             </x-slot:note>
                                             @if ($canManage)

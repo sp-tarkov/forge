@@ -1275,6 +1275,138 @@ describe('user lists-tab visibility', function (): void {
     });
 });
 
+describe('list.show fork UI', function (): void {
+    it('shows the Fork button to a verified viewer on a public list owned by another user', function (): void {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        Livewire::actingAs($viewer)
+            ->test('list-fork', ['sourceId' => $list->id])
+            ->assertSet('canFork', true)
+            ->assertSet('isOwnList', false)
+            ->assertSee('Fork');
+    });
+
+    it('shows the Duplicate label when the viewer owns the source list', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        Livewire::actingAs($owner)
+            ->test('list-fork', ['sourceId' => $list->id])
+            ->assertSet('canFork', true)
+            ->assertSet('isOwnList', true)
+            ->assertSee('Duplicate');
+    });
+
+    it('hides the Fork button when the policy denies the action', function (): void {
+        $owner = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->private()->create();
+        $viewer = User::factory()->create();
+
+        Livewire::actingAs($viewer)
+            ->test('list-fork', ['sourceId' => $list->id])
+            ->assertSet('canFork', false)
+            ->assertDontSee('Fork');
+    });
+
+    it('prefills the title from the source list', function (): void {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create(['title' => 'Curated Picks']);
+
+        Livewire::actingAs($viewer)
+            ->test('list-fork', ['sourceId' => $list->id])
+            ->assertSet('title', 'Curated Picks');
+    });
+
+    it('submits and creates a new list owned by the actor with the chosen title', function (): void {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create(['title' => 'Original']);
+
+        Livewire::actingAs($viewer)
+            ->test('list-fork', ['sourceId' => $list->id])
+            ->set('title', 'My Fork')
+            ->call('submit');
+
+        $created = ModList::query()
+            ->where('owner_id', $viewer->id)
+            ->where('title', 'My Fork')
+            ->first();
+
+        expect($created)->not->toBeNull();
+        expect($created?->forked_from_list_id)->toBe($list->id);
+    });
+
+    it('validates that the title is not empty', function (): void {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $list = ModList::factory()->for($owner, 'owner')->public()->create();
+
+        Livewire::actingAs($viewer)
+            ->test('list-fork', ['sourceId' => $list->id])
+            ->set('title', '')
+            ->call('submit')
+            ->assertHasErrors(['title' => 'required']);
+    });
+});
+
+describe('list.show provenance UI', function (): void {
+    it('renders a "Forked from X by Y" chip on the fork show page', function (): void {
+        $sourceOwner = User::factory()->create(['name' => 'Source Owner']);
+        $forkOwner = User::factory()->create();
+        $source = ModList::factory()->for($sourceOwner, 'owner')->public()->create(['title' => 'Original List']);
+        $fork = ModList::factory()->for($forkOwner, 'owner')->private()->forkedFrom($source)->create();
+
+        $response = $this->actingAs($forkOwner)->get($fork->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('Forked from');
+        $response->assertSee('Original List');
+        $response->assertSee('Source Owner');
+    });
+
+    it('drops the chip when the source has been deleted (nullOnDelete)', function (): void {
+        $sourceOwner = User::factory()->create();
+        $forkOwner = User::factory()->create();
+        $source = ModList::factory()->for($sourceOwner, 'owner')->public()->create();
+        $fork = ModList::factory()->for($forkOwner, 'owner')->private()->forkedFrom($source)->create();
+
+        $source->delete();
+
+        $response = $this->actingAs($forkOwner)->get($fork->fresh()->detailUrl());
+
+        $response->assertOk();
+        $response->assertDontSee('Forked from');
+    });
+
+    it('shows a "Forked N times" badge on the source list page', function (): void {
+        $sourceOwner = User::factory()->create();
+        $source = ModList::factory()->for($sourceOwner, 'owner')->public()->create();
+
+        ModList::factory()->public()->forkedFrom($source)->count(2)->create();
+        ModList::factory()->private()->forkedFrom($source)->count(1)->create();
+
+        $response = $this->get($source->detailUrl());
+
+        $response->assertOk();
+        $response->assertSee('Forked 2 times');
+    });
+
+    it('does not show the forks badge when only Private forks exist', function (): void {
+        $sourceOwner = User::factory()->create();
+        $source = ModList::factory()->for($sourceOwner, 'owner')->public()->create();
+
+        ModList::factory()->private()->forkedFrom($source)->count(3)->create();
+
+        $response = $this->get($source->detailUrl());
+
+        $response->assertOk();
+        $response->assertDontSee('Forked');
+    });
+});
+
 /**
  * Build a Mod with a single ModVersion wired to an SPT version. The caller
  * must ensure an SptVersion with version '3.8.0' exists.

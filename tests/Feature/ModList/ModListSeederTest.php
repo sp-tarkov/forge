@@ -45,6 +45,42 @@ describe('ModListSeeder Favourites lists', function (): void {
     });
 });
 
+describe('ModListSeeder forks', function (): void {
+    it('seeds at least some forked lists when sources exist', function (): void {
+        SptVersion::factory()->count(2)->create();
+        User::factory()->count(20)->create();
+        Mod::factory()->count(20)->create();
+
+        $this->seed(ModListSeeder::class);
+
+        $hasAnyForks = ModList::query()->whereNotNull('forked_from_list_id')->exists();
+
+        expect($hasAnyForks)->toBeTrue('seeder must produce at least some forked lists to exercise provenance UI');
+    });
+
+    it('copies source items into each forked list', function (): void {
+        SptVersion::factory()->count(2)->create();
+        User::factory()->count(20)->create();
+        Mod::factory()->count(20)->create();
+
+        $this->seed(ModListSeeder::class);
+
+        /** @var ModList|null $fork */
+        $fork = ModList::query()
+            ->whereNotNull('forked_from_list_id')
+            ->whereHas('items')
+            ->with(['items', 'forkedFromList.items'])
+            ->first();
+
+        expect($fork)->not->toBeNull('expected at least one fork with items');
+
+        $forkItems = $fork->items->map(fn (ModListItem $item): string => $item->listable_type.':'.$item->listable_id.':'.$item->position)->sort()->values()->all();
+        $sourceItems = $fork->forkedFromList->items->map(fn (ModListItem $item): string => $item->listable_type.':'.$item->listable_id.':'.$item->position)->sort()->values()->all();
+
+        expect($forkItems)->toBe($sourceItems);
+    });
+});
+
 describe('ModListSeeder item rows', function (): void {
     it('never seeds an addon without its parent mod also on the same list', function (): void {
         // Regression: orphan-addon list items (addon on the list, parent mod not on the list) bypass the SPT-version

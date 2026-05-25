@@ -73,4 +73,11 @@ final class ModListFactory extends Factory
             'share_token' => null,
         ]);
     }
+
+    public function forkedFrom(ModList $source): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'forked_from_list_id' => $source->id,
+        ]);
+    }
 }

@@ -137,6 +137,30 @@ final class ModListPolicy
     }
 
     /**
+     * Determine whether the user can fork or duplicate a list.
+     *
+     * Forking creates a new list owned by the actor with `forked_from_list_id` pointing back to the source. The actor
+     * must be able to view the source, be eligible to create a new list, the source must not be moderated, and the
+     * source's item count must fit within the per-list cap.
+     */
+    public function fork(User $user, ModList $source): bool
+    {
+        if ($source->disabled) {
+            return false;
+        }
+
+        if (! $this->view($user, $source)) {
+            return false;
+        }
+
+        if (! $this->create($user)) {
+            return false;
+        }
+
+        return $source->items()->count() <= ModList::maxItemsPerList();
+    }
+
+    /**
      * Determine whether the user can delete the list.
      *
      * The default Favourites list can never be deleted by anyone, including

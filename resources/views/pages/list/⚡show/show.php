@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\ModListCapacityExceededException;
 use App\Models\Addon;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\ModListItem;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use App\Exceptions\ModListCapacityExceededException;
 use App\Services\ModListService;
 use App\Support\DataTransferObjects\ResolvedListVersion;
 use Flux\Flux;
@@ -47,7 +47,15 @@ new #[Layout('layouts::base')] class extends Component
     public function mount(int $listId, string $slug, ?string $shareToken = null): void
     {
         $this->modList = ModList::query()
-            ->with(['owner:id,name', 'sptVersion'])
+            ->with([
+                'owner:id,name',
+                'sptVersion',
+                'forkedFromList:id,owner_id,title,slug,visibility,disabled,share_token',
+                'forkedFromList.owner:id,name',
+            ])
+            ->withCount([
+                'publicForks as public_forks_count',
+            ])
             ->findOrFail($listId);
 
         $this->shareToken = $shareToken;
@@ -456,6 +464,34 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * The source list this list was forked or duplicated from, or null when the source has been deleted or this list
+     * is not a fork.
+     */
+    #[Computed]
+    public function forkedFromSource(): ?ModList
+    {
+        if ($this->modList->forked_from_list_id === null) {
+            return null;
+        }
+
+        $source = $this->modList->forkedFromList;
+
+        return $source instanceof ModList ? $source : null;
+    }
+
+    /**
+     * Whether the current viewer can view the source list, gating whether the provenance chip renders as a link versus
+     * a plain attribution.
+     */
+    #[Computed]
+    public function forkedFromViewable(): bool
+    {
+        $source = $this->forkedFromSource;
+
+        return $source instanceof ModList && Gate::allows('view', $source);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function with(): array
@@ -468,6 +504,8 @@ new #[Layout('layouts::base')] class extends Component
             'listModIds' => $this->listModIds,
             'hasIncompatibleMods' => $this->hasIncompatibleMods,
             'missingDependencies' => $this->missingDependencies,
+            'forkedFromSource' => $this->forkedFromSource,
+            'forkedFromViewable' => $this->forkedFromViewable,
         ];
     }
 

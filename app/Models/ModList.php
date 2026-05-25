@@ -38,6 +38,7 @@ use Override;
  * @property ListVisibility $visibility
  * @property int|null $spt_version_id
  * @property string|null $share_token
+ * @property int|null $forked_from_list_id
  * @property bool $is_default
  * @property bool $comments_disabled
  * @property bool $disabled
@@ -46,8 +47,11 @@ use Override;
  * @property-read string $thumbnailUrl
  * @property-read User|null $owner
  * @property-read SptVersion|null $sptVersion
+ * @property-read ModList|null $forkedFromList
+ * @property-read EloquentCollection<int, ModList> $forks
  * @property-read EloquentCollection<int, ModListItem> $items
  * @property-read int $item_count
+ * @property-read int|null $public_forks_count
  *
  * @implements Commentable<self>
  */
@@ -127,6 +131,39 @@ final class ModList extends Model implements Commentable, Reportable
         return $this->hasMany(ModListItem::class)
             ->orderBy('position')
             ->orderBy('id');
+    }
+
+    /**
+     * The list this one was forked or duplicated from, if any.
+     *
+     * @return BelongsTo<ModList, $this>
+     */
+    public function forkedFromList(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'forked_from_list_id');
+    }
+
+    /**
+     * Lists that have been forked or duplicated from this one.
+     *
+     * @return HasMany<ModList, $this>
+     */
+    public function forks(): HasMany
+    {
+        return $this->hasMany(self::class, 'forked_from_list_id');
+    }
+
+    /**
+     * Lists that have been forked from this one and are visible to others (Public or Hidden, not disabled). Used to
+     * populate the source list's "Forked N times" badge.
+     *
+     * @return HasMany<ModList, $this>
+     */
+    public function publicForks(): HasMany
+    {
+        return $this->forks()
+            ->whereIn('visibility', [ListVisibility::Public, ListVisibility::Hidden])
+            ->where('disabled', false);
     }
 
     /**

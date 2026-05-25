@@ -4,6 +4,7 @@
     'canManage' => false,
     'editing' => false,
     'iconColumnClass' => 'w-14 sm:w-16',
+    'marginTopClass' => 'mt-2',
 ])
 
 @if ($itemId !== null)
@@ -64,7 +65,7 @@
     @elseif ($canManage)
         <div
             wire:key="note-add-{{ $itemId }}"
-            class="mt-2 flex items-start gap-3"
+            class="{{ $marginTopClass }} flex items-start gap-3"
         >
             <div class="{{ $iconColumnClass }} shrink-0"></div>
             <button

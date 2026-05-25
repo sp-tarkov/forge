@@ -31,6 +31,10 @@ return new class extends Migration
                 ->constrained('spt_versions')
                 ->nullOnDelete()
                 ->cascadeOnUpdate();
+            $table->foreignId('forked_from_list_id')
+                ->nullable()
+                ->constrained('mod_lists')
+                ->nullOnDelete();
             $table->string('share_token', 32)->nullable()->unique();
             $table->boolean('is_default')->default(false);
             $table->boolean('comments_disabled')->default(false);

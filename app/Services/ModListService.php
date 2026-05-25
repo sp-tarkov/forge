@@ -18,6 +18,8 @@ use App\Support\DataTransferObjects\ResolvedListVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use LogicException;
 
 final class ModListService
@@ -66,6 +68,71 @@ final class ModListService
         $list->save();
 
         return $list;
+    }
+
+    /**
+     * Copy a source list into a brand-new list owned by the actor.
+     *
+     * The new list starts Private with comments disabled and tracks its origin through `forked_from_list_id`. Items are
+     * bulk-inserted preserving their polymorphic identity, note, and position. Comments, reports, and moderation state
+     * are intentionally not copied.
+     *
+     * @throws ModListCapacityExceededException
+     */
+    public function forkList(User $newOwner, ModList $source, string $title): ModList
+    {
+        $source->loadMissing('items');
+
+        $sourceItemCount = $source->items->count();
+        $maxItems = ModList::maxItemsPerList();
+        throw_if(
+            $sourceItemCount > $maxItems,
+            ModListCapacityExceededException::class,
+            $source,
+            $sourceItemCount,
+            $maxItems,
+        );
+
+        return DB::transaction(function () use ($newOwner, $source, $title): ModList {
+            $list = new ModList;
+            $list->owner_id = $newOwner->id;
+            $list->title = mb_trim($title);
+            $list->description = $source->description;
+            $list->visibility = ListVisibility::Private;
+            $list->spt_version_id = $source->spt_version_id;
+            $list->is_default = false;
+            // Private lists never surface a comment thread.
+            $list->comments_disabled = true;
+            $list->forked_from_list_id = $source->id;
+            $list->share_token = null;
+
+            if ($source->thumbnail !== null && $source->thumbnail !== '') {
+                $copiedThumbnail = $this->copyThumbnailFile($source->thumbnail);
+                if ($copiedThumbnail !== null) {
+                    $list->thumbnail = $copiedThumbnail;
+                    $list->thumbnail_hash = $source->thumbnail_hash;
+                }
+            }
+
+            $list->save();
+
+            if ($source->items->isNotEmpty()) {
+                $now = now();
+                $rows = $source->items->map(fn (ModListItem $item): array => [
+                    'mod_list_id' => $list->id,
+                    'listable_type' => $item->listable_type,
+                    'listable_id' => $item->listable_id,
+                    'note' => $item->note,
+                    'position' => $item->position,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])->all();
+
+                ModListItem::query()->insert($rows);
+            }
+
+            return $list;
+        });
     }
 
     /**
@@ -586,6 +653,35 @@ final class ModListService
         );
 
         return $item;
+    }
+
+    /**
+     * Copy a list thumbnail to a new path on the configured asset disk.
+     *
+     * Returns the new storage path on success, or null when the source file is missing on disk so the fork falls back
+     * to no thumbnail.
+     */
+    private function copyThumbnailFile(string $sourcePath): ?string
+    {
+        /** @var string $disk */
+        $disk = config()->string('filesystems.asset_upload', 'public');
+        $storage = Storage::disk($disk);
+
+        if (! $storage->exists($sourcePath)) {
+            return null;
+        }
+
+        $extension = pathinfo($sourcePath, PATHINFO_EXTENSION);
+        $directory = pathinfo($sourcePath, PATHINFO_DIRNAME);
+        $newPath = ($directory === '' || $directory === '.' ? '' : $directory.'/').Str::random(40);
+
+        if ($extension !== '') {
+            $newPath .= '.'.$extension;
+        }
+
+        $storage->copy($sourcePath, $newPath);
+
+        return $newPath;
     }
 
     /**

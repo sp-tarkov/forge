@@ -13,6 +13,7 @@ use App\Models\SptVersion;
 use App\Models\User;
 use Carbon\CarbonInterface;
 use Database\Seeders\Traits\SeederHelpers;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
@@ -34,6 +35,18 @@ final class ModListSeeder extends Seeder
      * Cap on how many Favourites lists are populated with items.
      */
     private const int FAVOURITES_SAMPLE_SIZE = 100;
+
+    /**
+     * Percent of inserted non-default lists that get spawned forks. Tuned low so forks remain a minority of the seeded
+     * list pool but show up often enough to exercise the provenance UI in dev.
+     */
+    private const int FORK_SOURCE_PERCENT = 15;
+
+    /**
+     * Hard cap on how many forks the seeder will create in a single run, so the cost stays bounded on large dev
+     * databases.
+     */
+    private const int FORK_MAX_COUNT = 200;
 
     private const int LIST_INSERT_CHUNK = 500;
 
@@ -91,6 +104,7 @@ final class ModListSeeder extends Seeder
 
         $this->seedUserLists($userIds, $modIds, $addonIds, $addonModMap, $sptVersionIds);
         $this->seedFavouritesItems($userIds, $modIds, $addonIds, $addonModMap);
+        $this->seedForks($userIds);
     }
 
     /**
@@ -265,6 +279,213 @@ final class ModListSeeder extends Seeder
         foreach (array_chunk($itemRows, self::ITEM_INSERT_CHUNK) as $chunk) {
             ModListItem::query()->insert($chunk);
         }
+    }
+
+    /**
+     * Spawn forks of a random subset of the inserted non-default lists.
+     *
+     * Each fork copies the source's items verbatim (preserving position and note) and tracks the immediate parent via
+     * forked_from_list_id, exercising both the provenance chip and the "Forked N times" badge in dev. Fork ownership is
+     * picked at random from the same user pool used for the main list pass, occasionally landing on the source owner to
+     * also exercise the "Duplicate" label path.
+     *
+     * @param  Collection<int, int>  $userIds
+     */
+    private function seedForks(Collection $userIds): void
+    {
+        if ($userIds->isEmpty()) {
+            return;
+        }
+
+        /** @var Collection<int, ModList> $candidates */
+        $candidates = ModList::query()
+            ->where('is_default', false)
+            ->whereNull('forked_from_list_id')
+            ->whereExists(fn (Builder $query): Builder => $query
+                ->from('mod_list_items')
+                ->whereColumn('mod_list_items.mod_list_id', 'mod_lists.id'))
+            ->get(['id', 'owner_id', 'title', 'description', 'spt_version_id']);
+
+        if ($candidates->isEmpty()) {
+            return;
+        }
+
+        $sources = $candidates
+            ->shuffle()
+            ->take((int) ceil($candidates->count() * self::FORK_SOURCE_PERCENT / 100));
+
+        if ($sources->isEmpty()) {
+            return;
+        }
+
+        $now = Date::now();
+
+        /** @var array<int, array<int, array{listable_type: string, listable_id: int, note: string|null, position: int}>> $sourceItems */
+        $sourceItems = ModListItem::query()
+            ->whereIn('mod_list_id', $sources->pluck('id'))
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get(['mod_list_id', 'listable_type', 'listable_id', 'note', 'position'])
+            ->groupBy('mod_list_id')
+            ->map(fn (Collection $rows): array => $rows
+                ->map(fn (ModListItem $item): array => [
+                    'listable_type' => $item->listable_type,
+                    'listable_id' => $item->listable_id,
+                    'note' => $item->note,
+                    'position' => $item->position,
+                ])
+                ->all())
+            ->all();
+
+        $listRows = [];
+        $sourceForSlug = [];
+        $forkCount = 0;
+
+        foreach ($sources as $source) {
+            if ($forkCount >= self::FORK_MAX_COUNT) {
+                break;
+            }
+
+            $items = $sourceItems[$source->id] ?? [];
+            if ($items === []) {
+                continue;
+            }
+
+            if (count($items) > $this->maxItemsPerList) {
+                continue;
+            }
+
+            $forksForThisSource = $this->weightedForkCount();
+            for ($i = 0; $i < $forksForThisSource && $forkCount < self::FORK_MAX_COUNT; $i++) {
+                $row = $this->buildForkRow($source, $userIds->random(), $now);
+                $listRows[] = $row;
+                $sourceForSlug[$row['owner_id'].':'.$row['slug']] = $source->id;
+                $forkCount++;
+            }
+        }
+
+        if ($listRows === []) {
+            return;
+        }
+
+        $listChunks = array_chunk($listRows, self::LIST_INSERT_CHUNK);
+        progress(
+            label: 'Inserting Forked Mod Lists...',
+            steps: $listChunks,
+            callback: fn (array $chunk): bool => ModList::query()->insert($chunk),
+        );
+
+        $slugs = array_column($listRows, 'slug');
+
+        /** @var array<string, int> $idLookup */
+        $idLookup = ModList::query()
+            ->whereIn('slug', $slugs)
+            ->whereNotNull('forked_from_list_id')
+            ->get(['id', 'owner_id', 'slug'])
+            ->mapWithKeys(fn (ModList $list): array => [
+                $list->owner_id.':'.$list->slug => $list->id,
+            ])
+            ->all();
+
+        $itemRows = [];
+        foreach ($listRows as $row) {
+            $forkId = $idLookup[$row['owner_id'].':'.$row['slug']] ?? null;
+            $sourceId = $sourceForSlug[$row['owner_id'].':'.$row['slug']] ?? null;
+            if ($forkId === null) {
+                continue;
+            }
+
+            if ($sourceId === null) {
+                continue;
+            }
+
+            foreach ($sourceItems[$sourceId] ?? [] as $item) {
+                $itemRows[] = [
+                    'mod_list_id' => $forkId,
+                    'listable_type' => $item['listable_type'],
+                    'listable_id' => $item['listable_id'],
+                    'note' => $item['note'],
+                    'position' => $item['position'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        if ($itemRows === []) {
+            return;
+        }
+
+        foreach (array_chunk($itemRows, self::ITEM_INSERT_CHUNK) as $chunk) {
+            ModListItem::query()->insert($chunk);
+        }
+    }
+
+    /**
+     * Build a single fork ModList row ready for raw insert.
+     *
+     * Mirrors the runtime ModListService::forkList contract: the fork starts Private with comments disabled, carries
+     * forked_from_list_id back to the source, and reuses the source's title (the random slug suffix keeps the
+     * (owner_id, slug) uniqueness invariant intact). Visibility is drawn from the same weighted picker as regular lists
+     * so the "Forked N times" badge has a meaningful non-zero count in dev for popular sources.
+     *
+     * @return array{
+     *     owner_id: int,
+     *     title: string,
+     *     slug: string,
+     *     description: string|null,
+     *     description_html: string|null,
+     *     visibility: string,
+     *     spt_version_id: int|null,
+     *     forked_from_list_id: int,
+     *     share_token: string|null,
+     *     is_default: bool,
+     *     comments_disabled: bool,
+     *     created_at: CarbonInterface,
+     *     updated_at: CarbonInterface,
+     * }
+     */
+    private function buildForkRow(ModList $source, int $newOwnerId, CarbonInterface $now): array
+    {
+        $title = $source->title;
+        $slug = Str::slug($title).'-'.Str::lower(Str::random(6));
+        $visibility = $this->randomVisibility();
+
+        return [
+            'owner_id' => $newOwnerId,
+            'title' => $title,
+            'slug' => $slug,
+            'description' => $source->description,
+            'description_html' => $source->description !== null && $source->description !== ''
+                ? '<p>'.e($source->description).'</p>'
+                : null,
+            'visibility' => $visibility->value,
+            'spt_version_id' => $source->spt_version_id,
+            'forked_from_list_id' => $source->id,
+            'share_token' => $visibility === ListVisibility::Hidden ? ModList::generateShareToken() : null,
+            'is_default' => false,
+            'comments_disabled' => $visibility === ListVisibility::Private,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+    }
+
+    /**
+     * Pick how many forks a single source list spawns. Heavy bias toward 1.
+     */
+    private function weightedForkCount(): int
+    {
+        $roll = random_int(1, 100);
+
+        if ($roll <= 70) {
+            return 1;
+        }
+
+        if ($roll <= 95) {
+            return 2;
+        }
+
+        return 3;
     }
 
     /**
