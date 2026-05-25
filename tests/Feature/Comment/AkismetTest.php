@@ -13,11 +13,9 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
-    // Eagerly migrate the database. The API key verification tests don't
-    // interact with the database, which leaves LazilyRefreshDatabase in a
-    // deferred state. When a later test touches the DB, migrate:fresh can
-    // fail due to stale tables from a prior test file. Running migrate
-    // upfront with the --graceful flag avoids this.
+    // Eagerly migrate the database. The API key verification tests don't interact with the database, which leaves
+    // LazilyRefreshDatabase in a deferred state. When a later test touches the DB, migrate:fresh can fail due to stale
+    // tables from a prior test file. Running migrate upfront with the --graceful flag avoids this.
     Artisan::call('migrate', ['--force' => true, '--graceful' => true]);
 
     $apiKey = config('akismet.api_key');

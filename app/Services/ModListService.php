@@ -357,10 +357,9 @@ final class ModListService
         return $mods->mapWithKeys(function (Mod $mod) use ($exactMatches, $closestMatches, $targetSptVersion): array {
             $exact = $exactMatches->get($mod->id);
             if ($exact instanceof ModVersion) {
-                // Exact pivot match: the card badge shows the list's target
-                // SPT, not the resolved version's `latestSptVersion`, so a
-                // version that also supports newer SPTs does not get a
-                // higher badge than the list it sits on.
+                // Exact pivot match: the card badge shows the list's target SPT, not the resolved version's
+                // `latestSptVersion`, so a version that also supports newer SPTs does not get a higher badge than the
+                // list it sits on.
                 return [$mod->id => new ResolvedListVersion($exact, false, $targetSptVersion)];
             }
 

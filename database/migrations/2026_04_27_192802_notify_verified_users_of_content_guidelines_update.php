@@ -11,9 +11,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // In non-production environments cap the recipient list so importing the prod DB
-        // does not flood Herd's mail system with thousands of messages. Always include the
-        // Refringe account... because reasons. Shut up! Go away.
+        // In non-production environments cap the recipient list so importing the prod DB does not flood Herd's mail
+        // system with thousands of messages. Always include the Refringe account... because reasons. Shut up! Go away.
         if (! app()->environment('production')) {
             $refringe = User::query()
                 ->whereNotNull('email_verified_at')

@@ -32,7 +32,9 @@ describe('Addon Browser Tests', function (): void {
 
         $mod = $factory->create($modAttributes);
 
-        // Pin the constraint so SptVersionService::resolve always matches the 3.9.0 SPT version seeded in beforeEach; without this, the factory's random constraint (`^1.0.0`, `^2.0.0`) can cause the observer to clear the pivot mid-flow and leave the mod not publicly visible.
+        // Pin the constraint so SptVersionService::resolve always matches the 3.9.0 SPT version seeded in beforeEach;
+        // without this, the factory's random constraint (`^1.0.0`, `^2.0.0`) can cause the observer to clear the pivot
+        // mid-flow and leave the mod not publicly visible.
         $modVersion = ModVersion::factory()->create([
             'mod_id' => $mod->id,
             'published_at' => now()->subDay(),

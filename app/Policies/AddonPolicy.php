@@ -112,8 +112,7 @@ final class AddonPolicy
      */
     public function download(?User $user, Addon $addon): bool
     {
-        // Check if addon can be viewed first
-        // Allow downloads even if blocked
+        // Check if addon can be viewed first. Allow downloads even if blocked.
         return $this->view($user, $addon);
     }
 

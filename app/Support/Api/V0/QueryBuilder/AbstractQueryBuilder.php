@@ -313,7 +313,8 @@ abstract class AbstractQueryBuilder
             return;
         }
 
-        // Get the search results with their relevance ordering and ranking scores (model uses Searchable trait, verified above)
+        // Get the search results with their relevance ordering and ranking scores (model uses Searchable trait,
+        // verified above)
         throw_unless(method_exists($model, 'search'), LogicException::class, 'Searchable trait is present but search() method is missing.');
 
         /** @var \Laravel\Scout\Builder<Model> $scoutBuilder */

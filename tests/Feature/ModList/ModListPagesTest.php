@@ -859,10 +859,9 @@ describe('list.show SPT-version resolution', function (): void {
     });
 
     it('resolves an orphan-addon parent mod against the list target SPT', function (): void {
-        // Regression: when only an addon is on the list (its parent mod is
-        // rendered as a group anchor), the parent mod must still go through
-        // resolveListVersions so the card shows the target-compatible version
-        // and the "Not compatible" indicator when applicable.
+        // Regression: when only an addon is on the list (its parent mod is rendered as a group anchor), the parent
+        // mod must still go through resolveListVersions so the card shows the target-compatible version and the "Not
+        // compatible" indicator when applicable.
         $target = SptVersion::factory()->state(['version' => '3.1.1'])->create();
         $older = SptVersion::factory()->state(['version' => '2.3.0'])->create();
         $list = ModList::factory()->public()->create(['spt_version_id' => $target->id]);
@@ -887,8 +886,7 @@ describe('list.show SPT-version resolution', function (): void {
         $response = $this->get($list->detailUrl());
 
         $response->assertOk();
-        // The card must show the resolved older-compatible version, not the
-        // unfiltered latestVersion.
+        // The card must show the resolved older-compatible version, not the unfiltered latestVersion.
         $response->assertSee('7.0.5');
         $response->assertDontSee('9.8.2');
         // And no "Not compatible" indicator when an exact pivot match exists.

@@ -55,7 +55,8 @@ final class ModListSeeder extends Seeder
             return;
         }
 
-        // Favourites lists are created explicitly because seeders run with model events disabled, bypassing the User observer.
+        // Favourites lists are created explicitly because seeders run with model events disabled, bypassing the User
+        // observer.
         $this->seedFavouritesLists();
 
         /** @var Collection<int, int> $modIds */
@@ -362,9 +363,8 @@ final class ModListSeeder extends Seeder
             foreach ($addonIds->shuffle()->take($addonShare) as $addonId) {
                 $parentModId = $addonModMap->get($addonId);
                 if ($parentModId === null) {
-                    // The $addonModMap pre-filter excludes addons without a
-                    // parent mod, so this branch is unreachable in practice.
-                    // Skip defensively rather than seed a parent-less addon.
+                    // The $addonModMap pre-filter excludes addons without a parent mod, so this branch is unreachable
+                    // in practice. Skip defensively rather than seed a parent-less addon.
                     continue;
                 }
 
@@ -372,11 +372,9 @@ final class ModListSeeder extends Seeder
                 $slotsNeeded = $needsParent ? 2 : 1;
 
                 if ($remaining < $slotsNeeded) {
-                    // Not enough capacity for both this addon and its parent
-                    // (or just the addon itself). Skip this candidate and try
-                    // the next one rather than aborting the loop, which keeps
-                    // the no-orphan invariant intact without giving up on the
-                    // remaining addon budget.
+                    // Not enough capacity for both this addon and its parent (or just the addon itself). Skip this
+                    // candidate and try the next one rather than aborting the loop, which keeps the no-orphan
+                    // invariant intact without giving up on the remaining addon budget.
                     continue;
                 }
 

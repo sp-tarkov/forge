@@ -83,8 +83,7 @@ final class CommentPolicy
                     return true;
                 }
 
-                // Mod authors can view comments on their authored mods
-                // All other users cannot view disabled comments
+                // Mod authors can view comments on their authored mods. All other users cannot view disabled comments.
                 return $mod->additionalAuthors->contains($user);
             }
         }
@@ -174,7 +173,8 @@ final class CommentPolicy
      */
     public function update(User $user, Comment $comment): bool
     {
-        // Spam-flagged comments cannot be edited; the author cannot revise content into clean text to escape the review queue
+        // Spam-flagged comments cannot be edited; the author cannot revise content into clean text to escape the
+        // review queue
         if ($comment->isSpam()) {
             return false;
         }

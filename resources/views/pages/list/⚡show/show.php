@@ -199,9 +199,8 @@ new #[Layout('layouts::base')] class extends Component
             ]);
         }
 
-        // Each group carries its own render-time derivations (a stable key,
-        // whether it is drag-sortable, and the version the card should show)
-        // so the Blade template stays logic-free.
+        // Each group carries its own render-time derivations (a stable key, whether it is drag-sortable, and the
+        // version the card should show) so the Blade template stays logic-free.
         $canManage = $this->canManage;
         $groups = $this->modList->groupedItems()
             ->values()

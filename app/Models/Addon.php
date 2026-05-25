@@ -306,8 +306,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        // Ensure the addon has at least one published version.
-        // All conditions are met; the addon should be searchable.
+        // Ensure the addon has at least one published version. All conditions are met; the addon should be searchable.
         return $this->hasPublishedVersion();
     }
 

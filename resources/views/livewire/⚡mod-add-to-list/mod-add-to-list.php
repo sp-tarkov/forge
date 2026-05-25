@@ -279,9 +279,8 @@ new class extends Component
 
         $this->addToList($this->activeListId, $service);
 
-        // A successful add clears the dependency sub-flow; when the step is
-        // still open the write failed (e.g. the list is full) so the modal
-        // stays put for the viewer to retry or pick another list.
+        // A successful add clears the dependency sub-flow; when the step is still open the write failed (e.g. the
+        // list is full) so the modal stays put for the viewer to retry or pick another list.
         if (! $this->showDependencyStep) {
             $this->dispatch('modal-close', name: 'mod-add-to-list-'.$this->sourceType.'-'.$this->sourceId);
         }

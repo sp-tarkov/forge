@@ -70,9 +70,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // overwhelmingly automated SQLi/XSS probes targeting wire methods.
         $exceptions->dontReport(MethodNotFoundException::class);
 
-        // Attempts to write a #[Locked] Livewire property come from bots
-        // replaying stale or malformed update payloads. The locked-property
-        // guard is working as intended, so this is not a server-side bug.
+        // Attempts to write a #[Locked] Livewire property come from bots replaying stale or malformed update payloads.
+        // The locked-property guard is working as intended, so this is not a server-side bug.
         $exceptions->dontReport(CannotUpdateLockedPropertyException::class);
 
         // Register the custom exception handler for the API.

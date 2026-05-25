@@ -47,10 +47,9 @@ describe('ModListSeeder Favourites lists', function (): void {
 
 describe('ModListSeeder item rows', function (): void {
     it('never seeds an addon without its parent mod also on the same list', function (): void {
-        // Regression: orphan-addon list items (addon on the list, parent mod
-        // not on the list) bypass the SPT-version resolver on the show page.
-        // The real add-to-list flow refuses to create them, so the seeder
-        // must not produce them either.
+        // Regression: orphan-addon list items (addon on the list, parent mod not on the list) bypass the SPT-version
+        // resolver on the show page. The real add-to-list flow refuses to create them, so the seeder must not produce
+        // them either.
         SptVersion::factory()->count(3)->create();
         User::factory()->count(5)->create();
         Mod::factory()->count(10)->create();

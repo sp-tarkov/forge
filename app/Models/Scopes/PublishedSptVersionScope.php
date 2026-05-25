@@ -33,8 +33,7 @@ final class PublishedSptVersionScope implements Scope
             return;
         }
 
-        // For regular users and guests, only show published SPT versions
-        // NULL publish_date means unpublished
+        // For regular users and guests, only show published SPT versions. NULL publish_date means unpublished.
         $builder->whereNotNull($model->getTable().'.publish_date')
             ->where($model->getTable().'.publish_date', '<=', now());
     }

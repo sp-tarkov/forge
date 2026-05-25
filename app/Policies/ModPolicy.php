@@ -101,8 +101,7 @@ final class ModPolicy
      */
     public function download(?User $user, Mod $mod): bool
     {
-        // Check if mod can be viewed first
-        // Allow downloads even if blocked
+        // Check if mod can be viewed first. Allow downloads even if blocked.
         return $this->view($user, $mod);
     }
 
