@@ -42,6 +42,7 @@
                         autocomplete="username"
                         placeholder="your@email.com"
                     />
+                    <flux:error name="email" />
                 </flux:field>
 
                 <flux:field>
@@ -54,6 +55,7 @@
                         autocomplete="current-password"
                         placeholder="Enter your password"
                     />
+                    <flux:error name="password" />
                 </flux:field>
             </div>
 
