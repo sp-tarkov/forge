@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -11,18 +13,10 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 
+#[Description('Download and update the MaxMind GeoLite2-City database')]
+#[Signature('geoip:update {--force : Force update even if database is recent}')]
 final class UpdateGeoLiteDatabase extends Command
 {
-    /**
-     * The name and signature of the console command.
-     */
-    protected $signature = 'geoip:update {--force : Force update even if database is recent}';
-
-    /**
-     * The console command description.
-     */
-    protected $description = 'Download and update the MaxMind GeoLite2-City database';
-
     /**
      * Execute the console command.
      */

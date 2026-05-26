@@ -4,25 +4,15 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use App\Jobs\EnsureFavouritesListsJob;
 use Illuminate\Console\Command;
 
+#[Description('Queue creation of the default Favourites list for any user that is missing one')]
+#[Signature('mod-lists:ensure-favourites')]
 final class EnsureFavouritesLists extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'mod-lists:ensure-favourites';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Queue creation of the default Favourites list for any user that is missing one';
-
     /**
      * Execute the console command.
      */

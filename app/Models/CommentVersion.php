@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Carbon\CarbonImmutable;
 use Database\Factories\CommentVersionFactory;
 use GrahamCampbell\Markdown\Facades\Markdown;
@@ -23,17 +24,11 @@ use Stevebauman\Purify\Facades\Purify;
  * @property string $body_html
  * @property-read Comment $comment
  */
+#[WithoutTimestamps]
 final class CommentVersion extends Model
 {
     /** @use HasFactory<CommentVersionFactory> */
     use HasFactory;
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * We only use created_at, not updated_at, since versions are immutable.
-     */
-    public $timestamps = false;
 
     /**
      * The relationship between a version and its comment.

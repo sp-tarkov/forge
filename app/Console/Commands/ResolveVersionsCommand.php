@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use App\Jobs\ResolveAddonVersionsJob;
 use App\Jobs\ResolveDependenciesJob;
 use App\Jobs\ResolveSptVersionsJob;
 use Illuminate\Console\Command;
 
+#[Description('Resolve SPT and dependency versions for all mods and addon versions')]
+#[Signature('app:resolve-versions')]
 final class ResolveVersionsCommand extends Command
 {
-    protected $signature = 'app:resolve-versions';
-
-    protected $description = 'Resolve SPT and dependency versions for all mods and addon versions';
-
     public function handle(): void
     {
         dispatch(new ResolveSptVersionsJob())->onQueue('default');
