@@ -14,6 +14,11 @@
         </h2>
         <div class="flex items-center gap-2">
             @auth
+                <livewire:mod-add-to-list
+                    :source-id="$mod->id"
+                    source-type="mod"
+                    wire:key="mod-show-add-to-list-{{ $mod->id }}"
+                />
                 @if ($mod->addons_enabled)
                     @if (auth()->user()->hasMfaEnabled())
                         <flux:button

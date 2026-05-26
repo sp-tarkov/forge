@@ -98,7 +98,8 @@ describe('transaction safety', function (): void {
         $root = buildComment($this->author, $this->mod);
         $reply = buildComment($this->author, $this->mod, $root);
 
-        // Fire a pre-delete listener on the final $comment->delete() so the transaction throws after descendants have already been deleted and tracking has been written.
+        // Fire a pre-delete listener on the final $comment->delete() so the transaction throws after descendants have
+        // already been deleted and tracking has been written.
         Comment::deleting(function (Comment $deleting) use ($root): void {
             throw_if($deleting->id === $root->id, RuntimeException::class, 'simulated failure');
         });

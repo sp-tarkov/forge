@@ -599,9 +599,8 @@ function seedProfileMods(User $owner, User $additionalAuthor, User $otherOwner):
         'published_at' => now()->subDay(),
     ]);
 
-    // H: public mod owned by the profile, with TWO additional authors.
-    // The LEFT JOIN against additional_authors emits 2 rows for this mod;
-    // a COUNT(*) without DISTINCT inflates the tab number.
+    // H: public mod owned by the profile, with TWO additional authors. The LEFT JOIN against additional_authors emits
+    // 2 rows for this mod; a COUNT(*) without DISTINCT inflates the tab number.
     $modH = Mod::factory()->for($owner, 'owner')->create([
         'name' => 'Mod H Public Multi-Author',
         'published_at' => now()->subDay(),

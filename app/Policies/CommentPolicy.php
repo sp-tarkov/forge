@@ -8,6 +8,7 @@ use App\Contracts\Commentable;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -82,9 +83,25 @@ final class CommentPolicy
                     return true;
                 }
 
-                // Mod authors can view comments on their authored mods
-                // All other users cannot view disabled comments
+                // Mod authors can view comments on their authored mods. All other users cannot view disabled comments.
                 return $mod->additionalAuthors->contains($user);
+            }
+        }
+
+        // Check if comments are disabled for lists
+        if ($comment->commentable_type === ModList::class) {
+            /** @var ModList $modList */
+            $modList = $comment->commentable;
+            if ($modList->comments_disabled) {
+                if (! $user instanceof User) {
+                    return false;
+                }
+
+                if ($user->isModOrAdmin()) {
+                    return true;
+                }
+
+                return $modList->owner_id === $user->id;
             }
         }
 
@@ -138,6 +155,15 @@ final class CommentPolicy
             }
         }
 
+        // Check blocking for list comments
+        if ($commentable instanceof ModList) {
+            /** @var User|null $owner */
+            $owner = $commentable->owner;
+            if ($owner !== null && $user->isBlockedMutually($owner)) {
+                return false;
+            }
+        }
+
         // Check if the commentable can receive comments
         return $commentable->canReceiveComments();
     }
@@ -147,7 +173,8 @@ final class CommentPolicy
      */
     public function update(User $user, Comment $comment): bool
     {
-        // Spam-flagged comments cannot be edited; the author cannot revise content into clean text to escape the review queue
+        // Spam-flagged comments cannot be edited; the author cannot revise content into clean text to escape the
+        // review queue
         if ($comment->isSpam()) {
             return false;
         }
@@ -311,6 +338,16 @@ final class CommentPolicy
             }
         }
 
+        // For list comments, check if the user owns the list
+        if ($comment->commentable_type === ModList::class) {
+            /** @var ModList $modList */
+            $modList = $comment->commentable;
+
+            if ($modList->owner_id === $user->id) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -386,6 +423,16 @@ final class CommentPolicy
             }
         }
 
+        // For list comments, check if the user owns the list
+        if ($comment->commentable_type === ModList::class) {
+            /** @var ModList $modList */
+            $modList = $comment->commentable;
+
+            if ($modList->owner_id === $user->id) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -443,6 +490,16 @@ final class CommentPolicy
 
             // Check if the user owns the profile being commented on
             if ($profileUser->id === $user->id) {
+                return true;
+            }
+        }
+
+        // For list comments, check if the user owns the list
+        if ($comment->commentable_type === ModList::class) {
+            /** @var ModList $modList */
+            $modList = $comment->commentable;
+
+            if ($modList->owner_id === $user->id) {
                 return true;
             }
         }
@@ -560,6 +617,16 @@ final class CommentPolicy
             }
         }
 
+        // For list comments, check if the user owns the list
+        if ($comment->commentable_type === ModList::class) {
+            /** @var ModList $modList */
+            $modList = $comment->commentable;
+
+            if ($modList->owner_id === $user->id) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -590,6 +657,16 @@ final class CommentPolicy
 
             // Check if the user is one of the mod authors
             if ($mod->additionalAuthors->contains($user)) {
+                return true;
+            }
+        }
+
+        // For list comments, check if the user owns the list
+        if ($comment->commentable_type === ModList::class) {
+            /** @var ModList $modList */
+            $modList = $comment->commentable;
+
+            if ($modList->owner_id === $user->id) {
                 return true;
             }
         }

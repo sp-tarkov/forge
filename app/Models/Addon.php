@@ -136,6 +136,16 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * The relationship between an addon and the list items that reference it.
+     *
+     * @return MorphMany<ModListItem, $this>
+     */
+    public function listItems(): MorphMany
+    {
+        return $this->morphMany(ModListItem::class, 'listable');
+    }
+
+    /**
      * The relationship between an addon and its versions.
      *
      * @return HasMany<AddonVersion, $this>
@@ -296,8 +306,7 @@ final class Addon extends Model implements Commentable, Reportable, Trackable
             return false;
         }
 
-        // Ensure the addon has at least one published version.
-        // All conditions are met; the addon should be searchable.
+        // Ensure the addon has at least one published version. All conditions are met; the addon should be searchable.
         return $this->hasPublishedVersion();
     }
 

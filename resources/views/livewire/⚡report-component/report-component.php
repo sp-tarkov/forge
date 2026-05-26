@@ -8,6 +8,7 @@ use App\Enums\TrackingEventType;
 use App\Facades\Track;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\Report;
 use App\Models\User;
 use App\Notifications\ReportSubmittedNotification;
@@ -79,6 +80,7 @@ new class extends Component
     {
         return match ($this->reportableType) {
             Mod::class => __('Report Mod'),
+            ModList::class => __('Report List'),
             default => __('Report'),
         };
     }

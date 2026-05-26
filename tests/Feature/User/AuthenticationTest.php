@@ -28,12 +28,13 @@ describe('authentication', function (): void {
     it('does not authenticate users with invalid password', function (): void {
         $user = User::factory()->create();
 
-        $this->post('/login', [
+        $response = $this->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+        $response->assertSessionHasErrors(['email' => __('auth.failed')]);
     });
 
     it('does not authenticate users with null password', function (): void {

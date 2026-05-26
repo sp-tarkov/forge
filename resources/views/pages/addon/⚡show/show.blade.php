@@ -15,26 +15,42 @@
             <flux:icon.puzzle-piece class="w-5 h-5" />
             {{ __('Addon Details') }}
         </h2>
-        @if (auth()->user()
-                ?->can('viewActions', [App\Models\Addon::class, $addon]))
-            @if (auth()->user()?->hasMfaEnabled())
-                <flux:button
-                    href="{{ route('addon.version.create', ['addon' => $addon->id]) }}"
-                    size="sm"
-                >
-                    {{ __('Create Addon Version') }}
-                </flux:button>
-            @else
-                <flux:tooltip content="Must enable MFA to create addon versions.">
-                    <div>
-                        <flux:button
-                            disabled="true"
-                            size="sm"
-                        >{{ __('Create Addon Version') }}</flux:button>
-                    </div>
-                </flux:tooltip>
+        <div class="flex items-center gap-2">
+            @auth
+                <flux:modal.trigger name="mod-add-to-list-addon-{{ $addon->id }}">
+                    <flux:button
+                        icon="bookmark-square"
+                        size="sm"
+                        variant="outline"
+                    >{{ __('Add to list') }}</flux:button>
+                </flux:modal.trigger>
+                <livewire:mod-add-to-list
+                    :source-id="$addon->id"
+                    source-type="addon"
+                    wire:key="addon-show-add-to-list-{{ $addon->id }}"
+                />
+            @endauth
+            @if (auth()->user()
+                    ?->can('viewActions', [App\Models\Addon::class, $addon]))
+                @if (auth()->user()?->hasMfaEnabled())
+                    <flux:button
+                        href="{{ route('addon.version.create', ['addon' => $addon->id]) }}"
+                        size="sm"
+                    >
+                        {{ __('Create Addon Version') }}
+                    </flux:button>
+                @else
+                    <flux:tooltip content="Must enable MFA to create addon versions.">
+                        <div>
+                            <flux:button
+                                disabled="true"
+                                size="sm"
+                            >{{ __('Create Addon Version') }}</flux:button>
+                        </div>
+                    </flux:tooltip>
+                @endif
             @endif
-        @endif
+        </div>
     </div>
 </x-slot>
 

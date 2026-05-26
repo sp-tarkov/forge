@@ -145,13 +145,13 @@ new #[Lazy] class extends Component
             ->selectRaw('COUNT(DISTINCT country_code) as unique_countries')
             ->first();
 
-        // COUNT(DISTINCT ip) is the heaviest aggregate — run separately so
-        // MySQL can use an index-only loose scan on ip
+        // COUNT(DISTINCT ip) is the heaviest aggregate, so run it separately
+        // to let MySQL use an index-only loose scan on ip.
         $uniqueUsers = (clone $baseQuery)
             ->selectRaw('COUNT(DISTINCT ip) as unique_users')
             ->value('unique_users');
 
-        // Daily event counts for the chart — uses toBase() so the query builder
+        // Daily event counts for the chart. Uses toBase() so the query builder
         // returns stdClass rows instead of Eloquent models, giving PHPStan clean types.
         $dailyEvents = (clone $baseQuery)
             ->toBase()

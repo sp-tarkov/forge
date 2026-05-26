@@ -9,6 +9,7 @@ use App\Contracts\Reportable;
 use App\Contracts\Trackable;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Observers\UserObserver;
 use App\Traits\HasComments;
 use App\Traits\HasCoverPhoto;
 use App\Traits\HasProfilePhoto;
@@ -19,6 +20,7 @@ use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -27,6 +29,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -77,10 +80,12 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read Collection<int, Mod> $authoredMods
  * @property-read Collection<int, User> $followers
  * @property-read Collection<int, User> $following
+ * @property-read Collection<int, ModList> $modLists
  * @property-read Collection<int, OAuthConnection> $oAuthConnections
  *
  * @implements Commentable<self>
  */
+#[ObservedBy([UserObserver::class])]
 #[Appends([
     'profile_photo_url',
     'cover_photo_url',
@@ -156,6 +161,26 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     public function addons(): HasMany
     {
         return $this->hasMany(Addon::class, 'owner_id');
+    }
+
+    /**
+     * The relationship between a user and their curated mod lists.
+     *
+     * @return HasMany<ModList, $this>
+     */
+    public function modLists(): HasMany
+    {
+        return $this->hasMany(ModList::class, 'owner_id');
+    }
+
+    /**
+     * The relationship between a user and their immutable default Favourites list.
+     *
+     * @return HasOne<ModList, $this>
+     */
+    public function favouritesList(): HasOne
+    {
+        return $this->hasOne(ModList::class, 'owner_id')->where('is_default', true);
     }
 
     /**

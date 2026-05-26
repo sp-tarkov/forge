@@ -487,6 +487,17 @@
                                 </flux:checkbox.group>
                             </flux:field>
 
+                            <flux:field class="col-span-6">
+                                <flux:checkbox.group label="Mod Lists">
+                                    <flux:checkbox
+                                        value="true"
+                                        wire:model.blur="listsDisabled"
+                                        label="Disable Mod Lists"
+                                        description="When enabled, this mod cannot be added to user-created mod lists, and any existing list entries will be marked as removed. Users may still add it to their personal Favourites."
+                                    />
+                                </flux:checkbox.group>
+                            </flux:field>
+
                             <x-honeypot livewire-model="honeypotData" />
 
                         </div>

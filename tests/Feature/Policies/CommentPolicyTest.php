@@ -668,3 +668,21 @@ describe('update Policy Method', function (): void {
         expect($this->policy->update($this->otherUser, $comment))->toBeFalse();
     });
 });
+
+describe('report Policy Method', function (): void {
+    it('returns false for the comment author', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+        ]);
+
+        expect($this->policy->report($this->user, $comment))->toBeFalse();
+    });
+
+    it('returns true for a user who is not the comment author', function (): void {
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->otherUser->id,
+        ]);
+
+        expect($this->policy->report($this->user, $comment))->toBeTrue();
+    });
+});

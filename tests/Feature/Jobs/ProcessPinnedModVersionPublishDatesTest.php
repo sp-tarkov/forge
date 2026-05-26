@@ -39,9 +39,8 @@ describe('ProcessPinnedModVersionPublishDates job', function (): void {
         expect($modVersion->published_at)->not->toBeNull();
         expect($modVersion->published_at->toDateString())->toBe(Date::now()->toDateString());
 
-        // Assert the pinning has been cleared
-        // After processing, the relationship may exist with pinned=false, or may be removed entirely
-        // Both are acceptable outcomes as the mod version is now published
+        // Assert the pinning has been cleared. After processing, the relationship may exist with pinned=false, or may
+        // be removed entirely. Both are acceptable outcomes as the mod version is now published.
         $sptRelation = $modVersion->sptVersions()
             ->withoutGlobalScopes()
             ->where('spt_version_id', $sptVersion->id)

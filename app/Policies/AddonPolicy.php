@@ -112,8 +112,7 @@ final class AddonPolicy
      */
     public function download(?User $user, Addon $addon): bool
     {
-        // Check if addon can be viewed first
-        // Allow downloads even if blocked
+        // Check if addon can be viewed first. Allow downloads even if blocked.
         return $this->view($user, $addon);
     }
 
@@ -274,6 +273,11 @@ final class AddonPolicy
 
         // Moderators and administrators cannot create reports.
         if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Owners and authors cannot report their own addon.
+        if ($reportable instanceof Addon && $reportable->isAuthorOrOwner($user)) {
             return false;
         }
 

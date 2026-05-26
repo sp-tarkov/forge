@@ -25,6 +25,7 @@ final class DatabaseSeeder extends Seeder
             ModCategorySeeder::class,
             ModSeeder::class,
             AddonSeeder::class,
+            ModListSeeder::class,
             CommentSeeder::class,
             TrackingEventSeeder::class,
             ConversationSeeder::class,

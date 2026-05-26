@@ -144,8 +144,9 @@ describe('Mod Version Dependencies', function (): void {
             $dependentVersion5 = ModVersion::factory()->recycle($dependentMod)->create(['version' => '2.5.0', 'spt_version_constraint' => '3.8.0']);
 
             // Create a complex SemVer constraint
+            // Should resolve to dependentVersion2, dependentVersion3, and dependentVersion5
             Dependency::factory()->recycle([$modVersion, $dependentMod])->create([
-                'constraint' => '>1.0 <2.0 || >=2.5.0 <3.0', // Should resolve to dependentVersion2, dependentVersion3, and dependentVersion5
+                'constraint' => '>1.0 <2.0 || >=2.5.0 <3.0',
             ]);
 
             $dependenciesResolved = DependencyResolved::query()->where('dependable_id', $modVersion->id)->pluck('resolved_mod_version_id');

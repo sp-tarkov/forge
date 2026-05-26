@@ -19,7 +19,7 @@
             class="whitespace-nowrap"
         >
             <div class="flex items-center">
-                <flux:icon.shield-exclamation class="text-red-600 {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5" />
+                <flux:icon.shield-exclamation class="text-red-500 {{ $size === 'xs' ? 'size-3' : 'size-4' }} mr-1.5" />
                 {{ __('Ban User') }}
             </div>
         </flux:button>

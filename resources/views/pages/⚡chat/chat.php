@@ -122,7 +122,8 @@ new #[Layout('layouts::base')] class extends Component
             $this->loadAllConversationHashes();
         }
 
-        // Only switch conversation if we don't already have one selected or if the hash doesn't match the current selection
+        // Only switch conversation if we don't already have one selected or if the hash doesn't match the current
+        // selection
         if ($this->conversationHash && (! $this->selectedConversation || $this->selectedConversation->hash_id !== $this->conversationHash)) {
             $this->switchConversation($this->conversationHash);
         } elseif (! $this->selectedConversation instanceof Conversation) {

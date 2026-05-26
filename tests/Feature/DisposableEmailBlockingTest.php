@@ -194,8 +194,7 @@ describe('UpdateDisposableEmailBlocklist Job', function (): void {
     it('is scheduled to run daily', function (): void {
         Queue::fake();
 
-        // The schedule is defined in routes/console.php
-        // We'll check that the job class exists and can be instantiated
+        // The schedule is defined in routes/console.php. We'll check that the job class exists and can be instantiated.
         expect(class_exists(UpdateDisposableEmailBlocklist::class))->toBeTrue();
         expect(new UpdateDisposableEmailBlocklist)->toBeInstanceOf(UpdateDisposableEmailBlocklist::class);
     });

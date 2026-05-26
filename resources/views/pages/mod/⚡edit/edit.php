@@ -141,6 +141,11 @@ new #[Layout('layouts::base')] class extends Component
     public bool $addonsDisabled = false;
 
     /**
+     * Whether this mod may be added to user-created mod lists.
+     */
+    public bool $listsDisabled = false;
+
+    /**
      * Mount the component.
      */
     public function mount(int $modId): void
@@ -193,6 +198,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->disableProfileBindingNotice = (bool) $this->mod->profile_binding_notice_disabled;
         $this->cheatNotice = (bool) $this->mod->cheat_notice;
         $this->addonsDisabled = (bool) $this->mod->addons_disabled;
+        $this->listsDisabled = (bool) $this->mod->lists_disabled;
 
         // Load existing authors
         /** @var array<int> $authorIds */
@@ -330,6 +336,7 @@ new #[Layout('layouts::base')] class extends Component
         $this->mod->profile_binding_notice_disabled = $this->disableProfileBindingNotice;
         $this->mod->cheat_notice = $this->cheatNotice;
         $this->mod->addons_disabled = $this->addonsDisabled;
+        $this->mod->lists_disabled = $this->listsDisabled;
         $this->mod->published_at = $publishedAtCarbon;
 
         // Set the thumbnail if a file was uploaded.
@@ -460,6 +467,7 @@ new #[Layout('layouts::base')] class extends Component
             'disableProfileBindingNotice' => 'boolean',
             'cheatNotice' => 'boolean',
             'addonsDisabled' => 'boolean',
+            'listsDisabled' => 'boolean',
         ];
     }
 

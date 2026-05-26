@@ -39,7 +39,7 @@ final class DirectDownloadLink implements ValidationRule
             return;
         }
 
-        // Reject raw IP addresses — download links must use a domain name.
+        // Reject raw IP addresses; download links must use a domain name.
         $host = parse_url($value, PHP_URL_HOST);
         if (! is_string($host) || $host === '') {
             $fail(__('The download link must have a valid hostname.'));

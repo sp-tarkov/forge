@@ -54,6 +54,11 @@
                                     wire:navigate
                                     icon="squares-2x2"
                                 >{{ __('Browse All Mods') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    href="{{ route('list.index') }}"
+                                    wire:navigate
+                                    icon="list-bullet"
+                                >{{ __('Browse Lists') }}</flux:navmenu.item>
                                 @auth
                                     <flux:navmenu.item
                                         href="{{ route('mods.recently-created') }}"
@@ -304,6 +309,11 @@
                                     href="{{ auth()->user()->profile_url }}#addons"
                                     wire:navigate
                                 >{{ __('My Addons') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    icon="list-bullet"
+                                    href="{{ auth()->user()->profile_url }}#lists"
+                                    wire:navigate
+                                >{{ __('My Lists') }}</flux:navmenu.item>
 
                                 <flux:navmenu.separator />
                                 <flux:navmenu.item
@@ -491,6 +501,12 @@
                         <span class="flex items-center gap-2">
                             <flux:icon.puzzle-piece class="h-5 w-5" />
                             {{ __('My Addons') }}
+                        </span>
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ auth()->user()->profile_url }}#lists">
+                        <span class="flex items-center gap-2">
+                            <flux:icon.list-bullet class="h-5 w-5" />
+                            {{ __('My Lists') }}
                         </span>
                     </x-responsive-nav-link>
                     <x-responsive-nav-link
