@@ -157,7 +157,7 @@
                                 @endif
                                 <flux:select
                                     variant="listbox"
-                                    wire:model="form.visibility"
+                                    wire:model.live="form.visibility"
                                     :disabled="$modList->is_default"
                                 >
                                     @foreach (\App\Enums\ListVisibility::cases() as $visibility)
