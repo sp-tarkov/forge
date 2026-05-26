@@ -8,9 +8,15 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
 use App\Policies\CommentPolicy;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 
 beforeEach(function (): void {
+    // Enable Akismet so the CommentObserver dispatches the queued spam check (which Queue::fake() then swallows)
+    // instead of marking the comment clean inline. The factory-seeded spam_status values these policy tests rely on
+    // would otherwise be overwritten by the inline path.
+    Config::set('akismet.enabled', true);
+
     Queue::fake(); // Prevent spam check jobs from running
 
     $this->user = User::factory()->create();
@@ -684,5 +690,43 @@ describe('report Policy Method', function (): void {
         ]);
 
         expect($this->policy->report($this->user, $comment))->toBeTrue();
+    });
+});
+
+describe('checkForSpam Policy Method', function (): void {
+    it('returns false when Akismet is disabled even for moderators', function (): void {
+        Config::set('akismet.enabled', false);
+
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+            'spam_status' => SpamStatus::CLEAN,
+        ]);
+
+        expect($this->policy->checkForSpam($this->moderator, $comment))->toBeFalse();
+        expect($this->policy->checkForSpam($this->admin, $comment))->toBeFalse();
+    });
+
+    it('returns true for moderators when Akismet is enabled and recheck attempts remain', function (): void {
+        Config::set('akismet.enabled', true);
+
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+            'spam_status' => SpamStatus::CLEAN,
+            'spam_recheck_count' => 0,
+        ]);
+
+        expect($this->policy->checkForSpam($this->moderator, $comment))->toBeTrue();
+        expect($this->policy->checkForSpam($this->admin, $comment))->toBeTrue();
+    });
+
+    it('returns false for regular users even when Akismet is enabled', function (): void {
+        Config::set('akismet.enabled', true);
+
+        $comment = Comment::factory()->for($this->mod, 'commentable')->create([
+            'user_id' => $this->user->id,
+            'spam_status' => SpamStatus::CLEAN,
+        ]);
+
+        expect($this->policy->checkForSpam($this->user, $comment))->toBeFalse();
     });
 });

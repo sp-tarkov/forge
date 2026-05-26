@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
 use App\Models\Comment;
 use App\Models\Conversation;
 use App\Models\Message;
@@ -20,6 +18,8 @@ use App\Notifications\ReportSubmittedNotification;
 use App\Notifications\ResetPassword;
 use App\Notifications\UserBannedNotification;
 use App\Notifications\VerifyEmail;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Notification as NotificationFacade;

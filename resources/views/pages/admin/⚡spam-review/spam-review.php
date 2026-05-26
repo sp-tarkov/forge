@@ -146,7 +146,7 @@ new #[Layout('layouts::base')] class extends Component
 
         resolve(ConfirmCommentAsSpam::class)->execute($comment, (int) auth()->id(), $reason);
 
-        Flux::toast(heading: 'Confirmed Spam', text: 'Akismet has been trained with this example.', variant: 'success');
+        Flux::toast(heading: 'Confirmed Spam', text: 'The comment has been confirmed as spam.', variant: 'success');
     }
 
     /**

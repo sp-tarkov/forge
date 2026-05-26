@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Jobs\EnsureFavouritesListsJob;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
-use App\Jobs\EnsureFavouritesListsJob;
 use Illuminate\Console\Command;
 
 #[Description('Queue creation of the default Favourites list for any user that is missing one')]

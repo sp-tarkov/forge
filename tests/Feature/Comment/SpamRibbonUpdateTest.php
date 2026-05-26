@@ -133,6 +133,9 @@ describe('Comment Spam Ribbon Updates', function (): void {
     });
 
     it('polls for spam check completion and dispatches comment-updated event', function (): void {
+        // The on-demand recheck control is only available while Akismet is enabled.
+        Config::set('akismet.enabled', true);
+
         $moderator = createModerator();
         $user = User::factory()->create();
         $mod = Mod::factory()->create(['owner_id' => $user->id]);

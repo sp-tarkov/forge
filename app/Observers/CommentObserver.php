@@ -18,8 +18,14 @@ final class CommentObserver
     {
         $comment->updateRootId();
 
-        // Dispatch the spam check job.
-        dispatch(new CheckCommentForSpam($comment));
+        // Only run the Akismet spam check when the integration is enabled. With Akismet off, mark the comment clean
+        // inline so it never flickers through the PENDING ribbon state. Guard the inline mark on PENDING so an
+        // explicitly-seeded status (used in tests and admin tooling) is not clobbered.
+        if (config()->boolean('akismet.enabled', false)) {
+            dispatch(new CheckCommentForSpam($comment));
+        } elseif ($comment->isPendingSpamCheck()) {
+            $comment->markAsClean(metadata: ['reason' => 'akismet_disabled'], quiet: true);
+        }
 
         // Dispatch the comment notification job.
         dispatch(new ProcessCommentNotification($comment));

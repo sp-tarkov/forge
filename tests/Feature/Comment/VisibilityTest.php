@@ -6,10 +6,16 @@ use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
+    // Enable Akismet so the CommentObserver dispatches the queued spam check (which Queue::fake() then swallows)
+    // instead of marking the comment clean inline. The factory-seeded spam_status values these visibility tests
+    // rely on (PENDING, SPAM) would otherwise be overwritten by the inline disabled-path branch.
+    Config::set('akismet.enabled', true);
+
     Queue::fake(); // Prevent spam check jobs from running
 
     $this->mod = Mod::factory()->create();

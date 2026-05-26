@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Jobs\SearchSyncJob;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
-use App\Jobs\SearchSyncJob;
 use Illuminate\Console\Command;
 
 #[Description('Syncs all search settings and indexes with the database data')]

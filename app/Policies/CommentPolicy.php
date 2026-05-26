@@ -577,6 +577,11 @@ final class CommentPolicy
      */
     public function checkForSpam(User $user, Comment $comment): bool
     {
+        // The on-demand recheck action is meaningful only while the Akismet integration is enabled.
+        if (! config()->boolean('akismet.enabled', false)) {
+            return false;
+        }
+
         // Must be moderator or admin
         if (! $user->isModOrAdmin()) {
             return false;

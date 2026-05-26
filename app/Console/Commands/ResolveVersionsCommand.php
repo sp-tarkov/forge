@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
 use App\Jobs\ResolveAddonVersionsJob;
 use App\Jobs\ResolveDependenciesJob;
 use App\Jobs\ResolveSptVersionsJob;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Description('Resolve SPT and dependency versions for all mods and addon versions')]

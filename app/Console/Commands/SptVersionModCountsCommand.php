@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Jobs\SptVersionModCountsJob;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
-use App\Jobs\SptVersionModCountsJob;
 use Illuminate\Console\Command;
 
 #[Description('Recalculate the mod counts for each SPT version')]

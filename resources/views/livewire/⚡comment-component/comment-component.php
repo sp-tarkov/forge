@@ -362,13 +362,20 @@ new class extends Component
         // the queued job overwrites it once Akismet resolves.
         $comment->edited_at = now();
         $comment->save();
-        $comment->resetSpamStateForRecheck();
+
+        // Only reset the spam state and queue a recheck when the Akismet integration is enabled. With Akismet off
+        // there is nothing to recheck against, so leaving the prior status in place keeps the UI stable.
+        if (config()->boolean('akismet.enabled', false)) {
+            $comment->resetSpamStateForRecheck();
+        }
 
         // Reload the latestVersion relationship
         $comment->unsetRelation('latestVersion');
         $comment->load('latestVersion');
 
-        dispatch(new CheckCommentForSpam($comment));
+        if (config()->boolean('akismet.enabled', false)) {
+            dispatch(new CheckCommentForSpam($comment));
+        }
 
         Track::event(TrackingEventType::COMMENT_EDIT, $comment);
 

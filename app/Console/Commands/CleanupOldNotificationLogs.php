@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\NotificationLog;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
-use App\Models\NotificationLog;
 use Illuminate\Console\Command;
 
 #[Description('Clean up old notification logs to prevent table bloat')]

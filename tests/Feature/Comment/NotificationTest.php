@@ -13,11 +13,15 @@ use App\Models\User;
 use App\Notifications\CommentReplyNotification;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 
 describe('Comment Notifications', function (): void {
     it('triggers spam check job on comment creation', function (): void {
+        // The observer only dispatches CheckCommentForSpam while Akismet is enabled; otherwise it marks the comment
+        // clean inline and never queues a job for the bus fake to capture.
+        Config::set('akismet.enabled', true);
         Bus::fake();
 
         $user = User::factory()->create();
