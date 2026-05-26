@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\ListVisibility;
 use App\Exceptions\ModListCapacityExceededException;
+use App\Exceptions\ModListEntryDisabledException;
 use App\Exceptions\ParentModMissingException;
 use App\Models\Addon;
 use App\Models\Mod;
@@ -78,9 +79,31 @@ new class extends Component
         return $user->modLists()
             ->withCount('items')
             ->when($this->search !== '', fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
+            // Author opt-out: the only list the source may join is the viewer's own Favourites.
+            ->when($this->sourceListsDisabled, fn ($q) => $q->where('is_default', true))
             ->orderByDesc('is_default')
             ->orderBy('title')
             ->get();
+    }
+
+    /**
+     * Whether the source mod (or the parent mod of the source addon) has opted out of being added to user-created
+     * mod lists. Favourites bypass the opt-out and remain available regardless.
+     */
+    #[Computed]
+    public function sourceListsDisabled(): bool
+    {
+        if ($this->sourceType === 'mod') {
+            $mod = Mod::query()->find($this->sourceId);
+
+            return $mod instanceof Mod && $mod->lists_disabled;
+        }
+
+        $addon = Addon::query()->with('mod:id,lists_disabled')->find($this->sourceId);
+
+        return $addon instanceof Addon
+            && $addon->mod instanceof Mod
+            && $addon->mod->lists_disabled;
     }
 
     /**
@@ -198,6 +221,10 @@ new class extends Component
                 $this->toastListFull();
 
                 return;
+            } catch (ModListEntryDisabledException) {
+                $this->toastEntryDisabled();
+
+                return;
             }
 
             $this->toastAdded($list);
@@ -214,6 +241,10 @@ new class extends Component
             $service->addAddon($list, $addon, includeParentMod: true);
         } catch (ModListCapacityExceededException) {
             $this->toastListFull();
+
+            return;
+        } catch (ModListEntryDisabledException) {
+            $this->toastEntryDisabled();
 
             return;
         } catch (ParentModMissingException) {
@@ -379,6 +410,15 @@ new class extends Component
         Flux::toast(
             heading: __('List full'),
             text: __('This list is full (:count items max). Remove an item or use another list.', ['count' => $max]),
+            variant: 'warning',
+        );
+    }
+
+    private function toastEntryDisabled(): void
+    {
+        Flux::toast(
+            heading: __('Not available'),
+            text: __('The author has opted out of mod lists. You can still add this to your personal Favourites.'),
             variant: 'warning',
         );
     }

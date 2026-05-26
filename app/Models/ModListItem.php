@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Database\Factories\ModListItemFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,8 @@ use Override;
  * @property int $listable_id
  * @property string|null $note
  * @property int $position
+ * @property CarbonImmutable|null $tombstoned_at
+ * @property string|null $tombstoned_name
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Mod|Addon|null $listable
@@ -66,6 +69,36 @@ final class ModListItem extends Model
     }
 
     /**
+     * Whether this item is a tombstone left behind after the author opted out of mod lists.
+     */
+    public function isTombstone(): bool
+    {
+        return $this->tombstoned_at !== null;
+    }
+
+    /**
+     * Scope a query to active (non-tombstoned) items.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    protected function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNull('tombstoned_at');
+    }
+
+    /**
+     * Scope a query to tombstoned items.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    protected function scopeTombstoned(Builder $query): Builder
+    {
+        return $query->whereNotNull('tombstoned_at');
+    }
+
+    /**
      * The attributes that should be cast to native types.
      *
      * @return array<string, string>
@@ -76,6 +109,7 @@ final class ModListItem extends Model
         return [
             'position' => 'integer',
             'listable_id' => 'integer',
+            'tombstoned_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

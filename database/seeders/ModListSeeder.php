@@ -105,6 +105,445 @@ final class ModListSeeder extends Seeder
         $this->seedUserLists($userIds, $modIds, $addonIds, $addonModMap, $sptVersionIds);
         $this->seedFavouritesItems($userIds, $modIds, $addonIds, $addonModMap);
         $this->seedForks($userIds);
+        $this->seedTestAccountLists($modIds, $addonIds, $addonModMap, $sptVersionIds);
+    }
+
+    /**
+     * Seed a curated set of lists for the test@example.com account covering every state the list system can be in,
+     * so the dev account has one-click access to each variant (visibility, comments toggle, moderator-disabled,
+     * SPT-targeted, tombstoned items, fork source, fork copy, notes, empty, populated favourites).
+     *
+     * @param  Collection<int, int>  $modIds
+     * @param  Collection<int, int>  $addonIds
+     * @param  Collection<int, int>  $addonModMap  addon id => parent mod id
+     * @param  Collection<int, int>  $sptVersionIds
+     */
+    private function seedTestAccountLists(
+        Collection $modIds,
+        Collection $addonIds,
+        Collection $addonModMap,
+        Collection $sptVersionIds,
+    ): void {
+        $testAccount = User::query()->where('email', 'test@example.com')->first();
+        if (! $testAccount instanceof User) {
+            return;
+        }
+
+        if ($modIds->isEmpty()) {
+            return;
+        }
+
+        $now = Date::now();
+        $modPool = $modIds->shuffle()->values();
+        $addonPool = $addonIds->shuffle()->values();
+
+        // Wipe any prior test-account non-default lists so reruns produce a clean, predictable demo set.
+        ModList::query()
+            ->where('owner_id', $testAccount->id)
+            ->where('is_default', false)
+            ->delete();
+
+        // Public list with notes on most items.
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Public List with Notes',
+            visibility: ListVisibility::Public,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 5,
+            addonCount: 2,
+            noteEveryItem: true,
+        );
+
+        // Hidden list with share token.
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Hidden List (Share Token)',
+            visibility: ListVisibility::Hidden,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 4,
+            addonCount: 1,
+        );
+
+        // Private list.
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Private List',
+            visibility: ListVisibility::Private,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 3,
+            addonCount: 0,
+        );
+
+        // Comments-disabled public list.
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Comments Disabled',
+            visibility: ListVisibility::Public,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 3,
+            addonCount: 1,
+            commentsDisabled: true,
+        );
+
+        // Moderator-disabled public list (visible to staff only).
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Moderator Disabled',
+            visibility: ListVisibility::Public,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 3,
+            addonCount: 0,
+            disabled: true,
+        );
+
+        // SPT-targeted list. Lower-version target so some mods are flagged incompatible in the UI.
+        $targetSpt = $sptVersionIds->isNotEmpty() ? $sptVersionIds->first() : null;
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: SPT Targeted (3.x)',
+            visibility: ListVisibility::Public,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 5,
+            addonCount: 0,
+            sptVersionId: $targetSpt,
+        );
+
+        // Empty list.
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Empty List',
+            visibility: ListVisibility::Public,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 0,
+            addonCount: 0,
+        );
+
+        // List with tombstones - mod tombstone, addon tombstone, plus active items for comparison.
+        $this->buildTombstoneDemoList($testAccount, $modPool, $addonPool, $addonModMap, $now);
+
+        // Fork source + a fork of that source, both owned by the test account so the provenance UI is visible.
+        $sourceListId = $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Fork Source',
+            visibility: ListVisibility::Public,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 4,
+            addonCount: 1,
+        );
+
+        $this->buildTestList(
+            owner: $testAccount,
+            title: 'Demo: Forked From Source',
+            visibility: ListVisibility::Private,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            now: $now,
+            modCount: 4,
+            addonCount: 1,
+            forkedFromListId: $sourceListId,
+        );
+
+        // Populate the test account's auto-created Favourites list with a handful of items.
+        $favourites = ModList::query()
+            ->where('owner_id', $testAccount->id)
+            ->where('is_default', true)
+            ->first();
+        if ($favourites instanceof ModList) {
+            ModListItem::query()->where('mod_list_id', $favourites->id)->delete();
+            $favouriteRows = $this->buildItemRows(
+                listId: $favourites->id,
+                modIds: $modPool,
+                addonIds: $addonPool,
+                addonModMap: $addonModMap,
+                now: $now,
+                max: 6,
+            );
+            if ($favouriteRows !== []) {
+                ModListItem::query()->insert($favouriteRows);
+            }
+        }
+
+        $this->command->outputComponents()->info('Test account demo lists seeded for: '.$testAccount->email);
+    }
+
+    /**
+     * Build a single demo list for the test account and (optionally) populate it with items. Returns the new list's
+     * id so callers can chain things like forks off of it.
+     *
+     * @param  Collection<int, int>  $modPool
+     * @param  Collection<int, int>  $addonPool
+     * @param  Collection<int, int>  $addonModMap
+     */
+    private function buildTestList(
+        User $owner,
+        string $title,
+        ListVisibility $visibility,
+        Collection $modPool,
+        Collection $addonPool,
+        Collection $addonModMap,
+        CarbonInterface $now,
+        int $modCount,
+        int $addonCount,
+        bool $commentsDisabled = false,
+        bool $disabled = false,
+        ?int $sptVersionId = null,
+        ?int $forkedFromListId = null,
+        bool $noteEveryItem = false,
+    ): int {
+        $slug = Str::slug($title).'-'.Str::lower(Str::random(6));
+        $description = 'Seeded demo list to exercise the '.Str::lower($title).' state in the UI.';
+
+        $listId = ModList::query()->insertGetId([
+            'owner_id' => $owner->id,
+            'title' => $title,
+            'slug' => $slug,
+            'description' => $description,
+            'description_html' => '<p>'.e($description).'</p>',
+            'visibility' => $visibility->value,
+            'spt_version_id' => $sptVersionId,
+            'share_token' => $visibility === ListVisibility::Hidden ? ModList::generateShareToken() : null,
+            'forked_from_list_id' => $forkedFromListId,
+            'is_default' => false,
+            'comments_disabled' => $commentsDisabled || $visibility === ListVisibility::Private,
+            'disabled' => $disabled,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        if ($modCount === 0 && $addonCount === 0) {
+            return $listId;
+        }
+
+        $rows = $this->buildTestListItems(
+            listId: $listId,
+            modPool: $modPool,
+            addonPool: $addonPool,
+            addonModMap: $addonModMap,
+            modCount: $modCount,
+            addonCount: $addonCount,
+            now: $now,
+            noteEveryItem: $noteEveryItem,
+        );
+
+        if ($rows !== []) {
+            ModListItem::query()->insert($rows);
+        }
+
+        return $listId;
+    }
+
+    /**
+     * Build deterministic item rows for a demo list, mirroring the production add-to-list rules (every addon's
+     * parent mod is added alongside it).
+     *
+     * @param  Collection<int, int>  $modPool
+     * @param  Collection<int, int>  $addonPool
+     * @param  Collection<int, int>  $addonModMap
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildTestListItems(
+        int $listId,
+        Collection $modPool,
+        Collection $addonPool,
+        Collection $addonModMap,
+        int $modCount,
+        int $addonCount,
+        CarbonInterface $now,
+        bool $noteEveryItem,
+    ): array {
+        $rows = [];
+        $position = 0;
+        $addedModIds = [];
+
+        foreach ($modPool->take($modCount) as $modId) {
+            $rows[] = $this->modRow($listId, $modId, $position++, $now);
+            if ($noteEveryItem) {
+                $rows[count($rows) - 1]['note'] = $this->shortNote();
+            }
+
+            $addedModIds[$modId] = true;
+        }
+
+        foreach ($addonPool->take($addonCount) as $addonId) {
+            $parentModId = $addonModMap->get($addonId);
+            if ($parentModId === null) {
+                continue;
+            }
+
+            if (! isset($addedModIds[$parentModId])) {
+                $rows[] = $this->modRow($listId, $parentModId, $position++, $now);
+                $addedModIds[$parentModId] = true;
+            }
+
+            $rows[] = [
+                'mod_list_id' => $listId,
+                'listable_type' => Addon::class,
+                'listable_id' => $addonId,
+                'note' => $noteEveryItem ? $this->shortNote() : null,
+                'position' => $position++,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Build a list that demonstrates tombstone rendering: a few active items for context, then a tombstoned mod
+     * (with a tombstoned addon underneath it) so the dev can see the placeholder card alongside the live ones.
+     *
+     * Flips the underlying mod's lists_disabled flag so the dev can also navigate to the mod page and see the toggle
+     * in its enabled state.
+     *
+     * @param  Collection<int, int>  $modPool
+     * @param  Collection<int, int>  $addonPool
+     * @param  Collection<int, int>  $addonModMap
+     */
+    private function buildTombstoneDemoList(
+        User $owner,
+        Collection $modPool,
+        Collection $addonPool,
+        Collection $addonModMap,
+        CarbonInterface $now,
+    ): void {
+        if ($modPool->count() < 3) {
+            return;
+        }
+
+        // Pick an addon with a parent mod so we can tombstone both the mod and its addon entry in the same group.
+        $tombstoneAddonId = null;
+        $tombstoneModId = null;
+        foreach ($addonPool as $candidateAddonId) {
+            $parentModId = $addonModMap->get($candidateAddonId);
+            if ($parentModId === null) {
+                continue;
+            }
+
+            $tombstoneAddonId = $candidateAddonId;
+            $tombstoneModId = $parentModId;
+            break;
+        }
+
+        // If no addon/parent pair was found, fall back to tombstoning just a mod.
+        if ($tombstoneModId === null) {
+            $tombstoneModId = $modPool->first();
+        }
+
+        $activeModIds = $modPool->reject(fn (int $id): bool => $id === $tombstoneModId)->take(2)->values();
+
+        $listId = ModList::query()->insertGetId([
+            'owner_id' => $owner->id,
+            'title' => 'Demo: List with Tombstones',
+            'slug' => 'demo-list-with-tombstones-'.Str::lower(Str::random(6)),
+            'description' => 'Demonstrates how items render after a mod author opts out of mod lists.',
+            'description_html' => '<p>Demonstrates how items render after a mod author opts out of mod lists.</p>',
+            'visibility' => ListVisibility::Public->value,
+            'spt_version_id' => null,
+            'share_token' => null,
+            'forked_from_list_id' => null,
+            'is_default' => false,
+            'comments_disabled' => false,
+            'disabled' => false,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $position = 0;
+        $rows = [];
+
+        // Two active mods for comparison. Active rows carry the tombstone columns as null so every row in the bulk
+        // insert has the same key shape (Laravel's insert() infers columns from the first row).
+        foreach ($activeModIds as $modId) {
+            $rows[] = $this->tombstoneShapedModRow($listId, $modId, $position++, $now);
+        }
+
+        // Tombstoned mod row (capture its name now in case the underlying mod is later renamed or deleted).
+        $tombstoneMod = Mod::query()->find($tombstoneModId);
+        if ($tombstoneMod instanceof Mod) {
+            $rows[] = [
+                'mod_list_id' => $listId,
+                'listable_type' => Mod::class,
+                'listable_id' => $tombstoneMod->id,
+                'note' => null,
+                'position' => $position++,
+                'tombstoned_at' => $now,
+                'tombstoned_name' => $tombstoneMod->name,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            // Flip the underlying mod so its detail page demonstrates the opt-out toggle as enabled.
+            Mod::query()->whereKey($tombstoneMod->id)->update(['lists_disabled' => true]);
+        }
+
+        // Tombstoned addon under that mod, mirroring what the job produces.
+        if ($tombstoneAddonId !== null) {
+            $addon = Addon::query()->find($tombstoneAddonId);
+            if ($addon instanceof Addon) {
+                $rows[] = [
+                    'mod_list_id' => $listId,
+                    'listable_type' => Addon::class,
+                    'listable_id' => $addon->id,
+                    'note' => null,
+                    'position' => $position++,
+                    'tombstoned_at' => $now,
+                    'tombstoned_name' => $addon->name,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        if ($rows !== []) {
+            ModListItem::query()->insert($rows);
+        }
+    }
+
+    /**
+     * Build an active mod list-item row that carries the tombstone columns as null so it can share a bulk insert
+     * with tombstone rows.
+     *
+     * @return array<string, mixed>
+     */
+    private function tombstoneShapedModRow(int $listId, int $modId, int $position, CarbonInterface $now): array
+    {
+        return [
+            'mod_list_id' => $listId,
+            'listable_type' => Mod::class,
+            'listable_id' => $modId,
+            'note' => null,
+            'position' => $position,
+            'tombstoned_at' => null,
+            'tombstoned_name' => null,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
     }
 
     /**

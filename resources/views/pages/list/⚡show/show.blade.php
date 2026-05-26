@@ -264,7 +264,37 @@
                     @if ($group['is_sortable']) wire:sort:item="{{ $group['mod']->id }}" @endif
                     class="bg-white dark:bg-gray-950 rounded-xl shadow-md dark:shadow-gray-950 drop-shadow-2xl overflow-hidden"
                 >
-                    @if ($group['mod'])
+                    @if ($group['mod_item']?->isTombstone())
+                        @php
+                            $tombstoneTitle = $group['tombstone_names_visible']
+                                ? ($group['mod_item']->tombstoned_name ?? __('Removed mod'))
+                                : __('Removed item');
+                        @endphp
+                        <div class="p-3 sm:p-4 flex items-start gap-3 text-gray-500 dark:text-gray-400">
+                            <div class="shrink-0 size-14 sm:size-16 rounded-md bg-gray-100/60 dark:bg-gray-900/40 flex items-center justify-center">
+                                <flux:icon.no-symbol class="size-7 text-gray-300 dark:text-gray-700" />
+                            </div>
+                            <div class="min-w-0 flex-1 self-center">
+                                <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                                    {{ $tombstoneTitle }}
+                                </div>
+                                <div class="text-xs italic text-gray-500 dark:text-gray-500">
+                                    {{ __('The author has opted out of mod lists.') }}
+                                </div>
+                            </div>
+                            @if ($canManage)
+                                <flux:button
+                                    icon="x-mark"
+                                    variant="subtle"
+                                    size="sm"
+                                    square
+                                    class="shrink-0 self-center"
+                                    :aria-label="__('Remove :name from list', ['name' => $tombstoneTitle])"
+                                    wire:click="confirmRemoveItem({{ $group['mod_item']->id }})"
+                                />
+                            @endif
+                        </div>
+                    @elseif ($group['mod'])
                         <x-mod.list-row
                             :mod="$group['mod']"
                             :version="$group['resolved_version']"
@@ -315,7 +345,41 @@
                             class="-mt-1 sm:-mt-2 pb-3 sm:pb-4 space-y-0.5"
                         >
                             @foreach ($group['addons'] as $addonItem)
-                                @if ($addonItem->listable)
+                                @if ($addonItem->isTombstone())
+                                    @php
+                                        $addonTombstoneTitle = $group['tombstone_names_visible']
+                                            ? ($addonItem->tombstoned_name ?? __('Removed addon'))
+                                            : __('Removed item');
+                                    @endphp
+                                    <li wire:key="list-addon-{{ $addonItem->id }}">
+                                        <div class="px-3 sm:px-4 py-1.5 flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                                            <div class="shrink-0 w-14 sm:w-16 flex items-center justify-end">
+                                                <div class="size-10 rounded bg-gray-100/60 dark:bg-gray-900/40 flex items-center justify-center">
+                                                    <flux:icon.no-symbol class="size-5 text-gray-300 dark:text-gray-700" />
+                                                </div>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                                                    {{ $addonTombstoneTitle }}
+                                                </div>
+                                                <div class="text-xs italic text-gray-500 dark:text-gray-500 truncate">
+                                                    {{ __('The author has opted out of mod lists.') }}
+                                                </div>
+                                            </div>
+                                            @if ($canManage)
+                                                <flux:button
+                                                    icon="x-mark"
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    square
+                                                    class="shrink-0"
+                                                    :aria-label="__('Remove :name from list', ['name' => $addonTombstoneTitle])"
+                                                    wire:click="confirmRemoveItem({{ $addonItem->id }})"
+                                                />
+                                            @endif
+                                        </div>
+                                    </li>
+                                @elseif ($addonItem->listable)
                                     <li>
                                         <x-addon.list-item
                                             :addon="$addonItem->listable"

@@ -30,7 +30,9 @@
             <div>
                 <flux:heading size="lg">{{ __('Add to a list') }}</flux:heading>
                 <flux:subheading>
-                    @if ($sourceType === 'mod')
+                    @if ($this->sourceListsDisabled)
+                        {{ __('The author has opted out of mod lists. You can still add it to your personal Favourites.') }}
+                    @elseif ($sourceType === 'mod')
                         {{ __('Choose an existing list or create a new one.') }}
                     @else
                         {{ __('Adding this addon will also add its parent mod if needed.') }}
@@ -184,12 +186,16 @@
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <flux:button
-                        icon="plus"
-                        wire:click="startCreatingNew"
-                    >
-                        {{ __('Create new list') }}
-                    </flux:button>
+                    @if (! $this->sourceListsDisabled)
+                        <flux:button
+                            icon="plus"
+                            wire:click="startCreatingNew"
+                        >
+                            {{ __('Create new list') }}
+                        </flux:button>
+                    @else
+                        <span></span>
+                    @endif
                     <flux:modal.close>
                         <flux:button
                             variant="primary"

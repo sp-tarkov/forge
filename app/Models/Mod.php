@@ -61,6 +61,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $disabled
  * @property bool $comments_disabled
  * @property bool $addons_disabled
+ * @property bool $lists_disabled
  * @property bool $profile_binding_notice_disabled
  * @property bool $cheat_notice
  * @property CarbonImmutable|null $created_at
@@ -70,6 +71,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read string $description_html
  * @property-read string $custom_ai_disclosure_html
  * @property-read bool $addons_enabled
+ * @property-read bool $lists_enabled
  * @property-read bool $fika_compatibility
  * @property-read bool $shows_profile_binding_notice
  * @property-read User|null $owner
@@ -643,6 +645,17 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Get whether this mod may be added to user-created mod lists. Favourites bypass this check; the guard lives in
+     * ModListService::addMod/addAddon.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function listsEnabled(): Attribute
+    {
+        return Attribute::get(fn (): bool => ! $this->lists_disabled);
+    }
+
+    /**
      * Get whether this mod should display a profile binding notice.
      * Returns true if the category enables the notice AND the mod hasn't disabled it.
      *
@@ -702,6 +715,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
             'disabled' => 'boolean',
             'comments_disabled' => 'boolean',
             'addons_disabled' => 'boolean',
+            'lists_disabled' => 'boolean',
             'profile_binding_notice_disabled' => 'boolean',
             'cheat_notice' => 'boolean',
             'discord_notification_sent' => 'boolean',

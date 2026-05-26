@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\ListVisibility;
 use App\Exceptions\ModListCapacityExceededException;
+use App\Exceptions\ModListEntryDisabledException;
 use App\Exceptions\ParentModMissingException;
 use App\Models\Addon;
 use App\Models\Mod;
@@ -14,6 +15,7 @@ use App\Models\ModListItem;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use App\Support\DataTransferObjects\DependencyCascadeResult;
 use App\Support\DataTransferObjects\ResolvedListVersion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -83,7 +85,10 @@ final class ModListService
     {
         $source->loadMissing('items');
 
-        $sourceItemCount = $source->items->count();
+        // Tombstones are an artifact of the source list losing items; a fork should start clean.
+        $activeItems = $source->items->reject(fn (ModListItem $item): bool => $item->isTombstone())->values();
+
+        $sourceItemCount = $activeItems->count();
         $maxItems = ModList::maxItemsPerList();
         throw_if(
             $sourceItemCount > $maxItems,
@@ -93,7 +98,7 @@ final class ModListService
             $maxItems,
         );
 
-        return DB::transaction(function () use ($newOwner, $source, $title): ModList {
+        return DB::transaction(function () use ($newOwner, $source, $title, $activeItems): ModList {
             $list = new ModList;
             $list->owner_id = $newOwner->id;
             $list->title = mb_trim($title);
@@ -116,9 +121,9 @@ final class ModListService
 
             $list->save();
 
-            if ($source->items->isNotEmpty()) {
+            if ($activeItems->isNotEmpty()) {
                 $now = now();
-                $rows = $source->items->map(fn (ModListItem $item): array => [
+                $rows = $activeItems->map(fn (ModListItem $item): array => [
                     'mod_list_id' => $list->id,
                     'listable_type' => $item->listable_type,
                     'listable_id' => $item->listable_id,
@@ -141,12 +146,16 @@ final class ModListService
      * @param  Collection<int, Mod>|array<int, Mod>  $dependenciesToAdd
      *
      * @throws ModListCapacityExceededException
+     * @throws ModListEntryDisabledException
      */
     public function addMod(
         ModList $modList,
         Mod $mod,
         Collection|array $dependenciesToAdd = [],
     ): ModListItem {
+        // Favourites bypass the author opt-out: users keep full control of their personal Favourites list.
+        throw_if(! $modList->is_default && $mod->lists_disabled, ModListEntryDisabledException::class, $modList, $mod);
+
         // Resolve current membership once so neither the dependency filter nor
         // the capacity projection issues an existence query per candidate.
         $existingModIds = $this->existingModIds($modList);
@@ -154,6 +163,7 @@ final class ModListService
         $deps = ($dependenciesToAdd instanceof Collection ? $dependenciesToAdd : collect($dependenciesToAdd))
             ->reject(fn (Mod $candidate): bool => $candidate->id === $mod->id)
             ->reject(fn (Mod $candidate): bool => isset($existingModIds[$candidate->id]))
+            ->reject(fn (Mod $candidate): bool => ! $modList->is_default && $candidate->lists_disabled)
             ->unique('id')
             ->values();
 
@@ -185,12 +195,22 @@ final class ModListService
      *
      * @throws ParentModMissingException
      * @throws ModListCapacityExceededException
+     * @throws ModListEntryDisabledException
      */
     public function addAddon(
         ModList $modList,
         Addon $addon,
         bool $includeParentMod = false,
     ): ModListItem {
+        // Inheritance: if the parent mod opts out of lists, its addons are blocked too. Favourites bypass this,
+        // matching the addMod behaviour above.
+        if (! $modList->is_default) {
+            $parent = $addon->mod_id !== null
+                ? ($addon->relationLoaded('mod') ? $addon->mod : Mod::query()->find($addon->mod_id))
+                : null;
+            throw_if($parent instanceof Mod && $parent->lists_disabled, ModListEntryDisabledException::class, $modList, $addon);
+        }
+
         $needsParent = $addon->mod_id !== null && ! $modList->containsMod($addon->mod_id);
 
         throw_if($needsParent && ! $includeParentMod, ParentModMissingException::class, $modList, $addon);
@@ -222,8 +242,11 @@ final class ModListService
     }
 
     /**
-     * Toggle a mod in the user's Favourites list without the dependency prompt.
-     * Returns true if the mod was added, false if it was removed.
+     * Toggle a mod in the user's Favourites list without the dependency prompt. Returns true if the mod was added,
+     * false if it was removed.
+     *
+     * Favourites intentionally bypass the author lists_disabled opt-out: users keep full control of their own
+     * personal Favourites list.
      */
     public function toggleFavourite(ModList $favourites, Mod $mod): bool
     {
@@ -272,7 +295,9 @@ final class ModListService
      */
     public function reorderWithinPositions(ModList $modList, array $orderedModIds): void
     {
+        // Tombstones keep their original position and are not reorderable.
         $items = ModListItem::query()
+            ->active()
             ->where('mod_list_id', $modList->id)
             ->where('listable_type', Mod::class)
             ->whereIn('listable_id', $orderedModIds)
@@ -322,6 +347,15 @@ final class ModListService
      */
     public function suggestedDependencies(ModList $modList, Mod $mod): Collection
     {
+        return $this->suggestedDependenciesResult($modList, $mod)->included;
+    }
+
+    /**
+     * Same as suggestedDependencies but also returns the dependency mods that were skipped because their author
+     * opted out of mod lists, so the caller can surface a toast.
+     */
+    public function suggestedDependenciesResult(ModList $modList, Mod $mod): DependencyCascadeResult
+    {
         return $this->walkDependencyGraph($modList, new Collection([$mod]));
     }
 
@@ -336,16 +370,26 @@ final class ModListService
      */
     public function missingDependenciesForList(ModList $modList): Collection
     {
+        return $this->missingDependenciesResultForList($modList)->included;
+    }
+
+    /**
+     * Same as missingDependenciesForList but also returns the dependency mods that were skipped because their author
+     * opted out of mod lists.
+     */
+    public function missingDependenciesResultForList(ModList $modList): DependencyCascadeResult
+    {
         /** @var Collection<int, Mod> $topLevel */
         $topLevel = Mod::query()
             ->whereIn('id', ModListItem::query()
+                ->active()
                 ->where('mod_list_id', $modList->id)
                 ->where('listable_type', Mod::class)
                 ->select('listable_id'))
             ->get();
 
         if ($topLevel->isEmpty()) {
-            return new Collection;
+            return new DependencyCascadeResult(new Collection, new Collection);
         }
 
         return $this->walkDependencyGraph($modList, $topLevel);
@@ -368,6 +412,7 @@ final class ModListService
 
         $toAdd = ($mods instanceof Collection ? $mods : collect($mods))
             ->reject(fn (Mod $candidate): bool => isset($existingModIds[$candidate->id]))
+            ->reject(fn (Mod $candidate): bool => ! $modList->is_default && $candidate->lists_disabled)
             ->unique('id')
             ->values();
 
@@ -488,6 +533,7 @@ final class ModListService
 
         return Mod::query()
             ->whereIn('id', ModListItem::query()
+                ->active()
                 ->where('mod_list_id', $modList->id)
                 ->where('listable_type', Mod::class)
                 ->select('listable_id'))
@@ -507,14 +553,17 @@ final class ModListService
     }
 
     /**
-     * BFS walk of the dependency graph starting from a set of seed mods, returning
-     * every dependency mod that is not already on the list. Cycles and mods already
-     * on the list are skipped via a shared visited set.
+     * BFS walk of the dependency graph starting from a set of seed mods.
+     *
+     * Returns both the dependency mods that can be cascaded (included) and the ones that were skipped because their
+     * author opted out of mod lists. Cycles, mods already on the list, and opted-out mods are tracked via a shared
+     * visited set so each mod is considered at most once.
+     *
+     * Favourites bypass the opt-out: when the target list is favourites the skipped set is always empty.
      *
      * @param  Collection<int, Mod>  $startingMods
-     * @return Collection<int, Mod>
      */
-    private function walkDependencyGraph(ModList $modList, Collection $startingMods): Collection
+    private function walkDependencyGraph(ModList $modList, Collection $startingMods): DependencyCascadeResult
     {
         $visited = $this->existingModIds($modList);
 
@@ -522,9 +571,12 @@ final class ModListService
             $visited[$start->id] = $start->id;
         }
 
-        /** @var Collection<int, Mod> $mods */
-        $mods = new Collection;
+        /** @var Collection<int, Mod> $included */
+        $included = new Collection;
+        /** @var Collection<int, Mod> $skipped */
+        $skipped = new Collection;
         $queue = $startingMods->values()->all();
+        $respectOptOut = ! $modList->is_default;
 
         while ($queue !== []) {
             $current = array_shift($queue);
@@ -535,7 +587,7 @@ final class ModListService
             }
 
             $deps = $modVersion->latestDependenciesResolved()
-                ->with('mod:id,name,slug,thumbnail,thumbnail_hash,owner_id')
+                ->with('mod:id,name,slug,thumbnail,thumbnail_hash,owner_id,lists_disabled')
                 ->get();
 
             foreach ($deps as $depVersion) {
@@ -546,12 +598,21 @@ final class ModListService
                 }
 
                 $visited[$depMod->id] = $depMod->id;
-                $mods->push($depMod);
+
+                if ($respectOptOut && $depMod->lists_disabled) {
+                    // Opted-out mods are surfaced separately so the cascade UI can name them in a toast, but they are
+                    // not traversed further: their own transitive dependencies are the author's problem, not ours.
+                    $skipped->push($depMod);
+
+                    continue;
+                }
+
+                $included->push($depMod);
                 $queue[] = $depMod;
             }
         }
 
-        return $mods;
+        return new DependencyCascadeResult($included, $skipped);
     }
 
     /**
@@ -604,7 +665,8 @@ final class ModListService
     }
 
     /**
-     * Load the ids of every mod already present on the list, keyed for O(1) lookup.
+     * Load the ids of every mod actively present on the list, keyed for O(1) lookup. Tombstoned items are excluded
+     * so dependency cascade and capacity projection treat them as absent.
      *
      * @return array<int, int>
      */
@@ -612,6 +674,7 @@ final class ModListService
     {
         /** @var array<int, int> $ids */
         $ids = ModListItem::query()
+            ->active()
             ->where('mod_list_id', $modList->id)
             ->where('listable_type', Mod::class)
             ->pluck('listable_id')

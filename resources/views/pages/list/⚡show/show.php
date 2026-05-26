@@ -9,6 +9,7 @@ use App\Models\ModList;
 use App\Models\ModListItem;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
+use App\Models\User;
 use App\Services\ModListService;
 use App\Support\DataTransferObjects\ResolvedListVersion;
 use Flux\Flux;
@@ -105,10 +106,10 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
-     * Lightweight, list-wide item rows used for counts and dependency
-     * membership checks. Only the columns needed for grouping are selected so
-     * the whole list can be summarized cheaply, independent of the paginated
-     * render query.
+     * Lightweight, list-wide item rows used for counts and dependency membership checks. Only the columns needed for
+     * grouping are selected so the whole list can be summarized cheaply, independent of the paginated render query.
+     * Tombstoned items are excluded - they no longer count as mods/addons on the list for summary or dependency
+     * purposes.
      *
      * @return EloquentCollection<int, ModListItem>
      */
@@ -116,6 +117,7 @@ new #[Layout('layouts::base')] class extends Component
     public function listItemRows(): EloquentCollection
     {
         return $this->modList->items()
+            ->active()
             ->select(['id', 'mod_list_id', 'listable_type', 'listable_id', 'position'])
             ->get();
     }
@@ -127,12 +129,15 @@ new #[Layout('layouts::base')] class extends Component
      * in a single pass. This keeps drag-and-drop reorder working across the
      * full list without page boundaries.
      *
-     * @return Collection<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool, resolved_version: ?ModVersion, version_incompatible: bool, display_spt_version: ?SptVersion}>
+     * @return Collection<int, array{mod: ?Mod, mod_item: ?ModListItem, addons: Collection<int, ModListItem>, group_key: int|string, is_sortable: bool, resolved_version: ?ModVersion, version_incompatible: bool, display_spt_version: ?SptVersion, tombstone_names_visible: bool}>
      */
     #[Computed]
     public function grouped(): Collection
     {
         $this->modList->setRelation('items', $this->loadAllItems());
+
+        $viewer = auth()->user();
+        $viewerIsStaff = $viewer instanceof User && $viewer->isModOrAdmin();
 
         // Resolve the version each mod card should display against the list's
         // target SPT version (bulk, N+1-safe). Returns latestVersion across the
@@ -178,7 +183,7 @@ new #[Layout('layouts::base')] class extends Component
 
         return $this->modList->groupedItems()
             ->values()
-            ->map(function (array $group) use ($canManage, $resolvedVersions): array {
+            ->map(function (array $group) use ($canManage, $resolvedVersions, $viewer, $viewerIsStaff): array {
                 $modItem = $group['mod_item'];
                 $firstAddon = $group['addons']->first();
                 $firstAddonId = $firstAddon instanceof ModListItem ? $firstAddon->id : 0;
@@ -196,10 +201,14 @@ new #[Layout('layouts::base')] class extends Component
                         : 'detached-'.$firstAddonId,
                     'is_sortable' => $canManage
                         && $group['mod'] instanceof Mod
-                        && $modItem instanceof ModListItem,
+                        && $modItem instanceof ModListItem
+                        && ! $modItem->isTombstone(),
                     'resolved_version' => $resolved instanceof ResolvedListVersion ? $resolved->version : null,
                     'version_incompatible' => $resolved instanceof ResolvedListVersion && $resolved->isIncompatible,
                     'display_spt_version' => $resolved instanceof ResolvedListVersion ? $resolved->displaySptVersion : null,
+                    // Only the mod's authors/owner and staff/mods may see the captured name on a tombstoned item.
+                    // Everyone else gets a generic placeholder so the opt-out does not leak which mods were involved.
+                    'tombstone_names_visible' => $this->canViewTombstoneNames($group['mod'], $viewer, $viewerIsStaff),
                 ];
             });
     }
@@ -218,10 +227,10 @@ new #[Layout('layouts::base')] class extends Component
         }
 
         $this->pendingRemovalItemId = $item->id;
-        $this->pendingRemovalName = $item->listable instanceof Model
-            ? (string) $item->listable->name
-            : (string) __('this item');
-        $this->pendingRemovalIsAddon = $item->listable instanceof Addon;
+        $this->pendingRemovalName = $item->isTombstone() && $item->tombstoned_name !== null
+            ? $item->tombstoned_name
+            : ($item->listable instanceof Model ? (string) $item->listable->name : (string) __('this item'));
+        $this->pendingRemovalIsAddon = $item->listable_type === Addon::class;
 
         $this->dispatch('modal-show', name: 'list-remove-item-'.$this->modList->id);
     }
@@ -273,9 +282,16 @@ new #[Layout('layouts::base')] class extends Component
     {
         Gate::authorize('addItem', $this->modList);
 
-        $missing = $service->missingDependenciesForList($this->modList);
+        $result = $service->missingDependenciesResultForList($this->modList);
+        $missing = $result->included;
+        $skipped = $result->skipped;
+
         if ($missing->isEmpty()) {
             $this->dispatch('modal-close', name: 'list-missing-dependencies-'.$this->modList->id);
+
+            if ($skipped->isNotEmpty()) {
+                $this->toastSkippedOptOut($skipped);
+            }
 
             return;
         }
@@ -309,6 +325,10 @@ new #[Layout('layouts::base')] class extends Component
             ),
             variant: 'success',
         );
+
+        if ($skipped->isNotEmpty()) {
+            $this->toastSkippedOptOut($skipped);
+        }
 
         $this->dispatch('modal-close', name: 'list-missing-dependencies-'.$this->modList->id);
 
@@ -562,6 +582,43 @@ new #[Layout('layouts::base')] class extends Component
             'forkedFromSource' => $this->forkedFromSource,
             'forkedFromViewable' => $this->forkedFromViewable,
         ];
+    }
+
+    /**
+     * Whether the current viewer may see the captured mod/addon name on tombstoned items in this group.
+     *
+     * Mod authors/owners and staff/mods see the name; everyone else gets a generic placeholder so the opt-out does not
+     * leak which mods were involved.
+     */
+    private function canViewTombstoneNames(?Mod $mod, ?User $viewer, bool $viewerIsStaff): bool
+    {
+        if ($viewerIsStaff) {
+            return true;
+        }
+
+        return $mod instanceof Mod && $mod->isAuthorOrOwner($viewer);
+    }
+
+    /**
+     * Announce dependencies that were skipped because their author opted out of lists.
+     *
+     * @param  Collection<int, Mod>  $skipped
+     */
+    private function toastSkippedOptOut(Collection $skipped): void
+    {
+        $names = $skipped->map(fn (Mod $mod): string => $mod->name)->all();
+
+        Flux::toast(
+            heading: trans_choice(
+                ':count dependency skipped|:count dependencies skipped',
+                $skipped->count(),
+                ['count' => $skipped->count()],
+            ),
+            text: __('The author has opted these out of mod lists: :names.', [
+                'names' => implode(', ', $names),
+            ]),
+            variant: 'warning',
+        );
     }
 
     /**

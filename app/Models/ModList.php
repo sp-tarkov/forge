@@ -183,11 +183,12 @@ final class ModList extends Model implements Commentable, Reportable
     }
 
     /**
-     * Count all items (mods + addons) in the list.
+     * Count all active items (mods + addons) in the list. Tombstoned items are excluded so author opt-outs do not
+     * silently shrink the curator's available capacity.
      */
     public function itemCount(): int
     {
-        return $this->items()->count();
+        return $this->items()->active()->count();
     }
 
     /**
@@ -471,12 +472,13 @@ final class ModList extends Model implements Commentable, Reportable
     /**
      * Check whether the list contains a given listable record.
      *
-     * Queries the items table directly so the existence check carries none of
-     * the ordering overhead baked into the items() relation.
+     * Queries the items table directly so the existence check carries none of the ordering overhead baked into the
+     * items() relation. Tombstoned items are excluded - they no longer count as "present" for membership checks.
      */
     private function containsListable(string $listableType, int $listableId): bool
     {
         return ModListItem::query()
+            ->active()
             ->where('mod_list_id', $this->id)
             ->where('listable_type', $listableType)
             ->where('listable_id', $listableId)
