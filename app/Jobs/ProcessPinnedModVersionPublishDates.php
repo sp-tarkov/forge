@@ -54,9 +54,8 @@ final class ProcessPinnedModVersionPublishDates implements ShouldBeUnique, Shoul
                     $latestPinnedDate = $modVersion->getLatestPinnedSptPublishDate();
 
                     // If this SPT version's publish date was the controlling one (latest), or if there are no more
-                    // unpublished pinned versions, set the mod version's publish date
-                    // All pinned SPT versions are now published
-                    // Set the mod version's published_at to now if it wasn't already set
+                    // unpublished pinned versions, all pinned SPT versions are now published; set the mod version's
+                    // published_at to now if it wasn't already set.
                     if ((is_null($latestPinnedDate) || $latestPinnedDate <= Date::now()) && is_null($modVersion->published_at)) {
                         $modVersion->published_at = Date::now();
                         $modVersion->save();

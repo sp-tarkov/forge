@@ -6,6 +6,7 @@ use App\Enums\ReportReason;
 use App\Enums\ReportStatus;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\Report;
 use App\Models\User;
 use App\Models\UserRole;
@@ -546,6 +547,118 @@ describe('ReportComponent', function (): void {
             expect($report->reportable_type)->toBe(User::class);
             expect($report->reportable_id)->toBe($reportedUser->id);
             expect($report->reporter_id)->toBe($reporter->id);
+        });
+
+        it('works with mod list reports', function (): void {
+            $user = User::factory()->create();
+            $modList = ModList::factory()->public()->create();
+
+            Livewire::actingAs($user)
+                ->test('report-component', [
+                    'reportableId' => $modList->id,
+                    'reportableType' => $modList::class,
+                ])
+                ->set('reason', ReportReason::SPAM)
+                ->call('submit')
+                ->assertHasNoErrors();
+
+            $report = Report::query()->first();
+            expect($report->reportable_type)->toBe(ModList::class);
+            expect($report->reportable_id)->toBe($modList->id);
+        });
+    });
+
+    describe('Mod List Reports', function (): void {
+        it('can be mounted with a mod list', function (): void {
+            $user = User::factory()->create();
+            $modList = ModList::factory()->public()->create();
+
+            $component = Livewire::actingAs($user)
+                ->test('report-component', [
+                    'reportableId' => $modList->id,
+                    'reportableType' => $modList::class,
+                ]);
+
+            expect($component->get('reportableId'))->toBe($modList->id);
+            expect($component->get('reportableType'))->toBe(ModList::class);
+        });
+
+        it('allows a verified non-owner to report a mod list', function (): void {
+            $owner = User::factory()->create();
+            $reporter = User::factory()->create();
+            $modList = ModList::factory()->public()->create(['owner_id' => $owner->id]);
+
+            $component = Livewire::actingAs($reporter)
+                ->test('report-component', [
+                    'reportableId' => $modList->id,
+                    'reportableType' => $modList::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeTrue();
+
+            $component->set('reason', ReportReason::SPAM)
+                ->call('submit')
+                ->assertHasNoErrors();
+
+            expect(Report::query()->count())->toBe(1);
+        });
+
+        it('prevents unverified users from reporting a mod list', function (): void {
+            $user = User::factory()->unverified()->create();
+            $modList = ModList::factory()->public()->create();
+
+            $component = Livewire::actingAs($user)
+                ->test('report-component', [
+                    'reportableId' => $modList->id,
+                    'reportableType' => $modList::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeFalse();
+        });
+
+        it('prevents moderators from reporting a mod list', function (): void {
+            $moderator = User::factory()->moderator()->create();
+            $modList = ModList::factory()->public()->create();
+
+            $component = Livewire::actingAs($moderator)
+                ->test('report-component', [
+                    'reportableId' => $modList->id,
+                    'reportableType' => $modList::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeFalse();
+        });
+
+        it('prevents reporting the same mod list twice', function (): void {
+            $reporter = User::factory()->create();
+            $modList = ModList::factory()->public()->create();
+
+            Report::factory()->create([
+                'reporter_id' => $reporter->id,
+                'reportable_type' => $modList::class,
+                'reportable_id' => $modList->id,
+            ]);
+
+            $component = Livewire::actingAs($reporter)
+                ->test('report-component', [
+                    'reportableId' => $modList->id,
+                    'reportableType' => $modList::class,
+                ]);
+
+            expect($component->get('canReportItem'))->toBeFalse();
+        });
+
+        it('uses a mod list specific button label', function (): void {
+            $user = User::factory()->create();
+            $modList = ModList::factory()->public()->create();
+
+            $component = Livewire::actingAs($user)
+                ->test('report-component', [
+                    'reportableId' => $modList->id,
+                    'reportableType' => $modList::class,
+                ]);
+
+            expect($component->instance()->buttonLabel())->toBe('Report List');
         });
     });
 

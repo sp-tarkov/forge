@@ -36,7 +36,7 @@
     }"
     @scroll-to-comment.window="scrollToAnchor($event.detail.anchorId)"
 >
-    @if ($visibleRootComments->count() === 0)
+    @if ($visibleRootComments->count() === 0 && $commentable->canReceiveComments())
         <x-comment.empty-state
             :is-guest="auth()->guest()"
             :commentable="$commentable"

@@ -8,6 +8,7 @@ use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\ModVersion;
 use App\Models\User;
 
@@ -140,6 +141,12 @@ enum TrackingEventType: string
 
     case COMMENT_MARK_CLEAN = 'comment_mark_clean';
 
+    case MOD_LIST_DISABLE = 'mod_list_disable';
+
+    case MOD_LIST_ENABLE = 'mod_list_enable';
+
+    case MOD_LIST_DELETE = 'mod_list_delete';
+
     /**
      * Get all moderation action event types.
      *
@@ -226,6 +233,9 @@ enum TrackingEventType: string
             self::COMMENT_RESTORE => 'Restored comment',
             self::COMMENT_MARK_SPAM => 'Marked comment as spam',
             self::COMMENT_MARK_CLEAN => 'Marked comment as clean',
+            self::MOD_LIST_DISABLE => 'Disabled mod list',
+            self::MOD_LIST_ENABLE => 'Enabled mod list',
+            self::MOD_LIST_DELETE => 'Deleted mod list',
         };
     }
 
@@ -294,6 +304,9 @@ enum TrackingEventType: string
             self::COMMENT_RESTORE => 'Moderator restored a deleted comment',
             self::COMMENT_MARK_SPAM => 'Moderator marked a comment as spam',
             self::COMMENT_MARK_CLEAN => 'Moderator marked a comment as clean',
+            self::MOD_LIST_DISABLE => 'Moderator disabled a mod list',
+            self::MOD_LIST_ENABLE => 'Moderator enabled a mod list',
+            self::MOD_LIST_DELETE => 'Moderator deleted a mod list',
         };
     }
 
@@ -309,6 +322,7 @@ enum TrackingEventType: string
             self::ADDON_DOWNLOAD, self::ADDON_VERSION_CREATE, self::ADDON_VERSION_EDIT, self::ADDON_VERSION_DELETE, self::ADDON_VERSION_DISABLE, self::ADDON_VERSION_ENABLE, self::ADDON_VERSION_PUBLISH, self::ADDON_VERSION_UNPUBLISH => AddonVersion::class,
             self::COMMENT_CREATE, self::COMMENT_EDIT, self::COMMENT_SOFT_DELETE, self::COMMENT_HARD_DELETE, self::COMMENT_LIKE, self::COMMENT_UNLIKE, self::COMMENT_REPORT, self::COMMENT_PIN, self::COMMENT_UNPIN, self::COMMENT_RESTORE, self::COMMENT_MARK_SPAM, self::COMMENT_MARK_CLEAN => Comment::class,
             self::USER_BAN, self::USER_UNBAN, self::USER_BANNED, self::USER_UNBANNED => User::class,
+            self::MOD_LIST_DISABLE, self::MOD_LIST_ENABLE, self::MOD_LIST_DELETE => ModList::class,
             default => null,
         };
     }
@@ -389,6 +403,9 @@ enum TrackingEventType: string
             self::COMMENT_RESTORE => 'arrow-uturn-left',
             self::COMMENT_MARK_SPAM => 'shield-exclamation',
             self::COMMENT_MARK_CLEAN => 'shield-check',
+            self::MOD_LIST_DISABLE => 'eye-slash',
+            self::MOD_LIST_ENABLE => 'eye',
+            self::MOD_LIST_DELETE => 'trash',
         };
     }
 
@@ -472,6 +489,9 @@ enum TrackingEventType: string
             self::COMMENT_RESTORE => 'green',
             self::COMMENT_MARK_SPAM => 'red',
             self::COMMENT_MARK_CLEAN => 'green',
+            self::MOD_LIST_DISABLE => 'red',
+            self::MOD_LIST_ENABLE => 'green',
+            self::MOD_LIST_DELETE => 'red',
         };
     }
 
@@ -546,7 +566,10 @@ enum TrackingEventType: string
             self::COMMENT_HARD_DELETE,
             self::COMMENT_RESTORE,
             self::COMMENT_MARK_SPAM,
-            self::COMMENT_MARK_CLEAN => true,
+            self::COMMENT_MARK_CLEAN,
+            self::MOD_LIST_DISABLE,
+            self::MOD_LIST_ENABLE,
+            self::MOD_LIST_DELETE => true,
             default => false,
         };
     }

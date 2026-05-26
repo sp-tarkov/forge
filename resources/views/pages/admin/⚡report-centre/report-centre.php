@@ -8,6 +8,7 @@ use App\Facades\Track;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModList;
 use App\Models\Report;
 use App\Models\ReportAction;
 use App\Models\TrackingEvent;
@@ -272,6 +273,9 @@ new #[Layout('layouts::base')] class extends Component
             'enable_addon' => $this->executeEnableAddon($report),
             'delete_comment' => $this->executeDeleteComment($report),
             'restore_comment' => $this->executeRestoreComment($report),
+            'disable_mod_list' => $this->executeDisableModList($report),
+            'enable_mod_list' => $this->executeEnableModList($report),
+            'delete_mod_list' => $this->executeDeleteModList($report),
             default => null,
         };
 
@@ -468,6 +472,79 @@ new #[Layout('layouts::base')] class extends Component
     }
 
     /**
+     * Execute a mod list disable action.
+     */
+    private function executeDisableModList(Report $report): void
+    {
+        $modList = $report->reportable;
+
+        if (! $modList instanceof ModList) {
+            return;
+        }
+
+        $this->authorize('disable', $modList);
+
+        $service = resolve(ReportActionService::class);
+
+        $service->takeAction(report: $report, eventType: TrackingEventType::MOD_LIST_DISABLE, trackable: $modList, actionCallback: fn () => $modList->update(['disabled' => true]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+    }
+
+    /**
+     * Execute a mod list enable action.
+     */
+    private function executeEnableModList(Report $report): void
+    {
+        $modList = $report->reportable;
+
+        if (! $modList instanceof ModList) {
+            return;
+        }
+
+        $this->authorize('enable', $modList);
+
+        $service = resolve(ReportActionService::class);
+
+        $service->takeAction(report: $report, eventType: TrackingEventType::MOD_LIST_ENABLE, trackable: $modList, actionCallback: fn () => $modList->update(['disabled' => false]), resolveReport: $this->resolveAfterAction, reason: $this->actionNote ?: null);
+    }
+
+    /**
+     * Execute a mod list hard delete action.
+     *
+     * The list row is permanently removed. The tracking event still references
+     * the list's morph type and id (the in-memory model retains its key after
+     * deletion); identifying details are captured into the tracking event's
+     * additional data before deletion so the audit trail survives the row's
+     * removal. After deletion the report's reportable resolves to null, which
+     * the report centre already renders as a "content has been deleted" state.
+     */
+    private function executeDeleteModList(Report $report): void
+    {
+        $modList = $report->reportable;
+
+        if (! $modList instanceof ModList) {
+            return;
+        }
+
+        $this->authorize('delete', $modList);
+
+        $service = resolve(ReportActionService::class);
+
+        $service->takeAction(
+            report: $report,
+            eventType: TrackingEventType::MOD_LIST_DELETE,
+            trackable: $modList,
+            actionCallback: fn () => $modList->delete(),
+            resolveReport: $this->resolveAfterAction,
+            additionalData: [
+                'mod_list_id' => $modList->id,
+                'mod_list_title' => $modList->title,
+                'mod_list_owner_id' => $modList->owner_id,
+            ],
+            reason: $this->actionNote ?: null,
+        );
+    }
+
+    /**
      * Execute a comment soft delete action.
      */
     private function executeDeleteComment(Report $report): void
@@ -527,6 +604,11 @@ new #[Layout('layouts::base')] class extends Component
         // For comments, ban the author
         if ($reportable instanceof Comment) {
             return $reportable->user;
+        }
+
+        // For mod lists, ban the owner
+        if ($reportable instanceof ModList && $reportable->owner !== null) {
+            return $reportable->owner;
         }
 
         throw new RuntimeException('Cannot determine user to ban from report.');

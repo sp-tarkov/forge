@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Notifications\Messages\NotificationMailMessage;
+use App\Traits\ThrottlesOutboundEmail;
 use Illuminate\Auth\Notifications\VerifyEmail as OriginalVerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\URL;
 final class VerifyEmail extends OriginalVerifyEmail implements ShouldQueue
 {
     use Queueable;
+    use ThrottlesOutboundEmail;
 
     /**
      * Build the verification email using our standard branded template.

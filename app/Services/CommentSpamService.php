@@ -231,8 +231,7 @@ final class CommentSpamService implements SpamChecker
      */
     private function prepareAkismetData(Comment $comment): array
     {
-        // Details on available values:
-        // https://akismet.com/developers/detailed-docs/comment-check/
+        // Details on available values: https://akismet.com/developers/detailed-docs/comment-check/
         $payload = [
             'api_key' => config()->string('akismet.api_key'),
             'blog' => config()->string('akismet.blog_url'),

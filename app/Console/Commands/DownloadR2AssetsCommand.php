@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use Exception;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Concurrency;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+#[Description('Downloads assets from Cloudflare R2 to local storage (skips existing files)')]
+#[Signature('app:download-r2-assets {--filter="profile-photos/*"} {--chunk=50}')]
 final class DownloadR2AssetsCommand extends Command
 {
-    protected $signature = 'app:download-r2-assets
-                            {--filter= : Only download files matching this pattern (e.g., "profile-photos/*")}
-                            {--chunk=50 : Number of files to process concurrently per batch}';
-
-    protected $description = 'Downloads assets from Cloudflare R2 to local storage (skips existing files)';
-
     /**
      * This command downloads all files from Cloudflare R2 to the local public disk.
      * Useful for development environments where you want to work with production assets locally.

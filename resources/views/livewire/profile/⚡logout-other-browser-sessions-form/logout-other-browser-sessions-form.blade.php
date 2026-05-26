@@ -26,7 +26,7 @@
 
                         <div class="flex-1 min-w-0">
                             <flux:heading size="sm">
-                                {{ $session->platform ?? __('Unknown') }} — {{ $session->browser ?? __('Unknown') }}
+                                {{ $session->platform ?? __('Unknown') }}, {{ $session->browser ?? __('Unknown') }}
                             </flux:heading>
                             <flux:text size="xs">
                                 {{ $session->ip_address }},

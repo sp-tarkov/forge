@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
+#[Description('Uploads assets to Cloudflare R2')]
+#[Signature('app:upload-assets')]
 final class UploadAssetsCommand extends Command
 {
-    protected $signature = 'app:upload-assets';
-
-    protected $description = 'Uploads assets to Cloudflare R2';
-
     /**
      * This command uploads the Vite build assets to Cloudflare R2. Typically, this will be run after the assets have
      * been built and the application is ready to deploy from within the production environment build process.

@@ -156,7 +156,7 @@ describe('Mail Message Content', function (): void {
         $mailMessage = $notification->toMail($moderator);
 
         expect($mailMessage->introLines)->toHaveCount(2)
-            ->and($mailMessage->introLines[0])->toContain('Test Reporter has reported mod "Test Mod" for: Spam'); // No context line
+            ->and($mailMessage->introLines[0])->toContain('Test Reporter has reported mod "Test Mod" for: Spam');
     });
 });
 

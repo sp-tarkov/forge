@@ -19,7 +19,14 @@ beforeEach(function (): void {
         'user_id' => $this->user->id,
     ]);
 
-    // Enable Akismet for testing
+    // Comment creation triggers the observer, which (with Akismet disabled) marks the comment clean inline. Reset the
+    // spam state back to PENDING so each recheck test starts from a known unchecked baseline regardless of the observer.
+    $this->comment->resetSpamStateForRecheck(quiet: true);
+    $this->comment->spam_status = SpamStatus::PENDING;
+    $this->comment->saveQuietly();
+    $this->comment->refresh();
+
+    // Enable Akismet for the rest of the recheck behavior under test.
     Config::set('akismet.enabled', true);
 });
 

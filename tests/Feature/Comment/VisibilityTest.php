@@ -6,10 +6,16 @@ use App\Enums\SpamStatus;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
+    // Enable Akismet so the CommentObserver dispatches the queued spam check (which Queue::fake() then swallows)
+    // instead of marking the comment clean inline. The factory-seeded spam_status values these visibility tests
+    // rely on (PENDING, SPAM) would otherwise be overwritten by the inline disabled-path branch.
+    Config::set('akismet.enabled', true);
+
     Queue::fake(); // Prevent spam check jobs from running
 
     $this->mod = Mod::factory()->create();
@@ -215,9 +221,8 @@ describe('comment counting', function (): void {
         // Test as guest - should only see the clean comment, no discussion count
         $guestComponent = Livewire::test('comment-component', ['commentable' => $this->mod]);
 
-        // Guests should only see clean comments, but they don't see the main discussion header with count
-        // (The discussion header is only shown to authenticated users)
-        // Just verify guests don't see non-clean comments
+        // Guests should only see clean comments, but they don't see the main discussion header with count (the
+        // discussion header is only shown to authenticated users). Just verify guests don't see non-clean comments.
         $guestComponent->assertDontSee('Pending comment')
             ->assertDontSee('Spam comment');
 

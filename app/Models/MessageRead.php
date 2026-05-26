@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Database\Factories\MessageReadFactory;
+use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,12 +20,11 @@ use Override;
  * @property-read Message $message
  * @property-read User $user
  */
+#[WithoutTimestamps]
 final class MessageRead extends Model
 {
     /** @use HasFactory<MessageReadFactory> */
     use HasFactory;
-
-    public $timestamps = false;
 
     /**
      * Get the message that was read.

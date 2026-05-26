@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Console\Commands\CleanupOldNotificationLogs;
+use App\Console\Commands\EnsureFavouritesLists;
 use App\Console\Commands\ForgeHeartbeat;
 use App\Console\Commands\UpdateGeoLiteDatabase;
 use App\Jobs\DetectDownloadChangesJob;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('horizon:snapshot')->everyFiveMinutes()->onOneServer();
 Schedule::command(CleanupOldNotificationLogs::class)->daily()->onOneServer();
+Schedule::command(EnsureFavouritesLists::class)->daily()->onOneServer();
 
 Schedule::command(UpdateGeoLiteDatabase::class)->daily()->at('02:00')->onOneServer()->runInBackground()->environments('production');
 Schedule::job(new UpdateDisposableEmailBlocklist)->daily()->at('04:00')->onOneServer()->environments('production');

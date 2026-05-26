@@ -372,6 +372,67 @@
                                                                     @endcan
                                                                 @endif
                                                             @endif
+                                                        @elseif ($report->reportable_type === 'App\Models\ModList')
+                                                            @if ($report->reportable->disabled)
+                                                                @can('disable', $report->reportable)
+                                                                    <flux:button
+                                                                        size="xs"
+                                                                        variant="filled"
+                                                                        icon="eye"
+                                                                        wire:click="openActionModal({{ $report->id }}, 'enable_mod_list')"
+                                                                    >
+                                                                        Enable List
+                                                                    </flux:button>
+                                                                @endcan
+                                                            @else
+                                                                @can('disable', $report->reportable)
+                                                                    <flux:button
+                                                                        size="xs"
+                                                                        variant="danger"
+                                                                        icon="eye-slash"
+                                                                        wire:click="openActionModal({{ $report->id }}, 'disable_mod_list')"
+                                                                    >
+                                                                        Disable List
+                                                                    </flux:button>
+                                                                @endcan
+                                                            @endif
+                                                            @unless ($report->reportable->is_default)
+                                                                @can('delete', $report->reportable)
+                                                                    <flux:button
+                                                                        size="xs"
+                                                                        variant="danger"
+                                                                        icon="trash"
+                                                                        wire:click="openActionModal({{ $report->id }}, 'delete_mod_list')"
+                                                                    >
+                                                                        Delete List
+                                                                    </flux:button>
+                                                                @endcan
+                                                            @endunless
+                                                            @if ($report->reportable->owner)
+                                                                @if ($report->reportable->owner->isBanned())
+                                                                    @can('unban', $report->reportable->owner)
+                                                                        <flux:button
+                                                                            size="xs"
+                                                                            variant="filled"
+                                                                            icon="shield-check"
+                                                                            wire:click="openActionModal({{ $report->id }}, 'unban_user')"
+                                                                        >
+                                                                            Unban Owner
+                                                                        </flux:button>
+                                                                    @endcan
+                                                                @else
+                                                                    @can('ban', $report->reportable->owner)
+                                                                        <flux:button
+                                                                            size="xs"
+                                                                            variant="danger"
+                                                                            icon="no-symbol"
+                                                                            wire:click="openActionModal({{ $report->id }}, 'ban_user')"
+                                                                        >
+                                                                            Ban Owner
+                                                                        </flux:button>
+                                                                    @endcan
+                                                                @endif
+                                                            @endif
                                                         @endif
 
                                                         <flux:button
@@ -594,6 +655,23 @@
                                                             {{ \Illuminate\Support\Str::limit($report->reportable->teaser, 120) }}
                                                         </p>
                                                     </div>
+                                                @elseif($report->reportable_type === 'App\Models\ModList')
+                                                    <div class="space-y-2">
+                                                        <div class="flex items-center space-x-2">
+                                                            <flux:icon.list-bullet class="size-4 text-amber-500" />
+                                                            <span
+                                                                class="text-sm font-medium text-gray-900 dark:text-white"
+                                                            >Mod List</span>
+                                                        </div>
+                                                        <p class="text-sm text-gray-900 dark:text-white font-medium">
+                                                            {{ $report->reportable->getReportableTitle() }}</p>
+                                                        @if ($report->reportable->getReportableExcerpt())
+                                                            <p
+                                                                class="text-xs text-gray-500 dark:text-gray-400 line-clamp-3">
+                                                                {{ $report->reportable->getReportableExcerpt() }}
+                                                            </p>
+                                                        @endif
+                                                    </div>
                                                 @endif
                                             @else
                                                 <div
@@ -732,17 +810,17 @@
                                     name="shield-check"
                                     class="w-8 h-8 text-green-600"
                                 />
-                            @elseif ($selectedAction === 'disable_mod' || $selectedAction === 'disable_addon')
+                            @elseif ($selectedAction === 'disable_mod' || $selectedAction === 'disable_addon' || $selectedAction === 'disable_mod_list')
                                 <flux:icon
                                     name="eye-slash"
                                     class="w-8 h-8 text-red-600"
                                 />
-                            @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon')
+                            @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon' || $selectedAction === 'enable_mod_list')
                                 <flux:icon
                                     name="eye"
                                     class="w-8 h-8 text-green-600"
                                 />
-                            @elseif ($selectedAction === 'delete_comment')
+                            @elseif ($selectedAction === 'delete_comment' || $selectedAction === 'delete_mod_list')
                                 <flux:icon
                                     name="trash"
                                     class="w-8 h-8 text-red-600"
@@ -779,6 +857,12 @@
                                         {{ __('Soft-delete Comment') }}
                                     @elseif ($selectedAction === 'restore_comment')
                                         {{ __('Restore Comment') }}
+                                    @elseif ($selectedAction === 'disable_mod_list')
+                                        {{ __('Disable Mod List') }}
+                                    @elseif ($selectedAction === 'enable_mod_list')
+                                        {{ __('Enable Mod List') }}
+                                    @elseif ($selectedAction === 'delete_mod_list')
+                                        {{ __('Delete Mod List') }}
                                     @else
                                         {{ __('Confirm Action') }}
                                     @endif
@@ -800,6 +884,12 @@
                                         {{ __('Soft delete this comment (can be restored)') }}
                                     @elseif ($selectedAction === 'restore_comment')
                                         {{ __('Make this comment visible again') }}
+                                    @elseif ($selectedAction === 'disable_mod_list')
+                                        {{ __('Hide this list from everyone except its owner') }}
+                                    @elseif ($selectedAction === 'enable_mod_list')
+                                        {{ __('Make this list visible again') }}
+                                    @elseif ($selectedAction === 'delete_mod_list')
+                                        {{ __('Permanently delete this list') }}
                                     @else
                                         {{ __('Take action in response to this report') }}
                                     @endif
@@ -825,6 +915,24 @@
                                         </flux:text>
                                         <flux:text class="text-red-700 dark:text-red-300 text-sm mt-1">
                                             {{ __('Banned users cannot access the platform when logged in, but may still access content when logged out.') }}
+                                        </flux:text>
+                                    </div>
+                                </div>
+                            </div>
+                        @elseif ($selectedAction === 'delete_mod_list')
+                            <div
+                                class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <flux:icon
+                                        name="exclamation-triangle"
+                                        class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
+                                    />
+                                    <div>
+                                        <flux:text class="text-red-800 dark:text-red-200 text-sm font-medium">
+                                            {{ __('Warning') }}
+                                        </flux:text>
+                                        <flux:text class="text-red-700 dark:text-red-300 text-sm mt-1">
+                                            {{ __('This permanently deletes the list and all of its items. This action cannot be undone.') }}
                                         </flux:text>
                                     </div>
                                 </div>
@@ -883,7 +991,7 @@
                                     </div>
                                 </div>
                             </div>
-                        @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon')
+                        @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon' || $selectedAction === 'enable_mod_list')
                             <div
                                 class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                                 <div class="flex items-start gap-3">
@@ -988,14 +1096,16 @@
                                     {{ __('This action can be reversed by unbanning the user') }}
                                 @elseif ($selectedAction === 'unban_user')
                                     {{ __('This action can be reversed by banning the user again') }}
-                                @elseif ($selectedAction === 'disable_mod' || $selectedAction === 'disable_addon')
+                                @elseif ($selectedAction === 'disable_mod' || $selectedAction === 'disable_addon' || $selectedAction === 'disable_mod_list')
                                     {{ __('This action can be reversed by re-enabling') }}
-                                @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon')
+                                @elseif ($selectedAction === 'enable_mod' || $selectedAction === 'enable_addon' || $selectedAction === 'enable_mod_list')
                                     {{ __('This action can be reversed by disabling again') }}
                                 @elseif ($selectedAction === 'delete_comment')
                                     {{ __('This action can be reversed by a staff member') }}
                                 @elseif ($selectedAction === 'restore_comment')
                                     {{ __('This action can be reversed by soft-deleting again') }}
+                                @elseif ($selectedAction === 'delete_mod_list')
+                                    {{ __('This action is permanent and cannot be reversed') }}
                                 @else
                                     {{ __('This action will be logged for audit purposes') }}
                                 @endif
@@ -1012,9 +1122,9 @@
                             </flux:button>
                             <flux:button
                                 wire:click="executeAction"
-                                variant="{{ in_array($selectedAction, ['enable_mod', 'enable_addon', 'unban_user']) ? 'primary' : 'danger' }}"
+                                variant="{{ in_array($selectedAction, ['enable_mod', 'enable_addon', 'enable_mod_list', 'unban_user']) ? 'primary' : 'danger' }}"
                                 size="sm"
-                                icon="{{ $selectedAction === 'ban_user' ? 'shield-exclamation' : ($selectedAction === 'unban_user' ? 'shield-check' : ($selectedAction === 'delete_comment' ? 'trash' : (in_array($selectedAction, ['enable_mod', 'enable_addon']) ? 'eye' : 'eye-slash'))) }}"
+                                icon="{{ $selectedAction === 'ban_user' ? 'shield-exclamation' : ($selectedAction === 'unban_user' ? 'shield-check' : (in_array($selectedAction, ['delete_comment', 'delete_mod_list']) ? 'trash' : (in_array($selectedAction, ['enable_mod', 'enable_addon', 'enable_mod_list']) ? 'eye' : 'eye-slash'))) }}"
                             >
                                 @if ($selectedAction === 'ban_user')
                                     {{ __('Ban User') }}
@@ -1030,6 +1140,12 @@
                                     {{ __('Enable Addon') }}
                                 @elseif ($selectedAction === 'delete_comment')
                                     {{ __('Soft-delete Comment') }}
+                                @elseif ($selectedAction === 'disable_mod_list')
+                                    {{ __('Disable Mod List') }}
+                                @elseif ($selectedAction === 'enable_mod_list')
+                                    {{ __('Enable Mod List') }}
+                                @elseif ($selectedAction === 'delete_mod_list')
+                                    {{ __('Delete Mod List') }}
                                 @else
                                     {{ __('Confirm Action') }}
                                 @endif

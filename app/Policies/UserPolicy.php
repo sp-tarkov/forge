@@ -139,8 +139,7 @@ final class UserPolicy
                 return false;
             }
 
-            // Cannot ban other Senior Moderators
-            // Can ban Moderators and regular users
+            // Cannot ban other Senior Moderators. Can ban Moderators and regular users.
             return ! $targetUser->isSeniorMod();
         }
 

@@ -7,6 +7,7 @@ use App\Jobs\CheckCommentForSpam;
 use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 
@@ -75,6 +76,7 @@ describe('basic editing', function (): void {
 
 describe('spam state on edit', function (): void {
     it('preserves the prior spam_status during the recheck and clears the other spam metadata', function (): void {
+        Config::set('akismet.enabled', true);
         Queue::fake();
 
         $user = User::factory()->create();
@@ -113,6 +115,50 @@ describe('spam state on edit', function (): void {
         expect($comment->spam_reviewed_by)->toBeNull();
 
         Queue::assertPushed(CheckCommentForSpam::class, fn (CheckCommentForSpam $job): bool => $job->comment->id === $comment->id && $job->isRecheck === false);
+    });
+
+    it('leaves the spam state untouched and skips the recheck job when Akismet is disabled', function (): void {
+        Config::set('akismet.enabled', false);
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+        $reviewedAt = now()->subMinute();
+        $checkedAt = now()->subMinute();
+        $comment = Comment::factory()->create([
+            'user_id' => $user->id,
+            'commentable_id' => $mod->id,
+            'commentable_type' => $mod::class,
+            'spam_status' => SpamStatus::CLEAN,
+            'spam_metadata' => ['reason' => 'akismet_disabled'],
+            'spam_checked_at' => $checkedAt,
+            'spam_recheck_count' => 2,
+            'spam_reviewed_at' => $reviewedAt,
+            'spam_reviewed_by' => $moderator->id,
+        ]);
+        $comment->versions()->create([
+            'body' => 'Original content',
+            'version_number' => 1,
+            'created_at' => now(),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test('comment-component', ['commentable' => $mod])
+            ->set('formStates.edit-'.$comment->id.'.body', 'Rewritten content')
+            ->call('updateComment', $comment->id)
+            ->assertHasNoErrors();
+
+        $comment->refresh();
+
+        expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
+        expect($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
+        expect($comment->spam_recheck_count)->toBe(2);
+        expect($comment->spam_reviewed_by)->toBe($moderator->id);
+        expect($comment->spam_checked_at?->toIso8601String())->toBe($checkedAt->toIso8601String());
+        expect($comment->spam_reviewed_at?->toIso8601String())->toBe($reviewedAt->toIso8601String());
+
+        Queue::assertNotPushed(CheckCommentForSpam::class);
     });
 
     it('blocks the author from editing a spam-flagged comment', function (): void {

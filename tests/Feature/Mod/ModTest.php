@@ -145,7 +145,8 @@ describe('mod access control', function (): void {
 
         SptVersion::factory()->create(['version' => '9.9.9']);
         $mod = Mod::factory()->create();
-        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
+        // SPT version does not exist
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']);
 
         $response = $this->get($mod->detail_url);
         $response->assertForbidden();
@@ -160,7 +161,8 @@ describe('mod access control', function (): void {
         $mod->owner()->associate($user);
         $mod->save();
 
-        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']); // SPT version does not exist
+        // SPT version does not exist
+        ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.1.1']);
 
         $response = $this->get($mod->detail_url);
         $response->assertOk();
@@ -207,7 +209,8 @@ describe('mod access control', function (): void {
         SptVersion::factory()->create(['version' => '1.1.1']);
 
         $mod1 = Mod::factory()->recycle($user)->create(['published_at' => null]); // Unpublished, owned by the user
-        $mod2 = Mod::factory()->recycle($user)->create(['published_at' => now()->addDays(1)]); // Published in the future, owned by the user
+        // Published in the future, owned by the user
+        $mod2 = Mod::factory()->recycle($user)->create(['published_at' => now()->addDays(1)]);
 
         ModVersion::factory()->recycle($mod1)->create(['spt_version_constraint' => '1.1.1']);
         ModVersion::factory()->recycle($mod2)->create(['spt_version_constraint' => '1.1.1']);

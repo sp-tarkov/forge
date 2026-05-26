@@ -48,8 +48,8 @@ if (! $hasTextContent) {
     $hasTextContent = true;
 }
 
-// Be careful not to change the order of these colors.
-// They're used in the hash function below and changing them would change actual user avatar colors that they might have grown to identify with.
+// Be careful not to change the order of these colors. They're used in the hash function below and changing them would
+// change actual user avatar colors that they might have grown to identify with.
 $colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
 
 if ($hasTextContent && $color === 'auto') {

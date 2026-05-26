@@ -455,8 +455,7 @@ describe('Mod Version Create Form', function (): void {
                 ->set('dependencies.0.modId', (string) $dependencyMod->id)
                 ->set('dependencies.0.constraint', '^1.0.0');
 
-            // Check that matching versions are set correctly
-            // ^1.0.0 matches 1.0.0, 1.1.0, but not 2.0.0
+            // Check that matching versions are set correctly: ^1.0.0 matches 1.0.0, 1.1.0, but not 2.0.0.
             expect($component->get('matchingDependencyVersions')[0])->toHaveCount(2);
             $versions = collect($component->get('matchingDependencyVersions')[0])->pluck('version')->toArray();
             expect($versions)->toContain('1.0.0');

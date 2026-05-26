@@ -61,6 +61,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $disabled
  * @property bool $comments_disabled
  * @property bool $addons_disabled
+ * @property bool $lists_disabled
  * @property bool $profile_binding_notice_disabled
  * @property bool $cheat_notice
  * @property CarbonImmutable|null $created_at
@@ -70,6 +71,7 @@ use Stevebauman\Purify\Facades\Purify;
  * @property-read string $description_html
  * @property-read string $custom_ai_disclosure_html
  * @property-read bool $addons_enabled
+ * @property-read bool $lists_enabled
  * @property-read bool $fika_compatibility
  * @property-read bool $shows_profile_binding_notice
  * @property-read User|null $owner
@@ -213,6 +215,16 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     public function addons(): HasMany
     {
         return $this->hasMany(Addon::class);
+    }
+
+    /**
+     * The relationship between a mod and the list items that reference it.
+     *
+     * @return MorphMany<ModListItem, $this>
+     */
+    public function listItems(): MorphMany
+    {
+        return $this->morphMany(ModListItem::class, 'listable');
     }
 
     /**
@@ -633,6 +645,17 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
     }
 
     /**
+     * Get whether this mod may be added to user-created mod lists. Favourites bypass this check; the guard lives in
+     * ModListService::addMod/addAddon.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function listsEnabled(): Attribute
+    {
+        return Attribute::get(fn (): bool => ! $this->lists_disabled);
+    }
+
+    /**
      * Get whether this mod should display a profile binding notice.
      * Returns true if the category enables the notice AND the mod hasn't disabled it.
      *
@@ -692,6 +715,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
             'disabled' => 'boolean',
             'comments_disabled' => 'boolean',
             'addons_disabled' => 'boolean',
+            'lists_disabled' => 'boolean',
             'profile_binding_notice_disabled' => 'boolean',
             'cheat_notice' => 'boolean',
             'discord_notification_sent' => 'boolean',
@@ -766,7 +790,7 @@ final class Mod extends Model implements Commentable, Reportable, Trackable
      */
     private function hasActiveSptCompatibility(): bool
     {
-        // Get active SPT version strings (last three minor versions) for search — cache strings, not models
+        // Get active SPT version strings (last three minor versions) for search; cache strings, not models.
         /** @var array<int, string> $activeSptVersionIds */
         $activeSptVersionIds = Cache::remember('active_spt_versions_for_search', 60 * 60, fn (): array => SptVersion::getVersionsForLastThreeMinors()->pluck('version')->all());
 

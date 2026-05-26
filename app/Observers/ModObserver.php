@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Contracts\DependencyResolver;
+use App\Jobs\TombstoneModInListsJob;
 use App\Models\Mod;
+use App\Models\ModListItem;
 use App\Models\SptVersion;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +26,12 @@ final readonly class ModObserver
         }
 
         $this->updateRelatedSptVersions($mod);
+
+        // When the author flips lists_disabled from false to true, prune the mod (and its addons) from every
+        // non-Favourites list via a queued job.
+        if ($mod->wasChanged('lists_disabled') && $mod->lists_disabled === true) {
+            dispatch(new TombstoneModInListsJob($mod->id));
+        }
     }
 
     /**
@@ -46,6 +54,12 @@ final readonly class ModObserver
                 Storage::disk($disk)->delete($mod->thumbnail);
             }
         }
+
+        // Polymorphic relations are not cascaded by the DB; remove list references here.
+        ModListItem::query()
+            ->where('listable_type', Mod::class)
+            ->where('listable_id', $mod->id)
+            ->delete();
     }
 
     /**

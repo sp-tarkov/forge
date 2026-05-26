@@ -119,8 +119,7 @@ it('shows conversation to other user when one user archives', function (): void 
     // User1 archives the conversation
     $conversation->archiveFor($user1);
 
-    // User1 doesn't see it in their list when accessing chat
-    // (Will redirect to another conversation or empty state)
+    // User1 doesn't see it in their list when accessing chat (will redirect to another conversation or empty state)
     $otherConv = Conversation::findOrCreateBetween($user1, User::factory()->create(), $user1);
     $otherConv->messages()->create(['user_id' => $user1->id, 'content' => 'Other message']);
 

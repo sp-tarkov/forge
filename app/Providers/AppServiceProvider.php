@@ -62,8 +62,8 @@ final class AppServiceProvider extends ServiceProvider
         // Define the external API rate limiter for queue jobs that call external services.
         RateLimiter::for('external-api', fn () => Limit::perMinute(30));
 
-        // Define the announcement email rate limiter to stay within the SES sending quota.
-        RateLimiter::for('announcement-email', fn () => Limit::perSecond(10));
+        // Throttle all outbound email to stay within the shared SES sending quota.
+        RateLimiter::for('outbound-email', fn () => Limit::perSecond(10));
 
         // Register custom macros and mixins.
         $this->registerMacros();

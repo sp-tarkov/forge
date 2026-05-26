@@ -154,6 +154,45 @@ describe('comment observer behavior', function (): void {
 
         expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
     });
+
+    it('skips dispatching CheckCommentForSpam on create when Akismet is disabled', function (): void {
+        Config::set('akismet.enabled', false);
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+        // Seed the comment in the PENDING state so the observer's inline disabled-path branch runs. The factory defaults
+        // to CLEAN, which short-circuits the observer guard.
+        $comment = Comment::factory()->withVersion('Body content')->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $user->id,
+            'spam_status' => SpamStatus::PENDING,
+        ]);
+
+        $comment->refresh();
+
+        expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
+        expect($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
+        Queue::assertNotPushed(CheckCommentForSpam::class);
+    });
+
+    it('dispatches CheckCommentForSpam on create when Akismet is enabled', function (): void {
+        Config::set('akismet.enabled', true);
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+        $comment = Comment::factory()->withVersion('Body content')->create([
+            'commentable_type' => Mod::class,
+            'commentable_id' => $mod->id,
+            'user_id' => $user->id,
+        ]);
+
+        Queue::assertPushed(CheckCommentForSpam::class, fn (CheckCommentForSpam $job): bool => $job->comment->id === $comment->id);
+    });
 });
 
 describe('comment component filtering', function (): void {

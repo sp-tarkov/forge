@@ -5,26 +5,16 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use Exception;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+#[Description('Send a heartbeat ping to the configured URL')]
+#[Signature('app:forge-heartbeat')]
 final class ForgeHeartbeat extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:forge-heartbeat';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Send a heartbeat ping to the configured URL';
-
     /**
      * Execute the console command.
      */

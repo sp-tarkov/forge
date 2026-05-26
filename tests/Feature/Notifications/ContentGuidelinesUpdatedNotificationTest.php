@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Notifications\ContentGuidelinesUpdatedNotification;
-use Carbon\CarbonImmutable;
-use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\URL;
 
 describe('Channel Selection', function (): void {
@@ -47,32 +45,6 @@ describe('Channel Selection', function (): void {
         $channels = (new ContentGuidelinesUpdatedNotification)->via($user);
 
         expect($channels)->toContain('database')->not->toContain('mail');
-    });
-});
-
-describe('Job Middleware', function (): void {
-    it('rate limits the mail channel to respect the SES sending quota', function (): void {
-        $user = User::factory()->create();
-
-        $middleware = (new ContentGuidelinesUpdatedNotification)->middleware($user, 'mail');
-
-        expect($middleware)->toHaveCount(1)
-            ->and($middleware[0])->toBeInstanceOf(RateLimited::class);
-    });
-
-    it('does not rate limit the database channel', function (): void {
-        $user = User::factory()->create();
-
-        $middleware = (new ContentGuidelinesUpdatedNotification)->middleware($user, 'database');
-
-        expect($middleware)->toBe([]);
-    });
-
-    it('retries throttled mail jobs against a deadline rather than a try count', function (): void {
-        $notification = new ContentGuidelinesUpdatedNotification;
-
-        expect($notification->retryUntil())->toBeInstanceOf(CarbonImmutable::class)
-            ->and($notification->retryUntil()->isFuture())->toBeTrue();
     });
 });
 

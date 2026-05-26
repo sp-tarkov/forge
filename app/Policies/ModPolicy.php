@@ -101,8 +101,7 @@ final class ModPolicy
      */
     public function download(?User $user, Mod $mod): bool
     {
-        // Check if mod can be viewed first
-        // Allow downloads even if blocked
+        // Check if mod can be viewed first. Allow downloads even if blocked.
         return $this->view($user, $mod);
     }
 
@@ -231,6 +230,11 @@ final class ModPolicy
 
         // Moderators and administrators cannot create reports.
         if ($user->isModOrAdmin()) {
+            return false;
+        }
+
+        // Owners and authors cannot report their own mod.
+        if ($reportable instanceof Mod && $reportable->isAuthorOrOwner($user)) {
             return false;
         }
 

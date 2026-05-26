@@ -195,6 +195,7 @@
                             <flux:select.option value="wall">{{ __('Wall') }}</flux:select.option>
                             <flux:select.option value="mods">{{ $modCount }} {{ __(Str::plural('Mod', $modCount)) }}</flux:select.option>
                             <flux:select.option value="addons">{{ $addonCount }} {{ __(Str::plural('Addon', $addonCount)) }}</flux:select.option>
+                            <flux:select.option value="lists">{{ __('Lists') }}</flux:select.option>
                             <flux:select.option value="activity">{{ __('Activity') }}</flux:select.option>
                         </flux:select>
                     </div>
@@ -218,6 +219,10 @@
                                 name="{{ __('Addons') }}"
                                 value="addons"
                                 :label="$addonCount . ' ' . Str::plural('Addon', $addonCount)"
+                            />
+                            <x-tab-button
+                                name="{{ __('Lists') }}"
+                                value="lists"
                             />
                             <x-tab-button
                                 name="{{ __('Activity') }}"
@@ -253,6 +258,17 @@
                 >
                     <livewire:user.show.addons-tab
                         wire:key="user-addons-tab-{{ $user->id }}"
+                        :user-id="$user->id"
+                    />
+                </div>
+
+                {{-- Lists --}}
+                <div
+                    x-show="selectedTab === 'lists'"
+                    x-cloak
+                >
+                    <livewire:user.show.lists-tab
+                        wire:key="user-lists-tab-{{ $user->id }}"
                         :user-id="$user->id"
                     />
                 </div>

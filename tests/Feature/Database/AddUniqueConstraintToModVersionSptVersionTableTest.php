@@ -94,8 +94,7 @@ it('allows different mod versions to use the same spt version', function (): voi
         ->for(User::factory()->create(), 'owner')
         ->create();
 
-    // Create mod versions with a constraint that matches our SPT version
-    // The observer will automatically sync them
+    // Create mod versions with a constraint that matches our SPT version. The observer will automatically sync them.
     $modVersion1 = ModVersion::factory()->for($mod)->create([
         'version' => '1.0.0',
         'spt_version_constraint' => '>=3.10.0',
@@ -120,8 +119,7 @@ it('allows same mod version to use different spt versions', function (): void {
         ->for(User::factory()->create(), 'owner')
         ->create();
 
-    // Create a mod version with a constraint that matches both SPT versions
-    // The observer will automatically sync them
+    // Create a mod version with a constraint that matches both SPT versions. The observer will automatically sync them.
     $modVersion = ModVersion::factory()->for($mod)->create([
         'spt_version_constraint' => '>=3.10.0 <=3.11.0',
     ]);

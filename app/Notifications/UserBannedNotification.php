@@ -9,6 +9,7 @@ use App\Enums\NotificationColorRole;
 use App\Notifications\Messages\NotificationMailMessage;
 use App\Support\DataTransferObjects\HeadlineSegment;
 use App\Support\DataTransferObjects\NotificationPresentation;
+use App\Traits\ThrottlesOutboundEmail;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,6 +20,7 @@ use Mchev\Banhammer\Models\Ban;
 final class UserBannedNotification extends Notification implements Presentable, ShouldQueue
 {
     use Queueable;
+    use ThrottlesOutboundEmail;
 
     /**
      * Create a new notification instance.

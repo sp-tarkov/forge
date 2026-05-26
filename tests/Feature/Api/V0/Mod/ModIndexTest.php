@@ -227,7 +227,8 @@ describe('Mod Index API', function (): void {
     it('includes license relationship', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
-        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create(); // Factory includes license by default
+        // Factory includes license by default
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
 
         $response = $this->withToken($this->token)->getJson('/api/v0/mods?include=license');
         $response->assertStatus(Response::HTTP_OK);

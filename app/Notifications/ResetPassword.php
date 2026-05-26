@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Notifications\Messages\NotificationMailMessage;
+use App\Traits\ThrottlesOutboundEmail;
 use Illuminate\Auth\Notifications\ResetPassword as OriginalResetPassword;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Auth\CanResetPassword;
@@ -19,6 +20,7 @@ use SensitiveParameter;
 final class ResetPassword extends OriginalResetPassword implements ShouldQueue
 {
     use Queueable;
+    use ThrottlesOutboundEmail;
 
     public function __construct(#[SensitiveParameter] string $token)
     {

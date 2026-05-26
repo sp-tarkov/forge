@@ -27,7 +27,7 @@
                                 class="text-lg font-semibold text-gray-900 dark:text-white"
                             >{{ __('Spam Review') }}</h3>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                {{ __('Review comments flagged as spam by Akismet and confirm, approve, or delete them.') }}
+                                {{ __('Review comments flagged as spam and confirm, approve, or delete them.') }}
                             </p>
                         </div>
                         <div class="flex items-center gap-4 flex-shrink-0">
@@ -107,7 +107,7 @@
                                             color="red"
                                             size="sm"
                                         >
-                                            {{ __('Akismet: discard') }}
+                                            {{ __('Auto-discard recommended') }}
                                         </flux:badge>
                                     @endif
                                     @if ($comment->spam_checked_at)

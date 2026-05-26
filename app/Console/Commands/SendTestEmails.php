@@ -18,28 +18,18 @@ use App\Notifications\ReportSubmittedNotification;
 use App\Notifications\ResetPassword;
 use App\Notifications\UserBannedNotification;
 use App\Notifications\VerifyEmail;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Mchev\Banhammer\Models\Ban;
 use Throwable;
 
+#[Description('Send every notification email to the given user via the mail channel only. Local/development use only.')]
+#[Signature('notifications:test-email {email : Recipient user email address}')]
 final class SendTestEmails extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'notifications:test-email {email : Recipient user email address}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Send every notification email to the given user via the mail channel only. Local/development use only.';
-
     public function handle(): int
     {
         if (app()->environment('production')) {

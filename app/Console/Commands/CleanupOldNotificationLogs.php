@@ -5,24 +5,14 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\NotificationLog;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
+#[Description('Clean up old notification logs to prevent table bloat')]
+#[Signature('notifications:cleanup-logs {--days=30 : Number of days to retain logs}')]
 final class CleanupOldNotificationLogs extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'notifications:cleanup-logs {--days=30 : Number of days to retain logs}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Clean up old notification logs to prevent table bloat';
-
     /**
      * Execute the console command.
      */

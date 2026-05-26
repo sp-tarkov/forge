@@ -34,7 +34,8 @@ final class HardDeleteSpamComment
     /**
      * Walk the parent_id chain one generation at a time and return every descendant id.
      *
-     * Cannot use the descendants() relation: it is keyed on root_id, which points at the thread top, not at the target. For a non-root target that would pull in siblings and cousins.
+     * Cannot use the descendants() relation: it is keyed on root_id, which points at the thread top, not at the
+     * target. For a non-root target that would pull in siblings and cousins.
      *
      * @return list<int>
      */

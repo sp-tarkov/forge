@@ -28,8 +28,7 @@ final class ConversationPolicy
             return false;
         }
 
-        // Use the visibility logic: creator can see even without messages,
-        // other participant needs at least one message
+        // Use the visibility logic: creator can see even without messages, other participant needs at least one message
         return $conversation->isVisibleTo($user);
     }
 
