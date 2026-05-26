@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
+use Pest\Browser\Playwright\Playwright;
 use Tests\TestCase;
+
+Playwright::setTimeout(15_000);
 
 pest()->extend(TestCase::class)
     ->use(LazilyRefreshDatabase::class)
