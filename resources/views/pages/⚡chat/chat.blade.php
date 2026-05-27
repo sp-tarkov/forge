@@ -12,9 +12,9 @@
     </h2>
 </x-slot>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-    {{-- New Conversation Button --}}
-    <div class="absolute -top-[108px] right-4 sm:right-6 lg:right-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-0 relative">
+    {{-- New Conversation Button (desktop only; mobile uses the inline button in the conversations list) --}}
+    <div class="hidden lg:block absolute -top-[108px] right-4 sm:right-6 lg:right-8">
         <flux:button
             variant="primary"
             icon="plus"
@@ -26,14 +26,28 @@
 
     {{-- Chat Interface --}}
     <div
-        class="flex gap-4 min-h-[400px] max-h-[80vh]"
+        x-data="{ mobileView: @js($selectedConversation ? 'thread' : 'list') }"
+        class="flex flex-col lg:flex-row gap-4 h-[calc(100vh-160px)] lg:h-auto lg:min-h-[400px] lg:max-h-[80vh]"
         wire:key="chat-interface"
     >
         {{-- Left Column: Conversations List --}}
         <div
-            class="w-80 bg-gray-100 dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-[400px] max-h-[600px] flex flex-col"
+            :class="mobileView === 'list' ? 'flex' : 'hidden lg:flex'"
+            class="w-full lg:w-80 h-full lg:h-auto bg-gray-100 dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-0 lg:min-h-[400px] lg:max-h-[600px] flex-col"
             wire:key="conversations-list"
         >
+            {{-- Mobile-only New Conversation header (desktop uses the absolutely-positioned button above the panel) --}}
+            <div class="lg:hidden p-3 border-b border-gray-300 dark:border-gray-800">
+                <flux:button
+                    variant="primary"
+                    icon="plus"
+                    wire:click="openNewConversationModal"
+                    class="w-full"
+                >
+                    {{ __('New Conversation') }}
+                </flux:button>
+            </div>
+
             {{-- Conversations List --}}
             <div class="flex-1 overflow-y-auto">
                 @forelse($conversations as $conversation)
@@ -42,6 +56,7 @@
                             type="button"
                             wire:key="conversation-{{ $conversation->id }}"
                             wire:click="switchConversation('{{ $conversation->hash_id }}')"
+                            x-on:click="mobileView = 'thread'"
                             class="w-full flex items-center gap-3 p-4 transition-all duration-200 text-left
                                     {{ $selectedConversation?->id === $conversation->id
                                         ? 'bg-gray-50 dark:bg-gray-950 border-l-4 border-blue-500 shadow-sm'
@@ -112,7 +127,8 @@
 
         {{-- Right Column: Selected Conversation --}}
         <div
-            class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-[400px] max-h-[600px]"
+            :class="mobileView === 'thread' ? 'flex' : 'hidden lg:flex'"
+            class="w-full lg:flex-1 h-full lg:h-auto flex-col bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-300 dark:border-gray-800 shadow-sm overflow-hidden min-h-0 lg:min-h-[400px] lg:max-h-[600px]"
             wire:key="conversation-{{ $selectedConversation?->id ?? 'none' }}"
         >
             @if ($selectedConversation)
@@ -121,6 +137,16 @@
                     class="p-4 border-b border-gray-300 dark:border-gray-800 flex items-center justify-between bg-gray-100 dark:bg-gray-900">
                     @if ($selectedConversation->other_user)
                         <div class="flex items-center gap-3">
+                            <flux:button
+                                variant="ghost"
+                                size="sm"
+                                square
+                                class="lg:hidden -ml-2"
+                                x-on:click="mobileView = 'list'"
+                                aria-label="{{ __('Back to conversations') }}"
+                            >
+                                <flux:icon.arrow-left class="h-5 w-5" />
+                            </flux:button>
                             <div class="relative inline-block">
                                 <flux:avatar
                                     src="{{ $selectedConversation->other_user->profile_photo_url }}"
@@ -146,6 +172,16 @@
                         </div>
                     @else
                         <div class="flex items-center gap-3">
+                            <flux:button
+                                variant="ghost"
+                                size="sm"
+                                square
+                                class="lg:hidden -ml-2"
+                                x-on:click="mobileView = 'list'"
+                                aria-label="{{ __('Back to conversations') }}"
+                            >
+                                <flux:icon.arrow-left class="h-5 w-5" />
+                            </flux:button>
                             <div class="font-medium text-gray-900 dark:text-gray-100">{{ __('Loading...') }}</div>
                         </div>
                     @endif
@@ -335,7 +371,7 @@
                             @if ($message->is_mine)
                                 {{-- Message from current user --}}
                                 <div class="flex justify-end message-item">
-                                    <div class="flex gap-2 max-w-[70%] flex-row-reverse items-start">
+                                    <div class="flex gap-2 max-w-[85%] lg:max-w-[70%] flex-row-reverse items-start">
                                         <flux:avatar
                                             src="{{ auth()->user()->profile_photo_url }}"
                                             size="sm"
@@ -368,7 +404,7 @@
                             @else
                                 {{-- Message from other user --}}
                                 <div class="flex justify-start message-item">
-                                    <div class="flex gap-2 max-w-[70%] items-start">
+                                    <div class="flex gap-2 max-w-[85%] lg:max-w-[70%] items-start">
                                         <div class="relative inline-block flex-shrink-0">
                                             <flux:avatar
                                                 src="{{ $message->user->profile_photo_url }}"

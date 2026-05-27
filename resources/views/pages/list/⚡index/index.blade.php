@@ -84,7 +84,7 @@
     </div>
 
     @if ($this->lists->total() > 0)
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-4 sm:px-0">
             @foreach ($this->lists as $list)
                 <x-list.card
                     wire:key="list-index-card-{{ $list->id }}"
@@ -93,11 +93,11 @@
                 />
             @endforeach
         </div>
-        <div>
+        <div class="px-4 sm:px-0">
             {{ $this->lists->links() }}
         </div>
     @else
-        <div class="p-8 bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-900 drop-shadow-2xl text-center">
+        <div class="mx-4 sm:mx-0 p-8 bg-white dark:bg-gray-900 rounded-xl shadow-md dark:shadow-gray-900 drop-shadow-2xl text-center">
             <flux:icon.list-bullet class="mx-auto size-12 text-gray-400" />
             <h2 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {{ __('No lists match your filters') }}
