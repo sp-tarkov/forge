@@ -394,6 +394,10 @@
                 href="{{ route('mods') }}"
                 :active="request()->routeIs('mods')"
             >{{ __('Mods') }}</x-responsive-nav-link>
+            <x-responsive-nav-link
+                href="{{ route('list.index') }}"
+                :active="request()->routeIs('list.index')"
+            >{{ __('Lists') }}</x-responsive-nav-link>
             @auth
                 <x-responsive-nav-link
                     href="{{ route('mods.recently-created') }}"
