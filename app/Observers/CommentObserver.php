@@ -19,11 +19,13 @@ final class CommentObserver
         $comment->updateRootId();
 
         // Only run the Akismet spam check when the integration is enabled. With Akismet off, mark the comment clean
-        // inline so it never flickers through the PENDING ribbon state. Guard the inline mark on PENDING so an
-        // explicitly-seeded status (used in tests and admin tooling) is not clobbered.
+        // inline so it never flickers through the PENDING ribbon state. Skip when a caller has already seeded the
+        // status to CLEAN or SPAM (factories, admin tooling) so we do not clobber it. Note: comments created through
+        // Eloquent without an explicit spam_status leave the in-memory attribute null (the DB default fills the row
+        // only on insert), so a plain isPendingSpamCheck() check is not enough - treat null as pending too.
         if (config()->boolean('akismet.enabled', false)) {
             dispatch(new CheckCommentForSpam($comment));
-        } elseif ($comment->isPendingSpamCheck()) {
+        } elseif (! $comment->isSpam() && ! $comment->isSpamClean()) {
             $comment->markAsClean(metadata: ['reason' => 'akismet_disabled'], quiet: true);
         }
 

@@ -178,6 +178,32 @@ describe('comment observer behavior', function (): void {
         Queue::assertNotPushed(CheckCommentForSpam::class);
     });
 
+    it('marks comments clean inline when created through Eloquent without an explicit spam_status', function (): void {
+        // Reproduces the production path used by the comment Livewire component, which calls
+        // $commentable->comments()->create([...]) without specifying spam_status. The DB default of 'pending' fills the
+        // row on insert, but the in-memory model attribute stays null until refresh - so the observer must treat null
+        // the same as PENDING when Akismet is off, otherwise the row is left stuck in the PENDING state.
+        Config::set('akismet.enabled', false);
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+        $comment = $mod->comments()->create([
+            'user_id' => $user->id,
+            'parent_id' => null,
+            'user_ip' => '127.0.0.1',
+            'user_agent' => 'PHPUnit',
+            'referrer' => '',
+        ]);
+
+        $comment->refresh();
+
+        expect($comment->spam_status)->toBe(SpamStatus::CLEAN);
+        expect($comment->spam_metadata)->toBe(['reason' => 'akismet_disabled']);
+        Queue::assertNotPushed(CheckCommentForSpam::class);
+    });
+
     it('dispatches CheckCommentForSpam on create when Akismet is enabled', function (): void {
         Config::set('akismet.enabled', true);
         Queue::fake();
