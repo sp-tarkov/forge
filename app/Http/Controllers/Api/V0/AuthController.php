@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Passport\Token as PassportToken;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -122,8 +123,8 @@ final class AuthController extends Controller
         /** @var array<int, string> $abilitiesToGrant */
         $abilitiesToGrant = array_values(array_unique($validAbilities));
 
-        // Create the token
-        $token = $user->createToken($tokenName, $abilitiesToGrant)->plainTextToken;
+        // Create the token via Sanctum (legacy PAT issuance is deprecated in favour of OAuth; see ADR 0001).
+        $token = $user->createSanctumToken($tokenName, $abilitiesToGrant)->plainTextToken;
 
         return ApiResponse::success(['token' => $token]);
     }
@@ -153,7 +154,19 @@ final class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $user->currentAccessToken()->delete();
+
+        // Revoke whichever token authenticated this request. Passport's persisted Token model exposes `revoke()`;
+        // Sanctum's PersonalAccessToken is an Eloquent model, so we just delete it. TransientToken (Passport SPA
+        // cookie auth) has nothing to revoke server-side. Each branch is a no-op for the wrong token type.
+        $passportToken = $user->currentAccessToken();
+        if ($passportToken instanceof PassportToken) {
+            $passportToken->revoke();
+        }
+
+        $sanctumToken = $user->currentSanctumToken();
+        if ($sanctumToken instanceof PersonalAccessToken) {
+            $sanctumToken->delete();
+        }
 
         return ApiResponse::success(['message' => 'Current token revoked successfully.']);
     }
@@ -183,7 +196,7 @@ final class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $user->tokens()->delete();
+        $user->sanctumTokens()->delete();
 
         return ApiResponse::success(['message' => 'All tokens revoked successfully.']);
     }

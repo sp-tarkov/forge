@@ -16,6 +16,7 @@ use App\Traits\HasProfilePhoto;
 use App\Traits\HasReports;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
+use DateTimeInterface;
 use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -37,7 +39,15 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\Client;
+use Laravel\Passport\Contracts\ScopeAuthorizable;
+use Laravel\Passport\Passport;
+use Laravel\Passport\Token;
+use Laravel\Sanctum\Contracts\HasAbilities as SanctumHasAbilities;
+use Laravel\Sanctum\HasApiTokens as SanctumHasApiTokens;
+use Laravel\Sanctum\NewAccessToken;
+use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
+use Laravel\Sanctum\TransientToken;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
 use Override;
@@ -99,7 +109,6 @@ use Stevebauman\Purify\Facades\Purify;
 final class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
 {
     use Bannable;
-    use HasApiTokens;
 
     /** @use HasComments<self> */
     use HasComments;
@@ -115,9 +124,32 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     use HasReports;
 
     use Notifiable;
+
+    /*
+     * Sanctum's Guard checks for its `HasApiTokens` trait via `class_uses_recursive` before authenticating, so we
+     * include it as a marker. Sanctum's `tokens`, `tokenCan`, `tokenCant`, `createToken`, `currentAccessToken`, and
+     * `withAccessToken` are all overridden by class-level methods below; the trait's own `$accessToken` property
+     * is unused (we keep separate typed storage for Passport and Sanctum tokens). Once Sanctum PATs are deprecated
+     * (Phase 4 of ADR 0001) the trait include and the Sanctum branches below can both come out.
+     *
+     * Method-level conflict resolution is unnecessary because class methods always shadow trait methods in PHP.
+     */
+    use SanctumHasApiTokens {
+        SanctumHasApiTokens::tokens as private __sanctum_tokens;
+        SanctumHasApiTokens::tokenCan as private __sanctum_tokenCan;
+        SanctumHasApiTokens::tokenCant as private __sanctum_tokenCant;
+        SanctumHasApiTokens::createToken as private __sanctum_createToken;
+        SanctumHasApiTokens::currentAccessToken as private __sanctum_currentAccessToken;
+        SanctumHasApiTokens::withAccessToken as private __sanctum_withAccessToken;
+    }
     use Searchable;
     use TwoFactorAuthenticatable;
     use Visitor;
+
+    private ?ScopeAuthorizable $currentPassportToken = null;
+
+    /** @var SanctumPersonalAccessToken|TransientToken|null */
+    private mixed $currentSanctumToken = null;
 
     /**
      * Get the storage path for profile photos.
@@ -605,6 +637,150 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
     public function oAuthConnections(): HasMany
     {
         return $this->hasMany(OAuthConnection::class);
+    }
+
+    /**
+     * Get all OAuth clients owned by this user (used by the Developer Portal). Passport's `OAuthenticatable`
+     * contract.
+     *
+     * @return MorphMany<Client, $this>
+     */
+    public function oauthApps(): MorphMany
+    {
+        return $this->morphMany(Passport::clientModel(), 'owner');
+    }
+
+    /**
+     * Get all Sanctum personal access tokens for this user. Kept as `tokens()` for backwards-compatibility with
+     * pre-OAuth callers that expect Sanctum tokens; new Passport code should use `passportTokens()` instead. Once
+     * Sanctum PATs are removed (ADR 0001 Phase 4) `tokens()` should switch to the Passport relation.
+     *
+     * @return MorphMany<SanctumPersonalAccessToken, $this>
+     */
+    public function tokens(): MorphMany
+    {
+        return $this->morphMany(SanctumPersonalAccessToken::class, 'tokenable');
+    }
+
+    /**
+     * Alias for clarity at call sites that need to distinguish from Passport tokens.
+     *
+     * @return MorphMany<SanctumPersonalAccessToken, $this>
+     */
+    public function sanctumTokens(): MorphMany
+    {
+        return $this->tokens();
+    }
+
+    /**
+     * Get all Passport access tokens issued to this user.
+     *
+     * @return HasMany<Token, $this>
+     */
+    public function passportTokens(): HasMany
+    {
+        return $this->hasMany(Passport::tokenModel(), 'user_id', $this->getAuthIdentifierName());
+    }
+
+    /**
+     * Get the Passport access token currently associated with the user. Returns null when the request was
+     * authenticated via Sanctum (or not at all); use `currentSanctumToken()` for that case.
+     */
+    public function currentAccessToken(): ?ScopeAuthorizable
+    {
+        return $this->currentPassportToken;
+    }
+
+    /**
+     * Get the Sanctum personal access token currently associated with the user. Returns null when the request was
+     * authenticated via Passport (or not at all).
+     */
+    public function currentSanctumToken(): ?SanctumHasAbilities
+    {
+        return $this->currentSanctumToken instanceof SanctumHasAbilities ? $this->currentSanctumToken : null;
+    }
+
+    /**
+     * Attach an access token to this user. Called by both Passport's TokenGuard and Sanctum's Guard during request
+     * authentication. We dispatch by token type so each guard sees only its own token via its accessor.
+     */
+    public function withAccessToken(mixed $accessToken): static
+    {
+        if ($accessToken instanceof ScopeAuthorizable) {
+            $this->currentPassportToken = $accessToken;
+
+            return $this;
+        }
+
+        if ($accessToken instanceof SanctumPersonalAccessToken || $accessToken instanceof TransientToken) {
+            $this->currentSanctumToken = $accessToken;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Determine if the current Passport token has the given scope. Sanctum-authenticated callers should fall
+     * through to ability checks via `currentSanctumToken()`.
+     */
+    public function tokenCan(string $scope): bool
+    {
+        return $this->currentPassportToken?->can($scope) ?? false;
+    }
+
+    /**
+     * Inverse of `tokenCan()`. Passport's `OAuthenticatable` contract.
+     */
+    public function tokenCant(string $scope): bool
+    {
+        return ! $this->tokenCan($scope);
+    }
+
+    /**
+     * Create a Sanctum personal access token. Kept as the default `createToken()` so the legacy `/api/v0/auth/login`
+     * PAT endpoint and any existing callers continue to work; new code should use the OAuth authorization-code flow
+     * instead. Mirrors Sanctum's `HasApiTokens::createToken()` exactly so token lookup logic stays compatible.
+     *
+     * @param  array<int, string>  $abilities
+     */
+    public function createToken(string $name, array $abilities = ['*'], ?DateTimeInterface $expiresAt = null): NewAccessToken
+    {
+        $prefix = config()->string('sanctum.token_prefix', '');
+        $entropy = Str::random(40);
+        $plainTextToken = $prefix.$entropy.hash('crc32b', $entropy);
+
+        $accessToken = $this->sanctumTokens()->create([
+            'name' => $name,
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => $abilities,
+            'expires_at' => $expiresAt,
+        ]);
+
+        /** @var int $tokenId Sanctum's PersonalAccessToken uses an auto-increment primary key. */
+        $tokenId = $accessToken->getKey();
+
+        return new NewAccessToken($accessToken, $tokenId.'|'.$plainTextToken);
+    }
+
+    /**
+     * Alias retained from the transition era when both Sanctum's and Passport's `createToken()` methods coexisted.
+     * Now redundant -- `createToken()` IS the Sanctum path -- but kept temporarily so any call sites added during
+     * Phase 1 keep compiling. Remove once we are confident nothing references it.
+     *
+     * @param  array<int, string>  $abilities
+     */
+    public function createSanctumToken(string $name, array $abilities = ['*']): NewAccessToken
+    {
+        return $this->createToken($name, $abilities);
+    }
+
+    /**
+     * Return the user-provider name. Used by Passport to scope tokens to the correct provider when multiple
+     * `users` providers are configured. Passport's `OAuthenticatable` contract.
+     */
+    public function getProviderName(): string
+    {
+        return 'users';
     }
 
     /**

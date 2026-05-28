@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
 use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Http\Middleware\EnforceApiScope;
 use App\Http\Middleware\RejectMalformedUtf8;
 use App\Http\Middleware\SanitizeBroadcastSocketId;
 use Illuminate\Foundation\Application;
@@ -46,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.banned' => AuthBanned::class,
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
+            'api.scope' => EnforceApiScope::class,
         ]);
 
         // Trust proxies to get real client IP addresses
