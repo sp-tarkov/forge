@@ -101,10 +101,7 @@ it('does not crash typing or read broadcasts when broadcasting fails', function 
 it('logs a warning when a chat broadcast fails', function (): void {
     useFailingBroadcaster();
 
-    Log::shouldReceive('warning')
-        ->atLeast()
-        ->once()
-        ->withArgs(fn (string $message): bool => str_contains($message, 'Chat broadcast failed'));
+    Log::spy();
 
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
@@ -117,4 +114,7 @@ it('logs a warning when a chat broadcast fails', function (): void {
         ->set('messageText', 'Triggers a failed broadcast')
         ->call('sendMessage')
         ->assertOk();
+
+    Log::shouldHaveReceived('warning')
+        ->withArgs(fn (string $message): bool => str_contains($message, 'Chat broadcast failed'));
 });
