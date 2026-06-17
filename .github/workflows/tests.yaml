@@ -12,7 +12,12 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
-    name: Tests
+    name: Tests (Shard ${{ matrix.shard }}/6)
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [ 1, 2, 3, 4, 5, 6 ]
 
     services:
       mysql:
@@ -67,18 +72,34 @@ jobs:
         run: php artisan storage:link
 
       - name: Run Tests
-        run: ./vendor/bin/pest --ci --parallel
+        run: ./vendor/bin/pest --ci --parallel --shard=${{ matrix.shard }}/6
 
       - name: Upload Screenshots
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: screenshots
+          name: screenshots-shard-${{ matrix.shard }}
           path: tests/Browser/screenshots
 
       - name: Display Laravel Log
         if: failure()
         run: cat storage/logs/laravel.log
+
+  tests-complete:
+    runs-on: ubuntu-latest
+
+    name: Tests Complete
+
+    needs: tests
+
+    if: ${{ always() }}
+
+    steps:
+      - name: Verify All Shards Passed
+        if: ${{ needs.tests.result != 'success' }}
+        run: |
+          echo "One or more test shards did not pass: ${{ needs.tests.result }}"
+          exit 1
 
   type-coverage:
     runs-on: ubuntu-latest
