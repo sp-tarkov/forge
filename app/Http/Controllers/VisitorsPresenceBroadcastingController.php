@@ -37,8 +37,12 @@ final class VisitorsPresenceBroadcastingController extends BroadcastController
             return $this->authenticateVisitorsChannel($request);
         }
 
-        // For all other channels, use default authentication.
-        return parent::authenticate($request);
+        // For all other channels, use default authentication. The broadcaster can return null (the log/null
+        // driver used in tests), so fall back to a 403 response just like the visitors channel does.
+        /** @var Response|JsonResponse|array{id: string, name?: string, type?: string}|null $result */
+        $result = parent::authenticate($request);
+
+        return $result ?? response('Unauthorized', 403);
     }
 
     /**
