@@ -21,7 +21,6 @@ use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyExceptio
 use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
 use Spatie\Honeypot\ProtectAgainstSpam;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -64,28 +63,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-
-        // TEMPORARY
-        $exceptions->render(function (Throwable $e, Request $request): void {
-            if (! $e instanceof HttpException) {
-                return;
-            }
-
-            if ($e->getStatusCode() !== 419 || ! app()->environment('testing')) {
-                return;
-            }
-
-            $entry = sprintf(
-                "[419-DEBUG-7b3c] %s: %s\npath=%s\npayload=%s\ntrace:\n%s\n\n",
-                $e::class,
-                $e->getMessage(),
-                $request->path(),
-                json_encode($request->input('components')),
-                $e->getTraceAsString(),
-            );
-
-            @file_put_contents(storage_path('logs/laravel.log'), $entry, FILE_APPEND);
-        });
 
         // Don't report Livewire payload guard exceptions. These are security
         // limits working as intended (typically triggered by bots/abuse).
