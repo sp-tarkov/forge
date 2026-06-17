@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
 use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Http\Middleware\AnnounceSanctumDeprecation;
@@ -22,6 +21,7 @@ use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyExceptio
 use Mchev\Banhammer\Middleware\AuthBanned;
 use Mchev\Banhammer\Middleware\IPBanned;
 use Spatie\Honeypot\ProtectAgainstSpam;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
