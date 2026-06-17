@@ -109,7 +109,7 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * The mod dependencies to be created.
      *
-     * @var array<int, array{modId: string, constraint: string}>
+     * @var array<int, array{id: string, modId: string, constraint: string}>
      */
     public array $dependencies = [];
 
