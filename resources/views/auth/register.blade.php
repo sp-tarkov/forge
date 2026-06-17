@@ -32,6 +32,7 @@
                         autocomplete="name"
                         placeholder="Enter your username"
                     />
+                    <flux:error name="name" />
                 </flux:field>
 
                 <flux:field>
@@ -45,6 +46,7 @@
                         autocomplete="username"
                         placeholder="your@email.com"
                     />
+                    <flux:error name="email" />
                 </flux:field>
 
                 <flux:field>
@@ -57,6 +59,7 @@
                         autocomplete="new-password"
                         placeholder="Enter a secure password"
                     />
+                    <flux:error name="password" />
                 </flux:field>
 
                 <flux:field>
@@ -69,6 +72,7 @@
                         autocomplete="new-password"
                         placeholder="Re-enter your password"
                     />
+                    <flux:error name="password_confirmation" />
                 </flux:field>
 
                 <flux:field>
@@ -84,6 +88,7 @@
                             <flux:select.option value="{{ $tz }}">{{ $tz }}</flux:select.option>
                         @endforeach
                     </flux:select>
+                    <flux:error name="timezone" />
                 </flux:field>
             </div>
 
@@ -125,6 +130,7 @@
                             </span>
                         </label>
                     </div>
+                    <flux:error name="terms" />
                 </flux:field>
             </div>
 

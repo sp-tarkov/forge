@@ -40,4 +40,21 @@ describe('registration', function (): void {
         $response->assertSessionHasErrors('password');
         $this->assertGuest();
     })->skip(fn (): bool => ! Features::enabled(Features::registration()), 'Registration support is not enabled.');
+
+    it('renders validation error messages on the registration form', function (): void {
+        $response = $this->followingRedirects()->from('/register')->post('/register', [
+            'name' => '',
+            'email' => 'not-an-email',
+            'password' => 'short',
+            'password_confirmation' => 'different',
+            'timezone' => 'America/New_York',
+            'terms' => false,
+        ]);
+
+        $response->assertOk();
+        $response->assertSee('The name field is required.');
+        $response->assertSee('The email field must be a valid email address.');
+        $response->assertSee('The terms field must be accepted.');
+        $this->assertGuest();
+    })->skip(fn (): bool => ! Features::enabled(Features::registration()), 'Registration support is not enabled.');
 });

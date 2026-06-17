@@ -39,6 +39,7 @@
                     autofocus
                     autocomplete="username"
                 />
+                <flux:error name="email" />
             </flux:field>
 
             <x-honeypot />

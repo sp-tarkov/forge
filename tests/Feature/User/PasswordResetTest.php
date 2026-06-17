@@ -14,6 +14,27 @@ describe('password reset', function (): void {
         $response->assertStatus(200);
     })->skip(fn (): bool => ! Features::enabled(Features::resetPasswords()), 'Password updates are not enabled.');
 
+    it('renders the email validation error on the forgot password form', function (): void {
+        $response = $this->followingRedirects()->from('/forgot-password')->post('/forgot-password', [
+            'email' => 'not-an-email',
+        ]);
+
+        $response->assertOk();
+        $response->assertSee('The email field must be a valid email address.');
+    })->skip(fn (): bool => ! Features::enabled(Features::resetPasswords()), 'Password updates are not enabled.');
+
+    it('renders validation error messages on the reset password form', function (): void {
+        $response = $this->followingRedirects()->from('/reset-password/fake-token')->post('/reset-password', [
+            'token' => 'fake-token',
+            'email' => 'not-an-email',
+            'password' => 'short',
+            'password_confirmation' => 'different',
+        ]);
+
+        $response->assertOk();
+        $response->assertSee('The email field must be a valid email address.');
+    })->skip(fn (): bool => ! Features::enabled(Features::resetPasswords()), 'Password updates are not enabled.');
+
     it('can request reset password link', function (): void {
         Notification::fake();
 
