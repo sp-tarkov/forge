@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
 use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Http\Middleware\AnnounceSanctumDeprecation;
@@ -66,7 +67,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // TEMPORARY
         $exceptions->render(function (Throwable $e, Request $request): void {
-            if (! $e instanceof Symfony\Component\HttpKernel\Exception\HttpException) {
+            if (! $e instanceof HttpException) {
                 return;
             }
 
