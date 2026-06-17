@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Contracts\Broadcasting\Broadcaster;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 /**
@@ -101,6 +102,7 @@ it('does not crash typing or read broadcasts when broadcasting fails', function 
 it('logs a warning when a chat broadcast fails', function (): void {
     useFailingBroadcaster();
 
+    Notification::fake();
     Log::spy();
 
     $user1 = User::factory()->create();
