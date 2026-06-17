@@ -134,6 +134,15 @@ final class ProcessChatMessageNotification implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
+        // TEMPORARY
+        if ($exception instanceof Throwable) {
+            @file_put_contents(
+                storage_path('logs/laravel.log'),
+                sprintf("[JOB-DEBUG-7b3c] %s: %s\n%s\n\n", $exception::class, $exception->getMessage(), $exception->getTraceAsString()),
+                FILE_APPEND
+            );
+        }
+
         Log::error('ProcessChatMessageNotification job failed', [
             'message_id' => $this->message->id,
             'error' => $exception?->getMessage(),
