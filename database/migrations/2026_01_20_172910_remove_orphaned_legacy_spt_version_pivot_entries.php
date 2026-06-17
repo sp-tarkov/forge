@@ -7,7 +7,6 @@ use App\Services\SptVersionService;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 return new class extends Migration
 {
@@ -20,19 +19,10 @@ return new class extends Migration
             ->all();
 
         if (count($modVersionsWithLegacyConstraint) > 0) {
-            Log::info('[Migration] Found mod versions with legacy 0.0.0 constraint.', [
-                'count' => count($modVersionsWithLegacyConstraint),
-                'mod_version_ids' => $modVersionsWithLegacyConstraint,
-            ]);
-
             // Update the constraint to empty string
-            $updatedCount = DB::table('mod_versions')
+            DB::table('mod_versions')
                 ->where('spt_version_constraint', '0.0.0')
                 ->update(['spt_version_constraint' => '']);
-
-            Log::info('[Migration] Updated mod versions with legacy 0.0.0 constraint to empty string.', [
-                'updated_count' => $updatedCount,
-            ]);
         }
 
         // Find all pivot entries linked to 0.0.0 SPT version
@@ -45,27 +35,17 @@ return new class extends Migration
         $modVersionIds = [];
 
         if ($pivotEntries->isNotEmpty()) {
-            Log::info('[Migration] Found pivot entries linked to 0.0.0 SPT version.', [
-                'count' => $pivotEntries->count(),
-            ]);
-
             // Get unique mod version IDs for re-resolution
             $modVersionIds = $pivotEntries->pluck('mod_version_id')->unique()->all();
 
             // Delete all pivot entries linked to 0.0.0
-            $deletedCount = DB::table('mod_version_spt_version')
+            DB::table('mod_version_spt_version')
                 ->whereIn('spt_version_id', function (Builder $query): void {
                     $query->select('id')
                         ->from('spt_versions')
                         ->where('version', '0.0.0');
                 })
                 ->delete();
-
-            Log::info('[Migration] Deleted pivot entries linked to 0.0.0 SPT version.', [
-                'deleted_count' => $deletedCount,
-            ]);
-        } else {
-            Log::info('[Migration] No pivot entries linked to 0.0.0 SPT version found.');
         }
 
         // Re-resolve SPT versions for all affected mod versions
@@ -77,25 +57,14 @@ return new class extends Migration
                 $modVersion = ModVersion::query()->withoutGlobalScopes()->find($modVersionId);
                 if ($modVersion instanceof ModVersion) {
                     $sptVersionService->resolve($modVersion);
-                    Log::info('[Migration] Re-resolved SPT versions for mod version.', [
-                        'mod_version_id' => $modVersionId,
-                        'constraint' => $modVersion->spt_version_constraint,
-                        'resolved_count' => $modVersion->sptVersions()->count(),
-                    ]);
                 }
             }
         }
 
         // Delete the 0.0.0 SPT version record
-        $deleted = DB::table('spt_versions')
+        DB::table('spt_versions')
             ->where('version', '0.0.0')
             ->delete();
-
-        if ($deleted > 0) {
-            Log::info('[Migration] Deleted the legacy 0.0.0 SPT version record.');
-        } else {
-            Log::info('[Migration] No 0.0.0 SPT version record found to delete.');
-        }
     }
 
     public function down(): void
