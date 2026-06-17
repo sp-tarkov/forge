@@ -51,6 +51,7 @@ jobs:
         run: |
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate
+          php artisan passport:keys --force
           php artisan optimize
 
       - name: Build Front-end Assets
