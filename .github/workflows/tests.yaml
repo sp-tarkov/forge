@@ -104,6 +104,8 @@ jobs:
           php artisan optimize
 
       - name: Run Type Coverage
+        env:
+          FORK_MEM_PER_PROC: "1099511627776" # 1 TiB per-process budget forces Pokio to one fork worker on any runner.
         run: ./vendor/bin/pest --type-coverage --min=100
 
       - name: Display Laravel Log
