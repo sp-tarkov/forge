@@ -1,8 +1,29 @@
 name: forge
 icon: null
 processes:
-  Update Dependencies:
-    command: npm update && composer update
+  Logs:
+    command: php artisan pail -v
+    working_dir: null
+    auto_start: true
+    auto_restart: true
+    restart_when_changed: []
+    env: {}
+  Build Front-end:
+    command: npm run build
+    working_dir: null
+    auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Download R2 Assets:
+    command: php artisan app:download-r2-assets
+    working_dir: null
+    auto_start: true
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Update Test Shards:
+    command: ./vendor/bin/pest --parallel --update-shards
     working_dir: null
     auto_start: false
     auto_restart: false
@@ -15,8 +36,8 @@ processes:
     auto_restart: false
     restart_when_changed: []
     env: {}
-  Build Front-end:
-    command: npm run build
+  Update Dependencies:
+    command: npm update && composer update
     working_dir: null
     auto_start: false
     auto_restart: false
@@ -44,25 +65,11 @@ processes:
     - routes/**/*.php
     - database/**/*.php
     env: {}
-  Logs:
-    command: php artisan pail -v
-    working_dir: null
-    auto_start: true
-    auto_restart: true
-    restart_when_changed: []
-    env: {}
   Auto Build Front-end:
     command: npm run dev
     working_dir: null
     auto_start: true
     auto_restart: true
-    restart_when_changed: []
-    env: {}
-  Download R2 Assets:
-    command: php artisan app:download-r2-assets
-    working_dir: null
-    auto_start: true
-    auto_restart: false
     restart_when_changed: []
     env: {}
   Formatting:
