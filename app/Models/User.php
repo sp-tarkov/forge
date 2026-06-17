@@ -764,8 +764,8 @@ final class User extends Authenticatable implements Commentable, MustVerifyEmail
 
     /**
      * Alias retained from the transition era when both Sanctum's and Passport's `createToken()` methods coexisted.
-     * Now redundant -- `createToken()` IS the Sanctum path -- but kept temporarily so any call sites added during
-     * Phase 1 keep compiling. Remove once we are confident nothing references it.
+     * Now redundant (since `createToken()` IS the Sanctum path) but kept temporarily so any call sites added
+     * during Phase 1 keep compiling. Remove once we are confident nothing references it.
      *
      * @param  array<int, string>  $abilities
      */

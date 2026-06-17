@@ -20,7 +20,7 @@ Route::get('/ping', PingController::class)->name('api.v0.ping');
 
 // Authentication
 Route::post('/auth/login', [AuthController::class, 'login'])
-    ->middleware('throttle:5,1')
+    ->middleware(['throttle:5,1', 'api.sanctum_deprecated'])
     ->name('api.v0.auth.login');
 Route::post('/auth/register', [AuthController::class, 'register'])
     ->middleware('throttle:5,1')
@@ -34,18 +34,26 @@ Route::post('/auth/email/resend', [AuthController::class, 'resend'])
  * legacy Sanctum personal access token (sanctum guard). The `api.scope` middleware enforces the right Passport scope
  * for the endpoint and, for Sanctum-authenticated requests, requires the equivalent legacy ability. See ADR 0001.
  */
-Route::middleware(['throttle:api', 'auth:sanctum,api'])->group(function (): void {
+Route::middleware(['throttle:api', 'auth:sanctum,api', 'api.last_used'])->group(function (): void {
     // Auth & profile
     Route::get('/auth/user', [AuthController::class, 'user'])
         ->middleware('api.scope:profile:read')
         ->name('api.v0.auth.user');
+    // Token Abilities is a legacy-only concept: it returns the four-ability list that the deprecated PAT system
+    // uses. OAuth tokens carry scopes instead, which are inspected via the standard OAuth introspection mechanism.
     Route::get('/auth/abilities', [AuthController::class, 'abilities'])
-        ->middleware('api.scope:profile:read')
+        ->middleware(['api.scope:profile:read', 'api.sanctum_deprecated'])
         ->name('api.v0.auth.abilities');
 
-    // Any authenticated caller can revoke their own token; no scope required beyond proof of authentication.
-    Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.v0.auth.logout');
-    Route::post('/auth/logout/all', [AuthController::class, 'logoutAll'])->name('api.v0.auth.logout-all');
+    // Any authenticated caller can revoke their own token; no scope required beyond proof of authentication. Both
+    // endpoints carry the Sanctum deprecation headers because they overlap with OAuth's RFC 7009 revoke endpoint
+    // and will be removed alongside the PAT-issuing /auth/login route.
+    Route::post('/auth/logout', [AuthController::class, 'logout'])
+        ->middleware('api.sanctum_deprecated')
+        ->name('api.v0.auth.logout');
+    Route::post('/auth/logout/all', [AuthController::class, 'logoutAll'])
+        ->middleware('api.sanctum_deprecated')
+        ->name('api.v0.auth.logout-all');
 
     // Mods
     Route::middleware('api.scope:mods:read')->group(function (): void {

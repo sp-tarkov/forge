@@ -13,6 +13,7 @@ use App\Http\Resources\Api\V0\UserResource;
 use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\User;
 use App\Support\Api\V0\QueryBuilder\UserQueryBuilder;
+use Deprecated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -23,9 +24,9 @@ use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @group Authentication
- *
- * Endpoints for user authentication and token management.
+ * Endpoints fall into two Scribe groups: 'API Tokens' (the deprecated PAT flow) and 'Account' (generic
+ * account operations that work regardless of which authentication method the caller uses). The group is
+ * declared per-method so we can split them cleanly. See ADR 0001.
  */
 final class AuthController extends Controller
 {
@@ -34,6 +35,17 @@ final class AuthController extends Controller
      *
      * Authenticates a user with email and password and returns an API token. Users who registered via OAuth (and
      * haven't set a password) cannot use this endpoint.
+     *
+     * <aside style="background-color: #c97a7e; color: initial; text-shadow: 0 1px 0 #d18e91;"><strong>Deprecated.</strong> This endpoint issues the long-lived API tokens and
+     * will be removed on 2026-11-29. New integrations should use the OAuth 2.1 Authorization Code with PKCE flow at
+     * <code>/oauth/authorize</code> instead. Responses carry <code>Deprecation</code> and <code>Sunset</code> headers
+     * (RFC 8594 / RFC 9745).</aside>
+     *
+     * @group API Tokens
+     *
+     * <aside style="background-color: #c97a7e; color: initial; text-shadow: 0 1px 0 #d18e91;"><strong>This entire group is deprecated and will be removed on 2026-11-29.</strong> These
+     * legacy API-token endpoints remain only so existing integrations have time to migrate. Build anything new on the
+     * OAuth 2.1 Authorization Code with PKCE flow documented in the OAuth group above.</aside>
      *
      * @unauthenticated
      *
@@ -68,6 +80,7 @@ final class AuthController extends Controller
      *      }
      *  }
      */
+    #[Deprecated(message: '2026-05-28 Removed 2026-11-29. Use OAuth at /oauth/authorize. See ADR 0001.')]
     public function login(LoginRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -134,6 +147,12 @@ final class AuthController extends Controller
      *
      * Revokes the specific API token that was used to make this request.
      *
+     * <aside style="background-color: #c97a7e; color: initial; text-shadow: 0 1px 0 #d18e91;"><strong>Deprecated.</strong> Will be removed on 2026-11-29 alongside the rest of the
+     * legacy API-token endpoints. OAuth clients should use the Connected Apps page (or its forthcoming admin API) to
+     * revoke their own tokens.</aside>
+     *
+     * @group API Tokens
+     *
      * @authenticated
      *
      * @response status=200 scenario="Successful Logout"
@@ -150,6 +169,7 @@ final class AuthController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
+    #[Deprecated(message: '2026-05-28 Removed 2026-11-29.')]
     public function logout(Request $request): JsonResponse
     {
         /** @var User $user */
@@ -176,6 +196,12 @@ final class AuthController extends Controller
      *
      * Revokes all API tokens associated with the authenticated user.
      *
+     * <aside style="background-color: #c97a7e; color: initial; text-shadow: 0 1px 0 #d18e91;"><strong>Deprecated.</strong> Will be removed on 2026-11-29 alongside the rest of the
+     * legacy API-token endpoints. OAuth clients should use the Connected Apps page (or its forthcoming admin API) to
+     * revoke their own grants.</aside>
+     *
+     * @group API Tokens
+     *
      * @authenticated
      *
      * @response status=200 scenario="Successful Logout All"
@@ -192,6 +218,7 @@ final class AuthController extends Controller
      *      "message": "Unauthenticated."
      *  }
      */
+    #[Deprecated(message: '2026-05-28 Removed 2026-11-29.')]
     public function logoutAll(Request $request): JsonResponse
     {
         /** @var User $user */
@@ -204,7 +231,10 @@ final class AuthController extends Controller
     /**
      * Get Authenticated User
      *
-     * Retrieves the details for the currently authenticated user based on the provided API token.
+     * Retrieves the details for the currently authenticated user based on the provided bearer token. Works for
+     * tokens issued via OAuth 2.1 (the recommended path) and for API tokens.
+     *
+     * @group Account
      *
      * @authenticated
      *
@@ -270,6 +300,8 @@ final class AuthController extends Controller
      *
      * Creates a new user account. Email verification is still required.
      *
+     * @group Account
+     *
      * @unauthenticated
      *
      * @response status=201 scenario="Successful Registration"
@@ -332,6 +364,8 @@ final class AuthController extends Controller
      *
      * This endpoint is heavily rate-limited.
      *
+     * @group Account
+     *
      * @unauthenticated
      *
      * @response status=200 scenario="Request Accepted"
@@ -373,7 +407,13 @@ final class AuthController extends Controller
     /**
      * Token Abilities
      *
-     * Get the current token's abilities.
+     * Get the current token's abilities. Returns the ability list for API tokens; OAuth tokens
+     * should inspect their scopes via the standard OAuth introspection mechanism instead.
+     *
+     * <aside style="background-color: #c97a7e; color: initial; text-shadow: 0 1px 0 #d18e91;"><strong>Deprecated.</strong> Will be removed on 2026-11-29 alongside the rest of the
+     * legacy API-token endpoints.</aside>
+     *
+     * @group API Tokens
      *
      * @authenticated
      *

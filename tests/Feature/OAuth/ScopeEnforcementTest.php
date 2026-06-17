@@ -34,7 +34,7 @@ describe('Per-endpoint scope enforcement', function (): void {
         $user = User::factory()->create();
         Passport::actingAs($user, ['mods:read']);
 
-        // Even if no mods exist, the endpoint must respond with 200 -- not a scope rejection.
+        // Even if no mods exist, the endpoint must respond with 200, not a scope rejection.
         $response = $this->getJson('/api/v0/mods');
         expect($response->status())->not->toBe(Response::HTTP_FORBIDDEN);
     });

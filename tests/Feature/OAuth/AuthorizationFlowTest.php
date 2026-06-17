@@ -120,6 +120,83 @@ describe('Authorization Code + PKCE flow', function (): void {
         $response->assertSee('Only approve if you trust this application', escape: false);
     });
 
+    it('shows the client description and homepage on the consent screen', function (): void {
+        $owner = User::factory()->create();
+        $client = makePublicClient();
+        $client->forceFill([
+            'owner_type' => $owner->getMorphClass(),
+            'owner_id' => $owner->getKey(),
+            'description' => 'Syncs your installed mods across machines.',
+            'homepage_url' => 'https://launcher.example.com',
+        ])->save();
+
+        $user = User::factory()->create();
+        $pkce = makePkcePair();
+
+        $response = $this->actingAs($user)
+            ->get('/oauth/authorize?'.http_build_query([
+                'client_id' => $client->getKey(),
+                'redirect_uri' => 'http://127.0.0.1/callback',
+                'response_type' => 'code',
+                'scope' => 'profile:read',
+                'state' => 'xyz',
+                'code_challenge' => $pkce['challenge'],
+                'code_challenge_method' => 'S256',
+            ]));
+
+        $response->assertSuccessful();
+        $response->assertSee('Syncs your installed mods across machines.', escape: false);
+        $response->assertSee('https://launcher.example.com', escape: false);
+    });
+
+    it('escapes a malicious client name and description on the consent screen', function (): void {
+        $owner = User::factory()->create();
+        $client = makePublicClient();
+        $client->forceFill([
+            'owner_type' => $owner->getMorphClass(),
+            'owner_id' => $owner->getKey(),
+            'name' => 'Evil <script>alert(1)</script>',
+            'description' => 'Desc <img src=x onerror=alert(2)>',
+        ])->save();
+
+        $user = User::factory()->create();
+        $pkce = makePkcePair();
+
+        $response = $this->actingAs($user)
+            ->get('/oauth/authorize?'.http_build_query([
+                'client_id' => $client->getKey(),
+                'redirect_uri' => 'http://127.0.0.1/callback',
+                'response_type' => 'code',
+                'scope' => 'profile:read',
+                'state' => 'xyz',
+                'code_challenge' => $pkce['challenge'],
+                'code_challenge_method' => 'S256',
+            ]));
+
+        $response->assertSuccessful();
+        $response->assertDontSee('<script>alert(1)</script>', escape: false);
+        $response->assertDontSee('<img src=x onerror=alert(2)>', escape: false);
+    });
+
+    it('shows a no-extra-access message when the client requests no scopes', function (): void {
+        $client = makePublicClient();
+        $user = User::factory()->create();
+        $pkce = makePkcePair();
+
+        $response = $this->actingAs($user)
+            ->get('/oauth/authorize?'.http_build_query([
+                'client_id' => $client->getKey(),
+                'redirect_uri' => 'http://127.0.0.1/callback',
+                'response_type' => 'code',
+                'state' => 'xyz',
+                'code_challenge' => $pkce['challenge'],
+                'code_challenge_method' => 'S256',
+            ]));
+
+        $response->assertSuccessful();
+        $response->assertSee('No additional access to your account is requested.', escape: false);
+    });
+
     it('issues an authorization code that exchanges for an access token', function (): void {
         $client = makePublicClient();
         $user = User::factory()->create();
@@ -170,7 +247,11 @@ describe('Authorization Code + PKCE flow', function (): void {
         $tokenResponse->assertJsonStructure(['token_type', 'expires_in', 'access_token', 'refresh_token']);
 
         expect($tokenResponse->json('token_type'))->toBe('Bearer');
-        expect($tokenResponse->json('expires_in'))->toBe(3600);
+
+        // Allow a one-second drift: league/oauth2-server computes `expires_in` as `(expiry - now())` and the two
+        // `now()` calls (one when stamping the token, one when serializing the response) can land in different
+        // wall-clock seconds even with frozen Carbon, because the underlying interval math reads system time.
+        expect((int) $tokenResponse->json('expires_in'))->toBeGreaterThanOrEqual(3599)->toBeLessThanOrEqual(3600);
 
         // Auth code is single-use; a second exchange must fail.
         $secondAttempt = $this->postJson('/oauth/token', [

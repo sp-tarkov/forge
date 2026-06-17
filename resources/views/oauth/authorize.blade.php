@@ -28,10 +28,45 @@
                     </flux:badge>
                 @endif
 
-                <flux:text class="text-gray-600 dark:text-gray-400">
-                    {{ __('Signed in as') }}
-                    <span class="font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</span>
-                </flux:text>
+                @if (filled($client->description))
+                    <flux:text class="text-gray-600 dark:text-gray-400">
+                        {{ $client->description }}
+                    </flux:text>
+                @endif
+
+                @if (filled($client->homepage_url))
+                    <flux:text class="text-sm">
+                        <a
+                            href="{{ $client->homepage_url }}"
+                            target="_blank"
+                            rel="noopener nofollow"
+                            class="underline text-indigo-600 dark:text-indigo-400 break-all"
+                        >{{ $client->homepage_url }}</a>
+                    </flux:text>
+                @endif
+
+                <div class="space-y-1">
+                    <flux:text class="text-gray-600 dark:text-gray-400">
+                        {{ __('Signed in as') }}
+                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</span>
+                    </flux:text>
+
+                    <form
+                        method="POST"
+                        action="{{ route('logout') }}"
+                        x-data
+                    >
+                        @csrf
+                        <flux:button
+                            type="submit"
+                            variant="ghost"
+                            size="xs"
+                            x-on:click.prevent="$root.submit();"
+                        >
+                            {{ __('Not you? Sign out') }}
+                        </flux:button>
+                    </form>
+                </div>
             </div>
 
             <flux:separator />
@@ -42,7 +77,7 @@
                 </flux:heading>
 
                 <ul class="mt-3 space-y-2">
-                    @foreach ($scopes as $scope)
+                    @forelse ($scopes as $scope)
                         <li class="flex items-start gap-2">
                             <flux:icon
                                 name="check"
@@ -53,7 +88,18 @@
                                 {{ $scope->description }}
                             </flux:text>
                         </li>
-                    @endforeach
+                    @empty
+                        <li class="flex items-start gap-2">
+                            <flux:icon
+                                name="check"
+                                variant="mini"
+                                class="mt-0.5 text-emerald-500 shrink-0"
+                            />
+                            <flux:text class="text-gray-700 dark:text-gray-300">
+                                {{ __('Sign you in and confirm your identity. No additional access to your account is requested.') }}
+                            </flux:text>
+                        </li>
+                    @endforelse
                 </ul>
             </div>
 
@@ -95,6 +141,14 @@
                         value="{{ $authToken }}"
                     />
 
+                    @if (is_string($request->device_name) && $request->device_name !== '')
+                        <input
+                            type="hidden"
+                            name="device_name"
+                            value="{{ $request->device_name }}"
+                        />
+                    @endif
+
                     <flux:button
                         type="submit"
                         variant="primary"
@@ -130,6 +184,14 @@
                         name="auth_token"
                         value="{{ $authToken }}"
                     />
+
+                    @if (is_string($request->device_name) && $request->device_name !== '')
+                        <input
+                            type="hidden"
+                            name="device_name"
+                            value="{{ $request->device_name }}"
+                        />
+                    @endif
 
                     <flux:button
                         type="submit"

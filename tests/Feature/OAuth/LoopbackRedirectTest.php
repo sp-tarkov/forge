@@ -32,7 +32,7 @@ describe('Loopback redirect URI handling (RFC 8252)', function (): void {
                 'code_challenge_method' => 'S256',
             ]));
 
-        // The consent screen renders -- meaning Passport accepted the differing-port redirect_uri.
+        // The consent screen renders, meaning Passport accepted the differing-port redirect_uri.
         $response->assertSuccessful();
         $response->assertSee('Loopback Test');
     });

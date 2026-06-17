@@ -254,6 +254,11 @@
                                                 href="{{ route('admin.file-verification') }}"
                                                 wire:navigate
                                             >{{ __('File Verification') }}</flux:navmenu.item>
+                                            <flux:navmenu.item
+                                                icon="cube"
+                                                href="{{ route('admin.oauth-clients') }}"
+                                                wire:navigate
+                                            >{{ __('OAuth Clients') }}</flux:navmenu.item>
                                         @endif
                                     </flux:navmenu>
                                 </flux:dropdown>
@@ -317,10 +322,24 @@
 
                                 <flux:navmenu.separator />
                                 <flux:navmenu.item
+                                    icon="book-open"
+                                    href="/docs/index.html"
+                                >{{ __('API Documentation') }}</flux:navmenu.item>
+                                <flux:navmenu.item
                                     icon="key"
                                     href="{{ route('api-tokens.index') }}"
                                     wire:navigate
                                 >{{ __('API Tokens') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    icon="cube"
+                                    href="{{ route('oauth.developer-portal') }}"
+                                    wire:navigate
+                                >{{ __('OAuth Apps') }}</flux:navmenu.item>
+                                <flux:navmenu.item
+                                    icon="shield-check"
+                                    href="{{ route('oauth.connected-apps') }}"
+                                    wire:navigate
+                                >{{ __('Connected Apps') }}</flux:navmenu.item>
 
                                 {{-- Logout --}}
                                 <flux:navmenu.separator />
@@ -513,6 +532,12 @@
                             {{ __('My Lists') }}
                         </span>
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link href="/docs/index.html">
+                        <span class="flex items-center gap-2">
+                            <flux:icon.book-open class="h-5 w-5" />
+                            {{ __('API Documentation') }}
+                        </span>
+                    </x-responsive-nav-link>
                     <x-responsive-nav-link
                         href="{{ route('api-tokens.index') }}"
                         :active="request()->routeIs('api-tokens.index')"
@@ -520,6 +545,24 @@
                         <span class="flex items-center gap-2">
                             <flux:icon.key class="h-5 w-5" />
                             {{ __('API Tokens') }}
+                        </span>
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('oauth.developer-portal') }}"
+                        :active="request()->routeIs('oauth.developer-portal')"
+                    >
+                        <span class="flex items-center gap-2">
+                            <flux:icon.cube class="h-5 w-5" />
+                            {{ __('OAuth Apps') }}
+                        </span>
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link
+                        href="{{ route('oauth.connected-apps') }}"
+                        :active="request()->routeIs('oauth.connected-apps')"
+                    >
+                        <span class="flex items-center gap-2">
+                            <flux:icon.shield-check class="h-5 w-5" />
+                            {{ __('Connected Apps') }}
                         </span>
                     </x-responsive-nav-link>
                     {{-- Logout --}}

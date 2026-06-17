@@ -119,6 +119,8 @@ Route::middleware('auth.banned')->group(function (): void {
         // Profile routes
         Route::get('/user/profile', fn (): Factory|View => view('profile.show'))->name('profile.show');
         Route::get('/user/api-tokens', fn (): Factory|View => view('api.index'))->name('api-tokens.index');
+        Route::get('/user/oauth-apps', fn (): Factory|View => view('oauth.developer-portal'))->name('oauth.developer-portal');
+        Route::get('/user/connected-apps', fn (): Factory|View => view('oauth.connected-apps'))->name('oauth.connected-apps');
 
         Route::livewire('/mod/guidelines', 'pages::mod.guidelines-acknowledgment')
             ->name('mod.guidelines');
@@ -196,6 +198,7 @@ Route::middleware('auth.banned')->group(function (): void {
             Route::livewire('/admin/role-management', 'pages::admin.role-management')->name('admin.role-management');
             Route::livewire('/admin/spt-versions', 'pages::admin.spt-version-management')->name('admin.spt-versions');
             Route::livewire('/admin/file-verification', 'pages::admin.file-verification')->name('admin.file-verification');
+            Route::livewire('/admin/oauth-clients', 'pages::admin.oauth-client-moderation')->name('admin.oauth-clients');
         });
     });
 
