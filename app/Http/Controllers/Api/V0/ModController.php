@@ -115,8 +115,8 @@ final class ModController extends Controller
      *          }
      *      ],
      *      "links": {
-     *          "first": "https://forge.test/api/v0/mods?page=1",
-     *          "last": "https://forge.test/api/v0/mods?page=1",
+     *          "first": "https://forge.sp-tarkov.com/api/v0/mods?page=1",
+     *          "last": "https://forge.sp-tarkov.com/api/v0/mods?page=1",
      *          "prev": null,
      *          "next": null
      *      },
@@ -131,7 +131,7 @@ final class ModController extends Controller
      *                  "active": false
      *              },
      *              {
-     *                  "url": "https://forge.test/api/v0/mods?page=1",
+     *                  "url": "https://forge.sp-tarkov.com/api/v0/mods?page=1",
      *                  "label": "1",
      *                  "active": true
      *              },
@@ -141,7 +141,7 @@ final class ModController extends Controller
      *                  "active": false
      *              }
      *          ],
-     *          "path": "https://forge.test/api/v0/mods",
+     *          "path": "https://forge.sp-tarkov.com/api/v0/mods",
      *          "per_page": 12,
      *          "to": 2,
      *          "total": 2
@@ -191,8 +191,8 @@ final class ModController extends Controller
      *          }
      *      ],
      *      "links": {
-     *          "first": "https://forge.test/api/v0/mods?include=category&page=1",
-     *          "last": "https://forge.test/api/v0/mods?include=category&page=1",
+     *          "first": "https://forge.sp-tarkov.com/api/v0/mods?include=category&page=1",
+     *          "last": "https://forge.sp-tarkov.com/api/v0/mods?include=category&page=1",
      *          "prev": null,
      *          "next": null
      *      },
@@ -207,7 +207,7 @@ final class ModController extends Controller
      *                  "active": false
      *              },
      *              {
-     *                  "url": "https://forge.test/api/v0/mods?include=category&page=1",
+     *                  "url": "https://forge.sp-tarkov.com/api/v0/mods?include=category&page=1",
      *                  "label": "1",
      *                  "active": true
      *              },
@@ -217,7 +217,7 @@ final class ModController extends Controller
      *                  "active": false
      *              }
      *          ],
-     *          "path": "https://forge.test/api/v0/mods",
+     *          "path": "https://forge.sp-tarkov.com/api/v0/mods",
      *          "per_page": 12,
      *          "to": 1,
      *          "total": 1
@@ -282,8 +282,8 @@ final class ModController extends Controller
      *          }
      *      ],
      *      "links": {
-     *          "first": "https://forge.test/api/v0/mods?include=versions,license&page=1",
-     *          "last": "https://forge.test/api/v0/mods?include=versions,license&page=1",
+     *          "first": "https://forge.sp-tarkov.com/api/v0/mods?include=versions,license&page=1",
+     *          "last": "https://forge.sp-tarkov.com/api/v0/mods?include=versions,license&page=1",
      *          "prev": null,
      *          "next": null
      *      },
@@ -298,7 +298,7 @@ final class ModController extends Controller
      *                  "active": false
      *              },
      *              {
-     *                  "url": "https://forge.test/api/v0/mods?include=versions,license&page=1",
+     *                  "url": "https://forge.sp-tarkov.com/api/v0/mods?include=versions,license&page=1",
      *                  "label": "1",
      *                  "active": true
      *              },
@@ -308,7 +308,7 @@ final class ModController extends Controller
      *                  "active": false
      *              }
      *          ],
-     *          "path": "https://forge.test/api/v0/mods",
+     *          "path": "https://forge.sp-tarkov.com/api/v0/mods",
      *          "per_page": 12,
      *          "to": 1,
      *          "total": 1

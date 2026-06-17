@@ -62,6 +62,9 @@ final class SocialiteController extends Controller
 
         Auth::login($user, remember: true);
 
-        return to_route('dashboard');
+        // Honour `redirect()->guest()`'s intended-URL session so OAuth flows that started at `/oauth/authorize` (and
+        // bounced the unauthenticated user through Discord) land back on the authorization screen with their query
+        // params intact. Falls back to the dashboard for plain logins. See ADR 0001.
+        return redirect()->intended(route('dashboard'));
     }
 }
