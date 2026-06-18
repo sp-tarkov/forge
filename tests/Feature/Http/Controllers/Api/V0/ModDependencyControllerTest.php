@@ -73,6 +73,17 @@ describe('resolve', function (): void {
                 ]);
         });
 
+        it('returns a 400 instead of a 500 when mods is provided as an array', function (): void {
+            $response = $this->getJson('/api/v0/mods/dependencies?mods[]=5:1.2.0&mods[]=6:1.0.0');
+
+            $response->assertBadRequest()
+                ->assertJson([
+                    'success' => false,
+                    'code' => 'VALIDATION_FAILED',
+                    'message' => "Invalid format for 'mods' parameter. Expected format: 'identifier:version,identifier:version' where identifier is either a mod_id (numeric) or GUID (string)",
+                ]);
+        });
+
         it('returns empty array when non-existent mod:version pairs are provided', function (): void {
             $response = $this->getJson('/api/v0/mods/dependencies?mods=99999:1.0.0,88888:2.0.0');
 
