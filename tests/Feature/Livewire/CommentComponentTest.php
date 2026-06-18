@@ -31,9 +31,7 @@ function createPublishedMod(): Mod
     $user = User::factory()->create();
     SptVersion::query()->firstOrCreate(['version' => '1.0.0'], SptVersion::factory()->make(['version' => '1.0.0'])->toArray());
 
-    $mod = Mod::factory()->create(['published_at' => now()->subHour()]);
-    $mod->owner()->associate($user);
-    $mod->save();
+    $mod = Mod::factory()->create(['published_at' => now()->subHour(), 'owner_id' => $user->id]);
 
     ModVersion::factory()->recycle($mod)->create(['spt_version_constraint' => '1.0.0']);
 
@@ -3803,14 +3801,6 @@ describe('Disabled', function (): void {
         Queue::fake(); // Prevent spam check jobs from running
 
         $this->user = User::factory()->create();
-        $this->otherUser = User::factory()->create();
-
-        // Create moderator with proper role
-        $this->moderator = User::factory()->moderator()->create();
-
-        // Create admin with proper role
-        $this->admin = User::factory()->admin()->create();
-
         $this->license = License::factory()->create();
         $this->mod = Mod::factory()->create([
             'owner_id' => $this->user->id,
@@ -3844,6 +3834,10 @@ describe('Disabled', function (): void {
 
     describe('comment policy with disabled comments', function (): void {
         beforeEach(function (): void {
+            $this->otherUser = User::factory()->create();
+            $this->moderator = User::factory()->moderator()->create();
+            $this->admin = User::factory()->admin()->create();
+
             $this->comment = Comment::factory()->for($this->mod, 'commentable')->create([
                 'user_id' => $this->otherUser->id,
             ]);
@@ -4029,6 +4023,10 @@ describe('Disabled', function (): void {
 
     describe('mod show page comment visibility', function (): void {
         beforeEach(function (): void {
+            $this->otherUser = User::factory()->create();
+            $this->moderator = User::factory()->moderator()->create();
+            $this->admin = User::factory()->admin()->create();
+
             $this->comment = Comment::factory()->for($this->mod, 'commentable')->create([
                 'user_id' => $this->otherUser->id,
             ]);
