@@ -91,7 +91,7 @@ final class AppServiceProvider extends ServiceProvider
             'notification-row/dashboard', 'notification-row/nav',
         ];
         foreach ($blazeIncompatible as $component) {
-            $blaze->in(resource_path("views/components/{$component}.blade.php"), compile: false);
+            $blaze->in(resource_path(sprintf('views/components/%s.blade.php', $component)), compile: false);
         }
 
         // Add auth.banned to Livewire persistent middleware to ensure banned users are blocked on all requests.
