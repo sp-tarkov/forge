@@ -384,6 +384,15 @@ abstract class AbstractQueryBuilder
         }
 
         foreach ($this->filters as $filter => $value) {
+            // Filter values arrive as comma-separated strings; bracket-array syntax such as filter[id][]=1 or
+            // filter[id][neq]=2 yields an array that the string-typed filter methods cannot accept. Reject it as a
+            // client error rather than letting it surface as a 500 TypeError.
+            if ($value !== null && ! is_string($value)) {
+                throw new InvalidQueryException(
+                    sprintf("The '%s' filter must be a single value. Provide multiple values as a comma-separated string (e.g. filter[%s]=value1,value2).", $filter, $filter)
+                );
+            }
+
             $method = $allowedFilters[$filter];
             $this->{$method}($this->builder, $value);
         }

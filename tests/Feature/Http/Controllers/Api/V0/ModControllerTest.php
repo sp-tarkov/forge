@@ -436,6 +436,23 @@ describe('index', function (): void {
         'angle bracket junk' => '@771305116467855421>',
     ]);
 
+    it('returns a 400 instead of a 500 when a filter is given an array value', function (string $query, string $filter): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create();
+
+        $response = $this->withToken($this->token)->getJson('/api/v0/mods?'.$query);
+
+        $response->assertBadRequest()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('code', 'INVALID_QUERY_PARAMETER')
+            ->assertJsonFragment([
+                'message' => sprintf("The '%s' filter must be a single value. Provide multiple values as a comma-separated string (e.g. filter[%s]=value1,value2).", $filter, $filter),
+            ]);
+    })->with([
+        'nested operator array on id' => ['filter[id][neq]=236', 'id'],
+        'list array on spt_version' => ['filter[spt_version][]=4.0.13&filter[spt_version][]=4.0.7', 'spt_version'],
+    ]);
+
     it('returns only the fields requested', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
