@@ -21,6 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup PHP
+        uses: ./.github/action/php
+        with:
+          php-version: 8.5
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
       - name: Setup Node.js
         uses: ./.github/action/node
 
