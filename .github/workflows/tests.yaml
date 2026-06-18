@@ -9,15 +9,47 @@ env:
   COMPOSER_AUTH: '{"http-basic": {"composer.fluxui.dev": {"username": "${{ secrets.FLUX_USERNAME }}", "password": "${{ secrets.FLUX_LICENSE_KEY }}"}}}'
 
 jobs:
-  tests:
+  # Builds the front-end assets a single time and shares them with every downstream test job. Both the feature
+  # shards and the browser job need the Vite manifest, so building once and downloading the artifact avoids
+  # rebuilding the same bundle on every runner.
+  build-assets:
     runs-on: ubuntu-latest
 
-    name: Tests (Shard ${{ matrix.shard }}/6)
+    name: Build Assets
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: ./.github/action/node
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Front-end Assets
+        run: npm run build
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-assets
+          path: public/build
+          retention-days: 1
+
+  # The lightweight feature/unit shards. These never touch a browser, so they skip Playwright, Chromium, Reverb,
+  # and Node entirely: they only need PHP, Composer, MySQL, and the prebuilt asset manifest.
+  feature:
+    runs-on: ubuntu-latest
+
+    name: Feature (Shard ${{ matrix.shard }}/4)
+
+    needs: build-assets
 
     strategy:
       fail-fast: false
       matrix:
-        shard: [ 1, 2, 3, 4, 5, 6 ]
+        shard: [ 1, 2, 3, 4 ]
 
     services:
       mysql:
@@ -33,21 +65,82 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup
-        uses: ./.github/action/setup
+      - name: Setup PHP
+        uses: ./.github/action/php
         with:
           php-version: 8.5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
 
       - name: Install Composer Dependencies
         run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Install NPM dependencies
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: build-assets
+          path: public/build
+
+      - name: Prepare Laravel Environment
+        run: |
+          php -r "file_exists('.env') || copy('.env.ci', '.env');"
+          php artisan key:generate
+          php artisan passport:keys --force
+          php artisan optimize
+
+      - name: Run Database Migrations
+        run: php artisan migrate
+
+      - name: Link Storage
+        run: php artisan storage:link
+
+      - name: Run Tests
+        run: ./vendor/bin/pest --ci --parallel --testsuite=Feature,Unit --shard=${{ matrix.shard }}/4
+
+      - name: Display Laravel Log
+        if: failure()
+        run: cat storage/logs/laravel.log
+
+  # The heavyweight browser job. This is the only place that pays the Playwright/Chromium install cost and runs
+  # Reverb, because only the browser suite drives a real browser against the served application.
+  browser:
+    runs-on: ubuntu-latest
+
+    name: Browser
+
+    needs: build-assets
+
+    services:
+      mysql:
+        image: mysql:8.3
+        ports:
+          - 33306:3306
+        env:
+          MYSQL_DATABASE: test
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: ./.github/action/php
+        with:
+          php-version: 8.5
+
+      - name: Setup Node.js
+        uses: ./.github/action/node
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Install NPM Dependencies
         run: npm ci
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: build-assets
+          path: public/build
 
       - name: Cache Playwright Browsers
         id: playwright-cache
@@ -71,9 +164,6 @@ jobs:
           php artisan passport:keys --force
           php artisan optimize
 
-      - name: Build Front-end Assets
-        run: npm run build
-
       - name: Start Reverb Server
         run: php artisan reverb:start --host=127.0.0.1 --port=8080 &
 
@@ -84,13 +174,13 @@ jobs:
         run: php artisan storage:link
 
       - name: Run Tests
-        run: ./vendor/bin/pest --ci --parallel --shard=${{ matrix.shard }}/6
+        run: ./vendor/bin/pest --ci --parallel --testsuite=Browser
 
       - name: Upload Screenshots
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: screenshots-shard-${{ matrix.shard }}
+          name: screenshots
           path: tests/Browser/screenshots
 
       - name: Display Laravel Log
@@ -102,15 +192,15 @@ jobs:
 
     name: Tests Complete
 
-    needs: tests
+    needs: [ feature, browser ]
 
     if: ${{ always() }}
 
     steps:
-      - name: Verify All Shards Passed
-        if: ${{ needs.tests.result != 'success' }}
+      - name: Verify All Test Jobs Passed
+        if: ${{ needs.feature.result != 'success' || needs.browser.result != 'success' }}
         run: |
-          echo "One or more test shards did not pass: ${{ needs.tests.result }}"
+          echo "Feature: ${{ needs.feature.result }} | Browser: ${{ needs.browser.result }}"
           exit 1
 
   type-coverage:
@@ -122,8 +212,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup
-        uses: ./.github/action/setup
+      - name: Setup PHP
+        uses: ./.github/action/php
         with:
           php-version: 8.5
 
