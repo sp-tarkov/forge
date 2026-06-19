@@ -44,8 +44,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.banned' => AuthBanned::class,
         ]);
 
-        // Trust proxies to get real client IP addresses
-        $middleware->trustProxies(at: '*');
+        // Trust only the local Nginx reverse proxy (loopback). Nginx restores the real client IP from Cloudflare's
+        // CF-Connecting-IP header before forwarding, so the app reads the true client without trusting arbitrary
+        // X-Forwarded-For values sent on direct-to-origin requests.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
 
         // Protect against spam on the web middleware group.
         $middleware->web(append: [

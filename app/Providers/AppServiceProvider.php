@@ -57,8 +57,9 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Define the API rate limiter.
-        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip()));
+        // Define the API rate limiter. The v0 API is open (unauthenticated), so requests are throttled per client IP.
+        // Cloudflare is the primary limiter at the edge; this is a deliberately lax origin-side fallback (see config/api.php).
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(config()->integer('api.rate_limiting.per_minute'))->by($request->ip()));
 
         // Define the external API rate limiter for queue jobs that call external services.
         RateLimiter::for('external-api', fn () => Limit::perMinute(30));
