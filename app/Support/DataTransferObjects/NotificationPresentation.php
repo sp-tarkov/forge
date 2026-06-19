@@ -10,6 +10,7 @@ final readonly class NotificationPresentation
 {
     /**
      * @param  list<HeadlineSegment>  $headline
+     * @param  list<NotificationDetail>  $details
      */
     public function __construct(
         public string $iconName,
@@ -19,5 +20,6 @@ final readonly class NotificationPresentation
         public ?string $preview = null,
         public bool $previewQuoted = true,
         public ?string $url = null,
+        public array $details = [],
     ) {}
 }

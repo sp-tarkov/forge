@@ -7,7 +7,7 @@ namespace App\Support\Api\V0\QueryBuilder;
 use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -220,6 +220,8 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
      * Filter by version.
      *
      * @param  Builder<ModVersion>  $query
+     *
+     * @throws InvalidQueryException
      */
     protected function filterByVersion(Builder $query, ?string $semverConstraint): void
     {
@@ -227,8 +229,12 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
+        if (! VersionMatcher::isValidConstraint($semverConstraint)) {
+            throw new InvalidQueryException(sprintf('Invalid version filter: %s. Provide a valid semver version or constraint.', $semverConstraint));
+        }
+
         $allVersionNumbers = ModVersion::versionNumbers($this->modId);
-        $compatibleVersions = Semver::satisfiedBy($allVersionNumbers, $semverConstraint);
+        $compatibleVersions = VersionMatcher::satisfiedBy($allVersionNumbers, $semverConstraint);
         $query->whereIn('mod_versions.version', $compatibleVersions);
     }
 
@@ -309,6 +315,8 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
      * Filter by SPT version.
      *
      * @param  Builder<ModVersion>  $query
+     *
+     * @throws InvalidQueryException
      */
     protected function filterBySptVersion(Builder $query, ?string $version): void
     {
@@ -316,8 +324,12 @@ final class ModVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
+        if (! VersionMatcher::isValidConstraint($version)) {
+            throw new InvalidQueryException(sprintf('Invalid spt_version filter: %s. Provide a valid semver version or constraint.', $version));
+        }
+
         $validSptVersions = SptVersion::allValidVersions();
-        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+        $compatibleSptVersions = VersionMatcher::satisfiedBy($validSptVersions, $version);
 
         $this->applySptVersionCondition($query, $compatibleSptVersions);
     }

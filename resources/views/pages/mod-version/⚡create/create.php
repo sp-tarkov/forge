@@ -15,8 +15,7 @@ use App\Models\SptVersion;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
-use App\Support\Version;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
@@ -166,11 +165,11 @@ new #[Layout('layouts::base')] class extends Component
 
         try {
             $validSptVersions = SptVersion::allValidVersions(includeUnpublished: true);
-            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
+            $compatibleSptVersions = VersionMatcher::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
 
             // Check if any compatible version is >= 4.0.0
             foreach ($compatibleSptVersions as $version) {
-                if (Semver::satisfies($version, '>=4.0.0')) {
+                if (VersionMatcher::satisfies($version, '>=4.0.0')) {
                     return true;
                 }
             }
@@ -198,7 +197,7 @@ new #[Layout('layouts::base')] class extends Component
 
         try {
             $validSptVersions = SptVersion::allValidVersions(includeUnpublished: true);
-            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
+            $compatibleSptVersions = VersionMatcher::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
 
             // Get the matching versions
             $this->matchingSptVersions = SptVersion::query()
@@ -699,7 +698,7 @@ new #[Layout('layouts::base')] class extends Component
                 ->versions()
                 ->withoutGlobalScope(PublishedScope::class)
                 ->get()
-                ->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
+                ->filter(fn (ModVersion $version): bool => VersionMatcher::satisfies($version->version, $dependency['constraint']))
                 ->map(
                     fn (ModVersion $version): array => [
                         'id' => $version->id,

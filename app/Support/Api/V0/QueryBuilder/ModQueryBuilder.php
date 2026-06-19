@@ -8,11 +8,10 @@ use App\Enums\FikaCompatibility;
 use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Models\Mod;
 use App\Models\SptVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Override;
-use UnexpectedValueException;
 
 /**
  * @extends AbstractQueryBuilder<Mod>
@@ -429,13 +428,12 @@ final class ModQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
-        $validSptVersions = SptVersion::allValidVersions();
-
-        try {
-            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
-        } catch (UnexpectedValueException $unexpectedValueException) {
-            throw new InvalidQueryException(sprintf('Invalid spt_version filter: %s. Provide a valid semver version or constraint.', $version), $unexpectedValueException->getCode(), previous: $unexpectedValueException);
+        if (! VersionMatcher::isValidConstraint($version)) {
+            throw new InvalidQueryException(sprintf('Invalid spt_version filter: %s. Provide a valid semver version or constraint.', $version));
         }
+
+        $validSptVersions = SptVersion::allValidVersions();
+        $compatibleSptVersions = VersionMatcher::satisfiedBy($validSptVersions, $version);
 
         $this->applySptVersionCondition($query, $compatibleSptVersions);
     }

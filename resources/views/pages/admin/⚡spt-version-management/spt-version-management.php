@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Exceptions\InvalidVersionNumberException;
 use App\Jobs\UpdateGitHubSptVersionsJob;
 use App\Models\Scopes\PublishedSptVersionScope;
 use App\Models\SptVersion;
-use App\Support\Version;
+use App\Rules\Semver as SemverRule;
 use Carbon\CarbonInterface;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
@@ -161,15 +160,9 @@ new #[Layout('layouts::base')] #[Title('SPT Version Management - The Forge')] cl
                 'required',
                 'string',
                 'max:50',
+                new SemverRule(),
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    $versionString = is_string($value) ? $value : '';
-                    try {
-                        new Version($versionString);
-                    } catch (InvalidVersionNumberException) {
-                        $fail('The version format is invalid. Use semantic versioning (e.g., 3.10.0).');
-                    }
-
-                    // Check uniqueness
+                    // Ensure the version is unique across SPT versions, including unpublished ones.
                     $query = SptVersion::query()->withoutGlobalScope(PublishedSptVersionScope::class)->where('version', $value);
                     if ($this->selectedVersionId) {
                         $query->where('id', '!=', $this->selectedVersionId);

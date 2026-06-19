@@ -66,4 +66,27 @@
             </div>
         </div>
     </div>
+
+    @if ($presentation->details !== [])
+        <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-3 {{ !$notification->read_at ? 'pl-5' : '' }}">
+            <ul class="space-y-2">
+                @foreach ($presentation->details as $detail)
+                    <li class="text-sm">
+                        @if ($detail->url !== null)
+                            <a
+                                href="{{ $detail->url }}"
+                                wire:navigate
+                                class="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                            >{{ $detail->label }}</a>
+                        @else
+                            <span class="font-medium text-gray-900 dark:text-white">{{ $detail->label }}</span>
+                        @endif
+                        @if ($detail->note !== null)
+                            <span class="mt-0.5 block text-gray-500 dark:text-gray-400">{{ $detail->note }}</span>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 </div>

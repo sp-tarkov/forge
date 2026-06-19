@@ -11,7 +11,7 @@ use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Services\DependencyService;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -256,13 +256,13 @@ final class ModDependencyController extends Controller
                 $allVersions = $modVersions->pluck('resource.latestCompatibleVersion.version')->filter();
 
                 // Find versions that satisfy ALL constraints
-                $satisfyingVersions = $allVersions->filter(fn (mixed $version): bool => is_string($version) && $constraints->every(fn (string $constraint) => Semver::satisfies($version, $constraint)));
+                $satisfyingVersions = $allVersions->filter(fn (mixed $version): bool => is_string($version) && $constraints->every(fn (string $constraint): bool => VersionMatcher::satisfies($version, $constraint)));
 
                 if ($satisfyingVersions->isNotEmpty()) {
                     // Find the highest version that satisfies all constraints (no conflict)
                     /** @var array<string> $versionStrings */
                     $versionStrings = $satisfyingVersions->all();
-                    $sortedVersions = Semver::rsort($versionStrings);
+                    $sortedVersions = VersionMatcher::rsort($versionStrings);
                     $highestSatisfyingVersion = $sortedVersions[0];
 
                     // Keep only the mod resource with this version

@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Contracts\DependencyResolver;
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 
 final class DependencyVersionService implements DependencyResolver
 {
@@ -53,7 +53,7 @@ final class DependencyVersionService implements DependencyResolver
                 : $dependency->dependentMod->versions()->get();
 
             // Filter the dependent mod versions to find the ones that satisfy the dependency constraint.
-            $matchedVersions = $dependentModVersions->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency->constraint));
+            $matchedVersions = $dependentModVersions->filter(fn (ModVersion $version): bool => VersionMatcher::satisfies($version->version, $dependency->constraint));
 
             // Map the matched versions to the sync data.
             foreach ($matchedVersions as $matchedVersion) {

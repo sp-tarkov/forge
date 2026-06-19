@@ -150,6 +150,56 @@ describe('Mod Version Create Form', function (): void {
             expect($resolvedVersionIds)->not->toContain($dependencyVersion2->id); // ~1.0.0 does not match 1.1.0
             expect($resolvedVersionIds)->toContain($dependencyVersion3->id); // ^2.0.0 matches 2.0.0
         });
+
+        it('finds matching dependency versions when the dependent mod has an unparsable version string', function (): void {
+            // Regression: a dependent mod (e.g. SAIN) had a version row like "4.4.1-FikaEnhanced" whose suffix is not a
+            // valid SemVer stability modifier. Composer's parser threw on it, and because matching ran over the whole
+            // version list at once, that single bad row made every constraint report "No matching versions found".
+            $user = User::factory()->withMfa()->create();
+            $this->actingAs($user);
+
+            $mod = Mod::factory()->create(['owner_id' => $user->id]);
+
+            $dependencyMod = Mod::factory()->create();
+            $matchingVersion = ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '4.4.3',
+            ]);
+            // The malformed version row that previously poisoned the entire comparison.
+            ModVersion::factory()->create([
+                'mod_id' => $dependencyMod->id,
+                'version' => '4.4.1-FikaEnhanced',
+            ]);
+
+            $component = Livewire::test('pages::mod-version.create', ['mod' => $mod])
+                ->set('honeypotData.nameFieldName', 'name')
+                ->set('honeypotData.validFromFieldName', 'valid_from')
+                ->set('honeypotData.encryptedValidFrom', encrypt(now()->timestamp))
+                ->set('version', '1.0.0')
+                ->set('description', 'Test version with a tricky dependency')
+                ->set('link', 'https://example.com/download.zip')
+                ->set('sptVersionConstraint', '~3.11.0')
+                ->set('virusTotalLinks.0.url', 'https://www.virustotal.com/test');
+
+            $component->call('addDependency');
+            $component->call('updateDependencyModId', 0, (string) $dependencyMod->id);
+            $component->call('updateDependencyConstraint', 0, '~4.4.3');
+
+            // The matching version must be surfaced rather than swallowed by the malformed sibling row.
+            $matching = $component->get('matchingDependencyVersions');
+            expect($matching[0])->toHaveCount(1)
+                ->and($matching[0][0]['version'])->toBe('4.4.3');
+
+            $component->call('save')
+                ->assertHasNoErrors()
+                ->assertRedirect();
+
+            $modVersion = ModVersion::query()->where('mod_id', $mod->id)->first();
+            $modVersion->load('dependenciesResolved');
+
+            $resolvedVersionIds = $modVersion->dependenciesResolved->pluck('id')->toArray();
+            expect($resolvedVersionIds)->toContain($matchingVersion->id);
+        });
     });
 
     describe('Dependency Management', function (): void {

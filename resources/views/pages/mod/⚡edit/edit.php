@@ -10,7 +10,7 @@ use App\Models\Mod;
 use App\Models\ModCategory;
 use App\Models\SourceCodeLink;
 use App\Models\SptVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -499,11 +499,11 @@ new #[Layout('layouts::base')] class extends Component
             $allSptVersions = SptVersion::allValidVersions();
 
             // Get versions that match the constraint
-            $matchingVersions = Semver::satisfiedBy($allSptVersions, $constraint);
+            $matchingVersions = VersionMatcher::satisfiedBy($allSptVersions, $constraint);
 
             // Check if any matching version is >= 4.0.0
             foreach ($matchingVersions as $version) {
-                if (Semver::satisfies($version, '>=4.0.0')) {
+                if (VersionMatcher::satisfies($version, '>=4.0.0')) {
                     return true;
                 }
             }
