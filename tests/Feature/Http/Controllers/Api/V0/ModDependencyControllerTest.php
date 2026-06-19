@@ -11,8 +11,6 @@ use App\Models\User;
 
 beforeEach(function (): void {
     $this->user = User::factory()->create();
-    $this->token = $this->user->createToken('test', ['read'])->plainTextToken;
-    $this->withHeader('Authorization', 'Bearer '.$this->token);
 });
 
 describe('resolve', function (): void {
@@ -164,23 +162,6 @@ describe('resolve', function (): void {
                 ->assertJson([
                     'success' => true,
                     'data' => [],
-                ]);
-        });
-    });
-
-    describe('authentication', function (): void {
-        it('requires authentication', function (): void {
-            // Create a fresh test without the beforeEach authentication
-            $this->refreshApplication();
-
-            $response = $this->withHeaders([
-                'Accept' => 'application/json',
-            ])->getJson('/api/v0/mods/dependencies?mods=1:1.0.0');
-
-            $response->assertUnauthorized()
-                ->assertJson([
-                    'success' => false,
-                    'code' => 'UNAUTHENTICATED',
                 ]);
         });
     });

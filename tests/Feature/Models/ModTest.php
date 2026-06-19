@@ -1977,7 +1977,6 @@ describe('Legacy Support', function (): void {
             $this->user = User::factory()->create([
                 'password' => Hash::make('password'),
             ]);
-            $this->token = $this->user->createToken('test-token')->plainTextToken;
 
             $this->sptVersion = SptVersion::factory()->create(['version' => '3.8.0']);
         });
@@ -2000,7 +1999,7 @@ describe('Legacy Support', function (): void {
             ]);
             $modernVersion->sptVersions()->sync($this->sptVersion->id);
 
-            $response = $this->withToken($this->token)->getJson('/api/v0/mods');
+            $response = $this->getJson('/api/v0/mods');
 
             $response->assertOk();
             $response->assertJsonCount(1, 'data');
@@ -2025,7 +2024,7 @@ describe('Legacy Support', function (): void {
             ]);
             $modernVersion->sptVersions()->sync($this->sptVersion->id);
 
-            $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[include_legacy]=true');
+            $response = $this->getJson('/api/v0/mods?filter[include_legacy]=true');
 
             $response->assertOk();
             $response->assertJsonCount(2, 'data');
@@ -2052,7 +2051,7 @@ describe('Legacy Support', function (): void {
             ]);
             $modernVersion->sptVersions()->sync($this->sptVersion->id);
 
-            $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[include_legacy]=false');
+            $response = $this->getJson('/api/v0/mods?filter[include_legacy]=false');
 
             $response->assertOk();
             $response->assertJsonCount(1, 'data');
@@ -2322,8 +2321,6 @@ describe('Cheat Notice', function (): void {
                 'password' => Hash::make('password'),
             ]);
 
-            $this->token = $this->user->createToken('test-token')->plainTextToken;
-
             SptVersion::factory()->state(['version' => '3.8.0'])->create();
         });
 
@@ -2333,7 +2330,7 @@ describe('Cheat Notice', function (): void {
                 ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
                 ->create();
 
-            $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d?fields=cheat_notice', $mod->id));
+            $response = $this->getJson(sprintf('/api/v0/mod/%d?fields=cheat_notice', $mod->id));
 
             $response->assertOk()
                 ->assertJsonPath('data.cheat_notice', true);
@@ -2344,7 +2341,7 @@ describe('Cheat Notice', function (): void {
                 ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
                 ->create();
 
-            $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d?fields=cheat_notice', $mod->id));
+            $response = $this->getJson(sprintf('/api/v0/mod/%d?fields=cheat_notice', $mod->id));
 
             $response->assertOk()
                 ->assertJsonPath('data.cheat_notice', false);
@@ -2360,7 +2357,7 @@ describe('Cheat Notice', function (): void {
                 ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
                 ->create(['cheat_notice' => false]);
 
-            $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[cheat_notice]=true');
+            $response = $this->getJson('/api/v0/mods?filter[cheat_notice]=true');
 
             $response->assertOk();
 
@@ -2379,7 +2376,7 @@ describe('Cheat Notice', function (): void {
                 ->hasVersions(1, ['spt_version_constraint' => '3.8.0'])
                 ->create(['cheat_notice' => false]);
 
-            $response = $this->withToken($this->token)->getJson('/api/v0/mods?filter[cheat_notice]=false');
+            $response = $this->getJson('/api/v0/mods?filter[cheat_notice]=false');
 
             $response->assertOk();
 

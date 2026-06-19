@@ -21,7 +21,6 @@ describe('index', function (): void {
             'password' => Hash::make('password'),
         ]);
 
-        $this->token = $this->user->createToken('test-token-for-addon-index')->plainTextToken;
         $this->sptVersion = SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
         // Helper function to create a fully visible addon with all required relationships
@@ -50,7 +49,7 @@ describe('index', function (): void {
             ($this->createVisibleAddon)();
         }
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -79,7 +78,7 @@ describe('index', function (): void {
             ($this->createVisibleAddon)();
         }
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons?per_page=10');
+        $response = $this->getJson('/api/v0/addons?per_page=10');
 
         $response->assertOk()->assertJsonCount(10, 'data');
         $response->assertJsonPath('meta.total', 20);
@@ -90,7 +89,7 @@ describe('index', function (): void {
         $addon2 = ($this->createVisibleAddon)();
         ($this->createVisibleAddon)();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addons?filter[id]=%d,%d', $addon1->id, $addon2->id));
+        $response = $this->getJson(sprintf('/api/v0/addons?filter[id]=%d,%d', $addon1->id, $addon2->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -108,7 +107,7 @@ describe('index', function (): void {
         $addon2 = ($this->createVisibleAddon)(['name' => 'Awesome Feature']);
         ($this->createVisibleAddon)(['name' => 'Different Addon']);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons?filter[name]=Awesome');
+        $response = $this->getJson('/api/v0/addons?filter[name]=Awesome');
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -132,7 +131,7 @@ describe('index', function (): void {
         $addon2 = ($this->createVisibleAddon)([], $mod1);
         ($this->createVisibleAddon)();  // Different mod
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addons?filter[mod_id]=%d', $mod1->id));
+        $response = $this->getJson(sprintf('/api/v0/addons?filter[mod_id]=%d', $mod1->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -155,7 +154,7 @@ describe('index', function (): void {
         ]);
         Addon::factory()->for($mod)->create(['published_at' => null]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -175,7 +174,7 @@ describe('index', function (): void {
         $addon = Addon::factory()->for($mod)->published()->create();
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons?include=mod');
+        $response = $this->getJson('/api/v0/addons?include=mod');
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -192,7 +191,7 @@ describe('index', function (): void {
         $addon = Addon::factory()->for($mod)->for($owner, 'owner')->published()->create();
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -202,7 +201,7 @@ describe('index', function (): void {
     it('includes latest_version relationship when requested', function (): void {
         ($this->createVisibleAddon)();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons?include=latest_version');
+        $response = $this->getJson('/api/v0/addons?include=latest_version');
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -219,7 +218,7 @@ describe('index', function (): void {
         $attachedAddon = ($this->createVisibleAddon)();
         $detachedAddon = ($this->createVisibleAddon)(['detached_at' => now()->subDays(1)]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertStatus(Response::HTTP_OK);
 
@@ -236,7 +235,7 @@ describe('index', function (): void {
         $addon2 = ($this->createVisibleAddon)(['created_at' => now()->subDay()]);
         $addon3 = ($this->createVisibleAddon)(['created_at' => now()]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertStatus(Response::HTTP_OK);
 
@@ -256,7 +255,6 @@ describe('show', function (): void {
             'password' => Hash::make('password'),
         ]);
 
-        $this->token = $this->user->createToken('test-token-for-addon-show')->plainTextToken;
         $this->sptVersion = SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
         // Helper function to create a fully visible addon with all required relationships
@@ -285,7 +283,7 @@ describe('show', function (): void {
             'name' => 'Test Addon',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -301,7 +299,7 @@ describe('show', function (): void {
     });
 
     it('returns 404 for non-existent addon', function (): void {
-        $response = $this->withToken($this->token)->getJson('/api/v0/addon/99999');
+        $response = $this->getJson('/api/v0/addon/99999');
 
         $response->assertStatus(Response::HTTP_NOT_FOUND);
     });
@@ -315,7 +313,7 @@ describe('show', function (): void {
         $addon = Addon::factory()->for($mod)->published()->create();
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=mod', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d?include=mod', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -328,7 +326,7 @@ describe('show', function (): void {
         $addon->owner()->associate($owner);
         $addon->save();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -340,7 +338,7 @@ describe('show', function (): void {
         $authors = User::factory()->count(2)->create();
         $addon->additionalAuthors()->attach($authors);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -356,7 +354,7 @@ describe('show', function (): void {
     it('includes versions relationship when requested', function (): void {
         $addon = ($this->createVisibleAddon)();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d?include=versions', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d?include=versions', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -372,7 +370,7 @@ describe('show', function (): void {
     it('shows detached status', function (): void {
         $addon = ($this->createVisibleAddon)(['detached_at' => now()->subDays(1)]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -389,7 +387,7 @@ describe('show', function (): void {
         $addon = Addon::factory()->for($mod)->for($this->user, 'owner')->create(['published_at' => null]);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response->assertStatus(Response::HTTP_NOT_FOUND);
     });
@@ -401,7 +399,6 @@ describe('visibility', function (): void {
             'password' => Hash::make('password'),
         ]);
 
-        $this->token = $this->user->createToken('test-token')->plainTextToken;
         $this->sptVersion = SptVersion::factory()->state(['version' => '3.8.0'])->create();
     });
 
@@ -417,7 +414,7 @@ describe('visibility', function (): void {
 
         $addonWithoutVersion = Addon::factory()->create(['mod_id' => $mod->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -442,7 +439,7 @@ describe('visibility', function (): void {
         $addonUnderUnpublishedMod = Addon::factory()->create(['mod_id' => $unpublishedMod->id]);
         AddonVersion::factory()->create(['addon_id' => $addonUnderUnpublishedMod->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -467,7 +464,7 @@ describe('visibility', function (): void {
         $addonUnderDisabledMod = Addon::factory()->create(['mod_id' => $disabledMod->id]);
         AddonVersion::factory()->create(['addon_id' => $addonUnderDisabledMod->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -488,7 +485,7 @@ describe('visibility', function (): void {
         $addonUnderModWithoutVersions = Addon::factory()->create(['mod_id' => $modWithoutVersions->id]);
         AddonVersion::factory()->create(['addon_id' => $addonUnderModWithoutVersions->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -504,7 +501,7 @@ describe('visibility', function (): void {
         ]);
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -520,7 +517,7 @@ describe('visibility', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -536,7 +533,7 @@ describe('visibility', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -548,7 +545,7 @@ describe('visibility', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -564,7 +561,7 @@ describe('visibility', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d', $addon->id));
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -587,7 +584,7 @@ describe('visibility', function (): void {
             'disabled' => true,
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -611,7 +608,7 @@ describe('visibility', function (): void {
             'published_at' => null,
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -635,7 +632,7 @@ describe('visibility', function (): void {
             'published_at' => now()->addDay(),
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -659,7 +656,7 @@ describe('visibility', function (): void {
         ]);
         AddonVersion::factory()->create(['addon_id' => $unpublishedAddon->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -684,7 +681,7 @@ describe('visibility', function (): void {
         $addonUnderBadMod = Addon::factory()->create(['mod_id' => $modWithoutSptVersion->id]);
         AddonVersion::factory()->create(['addon_id' => $addonUnderBadMod->id]);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/addons');
+        $response = $this->getJson('/api/v0/addons');
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);

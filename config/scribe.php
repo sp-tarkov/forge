@@ -100,11 +100,11 @@ return [
     // How is your API authenticated? This information will be used in the displayed docs, generated examples and response calls.
     'auth' => [
         // Set this to true if ANY endpoints in your API use authentication.
-        'enabled' => true,
+        'enabled' => false,
 
         // Set this to true if your API should be authenticated by default. If so, you must also set `enabled` (above) to true.
         // You can then use @unauthenticated or @authenticated on individual endpoints to change their status from the default.
-        'default' => true,
+        'default' => false,
 
         // Where is the auth value meant to be sent in a request?
         'in' => AuthIn::BEARER->value,
@@ -120,27 +120,12 @@ return [
         // Set this to null if you want Scribe to use a random value as placeholder instead.
         'placeholder' => 'YOUR_API_KEY',
 
-        // Any extra authentication-related info for your users. Markdown and HTML are supported.
-        // Kept deliberately short here: the per-method walkthroughs live on the OAuth and API Tokens
-        // endpoint groups instead, so a reader follows one decision tree at the top then reads the full flow
-        // exactly where the endpoints they need are documented. See the slim version in .scribe/auth.md.
-        'extra_info' => <<<'MARKDOWN'
-The Forge issues two kinds of bearer token; pick the one that matches what you are building.
-
-| If your application is... | Use | Where the details live |
-|---|---|---|
-| New (any type), or built for an account that signs in with Discord and has no password | **OAuth 2.1 with PKCE** (recommended) | See the **OAuth** group below |
-| An existing script or integration already holding an API token | **API Tokens** (deprecated, removed 2026-11-29) | See the **API Tokens** group below |
-
-OAuth covers every account on the Forge and is what every new integration should use. Legacy API tokens are
-kept working only until the sunset date so existing callers have time to migrate.
-
-Endpoints marked with a `requires authentication` badge below accept tokens issued by either flow.
-MARKDOWN,
+        // The v0 API is open and read-only, so there is no authentication section to document.
+        'extra_info' => '',
     ],
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
-    'intro_text' => 'This documentation aims to provide all the information you need to work with our API.<br><br>As you scroll, you will see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile). You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).',
+    'intro_text' => 'The Forge API is open and read-only: every endpoint is publicly accessible and requires no authentication or API key.<br><br>This documentation aims to provide all the information you need to work with our API.<br><br>As you scroll, you will see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile). You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).',
 
     // Example requests for each endpoint will be shown in each of these languages.
     // Supported options are: bash, javascript, php, python
@@ -172,33 +157,7 @@ MARKDOWN,
     'openapi' => [
         'enabled' => true,
 
-        'overrides' => [
-            /*
-             * Adds a structured OAuth2 security scheme alongside the bearer one Scribe emits by default. OpenAPI-aware
-             * tools (Postman import, OpenAPI Generator, Speakeasy, etc.) can read this to wire up the PKCE
-             * authorization-code dance automatically instead of falling back to "paste a bearer token". The bearer
-             * scheme stays for prose / Scribe's own UI and for callers using legacy Sanctum PATs during the
-             * deprecation window. See ADR 0001.
-             */
-            'components.securitySchemes.forge_oauth' => [
-                'type' => 'oauth2',
-                'description' => 'OAuth 2.1 Authorization Code with PKCE. Register an app at /user/oauth-apps under your profile menu to obtain a client_id.',
-                'flows' => [
-                    'authorizationCode' => [
-                        'authorizationUrl' => 'https://forge.sp-tarkov.com/oauth/authorize',
-                        'tokenUrl' => 'https://forge.sp-tarkov.com/oauth/token',
-                        'refreshUrl' => 'https://forge.sp-tarkov.com/oauth/token',
-                        'scopes' => [
-                            'profile:read' => 'Read your basic profile information (name, email, avatar, role).',
-                            'mods:read' => 'Browse mods, mod versions, dependencies, and update feeds.',
-                            'addons:read' => 'Browse addons, addon versions, and dependencies.',
-                            'categories:read' => 'Read mod categories.',
-                            'spt:read' => 'Read available SPT versions.',
-                        ],
-                    ],
-                ],
-            ],
-        ],
+        'overrides' => [],
 
         // Additional generators to use when generating the OpenAPI spec.
         // Should extend `Knuckles\Scribe\Writing\OpenApiSpecGenerators\OpenApiGenerator`.
@@ -214,24 +173,7 @@ MARKDOWN,
         // See https://scribe.knuckles.wtf/blog/laravel-v4#easier-sorting and https://scribe.knuckles.wtf/laravel/reference/config#order for details
         // Note: does not work for `external` docs types
         'order' => [
-            // The two authentication flows lead, directly beneath the "Authenticating" overview section, so a reader
-            // picks their token type before anything else. OAuth (recommended) sits above the deprecated legacy flow.
-            'OAuth' => [
-                'GET /oauth/authorize',
-                'POST /oauth/token',
-            ],
-            'API Tokens' => [
-                'POST /api/v0/auth/login',
-                'GET /api/v0/auth/abilities',
-                'POST /api/v0/auth/logout',
-                'POST /api/v0/auth/logout/all',
-            ],
             'General',
-            'Account' => [
-                'POST /api/v0/auth/register',
-                'POST /api/v0/auth/email/resend',
-                'GET /api/v0/auth/user',
-            ],
             'Mods' => [
                 'GET /api/v0/mods',
                 'GET /api/v0/mod/{modId}',

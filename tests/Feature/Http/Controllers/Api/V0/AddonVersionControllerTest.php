@@ -17,8 +17,6 @@ describe('visibility', function (): void {
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
-
-        $this->token = $this->user->createToken('test-token')->plainTextToken;
     });
 
     it('returns not found when the addon has no published versions', function (): void {
@@ -30,7 +28,7 @@ describe('visibility', function (): void {
         ]);
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -50,7 +48,7 @@ describe('visibility', function (): void {
             'disabled' => true,
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -70,7 +68,7 @@ describe('visibility', function (): void {
             'published_at' => null,
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -87,7 +85,7 @@ describe('visibility', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
 
         $response->assertSuccessful();
         $response->assertJsonPath('success', true);
@@ -100,7 +98,7 @@ describe('visibility', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);
@@ -113,8 +111,6 @@ describe('virus total links', function (): void {
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
-
-        $this->token = $this->user->createToken('test-token')->plainTextToken;
 
         // Create SPT version for mod versions
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
@@ -136,7 +132,7 @@ describe('virus total links', function (): void {
             'label' => 'Test VT Link',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions', $addon->id));
 
         $response->assertSuccessful();
         $response->assertJsonStructure([
@@ -169,7 +165,7 @@ describe('virus total links', function (): void {
             'label' => 'Test VT Link',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions?include=virus_total_links', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions?include=virus_total_links', $addon->id));
 
         $response->assertSuccessful();
         $response->assertJsonStructure([
@@ -218,7 +214,7 @@ describe('virus total links', function (): void {
             'label' => 'Alternative Download',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions?include=virus_total_links', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions?include=virus_total_links', $addon->id));
 
         $response->assertSuccessful();
 
@@ -236,7 +232,7 @@ describe('virus total links', function (): void {
         $addon = Addon::factory()->create(['mod_id' => $mod->id]);
         AddonVersion::factory()->withoutVirusTotalLinks()->create(['addon_id' => $addon->id]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/addon/%d/versions?include=virus_total_links', $addon->id));
+        $response = $this->getJson(sprintf('/api/v0/addon/%d/versions?include=virus_total_links', $addon->id));
 
         $response->assertSuccessful();
 

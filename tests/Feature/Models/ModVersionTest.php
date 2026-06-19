@@ -410,8 +410,6 @@ describe('Published Version Visibility', function (): void {
             'password' => Hash::make('password'),
         ]);
 
-        $this->token = $this->user->createToken('test-token')->plainTextToken;
-
         // Create an SPT version for testing
         $this->sptVersion = SptVersion::factory()->create(['version' => '3.8.0']);
     });
@@ -448,7 +446,7 @@ describe('Published Version Visibility', function (): void {
         $publishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Test API endpoint - should only return the mod with a published version
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
+        $response = $this->getJson('/api/v0/mods');
 
         $response->assertOk();
         $response->assertJsonCount(1, 'data');
@@ -532,7 +530,7 @@ describe('Published Version Visibility', function (): void {
         $publishedVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Should return the mod because it has at least one published version
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
+        $response = $this->getJson('/api/v0/mods');
 
         $response->assertOk();
         $response->assertJsonCount(1, 'data');
@@ -555,7 +553,7 @@ describe('Published Version Visibility', function (): void {
         $disabledVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Regular user should not see the mod
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
+        $response = $this->getJson('/api/v0/mods');
         $response->assertOk();
         $response->assertJsonCount(0, 'data');
     });
@@ -844,7 +842,7 @@ describe('Published Version Visibility', function (): void {
         $validVersion->sptVersions()->sync($this->sptVersion->id);
 
         // Test API endpoint - should only return the valid mod
-        $response = $this->withToken($this->token)->getJson('/api/v0/mods');
+        $response = $this->getJson('/api/v0/mods');
 
         $response->assertOk();
         $response->assertJsonCount(1, 'data');

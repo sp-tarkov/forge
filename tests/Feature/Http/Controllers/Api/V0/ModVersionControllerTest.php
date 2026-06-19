@@ -22,15 +22,13 @@ describe('index', function (): void {
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
-
-        $this->token = $this->user->createToken('test-token-for-mod-index')->plainTextToken;
     });
 
     it('returns a paginated list of mod versions', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $mod = Mod::factory()->hasVersions(24, ['spt_version_constraint' => '3.8.0'])->create();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s/versions', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%s/versions', $mod->id));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -51,7 +49,7 @@ describe('index', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $mod = Mod::factory()->hasVersions(25, ['spt_version_constraint' => '3.8.0'])->create();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s/versions?per_page=5', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%s/versions?per_page=5', $mod->id));
 
         $response->assertOk()->assertJsonCount(5, 'data');
         $response->assertJsonPath('meta.total', 25);
@@ -62,7 +60,7 @@ describe('index', function (): void {
         $mod1 = Mod::factory()->hasVersions(5, ['spt_version_constraint' => '3.8.0'])->create();
         $mod2 = Mod::factory()->hasVersions(5, ['spt_version_constraint' => '3.8.0'])->create();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%s/versions', $mod1->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%s/versions', $mod1->id));
 
         $response
             ->assertOk()
@@ -81,7 +79,7 @@ describe('index', function (): void {
         $modVersion2 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0']);
         $modVersion3 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0']);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[id]=%d,%d', $mod->id, $modVersion1->id, $modVersion3->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[id]=%d,%d', $mod->id, $modVersion1->id, $modVersion3->id));
 
         $response->assertOk()->assertJsonCount(2, 'data');
 
@@ -103,7 +101,7 @@ describe('index', function (): void {
         $modVersion3 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0', 'hub_id' => 789]);
         $modVersion4 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0', 'hub_id' => null]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[hub_id]=%s,%s', $mod->id, $modVersion1->hub_id, $modVersion3->hub_id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[hub_id]=%s,%s', $mod->id, $modVersion1->hub_id, $modVersion3->hub_id));
 
         $response->assertOk()->assertJsonCount(2, 'data');
 
@@ -128,7 +126,7 @@ describe('index', function (): void {
         $modVersion6 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0', 'version' => '2.0.0']);
 
         $constraint = urlencode('~1.1.0');
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[version]=%s', $mod->id, $constraint));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[version]=%s', $mod->id, $constraint));
 
         $response->assertOk()->assertJsonCount(2, 'data');
 
@@ -155,7 +153,7 @@ describe('index', function (): void {
         $modVersion6 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0', 'version' => '2.0.0']);
 
         $constraint = urlencode('^1.0.0');
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[version]=%s', $mod->id, $constraint));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[version]=%s', $mod->id, $constraint));
 
         $response->assertOk()->assertJsonCount(5, 'data');
 
@@ -182,7 +180,7 @@ describe('index', function (): void {
         $modVersion6 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0', 'version' => '2.0.0']);
 
         $constraint = urlencode('>=1.1.0 <=1.2.1');
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[version]=%s', $mod->id, $constraint));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[version]=%s', $mod->id, $constraint));
 
         $response->assertOk()->assertJsonCount(4, 'data');
 
@@ -208,7 +206,7 @@ describe('index', function (): void {
         $modVersion5 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0', 'created_at' => '2021-01-05 00:00:00']);
         $modVersion6 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.8.0', 'created_at' => '2021-01-06 00:00:00']);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[created_between]=2021-01-02,2021-01-05', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[created_between]=2021-01-02,2021-01-05', $mod->id));
 
         $response->assertOk()->assertJsonCount(4, 'data');
 
@@ -240,7 +238,7 @@ describe('index', function (): void {
         $modVersionFor371 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.7.1']);
 
         $constraint = urlencode('~3.8.0');
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[spt_version]=%s', $mod->id, $constraint));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[spt_version]=%s', $mod->id, $constraint));
 
         $response->assertOk()->assertJsonCount(3, 'data');
 
@@ -271,7 +269,7 @@ describe('index', function (): void {
         $modVersionFor371 = ModVersion::factory()->create(['mod_id' => $mod->id, 'spt_version_constraint' => '3.7.1']);
 
         $constraint = urlencode('^3.8.1');
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[spt_version]=%s', $mod->id, $constraint));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[spt_version]=%s', $mod->id, $constraint));
 
         $response->assertOk()->assertJsonCount(3, 'data');
 
@@ -304,7 +302,7 @@ describe('index', function (): void {
         Dependency::factory()->create(['dependable_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod1->id, 'constraint' => '^1.0.0']);
         Dependency::factory()->create(['dependable_id' => $parentModVersion->id, 'dependent_mod_id' => $childMod2->id, 'constraint' => '^1.0.0']);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?include=dependencies', $parentMod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?include=dependencies', $parentMod->id));
 
         $dependencies = collect($response->json('data'))->pluck('dependencies')->filter()->flatten(1)->pluck('id')->all();
 
@@ -346,7 +344,7 @@ describe('index', function (): void {
         ]);
 
         // Test ascending sort
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?sort=version', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?sort=version', $mod->id));
 
         $response->assertOk()->assertJsonCount(5, 'data');
 
@@ -360,7 +358,7 @@ describe('index', function (): void {
         ]);
 
         // Test descending sort
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?sort=-version', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?sort=-version', $mod->id));
 
         $response->assertOk()->assertJsonCount(5, 'data');
 
@@ -381,8 +379,6 @@ describe('fika compatibility', function (): void {
             'password' => Hash::make('password'),
         ]);
 
-        $this->token = $this->user->createToken('test-token')->plainTextToken;
-
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
         $this->mod = Mod::factory()->create();
     });
@@ -393,7 +389,7 @@ describe('fika compatibility', function (): void {
             'spt_version_constraint' => '^3.8.0',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions', $this->mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions', $this->mod->id));
 
         $response->assertSuccessful();
         $response->assertJsonPath('data.0.fika_compatibility', 'compatible');
@@ -413,7 +409,7 @@ describe('fika compatibility', function (): void {
             'spt_version_constraint' => '^3.8.0',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[fika_compatibility]=compatible', $this->mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[fika_compatibility]=compatible', $this->mod->id));
 
         $response->assertSuccessful();
         $response->assertJsonCount(1, 'data');
@@ -434,7 +430,7 @@ describe('fika compatibility', function (): void {
             'spt_version_constraint' => '^3.8.0',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[fika_compatibility]=compatible,incompatible', $this->mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[fika_compatibility]=compatible,incompatible', $this->mod->id));
 
         $response->assertSuccessful();
         $response->assertJsonCount(2, 'data');
@@ -446,7 +442,7 @@ describe('fika compatibility', function (): void {
             'spt_version_constraint' => '^3.8.0',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?filter[fika_compatibility]=compatible', $this->mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?filter[fika_compatibility]=compatible', $this->mod->id));
 
         $response->assertSuccessful();
         $response->assertJsonCount(0, 'data');
@@ -458,8 +454,6 @@ describe('virus total links', function (): void {
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
-
-        $this->token = $this->user->createToken('test-token')->plainTextToken;
     });
 
     it('does not include virus_total_links by default', function (): void {
@@ -477,7 +471,7 @@ describe('virus total links', function (): void {
             'label' => 'Test VT Link',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions', $mod->id));
 
         $response->assertSuccessful();
         $response->assertJsonStructure([
@@ -509,7 +503,7 @@ describe('virus total links', function (): void {
             'label' => 'Test VT Link',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?include=virus_total_links', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?include=virus_total_links', $mod->id));
 
         $response->assertSuccessful();
         $response->assertJsonStructure([
@@ -557,7 +551,7 @@ describe('virus total links', function (): void {
             'label' => 'Alternative Download',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?include=virus_total_links', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?include=virus_total_links', $mod->id));
 
         $response->assertSuccessful();
 
@@ -574,7 +568,7 @@ describe('virus total links', function (): void {
             'spt_version_constraint' => '^3.8.0',
         ]);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions?include=virus_total_links', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions?include=virus_total_links', $mod->id));
 
         $response->assertSuccessful();
 
@@ -589,14 +583,12 @@ describe('visibility', function (): void {
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
-
-        $this->token = $this->user->createToken('test-token')->plainTextToken;
     });
 
     it('returns not found when the mod has no published versions', function (): void {
         $mod = Mod::factory()->create();
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/mod/%d/versions', $mod->id));
+        $response = $this->getJson(sprintf('/api/v0/mod/%d/versions', $mod->id));
 
         $response->assertNotFound();
         $response->assertJsonPath('success', false);

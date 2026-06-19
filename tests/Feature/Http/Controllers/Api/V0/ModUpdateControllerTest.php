@@ -10,8 +10,6 @@ use App\Models\User;
 
 beforeEach(function (): void {
     $this->user = User::factory()->create();
-    $this->token = $this->user->createToken('test', ['read'])->plainTextToken;
-    $this->withHeader('Authorization', 'Bearer '.$this->token);
 });
 
 describe('check', function (): void {

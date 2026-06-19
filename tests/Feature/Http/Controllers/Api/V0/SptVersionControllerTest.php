@@ -16,8 +16,6 @@ describe('index', function (): void {
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
-
-        $this->token = $this->user->createToken('test-token-for-mod-index')->plainTextToken;
     });
 
     it('returns a paginated list of SPT versions', function (): void {
@@ -28,7 +26,7 @@ describe('index', function (): void {
             ))
             ->create();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions');
+        $response = $this->getJson('/api/v0/spt/versions');
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -53,7 +51,7 @@ describe('index', function (): void {
             ))
             ->create();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?per_page=5');
+        $response = $this->getJson('/api/v0/spt/versions?per_page=5');
 
         $response->assertOk()->assertJsonCount(5, 'data');
         $response->assertJsonPath('meta.total', 25);
@@ -64,7 +62,7 @@ describe('index', function (): void {
         $v2 = SptVersion::factory()->create(['version' => '5.2.0']);
         $v3 = SptVersion::factory()->create(['version' => '5.3.0']);
 
-        $response = $this->withToken($this->token)->getJson(sprintf('/api/v0/spt/versions?filter[id]=%d,%d', $v1->id, $v3->id));
+        $response = $this->getJson(sprintf('/api/v0/spt/versions?filter[id]=%d,%d', $v1->id, $v3->id));
 
         $response->assertOk()->assertJsonCount(2, 'data');
 
@@ -82,7 +80,7 @@ describe('index', function (): void {
         $v371 = SptVersion::factory()->state(['version' => '3.7.1'])->create();
 
         $constraint = urlencode('~3.8.0');
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?filter[spt_version]='.$constraint);
+        $response = $this->getJson('/api/v0/spt/versions?filter[spt_version]='.$constraint);
 
         $response->assertOk();
 
@@ -102,7 +100,7 @@ describe('index', function (): void {
         $v5 = SptVersion::factory()->create(['version' => '5.5.0', 'created_at' => '2021-01-05 00:00:00']);
         $v6 = SptVersion::factory()->create(['version' => '5.6.0', 'created_at' => '2021-01-06 00:00:00']);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?filter[created_between]=2021-01-02,2021-01-05');
+        $response = $this->getJson('/api/v0/spt/versions?filter[created_between]=2021-01-02,2021-01-05');
 
         $response->assertOk()->assertJsonCount(4, 'data');
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
@@ -123,7 +121,7 @@ describe('index', function (): void {
         $v5 = SptVersion::factory()->create(['version' => '4.5.0', 'updated_at' => '2021-01-05 00:00:00']);
         $v6 = SptVersion::factory()->create(['version' => '4.6.0', 'updated_at' => '2021-01-06 00:00:00']);
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?filter[updated_between]=2021-01-02,2021-01-05');
+        $response = $this->getJson('/api/v0/spt/versions?filter[updated_between]=2021-01-02,2021-01-05');
 
         $response->assertOk()->assertJsonCount(4, 'data');
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
@@ -144,7 +142,7 @@ describe('index', function (): void {
         $v5 = SptVersion::factory()->state(['version' => '2.0.0'])->create();
 
         // Ascending
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?sort=version');
+        $response = $this->getJson('/api/v0/spt/versions?sort=version');
         $response->assertOk()->assertJsonCount(5, 'data');
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
         expect($returnedIds)->toBe([
@@ -156,7 +154,7 @@ describe('index', function (): void {
         ]);
 
         // Descending
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?sort=-version');
+        $response = $this->getJson('/api/v0/spt/versions?sort=-version');
         $response->assertOk()->assertJsonCount(5, 'data');
         $returnedIds = collect($response->json('data'))->pluck('id')->all();
         expect($returnedIds)->toBe([
@@ -175,7 +173,7 @@ describe('index', function (): void {
                 ...array_map(fn (int $i): array => ['version' => '3.0.'.$i], range(0, 2))
             ))
             ->create();
-        $response = $this->withToken($this->token)->getJson('/api/v0/spt/versions?fields=id,version');
+        $response = $this->getJson('/api/v0/spt/versions?fields=id,version');
         $response->assertOk();
         foreach ($response->json('data') as $item) {
             expect($item)->toHaveKeys(['id', 'version'])

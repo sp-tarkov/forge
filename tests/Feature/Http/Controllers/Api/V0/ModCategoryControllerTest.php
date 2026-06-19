@@ -15,14 +15,12 @@ describe('index', function (): void {
         $this->user = User::factory()->create([
             'password' => Hash::make('password'),
         ]);
-
-        $this->token = $this->user->createToken('test-token-for-mod-category-index')->plainTextToken;
     });
 
     it('returns paginated mod categories', function (): void {
         ModCategory::factory()->count(3)->create();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/mod-categories');
+        $response = $this->getJson('/api/v0/mod-categories');
 
         $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
@@ -35,7 +33,7 @@ describe('index', function (): void {
     it('returns only requested fields via sparse fieldsets', function (): void {
         ModCategory::factory()->count(2)->create();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/mod-categories?fields=id,title,slug,description');
+        $response = $this->getJson('/api/v0/mod-categories?fields=id,title,slug,description');
 
         $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([
@@ -51,7 +49,7 @@ describe('index', function (): void {
     it('always includes id even when not explicitly requested', function (): void {
         ModCategory::factory()->create();
 
-        $response = $this->withToken($this->token)->getJson('/api/v0/mod-categories?fields=title');
+        $response = $this->getJson('/api/v0/mod-categories?fields=title');
 
         $response->assertStatus(Response::HTTP_OK)
             ->assertJsonStructure([

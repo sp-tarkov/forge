@@ -38,34 +38,6 @@ describe('DisposableEmailBlocklist model', function (): void {
     });
 });
 
-describe('API registration with disposable email blocking', function (): void {
-    it('prevents registration with a disposable email', function (): void {
-        DisposableEmailBlocklist::query()->create(['domain' => 'tempmail.com']);
-
-        $response = $this->postJson('/api/v0/auth/register', [
-            'name' => 'TestUser',
-            'email' => 'test@tempmail.com',
-            'password' => 'password123',
-            'timezone' => 'America/New_York',
-        ]);
-
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['email']);
-    });
-
-    it('allows registration with a non-disposable email', function (): void {
-        $response = $this->postJson('/api/v0/auth/register', [
-            'name' => 'TestUser',
-            'email' => 'test@gmail.com',
-            'password' => 'password123',
-            'timezone' => 'America/New_York',
-        ]);
-
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('users', ['email' => 'test@gmail.com']);
-    });
-});
-
 describe('UpdateDisposableEmailBlocklist job', function (): void {
     it('downloads and updates the blocklist successfully', function (): void {
         Storage::fake();

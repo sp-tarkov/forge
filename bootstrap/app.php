@@ -4,17 +4,12 @@ declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
 use App\Exceptions\Api\V0\InvalidQueryException;
-use App\Http\Middleware\AnnounceSanctumDeprecation;
-use App\Http\Middleware\EnforceApiScope;
 use App\Http\Middleware\RejectMalformedUtf8;
 use App\Http\Middleware\SanitizeBroadcastSocketId;
-use App\Http\Middleware\UpdatePassportTokenLastUsed;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\Http\Middleware\CheckAbilities;
-use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Exceptions\TooManyCallsException;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
@@ -47,11 +42,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases
         $middleware->alias([
             'auth.banned' => AuthBanned::class,
-            'abilities' => CheckAbilities::class,
-            'ability' => CheckForAnyAbility::class,
-            'api.scope' => EnforceApiScope::class,
-            'api.last_used' => UpdatePassportTokenLastUsed::class,
-            'api.sanctum_deprecated' => AnnounceSanctumDeprecation::class,
         ]);
 
         // Trust proxies to get real client IP addresses
