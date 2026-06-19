@@ -16,32 +16,10 @@ use App\Models\Comment;
 use App\Models\Mod;
 use App\Models\ModList;
 use App\Models\Report;
-use App\Models\User;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
-
-// TEMPORARY (remove after verifying): confirms the real client IP reaches Laravel after the Cloudflare realip and
-// trustProxies changes. Locked to production AND the Refringe account; returns 404 to everyone and everything else.
-Route::get('/debug/client-ip', function (): JsonResponse {
-    $user = request()->user();
-
-    abort_unless(
-        app()->isProduction() && $user instanceof User && Str::lower($user->name) === 'refringe',
-        404,
-    );
-
-    return response()->json([
-        'request_ip' => request()->ip(),
-        'remote_addr' => request()->server('REMOTE_ADDR'),
-        'cf_connecting_ip' => request()->header('CF-Connecting-IP'),
-        'x_forwarded_for' => request()->header('X-Forwarded-For'),
-        'x_real_ip' => request()->header('X-Real-IP'),
-    ]);
-});
 
 Route::middleware('auth.banned')->group(function (): void {
 
