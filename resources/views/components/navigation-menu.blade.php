@@ -317,10 +317,9 @@
 
                                 <flux:navmenu.separator />
                                 <flux:navmenu.item
-                                    icon="key"
-                                    href="{{ route('api-tokens.index') }}"
-                                    wire:navigate
-                                >{{ __('API Tokens') }}</flux:navmenu.item>
+                                    icon="book-open"
+                                    href="/docs/index.html"
+                                >{{ __('API Documentation') }}</flux:navmenu.item>
 
                                 {{-- Logout --}}
                                 <flux:navmenu.separator />
@@ -513,13 +512,10 @@
                             {{ __('My Lists') }}
                         </span>
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link
-                        href="{{ route('api-tokens.index') }}"
-                        :active="request()->routeIs('api-tokens.index')"
-                    >
+                    <x-responsive-nav-link href="/docs/index.html">
                         <span class="flex items-center gap-2">
-                            <flux:icon.key class="h-5 w-5" />
-                            {{ __('API Tokens') }}
+                            <flux:icon.book-open class="h-5 w-5" />
+                            {{ __('API Documentation') }}
                         </span>
                     </x-responsive-nav-link>
                     {{-- Logout --}}

@@ -36,6 +36,7 @@
                         autofocus
                         autocomplete="username"
                     />
+                    <flux:error name="email" />
                 </flux:field>
 
                 <flux:field>
@@ -47,6 +48,7 @@
                         required
                         autocomplete="new-password"
                     />
+                    <flux:error name="password" />
                 </flux:field>
 
                 <flux:field>
@@ -58,6 +60,7 @@
                         required
                         autocomplete="new-password"
                     />
+                    <flux:error name="password_confirmation" />
                 </flux:field>
             </div>
 

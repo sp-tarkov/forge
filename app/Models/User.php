@@ -37,7 +37,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Mchev\Banhammer\Traits\Bannable;
 use Override;
@@ -99,7 +98,6 @@ use Stevebauman\Purify\Facades\Purify;
 final class User extends Authenticatable implements Commentable, MustVerifyEmail, Reportable, Trackable
 {
     use Bannable;
-    use HasApiTokens;
 
     /** @use HasComments<self> */
     use HasComments;

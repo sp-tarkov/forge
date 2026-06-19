@@ -11,7 +11,7 @@ use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Services\DependencyService;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -158,6 +158,16 @@ final class ModDependencyController extends Controller
     #[UrlParam('mods', description: 'Comma-separated list of identifier:version pairs to resolve dependencies for. Identifier can be either a mod_id (numeric) or GUID (string). Version strings must match exactly.', required: true, example: '5:1.2.0,com.example.mod:2.0.5,15:3.1.0')]
     public function resolve(Request $request): JsonResponse
     {
+        // Reject array input (e.g. mods[]=x) before string casting, which would otherwise raise an
+        // "Array to string conversion" error and surface as a 500.
+        if (is_array($request->input('mods'))) {
+            return ApiResponse::error(
+                "Invalid format for 'mods' parameter. Expected format: 'identifier:version,identifier:version' where identifier is either a mod_id (numeric) or GUID (string)",
+                Response::HTTP_BAD_REQUEST,
+                ApiErrorCode::VALIDATION_FAILED
+            );
+        }
+
         $modsParam = $request->string('mods')->trim()->toString();
 
         // Validate that the parameter is provided
@@ -246,13 +256,13 @@ final class ModDependencyController extends Controller
                 $allVersions = $modVersions->pluck('resource.latestCompatibleVersion.version')->filter();
 
                 // Find versions that satisfy ALL constraints
-                $satisfyingVersions = $allVersions->filter(fn (mixed $version): bool => is_string($version) && $constraints->every(fn (string $constraint) => Semver::satisfies($version, $constraint)));
+                $satisfyingVersions = $allVersions->filter(fn (mixed $version): bool => is_string($version) && $constraints->every(fn (string $constraint): bool => VersionMatcher::satisfies($version, $constraint)));
 
                 if ($satisfyingVersions->isNotEmpty()) {
                     // Find the highest version that satisfies all constraints (no conflict)
                     /** @var array<string> $versionStrings */
                     $versionStrings = $satisfyingVersions->all();
-                    $sortedVersions = Semver::rsort($versionStrings);
+                    $sortedVersions = VersionMatcher::rsort($versionStrings);
                     $highestSatisfyingVersion = $sortedVersions[0];
 
                     // Keep only the mod resource with this version

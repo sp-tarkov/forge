@@ -69,8 +69,8 @@ final class AddonController extends Controller
      *          }
      *      ],
      *      "links": {
-     *          "first": "https://forge.test/api/v0/addons?page=1",
-     *          "last": "https://forge.test/api/v0/addons?page=1",
+     *          "first": "https://forge.sp-tarkov.com/api/v0/addons?page=1",
+     *          "last": "https://forge.sp-tarkov.com/api/v0/addons?page=1",
      *          "prev": null,
      *          "next": null
      *      },
@@ -85,7 +85,7 @@ final class AddonController extends Controller
      *                  "active": false
      *              },
      *              {
-     *                  "url": "https://forge.test/api/v0/addons?page=1",
+     *                  "url": "https://forge.sp-tarkov.com/api/v0/addons?page=1",
      *                  "label": "1",
      *                  "active": true
      *              },
@@ -95,7 +95,7 @@ final class AddonController extends Controller
      *                  "active": false
      *              }
      *          ],
-     *          "path": "https://forge.test/api/v0/addons",
+     *          "path": "https://forge.sp-tarkov.com/api/v0/addons",
      *          "per_page": 12,
      *          "to": 1,
      *          "total": 1

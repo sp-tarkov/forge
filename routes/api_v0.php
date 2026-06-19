@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V0\AddonController;
 use App\Http\Controllers\Api\V0\AddonDependencyController;
 use App\Http\Controllers\Api\V0\AddonVersionController;
-use App\Http\Controllers\Api\V0\AuthController;
 use App\Http\Controllers\Api\V0\ModCategoryController;
 use App\Http\Controllers\Api\V0\ModController;
 use App\Http\Controllers\Api\V0\ModDependencyController;
@@ -18,25 +17,8 @@ use Illuminate\Support\Facades\Route;
 // Simple ping endpoint to check API health
 Route::get('/ping', PingController::class)->name('api.v0.ping');
 
-// Authentication
-Route::post('/auth/login', [AuthController::class, 'login'])
-    ->middleware('throttle:5,1')
-    ->name('api.v0.auth.login');
-Route::post('/auth/register', [AuthController::class, 'register'])
-    ->middleware('throttle:5,1')
-    ->name('api.v0.auth.register');
-Route::post('/auth/email/resend', [AuthController::class, 'resend'])
-    ->middleware('throttle:3,60')
-    ->name('api.v0.auth.resend');
-
-// Authenticated (Requires Sanctum Token with read ability)
-Route::middleware(['throttle:api', 'auth:sanctum', 'abilities:read'])->group(function (): void {
-    // Auth
-    Route::get('/auth/user', [AuthController::class, 'user'])->name('api.v0.auth.user');
-    Route::get('/auth/abilities', [AuthController::class, 'abilities'])->name('api.v0.auth.abilities');
-    Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.v0.auth.logout');
-    Route::post('/auth/logout/all', [AuthController::class, 'logoutAll'])->name('api.v0.auth.logout-all');
-
+// The v0 API is read-only and open. Requests are rate-limited per IP via the `api` limiter (see AppServiceProvider).
+Route::middleware('throttle:api')->group(function (): void {
     // Mods
     Route::get('/mods', [ModController::class, 'index'])->name('api.v0.mods');
     Route::get('/mod/{modId}', [ModController::class, 'show'])->where('modId', '[0-9]+')->name('api.v0.mods.show');

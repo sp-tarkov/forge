@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Models\ModVersion;
 use App\Models\SptVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Support\Collection;
 
 final class SptVersionService
@@ -64,7 +64,7 @@ final class SptVersionService
     private function resolveSemverConstraint(string $constraint): array
     {
         $availableVersions = $this->getAvailableVersions();
-        $satisfyingVersions = Semver::satisfiedBy($availableVersions->keys()->all(), $constraint);
+        $satisfyingVersions = VersionMatcher::satisfiedBy($availableVersions->keys()->all(), $constraint);
 
         return collect($satisfyingVersions)
             ->map(fn (string $version): ?int => $availableVersions[$version] ?? null)

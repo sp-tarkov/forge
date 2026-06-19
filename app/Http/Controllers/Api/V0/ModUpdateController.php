@@ -10,7 +10,7 @@ use App\Http\Responses\Api\V0\ApiResponse;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Services\DependencyService;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -363,7 +363,7 @@ final class ModUpdateController extends Controller
                 ->where('dependent_mod_id', $currentVersion->mod_id);
 
             foreach ($dependencies as $dep) {
-                if (! Semver::satisfies($candidate->version, $dep->constraint)) {
+                if (! VersionMatcher::satisfies($candidate->version, $dep->constraint)) {
                     return [
                         'valid' => false,
                         'block_reason' => 'dependency_constraint_violation',
@@ -421,7 +421,7 @@ final class ModUpdateController extends Controller
                     $constraints = $constraintsByModId->get($modId);
 
                     foreach ($constraints as $constraint) {
-                        if (! Semver::satisfies($installedMod->version, (string) $constraint)) {
+                        if (! VersionMatcher::satisfies($installedMod->version, (string) $constraint)) {
                             return [
                                 'valid' => false,
                                 'block_reason' => 'chain_dependency_conflict',

@@ -12,7 +12,7 @@
             <x-authentication-card-logo />
         </x-slot>
 
-        <div x-data="{ recovery: false }">
+        <div x-data="{ recovery: {{ $errors->has('recovery_code') ? 'true' : 'false' }} }">
             <div
                 class="mb-4 text-sm text-gray-600 dark:text-gray-400"
                 x-show="! recovery"
@@ -46,6 +46,7 @@
                         autofocus
                         x-ref="code"
                     />
+                    <flux:error name="code" />
                 </div>
 
                 <div
@@ -61,6 +62,7 @@
                         x-ref="recovery_code"
                         autocomplete="one-time-code"
                     />
+                    <flux:error name="recovery_code" />
                 </div>
 
                 <div class="flex items-center justify-end mt-4">

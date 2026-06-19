@@ -6,6 +6,7 @@ use App\Enums\SpamStatus;
 use App\Models\Addon;
 use App\Models\Comment;
 use App\Models\Mod;
+use App\Models\ModVersion;
 use App\Models\User;
 use App\Policies\CommentPolicy;
 use Illuminate\Support\Facades\Config;
@@ -728,5 +729,211 @@ describe('checkForSpam Policy Method', function (): void {
         ]);
 
         expect($this->policy->checkForSpam($this->user, $comment))->toBeFalse();
+    });
+});
+
+describe('pin authorization', function (): void {
+    it('allows mod owners, mod authors, moderators, and admins to pin comments', function (): void {
+        $owner = User::factory()->create();
+        $author = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create();
+        $mod->additionalAuthors()->attach($author);
+
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+        ]);
+
+        expect($owner->can('pin', $comment))->toBeTrue();
+        expect($author->can('pin', $comment))->toBeTrue();
+        expect($moderator->can('pin', $comment))->toBeTrue();
+        expect($admin->can('pin', $comment))->toBeTrue();
+    });
+
+    it('prevents regular users from pinning comments', function (): void {
+        $user = User::factory()->create();
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+        ]);
+
+        expect($user->can('pin', $comment))->toBeFalse();
+    });
+
+    it('prevents pinning reply comments', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create();
+
+        $rootComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+        ]);
+
+        $replyComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'parent_id' => $rootComment->id,
+            'root_id' => $rootComment->id,
+        ]);
+
+        $moderator = User::factory()->moderator()->create();
+
+        // Root comment should be pinnable
+        expect($owner->can('pin', $rootComment))->toBeTrue();
+        expect($moderator->can('pin', $rootComment))->toBeTrue();
+
+        // Reply comment should not be pinnable
+        expect($owner->can('pin', $replyComment))->toBeFalse();
+        expect($moderator->can('pin', $replyComment))->toBeFalse();
+
+        // Reply comment should not show the owner pin action
+        expect($owner->can('showOwnerPinAction', $replyComment))->toBeFalse();
+    });
+
+    it('allows mod owners, authors, moderators, and admins to pin (unpin) soft-deleted comments', function (): void {
+        $owner = User::factory()->create();
+        $author = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create();
+        $mod->additionalAuthors()->attach($author);
+
+        $moderator = User::factory()->moderator()->create();
+        $admin = User::factory()->admin()->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now(),
+            'deleted_at' => now(),
+        ]);
+
+        expect($comment->isPinned())->toBeTrue();
+        expect($comment->isDeleted())->toBeTrue();
+
+        // All privileged users should still be able to unpin a soft-deleted comment
+        expect($owner->can('pin', $comment))->toBeTrue();
+        expect($author->can('pin', $comment))->toBeTrue();
+        expect($moderator->can('pin', $comment))->toBeTrue();
+        expect($admin->can('pin', $comment))->toBeTrue();
+    });
+
+    it('grants pin permission on a deleted comment so it can be unpinned', function (): void {
+        $owner = User::factory()->create();
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create();
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'deleted_at' => now(),
+        ]);
+
+        // Comment is deleted but not pinned; owner retains pin permission (used for unpinning in the UI).
+        expect($comment->isDeleted())->toBeTrue();
+        expect($comment->isPinned())->toBeFalse();
+        expect($owner->can('pin', $comment))->toBeTrue();
+    });
+
+    it('shows owner pin actions only to mod owners and authors', function (): void {
+        $owner = User::factory()->create();
+        $author = User::factory()->create();
+        $regularUser = User::factory()->create();
+        $moderator = User::factory()->moderator()->create();
+
+        $mod = Mod::factory()->create(['owner_id' => $owner->id]);
+        ModVersion::factory()->recycle($mod)->create();
+        $mod->additionalAuthors()->attach($author);
+
+        $comment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+        ]);
+
+        // Mod owner and author should see the owner pin action
+        expect($owner->can('showOwnerPinAction', $comment))->toBeTrue();
+        expect($author->can('showOwnerPinAction', $comment))->toBeTrue();
+
+        // Regular user should not see the owner pin action
+        expect($regularUser->can('showOwnerPinAction', $comment))->toBeFalse();
+
+        // Moderator should not see the owner pin action (they use the moderation dropdown)
+        expect($moderator->can('showOwnerPinAction', $comment))->toBeFalse();
+    });
+});
+
+describe('pin ordering', function (): void {
+    it('displays pinned comments first then newest unpinned', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+
+        // Create comments with different timestamps
+        $oldComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'created_at' => now()->subDays(3),
+        ]);
+
+        $newComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'created_at' => now()->subDay(),
+        ]);
+
+        $pinnedComment = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'created_at' => now()->subDays(2),
+            'pinned_at' => now()->subHour(),
+        ]);
+
+        // Get root comments with ordering (rootComments() includes pinned ordering)
+        $comments = $mod->rootComments()->get();
+
+        // Pinned comment should be first (non-null pinned_at should come first)
+        expect($comments->first()->id)->toBe($pinnedComment->id);
+
+        // Then newest unpinned comment, then oldest unpinned comment
+        expect($comments->get(1)->id)->toBe($newComment->id);
+        expect($comments->get(2)->id)->toBe($oldComment->id);
+    });
+
+    it('orders multiple pinned comments by pin time', function (): void {
+        $mod = Mod::factory()->create();
+        ModVersion::factory()->recycle($mod)->create();
+
+        // Create pinned comments with different pin times
+        $firstPinned = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now()->subHours(3),
+        ]);
+
+        $secondPinned = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now()->subHours(2),
+        ]);
+
+        $latestPinned = Comment::factory()->create([
+            'commentable_id' => $mod->id,
+            'commentable_type' => Mod::class,
+            'pinned_at' => now()->subHour(),
+        ]);
+
+        // Get root comments with ordering (rootComments() includes pinned ordering)
+        $comments = $mod->rootComments()->get();
+
+        // Latest pinned should be first
+        expect($comments->get(0)->id)->toBe($latestPinned->id);
+        expect($comments->get(1)->id)->toBe($secondPinned->id);
+        expect($comments->get(2)->id)->toBe($firstPinned->id);
     });
 });

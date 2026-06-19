@@ -8,7 +8,7 @@ use App\Exceptions\InvalidVersionNumberException;
 use App\Models\SptVersion;
 use App\Support\DataTransferObjects\GitHubSptVersion;
 use App\Support\Version;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -141,10 +141,10 @@ final class UpdateGitHubSptVersionsJob implements ShouldBeUnique, ShouldQueue
      */
     private function processSptVersions(Collection $releases): void
     {
-        // Sort the releases by the tag_name using Semver::sort
+        // Sort the releases by the tag_name using VersionMatcher::sort
         /** @var array<int, string> $tagNames */
         $tagNames = $releases->pluck('tag_name')->toArray();
-        $sortedVersions = Semver::sort($tagNames);
+        $sortedVersions = VersionMatcher::sort($tagNames);
         $latestVersion = end($sortedVersions);
 
         $versionData = [];

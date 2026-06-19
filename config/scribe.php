@@ -20,7 +20,8 @@ return [
 
     // The base URL displayed in the docs.
     // If you're using `laravel` type, you can set this to a dynamic string, like '{{ config("app.tenant_url") }}' to get a dynamic base URL.
-    'base_url' => env('APP_URL', 'http://localhost'),
+    // Production base URL the public docs should advertise. Falls through to APP_URL so local docs builds work too.
+    'base_url' => env('APP_URL', 'https://forge.sp-tarkov.com'),
 
     // Routes to include in the docs
     'routes' => [
@@ -99,11 +100,11 @@ return [
     // How is your API authenticated? This information will be used in the displayed docs, generated examples and response calls.
     'auth' => [
         // Set this to true if ANY endpoints in your API use authentication.
-        'enabled' => true,
+        'enabled' => false,
 
         // Set this to true if your API should be authenticated by default. If so, you must also set `enabled` (above) to true.
         // You can then use @unauthenticated or @authenticated on individual endpoints to change their status from the default.
-        'default' => true,
+        'default' => false,
 
         // Where is the auth value meant to be sent in a request?
         'in' => AuthIn::BEARER->value,
@@ -119,12 +120,11 @@ return [
         // Set this to null if you want Scribe to use a random value as placeholder instead.
         'placeholder' => 'YOUR_API_KEY',
 
-        // Any extra authentication-related info for your users. Markdown and HTML are supported.
-        'extra_info' => 'You can generate your own API token by logging into the Forge, clicking your profile picture, and clicking <b>API Tokens</b>.',
+        'extra_info' => '',
     ],
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
-    'intro_text' => 'This documentation aims to provide all the information you need to work with our API.<br><br>As you scroll, you will see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile). You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).',
+    'intro_text' => 'The Forge API is open and read-only. Every endpoint is publicly accessible and requires no authentication or API key.<br><br>As you scroll, you will see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile). You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).',
 
     // Example requests for each endpoint will be shown in each of these languages.
     // Supported options are: bash, javascript, php, python
@@ -156,9 +156,7 @@ return [
     'openapi' => [
         'enabled' => true,
 
-        'overrides' => [
-            // 'info.version' => '2.0.0',
-        ],
+        'overrides' => [],
 
         // Additional generators to use when generating the OpenAPI spec.
         // Should extend `Knuckles\Scribe\Writing\OpenApiSpecGenerators\OpenApiGenerator`.
@@ -175,14 +173,6 @@ return [
         // Note: does not work for `external` docs types
         'order' => [
             'General',
-            'Authentication' => [
-                'POST /api/v0/auth/login',
-                'POST /api/v0/auth/logout',
-                'POST /api/v0/auth/logout/all',
-                'POST /api/v0/auth/register',
-                'POST /api/v0/auth/email/resend',
-                'GET /api/v0/auth/user',
-            ],
             'Mods' => [
                 'GET /api/v0/mods',
                 'GET /api/v0/mod/{modId}',

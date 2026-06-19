@@ -8,6 +8,10 @@ use App\Exceptions\InvalidVersionNumberException;
 use Illuminate\Support\Str;
 use Stringable;
 
+/**
+ * Parses and normalizes version strings into their major/minor/patch/label components and repairs messy
+ * user- or import-supplied version numbers into a storable form.
+ */
 final class Version implements Stringable
 {
     /**

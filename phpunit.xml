@@ -29,6 +29,7 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_DATABASE" value="testing"/>
         <env name="MAIL_MAILER" value="array"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

@@ -10,8 +10,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\Http\Middleware\CheckAbilities;
-use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Exceptions\TooManyCallsException;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
@@ -44,12 +42,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases
         $middleware->alias([
             'auth.banned' => AuthBanned::class,
-            'abilities' => CheckAbilities::class,
-            'ability' => CheckForAnyAbility::class,
         ]);
 
-        // Trust proxies to get real client IP addresses
-        $middleware->trustProxies(at: '*');
+        // Trust only the local Nginx reverse proxy (loopback). Nginx restores the real client IP from Cloudflare's
+        // CF-Connecting-IP header before forwarding, so the app reads the true client without trusting arbitrary
+        // X-Forwarded-For values sent on direct-to-origin requests.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
 
         // Protect against spam on the web middleware group.
         $middleware->web(append: [

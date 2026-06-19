@@ -6,7 +6,7 @@ namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Models\SptVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Override;
@@ -132,6 +132,8 @@ final class SptVersionQueryBuilder extends AbstractQueryBuilder
      * Filter by SPT version.
      *
      * @param  Builder<SptVersion>  $query
+     *
+     * @throws InvalidQueryException
      */
     protected function filterBySptVersion(Builder $query, ?string $version): void
     {
@@ -139,8 +141,12 @@ final class SptVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
+        if (! VersionMatcher::isValidConstraint($version)) {
+            throw new InvalidQueryException(sprintf('Invalid spt_version filter: %s. Provide a valid semver version or constraint.', $version));
+        }
+
         $validSptVersions = SptVersion::allValidVersions();
-        $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $version);
+        $compatibleSptVersions = VersionMatcher::satisfiedBy($validSptVersions, $version);
         $query->whereIn('spt_versions.version', $compatibleSptVersions);
     }
 

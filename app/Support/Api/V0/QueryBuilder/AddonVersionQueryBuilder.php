@@ -6,7 +6,7 @@ namespace App\Support\Api\V0\QueryBuilder;
 
 use App\Exceptions\Api\V0\InvalidQueryException;
 use App\Models\AddonVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Str;
@@ -180,6 +180,8 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
      * Filter by version.
      *
      * @param  Builder<AddonVersion>  $query
+     *
+     * @throws InvalidQueryException
      */
     protected function filterByVersion(Builder $query, ?string $semverConstraint): void
     {
@@ -187,11 +189,15 @@ final class AddonVersionQueryBuilder extends AbstractQueryBuilder
             return;
         }
 
+        if (! VersionMatcher::isValidConstraint($semverConstraint)) {
+            throw new InvalidQueryException(sprintf('Invalid version filter: %s. Provide a valid semver version or constraint.', $semverConstraint));
+        }
+
         /** @var array<string> $allVersionNumbers */
         $allVersionNumbers = AddonVersion::query()->where('addon_id', $this->addonId)
             ->pluck('version')
             ->all();
-        $compatibleVersions = Semver::satisfiedBy($allVersionNumbers, $semverConstraint);
+        $compatibleVersions = VersionMatcher::satisfiedBy($allVersionNumbers, $semverConstraint);
         $query->whereIn('addon_versions.version', $compatibleVersions);
     }
 

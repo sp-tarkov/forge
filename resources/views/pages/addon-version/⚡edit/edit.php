@@ -13,7 +13,7 @@ use App\Models\VirusTotalLink;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Flux\Flux;
 use Illuminate\Support\Facades\Date;
 use League\CommonMark\GithubFlavoredMarkdownConverter;
@@ -269,7 +269,7 @@ new #[Layout('layouts::base')] class extends Component
 
             /** @var array<string> $validVersions */
             $validVersions = $modVersions->pluck('version')->toArray();
-            $compatibleVersions = Semver::satisfiedBy($validVersions, $this->modVersionConstraint);
+            $compatibleVersions = VersionMatcher::satisfiedBy($validVersions, $this->modVersionConstraint);
 
             $this->matchingModVersions = $modVersions
                 ->whereIn('version', $compatibleVersions)
@@ -413,7 +413,7 @@ new #[Layout('layouts::base')] class extends Component
 
             /** @var array<string> $validVersions */
             $validVersions = $modVersions->pluck('version')->toArray();
-            $compatibleVersions = Semver::satisfiedBy($validVersions, $constraint);
+            $compatibleVersions = VersionMatcher::satisfiedBy($validVersions, $constraint);
 
             $this->matchingDependencyVersions[$index] = $modVersions
                 ->whereIn('version', $compatibleVersions)

@@ -1,10 +1,17 @@
 name: forge
 icon: null
 processes:
-  Update Dependencies:
-    command: npm update && composer update
+  Formatting:
+    command: composer format
     working_dir: null
     auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Download R2 Assets:
+    command: php artisan app:download-r2-assets
+    working_dir: null
+    auto_start: true
     auto_restart: false
     restart_when_changed: []
     env: {}
@@ -22,16 +29,19 @@ processes:
     auto_restart: false
     restart_when_changed: []
     env: {}
-  Scheduler:
-    command: php artisan schedule:work
+  Linting:
+    command: composer lint
     working_dir: null
     auto_start: false
+    auto_restart: false
+    restart_when_changed: []
+    env: {}
+  Logs:
+    command: php artisan pail -v
+    working_dir: null
+    auto_start: true
     auto_restart: true
-    restart_when_changed:
-    - app/**/*.php
-    - config/**/*.php
-    - routes/**/*.php
-    - database/**/*.php
+    restart_when_changed: []
     env: {}
   Queue Worker:
     command: php artisan queue:work redis --queue=default,verification,long --memory=512
@@ -44,11 +54,11 @@ processes:
     - routes/**/*.php
     - database/**/*.php
     env: {}
-  Logs:
-    command: php artisan pail -v
+  Update Test Shards:
+    command: ./vendor/bin/pest --update-shards
     working_dir: null
-    auto_start: true
-    auto_restart: true
+    auto_start: false
+    auto_restart: false
     restart_when_changed: []
     env: {}
   Auto Build Front-end:
@@ -58,15 +68,19 @@ processes:
     auto_restart: true
     restart_when_changed: []
     env: {}
-  Download R2 Assets:
-    command: php artisan app:download-r2-assets
+  Scheduler:
+    command: php artisan schedule:work
     working_dir: null
-    auto_start: true
-    auto_restart: false
-    restart_when_changed: []
+    auto_start: false
+    auto_restart: true
+    restart_when_changed:
+    - app/**/*.php
+    - config/**/*.php
+    - routes/**/*.php
+    - database/**/*.php
     env: {}
-  Formatting:
-    command: composer format
+  Update Dependencies:
+    command: npm update && composer update
     working_dir: null
     auto_start: false
     auto_restart: false
@@ -74,13 +88,6 @@ processes:
     env: {}
   Run Tests:
     command: composer test
-    working_dir: null
-    auto_start: false
-    auto_restart: false
-    restart_when_changed: []
-    env: {}
-  Linting:
-    command: composer lint
     working_dir: null
     auto_start: false
     auto_restart: false

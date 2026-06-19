@@ -16,7 +16,7 @@ use App\Models\VirusTotalLink;
 use App\Rules\DirectDownloadLink;
 use App\Rules\Semver as SemverRule;
 use App\Rules\SemverConstraint as SemverConstraintRule;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
@@ -113,7 +113,7 @@ new #[Layout('layouts::base')] class extends Component
     /**
      * The mod dependencies to be created.
      *
-     * @var array<int, array{modId: string, constraint: string}>
+     * @var array<int, array{id: string, modId: string, constraint: string}>
      */
     public array $dependencies = [];
 
@@ -219,11 +219,11 @@ new #[Layout('layouts::base')] class extends Component
 
         try {
             $validSptVersions = SptVersion::allValidVersions();
-            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
+            $compatibleSptVersions = VersionMatcher::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
 
             // Check if any compatible version is >= 4.0.0
             foreach ($compatibleSptVersions as $version) {
-                if (Semver::satisfies($version, '>=4.0.0')) {
+                if (VersionMatcher::satisfies($version, '>=4.0.0')) {
                     return true;
                 }
             }
@@ -403,7 +403,7 @@ new #[Layout('layouts::base')] class extends Component
         try {
             // For authors, we want to see all versions including unpublished
             $validSptVersions = SptVersion::allValidVersions(includeUnpublished: true);
-            $compatibleSptVersions = Semver::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
+            $compatibleSptVersions = VersionMatcher::satisfiedBy($validSptVersions, $this->sptVersionConstraint);
 
             $this->matchingSptVersions = SptVersion::query()
                 ->withoutGlobalScope(PublishedSptVersionScope::class)
@@ -713,7 +713,7 @@ new #[Layout('layouts::base')] class extends Component
                 ->versions()
                 ->withoutGlobalScope(PublishedScope::class)
                 ->get()
-                ->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $dependency['constraint']))
+                ->filter(fn (ModVersion $version): bool => VersionMatcher::satisfies($version->version, $dependency['constraint']))
                 ->map(
                     fn (ModVersion $version): array => [
                         'id' => $version->id,

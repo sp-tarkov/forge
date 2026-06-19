@@ -65,7 +65,6 @@ new class extends Component
         Track::event(TrackingEventType::ACCOUNT_DELETE, $freshUser, $userData);
 
         $freshUser->deleteProfilePhoto();
-        $freshUser->tokens->each->delete();
         $freshUser->delete();
 
         Auth::guard('web')->logout();

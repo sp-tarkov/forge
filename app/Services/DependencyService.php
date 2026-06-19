@@ -8,7 +8,7 @@ use App\Models\AddonVersion;
 use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Support\Api\V0\QueryBuilder\ModDependencyTreeQueryBuilder;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\JoinClause;
@@ -445,7 +445,7 @@ final class DependencyService
             ->get();
 
         // Find the highest version that satisfies the constraint
-        $satisfyingVersions = $versions->filter(fn (ModVersion $version): bool => Semver::satisfies($version->version, $constraint));
+        $satisfyingVersions = $versions->filter(fn (ModVersion $version): bool => VersionMatcher::satisfies($version->version, $constraint));
 
         return $satisfyingVersions->first();
     }

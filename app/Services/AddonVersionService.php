@@ -7,7 +7,7 @@ namespace App\Services;
 use App\Models\Addon;
 use App\Models\AddonVersion;
 use App\Models\ModVersion;
-use Composer\Semver\Semver;
+use App\Support\VersionMatcher;
 use Exception;
 
 final class AddonVersionService
@@ -77,9 +77,9 @@ final class AddonVersionService
             ->get();
 
         // Filter versions that satisfy the constraint
-        $compatibleVersions = $modVersions->filter(function (ModVersion $modVersion) use ($addonVersion) {
+        $compatibleVersions = $modVersions->filter(function (ModVersion $modVersion) use ($addonVersion): bool {
             try {
-                return Semver::satisfies($modVersion->version, $addonVersion->mod_version_constraint);
+                return VersionMatcher::satisfies($modVersion->version, $addonVersion->mod_version_constraint);
             } catch (Exception) {
                 // Invalid semver constraint or version, skip this version
                 return false;

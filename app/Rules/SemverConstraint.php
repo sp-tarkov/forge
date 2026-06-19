@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Rules;
 
+use App\Support\VersionMatcher;
 use Closure;
-use Composer\Semver\Semver;
-use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Translation\PotentiallyTranslatedString;
 
@@ -19,11 +18,8 @@ final class SemverConstraint implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        try {
-            // Attempt to parse the version constraint using the Semver library.
-            /** @var string $value */
-            Semver::satisfiedBy(versions: ['1.0.0'], constraints: $value); // Fake versions passed.
-        } catch (Exception) {
+        /** @var string $value */
+        if (! VersionMatcher::isValidConstraint($value)) {
             $fail(__('Please enter a valid semantic version constraint.'));
         }
     }

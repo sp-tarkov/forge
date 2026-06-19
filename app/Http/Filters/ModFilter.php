@@ -306,7 +306,7 @@ final class ModFilter
         }
 
         // Only normal versions
-        if ($normalVersions !== [] && ! $hasLegacyVersion) {
+        if ($normalVersions !== []) {
             return $this->builder->whereExists(function (QueryBuilder $query) use ($normalVersions, $showDisabled): void {
                 $query->select(DB::raw(1))
                     ->from('mod_versions')

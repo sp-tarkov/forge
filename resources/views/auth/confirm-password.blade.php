@@ -32,6 +32,7 @@
                     autocomplete="current-password"
                     autofocus
                 />
+                <flux:error name="password" />
             </flux:field>
 
             <x-honeypot />

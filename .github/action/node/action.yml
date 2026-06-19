@@ -1,0 +1,28 @@
+name: Node
+description: Setup Node.js and cache NPM dependencies.
+
+inputs:
+  node-version:
+    description: Node.js version to use.
+    required: false
+    default: lts/*
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Get NPM Cache Directory
+      id: npm-cache
+      run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache NPM Dependencies
+      uses: actions/cache@v5
+      with:
+        path: ${{ steps.npm-cache.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-node-
