@@ -21,7 +21,7 @@ return [
     // The base URL displayed in the docs.
     // If you're using `laravel` type, you can set this to a dynamic string, like '{{ config("app.tenant_url") }}' to get a dynamic base URL.
     // Production base URL the public docs should advertise. Falls through to APP_URL so local docs builds work too.
-    'base_url' => env('SCRIBE_BASE_URL', 'https://forge.sp-tarkov.com'),
+    'base_url' => env('APP_URL', 'https://forge.sp-tarkov.com'),
 
     // Routes to include in the docs
     'routes' => [
@@ -120,12 +120,11 @@ return [
         // Set this to null if you want Scribe to use a random value as placeholder instead.
         'placeholder' => 'YOUR_API_KEY',
 
-        // The v0 API is open and read-only, so there is no authentication section to document.
         'extra_info' => '',
     ],
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
-    'intro_text' => 'The Forge API is open and read-only: every endpoint is publicly accessible and requires no authentication or API key.<br><br>This documentation aims to provide all the information you need to work with our API.<br><br>As you scroll, you will see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile). You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).',
+    'intro_text' => 'The Forge API is open and read-only. Every endpoint is publicly accessible and requires no authentication or API key.<br><br>As you scroll, you will see code examples for working with the API in different programming languages in the dark area to the right (or as part of the content on mobile). You can switch the language used with the tabs at the top right (or from the nav menu at the top left on mobile).',
 
     // Example requests for each endpoint will be shown in each of these languages.
     // Supported options are: bash, javascript, php, python
