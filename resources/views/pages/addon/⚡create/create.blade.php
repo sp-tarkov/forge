@@ -342,9 +342,9 @@
                                         x-show="aiContent"
                                         x-cloak
                                     >
-                                        <flux:label badge="Optional">{{ __('Custom Disclosure Message') }}</flux:label>
+                                        <flux:label>{{ __('Custom Disclosure Message') }}</flux:label>
                                         <flux:description>
-                                            {{ __('Optionally describe how AI was used in this project. This message will appear on the addon page when users expand the AI disclosure. Markdown is supported.') }}
+                                            {{ __('Describe how AI was used in this project. This message will appear on the addon page when users expand the AI disclosure. Markdown is supported.') }}
                                         </flux:description>
                                         <x-markdown-editor
                                             wire-model="customAiDisclosure"

@@ -365,7 +365,7 @@ describe('Mod Create Form', function (): void {
             expect($mod->custom_ai_disclosure)->toBe('Used AI to draft documentation.');
         });
 
-        it('persists null when AI content is enabled but no disclosure message is provided', function (): void {
+        it('requires a disclosure message when AI content is enabled', function (): void {
             Livewire::test('pages::mod.create')
                 ->set('honeypotData.nameFieldName', 'name')
                 ->set('honeypotData.validFromFieldName', 'valid_from')
@@ -381,13 +381,9 @@ describe('Mod Create Form', function (): void {
                 ->set('customAiDisclosure', '')
                 ->set('containsAds', false)
                 ->call('save')
-                ->assertHasNoErrors()
-                ->assertRedirect();
+                ->assertHasErrors(['customAiDisclosure' => 'required_if']);
 
-            $mod = Mod::query()->where('name', 'AI No Message Mod')->first();
-            expect($mod)->not->toBeNull();
-            expect($mod->contains_ai_content)->toBeTrue();
-            expect($mod->custom_ai_disclosure)->toBeNull();
+            expect(Mod::query()->where('name', 'AI No Message Mod')->exists())->toBeFalse();
         });
 
         it('persists null when AI content is disabled even if a disclosure message is provided', function (): void {

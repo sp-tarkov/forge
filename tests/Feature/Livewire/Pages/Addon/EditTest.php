@@ -122,14 +122,14 @@ describe('custom AI disclosure', function (): void {
         expect($addon->custom_ai_disclosure)->toBeNull();
     });
 
-    it('clears the custom AI disclosure when the message is emptied while AI content remains enabled', function (): void {
+    it('requires a disclosure message when the message is emptied while AI content remains enabled', function (): void {
         $owner = User::factory()->withMfa()->create();
         $addon = Addon::withoutEvents(fn (): Addon => Addon::factory()
             ->for($this->mod)
             ->for($owner, 'owner')
             ->create([
                 'contains_ai_content' => true,
-                'custom_ai_disclosure' => 'Will be cleared.',
+                'custom_ai_disclosure' => 'Original disclosure.',
                 'license_id' => $this->license->id,
             ]));
 
@@ -144,12 +144,10 @@ describe('custom AI disclosure', function (): void {
             ->set('containsAiContent', true)
             ->set('customAiDisclosure', '')
             ->call('save')
-            ->assertHasNoErrors()
-            ->assertRedirect();
+            ->assertHasErrors(['customAiDisclosure' => 'required_if']);
 
         $addon->refresh();
-        expect($addon->contains_ai_content)->toBeTrue();
-        expect($addon->custom_ai_disclosure)->toBeNull();
+        expect($addon->custom_ai_disclosure)->toBe('Original disclosure.');
     });
 
     it('rejects a custom AI disclosure longer than 1000 characters', function (): void {

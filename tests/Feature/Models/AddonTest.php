@@ -724,6 +724,7 @@ describe('AI content lock on edit', function (): void {
 
         Livewire::test('pages::addon.edit', ['addonId' => $addon->id])
             ->set('containsAiContent', true)
+            ->set('customAiDisclosure', 'Used AI to draft the description.')
             ->call('save')
             ->assertHasNoErrors();
 
