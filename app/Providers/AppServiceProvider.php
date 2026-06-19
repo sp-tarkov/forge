@@ -154,7 +154,6 @@ final class AppServiceProvider extends ServiceProvider
         Number::macro('downloads', fn (int|float $number) => Number::forHumans(
             $number,
             $number > 1000000 ? 2 : ($number > 1000 ? 1 : 0),
-            maxPrecision: null,
             abbreviate: true
         ));
     }
