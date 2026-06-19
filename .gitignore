@@ -3,6 +3,10 @@
 .env.backup
 .env.production
 /php.ini
+**/caddy
+frankenphp
+frankenphp.bak
+frankenphp-worker.php
 .phpactor.json
 .phpunit.cache
 .phpunit.result.cache
@@ -29,6 +33,8 @@ Homestead.yaml
 /storage/app/public
 !/storage/app/public/cover-photos/.gitkeep
 !/storage/app/public/profile-photos/.gitkeep
+/storage/app/geoip/*
+!/storage/app/geoip/.gitkeep
 /storage/pail
 /tests/Browser/Screenshots
 /tmp
