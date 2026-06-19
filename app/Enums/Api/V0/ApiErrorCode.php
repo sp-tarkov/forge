@@ -15,6 +15,8 @@ enum ApiErrorCode: string
 
     case FORBIDDEN = 'FORBIDDEN';
 
+    case RATE_LIMITED = 'RATE_LIMITED';
+
     case INSUFFICIENT_SCOPE = 'INSUFFICIENT_SCOPE';
 
     case SERVER_ERROR = 'SERVER_ERROR';
