@@ -92,6 +92,13 @@ final class AddonResource extends JsonResource
             $data['contains_ai_content'] = (bool) $this->resource->contains_ai_content;
         }
 
+        if ($this->shouldInclude('custom_ai_disclosure')) {
+            $data['custom_ai_disclosure'] = $this->when(
+                $request->routeIs('api.v0.addons.show'),
+                $this->resource->custom_ai_disclosure_html,
+            );
+        }
+
         if ($this->shouldInclude('mod_id')) {
             $data['mod_id'] = $this->resource->mod_id;
         }

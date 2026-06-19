@@ -459,7 +459,7 @@ new #[Layout('layouts::base')] class extends Component
             'publishedAtTime' => 'nullable|date_format:H:i',
             'containsAiContent' => 'boolean',
             'containsAiContentLocked' => 'boolean',
-            'customAiDisclosure' => 'nullable|string|max:1000',
+            'customAiDisclosure' => 'required_if:containsAiContent,true|string|max:1000',
             'containsAds' => 'boolean',
             'commentsDisabled' => 'boolean',
             'authorIds' => 'array|max:10',
@@ -486,6 +486,7 @@ new #[Layout('layouts::base')] class extends Component
             'sourceCodeLinks.*.url.url' => 'Please enter a valid URL (e.g., https://github.com/username/repo).',
             'sourceCodeLinks.*.url.starts_with' => 'The URL must start with https:// or http://',
             'sourceCodeLinks.*.label.max' => 'The label must not exceed 50 characters.',
+            'customAiDisclosure.required_if' => 'Please describe how AI was used when your mod contains AI content.',
         ];
     }
 

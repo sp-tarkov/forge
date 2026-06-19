@@ -101,6 +101,18 @@ describe('index', function (): void {
             ->toContain($addon2->id);
     });
 
+    it('does not include custom_ai_disclosure on the index endpoint', function (): void {
+        ($this->createVisibleAddon)([
+            'custom_ai_disclosure' => 'AI was used to generate music tracks.',
+        ]);
+
+        // Even when explicitly requested, the disclosure is only served by the single-addon show endpoint.
+        $response = $this->getJson('/api/v0/addons?fields=custom_ai_disclosure');
+
+        $response->assertOk()
+            ->assertJsonMissingPath('data.0.custom_ai_disclosure');
+    });
+
     it('filters addons by name wildcard', function (): void {
         $addon1 = ($this->createVisibleAddon)(['name' => 'Awesome Addon']);
         ($this->createVisibleAddon)(['name' => 'Another Addon']);
@@ -296,6 +308,30 @@ describe('show', function (): void {
                 ],
             ])
             ->assertJsonPath('data.name', 'Test Addon');
+    });
+
+    it('returns custom_ai_disclosure as rendered HTML when requested', function (): void {
+        $addon = ($this->createVisibleAddon)([
+            'custom_ai_disclosure' => 'AI was used to generate **music tracks**.',
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d?fields=custom_ai_disclosure', $addon->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.custom_ai_disclosure', $addon->custom_ai_disclosure_html);
+
+        expect($response->json('data.custom_ai_disclosure'))->toContain('<strong>music tracks</strong>');
+    });
+
+    it('returns an empty custom_ai_disclosure when none is set', function (): void {
+        $addon = ($this->createVisibleAddon)([
+            'custom_ai_disclosure' => null,
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/addon/%d?fields=custom_ai_disclosure', $addon->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.custom_ai_disclosure', '');
     });
 
     it('returns 404 for non-existent addon', function (): void {

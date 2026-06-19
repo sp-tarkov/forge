@@ -147,7 +147,7 @@ describe('custom AI disclosure', function (): void {
         expect($addon->custom_ai_disclosure)->toBe('Used AI to draft documentation.');
     });
 
-    it('persists null when AI content is enabled but no disclosure message is provided', function (): void {
+    it('requires a disclosure message when AI content is enabled', function (): void {
         Livewire::test('pages::addon.create', ['mod' => $this->mod])
             ->set('honeypotData.nameFieldName', 'name')
             ->set('honeypotData.validFromFieldName', 'valid_from')
@@ -162,13 +162,9 @@ describe('custom AI disclosure', function (): void {
             ->set('customAiDisclosure', '')
             ->set('containsAds', false)
             ->call('save')
-            ->assertHasNoErrors()
-            ->assertRedirect();
+            ->assertHasErrors(['customAiDisclosure' => 'required_if']);
 
-        $addon = Addon::query()->where('name', 'AI No Message Addon')->first();
-        expect($addon)->not->toBeNull();
-        expect($addon->contains_ai_content)->toBeTrue();
-        expect($addon->custom_ai_disclosure)->toBeNull();
+        expect(Addon::query()->where('name', 'AI No Message Addon')->exists())->toBeFalse();
     });
 
     it('persists null when AI content is disabled even if a disclosure message is provided', function (): void {

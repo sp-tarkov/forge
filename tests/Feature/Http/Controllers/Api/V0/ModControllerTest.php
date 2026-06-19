@@ -467,6 +467,19 @@ describe('index', function (): void {
         $response->assertJsonMissing(['data' => ['*' => ['created_at', 'updated_at']]]);
     });
 
+    it('does not include custom_ai_disclosure on the index endpoint', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create([
+            'custom_ai_disclosure' => 'AI was used to generate item icons.',
+        ]);
+
+        // Even when explicitly requested, the disclosure is only served by the single-mod show endpoint.
+        $response = $this->getJson('/api/v0/mods?fields=custom_ai_disclosure');
+
+        $response->assertOk()
+            ->assertJsonMissingPath('data.0.custom_ai_disclosure');
+    });
+
     it('returns fika_compatibility when requested', function (): void {
         SptVersion::factory()->state(['version' => '3.8.0'])->create();
 
@@ -830,6 +843,32 @@ describe('show', function (): void {
         $response
             ->assertOk()
             ->assertJsonPath('data.fika_compatibility', true);
+    });
+
+    it('returns custom_ai_disclosure as rendered HTML when requested', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create([
+            'custom_ai_disclosure' => 'AI was used to generate **item icons**.',
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d?fields=custom_ai_disclosure', $mod->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.custom_ai_disclosure', $mod->custom_ai_disclosure_html);
+
+        expect($response->json('data.custom_ai_disclosure'))->toContain('<strong>item icons</strong>');
+    });
+
+    it('returns an empty custom_ai_disclosure when none is set', function (): void {
+        SptVersion::factory()->state(['version' => '3.8.0'])->create();
+        $mod = Mod::factory()->hasVersions(1, ['spt_version_constraint' => '3.8.0'])->create([
+            'custom_ai_disclosure' => null,
+        ]);
+
+        $response = $this->getJson(sprintf('/api/v0/mod/%d?fields=custom_ai_disclosure', $mod->id));
+
+        $response->assertOk()
+            ->assertJsonPath('data.custom_ai_disclosure', '');
     });
 
     it('returns thumbnail as a URL', function (): void {

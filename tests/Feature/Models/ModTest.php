@@ -1524,6 +1524,7 @@ describe('AI Content Lock', function (): void {
 
             Livewire::test('pages::mod.edit', ['modId' => $mod->id])
                 ->set('containsAiContent', true)
+                ->set('customAiDisclosure', 'Used AI to draft the description.')
                 ->call('save')
                 ->assertHasNoErrors();
 
@@ -1544,6 +1545,7 @@ describe('AI Content Lock', function (): void {
             Livewire::test('pages::mod.edit', ['modId' => $mod->id])
                 ->set('containsAiContentLocked', true)
                 ->set('containsAiContent', true)
+                ->set('customAiDisclosure', 'Used AI to draft the description.')
                 ->call('save')
                 ->assertHasNoErrors();
 

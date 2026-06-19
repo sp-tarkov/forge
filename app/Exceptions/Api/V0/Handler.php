@@ -7,6 +7,7 @@ namespace App\Exceptions\Api\V0;
 use App\Enums\Api\V0\ApiErrorCode;
 use App\Http\Responses\Api\V0\ApiResponse;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,6 +52,16 @@ final class Handler
                 Response::HTTP_BAD_REQUEST,
                 ApiErrorCode::INVALID_QUERY_PARAMETER
             );
+        }
+
+        // Rate-limited requests mirror the Cloudflare edge limiter's custom 429 body so clients see the same shape
+        // regardless of which layer throttled them. The exception's Retry-After and X-RateLimit-* headers are preserved.
+        if ($e instanceof ThrottleRequestsException) {
+            return ApiResponse::error(
+                'Too many requests. Retry after the number of seconds in the Retry-After header.',
+                Response::HTTP_TOO_MANY_REQUESTS,
+                ApiErrorCode::RATE_LIMITED,
+            )->withHeaders($e->getHeaders());
         }
 
         // Generic fallbacks for other exceptions.

@@ -23,6 +23,7 @@ final class AddonFactory extends Factory
     {
         $name = Str::title(mb_rtrim(fake()->sentence(random_int(2, 4)), '.'));
         $addonSlug = Str::slug($name);
+        $containsAiContent = fake()->boolean();
 
         return [
             'mod_id' => Mod::factory(),
@@ -33,7 +34,8 @@ final class AddonFactory extends Factory
             'description' => fake()->paragraphs(random_int(2, 5), true),
             'license_id' => License::query()->inRandomOrder()->first()->id ?? License::factory(),
             'downloads' => 0,
-            'contains_ai_content' => fake()->boolean(),
+            'contains_ai_content' => $containsAiContent,
+            'custom_ai_disclosure' => $containsAiContent ? fake()->sentence() : null,
             'contains_ads' => fake()->boolean(),
             'comments_disabled' => false,
             'discord_notification_sent' => true,

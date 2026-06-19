@@ -81,6 +81,7 @@ final class AddonQueryBuilder extends AbstractQueryBuilder
             'thumbnail',
             'downloads',
             'contains_ai_content',
+            'custom_ai_disclosure',
             'contains_ads',
             'mod_id',
             'detached_at',

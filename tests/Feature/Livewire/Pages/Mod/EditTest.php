@@ -299,6 +299,7 @@ describe('Mod Editing Functionality', function (): void {
             ->set('sourceCodeLinks.0.label', '')
             ->set('license', (string) $license->id)
             ->set('containsAiContent', true)
+            ->set('customAiDisclosure', 'Used AI to generate placeholder art.')
             ->set('containsAds', false)
             ->call('save')
             ->assertHasNoErrors()
@@ -446,12 +447,12 @@ describe('Custom AI Disclosure', function (): void {
         expect($mod->custom_ai_disclosure)->toBeNull();
     });
 
-    it('clears the custom AI disclosure when the message is emptied while AI content remains enabled', function (): void {
+    it('requires a disclosure message when the message is emptied while AI content remains enabled', function (): void {
         $license = License::factory()->create();
         $owner = User::factory()->withMfa()->create();
         $mod = Mod::factory()->recycle($owner)->create([
             'contains_ai_content' => true,
-            'custom_ai_disclosure' => 'Will be cleared.',
+            'custom_ai_disclosure' => 'Original disclosure.',
             'license_id' => $license->id,
         ]);
 
@@ -461,12 +462,10 @@ describe('Custom AI Disclosure', function (): void {
             ->set('containsAiContent', true)
             ->set('customAiDisclosure', '')
             ->call('save')
-            ->assertHasNoErrors()
-            ->assertRedirect();
+            ->assertHasErrors(['customAiDisclosure' => 'required_if']);
 
         $mod->refresh();
-        expect($mod->contains_ai_content)->toBeTrue();
-        expect($mod->custom_ai_disclosure)->toBeNull();
+        expect($mod->custom_ai_disclosure)->toBe('Original disclosure.');
     });
 
     it('rejects a custom AI disclosure longer than 1000 characters', function (): void {

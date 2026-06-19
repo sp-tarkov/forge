@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Api\V0\ApiErrorCode;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -38,6 +39,28 @@ describe('API exception handler', function (): void {
                 'message' => 'Validation failed.',
             ])
             ->assertJsonValidationErrorFor('name');
+    });
+
+    it('returns the rate-limited json shape and preserves rate-limit headers for a throttle exception', function (): void {
+        Route::get('/api/v0/test-throttle', function (): void {
+            throw new ThrottleRequestsException(
+                'Too Many Attempts.',
+                null,
+                ['Retry-After' => '42', 'X-RateLimit-Limit' => '300', 'X-RateLimit-Remaining' => '0'],
+            );
+        });
+
+        $response = $this->getJson('/api/v0/test-throttle');
+
+        $response->assertStatus(Response::HTTP_TOO_MANY_REQUESTS) // 429
+            ->assertExactJson([
+                'success' => false,
+                'code' => ApiErrorCode::RATE_LIMITED->value,
+                'message' => 'Too many requests. Retry after the number of seconds in the Retry-After header.',
+            ])
+            ->assertHeader('Retry-After', '42')
+            ->assertHeader('X-RateLimit-Limit', '300')
+            ->assertHeader('X-RateLimit-Remaining', '0');
     });
 
     it('returns correct json for generic server error', function (): void {

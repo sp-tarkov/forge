@@ -23,6 +23,7 @@ final class ModFactory extends Factory
         $name = Str::title(mb_rtrim(fake()->sentence(random_int(3, 5)), '.'));
         $domain = fake()->domainName();
         $modSlug = Str::slug($name);
+        $containsAiContent = fake()->boolean();
 
         return [
             'owner_id' => User::factory(),
@@ -34,7 +35,8 @@ final class ModFactory extends Factory
             'license_id' => License::query()->inRandomOrder()->first()->id ?? License::factory(),
             'category_id' => ModCategory::query()->inRandomOrder()->first()->id ?? ModCategory::factory(),
             'featured' => fake()->boolean(),
-            'contains_ai_content' => fake()->boolean(),
+            'contains_ai_content' => $containsAiContent,
+            'custom_ai_disclosure' => $containsAiContent ? fake()->sentence() : null,
             'contains_ads' => fake()->boolean(),
             'discord_notification_sent' => true,
             'published_at' => Date::now()->subDays(random_int(0, 365))->subHours(random_int(0, 23)),
