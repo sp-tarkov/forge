@@ -149,7 +149,8 @@ final class AddonController extends Controller
      * Retrieves details for a single addon, allowing relationship inclusion.
      *
      * Fields available:<br /><code>guid, name, slug, teaser, description, thumbnail, downloads, source_code_links,
-     * detail_url, contains_ai_content, contains_ads, mod_id, is_detached, published_at, created_at, updated_at</code>
+     * detail_url, contains_ai_content, custom_ai_disclosure, contains_ads, mod_id, is_detached, published_at,
+     * created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>addon/{id}/versions</code> endpoint.</aside>
@@ -182,6 +183,7 @@ final class AddonController extends Controller
      *          "detail_url": "https://forge.sp-tarkov.com/addon/1/ultimate-music-pack",
      *          "contains_ads": false,
      *          "contains_ai_content": false,
+     *          "custom_ai_disclosure": "<p>AI tools were used to generate placeholder music tracks.</p>",
      *          "mod_id": 5,
      *          "is_detached": false,
      *          "published_at": "2025-01-09T17:48:53.000000Z",

@@ -97,6 +97,7 @@ final class ModQueryBuilder extends AbstractQueryBuilder
             'downloads',
             'featured',
             'contains_ai_content',
+            'custom_ai_disclosure',
             'contains_ads',
             'cheat_notice',
             'category_id',

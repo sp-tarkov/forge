@@ -367,8 +367,8 @@ final class ModController extends Controller
      * Retrieves details for a single mod, allowing relationship inclusion.
      *
      * Fields available:<br /><code>hub_id, guid, name, slug, teaser, description, thumbnail, downloads,
-     * detail_url, fika_compatibility, featured, contains_ai_content, contains_ads, shows_profile_binding_notice,
-     * published_at, created_at, updated_at</code>
+     * detail_url, fika_compatibility, featured, contains_ai_content, custom_ai_disclosure, contains_ads,
+     * shows_profile_binding_notice, published_at, created_at, updated_at</code>
      *
      * <aside class="notice">This endpoint only offers limited version information. Only the latest 6 versions will be
      * included. For additional version information, use the <code>mod/{id}/versions</code> endpoint.</aside>
@@ -415,6 +415,7 @@ final class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
+     *          "custom_ai_disclosure": "<p>AI tools were used to generate placeholder item icons and textures.</p>",
      *          "shows_profile_binding_notice": false,
      *          "published_at": "2024-08-30T14:48:53.000000Z",
      *          "created_at": "2024-06-22T04:48:53.000000Z",
@@ -465,6 +466,7 @@ final class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
+     *          "custom_ai_disclosure": "<p>AI tools were used to generate placeholder item icons and textures.</p>",
      *          "shows_profile_binding_notice": false,
      *          "license": {
      *              "id": 2,
@@ -500,6 +502,7 @@ final class ModController extends Controller
      *          "featured": false,
      *          "contains_ads": true,
      *          "contains_ai_content": true,
+     *          "custom_ai_disclosure": "<p>AI tools were used to generate placeholder item icons and textures.</p>",
      *          "shows_profile_binding_notice": false,
      *          "owner": {
      *              "id": 1,
