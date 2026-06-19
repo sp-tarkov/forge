@@ -34,7 +34,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Blaze\Blaze;
 use Livewire\Livewire;
 use Mchev\Banhammer\Middleware\AuthBanned;
 use SocialiteProviders\Discord\Provider;
@@ -79,21 +78,6 @@ final class AppServiceProvider extends ServiceProvider
 
         // Register layouts directory as anonymous Blade component path.
         Blade::anonymousComponentPath(resource_path('views/layouts'), 'layouts');
-
-        // Compile the application's anonymous Blade components with Blaze.
-        $blaze = Blaze::optimize()->in(resource_path('views/components'));
-
-        // These anonymous components are rendered through the view() helper, or rely on the $component variable,
-        // neither of which Blaze's function compiler supports. They stay on the standard Blade renderer.
-        $blazeIncompatible = [
-            'addon/card', 'confirms-password', 'dropdown', 'modal', 'nav-link', 'online-indicator',
-            'responsive-nav-link', 'start-chat-button', 'tab-button', 'user-name', 'switchable-team',
-            'mod/download-button', 'mod/list-row', 'mod/version-card', 'mod/version-download-modal',
-            'notification-row/dashboard', 'notification-row/nav',
-        ];
-        foreach ($blazeIncompatible as $component) {
-            $blaze->in(resource_path(sprintf('views/components/%s.blade.php', $component)), compile: false);
-        }
 
         // Add auth.banned to Livewire persistent middleware to ensure banned users are blocked on all requests.
         Livewire::addPersistentMiddleware([
