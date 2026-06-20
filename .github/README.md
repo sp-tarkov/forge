@@ -26,12 +26,15 @@ We use [Laravel Herd](https://herd.laravel.com) for local development. [Herd Pro
 2. **Copy the environment file** and generate an application key:
    ```
    # Herd Pro (recommended):
-   cp .env.example .env
+   cp .env.herd-pro .env
 
    # Herd Free (limited):
-   cp .env.light .env
+   cp .env.herd .env
    ```
-   If using `.env.light`, update `DB_DATABASE` to the absolute path to your `database/database.sqlite` file.
+   If using `.env.herd`, create the SQLite database file and update `DB_DATABASE` to its absolute path:
+   ```
+   touch database/database.sqlite
+   ```
 
 3. **Install dependencies:**
    ```
@@ -84,10 +87,9 @@ We use [Laravel Herd](https://herd.laravel.com) for local development. [Herd Pro
 | Service                          | Authentication |
 |----------------------------------|----------------|
 | Redis Queue Management (Horizon) | Via User Role  |
-| Website Status (Pulse)           | Via User Role  |
 | Meilisearch WebUI (Herd Pro)     | Local Only     |
 | Mailpit WebUI (Herd Pro)         | Local Only     |
 
 ### More Information
 
-For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/12.x/).
+For more information on Laravel development, please refer to the [official documentation](https://laravel.com/docs/13.x/).
