@@ -39,10 +39,9 @@ We use [Laravel Herd](https://herd.laravel.com) for local development. [Herd Pro
    npm install
    ```
 
-4. **Generate the application and OAuth keys:**
+4. **Generate the application key:**
    ```
    php artisan key:generate
-   php artisan passport:keys
    ```
 
 5. **Start the Herd Pro services** (if using Herd Pro):
