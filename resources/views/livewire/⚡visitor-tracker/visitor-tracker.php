@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Events\PeakVisitorUpdated;
+use App\Models\ApiUsageMetric;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Locked;
@@ -21,6 +22,12 @@ new class extends Component
      */
     #[Locked]
     public ?string $peakDate = null;
+
+    /**
+     * The number of API requests served in the trailing 24 hours.
+     */
+    #[Locked]
+    public int $apiRequests24h = 0;
 
     /**
      * Initialize the component with current peak data.
@@ -44,6 +51,17 @@ new class extends Component
 
         $this->peakCount = $peakData['count'];
         $this->peakDate = $peakData['date'];
+
+        // Summing a day of per-minute rollup rows is too heavy to run on every footer render, so cache it. Wrapped in
+        // an array (not cached as a bare int) because the redis and database stores keep bare numeric values
+        // un-serialized and hand them back as strings, which would break the typed property; an array round-trips
+        // through serialization with its int intact. The `_v2` key suffix avoids colliding with an earlier release
+        // that cached a bare int under the un-suffixed key.
+        $apiUsage = Cache::flexible('api_requests_24h_v2', [300, 600], fn (): array => [
+            'count' => ApiUsageMetric::requestsInLast24Hours(),
+        ]);
+
+        $this->apiRequests24h = $apiUsage['count'];
     }
 
     /**

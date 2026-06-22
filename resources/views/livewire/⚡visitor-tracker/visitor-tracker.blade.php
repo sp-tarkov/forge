@@ -53,6 +53,14 @@
                     ></span>
                 </div>
             </template>
+
+            {{-- API requests served in the last 24 hours --}}
+            @if ($apiRequests24h > 0)
+                <div class="text-right mt-1">
+                    <span class="font-medium text-gray-400">{{ number_format($apiRequests24h) }}</span>
+                    <span class="text-gray-500">{{ __('API requests in the last 24h') }}</span>
+                </div>
+            @endif
         </div>
     </template>
 </div>
