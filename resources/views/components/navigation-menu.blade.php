@@ -179,7 +179,9 @@
 
                         {{-- Chat Dropdown --}}
                         @auth
-                            <livewire:navigation-chat />
+                            @persist('navigation-chat')
+                                <livewire:navigation-chat />
+                            @endpersist
                         @endauth
 
                         {{-- Moderation/Staff Dropdown --}}
