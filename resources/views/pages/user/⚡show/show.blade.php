@@ -15,11 +15,20 @@
 <div>
     <div class="sm:-mt-12 mb-6 dark:bg-gray-800 dark:text-gray-100">
         <div>
-            <img
-                src="{{ $user->cover_photo_url }}"
-                alt="{{ __(':name\'s Cover Photo', ['name' => $user->name]) }}"
-                class="h-32 w-full object-cover lg:h-48"
-            />
+            @if ($user->cover_photo_url)
+                <img
+                    src="{{ $user->cover_photo_url }}"
+                    alt="{{ __(':name\'s Cover Photo', ['name' => $user->name]) }}"
+                    class="h-32 w-full object-cover lg:h-48"
+                />
+            @else
+                <div
+                    class="h-32 w-full lg:h-48"
+                    style="background-image: {{ $user->cover_photo_gradient }}"
+                    role="img"
+                    aria-label="{{ __(':name\'s Cover Photo', ['name' => $user->name]) }}"
+                ></div>
+            @endif
         </div>
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex items-start gap-4 md:-mt-12 md:items-end md:gap-5">

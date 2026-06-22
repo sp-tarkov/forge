@@ -20,7 +20,15 @@ describe('Public Pages', function (): void {
             'spt_version_constraint' => test()->sptVersion->version,
         ]);
         $addon = Addon::factory()->published()->withVersions()->recycle($mod)->create();
-        $user = User::factory()->create();
+
+        // The public profile page renders a cover photo and avatar. The cover falls back to a self-hosted CSS gradient
+        // when no image is uploaded, but the avatar still falls back to an external service (ui-avatars.com); the
+        // browser blocks the page `load` event on that request, so a slow or unreachable host makes this navigation
+        // time out and the smoke run fail. Point the avatar at a local path so the page is fully self-hosted and never
+        // waits on a third-party host.
+        $user = User::factory()->create([
+            'profile_photo_path' => 'profile-photos/smoke.png',
+        ]);
         Comment::factory()->recycle($mod)->withVersion()->create();
 
         $pages = visit([
