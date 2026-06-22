@@ -149,7 +149,7 @@ final class ApiUsageSeeder extends Seeder
 
         foreach (range(1, 150) as $ignored) {
             $minute = $now->subMinutes(random_int(1, 1439))->startOfMinute()->format('Y-m-d H:i:s');
-            $key = $minute.'|'.$ips[array_rand($ips)];
+            $key = $minute.'|'.$ips[random_int(0, count($ips) - 1)];
             $totals[$key] = ($totals[$key] ?? 0) + random_int(5, 600);
         }
 
@@ -166,7 +166,7 @@ final class ApiUsageSeeder extends Seeder
 
         foreach (range(1, 400) as $ignored) {
             $day = $now->subDays(random_int(0, 89))->startOfDay()->format('Y-m-d H:i:s');
-            $key = $day.'|'.$ips[array_rand($ips)];
+            $key = $day.'|'.$ips[random_int(0, count($ips) - 1)];
             $totals[$key] = ($totals[$key] ?? 0) + random_int(20, 8000);
         }
 
