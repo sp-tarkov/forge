@@ -322,7 +322,7 @@ it('generates correct URLs in email', function (): void {
         'user' => $recipient->id,
         'conversation' => $conversation->hash_id,
     ]);
-    $foundUnsubscribe = array_any($mailMessage->footerLines, fn ($line): bool => str_contains((string) $line, $expectedUnsubscribeUrl));
+    $foundUnsubscribe = array_any($mailMessage->footerLines, fn (string $line): bool => str_contains($line, $expectedUnsubscribeUrl));
 
     expect($foundUnsubscribe)->toBeTrue();
 });

@@ -9,6 +9,7 @@ use App\Models\Mod;
 use App\Models\ModVersion;
 use App\Models\SptVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 /**
@@ -206,6 +207,35 @@ describe('profile page access', function (): void {
 
         $response->assertStatus(200);
         $response->assertSeeText($user->name);
+    });
+});
+
+describe('cover banner', function (): void {
+    it('renders the gradient placeholder when no cover photo has been uploaded', function (): void {
+        $user = User::factory()->create(['cover_photo_path' => null]);
+
+        $response = $this->get(route('user.show', [
+            'userId' => $user->id,
+            'slug' => $user->slug,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee($user->cover_photo_gradient);
+    });
+
+    it('renders the uploaded cover photo when one exists', function (): void {
+        Storage::fake('public');
+
+        $user = User::factory()->create(['cover_photo_path' => 'cover-photos/banner.png']);
+
+        $response = $this->get(route('user.show', [
+            'userId' => $user->id,
+            'slug' => $user->slug,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee($user->cover_photo_url, false);
+        $response->assertDontSee($user->cover_photo_gradient);
     });
 });
 

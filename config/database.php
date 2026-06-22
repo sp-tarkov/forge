@@ -201,6 +201,17 @@ return [
             'database' => env('REDIS_QUEUE_DB', '2'),
         ],
 
+        // Dedicated connection for in-flight API usage counters. Kept on its own database so cache flushes and queue
+        // operations never touch the counters waiting to be rolled up. See config/api.php (`usage`).
+        'api-usage' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_API_USAGE_DB', '3'),
+        ],
+
     ],
 
 ];

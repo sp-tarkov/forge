@@ -240,6 +240,11 @@
                                                 wire:navigate
                                             >{{ __('Visitor Analytics') }}</flux:navmenu.item>
                                             <flux:navmenu.item
+                                                icon="presentation-chart-line"
+                                                href="{{ route('admin.api-analytics') }}"
+                                                wire:navigate
+                                            >{{ __('API Analytics') }}</flux:navmenu.item>
+                                            <flux:navmenu.item
                                                 icon="users"
                                                 href="{{ route('admin.user-management') }}"
                                                 wire:navigate
@@ -606,6 +611,15 @@
                             <span class="flex items-center gap-2">
                                 <flux:icon.chart-bar class="h-5 w-5" />
                                 {{ __('Visitor Analytics') }}
+                            </span>
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link
+                            href="{{ route('admin.api-analytics') }}"
+                            :active="request()->routeIs('admin.api-analytics')"
+                        >
+                            <span class="flex items-center gap-2">
+                                <flux:icon.presentation-chart-line class="h-5 w-5" />
+                                {{ __('API Analytics') }}
                             </span>
                         </x-responsive-nav-link>
                         <x-responsive-nav-link

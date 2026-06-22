@@ -1,0 +1,12 @@
+{
+    "schemaVersion": 1,
+    "ignored": [
+        {
+            "apiModId": 1090,
+            "name": "Color Converter API",
+            "guid": "com.rairai.colorconverterapi.eft",
+            "localVersion": "1.1.0",
+            "ignoredLatestVersion": "1.1.1"
+        }
+    ]
+}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Exceptions\Api\V0\Handler as ApiV0ExceptionHandler;
 use App\Exceptions\Api\V0\InvalidQueryException;
+use App\Http\Middleware\RecordApiUsage;
 use App\Http\Middleware\RejectMalformedUtf8;
 use App\Http\Middleware\SanitizeBroadcastSocketId;
 use Illuminate\Foundation\Application;
@@ -31,6 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
             RejectMalformedUtf8::class,
             SanitizeBroadcastSocketId::class,
         ]);
+
+        // Track v0 API usage as aggregate counters. Registered globally (it self-gates to `api/v0/*`) so it captures
+        // 404s on unmatched paths and 429s from the throttle middleware, and records in terminate() off the hot path.
+        $middleware->append(RecordApiUsage::class);
 
         $middleware->append(IPBanned::class);
 

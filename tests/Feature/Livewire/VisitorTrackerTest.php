@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Enums\Api\V0\ApiUsagePeriod;
 use App\Events\PeakVisitorUpdated;
+use App\Models\ApiUsageMetric;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -30,6 +32,17 @@ it('initializes with zero when no peak exists', function (): void {
     Livewire::test('visitor-tracker')
         ->assertSet('peakCount', 0)
         ->assertSet('peakDate', null);
+});
+
+it('initializes with the API request count from the last 24 hours', function (): void {
+    ApiUsageMetric::factory()->create([
+        'period' => ApiUsagePeriod::Minute,
+        'period_start' => now()->utc()->subHour(),
+        'request_count' => 1234,
+    ]);
+
+    Livewire::test('visitor-tracker')
+        ->assertSet('apiRequests24h', 1234);
 });
 
 it('updates peak when new count is higher', function (): void {

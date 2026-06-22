@@ -53,31 +53,45 @@ trait HasCoverPhoto
     }
 
     /**
-     * Get the cover photo URL for the user.
+     * Get the cover photo URL for the user, or null when no cover photo has been uploaded.
      *
-     * @return Attribute<string, never>
+     * @return Attribute<string|null, never>
      */
     protected function coverPhotoUrl(): Attribute
     {
-        /** @var Attribute<string, never> $attribute */
+        /** @var Attribute<string|null, never> $attribute */
         $attribute = new Attribute(
-            get: fn (): string => $this->cover_photo_path
+            get: fn (): ?string => $this->cover_photo_path
                 ? Storage::disk($this->coverPhotoDisk())->url($this->cover_photo_path)
-                : $this->defaultCoverPhotoUrl()
+                : null
         );
 
         return $attribute;
     }
 
     /**
-     * Get the default cover photo URL if no cover photo has been uploaded.
+     * Get the CSS gradient used as the cover photo placeholder when no cover photo has been uploaded. The gradient
+     * colors are derived deterministically from the user's name so each profile gets a stable, distinct banner without
+     * relying on any external image service.
+     *
+     * @return Attribute<string, never>
      */
-    protected function defaultCoverPhotoUrl(): string
+    protected function coverPhotoGradient(): Attribute
     {
-        if (empty($this->name)) {
-            return 'https://picsum.photos/720/100?blur=2';
-        }
+        /** @var Attribute<string, never> $attribute */
+        $attribute = new Attribute(
+            get: function (): string {
+                $hue = crc32((string) $this->name) % 360;
+                $secondHue = ($hue + 50) % 360;
 
-        return 'https://picsum.photos/seed/'.urlencode($this->name).'/720/100?blur=2';
+                return sprintf(
+                    'linear-gradient(135deg, hsl(%d, 65%%, 55%%) 0%%, hsl(%d, 65%%, 45%%) 100%%)',
+                    $hue,
+                    $secondHue,
+                );
+            }
+        );
+
+        return $attribute;
     }
 }

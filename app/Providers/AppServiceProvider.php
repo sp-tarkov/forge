@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\ApiUsageStore;
 use App\Contracts\DependencyResolver;
 use App\Contracts\Geolocator;
 use App\Contracts\SpamChecker;
@@ -17,6 +18,8 @@ use App\Policies\BlockingPolicy;
 use App\Services\CommentSpamService;
 use App\Services\DependencyVersionService;
 use App\Services\GeolocationService;
+use App\Support\ApiUsage\ArrayApiUsageStore;
+use App\Support\ApiUsage\RedisApiUsageStore;
 use App\View\Composers\PaginationComposer;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\Events\Login;
@@ -49,6 +52,20 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(SpamChecker::class, CommentSpamService::class);
         $this->app->bind(DependencyResolver::class, DependencyVersionService::class);
         $this->app->bind(Geolocator::class, GeolocationService::class);
+
+        // API usage counters need a shared, atomic store (Redis) in production so every Octane worker and app server
+        // increments the same buckets. Tests run without Redis, so fall back to an in-memory store there. Both are
+        // singletons: the Redis store only holds scalars, and the array store must persist across a test's requests.
+        $this->app->singleton(ApiUsageStore::class, function (): ApiUsageStore {
+            if ($this->app->runningUnitTests()) {
+                return new ArrayApiUsageStore;
+            }
+
+            return new RedisApiUsageStore(
+                config()->string('api.usage.connection'),
+                config()->integer('api.usage.bucket_ttl'),
+            );
+        });
     }
 
     /**

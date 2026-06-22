@@ -70,7 +70,8 @@ use Stevebauman\Purify\Facades\Purify;
  * @property bool $email_reply_notifications_enabled
  * @property bool $email_announcement_notifications_enabled
  * @property bool $email_chat_notifications_enabled
- * @property-read string $cover_photo_url attribute
+ * @property-read string|null $cover_photo_url attribute
+ * @property-read string $cover_photo_gradient attribute
  * @property-read string $profile_photo_url attribute
  * @property-read string $profile_url attribute
  * @property-read string $slug attribute

@@ -6,6 +6,8 @@ use App\Console\Commands\CleanupOldNotificationLogs;
 use App\Console\Commands\EnsureFavouritesLists;
 use App\Console\Commands\ForgeHeartbeat;
 use App\Console\Commands\UpdateGeoLiteDatabase;
+use App\Jobs\AggregateApiUsageDailyJob;
+use App\Jobs\AggregateApiUsageJob;
 use App\Jobs\DetectDownloadChangesJob;
 use App\Jobs\ProcessPinnedModVersionPublishDates;
 use App\Jobs\SendDiscordNotifications;
@@ -28,6 +30,13 @@ if (config('app.forge_heartbeat_url')) {
 
 if (config('verification.enabled')) {
     Schedule::job(new DetectDownloadChangesJob)->twiceDaily(6, 18)->onOneServer()->withoutOverlapping();
+}
+
+// Drain the API usage counters every minute and roll them up daily. Gated on the same flag that enables recording so
+// capture and aggregation are turned on together.
+if (config('api.usage.enabled')) {
+    Schedule::job(new AggregateApiUsageJob)->everyMinute()->onOneServer()->withoutOverlapping();
+    Schedule::job(new AggregateApiUsageDailyJob)->dailyAt('00:15')->onOneServer();
 }
 
 if (app()->isLocal() && config('telescope.enabled')) {

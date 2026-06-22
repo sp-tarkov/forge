@@ -97,7 +97,8 @@
         "test": [
             "npm install playwright@latest",
             "npx playwright install",
-            "./vendor/bin/pest --parallel --compact"
+            "./vendor/bin/pest --parallel --compact --testsuite=Feature,Unit",
+            "./vendor/bin/pest --parallel --compact --testsuite=Browser"
         ],
         "format": [
             "@pint",
